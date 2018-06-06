@@ -1,0 +1,46 @@
+{
+  "id": 1,
+  "melding_id": 4,
+  "incident_date": "2018-05-19T07:22:15Z",
+  "_link": {
+    "self": "blabla",
+    "history": "blala"
+  },
+  "category": "watermelding",
+  "subcategory": "overlast",
+  "department": "Waternet",
+  "current_state": {
+    "_link": {
+      "self": "blabla"
+    },
+    "state": "Gemeld",
+    "description": "dkjfg"
+  },
+  "reporter": {
+    "email": "melder@meldingen.amsterdam.nl",
+    "phone": "020-1234567",
+    "confirmation": false
+  },
+  "location": {
+    "id": 2,
+    "latitude": 52.376,
+    "logitude": 4.901,
+    "openbareruimte": "Zeedijk",
+    "adres": "Zeedijk 142, 4455 KA Amsterdam",
+    "stadsdeel": "Centrum"
+  },
+  "source": {
+    "phone": "0123456789",
+    "name": "sinterklaas",
+    "created_at": "2018-12-05T07:22:15Z"
+  },
+  "description": "Er vaart hier een boot veel te hard",
+  "extra_information": "Is een witte boot",
+  "created_at": "2018-05-19T07:22:15Z",
+  "updated_at": "2018-05-19T07:22:15Z",
+  "extra_properties": [
+    {
+      "rederij": "loveboat"
+    }
+  ]
+}

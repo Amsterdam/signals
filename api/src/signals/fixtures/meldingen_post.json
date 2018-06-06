@@ -1,0 +1,19 @@
+{
+  "description": "Er vaart hier een boot veel te hard",
+  "latitude": 52.376,
+  "logitude": 4.901,
+  "incident_date": "2018-05-19T07:22:15Z",
+  "extra_information": "Is een witte boot",
+  "reporter": {
+    "email": "melder@meldingen.amsterdam.nl",
+    "phone": "020-1234567"
+  },
+  "source": "telefoon",
+  "category": "watermelding",
+  "subcategory": "overlast",
+  "extra_properties": [
+    {
+      "rederij": "loveboat"
+    }
+  ]
+}
