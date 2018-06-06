@@ -1,0 +1,15 @@
+datapunt-authorization-django
+datapunt-authorization-levels
+Django
+django-braces
+django-extensions
+django-filter
+django-rest-swagger
+djangorestframework
+djangorestframework-gis
+drf-extensions
+git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
+psycopg2-binary
+factory-boy
+drf_yasg
+swagger-spec-validator

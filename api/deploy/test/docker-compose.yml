@@ -1,0 +1,22 @@
+version: '3.0'
+services:
+
+  database:
+    image: amsterdam/postgres
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: signals
+      POSTGRES_DB: signals
+
+  tests:
+    build: ../../
+    links:
+      - database:signals
+    environment:
+      DATABASE_NAME: signals
+      DATABASE_USER: insecure
+      DATABASE_PASSWORD: insecure
+      ENVIRONMENT: test
+    volumes:
+        - ./run_tests.sh:/app/run_tests.sh
+    command: /app/run_tests.sh
