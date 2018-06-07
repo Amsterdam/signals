@@ -6,8 +6,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: meldingen
-      POSTGRES_USER: meldingen
+      POSTGRES_DB: signals
+      POSTGRES_USER: signals
       POSTGRES_PASSWORD: insecure
 
   api:
