@@ -1,0 +1,22 @@
+version: '3.0'
+services:
+
+  database:
+    image: amsterdam/postgres
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_DB: signals
+      POSTGRES_USER: signals
+
+  importer:
+    build: ../../
+    links:
+      - database
+    environment:
+      DATABASE_NAME: signals
+      DATABASE_USER: signals
+      DATABASE_PASSWORD: insecure
+      DATABASE_HOST_OVERRIDE: database
+      DATABASE_PORT_OVERRIDE: 5432
+      SIGNALS_OBJECTSTORE_PASSWORD:
+      PYTHONPATH: /app/

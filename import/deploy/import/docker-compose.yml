@@ -1,0 +1,35 @@
+version: '3.0'
+services:
+  database:
+    image: amsterdam/postgres
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: signals
+      POSTGRES_DB: signals
+    volumes:
+      - ./backups:/tmp/backups
+      - ./backups-tables.sh:/backup-tables.sh
+
+  api:
+    image: build.datapunt.amsterdam.nl:5000/signals_api:${ENVIRONMENT}
+    links:
+      - database
+    environment:
+      DATABASE_NAME: signals
+      DATABASE_USER: signals
+
+  importer:
+    image: build.datapunt.amsterdam.nl:5000/signals_importer:${ENVIRONMENT}
+    links:
+      - database
+    environment:
+      DATABASE_NAME: signals
+      DATABASE_USER: signals
+      DATABASE_PASSWORD: insecure
+    volumes:
+      - signals_import_cache:/data
+    command: >
+      bash -c "/deploy/import/import.sh"
+
+volumes:
+  signals_import_cache:

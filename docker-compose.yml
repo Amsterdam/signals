@@ -30,3 +30,11 @@ services:
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
       - UWSGI_MODULE=meldingen.wsgi:application
+
+  import:
+    build: ./import
+    links:
+      - database
+    environment:
+      - DB_NAME=meldingen
+      - DB_PASSWORD=insecure
