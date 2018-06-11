@@ -43,6 +43,8 @@ signals = SignalRouter()
 signals.register(
     r"signal", api_views.SignalView, base_name="signal")
 signals.register(
+    r"auth/signal", api_views.SignalViewAuth, base_name="signalauth")
+signals.register(
     r"status", api_views.StatusView, base_name="status")
 signals.register(
     r"category", api_views.CategoryView, base_name="category")

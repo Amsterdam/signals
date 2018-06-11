@@ -6,6 +6,7 @@ from django.contrib.gis.geos import Polygon
 from django.contrib.gis.measure import Distance
 
 from datapunt_api.rest import DatapuntViewSet
+from datapunt_api.rest import DatapuntViewSetWritable
 from datapunt_api import bbox
 
 from signals.models import Signal
@@ -13,7 +14,7 @@ from signals.models import Location
 from signals.models import Category
 from signals.models import Status
 from signals.models import Buurt
-from signals.serializers import SignalSerializer
+from signals.serializers import SignalPublicSerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import ReporterSerializer
 from signals.serializers import CategorySerializer
@@ -88,7 +89,7 @@ class SignalFilter(FilterSet):
             location__geometrie__dwithin=(point, radius))
 
 
-class SignalView(DatapuntViewSet):
+class SignalView(DatapuntViewSetWritable):
     """View of Containers.
     """
     queryset = (
@@ -98,14 +99,20 @@ class SignalView(DatapuntViewSet):
         .select_related('location')
         .select_related('category')
     )
-    serializer_detail_class = SignalSerializer
-    serializer_class = SignalSerializer
+    serializer_detail_class = SignalPublicSerializer
+    serializer_class = SignalPublicSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_class = SignalFilter
 
 
-class SignalViewAuth(DatapuntViewSet):
+class SignalViewAuth(DatapuntViewSetWritable):
     """View of Signals with reporter information
+
+    !! still in development !!
+
+    only for AUTHENTICATED users
+    ============================
+
     """
     queryset = (
         Signal.objects.all()
@@ -115,8 +122,8 @@ class SignalViewAuth(DatapuntViewSet):
         .select_related('category')
         .select_related('reporter')
     )
-    serializer_detail_class = SignalSerializer
-    serializer_class = SignalSerializer
+    serializer_detail_class = SignalPublicSerializer
+    serializer_class = SignalPublicSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_class = SignalFilter
 

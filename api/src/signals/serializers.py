@@ -21,7 +21,7 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SignalSerializer(HALSerializer):
+class SignalPublicSerializer(HALSerializer):
     _display = DisplayField()
 
     location = LocationSerializer()
