@@ -56,7 +56,7 @@ if os.getenv("SWIFT_ENABLED", "false") == "true":
     SWIFT_TENANT_ID = os.getenv("SWIFT_TENANT_ID")
     SWIFT_TENANT_NAME = os.getenv("SWIFT_TENANT_NAME")
     SWIFT_REGION_NAME = os.getenv("SWIFT_REGION_NAME")
-    SWIFT_CONTAINER_NAME = 'main'
+    SWIFT_CONTAINER_NAME = os.getenv("SWIFT_CONTAINER_NAME")
 
 # Database
 
