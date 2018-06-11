@@ -1,3 +1,6 @@
+"""
+Test basic endpoints and authorization
+"""
 # Packages
 from rest_framework.test import APITestCase
 

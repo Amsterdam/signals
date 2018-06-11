@@ -30,6 +30,8 @@ class SignalsView(routers.APIRootView):
     List Signals and their related information
 
     Manage the incoming signals in Amsterdam
+
+    !! IN TEST FASE !!
     """
 
 
