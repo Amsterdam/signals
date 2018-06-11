@@ -7,10 +7,10 @@ from . import factories
 class BrowseDatasetsTestCase(APITestCase):
 
     datasets = [
-        "api/signal",
-        "api/status",
-        "api/category",
-        "api/location",
+        "signals/signal",
+        "signals/status",
+        "signals/category",
+        "signals/location",
     ]
 
     def setUp(self):
@@ -38,7 +38,7 @@ class BrowseDatasetsTestCase(APITestCase):
         )
 
     def test_index_pages(self):
-        url = "api"
+        url = "signals"
 
         response = self.client.get("/{}/".format(url))
 
@@ -51,7 +51,8 @@ class BrowseDatasetsTestCase(APITestCase):
             response = self.client.get("/{}/".format(url))
 
             self.assertEqual(
-                response.status_code, 200, "Wrong response code for {}".format(url)
+                response.status_code, 200,
+                "Wrong response code for {}".format(url)
             )
 
             self.assertEqual(
