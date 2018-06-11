@@ -14,7 +14,7 @@ services:
       - database:signals
     environment:
       DATABASE_NAME: signals
-      DATABASE_USER: insecure
+      DATABASE_USER: signals
       DATABASE_PASSWORD: insecure
       ENVIRONMENT: test
     volumes:
