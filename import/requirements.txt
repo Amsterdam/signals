@@ -18,7 +18,7 @@ django-filter==1.1.0
 django-rest-swagger==2.2.0
 djangorestframework==3.8.2
 djangorestframework-gis==0.13
-drf-amsterdam==0.1.0
+git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
 drf-extensions==0.3.1
 drf-yasg==1.8.0
 factory-boy==2.11.1
