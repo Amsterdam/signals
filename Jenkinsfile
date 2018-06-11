@@ -25,7 +25,7 @@ node {
 
     stage("Build dockers") {
         tryStep "build", {
-            def api = docker.build("build.app.amsterdam.nl:5000/cto/signals_api:${env.BUILD_NUMBER}", ".")
+            def api = docker.build("build.app.amsterdam.nl:5000/signals_api:${env.BUILD_NUMBER}", "api")
                 api.push()
                 api.push("acceptance")
         }
@@ -39,7 +39,7 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.app.amsterdam.nl:5000/cto/signals_api:${env.BUILD_NUMBER}")
+                def image = docker.image("build.app.amsterdam.nl:5000/signals_api:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
             }
@@ -66,7 +66,7 @@ if (BRANCH == "master") {
     node {
         stage('Push production image') {
             tryStep "image tagging", {
-                def api = docker.image("build.app.amsterdam.nl:5000/cto/signals-api:${env.BUILD_NUMBER}")
+                def api = docker.image("build.app.amsterdam.nl:5000/signals-api:${env.BUILD_NUMBER}")
 
                 frontend.push("production")
                 frontend.push("latest")
