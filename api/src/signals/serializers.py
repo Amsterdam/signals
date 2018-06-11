@@ -38,7 +38,9 @@ class SignalPublicSerializer(HALSerializer):
             "status",
             "location",
             "category",
-            "reporter",
+            # DO NOT ENABLE
+            # make test for this
+            # "reporter",
             "created_at",
             "updated_at",
             "incident_date_start",
