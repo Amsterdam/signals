@@ -7,7 +7,7 @@ from . import factories
 class BrowseDatasetsTestCase(APITestCase):
 
     datasets = [
-        "api/signals",
+        "api/signal",
         "api/status",
         "api/category",
         "api/location",

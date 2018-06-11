@@ -44,13 +44,14 @@ class Signal(models.Model):
     operational_date = models.DateTimeField(null=True)
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
-    # some fields
-    extra_properties = JSONField()
-
     image = models.ImageField(
         upload_to='images/%Y/%m/%d/', null=True, blank=True)
+
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
-    upload = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    upload = ArrayField(
+        models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
+
+    extra_properties = JSONField(null=True)
 
 
 class Location(models.Model):
@@ -62,8 +63,8 @@ class Location(models.Model):
     address = JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # some fields
-    extra_properties = JSONField()
+
+    extra_properties = JSONField(null=True)
 
 
 class Reporter(models.Model):
@@ -74,8 +75,8 @@ class Reporter(models.Model):
     remove_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # some fields
-    extra_properties = JSONField()
+
+    extra_properties = JSONField(null=True)
 
 
 class Category(models.Model):
@@ -83,8 +84,8 @@ class Category(models.Model):
     """
     main = models.CharField(max_length=50, default='', blank=True)
     sub = models.CharField(max_length=50, default='', blank=True)
-    priority = models.IntegerField()
-    ml_priority = models.IntegerField()
+    priority = models.IntegerField(null=True)
+    ml_priority = models.IntegerField(null=True)
 
     ml_cat = models.CharField(
         max_length=50, default='', blank=True, null=True)
@@ -106,8 +107,7 @@ class Category(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # some fields
-    extra_properties = JSONField()
+    extra_properties = JSONField(null=True)
 
 
 class Status(models.Model):
@@ -130,12 +130,12 @@ class Status(models.Model):
         default=False,
         help_text='Wel of niet status extern weergeven')
 
-    extra_properties = JSONField(null=True)
-
     created_at = models.DateTimeField(
         auto_now_add=True, null=False, db_index=True)
     updated_at = models.DateTimeField(
         auto_now_add=True, null=True, db_index=True)
+
+    extra_properties = JSONField(null=True)
 
     class Meta:
         verbose_name_plural = "States"

@@ -39,7 +39,7 @@ class SignalRouter(routers.DefaultRouter):
 
 signals = SignalRouter()
 signals.register(
-    r"signals", api_views.SignalView, base_name="signal")
+    r"signal", api_views.SignalView, base_name="signal")
 signals.register(
     r"status", api_views.StatusView, base_name="status")
 signals.register(
