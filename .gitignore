@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*./__pycache__/
+/__pycache__/
+*__py_cache*
 *.py[cod]
+*.pytest_cache*
 
 # Distribution / packaging
 .Python
