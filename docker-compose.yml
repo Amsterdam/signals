@@ -13,13 +13,13 @@ services:
   api:
     build: ./api
     ports:
-      - "8001:8001"
+      - "8000:8000"
     links:
       - database
     environment:
       - DB_NAME=meldingen
       - DB_PASSWORD=insecure
-      - UWSGI_HTTP=0.0.0.0:8001
+      - UWSGI_HTTP=0.0.0.0:8000
       - UWSGI_MASTER=1
       - UWSGI_STATIC_INDEX=index.html
       - UWSGI_STATIC_MAP=/signals/static=/static
