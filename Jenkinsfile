@@ -23,17 +23,17 @@ node {
         checkout scm
     }
 
+    stage('Test') {
+        tryStep "test", {
+            sh "api/deploy/test/test.sh"
+        }
+    }
+
     stage("Build dockers") {
         tryStep "build", {
             def api = docker.build("build.app.amsterdam.nl:5000/signals_api:${env.BUILD_NUMBER}", "api")
                 api.push()
                 api.push("acceptance")
-        }
-    }
-
-    stage('Test') {
-        tryStep "test", {
-            sh "api/deploy/test/test.sh"
         }
     }
 }
