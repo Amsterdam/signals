@@ -30,6 +30,12 @@ node {
                 api.push("acceptance")
         }
     }
+
+    stage('Test') {
+        tryStep "test", {
+            sh "api/deploy/test/test.sh"
+        }
+    }
 }
 
 String BRANCH = "${env.BRANCH_NAME}"
