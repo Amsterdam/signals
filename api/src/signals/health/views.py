@@ -43,7 +43,7 @@ def health(request):
 
 def check_data(request):
 
-    if model.objects.all().count() < 20000:
+    if model.objects.all().count() > 1:
         return HttpResponse(
             "Too few items in the database", content_type="text/plain", status=500
         )

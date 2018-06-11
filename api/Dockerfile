@@ -23,4 +23,3 @@ RUN export DJANGO_SETTINGS_MODULE=signals.settings
 RUN python manage.py collectstatic --no-input
 
 CMD uwsgi
-

@@ -62,6 +62,8 @@ class Location(models.Model):
     address = JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # some fields
+    extra_properties = JSONField()
 
 
 class Reporter(models.Model):
@@ -72,6 +74,8 @@ class Reporter(models.Model):
     remove_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # some fields
+    extra_properties = JSONField()
 
 
 class Category(models.Model):
@@ -79,6 +83,8 @@ class Category(models.Model):
     """
     main = models.CharField(max_length=50, default='', blank=True)
     sub = models.CharField(max_length=50, default='', blank=True)
+    priority = models.IntegerField()
+    ml_priority = models.IntegerField()
 
     ml_cat = models.CharField(
         max_length=50, default='', blank=True, null=True)
@@ -99,6 +105,9 @@ class Category(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # some fields
+    extra_properties = JSONField()
 
 
 class Status(models.Model):
@@ -144,4 +153,3 @@ class Buurt(models.Model):
 
     class Meta:
         db_table = 'buurt_simple'
-        # managed = False
