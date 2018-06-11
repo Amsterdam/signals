@@ -52,9 +52,6 @@ if (BRANCH == "master") {
                 def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
-                def importer = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals_importer:${env.BUILD_NUMBER}", "import")
-                importer.pull()
-                importer.push("acceptance")
             }
         }
     }
