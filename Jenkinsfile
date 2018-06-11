@@ -34,6 +34,9 @@ node {
             def api = docker.build("build.datapunt.amsterdam.nl:5000/signals:${env.BUILD_NUMBER}", "api")
                 api.push()
                 api.push("acceptance")
+            def importer = docker.build("build.datapunt.amsterdam.nl:5000/signals_importer:${env.BUILD_NUMBER}", "importer")
+                importer.push()
+                importer.push("acceptance")
         }
     }
 }
@@ -45,9 +48,12 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/signals_api:${env.BUILD_NUMBER}")
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/signals_api:${env.BUILD_NUMBER}", "api")
                 image.pull()
                 image.push("acceptance")
+                def importer = docker.image("build.datapunt.amsterdam.nl:5000/signals_importer:${env.BUILD_NUMBER}", "importer")
+                importer.pull()
+                importer.push("acceptance")
             }
         }
     }

@@ -35,17 +35,23 @@ def health(request):
     except:  # noqa E722
         log.exception("Database connectivity failed")
         return HttpResponse(
-            "Database connectivity failed", content_type="text/plain", status=500
+            "Database connectivity failed",
+            content_type="text/plain", status=500
         )
 
-    return HttpResponse("Connectivity OK", content_type="text/plain", status=200)
+    return HttpResponse(
+        "Connectivity OK", content_type="text/plain", status=200)
 
 
 def check_data(request):
 
-    if model.objects.all().count() > 1:
+    count = model.objects.count()
+    if count < 2:
         return HttpResponse(
-            "Too few items in the database", content_type="text/plain", status=500
+            "Too few items in the database",
+            content_type="text/plain", status=500
         )
 
-    return HttpResponse("Data OK", content_type="text/plain", status=200)
+    return HttpResponse(
+        f"Data OK {count} {model.__name__}",
+        content_type="text/plain", status=200)

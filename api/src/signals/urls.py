@@ -63,17 +63,16 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 
-
 urlpatterns = [
-    url(r'^api/swagger(?P<format>\.json|\.yaml)$',
+    url(r'^signals/swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=None), name='schema-json'),
-    url(r'^api/swagger/$',
+    url(r'^signals/swagger/$',
         schema_view.with_ui(
             'swagger', cache_timeout=None),
         name='schema-swagger-ui'),
-    url(r'^api/redoc/$',
+    url(r'^signals/redoc/$',
         schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
-    url(r"^api/", include(urls)),
+    url(r"^signals/", include(urls)),
     url(r"^status/", include("signals.health.urls")),
 ]
 
