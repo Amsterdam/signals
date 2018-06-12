@@ -13,7 +13,7 @@ from signals.settings_databases import (
 
 # Application definition
 
-INSTALLED_APPS += ["drf_yasg", "signals"]
+INSTALLED_APPS += ["drf_yasg", "storages", "signals"]
 
 ROOT_URLCONF = "signals.urls"
 
@@ -46,6 +46,17 @@ DATABASE_OPTIONS = {
         "PORT": os.getenv(OVERRIDE_PORT_ENV_VAR, "5432"),
     },
 }
+
+# Object store / Swift
+if os.getenv("SWIFT_ENABLED", "false") == "true":
+    DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
+    SWIFT_USERNAME = os.getenv("SWIFT_USERNAME")
+    SWIFT_PASSWORD = os.getenv("SWIFT_PASSWORD")
+    SWIFT_AUTH_URL = os.getenv("SWIFT_AUTH_URL")
+    SWIFT_TENANT_ID = os.getenv("SWIFT_TENANT_ID")
+    SWIFT_TENANT_NAME = os.getenv("SWIFT_TENANT_NAME")
+    SWIFT_REGION_NAME = os.getenv("SWIFT_REGION_NAME")
+    SWIFT_CONTAINER_NAME = os.getenv("SWIFT_CONTAINER_NAME")
 
 # Database
 

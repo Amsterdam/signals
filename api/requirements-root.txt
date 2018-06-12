@@ -13,3 +13,5 @@ psycopg2-binary
 factory-boy
 drf_yasg
 swagger-spec-validator
+django-storages
+django-storage-swift

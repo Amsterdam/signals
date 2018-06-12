@@ -23,8 +23,8 @@ node {
         checkout scm
     }
 
-    stage('Test') {
-        tryStep "test", {
+    stage("Test") {
+        tryStep "Test", {
             sh "api/deploy/test/test.sh"
         }
     }
@@ -52,15 +52,9 @@ if (BRANCH == "master") {
                 def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
-                def importer = docker.image("build.datapunt.amsterdam.nl:5000/signals_importer:${env.BUILD_NUMBER}", "import")
-                importer.pull()
-                importer.push("acceptance")
             }
         }
     }
-
-
-
 
     node {
         stage("Deploy to ACC") {
@@ -74,8 +68,9 @@ if (BRANCH == "master") {
         }
     }
 
+
     stage('Waiting for approval') {
-        slackSend channel: '#ci-channel-app', color: 'warning', message: 'Meldingen is waiting for Production Release - please confirm'
+        slackSend channel: '#ci-channel', color: 'warning', message: 'Meldingen is waiting for Production Release - please confirm'
         input "Deploy to Production?"
     }
 

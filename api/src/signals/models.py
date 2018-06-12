@@ -65,7 +65,9 @@ class Signal(models.Model):
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
     upload = ArrayField(
-        models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
+        models.FileField(
+            upload_to='uploads/%Y/%m/%d/'),
+            null=True)
 
     extra_properties = JSONField(null=True)
 
