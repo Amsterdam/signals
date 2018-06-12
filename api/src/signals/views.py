@@ -15,6 +15,7 @@ from signals.models import Category
 from signals.models import Status
 from signals.models import Buurt
 from signals.serializers import SignalPublicSerializer
+from signals.serializers import SignalAuthSerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import ReporterSerializer
 from signals.serializers import CategorySerializer
@@ -89,7 +90,7 @@ class SignalFilter(FilterSet):
             location__geometrie__dwithin=(point, radius))
 
 
-class SignalView(DatapuntViewSetWritable):
+class SignalView(DatapuntViewSet):
     """View of Containers.
     """
     queryset = (
@@ -113,6 +114,12 @@ class SignalViewAuth(DatapuntViewSetWritable):
     only for AUTHENTICATED users
     ============================
 
+    valid geometrie points are:
+
+        { 'type': 'Point', 'coordinates': [ 135.0, 45.0, ], }
+
+    or 'POINT (12.492324113849 41.890307434153)'
+
     """
     queryset = (
         Signal.objects.all()
@@ -122,8 +129,8 @@ class SignalViewAuth(DatapuntViewSetWritable):
         .select_related('category')
         .select_related('reporter')
     )
-    serializer_detail_class = SignalPublicSerializer
-    serializer_class = SignalPublicSerializer
+    serializer_detail_class = SignalAuthSerializer
+    serializer_class = SignalAuthSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_class = SignalFilter
 
