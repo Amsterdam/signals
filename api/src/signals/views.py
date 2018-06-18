@@ -153,7 +153,7 @@ class StatusFilter(FilterSet):
         model = Status
         fields = (
             "id",
-            # "signal__id",
+            "signal__id",
             "buurt_code",
             "signal__location__stadsdeel",
             "signal__location__buurt_code",

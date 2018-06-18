@@ -204,7 +204,7 @@ class SignalAuthSerializer(HALSerializer):
 class StatusSerializer(HALSerializer):
     _display = DisplayField()
 
-    signal = SignalPublicSerializer()
+    # signal = SignalPublicSerializer()
 
     class Meta(object):
         model = Status
@@ -212,7 +212,7 @@ class StatusSerializer(HALSerializer):
             "_links",
             "_display",
             "id",
-            "signal",
+            # "signal",
             "text",
             "user",
             "extern",
