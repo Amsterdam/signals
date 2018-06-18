@@ -91,7 +91,9 @@ class SignalFilter(FilterSet):
 
 
 class SignalView(DatapuntViewSet):
-    """View of Containers.
+    """View of Signals.
+
+    ONLY shows minimal public information
     """
     queryset = (
         Signal.objects.all()

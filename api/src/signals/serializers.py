@@ -79,6 +79,9 @@ class CategoryModelSerializer(serializers.ModelSerializer):
 
 
 class SignalPublicSerializer(HALSerializer):
+    """
+    Public version of Signals
+    """
     _display = DisplayField()
 
     location = LocationModelSerializer()

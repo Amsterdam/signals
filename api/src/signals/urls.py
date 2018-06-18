@@ -42,6 +42,7 @@ class SignalRouter(routers.DefaultRouter):
 signals = SignalRouter()
 signals.register(
     r"signal", api_views.SignalView, base_name="signal")
+# authorized stuff in own url
 signals.register(
     r"auth/signal", api_views.SignalViewAuth, base_name="signalauth")
 signals.register(

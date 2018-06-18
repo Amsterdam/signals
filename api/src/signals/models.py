@@ -23,6 +23,7 @@ class Signal(models.Model):
         super(Signal, self).__init__(*args, **kwargs)
         self.signal_id = uuid.uuid4()
 
+    # we need an unique id for external systems.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=15, default='api')
 
@@ -66,8 +67,7 @@ class Signal(models.Model):
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
     upload = ArrayField(
         models.FileField(
-            upload_to='uploads/%Y/%m/%d/'),
-            null=True)
+                upload_to='uploads/%Y/%m/%d/'), null=True)
 
     extra_properties = JSONField(null=True)
 
@@ -122,6 +122,7 @@ class Category(models.Model):
     priority = models.IntegerField(null=True)
     ml_priority = models.IntegerField(null=True)
 
+    # machine learning properties.
     ml_cat = models.CharField(
         max_length=50, default='', blank=True, null=True)
     ml_prob = models.CharField(
@@ -154,7 +155,10 @@ STATUS_OPTIONS = (
 
 
 class Status(models.Model):
-    """Signal Status"""
+    """Signal Status
+
+    Updates / Changes are handeled here
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     text = models.CharField(max_length=1000, default='')
     user = models.EmailField(null=True)
@@ -182,4 +186,3 @@ class Status(models.Model):
 
     def __str__(self):
         return self.text
-
