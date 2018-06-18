@@ -21,7 +21,8 @@ class Signal(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
-        self.signal_id = uuid.uuid4()
+        if not self.signal_id:
+            self.signal_id = uuid.uuid4()
 
     # we need an unique id for external systems.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)

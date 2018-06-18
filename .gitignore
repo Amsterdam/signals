@@ -183,3 +183,5 @@ avro_files/
 *.avro
 
 deploy/backups
+
+*.doc

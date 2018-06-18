@@ -101,6 +101,7 @@ class SignalView(DatapuntViewSet):
         .select_related('status')
         .select_related('location')
         .select_related('category')
+        .order_by('-id')
     )
     serializer_detail_class = SignalPublicSerializer
     serializer_class = SignalPublicSerializer
@@ -130,6 +131,7 @@ class SignalViewAuth(DatapuntViewSetWritable):
         .select_related('location')
         .select_related('category')
         .select_related('reporter')
+        .order_by('-id')
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer

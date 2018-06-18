@@ -146,39 +146,47 @@ class SignalAuthSerializer(HALSerializer):
         ]
 
     def create(self, validated_data):
+        signal = Signal.objects.create()
+        signal.save()
 
         status = validated_data.pop('status')
         location = validated_data.pop('location')
         reporter = validated_data.pop('reporter')
         category = validated_data.pop('category')
 
-        signal = Signal.objects.create()
-
         location = Location.objects.create(**location)
         category = Category.objects.create(**category)
         status = Status.objects.create(**status)
         reporter = Reporter.objects.create(**reporter)
 
-        signal.location = location
-        signal.category = category
-        signal.status = status
-        signal.reporter = reporter
+        location.signal.add(signal)
+        status.signal.add(signal)
+        category.signal.add(signal)
+        reporter.signal.add(signal)
+
+        status.save()
+        reporter.save()
+        category.save()
+        location.save()
 
         return signal
+
+    def update(self, instance, validated_data):
+        pass
 
 
 class StatusSerializer(HALSerializer):
     _display = DisplayField()
 
-    # signal = SignalSerializer()
+    signal = SignalPublicSerializer()
 
     class Meta(object):
         model = Status
         fields = [
             "_links",
             "_display",
-            # "id",
-            # "signal",
+            "id",
+            "signal",
             "text",
             "user",
             "extern",
