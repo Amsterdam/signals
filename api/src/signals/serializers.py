@@ -1,5 +1,6 @@
 # import json
 # import logging
+from collections import OrderedDict
 
 from rest_framework import serializers
 from rest_framework.serializers import IntegerField
@@ -19,7 +20,7 @@ from signals.models import Status
 from signals.models import Location
 
 
-class LocationModelSerializer(GeoFeatureModelSerializer):
+class LocationModelSerializer(serializers.ModelSerializer):
 
     id = IntegerField(label='ID', read_only=True)
 
@@ -111,6 +112,29 @@ class SignalPublicSerializer(HALSerializer):
         ]
 
 
+class AuthLinksField(serializers.HyperlinkedIdentityField):
+    """
+    Return authorized url. handy for development.
+    maybe also for Frontend.
+
+    Needs discussion
+    """
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(
+                href=self.get_url(value, self.view_name, request, None))
+             ),
+            ('self_auth', dict(
+                href=self.get_url(value, 'signal-auth-detail', request, None))
+             ),
+        ])
+
+        return result
+
+
 class SignalAuthSerializer(HALSerializer):
     _display = DisplayField()
     id = IntegerField(label='ID', read_only=True)
@@ -119,6 +143,8 @@ class SignalAuthSerializer(HALSerializer):
     reporter = ReporterModelSerializer()
     status = StatusModelSerializer()
     category = CategoryModelSerializer()
+
+    serializer_url_field = AuthLinksField
 
     class Meta(object):
         model = Signal
@@ -195,7 +221,6 @@ class StatusSerializer(HALSerializer):
             "updated_at",
             "extra_properties",
         ]
-
 
 
 class CategorySerializer(HALSerializer):

@@ -75,7 +75,8 @@ class SignalFilter(FilterSet):
         if err:
             raise ValidationError(
                 f"bbox invalid {err}:{bbox_values}")
-        return qs.filter(location__geometrie__bboverlaps=(poly_bbox))
+        return qs.filter(
+            location__geometrie__bboverlaps=(poly_bbox))
 
     def in_extra(self, qs, name, value):
         """
@@ -109,7 +110,7 @@ class SignalView(DatapuntViewSet):
     filter_class = SignalFilter
 
 
-class SignalViewAuth(DatapuntViewSetWritable):
+class SignalAuthView(DatapuntViewSetWritable):
     """View of Signals with reporter information
 
     !! still in development !!

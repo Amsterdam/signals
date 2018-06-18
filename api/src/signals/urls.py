@@ -43,8 +43,9 @@ signals = SignalRouter()
 signals.register(
     r"signal", api_views.SignalView, base_name="signal")
 # authorized stuff in own url
+# auth urls.
 signals.register(
-    r"auth/signal", api_views.SignalViewAuth, base_name="signalauth")
+    r"auth/signal", api_views.SignalAuthView, base_name="signal-auth")
 signals.register(
     r"status", api_views.StatusView, base_name="status")
 signals.register(

@@ -72,6 +72,25 @@ class Signal(models.Model):
 
     extra_properties = JSONField(null=True)
 
+    def __str__(self):
+        """Identifying string.
+        DO NOT expose sensitive stuff here.
+        """
+        state = ''
+        buurt_code = ''
+
+        if self.status:
+            state = self.status.state
+        if self.location:
+            buurt_code = self.location.buurt_code
+
+        return '{} - {} - {} - {}'.format(
+            self.id,
+            state,
+            buurt_code,
+            self.created_at
+        )
+
 
 STADSDELEN = (
     ('A', 'Centrum'),
