@@ -1,0 +1,14 @@
+{
+	"geometrie": {
+	    "type": "Point",
+	    "coordinates": [
+		135.0,
+		45.0
+	    ]
+	},
+	"_signal": "/signals/signal/8/",
+	"stadsdeel": "A",
+	"buurt_code": "aaa1",
+	"address": {},
+	"extra_properties": {}
+}

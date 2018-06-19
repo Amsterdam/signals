@@ -141,6 +141,7 @@ class SignalAuthView(DatapuntViewSetWritable):
 
 
 class StatusFilter(FilterSet):
+
     id = filters.CharFilter()
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
     location = filters.CharFilter(
@@ -230,6 +231,19 @@ class LocationView(DatapuntViewSet):
 
 
 class StatusView(DatapuntViewSet):
+    """View of Status Changes"""
+    queryset = (
+        Status.objects.all()
+        .order_by("created_at")
+        .prefetch_related('signal')
+    )
+    serializer_detail_class = StatusSerializer
+    serializer_class = StatusSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = StatusFilter
+
+
+class StatusAuthView(DatapuntViewSetWritable):
     """View of Status Changes"""
     queryset = (
         Status.objects.all()

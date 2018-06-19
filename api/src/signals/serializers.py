@@ -56,9 +56,12 @@ class StatusModelSerializer(serializers.ModelSerializer):
             'user',
             'target_api',
             'state',
+            '_signal',
             'extern',
             'extra_properties',
         )
+
+        extra_kwargs = {'_signal': {'required': False}}
 
 
 class ReporterModelSerializer(serializers.ModelSerializer):
@@ -66,6 +69,8 @@ class ReporterModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reporter
         fields = '__all__'
+
+        extra_kwargs = {'_signal': {'required': False}}
 
 
 class CategoryModelSerializer(serializers.ModelSerializer):
@@ -77,6 +82,8 @@ class CategoryModelSerializer(serializers.ModelSerializer):
             "main",
             "sub",
         ]
+
+        extra_kwargs = {'_signal': {'required': False}}
 
 
 class SignalPublicSerializer(HALSerializer):
@@ -180,20 +187,20 @@ class SignalAuthSerializer(HALSerializer):
         reporter = validated_data.pop('reporter')
         category = validated_data.pop('category')
 
-        location = Location.objects.create(**location)
-        category = Category.objects.create(**category)
-        status = Status.objects.create(**status)
-        reporter = Reporter.objects.create(**reporter)
-
-        location.signal.add(signal)
-        status.signal.add(signal)
-        category.signal.add(signal)
-        reporter.signal.add(signal)
+        location = Location(_signal=signal, **location)
+        category = Category(_signal=signal, **category)
+        status = Status(_signal=signal, **status)
+        reporter = Reporter(_signal=signal, **reporter)
 
         status.save()
         reporter.save()
         category.save()
         location.save()
+
+        location.signal.add(signal)
+        status.signal.add(signal)
+        category.signal.add(signal)
+        reporter.signal.add(signal)
 
         return signal
 
@@ -213,14 +220,35 @@ class StatusSerializer(HALSerializer):
             "_display",
             "id",
             # "signal",
+            "_signal",
             "text",
             "user",
             "extern",
+            "_signal",
             "state",
             "created_at",
             "updated_at",
             "extra_properties",
         ]
+        extra_kwargs = {
+            '_signals': {'required': False},
+            '_signal': {'required': False},
+        }
+
+    def create(self, validated_data):
+        """
+        """
+        # django rest does default the good thing
+        status = Status(**validated_data)
+        status.save()
+        # update status on signal
+        status.signal.add(status._signal)
+        return status
+
+    def update(self, instance, validated_data):
+        """Should not be implemented.
+        """
+        pass
 
 
 class CategorySerializer(HALSerializer):
@@ -256,3 +284,6 @@ class ReporterSerializer(HALSerializer):
             "created_at"
             "remove_at"
         ]
+
+        # extra_kwargs = {'_signal': {'required': False}}
+        # validators = []

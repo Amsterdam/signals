@@ -109,6 +109,12 @@ def get_buurt_code_choises():
 class Location(models.Model):
     """All location related information
     """
+
+    _signal = models.ForeignKey(
+        "Signal", related_name="signals",
+        null=False, on_delete=models.CASCADE
+    )
+
     geometrie = models.PointField(name="geometrie")
     stadsdeel = models.CharField(
         null=True, max_length=1, choices=STADSDELEN)
@@ -125,6 +131,12 @@ class Location(models.Model):
 class Reporter(models.Model):
     """Privacy sensitive information on reporter
     """
+
+    _signal = models.ForeignKey(
+        "Signal", related_name="reporters",
+        null=False, on_delete=models.CASCADE
+    )
+
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=17, blank=True)
     remove_at = models.DateTimeField(null=True)
@@ -137,6 +149,12 @@ class Reporter(models.Model):
 class Category(models.Model):
     """Store Category information and Automatically suggested category
     """
+
+    _signal = models.ForeignKey(
+        "Signal", related_name="categories",
+        null=False, on_delete=models.CASCADE
+    )
+
     main = models.CharField(max_length=50, default='', null=True, blank=True)
     sub = models.CharField(max_length=50, default='', null=True, blank=True)
     priority = models.IntegerField(null=True)
@@ -179,7 +197,12 @@ class Status(models.Model):
 
     Updates / Changes are handeled here
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+
+    _signal = models.ForeignKey(
+        "Signal", related_name="states",
+        null=False, on_delete=models.CASCADE
+    )
+
     text = models.CharField(max_length=1000, default='')
     user = models.EmailField(null=True)
 

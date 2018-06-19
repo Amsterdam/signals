@@ -17,13 +17,17 @@ class BrowseDatasetsTestCase(APITestCase):
     ]
 
     def setUp(self):
-        self.loc = factories.LocationFactory()
-        self.status = factories.StatusFactory()
-        self.s = factories.SignalFactory(
-            status=self.status,
-            location=self.loc)
-        self.c = factories.CategoryFactory()
-        self.reporter = factories.ReporterFactory()
+        self.s = factories.SignalFactory()
+
+        self.loc = factories.LocationFactory(_signal=self.s)
+        self.status = factories.StatusFactory(_signal=self.s)
+        self.c = factories.CategoryFactory(_signal=self.s)
+        self.reporter = factories.ReporterFactory(_signal=self.s)
+
+        self.status.signal.add(self.s),
+        self.loc.signal.add(self.s)
+        self.c.signal.add(self.s)
+        self.reporter.signal.add(self.s)
 
     def valid_html_response(self, url, response):
         """
