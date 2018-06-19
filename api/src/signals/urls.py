@@ -58,7 +58,7 @@ signals.register(
 signals.register(
     r"location", api_views.LocationView, base_name="location")
 signals.register(
-    r"auth/location", api_views.LocationView, base_name="location-auth")
+    r"auth/location", api_views.LocationAuthView, base_name="location-auth")
 
 
 urls = signals.urls

@@ -35,7 +35,7 @@ class PostTestCase(APITestCase):
         "post_signal": "signal_auth_post.json",
         "post_status": "status_auth_post.json",
         "post_category": "category_post.json",
-        "post_location": "location_post.json",
+        "post_location": "location_auth_post.json",
     }
 
     def _get_fixture(self, name):
@@ -121,12 +121,22 @@ class PostTestCase(APITestCase):
         result = response.json()
         self.assertEqual(response.status_code, 201)
         self.s.refresh_from_db()
+        # check that current status of signal is now this one
         self.assertEqual(self.s.status.id, result['id'])
 
     def test_post_location(self):
         """We only create new location items
         """
-        pass
+        url = "/signals/auth/location/"
+        postjson = self._get_fixture('post_location')
+        signal_url = reverse('signal-detail', args=[self.s.id])
+        postjson['_signal'] = signal_url
+        response = self.client.post(url, postjson, format='json')
+        result = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.s.refresh_from_db()
+        # check that current location of signal is now this one
+        self.assertEqual(self.s.location.id, result['id'])
 
     def test_post_category(self):
         """

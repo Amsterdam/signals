@@ -41,7 +41,30 @@ class LocationSerializer(HALSerializer):
 
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = (
+            'id',
+            '_signal',
+            'stadsdeel',
+            'buurt_code',
+            'address',
+            'geometrie',
+            'extra_properties',
+        )
+
+    def create(self, validated_data):
+        """
+        """
+        # django rest does default the good thing
+        location = Location(**validated_data)
+        location.save()
+        # update status on signal
+        location.signal.add(location._signal)
+        return location
+
+    def update(self, instance, validated_data):
+        """Should not be implemented.
+        """
+        pass
 
 
 class StatusModelSerializer(serializers.ModelSerializer):
@@ -266,6 +289,21 @@ class CategorySerializer(HALSerializer):
             "sub",
             "signal",
         ]
+
+    def create(self, validated_data):
+        """
+        """
+        # django rest does default the good thing
+        category = Category(**validated_data)
+        category.save()
+        # update status on signal
+        category.signal.add(category._signal)
+        return category
+
+    def update(self, instance, validated_data):
+        """Should not be implemented.
+        """
+        pass
 
 
 class ReporterSerializer(HALSerializer):

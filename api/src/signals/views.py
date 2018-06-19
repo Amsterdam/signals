@@ -230,6 +230,20 @@ class LocationView(DatapuntViewSet):
     filter_class = LocationFilter
 
 
+class LocationAuthView(DatapuntViewSetWritable):
+
+    queryset = (
+        Location.objects.all()
+        .order_by("created_at")
+        .prefetch_related('signal')
+    )
+
+    serializer_detail_class = LocationSerializer
+    serializer_class = LocationSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = LocationFilter
+
+
 class StatusView(DatapuntViewSet):
     """View of Status Changes"""
     queryset = (
