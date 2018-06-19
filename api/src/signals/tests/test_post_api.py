@@ -139,6 +139,15 @@ class PostTestCase(APITestCase):
         self.assertEqual(self.s.location.id, result['id'])
 
     def test_post_category(self):
+        """Category Post
         """
-        """
-        pass
+        url = "/signals/auth/category/"
+        postjson = self._get_fixture('post_location')
+        signal_url = reverse('signal-detail', args=[self.s.id])
+        postjson['_signal'] = signal_url
+        response = self.client.post(url, postjson, format='json')
+        result = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.s.refresh_from_db()
+        # check that current location of signal is now this one
+        self.assertEqual(self.s.category.id, result['id'])

@@ -281,3 +281,16 @@ class CategoryView(DatapuntViewSet):
     serializer_class = CategorySerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ['main', 'sub']
+
+
+class CategoryAuthView(DatapuntViewSetWritable):
+    """View of Types.
+    """
+    queryset = (
+        Category.objects.all()
+        .order_by("id").prefetch_related("signal")
+    )
+    serializer_detail_class = CategorySerializer
+    serializer_class = CategorySerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ['main', 'sub']

@@ -53,7 +53,7 @@ signals.register(
 signals.register(
     r"category", api_views.CategoryView, base_name="category")
 signals.register(
-    r"auth/category", api_views.CategoryView, base_name="category-auth")
+    r"auth/category", api_views.CategoryAuthView, base_name="category-auth")
 
 signals.register(
     r"location", api_views.LocationView, base_name="location")

@@ -104,6 +104,7 @@ class CategoryModelSerializer(serializers.ModelSerializer):
             # "id",
             "main",
             "sub",
+            "priority",
         ]
 
         extra_kwargs = {'_signal': {'required': False}}
@@ -277,18 +278,22 @@ class StatusSerializer(HALSerializer):
 class CategorySerializer(HALSerializer):
     _display = DisplayField()
 
-    signal = RelatedSummaryField()
-
     class Meta(object):
         model = Category
         fields = [
             "_links",
             "_display",
-            # "id",
+            "id",
             "main",
             "sub",
-            "signal",
+            "priority",
+            "_signal",
         ]
+
+        extra_kwargs = {
+            '_signals': {'required': False},
+            '_signal': {'required': False},
+        }
 
     def create(self, validated_data):
         """
