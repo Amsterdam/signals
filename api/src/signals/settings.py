@@ -100,7 +100,8 @@ SWAGGER_SETTINGS = {
          'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
          'flow': 'implicit',
          'scopes': {
-          'SIG/ALL': 'Signals all authorizations',
+         # 'SIG/ALL': 'Signals all authorizations',
+         'HR/R': 'Signals all authorizations',  # TODO change HR/R
          }
       }
    },
