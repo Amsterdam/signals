@@ -91,6 +91,16 @@ class SignalFilter(FilterSet):
             location__geometrie__dwithin=(point, radius))
 
 
+class AuthViewSet():
+    def check_permissions(self, request):
+        scope = 'SIG/ALL'
+        if not request.is_authorized_for(scope):
+            self.permission_denied(
+                request, message=getattr(scope, 'message', None)
+            )
+        return super(AuthViewSet, self).check_permissions(request)
+
+
 class SignalView(DatapuntViewSet):
     """View of Signals.
 
@@ -110,7 +120,7 @@ class SignalView(DatapuntViewSet):
     filter_class = SignalFilter
 
 
-class SignalAuthView(DatapuntViewSetWritable):
+class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Signals with reporter information
 
     !! still in development !!
@@ -230,7 +240,7 @@ class LocationView(DatapuntViewSet):
     filter_class = LocationFilter
 
 
-class LocationAuthView(DatapuntViewSetWritable):
+class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
 
     queryset = (
         Location.objects.all()
@@ -257,7 +267,7 @@ class StatusView(DatapuntViewSet):
     filter_class = StatusFilter
 
 
-class StatusAuthView(DatapuntViewSetWritable):
+class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Status Changes"""
     queryset = (
         Status.objects.all()
@@ -283,7 +293,7 @@ class CategoryView(DatapuntViewSet):
     filter_fields = ['main', 'sub']
 
 
-class CategoryAuthView(DatapuntViewSetWritable):
+class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Types.
     """
     queryset = (

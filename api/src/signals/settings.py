@@ -1,5 +1,3 @@
-import os
-
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
 
@@ -90,7 +88,11 @@ JWKS_TEST_KEY = """
     }
 """
 
-DATAPUNT_AUTHZ = {"JWKS": os.getenv("PUB_JWKS", JWKS_TEST_KEY)}
+DATAPUNT_AUTHZ = {
+    'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
+    'ALWAYS_OK': LOCAL
+}
+
 
 SWAGGER_SETTINGS = {
    'USE_SESSION_AUTH': False,
@@ -100,14 +102,13 @@ SWAGGER_SETTINGS = {
          'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
          'flow': 'implicit',
          'scopes': {
-         # 'SIG/ALL': 'Signals all authorizations',
-         'HR/R': 'Signals all authorizations',  # TODO change HR/R
+         'SIG/ALL': 'Signals alle authorizaties',
          }
       }
    },
    'OAUTH2_CONFIG': {
       'clientId': 'swagger-ui',
-      # 'clientSecret': 'yourAppClientSecret',
-      'appName': 'Signal Swagger UI'
+      #  'clientSecret': 'yourAppClientSecret',
+      'appName': 'Signal Swagger UI',
    },
 }

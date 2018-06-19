@@ -23,6 +23,7 @@ insecure_key = "insecure"
 SECRET_KEY = os.getenv("SECRET_KEY", insecure_key)
 
 DEBUG = SECRET_KEY == insecure_key
+LOCAL = SECRET_KEY == insecure_key
 
 ALLOWED_HOSTS = ["*"]
 
@@ -52,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # 'authorization_django.authorization_middleware',
+    "authorization_django.authorization_middleware",
 ]
 
 if DEBUG:
