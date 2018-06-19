@@ -91,3 +91,23 @@ JWKS_TEST_KEY = """
 """
 
 DATAPUNT_AUTHZ = {"JWKS": os.getenv("PUB_JWKS", JWKS_TEST_KEY)}
+
+SWAGGER_SETTINGS = {
+   'USE_SESSION_AUTH': False,
+   'SECURITY_DEFINITIONS': {
+      'Signals API - Swagger': {
+         'type': 'oauth2',
+         'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
+         'flow': 'implicit',
+         'scopes': {
+         # 'SIG/ALL': 'Signals all authorizations',
+         'HR/R': 'Signals all authorizations',  # TODO change HR/R
+         }
+      }
+   },
+   'OAUTH2_CONFIG': {
+      'clientId': 'swagger-ui',
+      # 'clientSecret': 'yourAppClientSecret',
+      'appName': 'Signal Swagger UI'
+   },
+}
