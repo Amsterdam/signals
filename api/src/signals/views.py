@@ -3,7 +3,6 @@ from django_filters.rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.serializers import ValidationError
 from django.contrib.gis.geos import Polygon
-from django.contrib.gis.measure import Distance
 
 from datapunt_api.rest import DatapuntViewSet
 from datapunt_api.rest import DatapuntViewSetWritable
@@ -17,7 +16,6 @@ from signals.models import Buurt
 from signals.serializers import SignalPublicSerializer
 from signals.serializers import SignalAuthSerializer
 from signals.serializers import LocationSerializer
-from signals.serializers import ReporterSerializer
 from signals.serializers import CategorySerializer
 from signals.serializers import StatusSerializer
 
@@ -35,6 +33,7 @@ STADSDELEN = (
 
 
 def buurt_choices():
+    # noinspection PyUnresolvedReferences
     options = Buurt.objects.values_list('vollcode', 'naam')
     return [(c, '%s (%s)' % (n, c)) for c, n in options]
 
@@ -49,6 +48,16 @@ class SignalFilter(FilterSet):
 
     extra = filters.CharFilter(method='in_extra', label='extra')
 
+    created_at = filters.DateFilter(name='created_at', lookup_expr='date')
+    created_at__gte = filters.DateFilter(name='created_at', lookup_expr='date__gte')
+    created_at__lte = filters.DateFilter(name='created_at', lookup_expr='date__lte')
+
+    updated_at = filters.DateFilter(name='updated_at', lookup_expr='date')
+    updated_at__gte = filters.DateFilter(name='updated_at', lookup_expr='date__gte')
+    updated_at__lte = filters.DateFilter(name='updated_at', lookup_expr='date__lte')
+
+    status_not__state = filters.CharFilter(name='status__state', exclude=True)
+
     class Meta(object):
         model = Signal
         fields = (
@@ -57,7 +66,6 @@ class SignalFilter(FilterSet):
             "status__state",
             "category__main",
             "category__sub",
-            "created_at",
             "updated_at",
             "location__buurt_code",
             "location__stadsdeel",
@@ -76,7 +84,7 @@ class SignalFilter(FilterSet):
             raise ValidationError(
                 f"bbox invalid {err}:{bbox_values}")
         return qs.filter(
-            location__geometrie__bboverlaps=(poly_bbox))
+            location__geometrie__bboverlaps=poly_bbox)
 
     def in_extra(self, qs, name, value):
         """
@@ -91,7 +99,7 @@ class SignalFilter(FilterSet):
             location__geometrie__dwithin=(point, radius))
 
 
-class AuthViewSet():
+class AuthViewSet:
     def check_permissions(self, request):
         scope = 'SIG/ALL'
         if not request.is_authorized_for(scope):
@@ -185,7 +193,7 @@ class StatusFilter(FilterSet):
 
         if err:
             raise ValidationError(f"bbox invalid {err}:{bbox_values}")
-        return qs.filter(signal__location__geometrie__bboverlaps=(poly_bbox))
+        return qs.filter(signal__location__geometrie__bboverlaps=poly_bbox)
 
 
 class LocationFilter(FilterSet):
@@ -223,7 +231,7 @@ class LocationFilter(FilterSet):
 
         if err:
             raise ValidationError(f"bbox invalid {err}:{bbox_values}")
-        return qs.filter(geometrie__bboverlaps=(poly_bbox))
+        return qs.filter(geometrie__bboverlaps=poly_bbox)
 
 
 class LocationView(DatapuntViewSet):
