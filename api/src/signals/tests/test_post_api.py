@@ -70,7 +70,7 @@ class PostTestCase(APITestCase):
         """Post een compleet signaal.
         """
 
-        url = "/signals/auth/signal/"
+        url = "/signals/signal/"
         postjson = self._get_fixture('post_signal')
         response = self.client.post(url, postjson, format='json')
 
@@ -115,8 +115,8 @@ class PostTestCase(APITestCase):
         """
         url = "/signals/auth/status/"
         postjson = self._get_fixture('post_status')
-        signal_url = reverse('signal-detail', args=[self.s.id])
-        postjson['_signal'] = signal_url
+        # signal_url = reverse('signal-auth-detail', args=[self.s.id])
+        postjson['_signal'] = self.s.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
@@ -129,8 +129,8 @@ class PostTestCase(APITestCase):
         """
         url = "/signals/auth/location/"
         postjson = self._get_fixture('post_location')
-        signal_url = reverse('signal-detail', args=[self.s.id])
-        postjson['_signal'] = signal_url
+        # signal_url = reverse('signal-auth-detail', args=[self.s.id])
+        postjson['_signal'] = self.s.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
@@ -143,8 +143,8 @@ class PostTestCase(APITestCase):
         """
         url = "/signals/auth/category/"
         postjson = self._get_fixture('post_location')
-        signal_url = reverse('signal-detail', args=[self.s.id])
-        postjson['_signal'] = signal_url
+        signal_url = reverse('signal-auth-detail', args=[self.s.id])
+        postjson['_signal'] = self.s.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)

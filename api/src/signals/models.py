@@ -183,6 +183,16 @@ class Category(models.Model):
 
     extra_properties = JSONField(null=True)
 
+    def __str__(self):
+        """Identifying string.
+        """
+        return '{} - {} - {} - {}'.format(
+            self.main,
+            self.sub,
+            self.priority,
+            self.created_at
+        )
+
 
 STATUS_OPTIONS = (
     ('m', 'Gemeld'),

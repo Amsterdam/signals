@@ -2,16 +2,14 @@
 # import logging
 from collections import OrderedDict
 
-from rest_framework import serializers
-from rest_framework.serializers import IntegerField
-from rest_framework.serializers import CharField
+from django.db import transaction, connection
 
-from rest_framework_gis.serializers import GeometrySerializerMethodField
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
+from rest_framework import serializers
+from rest_framework.serializers import IntegerField, ModelSerializer
+from rest_framework.serializers import CharField
 
 from datapunt_api.rest import DisplayField
 from datapunt_api.rest import HALSerializer
-from datapunt_api.rest import RelatedSummaryField
 
 from signals.models import Signal
 from signals.models import Reporter
@@ -25,6 +23,7 @@ class LocationModelSerializer(serializers.ModelSerializer):
     id = IntegerField(label='ID', read_only=True)
 
     class Meta:
+
         model = Location
         geo_field = 'geometrie'
         fields = (
@@ -39,7 +38,10 @@ class LocationModelSerializer(serializers.ModelSerializer):
 
 class LocationSerializer(HALSerializer):
 
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+
     class Meta:
+
         model = Location
         fields = (
             'id',
@@ -110,56 +112,105 @@ class CategoryModelSerializer(serializers.ModelSerializer):
         extra_kwargs = {'_signal': {'required': False}}
 
 
-class SignalPublicSerializer(HALSerializer):
-    """
-    Public version of Signals
-    """
-    _display = DisplayField()
+# class SignalPublicSerializer(HALSerializer):
+#     """
+#     Public version of Signals
+#     """
+#     _display = DisplayField()
+#
+#     location = LocationModelSerializer()
+#
+#     class Meta(object):
+#         model = Signal
+#         fields = [
+#             "_links",
+#             "_display",
+#             # "pk",
+#             "signal_id",
+#             # "text",
+#             # "text_extra",
+#             # "status",
+#             "location",
+#             # "category",
+#             # DO NOT ENABLE
+#             # make test for this
+#             # "reporter",
+#             "created_at",
+#             # "updated_at",
+#             # "incident_date_start",
+#             # "incident_date_end",
+#             # "operational_date",
+#             # "image",
+#             # "upload",
+#         ]
 
+
+class SignalCreateSerializer(ModelSerializer):
+    id = IntegerField(label='ID', read_only=True)
+    signal_id = CharField(label='SIGNAL_ID', read_only=True)
     location = LocationModelSerializer()
+    reporter = ReporterModelSerializer()
+    status = StatusModelSerializer()
+    category = CategoryModelSerializer()
 
     class Meta(object):
         model = Signal
         fields = [
-            "_links",
-            "_display",
             # "pk",
+            "id",
             "signal_id",
-            # "text",
-            # "text_extra",
-            # "status",
+            "source",
+            "text",
+            "text_extra",
+            "status",
             "location",
-            # "category",
-            # DO NOT ENABLE
-            # make test for this
-            # "reporter",
+            "category",
+            "reporter",
             "created_at",
-            # "updated_at",
-            # "incident_date_start",
-            # "incident_date_end",
-            # "operational_date",
-            # "image",
-            # "upload",
+            "updated_at",
+            "incident_date_start",
+            "incident_date_end",
+            "operational_date",
+            "image",
+            # "upload",   For now we only upload one image
         ]
 
+    def create(self, validated_data):
+        status_data = validated_data.pop('status')
+        location_data = validated_data.pop('location')
+        reporter_data = validated_data.pop('reporter')
+        category_data = validated_data.pop('category')
 
-class AuthLinksField(serializers.HyperlinkedIdentityField):
+        with transaction.atomic():
+            cursor = connection.cursor()
+            cursor.execute("select nextval('signals_signal_id_seq')")
+            (signal_id,) = cursor.fetchone()
+            location = Location.objects.create(_signal_id=signal_id, **location_data)
+            category = Category.objects.create(_signal_id=signal_id, **category_data)
+            status = Status.objects.create(_signal_id=signal_id, **status_data)
+            reporter = Reporter.objects.create(_signal_id=signal_id, **reporter_data)
+            signal = Signal.objects.create(id=signal_id, location=location, category=category, reporter=reporter,
+                                           status=status, **validated_data)
+        return signal
+
+    def update(self, instance, validated_data):
+        pass
+
+    def validate(self, data):
+        # TODO add validation
+        return data
+
+
+class SignalLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
-    maybe also for Frontend.
-
-    Needs discussion
     """
-
     def to_representation(self, value):
         request = self.context.get('request')
 
         result = OrderedDict([
             ('self', dict(
-                href=self.get_url(value, self.view_name, request, None))
-             ),
-            ('self_auth', dict(
-                href=self.get_url(value, 'signal-auth-detail', request, None))
+                href=self.get_url(value, "signal-auth-detail", request, None))
              ),
         ])
 
@@ -175,7 +226,7 @@ class SignalAuthSerializer(HALSerializer):
     status = StatusModelSerializer()
     category = CategoryModelSerializer()
 
-    serializer_url_field = AuthLinksField
+    serializer_url_field = SignalLinksField
 
     class Meta(object):
         model = Signal
@@ -185,6 +236,7 @@ class SignalAuthSerializer(HALSerializer):
             # "pk",
             "id",
             "signal_id",
+            "source",
             "text",
             "text_extra",
             "status",
@@ -202,40 +254,30 @@ class SignalAuthSerializer(HALSerializer):
             "upload",
         ]
 
-    def create(self, validated_data):
-        signal = Signal.objects.create()
-        signal.save()
-
-        status = validated_data.pop('status')
-        location = validated_data.pop('location')
-        reporter = validated_data.pop('reporter')
-        category = validated_data.pop('category')
-
-        location = Location(_signal=signal, **location)
-        category = Category(_signal=signal, **category)
-        status = Status(_signal=signal, **status)
-        reporter = Reporter(_signal=signal, **reporter)
-
-        status.save()
-        reporter.save()
-        category.save()
-        location.save()
-
-        location.signal.add(signal)
-        status.signal.add(signal)
-        category.signal.add(signal)
-        reporter.signal.add(signal)
-
-        return signal
-
     def update(self, instance, validated_data):
         pass
 
 
+class StatusLinksField(serializers.HyperlinkedIdentityField):
+    """
+    Return authorized url. handy for development.
+    """
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(
+                href=self.get_url(value, "status-auth-detail", request, None))
+             ),
+        ])
+
+        return result
+
+
 class StatusSerializer(HALSerializer):
     _display = DisplayField()
-
-    # signal = SignalPublicSerializer()
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    serializer_url_field = StatusLinksField
 
     class Meta(object):
         model = Status
@@ -243,8 +285,6 @@ class StatusSerializer(HALSerializer):
             "_links",
             "_display",
             "id",
-            # "signal",
-            "_signal",
             "text",
             "user",
             "extern",
@@ -254,15 +294,13 @@ class StatusSerializer(HALSerializer):
             "updated_at",
             "extra_properties",
         ]
-        extra_kwargs = {
-            '_signals': {'required': False},
-            '_signal': {'required': False},
-        }
+        extra_kwargs = {'_signal': {'required': False}}
 
     def create(self, validated_data):
         """
         """
-        # django rest does default the good thing
+        # django rest does NOT default the good thing
+        # validated_data['_signal_id'] = validated_data.pop('_signal')
         status = Status(**validated_data)
         status.save()
         # update status on signal
@@ -274,9 +312,31 @@ class StatusSerializer(HALSerializer):
         """
         pass
 
+    # def validate(self, data):
+    #     # TODO add validation
+    #     return data
+
+
+class CategoryLinksField(serializers.HyperlinkedIdentityField):
+    """
+    Return authorized url. handy for development.
+    """
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(
+                href=self.get_url(value, "category-auth-detail", request, None))
+             ),
+        ])
+
+        return result
+
 
 class CategorySerializer(HALSerializer):
     _display = DisplayField()
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    serializer_url_field = CategoryLinksField
 
     class Meta(object):
         model = Category
@@ -289,11 +349,6 @@ class CategorySerializer(HALSerializer):
             "priority",
             "_signal",
         ]
-
-        extra_kwargs = {
-            '_signals': {'required': False},
-            '_signal': {'required': False},
-        }
 
     def create(self, validated_data):
         """
@@ -310,9 +365,30 @@ class CategorySerializer(HALSerializer):
         """
         pass
 
+    # def validate(self, data):
+    #     # TODO add validation
+    #     return data
+
+
+class ReporterLinksField(serializers.HyperlinkedIdentityField):
+    """
+    Return authorized url. handy for development.
+    """
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(
+                href=self.get_url(value, "reporter-auth-detail", request, None))
+             ),
+        ])
+
+        return result
+
 
 class ReporterSerializer(HALSerializer):
     _display = DisplayField()
+    serializer_url_field = ReporterLinksField
 
     # signal = RelatedSummaryField()
 
@@ -324,9 +400,6 @@ class ReporterSerializer(HALSerializer):
             "id",
             "email",
             "phone",
-            "created_at"
-            "remove_at"
+            "created_at",
+            "remove_at",
         ]
-
-        # extra_kwargs = {'_signal': {'required': False}}
-        # validators = []

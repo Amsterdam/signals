@@ -2,6 +2,7 @@ from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.serializers import ValidationError
+from rest_framework import viewsets, mixins
 from django.contrib.gis.geos import Polygon
 
 from datapunt_api.rest import DatapuntViewSet
@@ -13,7 +14,7 @@ from signals.models import Location
 from signals.models import Category
 from signals.models import Status
 from signals.models import Buurt
-from signals.serializers import SignalPublicSerializer
+from signals.serializers import SignalCreateSerializer
 from signals.serializers import SignalAuthSerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import CategorySerializer
@@ -109,23 +110,20 @@ class AuthViewSet:
         return super(AuthViewSet, self).check_permissions(request)
 
 
-class SignalView(DatapuntViewSet):
-    """View of Signals.
+class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """View of Signals for public access.
 
-    ONLY shows minimal public information
+    Only used to create the signal with POST
+
+    valid geometrie points are:
+
+        { 'type': 'Point', 'coordinates': [ 135.0, 45.0, ], }
+
+    or 'POINT (12.492324113849 41.890307434153)'
     """
-    queryset = (
-        Signal.objects.all()
-        .order_by("created_at")
-        .select_related('status')
-        .select_related('location')
-        .select_related('category')
-        .order_by('-id')
-    )
-    serializer_detail_class = SignalPublicSerializer
-    serializer_class = SignalPublicSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = SignalFilter
+    serializer_detail_class = SignalCreateSerializer
+    serializer_class = SignalCreateSerializer
+    pagination_class = None
 
 
 class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
@@ -135,12 +133,6 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
 
     only for AUTHENTICATED users
     ============================
-
-    valid geometrie points are:
-
-        { 'type': 'Point', 'coordinates': [ 135.0, 45.0, ], }
-
-    or 'POINT (12.492324113849 41.890307434153)'
 
     """
     queryset = (

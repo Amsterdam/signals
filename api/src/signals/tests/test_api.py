@@ -10,10 +10,10 @@ from . import factories
 class BrowseDatasetsTestCase(APITestCase):
 
     datasets = [
-        "signals/signal",
-        "signals/status",
-        "signals/category",
-        "signals/location",
+        "signals/auth/signal",
+        "signals/auth/status",
+        "signals/auth/category",
+        "signals/auth/location",
     ]
 
     def setUp(self):
