@@ -9,7 +9,7 @@ from datapunt_api.rest import DatapuntViewSet
 from datapunt_api.rest import DatapuntViewSetWritable
 from datapunt_api import bbox
 
-from signals.models import Signal
+from signals.models import Signal, STATUS_OPTIONS
 from signals.models import Location
 from signals.models import Category
 from signals.models import Status
@@ -36,7 +36,16 @@ STADSDELEN = (
 def buurt_choices():
     # noinspection PyUnresolvedReferences
     options = Buurt.objects.values_list('vollcode', 'naam')
-    return [(c, '%s (%s)' % (n, c)) for c, n in options]
+    return [(c, f'{n} ({c})') for c, n in options]
+
+
+def status_choices():
+    return [(c, f'{n} ({c})') for c, n in STATUS_OPTIONS]
+
+
+def category_sub_choices():
+    options = Category.objects.values_list("sub").distinct()
+    return [(c, f'{c}') for c, in options]
 
 
 class SignalFilter(FilterSet):
@@ -44,8 +53,9 @@ class SignalFilter(FilterSet):
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
     geo = filters.CharFilter(method="locatie_filter", label='x,y,r')
 
-    location__stadsdeel = filters.ChoiceFilter(choices=STADSDELEN)
-    location__buurt_code = filters.ChoiceFilter(choices=buurt_choices)
+    location__stadsdeel = filters.MultipleChoiceFilter(choices=STADSDELEN)
+    location__buurt_code = filters.MultipleChoiceFilter(choices=buurt_choices)
+    location__address_text = filters.CharFilter(lookup_expr='icontains')
 
     extra = filters.CharFilter(method='in_extra', label='extra')
 
@@ -57,7 +67,19 @@ class SignalFilter(FilterSet):
     updated_at__gte = filters.DateFilter(name='updated_at', lookup_expr='date__gte')
     updated_at__lte = filters.DateFilter(name='updated_at', lookup_expr='date__lte')
 
-    status_not__state = filters.CharFilter(name='status__state', exclude=True)
+    incident_date_start = filters.DateFilter(name='incident_date_start', lookup_expr='date')
+    incident_date_start__gte = filters.DateFilter(name='incident_date_start', lookup_expr='date__gte')
+    incident_date_start__lte = filters.DateFilter(name='incident_date_start', lookup_expr='date__lte')
+
+    incident_date_end = filters.DateFilter(name='incident_date_end', lookup_expr='date')
+
+    operational_date = filters.DateFilter(name='operational_date', lookup_expr='date')
+    expire_date = filters.DateFilter(name='expire_date', lookup_expr='date')
+    expire_date__gte = filters.DateFilter(name='expire_date', lookup_expr='date__gte')
+    expire_date__lte = filters.DateFilter(name='expire_date', lookup_expr='date__lte')
+
+    status__state = filters.MultipleChoiceFilter(choices=status_choices)
+    category__sub = filters.MultipleChoiceFilter(choices=category_sub_choices)
 
     class Meta(object):
         model = Signal
@@ -70,6 +92,7 @@ class SignalFilter(FilterSet):
             "updated_at",
             "location__buurt_code",
             "location__stadsdeel",
+            "location__address_text",
             "reporter__email",
             "in_bbox",
             "extra",
@@ -120,6 +143,17 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         { 'type': 'Point', 'coordinates': [ 135.0, 45.0, ], }
 
     or 'POINT (12.492324113849 41.890307434153)'
+
+
+    valid address:
+    {
+        "openbare_ruimte": "Dam",
+        "huisnummer": "1",
+        "huisletter": "A",
+        "huisnummer_toevoeging": "1",
+        "postcode": "1012JS",
+        "woonplaats": "Amsterdam"
+    }
     """
     serializer_detail_class = SignalCreateSerializer
     serializer_class = SignalCreateSerializer

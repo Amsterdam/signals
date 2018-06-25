@@ -24,7 +24,8 @@
     },
     "category": {
         "main": "a",
-        "sub": "b"
+        "sub": "b",
+        "department": "WaterNet"
     },
     "reporter": {
         "id": 9,

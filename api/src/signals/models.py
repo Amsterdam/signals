@@ -1,7 +1,6 @@
 import uuid
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
-# from jsonfield import JSONfield
 
 
 class Buurt(models.Model):
@@ -122,10 +121,32 @@ class Location(models.Model):
     # buurten as external data in a seperate process
     buurt_code = models.CharField(null=True, max_length=4)
     address = JSONField(null=True)
+    address_text = models.CharField(null=True, max_length=256, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     extra_properties = JSONField(null=True)
+
+    def set_address_text(self):
+        field_prefixes = (
+            ('openbare_ruimte', ''),
+            ('huisnummer', ' '),
+            ('huisletter', ''),
+            ('huisnummer_toevoeging', '-'),
+            ('postcode', ' '),
+            ('woonplaats', ' ')
+        )
+        address_text = ''
+        if self.address:
+            for field, prefix in field_prefixes:
+                if field in self.address:
+                    address_text += prefix + self.address[field]
+            self.address_text = address_text
+
+    def save(self, *args, **kwargs):
+        # Set address_text
+        self.set_address_text()
+        super().save(*args, **kwargs)  # Call the "real" save() method.
 
 
 class Reporter(models.Model):
@@ -157,6 +178,7 @@ class Category(models.Model):
 
     main = models.CharField(max_length=50, default='', null=True, blank=True)
     sub = models.CharField(max_length=50, default='', null=True, blank=True)
+    department = models.CharField(max_length=50, default='', null=True, blank=True)
     priority = models.IntegerField(null=True)
     ml_priority = models.IntegerField(null=True)
 

@@ -29,6 +29,7 @@ class LocationModelSerializer(serializers.ModelSerializer):
             'stadsdeel',
             'buurt_code',
             'address',
+            'address_text',
             'geometrie',
             'extra_properties',
         )
@@ -81,7 +82,6 @@ class StatusModelSerializer(serializers.ModelSerializer):
             'user',
             'target_api',
             'state',
-            '_signal',
             'extern',
             'extra_properties',
         )
@@ -93,9 +93,14 @@ class ReporterModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reporter
-        fields = '__all__'
-
-        extra_kwargs = {'_signal': {'required': False}}
+        fields = (
+            'email',
+            'phone',
+            'remove_at',
+            'created_at',
+            'updated_at',
+            'extra_properties',
+        )
 
 
 class CategoryModelSerializer(serializers.ModelSerializer):
@@ -103,46 +108,13 @@ class CategoryModelSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Category
         fields = [
-            # "id",
             "main",
             "sub",
+            "department",
             "priority",
         ]
 
         extra_kwargs = {'_signal': {'required': False}}
-
-
-# class SignalPublicSerializer(HALSerializer):
-#     """
-#     Public version of Signals
-#     """
-#     _display = DisplayField()
-#
-#     location = LocationModelSerializer()
-#
-#     class Meta(object):
-#         model = Signal
-#         fields = [
-#             "_links",
-#             "_display",
-#             # "pk",
-#             "signal_id",
-#             # "text",
-#             # "text_extra",
-#             # "status",
-#             "location",
-#             # "category",
-#             # DO NOT ENABLE
-#             # make test for this
-#             # "reporter",
-#             "created_at",
-#             # "updated_at",
-#             # "incident_date_start",
-#             # "incident_date_end",
-#             # "operational_date",
-#             # "image",
-#             # "upload",
-#         ]
 
 
 class SignalCreateSerializer(ModelSerializer):
@@ -156,7 +128,6 @@ class SignalCreateSerializer(ModelSerializer):
     # Explicitly specify fields with auto_now_add=True to show in the rest framework
     created_at = serializers.DateTimeField()
     incident_date_start = serializers.DateTimeField()
-
 
     class Meta(object):
         model = Signal
@@ -353,6 +324,7 @@ class CategorySerializer(HALSerializer):
             "id",
             "main",
             "sub",
+            "department",
             "priority",
             "_signal",
         ]
