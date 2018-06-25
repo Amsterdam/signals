@@ -33,22 +33,22 @@ class Signal(models.Model):
     text_extra = models.CharField(
         max_length=1000, default='', blank=True)
 
-    location = models.ForeignKey(
+    location = models.OneToOneField(
         'Location', related_name="signal",
         null=True, on_delete=models.CASCADE
     )
 
-    status = models.ForeignKey(
+    status = models.OneToOneField(
         "Status", related_name="signal",
         null=True, on_delete=models.CASCADE
     )
 
-    category = models.ForeignKey(
+    category = models.OneToOneField(
         "Category", related_name="signal",
         null=True, on_delete=models.CASCADE
     )
 
-    reporter = models.ForeignKey(
+    reporter = models.OneToOneField(
         "Reporter", related_name="signal",
         null=True, on_delete=models.CASCADE
     )

@@ -21,13 +21,14 @@ class BrowseDatasetsTestCase(APITestCase):
 
         self.loc = factories.LocationFactory(_signal=self.s)
         self.status = factories.StatusFactory(_signal=self.s)
-        self.c = factories.CategoryFactory(_signal=self.s)
+        self.category = factories.CategoryFactory(_signal=self.s)
         self.reporter = factories.ReporterFactory(_signal=self.s)
 
-        self.status.signal.add(self.s),
-        self.loc.signal.add(self.s)
-        self.c.signal.add(self.s)
-        self.reporter.signal.add(self.s)
+        self.s.location = self.loc
+        self.s.status = self.status
+        self.s.category = self.category
+        self.s.reporter = self.reporter
+        self.s.save()
 
     def valid_html_response(self, url, response):
         """

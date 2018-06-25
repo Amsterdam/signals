@@ -164,7 +164,7 @@ class StatusFilter(FilterSet):
         model = Status
         fields = (
             "id",
-            "signal__id",
+            "_signal__id",
             "buurt_code",
             "signal__location__stadsdeel",
             "signal__location__buurt_code",
@@ -203,7 +203,7 @@ class LocationFilter(FilterSet):
         model = Location
         fields = (
             "id",
-            "signal",
+            "_signal__id",
             "buurt_code",
             "signal__location__stadsdeel",
             "signal__location__buurt_code",
@@ -259,7 +259,7 @@ class StatusView(DatapuntViewSet):
     queryset = (
         Status.objects.all()
         .order_by("created_at")
-        .prefetch_related('signal')
+        # .prefetch_related('signal')
     )
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
@@ -272,7 +272,7 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     queryset = (
         Status.objects.all()
         .order_by("created_at")
-        .prefetch_related('signal')
+        # .prefetch_related('signal')
     )
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
@@ -290,7 +290,7 @@ class CategoryView(DatapuntViewSet):
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ['main', 'sub']
+    filter_fields = ['main', 'sub', '_signal_id']
 
 
 class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):

@@ -1,5 +1,3 @@
-# import json
-# import logging
 from collections import OrderedDict
 
 from django.db import transaction, connection
@@ -60,7 +58,9 @@ class LocationSerializer(HALSerializer):
         location = Location(**validated_data)
         location.save()
         # update status on signal
-        location.signal.add(location._signal)
+        signal = Signal.objects.get(id=location._signal_id)
+        signal.location = location
+        signal.save()
         return location
 
     def update(self, instance, validated_data):
@@ -152,6 +152,11 @@ class SignalCreateSerializer(ModelSerializer):
     reporter = ReporterModelSerializer()
     status = StatusModelSerializer()
     category = CategoryModelSerializer()
+
+    # Explicitly specify fields with auto_now_add=True to show in the rest framework
+    created_at = serializers.DateTimeField()
+    incident_date_start = serializers.DateTimeField()
+
 
     class Meta(object):
         model = Signal
@@ -276,7 +281,7 @@ class StatusLinksField(serializers.HyperlinkedIdentityField):
 
 class StatusSerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = StatusLinksField
 
     class Meta(object):
@@ -294,18 +299,20 @@ class StatusSerializer(HALSerializer):
             "updated_at",
             "extra_properties",
         ]
-        extra_kwargs = {'_signal': {'required': False}}
+        # extra_kwargs = {'_signal': {'required': False}}
 
     def create(self, validated_data):
         """
         """
-        # django rest does NOT default the good thing
-        # validated_data['_signal_id'] = validated_data.pop('_signal')
-        status = Status(**validated_data)
-        status.save()
-        # update status on signal
-        status.signal.add(status._signal)
-        return status
+        with transaction.atomic():
+            # django rest does default the good thing
+            status = Status(**validated_data)
+            status.save()
+            # update status on signal
+            signal = Signal.objects.get(id=status._signal_id)
+            signal.status = status
+            signal.save()
+            return status
 
     def update(self, instance, validated_data):
         """Should not be implemented.
@@ -335,7 +342,7 @@ class CategoryLinksField(serializers.HyperlinkedIdentityField):
 
 class CategorySerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = CategoryLinksField
 
     class Meta(object):
@@ -353,12 +360,15 @@ class CategorySerializer(HALSerializer):
     def create(self, validated_data):
         """
         """
-        # django rest does default the good thing
-        category = Category(**validated_data)
-        category.save()
-        # update status on signal
-        category.signal.add(category._signal)
-        return category
+        with transaction.atomic():
+            # django rest does default the good thing
+            category = Category(**validated_data)
+            category.save()
+            # update status on signal
+            signal = Signal.objects.get(id=category._signal_id)
+            signal.category = category
+            signal.save()
+            return category
 
     def update(self, instance, validated_data):
         """Should not be implemented.
