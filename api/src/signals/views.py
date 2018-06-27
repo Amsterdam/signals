@@ -3,6 +3,7 @@ from django_filters.rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.serializers import ValidationError
 from rest_framework import viewsets, mixins
+
 from django.contrib.gis.geos import Polygon
 
 from datapunt_api.rest import DatapuntViewSet
@@ -19,6 +20,7 @@ from signals.serializers import SignalAuthSerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import CategorySerializer
 from signals.serializers import StatusSerializer
+from signals.throttling import NoUserRateThrottle
 
 
 STADSDELEN = (
@@ -140,7 +142,7 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     valid geometrie points are:
 
-        { 'type': 'Point', 'coordinates': [ 135.0, 45.0, ], }
+        { "type": "Point", "coordinates": [ 135.0, 45.0 ] }
 
     or 'POINT (12.492324113849 41.890307434153)'
 
@@ -155,6 +157,8 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         "woonplaats": "Amsterdam"
     }
     """
+    throttle_classes = (NoUserRateThrottle,)
+
     serializer_detail_class = SignalCreateSerializer
     serializer_class = SignalCreateSerializer
     pagination_class = None

@@ -137,7 +137,7 @@ class Location(models.Model):
             ('woonplaats', ' ')
         )
         address_text = ''
-        if self.address:
+        if self.address and  isinstance(self.address, dict):
             for field, prefix in field_prefixes:
                 if field in self.address:
                     address_text += prefix + self.address[field]

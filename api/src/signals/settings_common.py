@@ -116,6 +116,13 @@ REST_FRAMEWORK = dict(
         "django_filters.rest_framework.DjangoFilterBackend",
     ),
     COERCE_DECIMAL_TO_STRING=True,
+    DEFAULT_THROTTLE_CLASSES=(
+        # Currently no default throttle class
+        # 'signals.throttling.NoUserRateThrottle',
+    ),
+    DEFAULT_THROTTLE_RATES={
+        'nouser': '5/hour',
+    },
 )
 
 # Static files (CSS, JavaScript, Images)
