@@ -14,6 +14,8 @@ from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
 from signals.models import Location
+from signals.models import STATUS_OVERGANGEN
+
 
 
 class LocationModelSerializer(serializers.ModelSerializer):
@@ -173,7 +175,10 @@ class SignalCreateSerializer(ModelSerializer):
         pass
 
     def validate(self, data):
-        # TODO add validation
+        # The status can only be 'm' when created
+        if data['status']['state'] not in STATUS_OVERGANGEN['']:
+            raise serializers.ValidationError(f"Invalid status: {data['status']['state']}")
+        # TODO add further validation
         return data
 
 
@@ -290,9 +295,14 @@ class StatusSerializer(HALSerializer):
         """
         pass
 
-    # def validate(self, data):
-    #     # TODO add validation
-    #     return data
+    def validate(self, data):
+        # Get current status for signal
+        signal = data['_signal']
+        if data['state'] not in STATUS_OVERGANGEN[signal.status.state]:
+            raise serializers.ValidationError(
+                f"Invalid state transition from {signal.status.state} to {data['state']}")
+        # TODO add further validation
+        return data
 
 
 class CategoryLinksField(serializers.HyperlinkedIdentityField):

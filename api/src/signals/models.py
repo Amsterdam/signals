@@ -137,7 +137,7 @@ class Location(models.Model):
             ('woonplaats', ' ')
         )
         address_text = ''
-        if self.address and  isinstance(self.address, dict):
+        if self.address and isinstance(self.address, dict):
             for field, prefix in field_prefixes:
                 if field in self.address:
                     address_text += prefix + self.address[field]
@@ -222,6 +222,17 @@ STATUS_OPTIONS = (
     ('b', 'In behandeling'),
     ('o', 'Afgehandeld'),
 )
+
+STATUS_OVERGANGEN = {
+    '': ['m'],  # Een nieuwe status mag alleen Gemeld zijn
+    'm': ['i',   # Van gemeld naar in afwachting van behandeling. Met deze is toestemming verleend voor behandeling
+          'o'],  # Kan ook meteen naar afgehandeld als dit een melding is waar niets mee kan gebeuren (onzin melding)
+
+    'i': ['b'],  # Van in afwachting naar in behandeling. Deze overgang gebeurt nadat het doorgezet is naar SigMax
+    'b': ['o',   # Naar afgehandeld
+          'm'],  # Of terug naar gemeld indien het niet kan worden afgehandeld.
+    'o': []  # Eenmaal afgehandeld kan hij nooit meer veranderen
+}
 
 
 class Status(models.Model):
