@@ -1,3 +1,4 @@
+import re
 from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,6 +12,7 @@ from datapunt_api.rest import DatapuntViewSet
 from datapunt_api.rest import DatapuntViewSetWritable
 from datapunt_api import bbox
 
+from signals import settings
 from signals.models import Signal, STATUS_OPTIONS
 from signals.models import Location
 from signals.models import Category
@@ -162,7 +164,8 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         "woonplaats": "Amsterdam"
     }
     """
-    throttle_classes = (NoUserRateThrottle,)
+    if not re.search('acc', settings.DATAPUNT_API_URL):
+        throttle_classes = (NoUserRateThrottle,)
 
     serializer_detail_class = SignalCreateSerializer
     serializer_class = SignalCreateSerializer
