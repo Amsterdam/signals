@@ -28,11 +28,11 @@ class GetAccessToken(object):
         acc_prefix = 'acc.' if acceptance else ''
         authzUrl = f'https://{acc_prefix}api.data.amsterdam.nl/oauth2/authorize'
         params = {
-            'idp_id' : 'datapunt',
-            'response_type' : 'token',
-            'client_id' : 'citydata',
-            'scope' : ' '.join(scopes),
-            'state' : state,
+            'idp_id': 'datapunt',
+            'response_type': 'token',
+            'client_id': 'citydata',
+            'scope': ' '.join(scopes),
+            'state': state,
             'redirect_uri' : f'https://{acc_prefix}data.amsterdam.nl/'
         }
 

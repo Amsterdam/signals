@@ -148,7 +148,7 @@ LOGGING = {
     },
     "root": {"level": "DEBUG", "handlers": ["console"]},
     "loggers": {
-        "django.db": {"handlers": ["console"], "level": "DEBUG"},
+        # "django.db": {"handlers": ["console"], "level": "DEBUG"},
         "django": {"handlers": ["console"], "level": "ERROR"},
         # Debug all batch jobs
         "doc": {"handlers": ["console"], "level": "INFO", "propagate": False},

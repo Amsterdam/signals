@@ -32,7 +32,7 @@ class PostTestCase(APITestCase):
     """
 
     fixture_files = {
-        "post_signal": "signal_auth_post.json",
+        "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
         "post_category": "category_post.json",
         "post_location": "location_auth_post.json",
