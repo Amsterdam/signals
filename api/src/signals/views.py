@@ -1,6 +1,7 @@
 from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import APIException
 from rest_framework.serializers import ValidationError
 from rest_framework import viewsets, mixins
 
@@ -128,10 +129,14 @@ class SignalFilter(FilterSet):
 class AuthViewSet:
     def check_permissions(self, request):
         scope = 'SIG/ALL'
-        if not request.is_authorized_for(scope):
-            self.permission_denied(
-                request, message=getattr(scope, 'message', None)
-            )
+        try:
+            if request.method != 'OPTIONS' and not request.is_authorized_for(scope):
+                self.permission_denied(
+                    request, message=getattr(scope, 'message', None)
+                )
+        except Exception as e:
+            raise APIException(e)
+
         return super(AuthViewSet, self).check_permissions(request)
 
 
