@@ -2,6 +2,7 @@ datapunt-authorization-django
 datapunt-authorization-levels
 Django
 django-braces
+django-cors-headers
 django-extensions
 django-filter
 django-rest-swagger

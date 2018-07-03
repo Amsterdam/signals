@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
     "django_filters",
+    "corsheaders",
     "django_extensions",
     "django.contrib.gis",
     "datapunt_api",
@@ -51,10 +52,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "authorization_django.authorization_middleware",
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 if DEBUG:
     INSTALLED_APPS += ('debug_toolbar',)

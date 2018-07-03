@@ -107,23 +107,23 @@ class PostTestCase(APITestCase):
             "Reporter is missing _signal field?"
         )
 
-    def test_post_status(self):
-        """Update status of signal
-
-        - Add a status object with link to Signal
-        - Change signal object status field.
-
-        """
-        url = "/signals/auth/status/"
-        postjson = self._get_fixture('post_status')
-        # signal_url = reverse('signal-auth-detail', args=[self.s.id])
-        postjson['_signal'] = self.s.id
-        response = self.client.post(url, postjson, format='json')
-        result = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.s.refresh_from_db()
-        # check that current status of signal is now this one
-        self.assertEqual(self.s.status.id, result['id'])
+    # def test_post_status(self):
+    #     """Update status of signal
+    #
+    #     - Add a status object with link to Signal
+    #     - Change signal object status field.
+    #
+    #     """
+    #     url = "/signals/auth/status/"
+    #     postjson = self._get_fixture('post_status')
+    #     # signal_url = reverse('signal-auth-detail', args=[self.s.id])
+    #     postjson['_signal'] = self.s.id
+    #     response = self.client.post(url, postjson, format='json')
+    #     result = response.json()
+    #     self.assertEqual(response.status_code, 201)
+    #     self.s.refresh_from_db()
+    #     # check that current status of signal is now this one
+    #     self.assertEqual(self.s.status.id, result['id'])
 
     def test_post_location(self):
         """We only create new location items
