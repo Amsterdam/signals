@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import ValidationError
 from rest_framework import viewsets, mixins
+from rest_framework.response import Response
 
 from django.contrib.gis.geos import Polygon
 
@@ -170,6 +171,9 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_detail_class = SignalCreateSerializer
     serializer_class = SignalCreateSerializer
     pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        return Response({})
 
 
 class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
