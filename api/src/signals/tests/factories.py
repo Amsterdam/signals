@@ -85,5 +85,5 @@ class StatusFactory(factory.DjangoModelFactory):
     user = 'kees%s@amsterdam.nl' % (int(random.random() * 100))
     text = fuzzy.FuzzyText(length=400)
 
-    state = fuzzy.FuzzyChoice(('m', 'i', 'b', 'o'))
+    state = 'm'  # Initial state is always 'm'
     extern = fuzzy.FuzzyChoice((True, False))
