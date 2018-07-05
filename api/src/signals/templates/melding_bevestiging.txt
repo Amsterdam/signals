@@ -1,0 +1,14 @@
+Geachte heer/mevrouw,
+
+
+Bedankt voor uw melding over :
+
+
+{{  text }}
+
+
+Deze is geregistreerd met nummer : {{ signal_id }}
+
+{% if afhandelings_termijn %}
+Er wordt naar gestreefd deze melding binnen {{ afhandelings_termijn }} af te handelen.
+{% endif %}

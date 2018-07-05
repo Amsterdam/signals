@@ -10,6 +10,14 @@ services:
       POSTGRES_USER: signals
       POSTGRES_PASSWORD: insecure
 
+  rabbit:
+    image: rabbitmq:3
+    hostname: signals-rabbit
+    ports:
+     - "5672:5672"
+    environment:
+     - RABBITMQ_ERLANG_COOKIE='secret cookie here'
+
   api:
     build: ./api
     ports:

@@ -1,0 +1,8 @@
+Geachte heer/mevrouw,
+
+
+Uw melding met registratienummer {{ signal_id }} is  {{ resultaat }}.
+
+{% if  resultaat_text %}
+{{ resultaat_text }}
+{% endif %}

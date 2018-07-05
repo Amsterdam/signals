@@ -1,6 +1,9 @@
+from datetime import timedelta, timezone
+
 from collections import OrderedDict
 
 from django.db import transaction, connection
+from django.utils.datetime_safe import time, datetime
 
 from rest_framework import serializers
 from rest_framework.serializers import IntegerField, ModelSerializer
@@ -9,6 +12,7 @@ from rest_framework.serializers import CharField
 from datapunt_api.rest import DisplayField
 from datapunt_api.rest import HALSerializer
 
+from signals.messaging import handle_status_change, handle_create_signal
 from signals.models import Signal
 from signals.models import Reporter
 from signals.models import Category
@@ -157,6 +161,9 @@ class SignalCreateSerializer(ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
+        if 'remove_at' not in reporter_data or reporter_data['remove_at'] is None:
+            remove_at = datetime.now(timezone.utc) + timedelta(weeks=2)
+            reporter_data["remove_at"] = remove_at.isoformat()
         category_data = validated_data.pop('category')
 
         with transaction.atomic():
@@ -169,6 +176,8 @@ class SignalCreateSerializer(ModelSerializer):
             reporter = Reporter.objects.create(_signal_id=signal_id, **reporter_data)
             signal = Signal.objects.create(id=signal_id, location=location, category=category, reporter=reporter,
                                            status=status, **validated_data)
+
+        handle_create_signal(signal)
         return signal
 
     def update(self, instance, validated_data):
@@ -280,14 +289,20 @@ class StatusSerializer(HALSerializer):
     def create(self, validated_data):
         """
         """
+        status = None
+        previous_status = None
         with transaction.atomic():
             # django rest does default the good thing
             status = Status(**validated_data)
             status.save()
             # update status on signal
             signal = Signal.objects.get(id=status._signal_id)
+            previous_status = signal.status
             signal.status = status
             signal.save()
+
+        if status:
+            handle_status_change(signal, previous_status)
             return status
 
     def update(self, instance, validated_data):

@@ -216,22 +216,33 @@ class Category(models.Model):
         )
 
 
+LEEG = ''
+GEMELD = 'm'
+AFWACHTING = 'i'
+BEHANDELING = 'b'
+AFGEHANDELD = 'o'
+ON_HOLD = 'h'
+GEANNULEERD = 'a'
+
+
 STATUS_OPTIONS = (
-    ('m', 'Gemeld'),
-    ('i', 'In afwachting van behandeling'),
-    ('b', 'In behandeling'),
-    ('o', 'Afgehandeld'),
+    (GEMELD, 'Gemeld'),
+    (AFWACHTING, 'In afwachting van behandeling'),
+    (BEHANDELING, 'In behandeling'),
+    (AFGEHANDELD, 'Afgehandeld'),
+    (ON_HOLD, 'On hold'),
+    (GEANNULEERD, 'Geannuleerd')
 )
 
-STATUS_OVERGANGEN = {
-    '': ['m'],  # Een nieuwe status mag alleen Gemeld zijn
-    'm': ['i',   # Van gemeld naar in afwachting van behandeling. Met deze is toestemming verleend voor behandeling
-          'o'],  # Kan ook meteen naar afgehandeld als dit een melding is waar niets mee kan gebeuren (onzin melding)
 
-    'i': ['b'],  # Van in afwachting naar in behandeling. Deze overgang gebeurt nadat het doorgezet is naar SigMax
-    'b': ['o',   # Naar afgehandeld
-          'm'],  # Of terug naar gemeld indien het niet kan worden afgehandeld.
-    'o': []  # Eenmaal afgehandeld kan hij nooit meer veranderen
+STATUS_OVERGANGEN = {
+    LEEG: [GEMELD],  # Een nieuw melding mag alleen aangemaakt worden met gemeld
+    GEMELD: [AFWACHTING, GEANNULEERD, ON_HOLD, GEMELD],
+    AFWACHTING: [BEHANDELING, ON_HOLD, AFWACHTING, GEANNULEERD],
+    BEHANDELING: [AFGEHANDELD, GEANNULEERD, BEHANDELING],
+    ON_HOLD: [AFWACHTING, BEHANDELING, GEANNULEERD],
+    AFGEHANDELD: [],
+    GEANNULEERD: [],
 }
 
 

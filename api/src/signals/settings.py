@@ -93,7 +93,6 @@ DATAPUNT_AUTHZ = {
     'ALWAYS_OK': LOCAL
 }
 
-
 SWAGGER_SETTINGS = {
    'USE_SESSION_AUTH': False,
    'SECURITY_DEFINITIONS': {
@@ -112,3 +111,40 @@ SWAGGER_SETTINGS = {
       'appName': 'Signal Swagger UI',
    },
 }
+
+# E-mail settings for SMTP (SendGrid)
+INSTALLED_APPS += ('djcelery_email',)
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
+RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', 'vhost')
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@localhost/{RABBITMQ_VHOST}')
+CELERY_EMAIL_CHUNK_SIZE = 1
+# CELERY_EMAIL_TASK_CONFIG = {
+#     'queue': 'email',
+#     'rate_limit': '50/m',  # * CELERY_EMAIL_CHUNK_SIZE (default: 10)
+# }
+
+# Can locally be tested with a Google account, for example :
+#
+# export EMAIL_HOST=smtp.gmail.com
+# export EMAIL_HOST_USER=<gmail_account>
+# export EMAIL_HOST_PASSWORD=<gmail_password>
+# export EMAIL_PORT=465
+# export EMAIL_USE_SSL=True
+# export EMAIL_USE_TLS=False
+#
+# These exports have to be set for the task that realy does the sending. So if
+# celery  does the sending then then these export should be set before starting the celery
+# working process
+
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
+
+EMAIL_USE_TLS =  os.getenv('EMAIL_USE_TLS', False)
+EMAIL_USE_SSL =  os.getenv('EMAIL_USE_SSL', True)
