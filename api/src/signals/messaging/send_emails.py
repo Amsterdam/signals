@@ -1,12 +1,12 @@
 import re
-import logging
 from django.core.mail import send_mail
 from django.template import loader
 
 from signals import settings
+from signals.messaging.categories import get_afhandeling_text
 from signals.models import AFGEHANDELD, GEANNULEERD
 
-log = logging.getLogger(__name__)
+NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
@@ -22,24 +22,27 @@ def handle_create_signal(signal):
     email = get_valid_email(signal)
     if email:
         context = {
-            'signal_id': signal.signal_id,
-            'afhandelings_termijn': "onbekende termijn",
-            'text': signal.text
+            'signal_id': signal.id,
+            'text': signal.text,
+            'afhandelings_text': get_afhandeling_text(signal.category.sub),
+            'address_text': signal.location.address_text,
+            'incident_date_start': signal.incident_date_start.strftime("%A %d-%m-%Y, %H:%M"),
+            'text_extra': signal.text_extra,
+            'email': signal.reporter.email,
         }
+        if signal.reporter.phone:
+            context['phone'] = signal.reporter.phone
         template = loader.get_template('melding_bevestiging.txt')
         body = template.render(context)
-        subject = f"Nieuwe melding : {signal.signal_id}"
+        subject = f"Bedankt voor uw melding ({signal.id})"
         to = signal.reporter.email
-        from1 = "do_not_reply@amsterdam.nl"
-        result = send_mail(
+        send_mail(
             subject,
             body,
-            from1,
+            NOREPLY,
             (to,),
             fail_silently=False,
         )
-        #$ log.info("Email result: ", result)
-
 
 
 def handle_status_change(signal, previous_status):
@@ -49,7 +52,7 @@ def handle_status_change(signal, previous_status):
         email = get_valid_email(signal)
         if email:
             context = {
-                'signal_id': signal.signal_id,
+                'signal_id': signal.id,
                 'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'gannuleerd'
             }
             if signal.status.extra_properties and 'resultaat_text' in signal.status.extra_properties:
@@ -58,11 +61,10 @@ def handle_status_change(signal, previous_status):
             body = template.render(context)
             subject = f"Betreft melding : {signal.signal_id}"
             to = signal.reporter.email
-            from1 = "do_not_reply@amsterdam.nl"
             send_mail(
                 subject,
                 body,
-                from1,
+                NOREPLY,
                 (to,),
                 fail_silently=False,
             )

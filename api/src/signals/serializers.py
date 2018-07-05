@@ -12,7 +12,7 @@ from rest_framework.serializers import CharField
 from datapunt_api.rest import DisplayField
 from datapunt_api.rest import HALSerializer
 
-from signals.messaging import handle_status_change, handle_create_signal
+from signals.messaging.send_emails import handle_status_change, handle_create_signal
 from signals.models import Signal
 from signals.models import Reporter
 from signals.models import Category
