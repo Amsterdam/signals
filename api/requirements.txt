@@ -38,6 +38,7 @@ drf-extensions==0.3.1
 drf-yasg==1.8.0
 factory-boy==2.11.1
 Faker==0.8.15
+flex==6.13.2
 frosted==1.4.1
 future==0.16.0
 idna==2.6
