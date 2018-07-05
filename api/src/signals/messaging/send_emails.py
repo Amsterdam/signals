@@ -15,18 +15,22 @@ def get_valid_email(signal):
     else:
         return None
 
+def get_incident_date_string(dt):
+    week_days = ('Maandag', 'Disdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
+    return week_days[dt.weekday()] + dt.strftime(" %d-%m-%Y, %H:%M")
 
 def handle_create_signal(signal):
     if not settings.EMAIL_HOST:
         return
     email = get_valid_email(signal)
     if email:
+
         context = {
             'signal_id': signal.id,
             'text': signal.text,
             'afhandelings_text': get_afhandeling_text(signal.category.sub),
             'address_text': signal.location.address_text,
-            'incident_date_start': signal.incident_date_start.strftime("%A %d-%m-%Y, %H:%M"),
+            'incident_date_start': get_incident_date_string(signal.incident_date_start),
             'text_extra': signal.text_extra,
             'email': signal.reporter.email,
         }
