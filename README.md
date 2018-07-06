@@ -11,8 +11,9 @@ https://vaarwatermeldingen.amsterdam.nl/
 * Better README
 * Check parameters when creating Signal
 * Test for filtering
-* Disable endpoints that are not used
-* Throttle unauthorized posts
+* Throttle unauthorized posts. Determine values exclude IP from gemeente and frequent users.
+* IP ranges in config
+* Add user id from token and IP address to status change propertieds for audit logging
 
 
 # Celery
