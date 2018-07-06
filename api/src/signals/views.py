@@ -152,9 +152,9 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     valid geometrie points are:
 
-        { "type": "Point", "coordinates": [ 135.0, 45.0 ] }
+        { "type": "Point", "coordinates": [ 4.893697 ,  52.372840 ] }
 
-    or 'POINT (12.492324113849 41.890307434153)'
+    or 'POINT (4.893697  52.372840)'
 
 
     valid address:
