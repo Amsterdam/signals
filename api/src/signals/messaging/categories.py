@@ -140,6 +140,6 @@ Het is ons helaas niet goed duidelijk wat u bedoelt. We nemen contact met u op."
 
 
 def get_afhandeling_text(sub_categorie):
-    afhandeling_code = SUB_CATEGORIES_DICT[sub_categorie] or REST
+    afhandeling_code = SUB_CATEGORIES_DICT.get(sub_categorie) or REST
     return ALL_AFHANDELING_TEXT[afhandeling_code[3]]
 
