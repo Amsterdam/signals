@@ -1,35 +1,37 @@
 import re
-from django_filters.rest_framework import FilterSet
-from django_filters.rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import APIException
-from rest_framework.serializers import ValidationError
-from rest_framework import viewsets, mixins
-from rest_framework.response import Response
 
-from django.contrib.gis.geos import Polygon
-
+from datapunt_api import bbox
 from datapunt_api.rest import DatapuntViewSet
 from datapunt_api.rest import DatapuntViewSetWritable
-from datapunt_api import bbox
+from django.contrib.gis.geos import Polygon
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import FilterSet
+from django_filters.rest_framework import filters
+from rest_framework import viewsets, mixins
+from rest_framework.exceptions import APIException
+from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework.settings import api_settings
-from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, \
-    HTTP_202_ACCEPTED
+from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals import settings
-from signals.models import Signal, STATUS_OPTIONS
-from signals.models import Location
-from signals.models import Category
-from signals.models import Status
 from signals.models import Buurt
+from signals.models import Category
+from signals.models import Location
+from signals.models import Signal, STATUS_OPTIONS
+from signals.models import Status
+from signals.serializers import CategorySerializer
+from signals.serializers import LocationSerializer
+from signals.serializers import SignalAuthSerializer
 from signals.serializers import SignalCreateSerializer, \
     SignalUpdateImageSerializer
-from signals.serializers import SignalAuthSerializer
-from signals.serializers import LocationSerializer
-from signals.serializers import CategorySerializer
 from signals.serializers import StatusSerializer
 from signals.throttling import NoUserRateThrottle
 
+import logging
+
+
+LOGGER = logging.getLogger()
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),
@@ -70,23 +72,34 @@ class SignalFilter(FilterSet):
     extra = filters.CharFilter(method='in_extra', label='extra')
 
     created_at = filters.DateFilter(name='created_at', lookup_expr='date')
-    created_at__gte = filters.DateFilter(name='created_at', lookup_expr='date__gte')
-    created_at__lte = filters.DateFilter(name='created_at', lookup_expr='date__lte')
+    created_at__gte = filters.DateFilter(name='created_at',
+                                         lookup_expr='date__gte')
+    created_at__lte = filters.DateFilter(name='created_at',
+                                         lookup_expr='date__lte')
 
     updated_at = filters.DateFilter(name='updated_at', lookup_expr='date')
-    updated_at__gte = filters.DateFilter(name='updated_at', lookup_expr='date__gte')
-    updated_at__lte = filters.DateFilter(name='updated_at', lookup_expr='date__lte')
+    updated_at__gte = filters.DateFilter(name='updated_at',
+                                         lookup_expr='date__gte')
+    updated_at__lte = filters.DateFilter(name='updated_at',
+                                         lookup_expr='date__lte')
 
-    incident_date_start = filters.DateFilter(name='incident_date_start', lookup_expr='date')
-    incident_date_start__gte = filters.DateFilter(name='incident_date_start', lookup_expr='date__gte')
-    incident_date_start__lte = filters.DateFilter(name='incident_date_start', lookup_expr='date__lte')
+    incident_date_start = filters.DateFilter(name='incident_date_start',
+                                             lookup_expr='date')
+    incident_date_start__gte = filters.DateFilter(name='incident_date_start',
+                                                  lookup_expr='date__gte')
+    incident_date_start__lte = filters.DateFilter(name='incident_date_start',
+                                                  lookup_expr='date__lte')
 
-    incident_date_end = filters.DateFilter(name='incident_date_end', lookup_expr='date')
+    incident_date_end = filters.DateFilter(name='incident_date_end',
+                                           lookup_expr='date')
 
-    operational_date = filters.DateFilter(name='operational_date', lookup_expr='date')
+    operational_date = filters.DateFilter(name='operational_date',
+                                          lookup_expr='date')
     expire_date = filters.DateFilter(name='expire_date', lookup_expr='date')
-    expire_date__gte = filters.DateFilter(name='expire_date', lookup_expr='date__gte')
-    expire_date__lte = filters.DateFilter(name='expire_date', lookup_expr='date__lte')
+    expire_date__gte = filters.DateFilter(name='expire_date',
+                                          lookup_expr='date__gte')
+    expire_date__lte = filters.DateFilter(name='expire_date',
+                                          lookup_expr='date__lte')
 
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
     category__sub = filters.MultipleChoiceFilter(choices=category_sub_choices)
@@ -139,14 +152,18 @@ class AuthViewSet:
     def check_permissions(self, request):
         scope = 'SIG/ALL'
         try:
-            if request.method != 'OPTIONS' and not request.is_authorized_for(scope):
+            if request.method != 'OPTIONS' and not request.is_authorized_for(
+                    scope):
                 self.permission_denied(
                     request, message=getattr(scope, 'message', None)
                 )
         except Exception as e:
             raise APIException(e)
 
-        print(request.get_token_subject)
+        if hasattr(request, 'get_token_subject'):
+            LOGGER.debug(request.get_token_subject)
+        else:
+            LOGGER.debug('no token')
         return super(AuthViewSet, self).check_permissions(request)
 
 
@@ -227,12 +244,12 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     """
     queryset = (
         Signal.objects.all()
-        .order_by("created_at")
-        .select_related('status')
-        .select_related('location')
-        .select_related('category')
-        .select_related('reporter')
-        .order_by('-id')
+            .order_by("created_at")
+            .select_related('status')
+            .select_related('location')
+            .select_related('category')
+            .select_related('reporter')
+            .order_by('-id')
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer
@@ -241,7 +258,6 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
 
 
 class StatusFilter(FilterSet):
-
     id = filters.CharFilter()
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
     location = filters.CharFilter(
@@ -317,11 +333,10 @@ class LocationFilter(FilterSet):
 
 
 class LocationView(DatapuntViewSet):
-
     queryset = (
         Location.objects.all()
-        .order_by("created_at")
-        .prefetch_related('signal')
+            .order_by("created_at")
+            .prefetch_related('signal')
     )
 
     serializer_detail_class = LocationSerializer
@@ -331,11 +346,10 @@ class LocationView(DatapuntViewSet):
 
 
 class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
-
     queryset = (
         Location.objects.all()
-        .order_by("created_at")
-        .prefetch_related('signal')
+            .order_by("created_at")
+            .prefetch_related('signal')
     )
 
     serializer_detail_class = LocationSerializer
@@ -348,7 +362,7 @@ class StatusView(DatapuntViewSet):
     """View of Status Changes"""
     queryset = (
         Status.objects.all()
-        .order_by("created_at")
+            .order_by("created_at")
         # .prefetch_related('signal')
     )
     serializer_detail_class = StatusSerializer
@@ -361,7 +375,7 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Status Changes"""
     queryset = (
         Status.objects.all()
-        .order_by("created_at")
+            .order_by("created_at")
         # .prefetch_related('signal')
     )
     serializer_detail_class = StatusSerializer
@@ -375,7 +389,7 @@ class CategoryView(DatapuntViewSet):
     """
     queryset = (
         Category.objects.all()
-        .order_by("id").prefetch_related("signal")
+            .order_by("id").prefetch_related("signal")
     )
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer
@@ -388,7 +402,7 @@ class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     """
     queryset = (
         Category.objects.all()
-        .order_by("id").prefetch_related("signal")
+            .order_by("id").prefetch_related("signal")
     )
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer

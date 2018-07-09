@@ -1,3 +1,6 @@
+from logging import StreamHandler
+from sys import stdout
+
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
 
@@ -8,6 +11,20 @@ from signals.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
     in_docker)
+
+# Logging setup
+
+from pygelf import GelfUdpHandler
+import logging
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[
+        GelfUdpHandler(host='127.0.0.1', port=12201),
+        StreamHandler(stream=stdout)
+    ]
+)
 
 # Application definition
 

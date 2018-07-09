@@ -165,7 +165,7 @@ class SignalUpdateImageSerializer(ModelSerializer):
         image = validated_data['image']
 
         ## Only allow adding a photo if none is set.
-        if instance.image is not None:
+        if instance.image:
             raise PermissionDenied("Melding is reeds van foto voorzien.")
 
         if image:
