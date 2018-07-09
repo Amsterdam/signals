@@ -60,6 +60,8 @@ signals.register(
 signals.register(
     r"auth/location", api_views.LocationAuthView, base_name="location-auth")
 
+signals.register(
+    r"signal/image", api_views.SignalImageUpdateView, base_name="img")
 
 urls = signals.urls
 
