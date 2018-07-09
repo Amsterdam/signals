@@ -253,8 +253,9 @@ class SignalCreateSerializer(ModelSerializer):
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
         ip = self.add_ip(data)
         if ip is not None:
-            extra_properties = data['status']['extra_properties']
-            if extra_properties is None:
+            if 'extra_properties' in data['status']:
+                extra_properties = data['status']['extra_properties']
+            else:
                 extra_properties = {}
             extra_properties['IP'] = ip
             data['status']['extra_properties'] = extra_properties
@@ -414,8 +415,9 @@ class StatusSerializer(HALSerializer):
                 f"to {data['state']}")
         ip = self.add_ip(data)
         if ip is not None:
-            extra_properties = data['extra_properties']
-            if extra_properties is None:
+            if 'extra_properties' in data:
+                extra_properties = data['extra_properties']
+            else:
                 extra_properties = {}
             extra_properties['IP'] = ip
             data['extra_properties'] = extra_properties
