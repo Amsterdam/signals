@@ -1,34 +1,32 @@
-from datetime import timedelta, timezone
-
 from collections import OrderedDict
-
-from django.db import transaction, connection
-from django.utils.datetime_safe import time, datetime
-
-from rest_framework import serializers
-from rest_framework.serializers import IntegerField, ModelSerializer
-from rest_framework.serializers import CharField
+from datetime import timedelta, timezone
 
 from datapunt_api.rest import DisplayField
 from datapunt_api.rest import HALSerializer
+from django.core.exceptions import ValidationError
+from django.db import transaction, connection
+from django.forms import ImageField
+from django.utils.datetime_safe import datetime
+from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.serializers import CharField
+from rest_framework.serializers import IntegerField, ModelSerializer
 
-from signals.messaging.send_emails import handle_status_change, handle_create_signal
-from signals.models import Signal
-from signals.models import Reporter
+from signals.messaging.send_emails import handle_status_change, \
+    handle_create_signal
 from signals.models import Category
-from signals.models import Status
 from signals.models import Location
+from signals.models import Reporter
 from signals.models import STATUS_OVERGANGEN
-
 from rest_framework.throttling import BaseThrottle
+from signals.models import Signal
+from signals.models import Status
 
 
 class LocationModelSerializer(serializers.ModelSerializer):
-
     id = IntegerField(label='ID', read_only=True)
 
     class Meta:
-
         model = Location
         geo_field = 'geometrie'
         fields = (
@@ -43,11 +41,9 @@ class LocationModelSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(HALSerializer):
-
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
-
         model = Location
         fields = (
             'id',
@@ -60,8 +56,6 @@ class LocationSerializer(HALSerializer):
         )
 
     def create(self, validated_data):
-        """
-        """
         # django rest does default the good thing
         location = Location(**validated_data)
         location.save()
@@ -78,7 +72,6 @@ class LocationSerializer(HALSerializer):
 
 
 class StatusModelSerializer(serializers.ModelSerializer):
-
     id = IntegerField(label='ID', read_only=True)
 
     class Meta:
@@ -97,7 +90,6 @@ class StatusModelSerializer(serializers.ModelSerializer):
 
 
 class ReporterModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Reporter
         fields = (
@@ -111,7 +103,6 @@ class ReporterModelSerializer(serializers.ModelSerializer):
 
 
 class CategoryModelSerializer(serializers.ModelSerializer):
-
     class Meta(object):
         model = Category
         fields = [
@@ -124,6 +115,51 @@ class CategoryModelSerializer(serializers.ModelSerializer):
         extra_kwargs = {'_signal': {'required': False}}
 
 
+class SignalUpdateImageSerializer(ModelSerializer):
+    id = IntegerField(label='ID', read_only=True)
+    signal_id = CharField(label='SIGNAL_ID')
+
+    class Meta(object):
+        model = Signal
+        fields = [
+            'id',
+            'signal_id',
+            'image'
+        ]
+
+    def create(self, validated_data):
+        """
+        This serializer is only used for updating
+        """
+        signal_id = validated_data.get('signal_id')
+        instance = Signal.objects.get(pk=signal_id)
+        return self.update(instance, validated_data)
+
+    def validate(self, attrs):
+        # self.data.is_valid()
+        image = self.initial_data.get('image', False)
+        if image:
+            if image._size > 3145728:  # 3MB = 3*1024*1024
+                raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
+        else:
+            raise ValidationError("Foto is een verplicht veld.")
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        image = validated_data['image']
+
+        ## Only allow adding a photo if none is set.
+        if instance.image is not None:
+            raise PermissionDenied("Melding is reeds van foto voorzien.")
+
+        if image:
+            setattr(instance, 'image', image)
+            instance.save()
+
+        return instance
+
+
 class SignalCreateSerializer(ModelSerializer):
     id = IntegerField(label='ID', read_only=True)
     signal_id = CharField(label='SIGNAL_ID', read_only=True)
@@ -132,7 +168,8 @@ class SignalCreateSerializer(ModelSerializer):
     status = StatusModelSerializer()
     category = CategoryModelSerializer()
 
-    # Explicitly specify fields with auto_now_add=True to show in the rest framework
+    # Explicitly specify fields with auto_now_add=True
+    # to show in the rest framework
     created_at = serializers.DateTimeField()
     incident_date_start = serializers.DateTimeField()
 
@@ -162,7 +199,8 @@ class SignalCreateSerializer(ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        if 'remove_at' not in reporter_data or reporter_data['remove_at'] is None:
+        if 'remove_at' not in reporter_data or reporter_data[
+            'remove_at'] is None:
             remove_at = datetime.now(timezone.utc) + timedelta(weeks=2)
             reporter_data["remove_at"] = remove_at.isoformat()
         category_data = validated_data.pop('category')
@@ -171,11 +209,15 @@ class SignalCreateSerializer(ModelSerializer):
             cursor = connection.cursor()
             cursor.execute("select nextval('signals_signal_id_seq')")
             (signal_id,) = cursor.fetchone()
-            location = Location.objects.create(_signal_id=signal_id, **location_data)
-            category = Category.objects.create(_signal_id=signal_id, **category_data)
+            location = Location.objects.create(_signal_id=signal_id,
+                                               **location_data)
+            category = Category.objects.create(_signal_id=signal_id,
+                                               **category_data)
             status = Status.objects.create(_signal_id=signal_id, **status_data)
-            reporter = Reporter.objects.create(_signal_id=signal_id, **reporter_data)
-            signal = Signal.objects.create(id=signal_id, location=location, category=category, reporter=reporter,
+            reporter = Reporter.objects.create(_signal_id=signal_id,
+                                               **reporter_data)
+            signal = Signal.objects.create(id=signal_id, location=location,
+                                           category=category, reporter=reporter,
                                            status=status, **validated_data)
 
         handle_create_signal(signal)
@@ -187,7 +229,14 @@ class SignalCreateSerializer(ModelSerializer):
     def validate(self, data):
         # The status can only be 'm' when created
         if data['status']['state'] not in STATUS_OVERGANGEN['']:
-            raise serializers.ValidationError(f"Invalid status: {data['status']['state']}")
+            raise serializers.ValidationError(
+                f"Invalid status: {data['status']['state']}")
+
+        image = self.initial_data.get('image', False)
+        if image:
+            if image._size > 3145728:  # 3MB = 3*1024*1024
+                raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
+
         # TODO add further validation
         return data
 
@@ -196,6 +245,7 @@ class SignalLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
     """
+
     def to_representation(self, value):
         request = self.context.get('request')
 
@@ -212,10 +262,12 @@ class SignalAuthSerializer(HALSerializer):
     _display = DisplayField()
     id = IntegerField(label='ID', read_only=True)
     signal_id = CharField(label='SIGNAL_ID', read_only=True)
-    location = LocationModelSerializer()
-    reporter = ReporterModelSerializer()
-    status = StatusModelSerializer()
-    category = CategoryModelSerializer()
+    location = LocationModelSerializer(read_only=True)
+    reporter = ReporterModelSerializer(read_only=True)
+    status = StatusModelSerializer(read_only=True)
+    category = CategoryModelSerializer(read_only=True)
+
+    image = ImageField(max_length=50, allow_empty_file=False)
 
     serializer_url_field = SignalLinksField
 
@@ -242,7 +294,7 @@ class SignalAuthSerializer(HALSerializer):
             "incident_date_end",
             "operational_date",
             "image",
-            "upload",
+            # "upload",
         ]
 
     def update(self, instance, validated_data):
@@ -253,6 +305,7 @@ class StatusLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
     """
+
     def to_representation(self, value):
         request = self.context.get('request')
 
@@ -267,7 +320,8 @@ class StatusLinksField(serializers.HyperlinkedIdentityField):
 
 class StatusSerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all().order_by("id"))
+    _signal = serializers.PrimaryKeyRelatedField(
+        queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = StatusLinksField
 
     class Meta(object):
@@ -314,7 +368,8 @@ class StatusSerializer(HALSerializer):
         signal = data['_signal']
         if data['state'] not in STATUS_OVERGANGEN[signal.status.state]:
             raise serializers.ValidationError(
-                f"Invalid state transition from {signal.status.state} to {data['state']}")
+                f"Invalid state transition from {signal.status.state} "
+                f"to {data['state']}")
         # TODO add further validation
         self.add_user_and_ip(data)
         return data
@@ -332,6 +387,7 @@ class CategoryLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
     """
+
     def to_representation(self, value):
         request = self.context.get('request')
 
@@ -346,7 +402,8 @@ class CategoryLinksField(serializers.HyperlinkedIdentityField):
 
 class CategorySerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all().order_by("id"))
+    _signal = serializers.PrimaryKeyRelatedField(
+        queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = CategoryLinksField
 
     class Meta(object):
@@ -363,8 +420,6 @@ class CategorySerializer(HALSerializer):
         ]
 
     def create(self, validated_data):
-        """
-        """
         with transaction.atomic():
             # django rest does default the good thing
             category = Category(**validated_data)
@@ -376,7 +431,8 @@ class CategorySerializer(HALSerializer):
             return category
 
     def update(self, instance, validated_data):
-        """Should not be implemented.
+        """
+        Should not be implemented.
         """
         pass
 
@@ -389,6 +445,7 @@ class ReporterLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
     """
+
     def to_representation(self, value):
         request = self.context.get('request')
 

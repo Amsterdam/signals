@@ -12,6 +12,9 @@ from django.contrib.gis.geos import Polygon
 from datapunt_api.rest import DatapuntViewSet
 from datapunt_api.rest import DatapuntViewSetWritable
 from datapunt_api import bbox
+from rest_framework.settings import api_settings
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, \
+    HTTP_202_ACCEPTED
 
 from signals import settings
 from signals.models import Signal, STATUS_OPTIONS
@@ -19,7 +22,8 @@ from signals.models import Location
 from signals.models import Category
 from signals.models import Status
 from signals.models import Buurt
-from signals.serializers import SignalCreateSerializer
+from signals.serializers import SignalCreateSerializer, \
+    SignalUpdateImageSerializer
 from signals.serializers import SignalAuthSerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import CategorySerializer
@@ -144,6 +148,37 @@ class AuthViewSet:
 
         print(request.get_token_subject)
         return super(AuthViewSet, self).check_permissions(request)
+
+
+class SignalImageUpdateView(viewsets.GenericViewSet):
+    """
+    Add or update image of newly submitted signals
+    """
+    serializer_detail_class = SignalUpdateImageSerializer
+    serializer_class = SignalUpdateImageSerializer
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        return Response({})
+
+    def update(self, request, *args, **kwargs):
+        return Response({})
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({}, status=HTTP_202_ACCEPTED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def get_success_headers(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
 
 
 class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
