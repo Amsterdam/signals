@@ -134,6 +134,8 @@ class SignalFilter(FilterSet):
 
 
 class AuthViewSet:
+    http_method_names = ['get', 'post', 'head', 'options', 'trace']
+
     def check_permissions(self, request):
         scope = 'SIG/ALL'
         try:
@@ -200,6 +202,8 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         "woonplaats": "Amsterdam"
     }
     """
+    http_method_names = ['get', 'post', 'head', 'options', 'trace']
+
     if not re.search('acc', settings.DATAPUNT_API_URL):
         throttle_classes = (NoUserRateThrottle,)
 

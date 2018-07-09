@@ -1,0 +1,30 @@
+Bedankt!
+
+Uw melding ({{ signal_id }}):
+
+{{ text }}
+
+Wat doen we met uw melding?
+
+{{ afhandelings_text }}
+
+*** Details van uw melding ***
+
+{% if addres_text %}
+Hier is het : {{ addres_text }}
+{% endif %}
+
+Tijdstip : {{ incident_date_start }}
+
+{% if text_extra %}
+{{ text_extra }}
+{% endif %}
+
+Uw e-mailadres : {{ email  }}
+
+{% if phone %}
+Uw (mobiele) telefoon : {{ phone }}
+{% endif %}
+
+******************************
+Als u nog vragen hebt, dan kunt u bellen met het Gemeentelijk informatienummer: 14 020. Geef dan ook het nummer van uw melding: {{ signal_id }}.

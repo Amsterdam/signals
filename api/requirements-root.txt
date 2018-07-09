@@ -14,5 +14,6 @@ psycopg2-binary
 factory-boy
 drf_yasg
 swagger-spec-validator
+django-celery-email
 django-storages
 django-storage-swift
