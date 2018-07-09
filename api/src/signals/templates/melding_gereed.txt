@@ -1,8 +1,7 @@
-Geachte heer/mevrouw,
+Uw melding met {{ signal_id }} is  {{ resultaat }}.
 
-
-Uw melding met registratienummer {{ signal_id }} is  {{ resultaat }}.
-
-{% if  resultaat_text %}
+{% if resultaat_text %}
 {{ resultaat_text }}
 {% endif %}
+
+Als u nog vragen hebt, dan kunt u bellen met het Gemeentelijk informatienummer: 14 020. Geef dan ook het nummer van uw melding: {{ signal_id }}

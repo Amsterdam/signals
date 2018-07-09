@@ -74,6 +74,8 @@ if os.getenv("SWIFT_ENABLED", "false") == "true":
     SWIFT_CONTAINER_NAME = os.getenv("SWIFT_CONTAINER_NAME")
     SWIFT_TEMP_URL_KEY = os.getenv("SWIFT_TEMP_URL_KEY")
     SWIFT_USE_TEMP_URLS = True
+else:
+    MEDIA_ROOT = '/tmp/signals/upload'
 
 # Database
 
