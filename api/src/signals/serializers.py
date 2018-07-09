@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 from datetime import timedelta, timezone
 
@@ -21,6 +22,9 @@ from signals.models import STATUS_OVERGANGEN
 from rest_framework.throttling import BaseThrottle
 from signals.models import Signal
 from signals.models import Status
+
+
+log = logging.getLogger(__name__)
 
 
 class LocationModelSerializer(serializers.ModelSerializer):
@@ -324,6 +328,8 @@ class StatusSerializer(HALSerializer):
         queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = StatusLinksField
 
+    user = serializers.SerializerMethodField()
+
     class Meta(object):
         model = Status
         fields = [
@@ -344,6 +350,7 @@ class StatusSerializer(HALSerializer):
     def create(self, validated_data):
         """
         """
+
         with transaction.atomic():
             # django rest does default the good thing
             status = Status(**validated_data)
@@ -363,6 +370,18 @@ class StatusSerializer(HALSerializer):
         """
         pass
 
+    def get_user(self, obj):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "get_token_subject"):
+            user = request.get_token_subject
+        if user is None:
+            raise serializers.ValidationError("Missing user in request")
+        if user.find('@') == -1:
+            log.warning(f"User without e-mail : {user}")
+            user += '@unknown.nl'
+        return user
+
     def validate(self, data):
         # Get current status for signal
         signal = data['_signal']
@@ -370,17 +389,22 @@ class StatusSerializer(HALSerializer):
             raise serializers.ValidationError(
                 f"Invalid state transition from {signal.status.state} "
                 f"to {data['state']}")
+        ip = self.add_ip(data)
+        if ip is not None:
+            extra_properties = data['extra_properties']
+            if extra_properties is None:
+                extra_properties = {}
+            extra_properties['IP'] = ip
+            data['extra_properties'] = extra_properties
         # TODO add further validation
-        self.add_user_and_ip(data)
         return data
 
-    def add_user_and_ip(self, data):
-        user = None
+    def add_ip(self, data):
+        ip = None
         request = self.context.get("request")
         if request and hasattr(request, "get_token_subject"):
-            user = request.get_token_subject
             ip = BaseThrottle.get_ident(None, request)
-            print(user, ip)
+        return ip
 
 
 class CategoryLinksField(serializers.HyperlinkedIdentityField):
