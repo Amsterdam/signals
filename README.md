@@ -34,13 +34,24 @@ To start celery for testing we need to have SMTP settings in celery:
     celery -A signals worker -l info
 
 
-RabbitMQ is run from a docker instance
-If the rabbitmq image wash freshly installed we need to add a user with:
+RabbitMQ is run from a docker instance.  In order to be able to use it we need to specify 
+at startup the signala user and password and a vhost.
+
+This is most easily using the default docker rabbitmq:3 and environment variables :
+
+::
+
+     - RABBITMQ_ERLANG_COOKIE='secret cookie here'
+     - RABBITMQ_DEFAULT_USER=signals
+     - RABBITMQ_DEFAULT_PASS=insecure
+     - RABBITMQ_DEFAULT_VHOST=vhost
+
+Otherwise we need to add a user with:
 
 ::
 
     docker-compose exec rabbit rabbitmqctl add_user signals insecure
-    docker-compose exec rabbit rabbitmqctl add_vhost rabbitmq_signals
+    docker-compose exec rabbit rabbitmqctl add_vhost vhost
     docker-compose exec rabbit rabbitmqctl set_permissions -p rabbitmq_signals signals ".*" ".*" ".*"
 
 ...

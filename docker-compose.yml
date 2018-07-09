@@ -17,6 +17,9 @@ services:
      - "5672:5672"
     environment:
      - RABBITMQ_ERLANG_COOKIE='secret cookie here'
+     - RABBITMQ_DEFAULT_USER=signals
+     - RABBITMQ_DEFAULT_PASS=insecure
+     - RABBITMQ_DEFAULT_VHOST=vhost
 
   celery:
     build: ./api
