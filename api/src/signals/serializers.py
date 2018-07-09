@@ -1,27 +1,19 @@
-from datetime import timedelta, timezone
-
 from collections import OrderedDict
+from datetime import timedelta, timezone
 
 from datapunt_api.rest import DisplayField
 from datapunt_api.rest import HALSerializer
 from django.core.exceptions import ValidationError
 from django.db import transaction, connection
-from django.utils.datetime_safe import time, datetime
-
 from django.forms import ImageField
+from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
 from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField, ModelSerializer
-from rest_framework.utils import model_meta
 
-from datapunt_api.rest import DisplayField
-from datapunt_api.rest import HALSerializer
-
-from signals.messaging.send_emails import handle_status_change, handle_create_signal
-from signals.models import Signal
-from signals.models import Reporter
+from signals.messaging.send_emails import handle_status_change, \
+    handle_create_signal
 from signals.models import Category
 from signals.models import Location
 from signals.models import Reporter
@@ -206,7 +198,8 @@ class SignalCreateSerializer(ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        if 'remove_at' not in reporter_data or reporter_data['remove_at'] is None:
+        if 'remove_at' not in reporter_data or reporter_data[
+            'remove_at'] is None:
             remove_at = datetime.now(timezone.utc) + timedelta(weeks=2)
             reporter_data["remove_at"] = remove_at.isoformat()
         category_data = validated_data.pop('category')
@@ -444,6 +437,7 @@ class ReporterLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
     """
+
     def to_representation(self, value):
         request = self.context.get('request')
 
