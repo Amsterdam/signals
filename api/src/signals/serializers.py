@@ -77,6 +77,7 @@ class LocationSerializer(HALSerializer):
 
 class StatusModelSerializer(serializers.ModelSerializer):
     id = IntegerField(label='ID', read_only=True)
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Status
@@ -91,6 +92,16 @@ class StatusModelSerializer(serializers.ModelSerializer):
         )
 
         extra_kwargs = {'_signal': {'required': False}}
+
+    def get_user(self, obj):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "get_token_subject"):
+            user = request.get_token_subject
+            if user.find('@') == -1:
+                log.warning(f"User without e-mail : {user}")
+                user += '@unknown.nl'
+        return user
 
 
 class ReporterModelSerializer(serializers.ModelSerializer):
@@ -240,9 +251,22 @@ class SignalCreateSerializer(ModelSerializer):
         if image:
             if image._size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
-
+        ip = self.add_ip(data)
+        if ip is not None:
+            extra_properties = data['status']['extra_properties']
+            if extra_properties is None:
+                extra_properties = {}
+            extra_properties['IP'] = ip
+            data['status']['extra_properties'] = extra_properties
         # TODO add further validation
         return data
+
+    def add_ip(self, data):
+        ip = None
+        request = self.context.get("request")
+        if request and hasattr(request, "get_token_subject"):
+            ip = BaseThrottle.get_ident(None, request)
+        return ip
 
 
 class SignalLinksField(serializers.HyperlinkedIdentityField):
@@ -327,7 +351,6 @@ class StatusSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(
         queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = StatusLinksField
-
     user = serializers.SerializerMethodField()
 
     class Meta(object):
