@@ -231,7 +231,7 @@ class SignalCreateSerializer(ModelSerializer):
             raise serializers.ValidationError(
                 f"Invalid status: {data['status']['state']}")
 
-        image = self.data.get('image', False)
+        image = self.initial_data.get('image', False)
         if image:
             if image._size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
