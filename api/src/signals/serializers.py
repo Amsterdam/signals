@@ -98,7 +98,7 @@ class StatusModelSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "get_token_subject"):
             user = request.get_token_subject
-            if user.find('@') == -1:
+            if user and user.find('@') == -1:
                 log.warning(f"User without e-mail : {user}")
                 user += '@unknown.nl'
         return user
@@ -400,7 +400,7 @@ class StatusSerializer(HALSerializer):
             user = request.get_token_subject
         if user is None:
             raise serializers.ValidationError("Missing user in request")
-        if user.find('@') == -1:
+        elif user.find('@') == -1:
             log.warning(f"User without e-mail : {user}")
             user += '@unknown.nl'
         return user
