@@ -1,11 +1,14 @@
+Celery
 datapunt-authorization-django
 datapunt-authorization-levels
 Django
 django-braces
 django-cors-headers
+django-debug-toolbar
 django-extensions
 django-filter
 django-rest-swagger
+django-storage-swift
 djangorestframework
 djangorestframework-gis
 drf-extensions
@@ -17,3 +20,4 @@ swagger-spec-validator
 django-celery-email
 django-storages
 django-storage-swift
+Pillow

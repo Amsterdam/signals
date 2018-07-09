@@ -142,6 +142,7 @@ class AuthViewSet:
         except Exception as e:
             raise APIException(e)
 
+        print(request.get_token_subject)
         return super(AuthViewSet, self).check_permissions(request)
 
 

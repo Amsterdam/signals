@@ -20,6 +20,7 @@ from signals.models import Status
 from signals.models import Location
 from signals.models import STATUS_OVERGANGEN
 
+from rest_framework.throttling import BaseThrottle
 
 
 class LocationModelSerializer(serializers.ModelSerializer):
@@ -289,8 +290,6 @@ class StatusSerializer(HALSerializer):
     def create(self, validated_data):
         """
         """
-        status = None
-        previous_status = None
         with transaction.atomic():
             # django rest does default the good thing
             status = Status(**validated_data)
@@ -317,7 +316,16 @@ class StatusSerializer(HALSerializer):
             raise serializers.ValidationError(
                 f"Invalid state transition from {signal.status.state} to {data['state']}")
         # TODO add further validation
+        self.add_user_and_ip(data)
         return data
+
+    def add_user_and_ip(self, data):
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "get_token_subject"):
+            user = request.get_token_subject
+            ip = BaseThrottle.get_ident(None, request)
+            print(user, ip)
 
 
 class CategoryLinksField(serializers.HyperlinkedIdentityField):
