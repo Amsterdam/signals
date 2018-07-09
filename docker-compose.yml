@@ -18,12 +18,30 @@ services:
     environment:
      - RABBITMQ_ERLANG_COOKIE='secret cookie here'
 
+  celery:
+    build: ./api
+    links:
+      - database
+      - rabbit
+    environment:
+      - DB_NAME=meldingen
+      - DB_PASSWORD=insecure
+      - EMAIL_HOST
+      - EMAIL_HOST_PASSWORD
+      - EMAIL_HOST_USER
+      - EMAIL_PORT
+      - EMAIL_USE_SSL
+      - EMAIL_USE_TLS
+    command: celery -A signals worker -l info
+
+
   api:
     build: ./api
     ports:
       - "8000:8000"
     links:
       - database
+      - rabbit
     environment:
       - DB_NAME=meldingen
       - DB_PASSWORD=insecure

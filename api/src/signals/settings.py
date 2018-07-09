@@ -7,7 +7,7 @@ from signals.settings_databases import (
     get_database_key,
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
-)
+    in_docker)
 
 # Application definition
 
@@ -121,8 +121,10 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
 RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', 'vhost')
+RABBITMQ_HOST = os.getenv('RABBITMQ_VHOST', 'rabbit' if in_docker() else 'localhost')
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@localhost/{RABBITMQ_VHOST}')
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
+                              f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
 CELERY_EMAIL_CHUNK_SIZE = 1
 # CELERY_EMAIL_TASK_CONFIG = {
 #     'queue': 'email',
