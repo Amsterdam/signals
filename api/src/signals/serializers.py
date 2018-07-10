@@ -207,6 +207,7 @@ class SignalCreateSerializer(ModelSerializer):
             "incident_date_end",
             "operational_date",
             "image",
+            "extra_properties",
             # "upload",   For now we only upload one image
         ]
 
@@ -323,6 +324,7 @@ class SignalAuthSerializer(HALSerializer):
             "incident_date_end",
             "operational_date",
             "image",
+            "extra_properties",
             # "upload",
         ]
 
