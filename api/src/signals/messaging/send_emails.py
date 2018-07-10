@@ -20,7 +20,7 @@ def get_incident_date_string(dt):
     return week_days[dt.weekday()] + dt.strftime(" %d-%m-%Y, %H:%M")
 
 def handle_create_signal(signal):
-    if not settings.EMAIL_HOST:
+    if not settings.RABBITMQ_HOST:
         return
     email = get_valid_email(signal)
     if email:
@@ -50,7 +50,7 @@ def handle_create_signal(signal):
 
 
 def handle_status_change(signal, previous_status):
-    if not settings.EMAIL_HOST:
+    if not settings.RABBITMQ_HOST:
         return
     if signal.status.state in (AFGEHANDELD, GEANNULEERD) and previous_status.state not in (AFGEHANDELD, GEANNULEERD):
         email = get_valid_email(signal)
