@@ -140,7 +140,7 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
 RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', 'vhost')
-RABBITMQ_HOST = os.getenv('RABBITMQ_VHOST', 'rabbit' if in_docker() else 'localhost')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbit' if in_docker() else 'localhost')
 
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
