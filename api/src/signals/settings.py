@@ -173,3 +173,4 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
+TESTING = sys.argv[1:2] == ['test']

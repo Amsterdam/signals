@@ -1,5 +1,26 @@
 # TODO In a future version this should be in the database
 
+# Afdeling/Diensten
+
+# Code, Naam, Intern/Extern
+ALL_DEPARTMENTS = {
+    "POA" : ("Port of Amsterdam", "E"),
+    "THO": ("THOR", "I"),
+    "WAT": ("Waternet", "E"),
+    "STW": ("Stadswerken", "I"),
+    "AEG": ("Afval en Grondstoffen", "I"),
+    "ASC": ("Actie Service Centrum","I" ),
+    "POL": ("Politie", "E"),
+    "GGD": ("GGD", "E"),
+    # "VOR": ("V&OR", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
+    "OVL": ("V&OR OVL", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
+    "VRI": ("V&OR VRI", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
+    "CCA": ("CCA", "I"),
+    "STL": ("Stadsloket", "I"),
+    "OMG": ("Omgevingsdienst", "I"), # Intern/extern ???
+    "VTH": ("VTH", "I"), # Wat is VTH ? Intern/Extern ?
+}
+
 # Constants for afhandeling
 A3DMC = 'A3DMC'
 A3DEC = 'A3DEC'
@@ -15,81 +36,81 @@ WS2EC = 'WS2EC'
 REST = 'REST'
 
 ALL_SUB_CATEGORIES = (
-    # sub_code, categorie, sub_categorie, afhandeling
-    ('F01', 'Afval', 'Veeg-/zwerfvuil', A3DEC),
-    ('F02', 'Afval', 'Grofvuil', A3DEVOMC),
-    ('F03', 'Afval', 'Huisafval', A3DMC),
-    ('F04', 'Afval', 'Bedrijfsafval', A3DMC),
-    ('F05', 'Afval', 'Puin/sloopafval', A3DMC),
-    ('F06', 'Afval', 'Container vol', A3DMC),
-    ('F07', 'Afval', 'Prullenbak vol', A3DEC),
-    ('F08', 'Afval', 'Container kapot', A3DMC),
-    ('F09', 'Afval', 'Prullenbak kapot', A3DMC),
-    ('F10', 'Afval', 'Asbest/accu', A3DMC),
-    ('F11', 'Afval', 'Overig afval', I5DMC),
-    ('F12', 'Afval', 'Container plastic afval vol', A3DMC),
-    ('F13', 'Afval', 'Container plastic afval kapot', A3DMC),
-    ('F14', 'Wegen/verkeer/straatmeubilair', 'Onderhoud stoep/straat/fietspad', A3DEC),
-    ('F15', 'Wegen/verkeer/straatmeubilair', 'Verkeersbord/verkeersafzetting', A3DEC),
-    ('F16', 'Wegen/verkeer/straatmeubilair', 'Gladheid', GLADZC),
-    ('F17', 'Wegen/verkeer/straatmeubilair', 'Omleiding/belijning verkeer', A3WEC),
-    ('F18', 'Wegen/verkeer/straatmeubilair', 'Brug', A3WEC),
-    ('F19', 'Wegen/verkeer/straatmeubilair', 'Straatmeubilair', I5DMC),
-    ('F20', 'Wegen/verkeer/straatmeubilair', 'Fietsenrek/nietje', I5DMC),
-    ('F21', 'Wegen/verkeer/straatmeubilair', 'Put/riolering verstopt', I5DMC),
-    ('F22', 'Wegen/verkeer/straatmeubilair', 'Speelplaats', I5DMC),
-    ('F23', 'Wegen/verkeer/straatmeubilair', 'Sportvoorziening', I5DMC),
-    ('F24a', 'Wegen/verkeer/straatmeubilair', 'Straatverlichting', KLOKLICHTZC),
-    ('F24b', 'Wegen/verkeer/straatmeubilair', 'Klok', KLOKLICHTZC),
-    ('F25', 'Wegen/verkeer/straatmeubilair', 'Stoplicht', STOPEC),
-    ('F26', 'Wegen/verkeer/straatmeubilair', 'Overig wegen/verkeer/straatmeubilair', I5DMC),
-    ('F27', 'Wegen/verkeer/straatmeubilair', 'Verkeersoverlast/verkeerssituaties', I5DMC),
-    ('F28', 'Openbare ruimte', 'Lozing/dumping /bodemverontreiniging', A3DMC),
-    ('F29', 'Openbare ruimte', 'Parkeeroverlast', A3DMC),
-    ('F30', 'Openbare ruimte', 'Fietswrak', A3WMC),
-    ('F31', 'Openbare ruimte', 'Stank-/geluid', A3WMC),
-    ('F32', 'Openbare ruimte', 'Bouw-/sloopoverlast', A3WMC),
-    ('F33', 'Openbare ruimte', 'Auto-/scooter-/bromfietswrak', A3WMC),
-    ('F34', 'Openbare ruimte', 'Graffiti/wildplak', I5DMC),
-    ('F35', 'Openbare ruimte', 'Honden(poep)', A3WMC),
-    ('F36', 'Openbare ruimte', 'Hinderlijk geplaatst object', I5DMC),
-    # vervallen ('F37','Openbare ruimte','Overlast van dieren (bijv. ratten)', 'REST'),
-    # vervallen ('F38','Openbare ruimte','Vuurwerkoverlast', 'REST'),
-    ('F39', 'Openbare ruimte', 'Deelfiets', A3WMC),
-    ('F40', 'Openbare ruimte', 'Overig openbare ruimte', I5DMC),
-    ('F41', 'Groen en water', 'Boom', I5DMC),
-    ('F42', 'Groen en water', 'Maaien/snoeien', I5DMC),
-    ('F43', 'Groen en water', 'Onkruid', I5DMC),
-    ('F44', 'Groen en water', 'Drijfvuil', I5DMC),
-    ('F45', 'Groen en water', 'Oever/kade/steiger', I5DMC),
-    ('F46', 'Groen en water', 'Overig groen en water', I5DMC),
-    # vervallen ('F47','Dieren','Hondenpoep', 'REST'),
-    ('F48', 'Dieren', 'Ratten', I5DMC),
-    ('F49', 'Dieren', 'Ganzen', I5DMC),
-    ('F50', 'Dieren', 'Duiven', I5DMC),
-    ('F51', 'Dieren', 'Meeuwen', I5DMC),
-    ('F52', 'Dieren', 'Wespen', I5DMC),
-    ('F53', 'Dieren', 'Dode dieren', A3DMC),
-    ('F54', 'Dieren', 'Overig dieren', I5DMC),
-    ('F55', 'Personen/groepen', 'Vuurwerk', A3DMC),
-    ('F56', 'Personen/groepen', 'Overig personen/groepen', A3DMC),
-    ('F57', 'Personen/groepen', 'Personen op het water', A3DMC),
-    ('F58', 'Personen/groepen', 'Taxi/bus/fietstaxi', A3DMC),
-    ('F59', 'Personen/groepen', 'Jongeren', A3DMC),
-    ('F60', 'Personen/groepen', 'Dakloze/bedelen', A3DMC),
-    ('F61', 'Personen/groepen', 'Wildplassen/poepen/overgeven', A3DMC),
-    ('F62', 'Personen/groepen', 'Drank/drugs', A3DMC),
-    ('F63', 'Horeca/bedrijven', 'Muziek horeca/bedrijven', I5DMC),
-    ('F64', 'Horeca/bedrijven', 'Installaties', I5DMC),
-    ('F65', 'Horeca/bedrijven', 'Terras', I5DMC),
-    ('F66', 'Horeca/bedrijven', 'Stank horeca/bedrijven', I5DMC),
-    ('F67', 'Horeca/bedrijven', 'Bezoekers (niet op terras)', I5DMC),
-    ('F68', 'Horeca/bedrijven', 'Overig horeca/bedrijven', I5DMC),
-    ('F69', 'Boten', 'Snel varen', WS1EC),
-    ('F70', 'Boten', 'Geluid boten', WS1EC),
-    ('F71', 'Boten', 'Gezonken', WS2EC),
-    ('F72', 'Boten', 'Overig boten', WS1EC),
-    ('F73', 'Overig', 'Overig', REST)
+    # sub_code, categorie, sub_categorie, afhandeling, afdelingen
+    ('F01', 'Afval', 'Veeg-/zwerfvuil', A3DEC, "CCA,ASC,STW"),
+    ('F02', 'Afval', 'Grofvuil', A3DEVOMC, "CCA,ASC,AEG"),
+    ('F03', 'Afval', 'Huisafval', A3DMC, "CCA,ASC,AEG"),
+    ('F04', 'Afval', 'Bedrijfsafval', A3DMC, "CCA,ASC,AEG"),
+    ('F05', 'Afval', 'Puin/sloopafval', A3DMC, "CCA,ASC,AEG"),
+    ('F06', 'Afval', 'Container vol', A3DMC, "CCA,ASC,AEG"),
+    ('F07', 'Afval', 'Prullenbak vol', A3DEC, "CCA,ASC,STW"),
+    ('F08', 'Afval', 'Container kapot', A3DMC, "CCA,ASC,AEG"),
+    ('F09', 'Afval', 'Prullenbak kapot', A3DMC, "CCA,ASC,STW"),
+    ('F10', 'Afval', 'Asbest/accu', A3DMC, "CCA,ASC,AEG"),
+    ('F11', 'Afval', 'Overig afval', I5DMC, "CCA,ASC,STW,AEG"),
+    ('F12', 'Afval', 'Container plastic afval vol', A3DMC, "CCA,ASC,AEG"),
+    ('F13', 'Afval', 'Container plastic afval kapot', A3DMC, "CCA,ASC,AEG"),
+    ('F14', 'Wegen/verkeer/straatmeubilair', 'Onderhoud stoep/straat/fietspad', A3DEC, "CCA,ASC,STW"),
+    ('F15', 'Wegen/verkeer/straatmeubilair', 'Verkeersbord/verkeersafzetting', A3DEC, "CCA,ASC,STW"),
+    ('F16', 'Wegen/verkeer/straatmeubilair', 'Gladheid', GLADZC, "CCA,ASC,STW"),
+    ('F17', 'Wegen/verkeer/straatmeubilair', 'Omleiding/belijning verkeer', A3WEC, "CCA,ASC,STW"),
+    ('F18', 'Wegen/verkeer/straatmeubilair', 'Brug', A3WEC, "CCA,ASC,STW"),
+    ('F19', 'Wegen/verkeer/straatmeubilair', 'Straatmeubilair', I5DMC, "CCA,ASC,STW"),
+    ('F20', 'Wegen/verkeer/straatmeubilair', 'Fietsenrek/nietje', I5DMC, "CCA,ASC,STW"),
+    ('F21', 'Wegen/verkeer/straatmeubilair', 'Put/riolering verstopt', I5DMC, "CCA,ASC,STW"),
+    ('F22', 'Wegen/verkeer/straatmeubilair', 'Speelplaats', I5DMC, "CCA,ASC,STW"),
+    ('F23', 'Wegen/verkeer/straatmeubilair', 'Sportvoorziening', I5DMC, "CCA,ASC,STW"),
+    ('F24a', 'Wegen/verkeer/straatmeubilair', 'Straatverlichting', KLOKLICHTZC, "CCA,ASC"),
+    ('F24b', 'Wegen/verkeer/straatmeubilair', 'Klok', KLOKLICHTZC, "CCA,ASC,OVL"),
+    ('F25', 'Wegen/verkeer/straatmeubilair', 'Stoplicht', STOPEC, "CCA,ASC,VRI"),
+    ('F26', 'Wegen/verkeer/straatmeubilair', 'Overig wegen/verkeer/straatmeubilair', I5DMC, "CCA,ASC,STW"),
+    ('F27', 'Wegen/verkeer/straatmeubilair', 'Verkeersoverlast/verkeerssituaties', I5DMC, "CCA,ASC,THO"),
+    ('F28', 'Openbare ruimte', 'Lozing/dumping /bodemverontreiniging', A3DMC, "CCA,ASC,OMG"),
+    ('F29', 'Openbare ruimte', 'Parkeeroverlast', A3DMC, "CCA,ASC,THO"),
+    ('F30', 'Openbare ruimte', 'Fietswrak', A3WMC, "CCA,ASC,STW,THO"),
+    ('F31', 'Openbare ruimte', 'Stank-/geluid', A3WMC, "CCA,ASC,THO,VTH"),
+    ('F32', 'Openbare ruimte', 'Bouw-/sloopoverlast', A3WMC, "CCA,ASC,VTH"),
+    ('F33', 'Openbare ruimte', 'Auto-/scooter-/bromfietswrak', A3WMC, "CCA,ASC,VTH"),
+    ('F34', 'Openbare ruimte', 'Graffiti/wildplak', I5DMC, "CCA,ASC,STW"),
+    ('F35', 'Openbare ruimte', 'Honden(poep)', A3WMC, "CCA,ASC,STW"),
+    ('F36', 'Openbare ruimte', 'Hinderlijk geplaatst object', I5DMC, "CCA,ASC,THO"),
+    # vervallen ('F37','Openbare ruimte','Overlast van dieren (bijv. ratten)', 'REST', "CCA,ASC"),
+    # vervallen ('F38','Openbare ruimte','Vuurwerkoverlast', 'REST', "CCA,ASC"),
+    ('F39', 'Openbare ruimte', 'Deelfiets', A3WMC, "CCA,ASC,STW"),
+    ('F40', 'Openbare ruimte', 'Overig openbare ruimte', I5DMC, "CCA,ASC,STW,THOVTH"),
+    ('F41', 'Groen en water', 'Boom', I5DMC, "CCA,ASC,STW"),
+    ('F42', 'Groen en water', 'Maaien/snoeien', I5DMC, "CCA,ASC,STW"),
+    ('F43', 'Groen en water', 'Onkruid', I5DMC, "CCA,ASC,STW"),
+    ('F44', 'Groen en water', 'Drijfvuil', I5DMC, "CCA,ASC,STW"),
+    ('F45', 'Groen en water', 'Oever/kade/steiger', I5DMC, "CCA,ASC,STW"),
+    ('F46', 'Groen en water', 'Overig groen en water', I5DMC, "CCA,ASC,STW"),
+    # vervallen ('F47','Dieren','Hondenpoep', 'REST', "CCA,ASC"),
+    ('F48', 'Dieren', 'Ratten', I5DMC, "CCA,ASC,GGD"),
+    ('F49', 'Dieren', 'Ganzen', I5DMC, "CCA,ASC,GGD"),
+    ('F50', 'Dieren', 'Duiven', I5DMC, "CCA,ASC,GGD"),
+    ('F51', 'Dieren', 'Meeuwen', I5DMC, "CCA,ASC,GGD"),
+    ('F52', 'Dieren', 'Wespen', I5DMC, "CCA,ASC,GGD"),
+    ('F53', 'Dieren', 'Dode dieren', A3DMC, "CCA,ASC,GGD"),
+    ('F54', 'Dieren', 'Overig dieren', I5DMC, "CCA,ASC,GGD"),
+    ('F55', 'Personen/groepen', 'Vuurwerk', A3DMC, "CCA,ASC,THO"),
+    ('F56', 'Personen/groepen', 'Overig personen/groepen', A3DMC, "CCA,ASC,THO"),
+    ('F57', 'Personen/groepen', 'Personen op het water', A3DMC, "CCA,ASC,THO"),
+    ('F58', 'Personen/groepen', 'Taxi/bus/fietstaxi', A3DMC, "CCA,ASC,THO"),
+    ('F59', 'Personen/groepen', 'Jongeren', A3DMC, "CCA,ASC,THO"),
+    ('F60', 'Personen/groepen', 'Dakloze/bedelen', A3DMC, "CCA,ASC,THO"),
+    ('F61', 'Personen/groepen', 'Wildplassen/poepen/overgeven', A3DMC, "CCA,ASC,THO"),
+    ('F62', 'Personen/groepen', 'Drank/drugs', A3DMC, "CCA,ASC,THO"),
+    ('F63', 'Horeca/bedrijven', 'Muziek horeca/bedrijven', I5DMC, "CCA,ASC,VTH"),
+    ('F64', 'Horeca/bedrijven', 'Installaties', I5DMC, "CCA,ASC,VTH"),
+    ('F65', 'Horeca/bedrijven', 'Terras', I5DMC, "CCA,ASC,VTH"),
+    ('F66', 'Horeca/bedrijven', 'Stank horeca/bedrijven', I5DMC, "CCA,ASC,VTH"),
+    ('F67', 'Horeca/bedrijven', 'Bezoekers (niet op terras)', I5DMC, "CCA,ASC,THO"),
+    ('F68', 'Horeca/bedrijven', 'Overig horeca/bedrijven', I5DMC, "CCA,ASC,THO,VTH"),
+    ('F69', 'Boten', 'Snel varen', WS1EC, "CCA,ASC,WAT"),
+    ('F70', 'Boten', 'Geluid boten', WS1EC, "CCA,ASC,WAT"),
+    ('F71', 'Boten', 'Gezonken', WS2EC, "CCA,ASC,WAT"),
+    ('F72', 'Boten', 'Overig boten', WS1EC, "CCA,ASC,WAT"),
+    ('F73', 'Overig', 'Overig', REST, "CCA,ASC")
 )
 
 SUB_CATEGORIES_DICT = {}
@@ -147,3 +168,12 @@ def get_afhandeling_text(sub_categorie):
         afhandeling_code = REST
     return ALL_AFHANDELING_TEXT[afhandeling_code]
 
+
+def get_departments(sub_categorie):
+    sub = SUB_CATEGORIES_DICT.get(sub_categorie)
+    if sub:
+        departments = sub[4]
+        #ldepartments = map( lambda x: ALL_DEPARTMENTS[x][0], departments.split(","))
+        return departments
+    else:
+        return None

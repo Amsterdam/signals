@@ -8,6 +8,7 @@ from signals.models import AFGEHANDELD, GEANNULEERD
 
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
+
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
     if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
@@ -15,12 +16,14 @@ def get_valid_email(signal):
     else:
         return None
 
+
 def get_incident_date_string(dt):
     week_days = ('Maandag', 'Disdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
     return week_days[dt.weekday()] + dt.strftime(" %d-%m-%Y, %H:%M")
 
+
 def handle_create_signal(signal):
-    if not settings.RABBITMQ_HOST:
+    if settings.TESTING or not settings.RABBITMQ_HOST:
         return
     email = get_valid_email(signal)
     if email:
@@ -50,7 +53,7 @@ def handle_create_signal(signal):
 
 
 def handle_status_change(signal, previous_status):
-    if not settings.RABBITMQ_HOST:
+    if settings.TESTING or not settings.RABBITMQ_HOST:
         return
     if signal.status.state in (AFGEHANDELD, GEANNULEERD) and previous_status.state not in (AFGEHANDELD, GEANNULEERD):
         email = get_valid_email(signal)

@@ -23,9 +23,8 @@
         "extra_properties": {}
     },
     "category": {
-        "main": "a",
-        "sub": "b",
-        "department": "WaterNet"
+        "main": "Afval",
+        "sub": "Veeg-/zwerfvuil"
     },
     "reporter": {
         "id": 9,

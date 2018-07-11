@@ -13,6 +13,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField, ModelSerializer
 
+from signals.messaging.categories import get_departments
 from signals.messaging.send_emails import handle_status_change, \
     handle_create_signal
 from signals.models import Category
@@ -77,7 +78,6 @@ class LocationSerializer(HALSerializer):
 
 class StatusModelSerializer(serializers.ModelSerializer):
     id = IntegerField(label='ID', read_only=True)
-    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Status
@@ -92,16 +92,6 @@ class StatusModelSerializer(serializers.ModelSerializer):
         )
 
         extra_kwargs = {'_signal': {'required': False}}
-
-    def get_user(self, obj):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "get_token_subject"):
-            user = request.get_token_subject
-            if user and user.find('@') == -1:
-                log.warning(f"User without e-mail : {user}")
-                user += '@unknown.nl'
-        return user
 
 
 class ReporterModelSerializer(serializers.ModelSerializer):
@@ -164,7 +154,7 @@ class SignalUpdateImageSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         image = validated_data['image']
 
-        ## Only allow adding a photo if none is set.
+        # Only allow adding a photo if none is set.
         if instance.image:
             raise PermissionDenied("Melding is reeds van foto voorzien.")
 
@@ -215,8 +205,7 @@ class SignalCreateSerializer(ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        if 'remove_at' not in reporter_data or reporter_data[
-            'remove_at'] is None:
+        if 'remove_at' not in reporter_data or reporter_data['remove_at'] is None:
             remove_at = datetime.now(timezone.utc) + timedelta(weeks=2)
             reporter_data["remove_at"] = remove_at.isoformat()
         category_data = validated_data.pop('category')
@@ -229,6 +218,7 @@ class SignalCreateSerializer(ModelSerializer):
                                                **location_data)
             category = Category.objects.create(_signal_id=signal_id,
                                                **category_data)
+
             status = Status.objects.create(_signal_id=signal_id, **status_data)
             reporter = Reporter.objects.create(_signal_id=signal_id,
                                                **reporter_data)
@@ -238,9 +228,6 @@ class SignalCreateSerializer(ModelSerializer):
 
         handle_create_signal(signal)
         return signal
-
-    def update(self, instance, validated_data):
-        pass
 
     def validate(self, data):
         # The status can only be 'm' when created
@@ -252,7 +239,7 @@ class SignalCreateSerializer(ModelSerializer):
         if image:
             if image._size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
-        ip = self.add_ip(data)
+        ip = self.add_ip()
         if ip is not None:
             if 'extra_properties' in data['status']:
                 extra_properties = data['status']['extra_properties']
@@ -260,10 +247,20 @@ class SignalCreateSerializer(ModelSerializer):
                 extra_properties = {}
             extra_properties['IP'] = ip
             data['status']['extra_properties'] = extra_properties
+
+        if 'category' in data and 'sub' in data['category']:
+            departments = get_departments(data['category']['sub'])
+            if departments and 'department' not in data['category']:
+                data['category']['department'] = departments
+            elif not departments:
+                log.warning(f"Department not found for subcategory : {data['category']['sub']}")
+        else:
+            raise serializers.ValidationError(
+                f"Invalid category : missing sub")
         # TODO add further validation
         return data
 
-    def add_ip(self, data):
+    def add_ip(self):
         ip = None
         request = self.context.get("request")
         if request and hasattr(request, "get_token_subject"):
@@ -354,7 +351,6 @@ class StatusSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(
         queryset=Signal.objects.all().order_by("id"))
     serializer_url_field = StatusLinksField
-    user = serializers.SerializerMethodField()
 
     class Meta(object):
         model = Status
@@ -396,7 +392,7 @@ class StatusSerializer(HALSerializer):
         """
         pass
 
-    def get_user(self, obj):
+    def get_user(self):
         user = None
         request = self.context.get("request")
         if request and hasattr(request, "get_token_subject"):
@@ -415,7 +411,7 @@ class StatusSerializer(HALSerializer):
             raise serializers.ValidationError(
                 f"Invalid state transition from {signal.status.state} "
                 f"to {data['state']}")
-        ip = self.add_ip(data)
+        ip = self.add_ip()
         if ip is not None:
             if 'extra_properties' in data:
                 extra_properties = data['extra_properties']
@@ -423,10 +419,12 @@ class StatusSerializer(HALSerializer):
                 extra_properties = {}
             extra_properties['IP'] = ip
             data['extra_properties'] = extra_properties
+        data['user'] = self.get_user()
+
         # TODO add further validation
         return data
 
-    def add_ip(self, data):
+    def add_ip(self):
         ip = None
         request = self.context.get("request")
         if request and hasattr(request, "get_token_subject"):
@@ -481,15 +479,19 @@ class CategorySerializer(HALSerializer):
             signal.save()
             return category
 
-    def update(self, instance, validated_data):
-        """
-        Should not be implemented.
-        """
-        pass
+    def validate(self, data):
+        if 'sub' in data:
+            departments = get_departments(data['sub'])
+            if departments and 'department' not in data:
+                data['department'] = departments
+            elif not departments:
+                log.warning(f"Department not found for subcategory : {data['sub']}")
+        else:
+            raise serializers.ValidationError(
+                f"Invalid category : missing sub")
 
-    # def validate(self, data):
-    #     # TODO add validation
-    #     return data
+        # TODO add validation
+        return data
 
 
 class ReporterLinksField(serializers.HyperlinkedIdentityField):

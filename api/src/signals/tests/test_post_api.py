@@ -34,7 +34,7 @@ class PostTestCase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
-        "post_category": "category_post.json",
+        "post_category": "category_auth_post.json",
         "post_location": "location_auth_post.json",
     }
 
@@ -74,13 +74,16 @@ class PostTestCase(APITestCase):
         url = "/signals/signal/"
         postjson = self._get_fixture('post_signal')
         response = self.client.post(url, postjson, format='json')
-
         self.assertEqual(response.status_code, 201)
-
         self.assertEqual(Signal.objects.count(), 2)
-        s = Signal.objects.all().first()
+        id = response.data['id']
+        s = Signal.objects.get(id=id)
+
         self.assertEqual(Reporter.objects.count(), 2)
-        r = Reporter.objects.all().first()
+        lr = Reporter.objects.filter(signal=s.id)
+        self.assertEqual(lr.count(), 1)
+        r = lr[0]
+
         self.assertEqual(r.id, s.reporter.id)
 
         self.assertEqual(
@@ -105,6 +108,10 @@ class PostTestCase(APITestCase):
         self.assertEqual(
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
+        )
+
+        self.assertEqual(
+            Category.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
         )
 
     def test_post_status(self):
@@ -143,7 +150,7 @@ class PostTestCase(APITestCase):
         """Category Post
         """
         url = "/signals/auth/category/"
-        postjson = self._get_fixture('post_location')
+        postjson = self._get_fixture('post_category')
         signal_url = reverse('signal-auth-detail', args=[self.s.id])
         postjson['_signal'] = self.s.id
         response = self.client.post(url, postjson, format='json')
@@ -152,3 +159,4 @@ class PostTestCase(APITestCase):
         self.s.refresh_from_db()
         # check that current location of signal is now this one
         self.assertEqual(self.s.category.id, result['id'])
+        self.assertEqual(self.s.category.department, "CCA,ASC,WAT")
