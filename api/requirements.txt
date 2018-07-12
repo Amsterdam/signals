@@ -25,6 +25,7 @@ django-rest-swagger==2.2.0
 django-storage-swift==1.2.19
 django-storages==1.6.6
 djangorestframework==3.8.2
+djangorestframework-csv==2.1.0
 djangorestframework-gis==0.13
 git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
 drf-extensions==0.3.1

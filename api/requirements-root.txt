@@ -10,6 +10,7 @@ django-filter
 django-rest-swagger
 django-storage-swift
 djangorestframework
+djangorestframework-csv
 djangorestframework-gis
 drf-extensions
 git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
