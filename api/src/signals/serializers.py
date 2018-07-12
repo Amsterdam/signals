@@ -250,7 +250,7 @@ class SignalCreateSerializer(ModelSerializer):
 
         if 'category' in data and 'sub' in data['category']:
             departments = get_departments(data['category']['sub'])
-            if departments and 'department' not in data['category']:
+            if departments and ('department' not in data['category'] or not data['category']['department']):
                 data['category']['department'] = departments
             elif not departments:
                 log.warning(f"Department not found for subcategory : {data['category']['sub']}")
@@ -482,7 +482,7 @@ class CategorySerializer(HALSerializer):
     def validate(self, data):
         if 'sub' in data:
             departments = get_departments(data['sub'])
-            if departments and 'department' not in data:
+            if departments and ('department' not in data or not data['department']):
                 data['department'] = departments
             elif not departments:
                 log.warning(f"Department not found for subcategory : {data['sub']}")
