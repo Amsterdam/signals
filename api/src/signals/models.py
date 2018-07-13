@@ -25,7 +25,7 @@ class Signal(models.Model):
 
     # we need an unique id for external systems.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
-    source = models.CharField(max_length=15, default='api')
+    source = models.CharField(max_length=128, default='api')
 
     text = models.CharField(max_length=1000)
 
