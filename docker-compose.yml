@@ -46,7 +46,7 @@ services:
       - database
       - rabbit
     environment:
-      - DB_NAME=meldingen
+      - DB_NAME=signals
       - DB_PASSWORD=insecure
       - UWSGI_HTTP=0.0.0.0:8000
       - UWSGI_MASTER=1
@@ -58,7 +58,7 @@ services:
       - UWSGI_OFFLOAD_THREADS=1
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
-      - UWSGI_MODULE=meldingen.wsgi:application
+      - UWSGI_MODULE=signals.wsgi:application
 
   import:
     build: ./import
