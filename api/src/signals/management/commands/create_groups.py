@@ -29,19 +29,28 @@ class Command(BaseCommand):
             _, created = Group.objects.get_or_create(name=dep_name)
 
         # Add test users
-        monitor = User.objects.get(username='signals.monitor@amsterdam.nl')
+        try:
+            monitor = User.objects.get(username='signals.monitor@amsterdam.nl')
+        except User.DoesNotExist:
+            monitor = None
         if not monitor:
             monitor = User.objects.create_user(username='signals.monitor@amsterdam.nl',
                                             email='signals.monitor@amsterdam.nl',
                                             password=make_random_password())
             monitors.user_set.add(monitor)
-        behandelaar = User.objects.get(username='signals.behandelaar@amsterdam.nl')
+        try:
+            behandelaar = User.objects.get(username='signals.behandelaar@amsterdam.nl')
+        except User.DoesNotExist:
+            behandelaar = None
         if not behandelaar:
             behandelaar = User.objects.create_user(username='signals.behandelaar@amsterdam.nl',
                                             email='signals.behandelaar@amsterdam.nl',
                                             password=make_random_password())
             behandelaars.user_set.add(behandelaar)
-        coordinator = User.objects.get(username='signals.coordinator@amsterdam.nl')
+        try:
+            coordinator = User.objects.get(username='signals.coordinator@amsterdam.nl')
+        except User.DoesNotExist:
+            coordinator = None
         if not coordinator:
             coordinator = User.objects.create_user(username='signals.coordinator@amsterdam.nl',
                                             email='signals.coordinator@amsterdam.nl',
