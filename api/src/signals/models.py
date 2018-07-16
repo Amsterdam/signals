@@ -1,4 +1,5 @@
 import uuid
+from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
 
@@ -283,3 +284,7 @@ class Status(models.Model):
 
     def __str__(self):
         return self.text
+#
+#
+# class SignalsUser(AbstractUser):
+#     department = models.CharField(max_length=50, default='')

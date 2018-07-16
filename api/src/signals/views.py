@@ -8,18 +8,19 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from rest_framework import viewsets, mixins
-from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals import settings
+from signals.auth.backend import JWTAuthBackend
 from signals.models import Buurt
 from signals.models import Category
 from signals.models import Location
 from signals.models import Signal, STATUS_OPTIONS
 from signals.models import Status
+from signals.permissions import StatusPermission, CategoryPermission, LocationPermission
 from signals.serializers import CategorySerializer
 from signals.serializers import LocationSerializer
 from signals.serializers import SignalAuthSerializer
@@ -27,6 +28,7 @@ from signals.serializers import SignalCreateSerializer, \
     SignalUpdateImageSerializer
 from signals.serializers import StatusSerializer
 from signals.throttling import NoUserRateThrottle
+
 
 import logging
 
@@ -148,23 +150,26 @@ class SignalFilter(FilterSet):
 
 class AuthViewSet:
     http_method_names = ['get', 'post', 'head', 'options', 'trace']
+    authentication_classes = (JWTAuthBackend,)
 
-    def check_permissions(self, request):
-        scope = 'SIG/ALL'
-        try:
-            if request.method != 'OPTIONS' and not request.is_authorized_for(
-                    scope):
-                self.permission_denied(
-                    request, message=getattr(scope, 'message', None)
-                )
-        except Exception as e:
-            raise APIException(e)
+    # permission_classes = (permissions.IsAuthenticated, )
 
-        if hasattr(request, 'get_token_subject'):
-            LOGGER.debug(request.get_token_subject)
-        else:
-            LOGGER.debug('no token')
-        return super(AuthViewSet, self).check_permissions(request)
+    # def check_permissions(self, request):
+    #     scope = 'SIG/ALL'
+    #     try:
+    #         if request.method != 'OPTIONS' and not request.is_authorized_for(
+    #                 scope):
+    #             self.permission_denied(
+    #                 request, message=getattr(scope, 'message', None)
+    #             )
+    #     except Exception as e:
+    #         raise APIException(e)
+    #
+    #     if hasattr(request, 'get_token_subject'):
+    #         LOGGER.debug(request.get_token_subject)
+    #     else:
+    #         LOGGER.debug('no token')
+    #     return super(AuthViewSet, self).check_permissions(request)
 
 
 class SignalImageUpdateView(viewsets.GenericViewSet):
@@ -332,20 +337,21 @@ class LocationFilter(FilterSet):
         return qs.filter(geometrie__bboverlaps=poly_bbox)
 
 
-class LocationView(DatapuntViewSet):
-    queryset = (
-        Location.objects.all()
-            .order_by("created_at")
-            .prefetch_related('signal')
-    )
-
-    serializer_detail_class = LocationSerializer
-    serializer_class = LocationSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = LocationFilter
-
+# class LocationView(DatapuntViewSet):
+#     queryset = (
+#         Location.objects.all()
+#             .order_by("created_at")
+#             .prefetch_related('signal')
+#     )
+#
+#     serializer_detail_class = LocationSerializer
+#     serializer_class = LocationSerializer
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_class = LocationFilter
+#
 
 class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
+    permission_classes = (LocationPermission,)
     queryset = (
         Location.objects.all()
             .order_by("created_at")
@@ -358,21 +364,22 @@ class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
     filter_class = LocationFilter
 
 
-class StatusView(DatapuntViewSet):
-    """View of Status Changes"""
-    queryset = (
-        Status.objects.all()
-            .order_by("created_at")
-        # .prefetch_related('signal')
-    )
-    serializer_detail_class = StatusSerializer
-    serializer_class = StatusSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = StatusFilter
-
-
+# class StatusView(DatapuntViewSet):
+#     """View of Status Changes"""
+#     queryset = (
+#         Status.objects.all()
+#             .order_by("created_at")
+#         # .prefetch_related('signal')
+#     )
+#     serializer_detail_class = StatusSerializer
+#     serializer_class = StatusSerializer
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_class = StatusFilter
+#
+#
 class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Status Changes"""
+    permission_classes = (StatusPermission,)
     queryset = (
         Status.objects.all()
             .order_by("created_at")
@@ -384,22 +391,23 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     filter_class = StatusFilter
 
 
-class CategoryView(DatapuntViewSet):
-    """View of Types.
-    """
-    queryset = (
-        Category.objects.all()
-            .order_by("id").prefetch_related("signal")
-    )
-    serializer_detail_class = CategorySerializer
-    serializer_class = CategorySerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ['main', 'sub', '_signal_id']
-
-
+# class CategoryView(DatapuntViewSet):
+#     """View of Types.
+#     """
+#     queryset = (
+#         Category.objects.all()
+#             .order_by("id").prefetch_related("signal")
+#     )
+#     serializer_detail_class = CategorySerializer
+#     serializer_class = CategorySerializer
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_fields = ['main', 'sub', '_signal_id']
+#
+#
 class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     """View of Types.
     """
+    permission_classes = (CategoryPermission,)
     queryset = (
         Category.objects.all()
             .order_by("id").prefetch_related("signal")

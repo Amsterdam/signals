@@ -38,6 +38,10 @@ INTERNAL_IPS = ("127.0.0.1", "0.0.0.0")
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
+    "django.contrib.messages",
+    "django.contrib.sessions",
+    "django.contrib.auth",
+    "django.contrib.admin",
     "django_filters",
     "corsheaders",
     "django_extensions",
@@ -50,6 +54,9 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -75,6 +82,7 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.messages.context_processors.messages",
+                "django.contrib.auth.context_processors.auth"
             ]
         },
     }
@@ -104,6 +112,7 @@ REST_FRAMEWORK = dict(
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
     DEFAULT_AUTHENTICATION_CLASSES=(
+        # 'signals.auth.backend.JWTAuthBackend',
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
     ),
@@ -146,7 +155,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler", "formatter": "console"
         }
     },
@@ -157,7 +166,7 @@ LOGGING = {
         # Debug all batch jobs
         "doc": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "index": {
-            "handlers": ["console"], "level": "DEBUG", "propagate": False},
+            "handlers": ["console"], "level": "INFO", "propagate": False},
         "search": {
             "handlers": ["console"], "level": "ERROR", "propagate": False},
         "elasticsearch": {

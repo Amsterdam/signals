@@ -66,7 +66,7 @@ def handle_status_change(signal, previous_status):
                 context['resultaat_text'] = signal.status.extra_properties['resultaat_text']
             template = loader.get_template('melding_gereed.txt')
             body = template.render(context)
-            subject = f"Betreft melding : {signal.signal_id}"
+            subject = f"Betreft melding : {signal.id}"
             to = signal.reporter.email
             send_mail(
                 subject,

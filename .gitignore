@@ -185,3 +185,4 @@ avro_files/
 deploy/backups
 
 *.doc
+data/

@@ -23,6 +23,8 @@ from rest_framework import permissions
 
 from . import views as api_views
 from django.conf import settings
+from django.contrib import admin
+from django.urls import path
 
 
 class SignalsView(routers.APIRootView):
@@ -90,6 +92,8 @@ urlpatterns = [
         schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
     url(r"^signals/", include(urls)),
     url(r"^status/", include("signals.health.urls")),
+    # TODO : where should the Django Admin endpoint be eventually 
+    path("signals/admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:

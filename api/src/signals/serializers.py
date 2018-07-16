@@ -257,6 +257,11 @@ class SignalCreateSerializer(ModelSerializer):
         else:
             raise serializers.ValidationError(
                 f"Invalid category : missing sub")
+
+        request = self.context.get("request")
+        if request.user and not request.user.is_anonymous:
+            data['user'] = request.user.get_username()
+
         # TODO add further validation
         return data
 
@@ -387,23 +392,6 @@ class StatusSerializer(HALSerializer):
             handle_status_change(signal, previous_status)
             return status
 
-    def update(self, instance, validated_data):
-        """Should not be implemented.
-        """
-        pass
-
-    def get_user(self):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "get_token_subject"):
-            user = request.get_token_subject
-        if user is None:
-            raise serializers.ValidationError("Missing user in request")
-        elif user.find('@') == -1:
-            log.warning(f"User without e-mail : {user}")
-            user += '@unknown.nl'
-        return user
-
     def validate(self, data):
         # Get current status for signal
         signal = data['_signal']
@@ -419,7 +407,10 @@ class StatusSerializer(HALSerializer):
                 extra_properties = {}
             extra_properties['IP'] = ip
             data['extra_properties'] = extra_properties
-        data['user'] = self.get_user()
+
+        request = self.context.get("request")
+        if request.user and not request.user.is_anonymous:
+            data['user'] = request.user.get_username()
 
         # TODO add further validation
         return data

@@ -1,6 +1,7 @@
 # TODO In a future version this should be in the database
 
 # Afdeling/Diensten
+# Zie : https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:toepassingen:signalen:ontwerp:referentietabellen:dienstenvsrubrieken
 
 # Code, Naam, Intern/Extern
 ALL_DEPARTMENTS = {

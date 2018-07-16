@@ -19,7 +19,7 @@ import logging
 
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     handlers=[
         GelfUdpHandler(host='127.0.0.1', port=12201),
         StreamHandler(stream=stdout)
@@ -174,3 +174,20 @@ if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
 TESTING = sys.argv[1:2] == ['test']
+
+# Use custom User Model for Signals
+# AUTH_USER_MODEL = "signals.SignalsUser"
+
+ADMIN_LOGIN = "signals.admin@amsterdam.nl"
+
+# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.behandelaar@amsterdam.nl")
+# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.coordinator@amsterdam.nl")
+# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.monitor@amsterdam.nl")
+# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.admin@amsterdam.nl")
+TEST_LOGIN = os.getenv("TEST_LOGIN", "invalid@invalid.nl")
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}

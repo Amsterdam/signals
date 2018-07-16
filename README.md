@@ -13,7 +13,17 @@ https://vaarwatermeldingen.amsterdam.nl/
 * Test for filtering
 * Throttle unauthorized posts. Determine values exclude IP from gemeente and frequent users.
 * IP ranges in config
-* Add user id from token and IP address to status change propertieds for audit logging
+* 
+* Custom backend for django authentication that gives a user
+* Extend Django  User for authentication
+* Django admin for user maintenance
+* Tables for categories, subcategories, departments 
+* Admin maintenance for these tables 
+* Add index on email for user table
+* Add view for user. what am I. superusers can see all users
+* Add management script to import users 
+
+
 
 
 # Celery
@@ -56,3 +66,8 @@ Otherwise we need to add a user with:
 
 ...
 
+
+# Admin
+
+To maintain user and groups we use Django Admin. We cannot yet login to Djang Admin with JWT tokens so for 
+this we need to set  a password for a staff account.  This is needed to login to Djang Admin 

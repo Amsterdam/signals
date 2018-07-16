@@ -1,4 +1,4 @@
-Uw melding met {{ signal_id }} is  {{ resultaat }}.
+Uw melding met nummer {{ signal_id }} is  {{ resultaat }}.
 
 {% if resultaat_text %}
 {{ resultaat_text }}
