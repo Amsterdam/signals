@@ -183,8 +183,8 @@ ADMIN_LOGIN = "signals.admin@amsterdam.nl"
 # TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.behandelaar@amsterdam.nl")
 # TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.coordinator@amsterdam.nl")
 # TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.monitor@amsterdam.nl")
-# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.admin@amsterdam.nl")
-TEST_LOGIN = os.getenv("TEST_LOGIN", "invalid@invalid.nl")
+TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.admin@amsterdam.nl")
+# TEST_LOGIN = os.getenv("TEST_LOGIN", "invalid@invalid.nl")
 
 CACHES = {
     'default': {
