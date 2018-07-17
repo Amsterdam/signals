@@ -27,13 +27,13 @@ class JWTAuthBackend:
 
         if not user:
             login_valid = (settings.ADMIN_LOGIN == user_email)
-            if login_valid and settings.ADMIN_DEFAULT_PASSWORD:
+            if login_valid:
                 try:
                     user = User.objects.get(username=user_email)
                 except User.DoesNotExist:
                     # Create a new user. There's no need to set a password
                     # because only the password from settings.py is checked.
-                    user = User(email=user_email, username=user_email, password=settings.ADMIN_DEFAULT_PASSWORD)
+                    user = User(email=user_email)
                     user.is_staff = True
                     user.is_superuser = True
                     user.save()
