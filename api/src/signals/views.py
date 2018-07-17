@@ -1,9 +1,9 @@
 import re
 
 from datapunt_api import bbox
-from datapunt_api.rest import DatapuntViewSet
-from datapunt_api.rest import DatapuntViewSetWritable
+from datapunt_api.rest import DatapuntViewSetWritable, DatapuntViewSet
 from django.contrib.gis.geos import Polygon
+from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
+from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 
 from signals import settings
 from signals.auth.backend import JWTAuthBackend
@@ -416,3 +418,28 @@ class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     serializer_class = CategorySerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ['main', 'sub']
+
+
+class LocationUserView(AuthViewSet, APIView):
+    """
+    Handle information about user me
+    """
+    def get(self, request):
+        data  = {}
+        user = request.user
+        if user:
+            data['username'] = user.username
+            data['email'] = user.email
+            data['is_staff'] = user.is_staff == True
+            data['is_superuser'] = user.is_superuser == True
+            groups = []
+            departments = []
+            for g in request.user.groups.all():
+                match = re.match(r"^dep_(\w+)$", g.name)
+                if match:
+                    departments.append(match.group(1))
+                else:
+                    groups.append(g.name)
+            data['groups'] = groups
+            data['departments'] = departments
+        return JsonResponse(data)

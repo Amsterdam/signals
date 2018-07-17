@@ -65,6 +65,10 @@ signals.register(
 signals.register(
     r"signal/image", api_views.SignalImageUpdateView, base_name="img")
 
+# signals.register(
+#     r"auth/me", api_views.LocationUserView, base_name="me-auth")
+
+
 urls = signals.urls
 
 schema_view = get_schema_view(
@@ -92,6 +96,7 @@ urlpatterns = [
         schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
     url(r"^signals/", include(urls)),
     url(r"^status/", include("signals.health.urls")),
+    path("signals/auth/me/", api_views.LocationUserView.as_view()),
     # TODO : where should the Django Admin endpoint be eventually 
     path("signals/admin/", admin.site.urls),
 ]

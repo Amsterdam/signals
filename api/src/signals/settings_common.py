@@ -134,7 +134,8 @@ REST_FRAMEWORK = dict(
         # 'signals.throttling.NoUserRateThrottle',
     ),
     DEFAULT_THROTTLE_RATES={
-        'nouser': '5/hour',
+        # 'nouser': '5/hour',
+        'nouser': '60/hour'
     },
 )
 
