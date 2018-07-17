@@ -1,5 +1,5 @@
 # Meldingen
-meldingen system amsterdam
+meldingen systeem amsterdam
 
 The beginning of Signalen Amsterdam Rewrite.
 
@@ -13,14 +13,10 @@ https://vaarwatermeldingen.amsterdam.nl/
 * Test for filtering
 * Throttle unauthorized posts. Determine values exclude IP from gemeente and frequent users.
 * IP ranges in config
-* 
-* Custom backend for django authentication that gives a user
 * Extend Django  User for authentication
-* Django admin for user maintenance
 * Tables for categories, subcategories, departments 
 * Admin maintenance for these tables 
 * Add index on email for user table
-* Add view for user. what am I. superusers can see all users
 * Add management script to import users 
 
 
@@ -66,8 +62,120 @@ Otherwise we need to add a user with:
 
 ...
 
+# Authentication 
 
-# Admin
+Authentication can be done with the Authz service with either the _datapunt_ or the _grip_ Idp.
 
-To maintain user and groups we use Django Admin. We cannot yet login to Djang Admin with JWT tokens so for 
-this we need to set  a password for a staff account.  This is needed to login to Djang Admin 
+Users that have a ADW account should login with the grip Idp. They will get a prompt from the 
+GRIP KPN login page and login with their username (6 letters and 3 digits) and their ADW password. 
+
+In order to be authorized  for the Signals application their account should exist also the Django Admin
+user administration below. There groups and superuser status can be set. 
+
+Users that do not have a ADW account should  be added both to the Datapunt Idp and the authz_admin service 
+as described in _https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:aa:useraccounts_ and
+_https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:aa:userpermissions_
+
+These accounts should be given the Signals Admin role
+
+This is normally done by Service and Delivery. 
+
+In addition the account should then also be created in the Django Admin below. 
+
+NOTE : We should use e-mail addresses always in lowercase because some services 
+are case sensitive , and then it looks like users do not exist. 
+
+
+
+# Django Admin for user maintenance
+
+To maintain user and groups we use Django Admin. We cannot yet login to Djang Admin with JWT tokens 
+so for  now we need to set  a password for a staff account.  This is needed to login to Django Admin:
+
+
+This can be set the following commands. On acception or production you have to login to 
+
+_dc01-acc.datapunt.amsterdam.nl_ or _dc01.datapunt.amsterdam.nl_  and become root. 
+
+Then execute : 
+
+`docker exec -it signals python manage.py changepassword signals.admin@amsterdam.nl `
+
+and set the password. 
+
+If the user does not yest exist execute : 
+
+`docker exec -it signals python manage.py createsuperuser --username  signals.admin@amsterdam.nl --email signals.admin@amsterdam.nl
+`
+
+and set the password. 
+
+
+Then you can go to either : 
+
+`https://acc.api.data.amsterdam.nl/signals/admin/`
+
+or
+
+`https://api.data.amsterdam.nl/signals/admin/`
+
+and login with credentials just created. 
+
+In order to create some default groups for signals you have to run:
+
+`docker exec -it signals python manage.py create_groups`
+
+We can also import a CSV file with users. It should look like :
+
+`user_email,groups,departments,superuser,staff,action
+signals.monitor@amsterdam.nl,monitors,,false,false,
+signals.behandelaar@amsterdam.nl,behandelaars,,false,false,
+signals.coordinator@amsterdam.nl,coordinatoren,,false,false,
+user.todelete@amsterdam,,,,,delete
+...`
+
+
+First copy the file to the server :
+
+`scp users.csv dc01-acc.datapunt.amsterdam.nl:/tmp/users.csv`
+
+The on that server copy it to the docker instance :
+
+`docker cp /tmp/users.csv signals:/tmp/users.csv`
+
+Then import the file with : 
+
+`docker exec -it signals python manage.py create_users /tmp/users.csv`
+
+This should create users in the CSV file. It does NOT overwrite passwords.
+
+
+Currently three groups are defined to enable / disable specific operation 
+
+Users in the _**monitors**_ group  are only allowed to view tickets.
+
+Users in the _**behandelaars**_ group can make status changes. 
+
+User in the _**coordinatoren**_ group can also change the categories. 
+
+And users that are superuser can do everything. 
+
+Additionally  there groups defined for departments. They start with 'dep_'
+It is intended that users from a specific department should only see tickets 
+that belong to a specific department (in the category). But this is not yet implemented.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
