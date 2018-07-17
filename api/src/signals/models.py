@@ -99,6 +99,8 @@ STADSDELEN = (
     ('M', 'Oost'),
     ('N', 'Noord'),
     ('T', 'Zuidoost'),
+    ('K', 'Zuid'),
+    ('F', 'Nieuw-West')
 )
 
 
