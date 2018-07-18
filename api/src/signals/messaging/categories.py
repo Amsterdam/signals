@@ -20,6 +20,7 @@ ALL_DEPARTMENTS = {
     "STL": ("Stadsloket", "I"),
     "OMG": ("Omgevingsdienst", "I"), # Intern/extern ???
     "VTH": ("VTH", "I"), # Wat is VTH ? Intern/Extern ?
+    "FB": ("FB", "I"), # ?? what is FB
 }
 
 # Constants for afhandeling
