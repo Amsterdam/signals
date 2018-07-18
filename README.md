@@ -127,12 +127,14 @@ In order to create some default groups for signals you have to run:
 
 We can also import a CSV file with users. It should look like :
 
-`user_email,groups,departments,superuser,staff,action
+~~~~
+user_email,groups,departments,superuser,staff,action
 signals.monitor@amsterdam.nl,monitors,,false,false,
 signals.behandelaar@amsterdam.nl,behandelaars,,false,false,
 signals.coordinator@amsterdam.nl,coordinatoren,,false,false,
 user.todelete@amsterdam,,,,,delete
-...`
+... 
+~~~~  
 
 
 First copy the file to the server :
