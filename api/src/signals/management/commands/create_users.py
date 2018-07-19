@@ -94,8 +94,12 @@ class Command(BaseCommand):
                     continue
 
                 if not re.match(email_valid, drow['emailadres']):
-                    log.warning(f"Inlog {drow['inlog']} komt vaker voor in regel {row_number}")
+                    log.warning(f"Ongeldige e-mail {drow['emailadres']} in regel {row_number}")
                     continue
+
+                if drow['organisatie'] != 'gemeente amsterdam' or not re.match(r'[^@]+@amsterdam.nl$',
+                                                                               drow['emailadres']):
+                    log.warning(f"User e-mail {drow['emailadres']} in regel moet in datapunt IDP worden aangemaakt")
 
                 rol = drow['rol']
                 group = rol_group.get(rol)
