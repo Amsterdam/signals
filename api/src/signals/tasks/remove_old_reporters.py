@@ -16,9 +16,6 @@ def remove_old_reporters():
 
     delete_count = 0
     for old_reporter in old_reporters:
-        signal = old_reporter._signal
-        with transaction.atomic():
-            signal.reporter = None
-            old_reporter.delete()
+        old_reporter.delete()
         delete_count += 1
     log.warning(f"Removed {delete_count} old reporters")
