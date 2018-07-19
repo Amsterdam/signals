@@ -54,10 +54,10 @@ class Signal(models.Model):
     )
 
     # Date of the incident.
-    incident_date_start = models.DateTimeField(null=False, auto_now_add=True)
+    incident_date_start = models.DateTimeField(null=False)
     incident_date_end = models.DateTimeField(null=True)
     created_at = models.DateTimeField(null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(null=True)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
     # Date action is expected
     operational_date = models.DateTimeField(null=True)
     # Date we should have reported back to reporter.
