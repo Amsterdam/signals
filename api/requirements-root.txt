@@ -12,8 +12,9 @@ django-storage-swift
 djangorestframework
 djangorestframework-csv
 djangorestframework-gis
+djangorestframework-xml
 drf-extensions
-git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
+drf_amsterdam
 psycopg2-binary
 factory-boy
 drf_yasg
