@@ -4,6 +4,7 @@ import logging
 import random
 import re
 import string
+from collections import Counter
 from django.contrib.auth.models import Group, User
 from django.core.management import BaseCommand, CommandError
 from signals.messaging.categories import ALL_DEPARTMENTS
@@ -65,6 +66,7 @@ class Command(BaseCommand):
         for group in Group.objects.all():
             all_groups[group.name] = group
 
+        inlog_counter = Counter()
         rows_to_be_processed = []
         with open(csv_path, 'rt') as csvFile:
             reader = csv.reader(csvFile, delimiter=',', quotechar="\"")
@@ -83,10 +85,17 @@ class Command(BaseCommand):
                 # Read all rows and check contents
                 drow = {}
                 for i, field in enumerate(row):
-                    drow[fields_name[i]] = field.strip().strip('"').lower()
+                    stripped_field = field.strip().strip('"')
+                    drow[fields_name[i]] = stripped_field if fields_name[i] == 'naam' else stripped_field.lower()
+
+                inlog_counter[drow['inlog']] += 1
+                if inlog_counter[drow['inlog']] > 1:
+                    log.warning(f"Inlog {drow['inlog']} komt vaker voor in regel {row_number}")
+                    continue
 
                 if not re.match(email_valid, drow['emailadres']):
-                    raise CommandError(f"Ongeldige e-mail {drow['emailadres']} in regel {row_number}")
+                    log.warning(f"Inlog {drow['inlog']} komt vaker voor in regel {row_number}")
+                    continue
 
                 rol = drow['rol']
                 group = rol_group.get(rol)
@@ -104,24 +113,34 @@ class Command(BaseCommand):
             rol = drow['rol']
             group = rol_group.get(rol)
             is_superuser = True if rol in supervisor_roles else False
+            is_active = True if drow['actief'] == 'j' else False
             dienst = drow['dienst']
+            names = drow['naam'].split(' ', 1)
+            if len(names) == 2:
+                (first_name, last_name) = names
+            else:
+                (first_name, last_name) = ('', names[0])
             if dienst:
                 department = departments_map.get(dienst)
             else:
                 department = None
 
             try:
-                user = User.objects.get(username=drow['emailadres'])
+                user = User.objects.get(username=email)
             except User.DoesNotExist:
                 user = None
             if not user:
                 user = User.objects.create_user(
                     username=email,
                     email=email,
+                    first_name = first_name,
+                    last_name = last_name,
                     password=make_random_password(),
+                    is_active=is_active,
                     is_superuser=is_superuser)
             else:
                 user.is_superuser = is_superuser
+                user.is_active = is_active
                 user.save()
 
             new_groups = set()
