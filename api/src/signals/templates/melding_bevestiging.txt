@@ -15,9 +15,15 @@ Hier is het : {{ addres_text }}
 {% endif %}
 
 Tijdstip : {{ incident_date_start }}
-
 {% if text_extra %}
+
 {{ text_extra }}
+{% endif %}
+{% if extra_properties %}
+
+{% for key, value in extra_properties.items %}
+{{key}} - {{value}}
+{% endfor %}
 {% endif %}
 
 Uw e-mailadres : {{ email  }}
@@ -27,4 +33,5 @@ Uw (mobiele) telefoon : {{ phone }}
 {% endif %}
 
 ******************************
+
 Als u nog vragen hebt, dan kunt u bellen met het Gemeentelijk informatienummer: 14 020. Geef dan ook het nummer van uw melding: {{ signal_id }}.

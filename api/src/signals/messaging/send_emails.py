@@ -40,6 +40,7 @@ def handle_create_signal(signal):
             'address_text': signal.location.address_text,
             'incident_date_start': get_incident_date_string(signal.incident_date_start),
             'text_extra': signal.text_extra,
+            'extra_properties': signal.extra_properties,
             'email': signal.reporter.email,
         }
         if signal.reporter.phone:
