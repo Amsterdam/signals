@@ -129,21 +129,21 @@ ALL_AFHANDELING_TEXT = {
 We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
 We houden u op de hoogte via e-mail.""",
     A3DEC: """
-Wij handelen uw melding binnen 3 werkdagen af. U ontvangt dan geen apart bericht meer.
+Wij handelen uw melding binnen 3 werkdagen af.
 En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
     A3WMC: """
 We laten u binnen 3 weken weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
 We houden u op de hoogte via e-mail.""",
     A3WEC: """
-Wij handelen uw melding binnen drie weken af. U ontvangt dan geen apart bericht meer.
+Wij handelen uw melding binnen drie weken af.
 En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
     I5DMC: """
 Uw melding wordt ingepland: wij laten u binnen 5 werkdagen weten hoe en wanneer uw melding wordt afgehandeld. Dat doen we via e-mail.""",
     STOPEC: """
-Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties handelen wij meestal binnen 5 werkdagen af. U ontvangt dan geen apart bericht meer.
+Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties handelen wij meestal binnen 5 werkdagen af.
 Als we uw melding niet binnen 5 werkdagen kunnen afhandelen, hoort u - via e-mail – hoe wij uw melding oppakken.""",
     KLOKLICHTZC: """
-Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties kunnen wat langer duren. Wij kunnen u hier helaas niet van  op de hoogte houden.""",
+Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties kunnen wat langer duren. Wij kunnen u hier helaas niet altijd van op de hoogte houden.""",
     GLADZC: """
 Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.
 
