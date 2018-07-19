@@ -5,6 +5,8 @@ from django.template import loader
 from signals import settings
 from signals.messaging.categories import get_afhandeling_text
 from signals.models import AFGEHANDELD, GEANNULEERD
+from django.utils import timezone
+import pytz
 
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
@@ -18,8 +20,9 @@ def get_valid_email(signal):
 
 
 def get_incident_date_string(dt):
+    local_dt = timezone.localtime(dt, pytz.timezone('Europe/Amsterdam'))
     week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
-    return week_days[dt.weekday()] + dt.strftime(" %d-%m-%Y, %H:%M")
+    return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
 
 
 # TODO : If the image has to be attached to the e-mail, we have to postpone the e-mail till the image has been
