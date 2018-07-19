@@ -35,22 +35,22 @@ class Signal(models.Model):
 
     location = models.OneToOneField(
         'Location', related_name="signal",
-        null=True, on_delete=models.CASCADE
+        null=True, on_delete=models.SET_NULL
     )
 
     status = models.OneToOneField(
         "Status", related_name="signal",
-        null=True, on_delete=models.CASCADE
+        null=True, on_delete=models.SET_NULL
     )
 
     category = models.OneToOneField(
         "Category", related_name="signal",
-        null=True, on_delete=models.CASCADE
+        null=True, on_delete=models.SET_NULL
     )
 
     reporter = models.OneToOneField(
         "Reporter", related_name="signal",
-        null=True, on_delete=models.CASCADE
+        null=True, on_delete=models.SET_NULL
     )
 
     # Date of the incident.
@@ -104,7 +104,7 @@ STADSDELEN = (
 )
 
 
-def get_buurt_code_choises():
+def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
