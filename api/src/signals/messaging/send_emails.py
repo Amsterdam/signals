@@ -18,10 +18,12 @@ def get_valid_email(signal):
 
 
 def get_incident_date_string(dt):
-    week_days = ('Maandag', 'Disdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
+    week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
     return week_days[dt.weekday()] + dt.strftime(" %d-%m-%Y, %H:%M")
 
 
+# TODO : If the image has to be attached to the e-mail, we have to postpone the e-mail till the image has been
+# uploaded. Then there has to be some kind of delay after creating the the signal before sending the e-mail
 def handle_create_signal(signal):
     if settings.TESTING or not settings.RABBITMQ_HOST:
         return
