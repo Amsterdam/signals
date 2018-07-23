@@ -143,7 +143,7 @@ class Location(models.Model):
         if self.address and isinstance(self.address, dict):
             for field, prefix in field_prefixes:
                 if field in self.address and self.address[field]:
-                    address_text += prefix + self.address[field]
+                    address_text += prefix + str(self.address[field])
             self.address_text = address_text
 
     def save(self, *args, **kwargs):
