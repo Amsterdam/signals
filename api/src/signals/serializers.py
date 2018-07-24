@@ -238,7 +238,7 @@ class SignalCreateSerializer(ModelSerializer):
         image = self.initial_data.get('image', False)
         if image:
             if image._size > 3145728:  # 3MB = 3*1024*1024
-                raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
+                raise ValidationError("Maximum photo size is 3Mb.")
         ip = self.add_ip()
         if ip is not None:
             if 'extra_properties' in data['status']:
@@ -249,6 +249,9 @@ class SignalCreateSerializer(ModelSerializer):
             data['status']['extra_properties'] = extra_properties
 
         if 'category' in data and 'sub' in data['category']:
+            if len(data['category']) < 1:
+                raise serializers.ValidationError("Invalid category")
+
             departments = get_departments(data['category']['sub'])
             if departments and ('department' not in data['category'] or not data['category']['department']):
                 data['category']['department'] = departments

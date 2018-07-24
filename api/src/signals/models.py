@@ -1,7 +1,9 @@
 import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
+from django.db.models import DO_NOTHING
 
 
 class Buurt(models.Model):
@@ -35,22 +37,22 @@ class Signal(models.Model):
 
     location = models.OneToOneField(
         'Location', related_name="signal",
-        null=True, on_delete=models.SET_NULL
+        null=False, on_delete=DO_NOTHING
     )
 
     status = models.OneToOneField(
         "Status", related_name="signal",
-        null=True, on_delete=models.SET_NULL
+        null=False, on_delete=DO_NOTHING
     )
 
     category = models.OneToOneField(
         "Category", related_name="signal",
-        null=True, on_delete=models.SET_NULL
+        null=False, on_delete=DO_NOTHING
     )
 
     reporter = models.OneToOneField(
         "Reporter", related_name="signal",
-        null=True, on_delete=models.SET_NULL
+        null=True, on_delete=DO_NOTHING
     )
 
     # Date of the incident.
@@ -179,8 +181,8 @@ class Category(models.Model):
         null=False, on_delete=models.CASCADE
     )
 
-    main = models.CharField(max_length=50, default='', null=True, blank=True)
-    sub = models.CharField(max_length=50, default='', null=True, blank=True)
+    main = models.CharField(max_length=50, default='', null=True, blank=False)
+    sub = models.CharField(max_length=50, default='', null=True, blank=False)
     department = models.CharField(max_length=50, default='', null=True, blank=True)
     priority = models.IntegerField(null=True)
     ml_priority = models.IntegerField(null=True)
@@ -240,10 +242,10 @@ STATUS_OPTIONS = (
 
 STATUS_OVERGANGEN = {
     LEEG: [GEMELD],  # Een nieuw melding mag alleen aangemaakt worden met gemeld
-    GEMELD: [AFWACHTING, GEANNULEERD, ON_HOLD, GEMELD],
-    AFWACHTING: [BEHANDELING, ON_HOLD, AFWACHTING, GEANNULEERD],
-    BEHANDELING: [AFGEHANDELD, GEANNULEERD, BEHANDELING],
-    ON_HOLD: [AFWACHTING, BEHANDELING, GEANNULEERD],
+    GEMELD: [AFWACHTING, GEANNULEERD, ON_HOLD, GEMELD, BEHANDELING],
+    AFWACHTING: [BEHANDELING, ON_HOLD, AFWACHTING, GEANNULEERD, AFGEHANDELD],
+    BEHANDELING: [AFGEHANDELD, ON_HOLD, GEANNULEERD, BEHANDELING],
+    ON_HOLD: [AFWACHTING, BEHANDELING, GEANNULEERD, GEMELD, AFGEHANDELD],
     AFGEHANDELD: [],
     GEANNULEERD: [],
 }
@@ -266,10 +268,11 @@ class Status(models.Model):
     target_api = models.CharField(max_length=250, default='')
 
     state = models.CharField(
-        max_length=1, choices=STATUS_OPTIONS, blank=True,
+        max_length=1, choices=STATUS_OPTIONS, blank=False,
         default='m', help_text='Melding status')
 
     extern = models.BooleanField(
+        null=False,
         default=False,
         help_text='Wel of niet status extern weergeven')
 

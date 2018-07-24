@@ -10,6 +10,8 @@ import pytz
 
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
+## Todo: fetch PDF and attach to message?
+
 
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
@@ -25,8 +27,10 @@ def get_incident_date_string(dt):
     return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
 
 
-# TODO : If the image has to be attached to the e-mail, we have to postpone the e-mail till the image has been
-# uploaded. Then there has to be some kind of delay after creating the the signal before sending the e-mail
+# TODO: If the image has to be attached to the e-mail, we have to postpone
+#       the e-mail till the image has been uploaded. Then there has to be
+#       some kind of delay after creating the the signal before sending the
+#       e-mail
 def handle_create_signal(signal):
     if settings.TESTING or not settings.RABBITMQ_HOST:
         return
@@ -43,6 +47,7 @@ def handle_create_signal(signal):
             'extra_properties': signal.extra_properties,
             'email': signal.reporter.email,
         }
+
         if signal.reporter.phone:
             context['phone'] = signal.reporter.phone
         template = loader.get_template('melding_bevestiging.txt')
@@ -66,10 +71,17 @@ def handle_status_change(signal, previous_status):
         if email:
             context = {
                 'signal_id': signal.id,
-                'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'gannuleerd'
+                'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'gannuleerd',
+                'address_text': signal.location.address_text,
+                'stadsdeel': signal.location.stadsdeel,
+                'category': signal.category,
+                'text': signal.text
             }
-            if signal.status.extra_properties and 'resultaat_text' in signal.status.extra_properties:
-                context['resultaat_text'] = signal.status.extra_properties['resultaat_text']
+
+            with signal.status as ss:
+                if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
+                    context['resultaat_text'] = ss.extra_properties['resultaat_text']
+
             template = loader.get_template('melding_gereed.txt')
             body = template.render(context)
             subject = f"Betreft melding : {signal.id}"

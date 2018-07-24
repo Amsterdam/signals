@@ -1,7 +1,22 @@
-Uw melding met nummer {{ signal_id }} is  {{ resultaat }}.
+Geachte melder,
+
+Uw melding over Vuurwerkoverlast met registratienummer {{ signal_id }} is afgehandeld.
 
 {% if resultaat_text %}
+De volgende toelichting is daarbij gegeven:
 {{ resultaat_text }}
 {% endif %}
 
-Als u nog vragen hebt, dan kunt u bellen met het Gemeentelijk informatienummer: 14 020. Geef dan ook het nummer van uw melding: {{ signal_id }}
+Samenvatting van uw melding
+
+Hieronder staat de samenvatting van het door u ingevulde formulier.
+Samenvatting melding: {{ signal_id }}
+Adres:  {{ addres_text }}
+Stadsdeel: {{ stadsdeel }}
+Rubriek: {{ category }}
+Uw omschrijving:
+{{ text }}
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam
