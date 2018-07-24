@@ -1,9 +1,7 @@
 import uuid
-
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
-from django.db.models import DO_NOTHING
 
 
 class Buurt(models.Model):
@@ -37,22 +35,22 @@ class Signal(models.Model):
 
     location = models.OneToOneField(
         'Location', related_name="signal",
-        null=False, on_delete=DO_NOTHING
+        null=True, on_delete=models.SET_NULL
     )
 
     status = models.OneToOneField(
         "Status", related_name="signal",
-        null=False, on_delete=DO_NOTHING
+        null=True, on_delete=models.SET_NULL
     )
 
     category = models.OneToOneField(
         "Category", related_name="signal",
-        null=False, on_delete=DO_NOTHING
+        null=True, on_delete=models.SET_NULL
     )
 
     reporter = models.OneToOneField(
         "Reporter", related_name="signal",
-        null=True, on_delete=DO_NOTHING
+        null=True, on_delete=models.SET_NULL
     )
 
     # Date of the incident.
@@ -181,8 +179,8 @@ class Category(models.Model):
         null=False, on_delete=models.CASCADE
     )
 
-    main = models.CharField(max_length=50, default='', null=True, blank=False)
-    sub = models.CharField(max_length=50, default='', null=True, blank=False)
+    main = models.CharField(max_length=50, default='', null=True, blank=True)
+    sub = models.CharField(max_length=50, default='', null=True, blank=True)
     department = models.CharField(max_length=50, default='', null=True, blank=True)
     priority = models.IntegerField(null=True)
     ml_priority = models.IntegerField(null=True)
@@ -268,11 +266,10 @@ class Status(models.Model):
     target_api = models.CharField(max_length=250, default='')
 
     state = models.CharField(
-        max_length=1, choices=STATUS_OPTIONS, blank=False,
+        max_length=1, choices=STATUS_OPTIONS, blank=True,
         default='m', help_text='Melding status')
 
     extern = models.BooleanField(
-        null=False,
         default=False,
         help_text='Wel of niet status extern weergeven')
 
