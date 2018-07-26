@@ -186,3 +186,6 @@ deploy/backups
 
 *.doc
 data/
+
+setup_env_acctest.sh
+env.sh

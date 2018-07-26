@@ -74,6 +74,7 @@ if os.getenv("SWIFT_ENABLED", "false") == "true":
     SWIFT_TEMP_URL_KEY = os.getenv("SWIFT_TEMP_URL_KEY")
     SWIFT_USE_TEMP_URLS = True
 else:
+    # noinspection PyUnresolvedReferences
     MEDIA_ROOT = '/tmp/signals/upload'
 
 # Database
@@ -82,6 +83,7 @@ DATABASES = {"default": DATABASE_OPTIONS[get_database_key()]}
 
 STATIC_URL = '/signals/static/'
 
+# noinspection PyUnresolvedReferences
 STATIC_ROOT = '/static/'
 
 HEALTH_MODEL = "signals.Signal"
@@ -142,7 +144,8 @@ RABBITMQ_HOST = os.getenv('RABBITMQ_HOST',
                           'rabbit' if in_docker() else 'localhost')
 
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
-                              f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
+                              f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}'
+                              f'@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
 CELERY_EMAIL_CHUNK_SIZE = 1
 # CELERY_EMAIL_TASK_CONFIG = {
 #     'queue': 'email',
@@ -159,10 +162,10 @@ CELERY_EMAIL_CHUNK_SIZE = 1
 # export EMAIL_USE_TLS=False
 #
 # These exports have to be set for the task that realy does the sending. So if
-# celery  does the sending then then these export should be set before starting the celery
-# working process
+# celery  does the sending then then these export should be set before starting
+# the celery working process
 
-## FIXME: Following part should be gone
+# FIXME: Following part should be gone
 EMAIL_INTEGRATION_ADDRESS = os.getenv('EMAIL_INTEGRATION_ADDRESS', None)
 EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES = (
     'Groen en water', 'Wegen/verkeer/straatmeubilair')
@@ -175,7 +178,6 @@ for main_cat in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES:
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-# EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
 
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)

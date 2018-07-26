@@ -31,7 +31,7 @@ class Signal(models.Model):
     text = models.CharField(max_length=1000)
 
     text_extra = models.CharField(
-        max_length=1000, default='', blank=True)
+        max_length=10000, default='', blank=True)
 
     location = models.OneToOneField(
         'Location', related_name="signal",
@@ -260,7 +260,7 @@ class Status(models.Model):
         null=False, on_delete=models.CASCADE
     )
 
-    text = models.CharField(max_length=1000, default='')
+    text = models.CharField(max_length=10000, default='')
     user = models.EmailField(null=True)
 
     target_api = models.CharField(max_length=250, default='')
