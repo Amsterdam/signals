@@ -124,6 +124,13 @@ SUB_CATEGORIES_DICT = {}
 for entry in ALL_SUB_CATEGORIES:
     SUB_CATEGORIES_DICT[entry[2]] = entry
 
+MAIN_CATEGORIES_DICT = {}
+for entry in ALL_SUB_CATEGORIES:
+    if SUB_CATEGORIES_DICT.get(entry[1]):
+        SUB_CATEGORIES_DICT[entry[1]] += (entry,)
+    else:
+        SUB_CATEGORIES_DICT[entry[1]] = (entry,)
+
 ALL_AFHANDELING_TEXT = {
     A3DMC: """
 We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.

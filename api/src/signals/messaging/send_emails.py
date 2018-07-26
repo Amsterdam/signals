@@ -1,21 +1,27 @@
 import re
+
+import pytz
 from django.core.mail import send_mail
 from django.template import loader
+from django.utils import timezone
 
 from signals import settings
 from signals.messaging.categories import get_afhandeling_text
-from signals.models import AFGEHANDELD, GEANNULEERD
-from django.utils import timezone
-import pytz
+from signals.models import AFGEHANDELD, GEANNULEERD, STADSDELEN
+from signals.settings import EMAIL_INTEGRATION_ADDRESS, \
+    EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES, \
+    EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES
 
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
+
 
 ## Todo: fetch PDF and attach to message?
 
 
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
-    if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
+    if signal.reporter and signal.reporter.email and re.match(email_valid,
+                                                              signal.reporter.email):
         return signal.reporter.email
     else:
         return None
@@ -23,7 +29,9 @@ def get_valid_email(signal):
 
 def get_incident_date_string(dt):
     local_dt = timezone.localtime(dt, pytz.timezone('Europe/Amsterdam'))
-    week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag')
+    week_days = (
+    'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag',
+    'Zondag')
     return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
 
 
@@ -42,7 +50,8 @@ def handle_create_signal(signal):
             'text': signal.text,
             'afhandelings_text': get_afhandeling_text(signal.category.sub),
             'address_text': signal.location.address_text,
-            'incident_date_start': get_incident_date_string(signal.incident_date_start),
+            'incident_date_start': get_incident_date_string(
+                signal.incident_date_start),
             'text_extra': signal.text_extra,
             'extra_properties': signal.extra_properties,
             'email': signal.reporter.email,
@@ -61,6 +70,37 @@ def handle_create_signal(signal):
             (to,),
             fail_silently=False,
         )
+
+    with signal.category as sc, \
+            signal.location as sl, \
+            signal.reporter as sr:
+        if EMAIL_INTEGRATION_ADDRESS \
+                and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
+                and sc.sub in EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES:
+
+            context = {
+                'signal_id': signal.id,
+                'address_text': sl.address_text,
+                'stadsdeel': STADSDELEN[sl.stadsdeel] if sl.stadsdeel else "n/a",
+                'category': sc.main + " - " + sc.sub,
+                'category_main': sc.main,
+                'category_sub': sc.sub,
+                'text': signal.text,
+                'text_extra': signal.text_extra,
+                'extra_properties': signal.extra_properties,
+                'email': sr.email,
+                'incident_date_start': get_incident_date_string(
+                    signal.incident_date_start)
+            }
+
+            template = loader.get_template('new_signal_integration_message.json')
+            send_mail(
+                subject="email",
+                message=template.render(context),
+                from_email=NOREPLY,
+                recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
+                fail_silently=False
+            )
 
 
 def handle_status_change(signal, previous_status):

@@ -1,9 +1,12 @@
+import logging
 from logging import StreamHandler
 from sys import stdout
 
+from pygelf import GelfUdpHandler
+
+from signals.messaging.categories import SUB_CATEGORIES_DICT
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
-
 from signals.settings_databases import (
     LocationKey,
     get_docker_host,
@@ -13,9 +16,6 @@ from signals.settings_databases import (
     in_docker)
 
 # Logging setup
-
-from pygelf import GelfUdpHandler
-import logging
 
 
 logging.basicConfig(
@@ -33,7 +33,6 @@ INSTALLED_APPS += ["drf_yasg", "storages", "signals"]
 ROOT_URLCONF = "signals.urls"
 
 WSGI_APPLICATION = "signals.wsgi.application"
-
 
 DATABASE_OPTIONS = {
     LocationKey.docker: {
@@ -85,7 +84,6 @@ STATIC_URL = '/signals/static/'
 
 STATIC_ROOT = '/static/'
 
-
 HEALTH_MODEL = "signals.Signal"
 
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
@@ -115,22 +113,22 @@ DATAPUNT_AUTHZ = {
 }
 
 SWAGGER_SETTINGS = {
-   'USE_SESSION_AUTH': False,
-   'SECURITY_DEFINITIONS': {
-      'Signals API - Swagger': {
-         'type': 'oauth2',
-         'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
-         'flow': 'implicit',
-         'scopes': {
-         'SIG/ALL': 'Signals alle authorizaties',
-         }
-      }
-   },
-   'OAUTH2_CONFIG': {
-      'clientId': 'swagger-ui',
-      #  'clientSecret': 'yourAppClientSecret',
-      'appName': 'Signal Swagger UI',
-   },
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Signals API - Swagger': {
+            'type': 'oauth2',
+            'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
+            'flow': 'implicit',
+            'scopes': {
+                'SIG/ALL': 'Signals alle authorizaties',
+            }
+        }
+    },
+    'OAUTH2_CONFIG': {
+        'clientId': 'swagger-ui',
+        #  'clientSecret': 'yourAppClientSecret',
+        'appName': 'Signal Swagger UI',
+    },
 }
 
 # E-mail settings for SMTP (SendGrid)
@@ -140,7 +138,8 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
 RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', 'vhost')
-RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbit' if in_docker() else 'localhost')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST',
+                          'rabbit' if in_docker() else 'localhost')
 
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
@@ -162,6 +161,16 @@ CELERY_EMAIL_CHUNK_SIZE = 1
 # These exports have to be set for the task that realy does the sending. So if
 # celery  does the sending then then these export should be set before starting the celery
 # working process
+
+## FIXME: Following part should be gone
+EMAIL_INTEGRATION_ADDRESS = os.getenv('EMAIL_INTEGRATION_ADDRESS', None)
+EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES = (
+    'Groen en water', 'Wegen/verkeer/straatmeubilair')
+EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES = ()
+for main_cat in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES:
+    for cat in SUB_CATEGORIES_DICT[main_cat]:
+        EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES += (cat[2],)
+##
 
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
