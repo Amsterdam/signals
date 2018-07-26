@@ -71,36 +71,37 @@ def handle_create_signal(signal):
             fail_silently=False,
         )
 
-    with signal.category as sc, \
-            signal.location as sl, \
-            signal.reporter as sr:
-        if EMAIL_INTEGRATION_ADDRESS \
-                and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
-                and sc.sub in EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES:
+    sc = signal.category
+    sl = signal.location
+    sr = signal.reporter
 
-            context = {
-                'signal_id': signal.id,
-                'address_text': sl.address_text,
-                'stadsdeel': STADSDELEN[sl.stadsdeel] if sl.stadsdeel else "n/a",
-                'category': sc.main + " - " + sc.sub,
-                'category_main': sc.main,
-                'category_sub': sc.sub,
-                'text': signal.text,
-                'text_extra': signal.text_extra,
-                'extra_properties': signal.extra_properties,
-                'email': sr.email,
-                'incident_date_start': get_incident_date_string(
-                    signal.incident_date_start)
-            }
+    if EMAIL_INTEGRATION_ADDRESS \
+            and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
+            and sc.sub in EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES:
 
-            template = loader.get_template('new_signal_integration_message.json')
-            send_mail(
-                subject="email",
-                message=template.render(context),
-                from_email=NOREPLY,
-                recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
-                fail_silently=False
-            )
+        context = {
+            'signal_id': signal.id,
+            'address_text': sl.address_text,
+            'stadsdeel': STADSDELEN[sl.stadsdeel] if sl.stadsdeel else "n/a",
+            'category': sc.main + " - " + sc.sub,
+            'category_main': sc.main,
+            'category_sub': sc.sub,
+            'text': signal.text,
+            'text_extra': signal.text_extra,
+            'extra_properties': signal.extra_properties,
+            'email': sr.email,
+            'incident_date_start': get_incident_date_string(
+                signal.incident_date_start)
+        }
+
+        template = loader.get_template('new_signal_integration_message.json')
+        send_mail(
+            subject="email",
+            message=template.render(context),
+            from_email=NOREPLY,
+            recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
+            fail_silently=False
+        )
 
 
 def handle_status_change(signal, previous_status):
