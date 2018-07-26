@@ -119,9 +119,9 @@ def handle_status_change(signal, previous_status):
                 'text': signal.text
             }
 
-            with signal.status as ss:
-                if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
-                    context['resultaat_text'] = ss.extra_properties['resultaat_text']
+            ss = signal.status
+            if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
+                context['resultaat_text'] = ss.extra_properties['resultaat_text']
 
             template = loader.get_template('melding_gereed.txt')
             body = template.render(context)
