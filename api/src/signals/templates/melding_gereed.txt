@@ -1,21 +1,25 @@
 Geachte melder,
 
-Uw melding over Vuurwerkoverlast met registratienummer {{ signal_id }} is afgehandeld.
+Uw melding over {{ subcategory }} met registratienummer {{ signal_id }} is afgehandeld.
 
 {% if resultaat_text %}
 De volgende toelichting is daarbij gegeven:
 {{ resultaat_text }}
 {% endif %}
 
-Samenvatting van uw melding
 
 Hieronder staat de samenvatting van het door u ingevulde formulier.
+
+
 Samenvatting melding: {{ signal_id }}
+
 Adres:  {{ addres_text }}
+
 Stadsdeel: {{ stadsdeel }}
+
 Rubriek: {{ category }}
-Uw omschrijving:
-{{ text }}
+
+Uw omschrijving: {{ text }}
 
 Met vriendelijke groet,
 

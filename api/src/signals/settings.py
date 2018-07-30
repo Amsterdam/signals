@@ -168,7 +168,8 @@ CELERY_EMAIL_CHUNK_SIZE = 1
 # FIXME: Following part should be gone
 EMAIL_INTEGRATION_ADDRESS = os.getenv('EMAIL_INTEGRATION_ADDRESS', None)
 EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES = (
-    'Groen en water', 'Wegen/verkeer/straatmeubilair')
+    'Groen en water',
+    'Wegen/verkeer/straatmeubilair')
 EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES = ()
 for main_cat in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES:
     for cat in SUB_CATEGORIES_DICT[main_cat]:

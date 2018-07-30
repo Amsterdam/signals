@@ -13,6 +13,5 @@
         "hoofdrubriek": "{{ category_main }}",
         "subrubriek": "{{ category_sub }}"
     },
-    "omschrijving": "{{ text }}",
-
+    "omschrijving": "{{ text }}"
 }
