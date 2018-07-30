@@ -13,7 +13,7 @@ Hieronder staat de samenvatting van het door u ingevulde formulier.
 
 Samenvatting melding: {{ signal_id }}
 
-Adres:  {{ addres_text }}
+Adres:  {{ address_text }}
 
 Stadsdeel: {{ stadsdeel }}
 

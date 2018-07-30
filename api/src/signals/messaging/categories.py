@@ -80,12 +80,12 @@ ALL_SUB_CATEGORIES = (
     # vervallen ('F38','Openbare ruimte','Vuurwerkoverlast', 'REST', "CCA,ASC"),
     ('F39', 'Openbare ruimte', 'Deelfiets', A3WMC, "CCA,ASC,STW"),
     ('F40', 'Openbare ruimte', 'Overig openbare ruimte', I5DMC, "CCA,ASC,STW,THOVTH"),
-    ('F41', 'Groen en water', 'Boom', I5DMC, "CCA,ASC,STW"),
-    ('F42', 'Groen en water', 'Maaien / snoeien', I5DMC, "CCA,ASC,STW"),
-    ('F43', 'Groen en water', 'Onkruid', I5DMC, "CCA,ASC,STW"),
-    ('F44', 'Groen en water', 'Drijfvuil', I5DMC, "CCA,ASC,STW"),
-    ('F45', 'Groen en water', 'Oever / kade / steiger', I5DMC, "CCA,ASC,STW"),
-    ('F46', 'Groen en water', 'Overig groen en water', I5DMC, "CCA,ASC,STW"),  # Not in meldingen classificatie
+    ('F41', 'Openbaar groen en water', 'Boom', I5DMC, "CCA,ASC,STW"),
+    ('F42', 'Openbaar groen en water', 'Maaien / snoeien', I5DMC, "CCA,ASC,STW"),
+    ('F43', 'Openbaar groen en water', 'Onkruid', I5DMC, "CCA,ASC,STW"),
+    ('F44', 'Openbaar groen en water', 'Drijfvuil', I5DMC, "CCA,ASC,STW"),
+    ('F45', 'Openbaar groen en water', 'Oever / kade / steiger', I5DMC, "CCA,ASC,STW"),
+    ('F46', 'Openbaar groen en water', 'Overig groen en water', I5DMC, "CCA,ASC,STW"),  # Not in meldingen classificatie
     # vervallen ('F47','Dieren','Hondenpoep', 'REST', "CCA,ASC"),
     ('F48', 'Dieren', 'Ratten', I5DMC, "CCA,ASC,GGD"),
     ('F49', 'Dieren', 'Ganzen', I5DMC, "CCA,ASC,GGD"),

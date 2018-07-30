@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qsl
 
 class GetAccessToken(object):
     """
-        Get an header authentication item for access token
+        Get a header authentication item for access token
         for using the internal API's
         by logging in as type = 'employee'
 

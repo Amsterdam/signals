@@ -10,8 +10,8 @@ Wat doen we met uw melding?
 
 *** Details van uw melding ***
 
-{% if addres_text %}
-Hier is het : {{ addres_text }}
+{% if address_text %}
+Hier is het : {{ address_text }}
 {% endif %}
 
 Tijdstip : {{ incident_date_start }}

@@ -1,10 +1,10 @@
+import logging
 import re
 
 import pytz
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
-import logging
 
 from signals import settings
 from signals.messaging.categories import get_afhandeling_text
@@ -15,6 +15,7 @@ from signals.settings import EMAIL_INTEGRATION_ADDRESS, \
 
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 LOG = logging.getLogger()
+
 
 ## Todo: fetch PDF and attach to message?
 
@@ -45,9 +46,9 @@ def handle_create_signal(signal):
         LOG.info('Aborting')
         return
     email = get_valid_email(signal)
-    LOG.info('Valid email: ' + str(email))
+    LOG.debug('Valid email: ' + str(email))
     if email:
-        LOG.info('Trying to compose message')
+        LOG.debug('Trying to compose message')
         context = {
             'signal_id': signal.id,
             'text': signal.text,
@@ -81,23 +82,20 @@ def handle_create_signal(signal):
     sl = signal.location
     sr = signal.reporter
 
-    LOG.info('Email integration Address %s(eia)s,\n'
-             'Main: %(main)s,\n'
-             'Sub: %(sub)s', {
-                 'eia': EMAIL_INTEGRATION_ADDRESS,
-                 'sub': sc.sub,
-                 'main': sc.main
-             })
+    LOG.debug('Email integration Address %s,\nMain: %s,\nSub: %s',
+             EMAIL_INTEGRATION_ADDRESS, sc.main, sc.sub)
 
     if EMAIL_INTEGRATION_ADDRESS \
             and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
             and sc.sub in EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES:
 
-        LOG.info('rendering template for email integration')
+        stadsdeel = [s[1] for s in STADSDELEN if s[0] == sl.stadsdeel][0]
+        LOG.debug('rendering template for email integration')
+        LOG.debug('stadsdeel is %s\n JSON=%s', sl.address_text, sl.address)
         context = {
             'signal_id': signal.id,
             'address_text': sl.address_text,
-            'stadsdeel': STADSDELEN[sl.stadsdeel] if sl.stadsdeel else "n/a",
+            'stadsdeel': stadsdeel if stadsdeel else 'onbekend',
             'category': sc.main + " - " + sc.sub,
             'category_main': sc.main,
             'category_sub': sc.sub,
@@ -119,25 +117,27 @@ def handle_create_signal(signal):
             recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
             fail_silently=False
         )
+    else:
+        LOG.debug('skipping integration email')
+        LOG.debug(EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES)
+        LOG.debug(EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES)
 
 
 def handle_status_change(signal, previous_status):
     LOG.info('Handling status change of signal')
     if settings.TESTING or not settings.RABBITMQ_HOST:
-        LOG.info('Skipping')
+        LOG.debug('Skipping')
         return
-    LOG.info('Signal %(sig_id)s changed to state: %(new_state)s '
-             'from %(prev_state)s', {
-                'sig_id': str(signal.id),
-                'new_state': str(signal.status.state),
-                'old_state': str(previous_status.state)
-             })
+    LOG.debug('Signal %s changed to state: %s from %s',
+             str(signal.id),
+             str(signal.status.state),
+             str(previous_status.state))
 
     if signal.status.state in (AFGEHANDELD, GEANNULEERD) \
             and previous_status.state not in (AFGEHANDELD, GEANNULEERD) \
             and signal.category:
 
-        LOG.info('Rendering template')
+        LOG.debug('Rendering template')
         email = get_valid_email(signal)
         if email:
             context = {
@@ -152,14 +152,15 @@ def handle_status_change(signal, previous_status):
 
             ss = signal.status
             if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
-                context['resultaat_text'] = ss.extra_properties['resultaat_text']
+                context['resultaat_text'] = ss.extra_properties[
+                    'resultaat_text']
 
             template = loader.get_template('melding_gereed.txt')
             body = template.render(context)
             subject = f"Betreft melding : {signal.id}"
             to = signal.reporter.email
 
-            LOG.info('Sending email')
+            LOG.debug('Sending email')
             send_mail(
                 subject,
                 body,
