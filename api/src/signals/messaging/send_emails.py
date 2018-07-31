@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 
@@ -80,10 +81,9 @@ def handle_create_signal(signal):
 
     sc = signal.category
     sl = signal.location
-    sr = signal.reporter
 
     LOG.debug('Email integration Address %s,\nMain: %s,\nSub: %s',
-             EMAIL_INTEGRATION_ADDRESS, sc.main, sc.sub)
+              EMAIL_INTEGRATION_ADDRESS, sc.main, sc.sub)
 
     if EMAIL_INTEGRATION_ADDRESS \
             and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
@@ -92,27 +92,27 @@ def handle_create_signal(signal):
         stadsdeel = [s[1] for s in STADSDELEN if s[0] == sl.stadsdeel][0]
         LOG.debug('rendering template for email integration')
         LOG.debug('stadsdeel is %s\n JSON=%s', sl.address_text, sl.address)
-        context = {
-            'signal_id': signal.id,
-            'address_text': sl.address_text,
-            'stadsdeel': stadsdeel if stadsdeel else 'onbekend',
-            'category': sc.main + " - " + sc.sub,
-            'category_main': sc.main,
-            'category_sub': sc.sub,
-            'text': signal.text,
-            'text_extra': signal.text_extra,
-            'extra_properties': signal.extra_properties,
-            'email': sr.email,
-            'incident_date_start': get_incident_date_string(
-                signal.incident_date_start)
-        }
 
-        template = loader.get_template('new_signal_integration_message.json')
+        message = json.dumps({
+            "mora_nummer": signal.id,
+            "signal_id": signal.signal_id,
+            "tijdstip": signal.incident_date_start,
+            "email_melder": signal.reporter.email,
+            "telefoonnummer_melder": signal.reporter.phone,
+
+            "adres": signal.location.address,
+            "stadsdeel": signal.location.stadsdeel,
+            "categorie": {
+                "hoofdrubriek": signal.category.main,
+                "subrubriek": signal.category.main
+            },
+            "omschrijving": signal.text
+        }, indent=4, sort_keys=True, default=str)
 
         LOG.info('Sinding email integration')
         send_mail(
             subject="email",
-            message=template.render(context),
+            message=message,
             from_email=NOREPLY,
             recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
             fail_silently=False
