@@ -12,10 +12,10 @@ services:
     image: rabbitmq:3
     hostname: signals-rabbit
     environment:
-    - RABBITMQ_ERLANG_COOKIE='secret cookie here'
-    - RABBITMQ_DEFAULT_USER=signals
-    - RABBITMQ_DEFAULT_PASS=insecure
-    - RABBITMQ_DEFAULT_VHOST=vhost
+      RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
+      RABBITMQ_DEFAULT_USER: signals
+      RABBITMQ_DEFAULT_PASS: insecure
+      RABBITMQ_DEFAULT_VHOST: vhost
 
   celery:
     build: ./api
@@ -23,14 +23,13 @@ services:
     - database
     - rabbit
     environment:
-    - DB_NAME=meldingen
-    - DB_PASSWORD=insecure
-    - EMAIL_HOST=localhost
-    - EMAIL_HOST_PASSWORD=insecure
-    - EMAIL_HOST_USER=unknown
-    - EMAIL_PORT=123
+      DB_NAME: meldingen
+      DB_PASSWORD: insecure
+      EMAIL_HOST: localhost
+      EMAIL_HOST_PASSWORD: insecure
+      EMAIL_HOST_USER: unknown
+      EMAIL_PORT: 123
     command: celery -A signals worker -l info
-
 
   tests:
     build: ../../
