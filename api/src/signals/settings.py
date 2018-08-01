@@ -147,6 +147,10 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}'
                               f'@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
 CELERY_EMAIL_CHUNK_SIZE = 1
+
+if TESTING:
+    CELERY_TASK_ALWAYS_EAGER = True
+
 # CELERY_EMAIL_TASK_CONFIG = {
 #     'queue': 'email',
 #     'rate_limit': '50/m',  # * CELERY_EMAIL_CHUNK_SIZE (default: 10)

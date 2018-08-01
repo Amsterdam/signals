@@ -17,20 +17,6 @@ services:
       RABBITMQ_DEFAULT_PASS: insecure
       RABBITMQ_DEFAULT_VHOST: vhost
 
-  celery:
-    build: ../../
-    links:
-    - database
-    - rabbit
-    environment:
-      DB_NAME: meldingen
-      DB_PASSWORD: insecure
-      EMAIL_HOST: localhost
-      EMAIL_HOST_PASSWORD: insecure
-      EMAIL_HOST_USER: unknown
-      EMAIL_PORT: 123
-    command: celery -A signals worker -l info
-
   tests:
     build: ../../
     links:
