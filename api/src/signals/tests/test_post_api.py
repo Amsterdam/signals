@@ -3,18 +3,16 @@ Test posting / updating to basic endpoints and authorization
 """
 import os
 import json
-# Packages
-from rest_framework.test import APITestCase
-from rest_framework.reverse import reverse
-# from . import factories
+
 from django.conf import settings
+from rest_framework.test import APITestCase
+
 from signals.models import Signal
 from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
-
-from . import factories
+from signals.tests import factories
 
 
 class PostTestCase(APITestCase):
