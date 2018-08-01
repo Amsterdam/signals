@@ -16,7 +16,7 @@ def push_to_sigmax(id):
 
 
 @app.task
-def email_apptimize(id):
+def send_mail_apptimize(id):
     """Send email to Apptimize when applicable.
 
     :param id: Signal object id
@@ -45,7 +45,7 @@ def email_apptimize(id):
         }, indent=4, sort_keys=True, default=str)
 
         send_mail(
-            subject='email',
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
             recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),

@@ -4,7 +4,7 @@ from unittest import mock
 from django.conf import settings
 from django.test import TestCase
 
-from signals.tasks import email_apptimize
+from signals.tasks import send_mail_apptimize
 from signals.tests.factories import SignalFactory
 
 
@@ -13,10 +13,8 @@ class TestTaskSendToApptimize(TestCase):
     @mock.patch('signals.tasks.send_mail')
     @mock.patch('signals.tasks._is_signal_applicable_for_apptimize',
                 return_value=True)
-    def test_send_to_apptimize(
-            self,
-            mocked_is_signal_applicable_for_apptimize,
-            mocked_send_mail):
+    def test_send_mail_apptimize(
+            self, mocked_is_signal_applicable_for_apptimize, mocked_send_mail):
         signal = SignalFactory.create()
         message = json.dumps({
             'mora_nummer': signal.id,
@@ -33,12 +31,12 @@ class TestTaskSendToApptimize(TestCase):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        email_apptimize(id=signal.id)
+        send_mail_apptimize(id=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
         mocked_send_mail.assert_called_once_with(
-            subject='email',
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
             recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
@@ -46,10 +44,9 @@ class TestTaskSendToApptimize(TestCase):
 
     @mock.patch('signals.tasks.send_mail')
     @mock.patch('signals.tasks.log')
-    def test_send_to_apptimize_no_signal_found(self,
-                                               mocked_log,
-                                               mocked_send_mail):
-        email_apptimize(id=1)  # id `1` shouldn't be found.
+    def test_send_mail_apptimize_no_signal_found(
+            self, mocked_log, mocked_send_mail):
+        send_mail_apptimize(id=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
@@ -57,11 +54,11 @@ class TestTaskSendToApptimize(TestCase):
     @mock.patch('signals.tasks.send_mail')
     @mock.patch('signals.tasks._is_signal_applicable_for_apptimize',
                 return_value=False)
-    def test_send_to_apptimize_not_applicable(
+    def test_send_mail_apptimize_not_applicable(
             self, mocked_is_signal_applicable_for_apptimize, mocked_send_mail):
         signal = SignalFactory.create()
 
-        email_apptimize(id=signal.id)
+        send_mail_apptimize(id=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
