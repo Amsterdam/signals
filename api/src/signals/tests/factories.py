@@ -1,15 +1,12 @@
 import pytz
-import factory
 import string
-import random
-from datetime import datetime
 import uuid
 import random
+from datetime import datetime
 
+import factory
 from django.contrib.gis.geos import Point
-
 from factory import fuzzy
-
 
 from signals.models import Signal
 from signals.models import Location
@@ -33,9 +30,22 @@ class SignalFactory(factory.DjangoModelFactory):
     class Meta:
         model = Signal
 
-    signal_id = uuid.uuid4()
+    # This is needed to make the back reference `_signal` on o2o related
+    # objects possible.
+    id = factory.Sequence(lambda n: n)
+
+    signal_id = fuzzy.FuzzyAttribute(uuid.uuid4)
     text = fuzzy.FuzzyText(length=100)
     text_extra = fuzzy.FuzzyText(length=100)
+
+    location = factory.SubFactory('signals.tests.factories.LocationFactory',
+                                  _signal_id=factory.SelfAttribute('..id'))
+    status = factory.SubFactory('signals.tests.factories.StatusFactory',
+                                _signal_id=factory.SelfAttribute('..id'))
+    category = factory.SubFactory('signals.tests.factories.CategoryFactory',
+                                  _signal_id=factory.SelfAttribute('..id'))
+    reporter = factory.SubFactory('signals.tests.factories.ReporterFactory',
+                                  _signal_id=factory.SelfAttribute('..id'))
 
     incident_date_start = fuzzy.FuzzyDateTime(
         datetime(2017, 11, 1, tzinfo=pytz.UTC),
