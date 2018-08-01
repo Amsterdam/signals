@@ -93,11 +93,11 @@ class BrowseDatasetsTestCase(APITestCase):
         self.assertEqual(response.data.get('signal_id'),
                          str(some_signal.signal_id),
                          "Signaal komt niet overeen")
-        self.assertEqual(response.data.get('status').get('id'), some_signal.id,
-                         "Signaal komt niet overeen")
+        self.assertEqual(response.data.get('status').get('id'),
+                         some_signal.status.id, "Status id komt niet overeen")
         self.assertEqual(response.data.get('status').get('state'),
                          str(some_signal.status.state),
-                         "Signaal komt niet overeen")
+                         "Signaal status komt niet overeen")
         self.assertEqual(response.data.get('text'), None,
                          "Signaal lekt informatie naar publiek endpoint")
         self.assertEqual(response.data.get('category'), None,
