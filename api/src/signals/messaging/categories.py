@@ -65,7 +65,7 @@ ALL_SUB_CATEGORIES = (
     ('F24a', 'Wegen, verkeer, straatmeubilair', 'Straatverlichting / openbare klok', KLOKLICHTZC, "CCA,ASC"),
     ('F24b', 'Wegen, verkeer, straatmeubilair', 'Klok', KLOKLICHTZC, "CCA,ASC,OVL"),  # TODO: not in meldingen classificatie
     ('F25', 'Wegen, verkeer, straatmeubilair', 'Verkeerslicht', STOPEC, "CCA,ASC,VRI"),
-    ('F26', 'Wegen, verkeer, straatmeubilair', 'Overig wegen/verkeer/straatmeubilair', I5DMC, "CCA,ASC,STW"), # TODO : not in classificatie
+    ('F26', 'Wegen, verkeer, straatmeubilair', 'Overig Wegen, verkeer, straatmeubilair', I5DMC, "CCA,ASC,STW"), # TODO : not in classificatie
     ('F27', 'Wegen, verkeer, straatmeubilair', 'Verkeersoverlast / Verkeerssituaties', I5DMC, "CCA,ASC,THO"),
     ('F28', 'Overlast in de openbare ruimte', 'Lozing / dumping / bodemverontreiniging', A3DMC, "CCA,ASC,OMG"),
     ('F29', 'Overlast in de openbare ruimte', 'Parkeeroverlast', A3DMC, "CCA,ASC,THO"),
