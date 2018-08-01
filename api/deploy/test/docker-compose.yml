@@ -8,15 +8,24 @@ services:
       POSTGRES_USER: signals
       POSTGRES_DB: signals
 
+  rabbit:
+    image: rabbitmq:3
+    hostname: signals-rabbit
+    environment:
+      RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
+      RABBITMQ_DEFAULT_USER: signals
+      RABBITMQ_DEFAULT_PASS: insecure
+      RABBITMQ_DEFAULT_VHOST: vhost
+
   tests:
     build: ../../
     links:
-      - database:signals
+    - database:signals
     environment:
       DATABASE_NAME: signals
       DATABASE_USER: signals
       DATABASE_PASSWORD: insecure
       ENVIRONMENT: test
     volumes:
-        - ./run_tests.sh:/app/run_tests.sh
+    - ./run_tests.sh:/app/run_tests.sh
     command: /app/run_tests.sh

@@ -18,6 +18,7 @@ dc pull
 dc build
 
 dc up -d database
+dc up -d rabbit
 
 dc run --rm tests
 
