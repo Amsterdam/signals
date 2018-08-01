@@ -9,7 +9,12 @@ class TestDjangoSignals(testcases.TestCase):
 
     @mock.patch('signals.django_signals.tasks')
     def test_post_save_signal_created(self, mocked_tasks):
-        signal = SignalFactory.create()
+        signal = SignalFactory.build()
+        signal.location.save()
+        signal.status.save()
+        signal.reporter.save()
+        signal.category.save()
+        signal.save()  # Triggers Django `post_save` signal.
 
         mocked_tasks.push_to_sigmax.delay.assert_called_once_with(id=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
@@ -18,7 +23,6 @@ class TestDjangoSignals(testcases.TestCase):
     @mock.patch('signals.django_signals.tasks')
     def test_post_save_signal_updated(self, mocked_tasks):
         signal = SignalFactory.create()
-        mocked_tasks.reset_mock()
 
         signal.text = 'Signal is updated'
         signal.save()
