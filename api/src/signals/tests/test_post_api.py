@@ -3,18 +3,16 @@ Test posting / updating to basic endpoints and authorization
 """
 import os
 import json
-# Packages
-from rest_framework.test import APITestCase
-from rest_framework.reverse import reverse
-# from . import factories
+
 from django.conf import settings
+from rest_framework.test import APITestCase
+
 from signals.models import Signal
 from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
-
-from . import factories
+from signals.tests import factories
 
 
 class PostTestCase(APITestCase):
@@ -54,23 +52,14 @@ class PostTestCase(APITestCase):
         return postjson
 
     def setUp(self):
-        self.s = factories.SignalFactory()
-
-        self.loc = factories.LocationFactory(_signal=self.s)
-        self.status = factories.StatusFactory(_signal=self.s)
-        self.category = factories.CategoryFactory(_signal=self.s)
-        self.reporter = factories.ReporterFactory(_signal=self.s)
-
-        self.s.location = self.loc
-        self.s.status = self.status
-        self.s.category = self.category
-        self.s.reporter = self.reporter
-        self.s.save()
+        self.signal = factories.SignalFactory()
+        self.location = self.signal.location
+        self.status = self.signal.status
+        self.category = self.signal.category
+        self.reporter = self.signal.reporter
 
     def test_post_signal(self):
-        """Post een compleet signaal.
-        """
-
+        """Post een compleet signaal."""
         url = "/signals/signal/"
         postjson = self._get_fixture('post_signal')
         response = self.client.post(url, postjson, format='json')
@@ -123,40 +112,35 @@ class PostTestCase(APITestCase):
         """
         url = "/signals/auth/status/"
         postjson = self._get_fixture('post_status')
-        # signal_url = reverse('signal-auth-detail', args=[self.s.id])
-        postjson['_signal'] = self.s.id
+        postjson['_signal'] = self.signal.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
-        self.s.refresh_from_db()
+        self.signal.refresh_from_db()
         # check that current status of signal is now this one
-        self.assertEqual(self.s.status.id, result['id'])
+        self.assertEqual(self.signal.status.id, result['id'])
 
     def test_post_location(self):
-        """We only create new location items
-        """
+        """We only create new location items"""
         url = "/signals/auth/location/"
         postjson = self._get_fixture('post_location')
-        # signal_url = reverse('signal-auth-detail', args=[self.s.id])
-        postjson['_signal'] = self.s.id
+        postjson['_signal'] = self.signal.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
-        self.s.refresh_from_db()
+        self.signal.refresh_from_db()
         # check that current location of signal is now this one
-        self.assertEqual(self.s.location.id, result['id'])
+        self.assertEqual(self.signal.location.id, result['id'])
 
     def test_post_category(self):
-        """Category Post
-        """
+        """Category Post"""
         url = "/signals/auth/category/"
         postjson = self._get_fixture('post_category')
-        signal_url = reverse('signal-auth-detail', args=[self.s.id])
-        postjson['_signal'] = self.s.id
+        postjson['_signal'] = self.signal.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
-        self.s.refresh_from_db()
+        self.signal.refresh_from_db()
         # check that current location of signal is now this one
-        self.assertEqual(self.s.category.id, result['id'])
-        self.assertEqual(self.s.category.department, "CCA,ASC,WAT")
+        self.assertEqual(self.signal.category.id, result['id'])
+        self.assertEqual(self.signal.category.department, "CCA,ASC,WAT")
