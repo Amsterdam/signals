@@ -18,7 +18,7 @@ services:
       RABBITMQ_DEFAULT_VHOST: vhost
 
   celery:
-    build: ./api
+    build: ../../
     links:
     - database
     - rabbit
