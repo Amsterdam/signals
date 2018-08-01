@@ -49,8 +49,7 @@ def email_apptimize(id):
             message=message,
             from_email=settings.NOREPLY,
             recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
-            fail_silently=False
-        )
+            fail_silently=False)
 
 
 def _is_signal_applicable_for_apptimize(signal):
