@@ -59,7 +59,7 @@ def _is_signal_applicable_for_apptimize(signal):
     :returns: bool
     """
     eligible_main_categories = ('Openbaar groen en water',
-                                'Wegen/verkeer/straatmeubilair', )
+                                'Wegen, verkeer, straatmeubilair', )
     eligible_sub_categories = ()
     for main_category in eligible_main_categories:
         for sub_category in settings.SUB_CATEGORIES_DICT[main_category]:

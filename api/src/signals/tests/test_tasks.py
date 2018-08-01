@@ -75,10 +75,10 @@ class TestTaskSendToApptimize(TestCase):
              'CCA,ASC,STW'),
             # ...
         ),
-        'Wegen/verkeer/straatmeubilair': (
-            ('F14', 'Wegen/verkeer/straatmeubilair',
+        'Wegen, verkeer, straatmeubilair': (
+            ('F14', 'Wegen, verkeer, straatmeubilair',
              'Onderhoud stoep, straat en fietspad', 'A3DEC', 'CCA,ASC,STW'),
-            ('F15', 'Wegen/verkeer/straatmeubilair',
+            ('F15', 'Wegen, verkeer, straatmeubilair',
              'Verkeersbord, verkeersafzetting', 'A3DEC', 'CCA,ASC,STW'),
             # ...
         )
