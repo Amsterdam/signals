@@ -40,3 +40,13 @@ def send_mail_apptimize(key: int):
     signal: Signal = retrieve_signal(key)
     if signal and apptimize.is_signal_applicable(signal):
         apptimize.handle(signal)
+
+
+@app.task
+def send_mail_flex_horeca(id):
+    """Send email to Flex Horeca Team when applicable
+
+    :param id: Signal object id
+    :returns:
+    """
+    pass
