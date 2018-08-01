@@ -6,4 +6,5 @@ class SignalsConfig(AppConfig):
     verbose_name = 'Signals'
 
     def ready(self):
+        # Import Django signals to connect receiver functions.
         import signals.django_signals  # noqa
