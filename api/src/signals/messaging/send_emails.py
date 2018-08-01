@@ -1,20 +1,15 @@
-import json
 import logging
 import re
 
 import pytz
+from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from signals import settings
 from signals.messaging.categories import get_afhandeling_text
 from signals.models import AFGEHANDELD, GEANNULEERD, STADSDELEN
-from signals.settings import EMAIL_INTEGRATION_ADDRESS, \
-    EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES, \
-    EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES
 
-NOREPLY = 'noreply@meldingen.amsterdam.nl'
 LOG = logging.getLogger()
 
 
@@ -74,53 +69,10 @@ def handle_create_signal(signal):
         send_mail(
             subject,
             body,
-            NOREPLY,
+            settings.NOREPLY,
             (to,),
             fail_silently=False,
         )
-
-    sc = signal.category
-    sl = signal.location
-
-    LOG.debug('Email integration Address %s,\nMain: %s,\nSub: %s',
-              EMAIL_INTEGRATION_ADDRESS, sc.main, sc.sub)
-
-    if EMAIL_INTEGRATION_ADDRESS \
-            and sc.main in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES \
-            and sc.sub in EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES:
-
-        stadsdeel = [s[1] for s in STADSDELEN if s[0] == sl.stadsdeel][0]
-        LOG.debug('rendering template for email integration')
-        LOG.debug('stadsdeel is %s\n JSON=%s', sl.address_text, sl.address)
-
-        message = json.dumps({
-            "mora_nummer": signal.id,
-            "signal_id": signal.signal_id,
-            "tijdstip": signal.incident_date_start,
-            "email_melder": signal.reporter.email,
-            "telefoonnummer_melder": signal.reporter.phone,
-
-            "adres": signal.location.address,
-            "stadsdeel": signal.location.stadsdeel,
-            "categorie": {
-                "hoofdrubriek": signal.category.main,
-                "subrubriek": signal.category.main
-            },
-            "omschrijving": signal.text
-        }, indent=4, sort_keys=True, default=str)
-
-        LOG.info('Sinding email integration')
-        send_mail(
-            subject="email",
-            message=message,
-            from_email=NOREPLY,
-            recipient_list=(EMAIL_INTEGRATION_ADDRESS,),
-            fail_silently=False
-        )
-    else:
-        LOG.debug('skipping integration email')
-        LOG.debug(EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES)
-        LOG.debug(EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES)
 
 
 def handle_status_change(signal, previous_status):
@@ -164,7 +116,7 @@ def handle_status_change(signal, previous_status):
             send_mail(
                 subject,
                 body,
-                NOREPLY,
+                settings.NOREPLY,
                 (to,),
                 fail_silently=False,
             )

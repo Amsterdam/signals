@@ -169,16 +169,9 @@ if TESTING:
 # celery  does the sending then then these export should be set before starting
 # the celery working process
 
-# FIXME: Following part should be gone
-EMAIL_INTEGRATION_ADDRESS = os.getenv('EMAIL_INTEGRATION_ADDRESS', None)
-EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES = (
-    'Openbaar groen en water',
-    'Wegen/verkeer/straatmeubilair')
-EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES = ()
-for main_cat in EMAIL_INTEGRATION_ELIGIBLE_MAIN_CATEGORIES:
-    for cat in SUB_CATEGORIES_DICT[main_cat]:
-        EMAIL_INTEGRATION_ELIGIBLE_SUB_CATEGORIES += (cat[2],)
-##
+EMAIL_APPTIMIZE_INTEGRATION_ADDRESS = os.getenv(
+    'EMAIL_APPTIMIZE_INTEGRATION_ADDRESS', None)
+NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
