@@ -20,8 +20,18 @@ class TestTaskSendToApptimize(TestCase):
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
 
-    def test_send_to_apptimize_not_applicable(self):
-        pass
+    @mock.patch('signals.tasks.send_mail')
+    @mock.patch('signals.tasks._is_signal_applicable_for_apptimize',
+                return_value=False)
+    def test_send_to_apptimize_not_applicable(
+            self, mocked_is_signal_applicable_for_apptimize, mocked_send_mail):
+        signal = SignalFactory.create()
+
+        email_apptimize(id=signal.id)
+
+        mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
+            signal)
+        mocked_send_mail.assert_not_called()
 
     def test_is_signal_applicable_for_apptimize_true(self):
         pass
