@@ -16,7 +16,7 @@ def push_to_sigmax(id):
 
 
 @app.task
-def email_to_apptimize(id):
+def email_apptimize(id):
     """Send email to Apptimize when applicable.
 
     :param id: Signal object id
@@ -25,7 +25,7 @@ def email_to_apptimize(id):
     try:
         signal = Signal.objects.get(id=id)
     except Signal.DoesNotExist as e:
-        log.exception(e.message)
+        log.exception(str(e))
         return
 
     if _is_signal_applicable_for_apptimize(signal):

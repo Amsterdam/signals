@@ -12,7 +12,7 @@ class TestDjangoSignals(testcases.TestCase):
         signal = SignalFactory.create()
 
         mocked_tasks.push_to_sigmax.delay.assert_called_once_with(id=signal.id)
-        mocked_tasks.email_to_apptimize.delay.assert_called_once_with(
+        mocked_tasks.email_apptimize.delay.assert_called_once_with(
             id=signal.id)
 
     @mock.patch('signals.django_signals.tasks')
@@ -23,5 +23,5 @@ class TestDjangoSignals(testcases.TestCase):
         signal.text = 'Signal is updated'
         signal.save()
         mocked_tasks.push_to_sigmax.delay.assert_not_called()
-        mocked_tasks.email_to_apptimize.delay.assert_called_once_with(
+        mocked_tasks.email_apptimize.delay.assert_called_once_with(
             id=signal.id)
