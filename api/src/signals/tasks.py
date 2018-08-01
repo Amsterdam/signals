@@ -80,3 +80,13 @@ def _is_signal_applicable_for_apptimize(signal):
         and signal.category.sub in eligible_sub_categories)
 
     return is_applicable_for_apptimize
+
+
+@app.task
+def send_mail_flex_horeca(id):
+    """Send email to Flex Horeca Team when applicable
+
+    :param id: Signal object id
+    :returns:
+    """
+    pass
