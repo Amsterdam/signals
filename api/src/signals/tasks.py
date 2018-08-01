@@ -65,9 +65,9 @@ def _is_signal_applicable_for_apptimize(signal):
         for sub_category in settings.SUB_CATEGORIES_DICT[main_category]:
             eligible_sub_categories += (sub_category[2], )
 
-    is_eligible_for_apptimize = (
-        settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS
+    is_applicable_for_apptimize = (
+        settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
         and signal.category.main in eligible_main_categories
         and signal.category.sub in eligible_sub_categories)
 
-    return is_eligible_for_apptimize
+    return is_applicable_for_apptimize

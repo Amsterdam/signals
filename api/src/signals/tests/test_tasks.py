@@ -2,9 +2,9 @@ import json
 from unittest import mock
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
-from signals.tasks import send_mail_apptimize
+from signals import tasks
 from signals.tests.factories import SignalFactory
 
 
@@ -31,7 +31,7 @@ class TestTaskSendToApptimize(TestCase):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        send_mail_apptimize(id=signal.id)
+        tasks.send_mail_apptimize(id=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
@@ -46,7 +46,7 @@ class TestTaskSendToApptimize(TestCase):
     @mock.patch('signals.tasks.log')
     def test_send_mail_apptimize_no_signal_found(
             self, mocked_log, mocked_send_mail):
-        send_mail_apptimize(id=1)  # id `1` shouldn't be found.
+        tasks.send_mail_apptimize(id=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
@@ -58,14 +58,58 @@ class TestTaskSendToApptimize(TestCase):
             self, mocked_is_signal_applicable_for_apptimize, mocked_send_mail):
         signal = SignalFactory.create()
 
-        send_mail_apptimize(id=signal.id)
+        tasks.send_mail_apptimize(id=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
         mocked_send_mail.assert_not_called()
 
-    def test_is_signal_applicable_for_apptimize_true(self):
-        pass
 
-    def test_is_signal_applicable_for_apptimize_false(self):
-        pass
+@override_settings(
+    EMAIL_APPTIMIZE_INTEGRATION_ADDRESS='test@test.com',
+    SUB_CATEGORIES_DICT={
+        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
+        'Openbaar groen en water': (
+            ('F41', 'Openbaar groen en water', 'Boom', 'I5DMC', 'CCA,ASC,STW'),
+            ('F42', 'Openbaar groen en water', 'Maaien / snoeien', 'I5DMC',
+             'CCA,ASC,STW'),
+            # ...
+        ),
+        'Wegen/verkeer/straatmeubilair': (
+            ('F14', 'Wegen/verkeer/straatmeubilair',
+             'Onderhoud stoep, straat en fietspad', 'A3DEC', 'CCA,ASC,STW'),
+            ('F15', 'Wegen/verkeer/straatmeubilair',
+             'Verkeersbord, verkeersafzetting', 'A3DEC', 'CCA,ASC,STW'),
+            # ...
+        )
+    }
+)
+class TestHelperIsSignalApplicableForApptimize(TestCase):
+
+    def test_is_signal_applicable_for_apptimize_in_category(self):
+        signal = SignalFactory.create(
+            category__main='Openbaar groen en water',
+            category__sub='Boom')
+
+        result = tasks._is_signal_applicable_for_apptimize(signal)
+
+        self.assertEqual(result, True)
+
+    def test_is_signal_applicable_for_apptimize_outside_category(self):
+        signal = SignalFactory.create(
+            category__main='Some other main category',
+            category__sub='Some other sub category')
+
+        result = tasks._is_signal_applicable_for_apptimize(signal)
+
+        self.assertEqual(result, False)
+
+    @override_settings(EMAIL_APPTIMIZE_INTEGRATION_ADDRESS=None)
+    def test_is_signal_applicable_for_apptimize_no_email(self):
+        signal = SignalFactory.create(
+            category__main='Openbaar groen en water',
+            category__sub='Boom')
+
+        result = tasks._is_signal_applicable_for_apptimize(signal)
+
+        self.assertEqual(result, False)
