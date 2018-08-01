@@ -2,13 +2,14 @@
 Test gets basic endpoints and authorization
 """
 # Packages
+from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APITestCase
 
+from signals.models import Signal
 from . import factories
 
 
 class BrowseDatasetsTestCase(APITestCase):
-
     datasets = [
         "signals/auth/signal",
         "signals/auth/status",
@@ -82,3 +83,26 @@ class BrowseDatasetsTestCase(APITestCase):
             self.assertIn(
                 "count", response.data, "No count attribute in {}".format(url)
             )
+
+    def test_signal_unauthenticated(self):
+        some_signal = Signal.objects.all().first()
+
+        response = self.client.get(f"/signals/signal/{some_signal.signal_id}/")
+        self.assertEqual(response.status_code, HTTP_200_OK,
+                         "Probelem retrieving signal status")
+        self.assertEqual(response.data.get('signal_id'),
+                         str(some_signal.signal_id),
+                         "Signaal komt niet overeen")
+        self.assertEqual(response.data.get('status').get('id'),
+                         some_signal.status.id, "Status id komt niet overeen")
+        self.assertEqual(response.data.get('status').get('state'),
+                         str(some_signal.status.state),
+                         "Signaal status komt niet overeen")
+        self.assertEqual(response.data.get('text'), None,
+                         "Signaal lekt informatie naar publiek endpoint")
+        self.assertEqual(response.data.get('category'), None,
+                         "Signaal lekt informatie naar publiek endpoint")
+        self.assertEqual(response.data.get('location'), None,
+                         "Signaal lekt informatie naar publiek endpoint")
+        self.assertEqual(response.data.get('id'), None,
+                         "Signaal lekt informatie naar publiek endpoint")

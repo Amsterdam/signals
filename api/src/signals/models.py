@@ -181,7 +181,8 @@ class Category(models.Model):
 
     main = models.CharField(max_length=50, default='', null=True, blank=True)
     sub = models.CharField(max_length=50, default='', null=True, blank=True)
-    department = models.CharField(max_length=50, default='', null=True, blank=True)
+    department = models.CharField(max_length=50, default='',
+                                  null=True, blank=True)
     priority = models.IntegerField(null=True)
     ml_priority = models.IntegerField(null=True)
 
@@ -286,7 +287,3 @@ class Status(models.Model):
 
     def __str__(self):
         return self.text
-#
-#
-# class SignalsUser(AbstractUser):
-#     department = models.CharField(max_length=50, default='')

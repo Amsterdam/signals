@@ -94,6 +94,19 @@ class StatusModelSerializer(serializers.ModelSerializer):
         extra_kwargs = {'_signal': {'required': False}}
 
 
+class StatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
+    id = IntegerField(label='ID', read_only=True)
+
+    class Meta:
+        model = Status
+        fields = (
+            'id',
+            'state',
+        )
+
+        extra_kwargs = {'_signal': {'required': False}}
+
+
 class ReporterModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reporter
@@ -144,7 +157,7 @@ class SignalUpdateImageSerializer(ModelSerializer):
         # self.data.is_valid()
         image = self.initial_data.get('image', False)
         if image:
-            if image._size > 3145728:  # 3MB = 3*1024*1024
+            if image.file.size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
         else:
             raise ValidationError("Foto is een verplicht veld.")
@@ -291,6 +304,35 @@ class SignalLinksField(serializers.HyperlinkedIdentityField):
         ])
 
         return result
+
+
+class SignalUnauthenticatedLinksField(serializers.HyperlinkedIdentityField):
+    """
+    Return url based on UUID instead of normal database id
+    """
+    lookup_field = 'signal_id'
+
+
+class SignalUnauthenticatedSerializer(HALSerializer):
+    _display = DisplayField()
+    signal_id = CharField(label='SIGNAL_ID', read_only=True)
+    status = StatusUnauthenticatedModelSerializer(read_only=True)
+
+    _links = SignalUnauthenticatedLinksField('signal-detail')
+
+    class Meta(object):
+        model = Signal
+        fields = [
+            "_links",
+            "_display",
+            "signal_id",
+            "status",
+            "created_at",
+            "updated_at",
+            "incident_date_start",
+            "incident_date_end",
+            "operational_date",
+        ]
 
 
 class SignalAuthSerializer(HALSerializer):
