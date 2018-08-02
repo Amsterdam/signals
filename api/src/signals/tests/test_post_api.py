@@ -59,6 +59,12 @@ class PostTestCase(APITestCase):
         self.category = self.signal.category
         self.reporter = self.signal.reporter
 
+        self.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+            b'\x02\x4c\x01\x00\x3b'
+        )
+
     def test_post_signal(self):
         """Post een compleet signaal."""
         url = "/signals/signal/"
@@ -105,20 +111,27 @@ class PostTestCase(APITestCase):
         )
 
     def test_post_signal_image(self):
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
         url = '/signals/signal/image/'
         image = SimpleUploadedFile(
-            'image.gif', small_gif, content_type='image/gif')
+            'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.id, 'image': image})
 
         self.assertEqual(response.status_code, 202)
         self.signal.refresh_from_db()
         self.assertTrue(self.signal.image)
+
+    def test_post_signal_image_already_exists(self):
+        self.signal.image = 'already_exists'
+        self.signal.save()
+
+        url = '/signals/signal/image/'
+        image = SimpleUploadedFile(
+            'image.gif', self.small_gif, content_type='image/gif')
+        response = self.client.post(
+            url, {'signal_id': self.signal.id, 'image': image})
+
+        self.assertEqual(response.status_code, 403)
 
     def test_post_status(self):
         """Update status of signal
