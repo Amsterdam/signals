@@ -42,6 +42,9 @@ class SignalRouter(routers.DefaultRouter):
 
 
 signals = SignalRouter()
+
+signals.register(
+    r"signal/image", api_views.SignalImageUpdateView, base_name="img")
 signals.register(
     r"signal", api_views.SignalView, base_name="signal")
 signals.register(
@@ -61,9 +64,6 @@ signals.register(
 #     r"location", api_views.LocationView, base_name="location")
 signals.register(
     r"auth/location", api_views.LocationAuthView, base_name="location-auth")
-
-signals.register(
-    r"signal/image", api_views.SignalImageUpdateView, base_name="img")
 
 # signals.register(
 #     r"auth/me", api_views.LocationUserView, base_name="me-auth")
@@ -97,7 +97,7 @@ urlpatterns = [
     url(r"^signals/", include(urls)),
     url(r"^status/", include("signals.health.urls")),
     path("signals/auth/me/", api_views.LocationUserView.as_view()),
-    # TODO : where should the Django Admin endpoint be eventually 
+    # TODO : where should the Django Admin endpoint be eventually
     path("signals/admin/", admin.site.urls),
 ]
 
