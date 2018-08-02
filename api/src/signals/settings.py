@@ -16,14 +16,16 @@ from signals.settings_databases import (
     in_docker)
 
 # Logging setup
+GELF_HOST: str = os.getenv('GELF_UDP_HOST')
+GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 
+log_handlers = [StreamHandler(stream=stdout)]
+if GELF_HOST:
+    log_handlers += [GelfUdpHandler(host=GELF_HOST, port=GELF_PORT)]
 
 logging.basicConfig(
     level=logging.INFO,
-    handlers=[
-        GelfUdpHandler(host='127.0.0.1', port=12201),
-        StreamHandler(stream=stdout)
-    ]
+    handlers=log_handlers
 )
 
 # Application definition
@@ -168,6 +170,9 @@ if TESTING:
 # These exports have to be set for the task that realy does the sending. So if
 # celery  does the sending then then these export should be set before starting
 # the celery working process
+
+SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
+SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 
 EMAIL_APPTIMIZE_INTEGRATION_ADDRESS = os.getenv(
     'EMAIL_APPTIMIZE_INTEGRATION_ADDRESS', None)
