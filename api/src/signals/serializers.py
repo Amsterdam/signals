@@ -157,7 +157,7 @@ class SignalUpdateImageSerializer(ModelSerializer):
         # self.data.is_valid()
         image = self.initial_data.get('image', False)
         if image:
-            if image.file.size > 3145728:  # 3MB = 3*1024*1024
+            if image.size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
         else:
             raise ValidationError("Foto is een verplicht veld.")
