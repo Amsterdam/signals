@@ -1,9 +1,3 @@
-import logging
-from logging import StreamHandler
-from sys import stdout
-
-from pygelf import GelfUdpHandler
-
 from signals.messaging.categories import SUB_CATEGORIES_DICT
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
@@ -14,19 +8,6 @@ from signals.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
     in_docker)
-
-# Logging setup
-GELF_HOST: str = os.getenv('GELF_UDP_HOST')
-GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
-
-log_handlers = [StreamHandler(stream=stdout)]
-if GELF_HOST:
-    log_handlers += [GelfUdpHandler(host=GELF_HOST, port=GELF_PORT)]
-
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=log_handlers
-)
 
 # Application definition
 

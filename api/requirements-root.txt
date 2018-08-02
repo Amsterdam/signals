@@ -23,4 +23,4 @@ django-celery-email
 django-storages
 django-storage-swift
 Pillow
-pygelf
+graypy
