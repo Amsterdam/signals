@@ -2,8 +2,10 @@ Geachte melder,
 
 Uw melding over {{ subcategory }} met registratienummer {{ signal_id }} is afgehandeld.
 
-{% if resultaat_text %}
+{% if resultaat_text or status_text %}
 De volgende toelichting is daarbij gegeven:
+{{ status_text }}
+
 {{ resultaat_text }}
 {% endif %}
 
