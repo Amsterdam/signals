@@ -250,7 +250,7 @@ class SignalCreateSerializer(ModelSerializer):
 
         image = self.initial_data.get('image', False)
         if image:
-            if image._size > 3145728:  # 3MB = 3*1024*1024
+            if image.size > 3145728:  # 3MB = 3*1024*1024
                 raise ValidationError("Maximum photo size is 3Mb.")
         ip = self.add_ip()
         if ip is not None:
