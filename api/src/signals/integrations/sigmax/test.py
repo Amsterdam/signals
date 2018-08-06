@@ -9,7 +9,6 @@ from unittest import mock
 from django.test import TestCase, override_settings
 from lxml import etree
 
-import utils
 from signals.integrations.sigmax import utils, handler
 from signals.models import Signal
 from signals.tests.factories import SignalFactory
