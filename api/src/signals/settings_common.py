@@ -146,7 +146,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../../../", "static"))
 
 # Logging setup
-GELF_HOST: str = os.getenv('GELF_UDP_HOST')
+GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
 GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
     "version": 1,
