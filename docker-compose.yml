@@ -41,7 +41,7 @@ services:
   api:
     build: ./api
     ports:
-      - "8000:8000"
+      - "8001:8000"
     links:
       - database
       - rabbit
