@@ -67,7 +67,7 @@ class PostTestCase(APITestCase):
 
     def test_post_signal_with_json(self):
         """Post een compleet signaal."""
-        url = "/signals/signal/"
+        url = '/signals/signal/'
         postjson = self._get_fixture('post_signal')
         response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
@@ -111,7 +111,7 @@ class PostTestCase(APITestCase):
         )
 
     def test_post_signal_with_multipart_and_image(self):
-        url = "/signals/signal/"
+        url = '/signals/signal/'
         data = self._get_fixture('post_signal')
 
         # Adding a testing image to the posting data.
@@ -119,7 +119,8 @@ class PostTestCase(APITestCase):
             'image.gif', self.small_gif, content_type='image/gif')
         data['image'] = image
 
-        # Changing data dict structure to work with multipart structure.
+        # Changing data dict structure (loaded from json file) to work with
+        # multipart structure.
         for key, value in data['status'].items():
             data['status.{}'.format(key)] = value
         for key, value in data['location'].items():
