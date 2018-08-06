@@ -1,19 +1,20 @@
+import datetime
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
 
-def _format_datetime(dt):
+def _format_datetime(dt: datetime) -> str:
     """Format datetime as YYYYMMDDHHMMSS."""
     return dt.strftime('%Y%m%d%H%M%S')
 
 
-def _format_date(dt):
+def _format_date(dt: datetime) -> str:
     """Format date as YYYYMMDD."""
     return dt.strftime('%Y%m%d')
 
 
-def _get_session_with_retries():
+def _get_session_with_retries() -> requests.Session:
     """
     There can be a some delays in processing from Sigmax. This retry logic
     handles most of that without having to reschedule the task. If this fails

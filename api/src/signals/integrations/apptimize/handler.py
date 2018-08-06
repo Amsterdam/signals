@@ -36,7 +36,8 @@ def is_signal_applicable(signal: Signal):
     return is_applicable_for_apptimize
 
 
-def handle(signal: Signal):
+def handle(signal: Signal) -> None:
+    print('SENDING')
     message = json.dumps({
         'mora_nummer': signal.id,
         'signal_id': signal.signal_id,

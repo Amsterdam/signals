@@ -68,7 +68,10 @@ class LocationFactory(factory.DjangoModelFactory):
     buurt_code = fuzzy.FuzzyText(length=4)
     stadsdeel = fuzzy.FuzzyText(length=1)
     geometrie = get_puntje()
-    address = {'straat': 'Sesamstraat', 'nummer': 666}
+    address = {'straat': 'Sesamstraat',
+               'huisnummer': 666,
+               'postcode': '1011AA',
+               'openbare_ruimte': 'Ergens'}
 
 
 class ReporterFactory(factory.DjangoModelFactory):

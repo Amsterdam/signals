@@ -38,20 +38,19 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
     """
     Generate XML for Sigmax CreeerZaak_Lk01
     """
-    return CREER_ZAAK.format(**{
-        'PRIMARY_KEY': str(signal.signal_id),
-        'OMSCHRIJVING': escape(signal.text),
-        'TIJDSTIPBERICHT': escape(_format_datetime(signal.created_at)),
-        'STARTDATUM': escape(_format_date(signal.incident_date_start)),
-        'REGISTRATIEDATUM': escape(_format_date(signal.created_at)),
-        'EINDDATUMGEPLAND': escape(_format_date(signal.incident_date_end)),
-        'OPENBARERUIMTENAAM': escape(
-            signal.location.address['openbare_ruimte']),
-        'HUISNUMMER': escape(signal.location.address['huisnummer']),
-        'POSTCODE': escape(signal.location.address['postcode']),
-        'X': escape(str(signal.location.geometrie.x)),
-        'Y': escape(str(signal.location.geometrie.y)),
-    })
+    return CREER_ZAAK.format(
+        PRIMARY_KEY=str(signal.signal_id),
+        OMSCHRIJVING=escape(signal.text),
+        TIJDSTIPBERICHT=escape(_format_datetime(signal.created_at)),
+        STARTDATUM=escape(_format_date(signal.incident_date_start)),
+        REGISTRATIEDATUM=escape(_format_date(signal.created_at)),
+        EINDDATUMGEPLAND=escape(_format_date(signal.incident_date_end)),
+        OPENBARERUIMTENAAM=escape(signal.location.address['openbare_ruimte']),
+        HUISNUMMER=escape(str(signal.location.address['huisnummer'])),
+        POSTCODE=escape(signal.location.address['postcode']),
+        X=escape(str(signal.location.geometrie.x)),
+        Y=escape(str(signal.location.geometrie.y))
+    )
 
 
 def _generate_voeg_zaak_document_toe_lk01(signal: Signal):
@@ -59,14 +58,14 @@ def _generate_voeg_zaak_document_toe_lk01(signal: Signal):
     Generate XML for Sigmax VoegZaakdocumentToe_Lk01 (for the PDF case)
     """
     encoded_pdf = _generate_pdf(signal)
-    msg = VOEG_ZAAK_DOCUMENT_TOE.format(**{
-        'ZKN_UUID': str(signal.signal_id),
-        'DOC_UUID': escape(str(uuid.uuid4())),
-        'DATA': encoded_pdf.decode('utf-8'),
-        'DOC_TYPE': 'PDF',
-        'DOC_TYPE_LOWER': 'pdf',
-        'FILE_NAME': f'MORA-{str(signal.id)}.pdf'
-    })
+    msg = VOEG_ZAAK_DOCUMENT_TOE.format(
+        ZKN_UUID=str(signal.signal_id),
+        DOC_UUID=escape(str(uuid.uuid4())),
+        DATA=encoded_pdf.decode('utf-8'),
+        DOC_TYPE='PDF',
+        DOC_TYPE_LOWER='pdf',
+        FILE_NAME=f'MORA-{str(signal.id)}.pdf'
+    )
 
     return msg
 
@@ -93,14 +92,14 @@ def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
             print(encoded_jpg)
 
     if encoded_jpg:
-        msg = VOEG_ZAAK_DOCUMENT_TOE.format(**{
-            'ZKN_UUID': escape(signal.signal_id),
-            'DOC_UUID': escape(str(uuid.uuid4())),
-            'DATA': encoded_jpg.decode('utf-8'),
-            'DOC_TYPE': 'JPG',
-            'DOC_TYPE_LOWER': 'jpg',
-            'FILE_NAME': 'MORA-' + escape(str(signal.id)) + '.jpg'
-        })
+        msg = VOEG_ZAAK_DOCUMENT_TOE.format(
+            ZKN_UUID=escape(signal.signal_id),
+            DOC_UUID=escape(str(uuid.uuid4())),
+            DATA=encoded_jpg.decode('utf-8'),
+            DOC_TYPE='JPG',
+            DOC_TYPE_LOWER='jpg',
+            FILE_NAME='MORA-' + escape(str(signal.id)) + '.jpg'
+        )
         return msg
     else:
         return ''
@@ -111,8 +110,8 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     Send a STUF message to the server that is configured.
     """
     if not settings.SIGMAX_AUTH_TOKEN or not settings.SIGMAX_SERVER:
-        msg = 'SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.'
-        raise ServiceNotConfigured(msg)
+        raise ServiceNotConfigured(
+            'SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.')
 
     # Prepare our request to Sigmax
     encoded = stuf_msg.encode('utf-8')
@@ -136,7 +135,7 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     return response
 
 
-def handle_signal(signal: Signal):
+def handle(signal: Signal) -> None:
     """Signal can be send to Sigmax at this point"""
     soap_action = CREEER_ZAAK_SOAPACTION
     msg = _generate_creeer_zaak_lk01_message(signal)
