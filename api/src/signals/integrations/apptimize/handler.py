@@ -9,10 +9,18 @@ from signals.models import Signal
 def is_signal_applicable(signal: Signal):
     """Is given `Signal` applicable for Apptimize.
 
+<<<<<<< HEAD
+=======
+    Note, this logic isn't tenable anymore.. The concept `categories` needs
+    to be refactored soon. Take a look at `signals.messaging.categories` as
+    well.
+
+>>>>>>> - moved integration code to package
     :param signal: Signal object
     :returns: bool
     """
     eligible_main_categories = ('Openbaar groen en water',
+<<<<<<< HEAD
                                 'Wegen, verkeer, straatmeubilair', )
     eligible_sub_categories = ()
     for main_category in eligible_main_categories:
@@ -23,6 +31,23 @@ def is_signal_applicable(signal: Signal):
         settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
         and signal.category.main in eligible_main_categories
         and signal.category.sub in eligible_sub_categories)
+=======
+                                'Wegen, verkeer, straatmeubilair',
+                                'Afval',)
+    all_sub_categories_of_main_categories = (
+            settings.SUB_CATEGORIES_DICT['Openbaar groen en water'] +
+            settings.SUB_CATEGORIES_DICT['Wegen, verkeer, straatmeubilair'])
+
+    eligible_sub_categories = ()
+    for sub_category in all_sub_categories_of_main_categories:
+        eligible_sub_categories += (sub_category[2],)
+    eligible_sub_categories += ('Prullenbak is vol', 'Veeg- / zwerfvuil',)
+
+    is_applicable_for_apptimize = (
+            settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
+            and signal.category.main in eligible_main_categories
+            and signal.category.sub in eligible_sub_categories)
+>>>>>>> - moved integration code to package
 
     return is_applicable_for_apptimize
 
@@ -47,5 +72,9 @@ def handle(signal: Signal):
         subject='Nieuwe melding op meldingen.amsterdam.nl',
         message=message,
         from_email=settings.NOREPLY,
+<<<<<<< HEAD
         recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
+=======
+        recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS,),
+>>>>>>> - moved integration code to package
         fail_silently=False)
