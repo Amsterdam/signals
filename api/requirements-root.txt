@@ -18,6 +18,7 @@ drf-extensions
 drf_amsterdam
 psycopg2-binary
 factory-boy
+freezegun
 drf_yasg
 swagger-spec-validator
 django-celery-email
