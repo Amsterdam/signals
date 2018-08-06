@@ -17,9 +17,9 @@ class TestDjangoSignals(testcases.TestCase):
         signal.save()  # Triggers Django `post_save` signal.
 
         mocked_tasks.push_to_sigmax.delay.assert_called_once_with(key=signal.id)
-        mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
-            key=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(
+            key=signal.id)
+        mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
             id=signal.id)
 
     @mock.patch('signals.django_signals.tasks')
@@ -29,7 +29,6 @@ class TestDjangoSignals(testcases.TestCase):
         signal.text = 'Signal is updated'
         signal.save()
         mocked_tasks.push_to_sigmax.delay.assert_not_called()
+        mocked_tasks.send_mail_flex_horeca.delay.assert_not_called()
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
             key=signal.id)
-        mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(
-            id=signal.id)
