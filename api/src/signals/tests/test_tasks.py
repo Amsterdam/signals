@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase, override_settings
+from freezegun import freeze_time
 
 from signals import tasks
 from signals.tests.factories import SignalFactory
@@ -177,3 +178,49 @@ class TestTaskSendMailFlexHoreca(TestCase):
         mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
             signal)
         mocked_send_mail.assert_not_called()
+
+
+class TestHelperIsSignalApplicableForFlexHoreca(TestCase):
+
+    @freeze_time('2018-08-03')  # Friday
+    def test_is_signal_applicable_for_flex_horeca_in_category_on_friday(self):
+        signal = SignalFactory.create(
+            category__main='Overlast Bedrijven en Horeca',
+            category__sub='Geluidsoverlast muziek')
+
+        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+
+        self.assertEqual(result, True)
+
+    @freeze_time('2018-08-04')  # Saterday
+    def test_is_signal_applicable_for_flex_horeca_in_category_on_saterday(
+            self):
+        signal = SignalFactory.create(
+            category__main='Overlast Bedrijven en Horeca',
+            category__sub='Geluidsoverlast muziek')
+
+        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+
+        self.assertEqual(result, True)
+
+    @freeze_time('2018-08-03')  # Friday
+    def test_is_signal_applicable_for_flex_horeca_outside_category_on_friday(
+            self):
+        signal = SignalFactory.create(
+            category__main='Some other main category',
+            category__sub='Some other sub category')
+
+        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+
+        self.assertEqual(result, False)
+
+    @freeze_time('2018-08-05')  # Sunday
+    def test_is_signal_applicable_for_flex_horeca_in_category_on_sunday(
+            self):
+        signal = SignalFactory.create(
+            category__main='Overlast Bedrijven en Horeca',
+            category__sub='Geluidsoverlast muziek')
+
+        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+
+        self.assertEqual(result, False)
