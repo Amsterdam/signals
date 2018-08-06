@@ -34,6 +34,7 @@ drf-yasg==1.9.1
 factory-boy==2.11.1
 Faker==0.8.17
 future==0.16.0
+freezegun==0.3.10
 graypy==0.3
 idna==2.7
 inflection==0.3.1
