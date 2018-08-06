@@ -47,7 +47,7 @@ def send_mail_apptimize(key: int):
 
 @app.task
 def send_mail_flex_horeca(id):
-    """Send email to Flex Horeca Team when applicable
+    """Send email to Flex Horeca Team when applicable.
 
     :param id: Signal object id
     :returns:
