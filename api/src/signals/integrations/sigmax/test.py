@@ -1,21 +1,21 @@
 """
 Test suite for Sigmax message generation.
 """
-import os
-import json
-import logging
-import time
 import copy
 import datetime
+import json
+import logging
+import os
+import time
 from unittest import mock
+from xml import etree
 
-from lxml import etree
 from dateutil.parser import parse
-
-from django.test import TestCase
 from django.conf import settings
+from django.test import TestCase
 
-from datasets.external import sigmax
+import utils
+from signals.integrations.sigmax import utils, handler
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -27,35 +27,35 @@ class TestSigmaxHelpers(TestCase):
     def test_format_datetime(self):
         dt = datetime.datetime(2018, 7, 9, 10, 0, 30)
         self.assertEqual(
-            sigmax._format_datetime(dt),
+            utils._format_datetime(dt),
             '20180709100030'
         )
 
         dt = datetime.datetime(2018, 7, 9, 22, 0, 30)
         self.assertEqual(
-            sigmax._format_datetime(dt),
+            utils._format_datetime(dt),
             '20180709220030'
         )
 
     def test_format_date(self):
         dt = datetime.datetime(2018, 7, 9, 10, 59, 34)
         self.assertEqual(
-            sigmax._format_date(dt),
+            utils._format_date(dt),
             '20180709'
         )
 
     def test_wrong_type(self):
         with self.assertRaises(AttributeError):
-            sigmax._format_datetime(None)
+            utils._format_datetime(None)
         with self.assertRaises(AttributeError):
             t = time.time()
-            sigmax._format_datetime(t)
+            utils._format_datetime(t)
 
         with self.assertRaises(AttributeError):
-            sigmax._format_date(None)
+            utils._format_date(None)
         with self.assertRaises(AttributeError):
             t = time.time()
-            sigmax._format_date(t)
+            utils._format_date(t)
 
 
 class TestGenerateCreeerZaakLk01Message(TestCase):
@@ -74,7 +74,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
 
     def test_is_xml(self):
         signal = copy.deepcopy(self._example_signal)
-        xml = sigmax._generate_creeer_zaak_lk01_message(signal)
+        xml = handler._generate_creeer_zaak_lk01_message(signal)
 
         try:
             root = etree.fromstring(xml)
@@ -84,13 +84,13 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
     def test_escaping(self):
         poison = copy.deepcopy(self._example_signal)
         poison.update({'signal_id': '<poison>tastes nice</poison>'})
-        msg = sigmax._generate_creeer_zaak_lk01_message(poison)
+        msg = handler._generate_creeer_zaak_lk01_message(poison)
         self.assertTrue('<poison>' not in msg)
 
     def test_propagate_signal_properties_to_message(self):
         signal = copy.deepcopy(self._example_signal)
 
-        msg = sigmax._generate_creeer_zaak_lk01_message(signal)
+        msg = handler._generate_creeer_zaak_lk01_message(signal)
 
         # first test that we have obtained valid XML
         try:
@@ -122,27 +122,27 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
             ),
             (
                 '{http://www.egem.nl/StUF/StUF0301}tijdstipBericht',
-                sigmax._format_datetime(parse(signal['created_at']))
+                utils._format_datetime(parse(signal['created_at']))
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}registratiedatum',
-                sigmax._format_date(parse(signal['created_at']))
+                utils._format_date(parse(signal['created_at']))
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}startdatum',
-                sigmax._format_date(parse(signal['incident_date_start']))
+                utils._format_date(parse(signal['incident_date_start']))
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}einddatumGepland',
-                sigmax._format_date(parse(signal['incident_date_end']))
+                utils._format_date(parse(signal['incident_date_end']))
             )
-       ])
+        ])
         # X and Y need to be checked differently
 
         logger.debug(msg)
 
         for element in root.iter():
-#            logger.debug('Found: {}'.format(element.tag))
+            # logger.debug('Found: {}'.format(element.tag))
             if element.tag in NEED_TO_FIND:
                 correct = NEED_TO_FIND[element.tag] == element.text
                 if correct:
@@ -151,7 +151,6 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
                     logger.debug('Found {} and is correct {}'.format(
                         element.tag, correct))
                     logger.debug('element.text {}'.format(element.text))
-
 
         self.assertEquals(len(NEED_TO_FIND), 0)
 
@@ -172,7 +171,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def test_is_xml(self):
         signal = copy.deepcopy(self._example_signal)
-        xml = sigmax._generate_voeg_zaak_document_toe_lk01(signal)
+        xml = handler._generate_voeg_zaak_document_toe_lk01(signal)
         try:
             root = etree.fromstring(xml)
         except:
@@ -181,7 +180,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
     def test_escaping(self):
         poison = copy.deepcopy(self._example_signal)
         poison.update({'signal_id': '<poison>tastes nice</poison>'})
-        msg = sigmax._generate_voeg_zaak_document_toe_lk01(poison)
+        msg = handler._generate_voeg_zaak_document_toe_lk01(poison)
         self.assertTrue('<poison>' not in msg)
 
 
@@ -196,10 +195,9 @@ class TestSendStufMessage(TestCase):
         env_override = {'SIGMAX_AUTH_TOKEN': '', 'SIGMAX_SERVER': ''}
 
         with mock.patch.dict('os.environ', env_override):
-            with self.assertRaises(sigmax.ServiceNotConfigured):
+            with self.assertRaises(handler.ServiceNotConfigured):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-                sigmax._send_stuf_message('TEST BERICHT', action)
-
+                handler._send_stuf_message('TEST BERICHT', action)
 
     @mock.patch('requests.post', side_effect=show_args_kwargs)
     def test_send_message(self, request_post_mock):
@@ -212,7 +210,7 @@ class TestSendStufMessage(TestCase):
 
         with mock.patch.dict('os.environ', env_override):
             action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-            args, kwargs = sigmax._send_stuf_message(message, action)
+            args, kwargs = handler._send_stuf_message(message, action)
 
             self.assertEquals(request_post_mock.called, 1)
             self.assertEquals(kwargs['url'], 'TESTSERVER')
@@ -232,6 +230,3 @@ class TestSendStufMessage(TestCase):
                 bytes(len(message)),
                 kwargs['headers']['Content-Length']
             )
-
-
-

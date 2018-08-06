@@ -14,18 +14,20 @@ from django.template.loader import render_to_string
 
 # Because weasyprint can produce a lot of warnings (unsupported
 # CSS etc.) we ignore them.
+from signals.models import Signal
+
 logging.getLogger('weasyprint').setLevel(100)
 
 
-def _render_html(signal):
+def _render_html(signal: Signal):
     dt = parse(signal['created_at'])
 
-    return render_to_string('datasets/external/sigmax_pdf.html', context={
+    return render_to_string('pdf_template.html', context={
         'signal': signal,
         'datum': dt.strftime('%Y %m %d'),
         'tijdstip': dt.strftime('%H:%M:%S'),
-        'hoofdrubriek': signal['category']['main'],
-        'subrubriek': signal['category']['sub'],
+        'hoofdrubriek': signal.category.main,
+        'subrubriek': signal.category.sub,
         'omschrijving': signal['text'],
         'stadsdeel': '',  # TODO, extract from gebieden API?
         'adres': signal['location']['address_text'],

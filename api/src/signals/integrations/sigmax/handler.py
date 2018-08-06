@@ -7,24 +7,24 @@ import logging
 import os
 import uuid
 from xml.sax.saxutils import escape
-from django.conf import settings
+
 
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
+from django.conf import settings
 
+from signals.integrations.sigmax.pdf import _generate_pdf
+from signals.integrations.sigmax.utils import _format_datetime, _format_date
+from signals.integrations.sigmax.xml_templates import CREER_ZAAK
+from signals.integrations.sigmax.xml_templates import VOEG_ZAAK_DOCUMENT_TOE
 from signals.models import Signal
-from signals.integrations.sigmax.sigmax_pdf import _generate_pdf
-from signals.integrations.sigmax.sigmax_xml_templates import CREER_ZAAK
-from signals.integrations.sigmax.sigmax_xml_templates import VOEG_ZAAK_DOCUMENT_TOE
+
+logger = logging.getLogger(__name__)
 
 CREEER_ZAAK_SOAPACTION = \
     'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
 
 VOEG_ZAAKDOCUMENT_TOE_SOAPACTION = \
     'http://www.egem.nl/StUF/sector/zkn/0310/VoegZaakdocumentToe_Lk01'
-
-logger = logging.getLogger(__name__)
 
 SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
@@ -33,40 +33,6 @@ PLACEHOLDER_STRING = ''
 
 class ServiceNotConfigured(Exception):
     pass
-
-
-def _format_datetime(dt):
-    """Format datetime as YYYYMMDDHHMMSS."""
-    return dt.strftime('%Y%m%d%H%M%S')
-
-
-def _format_date(dt):
-    """Format date as YYYYMMDD."""
-    return dt.strftime('%Y%m%d')
-
-
-def _get_session_with_retries():
-    """
-    There can be a some delays in processing from Sigmax. This retry logic
-    handles most of that without having to reschedule the task. If this fails
-    normal celery retry logic wil be applied.
-
-    Get a requests Session that will retry 5 times
-    on a number of HTTP 500 statusses.
-    """
-    session = requests.Session()
-
-    retries = Retry(
-        total=5,
-        backoff_factor=0.1,
-        status_forcelist=[500, 502, 503, 504],
-        raise_on_status=True
-    )
-    adapter = HTTPAdapter(max_retries=retries)
-    session.mount('https://', adapter)
-    session.mount('http://', adapter)
-
-    return session
 
 
 def _generate_creeer_zaak_lk01_message(signal: Signal):
@@ -80,11 +46,12 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
         'STARTDATUM': escape(_format_date(signal.incident_date_start)),
         'REGISTRATIEDATUM': escape(_format_date(signal.created_at)),
         'EINDDATUMGEPLAND': escape(_format_date(signal.incident_date_end)),
-        'OPENBARERUIMTENAAM': escape(signal.location.address['openbare_ruimte']),
+        'OPENBARERUIMTENAAM': escape(
+            signal.location.address['openbare_ruimte']),
         'HUISNUMMER': escape(signal.location.address['huisnummer']),
         'POSTCODE': escape(signal.location.address['postcode']),
-        'X': escape(str(signal.location.geometrie['coordinates'][0])),
-        'Y': escape(str(signal.location.geometrie['coordinates'][1])),
+        'X': escape(str(signal.location.geometrie.x)),
+        'Y': escape(str(signal.location.geometrie.y)),
     })
 
 
@@ -105,6 +72,7 @@ def _generate_voeg_zaak_document_toe_lk01(signal: Signal):
     return msg
 
 
+# noinspection PyBroadException
 def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
     """
     Generate XML for Sigmax VoegZaakdocumentToe_Lk01 (for the JPG case)
@@ -127,12 +95,12 @@ def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
 
     if encoded_jpg:
         msg = VOEG_ZAAK_DOCUMENT_TOE.format(**{
-            'ZKN_UUID': escape(signal['signal_id']),
+            'ZKN_UUID': escape(signal.signal_id),
             'DOC_UUID': escape(str(uuid.uuid4())),
             'DATA': encoded_jpg.decode('utf-8'),
             'DOC_TYPE': 'JPG',
             'DOC_TYPE_LOWER': 'jpg',
-            'FILE_NAME': 'MORA-' + escape(str(signal['id'])) + '.jpg'
+            'FILE_NAME': 'MORA-' + escape(str(signal.id)) + '.jpg'
         })
         return msg
     else:

@@ -5,11 +5,13 @@ Note:
 * this script is based on example messages given to use by Sigmax
 * full integration will be based on what we learn here
 """
-import os
 import logging
-import datetime
+import os
 import uuid
+
 import requests
+
+from signals.integrations.sigmax.handler import ServiceNotConfigured
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -130,20 +132,19 @@ EXAMPLE_MESSAGE_2 = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soa
 
 
 # -- functions that generate or send messages --
-
-
 def send_example(**options):
     """
     Send a STUF message to the server that is configured.
     """
     # Grab credentials from environment (assumption, these are set for
     # either testing or production --- not configurable at run time).
-    SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
-    SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
-    logger.debug('SIGMAX_SERVER: {}'.format(SIGMAX_SERVER))
-    logger.debug('SIGMAX_AUTH_TOKEN: {}'.format(SIGMAX_AUTH_TOKEN))
+    sigmax_auth_token = os.getenv('SIGMAX_AUTH_TOKEN', None)
+    sigmax_server = os.getenv('SIGMAX_SERVER', None)
 
-    if not SIGMAX_AUTH_TOKEN or not SIGMAX_SERVER:
+    logger.debug('SIGMAX_SERVER: {}'.format(sigmax_server))
+    logger.debug('SIGMAX_AUTH_TOKEN: {}'.format(sigmax_auth_token))
+
+    if not sigmax_auth_token or not sigmax_server:
         msg = 'SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.'
         raise ServiceNotConfigured(msg)
 
@@ -175,8 +176,8 @@ def send_example(**options):
     }[example]
 
     logger.info("Using zaak identifier (between quotes): '{}'".format(zkn_uuid))
-    logger.info("Using document identifier (between quotes): '{}'".format(doc_uuid))
-     
+    logger.info(
+        "Using document identifier (between quotes): '{}'".format(doc_uuid))
     encoded = (msg.format(**{
         'ZKN_UUID': zkn_uuid,
         'DOC_UUID': doc_uuid,
@@ -185,21 +186,22 @@ def send_example(**options):
     logger.debug(encoded)
     logger.debug('--')
 
-## -- uncomment this to get the message dumped to a file in the local directory --
-##     fn = 'attempt-{}.xml'.format(uuid.uuid4())
-##     with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
-##         f.write(encoded)
+    # -- uncomment this to get the message
+    #    dumped to a file in the local directory --
+    # fn = 'attempt-{}.xml'.format(uuid.uuid4())
+    # with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
+    #        f.write(encoded)
 
     headers = {
         'SOAPAction': action,
         'Content-Type': 'text/xml; charset=UTF-8',
-        'Authorization': 'Basic ' + SIGMAX_AUTH_TOKEN,
+        'Authorization': 'Basic ' + sigmax_auth_token,
         'Content-Length': bytes(len(encoded))
     }
 
     # Send our message to Sigmax
     response = requests.post(
-        url=SIGMAX_SERVER,
+        url=sigmax_server,
         headers=headers,
         data=encoded,
         verify=False
