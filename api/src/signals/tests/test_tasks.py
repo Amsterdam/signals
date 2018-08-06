@@ -83,8 +83,8 @@ class TestTaskSendToApptimize(TestCase):
             # ...
         ),
         'Afval': (
-            ('F01', 'Afval', 'Veeg- / zwerfvuil', A3DEC, "CCA,ASC,STW"),
-            ('F07', 'Afval', 'Prullenbak is vol', A3DEC, "CCA,ASC,STW"),
+            ('F01', 'Afval', 'Veeg- / zwerfvuil', 'A3DEC', "CCA,ASC,STW"),
+            ('F07', 'Afval', 'Prullenbak is vol', 'A3DEC', "CCA,ASC,STW"),
         ),
     }
 )
