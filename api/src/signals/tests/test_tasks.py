@@ -81,7 +81,11 @@ class TestTaskSendToApptimize(TestCase):
             ('F15', 'Wegen, verkeer, straatmeubilair',
              'Verkeersbord, verkeersafzetting', 'A3DEC', 'CCA,ASC,STW'),
             # ...
-        )
+        ),
+        'Afval': (
+            ('F01', 'Afval', 'Veeg- / zwerfvuil', 'A3DEC', "CCA,ASC,STW"),
+            ('F07', 'Afval', 'Prullenbak is vol', 'A3DEC', "CCA,ASC,STW"),
+        ),
     }
 )
 class TestHelperIsSignalApplicableForApptimize(TestCase):
