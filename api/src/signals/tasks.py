@@ -55,6 +55,10 @@ def send_mail_apptimize(id):
 def _is_signal_applicable_for_apptimize(signal):
     """Is given `Signal` applicable for Apptimize.
 
+    Note, this logic isn't tenable anymore.. The concept `categories` needs
+    to be refactored soon. Take a look at `signals.messaging.categories` as
+    well.
+
     :param signal: Signal object
     :returns: bool
     """
