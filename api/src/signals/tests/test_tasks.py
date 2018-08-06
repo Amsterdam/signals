@@ -8,7 +8,7 @@ from signals import tasks
 from signals.tests.factories import SignalFactory
 
 
-class TestTaskSendToApptimize(TestCase):
+class TestTaskSendMailApptimize(TestCase):
 
     @mock.patch('signals.tasks.send_mail')
     @mock.patch('signals.tasks._is_signal_applicable_for_apptimize',
@@ -117,3 +117,63 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
         result = tasks._is_signal_applicable_for_apptimize(signal)
 
         self.assertEqual(result, False)
+
+
+class TestTaskSendMailFlexHoreca(TestCase):
+
+    @mock.patch('signals.tasks.send_mail')
+    @mock.patch('signals.tasks.loader')
+    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+                return_value=True)
+    def test_send_mail_flex_horeca(
+            self,
+            mocked_is_signal_applicable_for_flex_horeca,
+            mocked_loader,
+            mocked_send_mail):
+        # Setting up template mocking.
+        mocked_rendered_template = mock.Mock()
+        mocked_template = mock.Mock()
+        mocked_template.render.return_value = mocked_rendered_template
+        mocked_loader.get_template.return_value = mocked_template
+
+        # Creating a `Signal` object to use for sending mail to Flex Horeca.
+        signal = SignalFactory.create()
+        tasks.send_mail_flex_horeca(id=signal.id)
+
+        # Asserting all correct function calls.
+        mocked_loader.get_template.assert_called_once_with(
+            'mail_flex_horeca.txt')
+        mocked_template.render.assert_called_once_with({'signal': signal})
+
+        mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
+            signal)
+        mocked_send_mail.assert_called_once_with(
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
+            message=mocked_rendered_template,
+            from_email=settings.NOREPLY,
+            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
+            fail_silently=False)
+
+    @mock.patch('signals.tasks.send_mail')
+    @mock.patch('signals.tasks.log')
+    def test_send_mail_flex_horeca_no_signal_found(
+            self, mocked_log, mocked_send_mail):
+        tasks.send_mail_flex_horeca(id=1)  # id `1` shouldn't be found.
+
+        mocked_log.exception.assert_called_once()
+        mocked_send_mail.assert_not_called()
+
+    @mock.patch('signals.tasks.send_mail')
+    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+                return_value=False)
+    def test_send_mail_flex_horeca_not_applicable(
+            self,
+            mocked_is_signal_applicable_for_flex_horeca,
+            mocked_send_mail):
+        signal = SignalFactory.create()
+
+        tasks.send_mail_flex_horeca(id=signal.id)
+
+        mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
+            signal)
+        mocked_send_mail.assert_not_called()
