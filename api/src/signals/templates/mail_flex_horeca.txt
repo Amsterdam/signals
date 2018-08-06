@@ -1,0 +1,21 @@
+Nieuwe melding ({{ signal.signal_id }}):
+
+{{ signal.text }}
+
+*** Details melding ***
+
+Categorie: {{ signal.category.main }}
+Subcategorie: {{ signal.category.sub }}
+{% if signal.location.address_text %}Adres: {{ signal.location.address_text }}{% endif %}
+Tijdstip: {{ signal.incident_date_start|date"l d-m-Y, H:i " }}
+E-mailadres: {{ signal.reporter.email }}
+{% if signal.reporter.phone %}Telefoon (mobiele): {{ signal.reporter.phone }}{% endif %}
+
+{% if signal.text_extra %}{{ signal.text_extra }}{% endif %}
+{% if signal.extra_properties %}
+
+{% for key, value in signal.extra_properties.items %}
+{{ key }} - {{ value }}
+{% endfor %}
+{% endif %}
+

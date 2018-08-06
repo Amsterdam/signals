@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.template import loader
 
 from signals.celery import app
 from signals.models import Signal
@@ -88,5 +89,29 @@ def send_mail_flex_horeca(id):
 
     :param id: Signal object id
     :returns:
+    """
+    try:
+        signal = Signal.objects.get(id=id)
+    except Signal.DoesNotExist as e:
+        log.exception(str(e))
+        return
+
+    if _is_signal_applicable_for_flex_horeca(signal):
+        template = loader.get_template('mail_flex_horeca.txt')
+        context = {'signal': signal, }
+        message = template.render(context)
+        send_mail(
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
+            message=message,
+            from_email=settings.NOREPLY,
+            recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS, ),
+            fail_silently=False)
+
+
+def _is_signal_applicable_for_flex_horeca(signal):
+    """Is given `Signal` applicable for Flex Horeca Team.
+
+    :param signal: Signal object
+    :returns: bool
     """
     pass
