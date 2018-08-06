@@ -42,6 +42,7 @@ Faker==0.8.17
 flake8==3.5.0
 flex==6.13.2
 future==0.16.0
+freezegun==0.3.10
 graypy==0.3
 html5lib==1.0.1
 idna==2.7
