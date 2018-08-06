@@ -20,7 +20,7 @@ class TestDjangoSignals(testcases.TestCase):
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(
             key=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
-            id=signal.id)
+            key=signal.id)
 
     @mock.patch('signals.django_signals.tasks')
     def test_post_save_signal_updated(self, mocked_tasks):

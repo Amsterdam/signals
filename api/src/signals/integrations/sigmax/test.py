@@ -1,21 +1,18 @@
 """
 Test suite for Sigmax message generation.
 """
-import copy
 import datetime
-import json
 import logging
-import os
 import time
 from unittest import mock
-from xml import etree
 
-from dateutil.parser import parse
-from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from lxml import etree
 
 import utils
 from signals.integrations.sigmax import utils, handler
+from signals.models import Signal
+from signals.tests.factories import SignalFactory
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -59,22 +56,12 @@ class TestSigmaxHelpers(TestCase):
 
 
 class TestGenerateCreeerZaakLk01Message(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        fixture_file = os.path.join(
-            settings.FIXTURES_DIR, 'datasets', 'internal', 'auth_signal.json')
 
-        with open(fixture_file, 'r') as f:
-            test_data = json.load(f)
-        cls._example_signal = test_data['results'][0]
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
+    def setUp(self):
+        self.signal: Signal = SignalFactory.create()
 
     def test_is_xml(self):
-        signal = copy.deepcopy(self._example_signal)
-        xml = handler._generate_creeer_zaak_lk01_message(signal)
+        xml = handler._generate_creeer_zaak_lk01_message(self.signal)
 
         try:
             root = etree.fromstring(xml)
@@ -82,15 +69,13 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
             self.fail('Cannot parse STUF message as XML')
 
     def test_escaping(self):
-        poison = copy.deepcopy(self._example_signal)
-        poison.update({'signal_id': '<poison>tastes nice</poison>'})
+        poison: Signal = self.signal
+        poison.text = '<poison>tastes nice</poison>'
         msg = handler._generate_creeer_zaak_lk01_message(poison)
         self.assertTrue('<poison>' not in msg)
 
     def test_propagate_signal_properties_to_message(self):
-        signal = copy.deepcopy(self._example_signal)
-
-        msg = handler._generate_creeer_zaak_lk01_message(signal)
+        msg = handler._generate_creeer_zaak_lk01_message(self.signal)
 
         # first test that we have obtained valid XML
         try:
@@ -98,43 +83,44 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         except:
             self.fail('Cannot parse STUF message as XML')
 
-        # Check whether our properties made it over (crudely, maybe use XPATH here)
-        NEED_TO_FIND = dict([
+        # Check whether our properties made it over
+        # (crudely, maybe use XPATH here)
+        need_to_find = dict([
             (
                 '{http://www.egem.nl/StUF/StUF0301}referentienummer',
-                signal['signal_id']
+                self.signal.signal_id
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}identificatie',
-                signal['signal_id']
+                self.signal.signal_id
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',
-                signal['location']['address']['openbare_ruimte']
+                self.signal.location.address['openbare_ruimte']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}huisnummer',
-                signal['location']['address']['huisnummer']
+                self.signal.location.address['huisnummer']
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}postcode',
-                signal['location']['address']['postcode']
+                self.signal.location.address['postcode']
             ),
             (
                 '{http://www.egem.nl/StUF/StUF0301}tijdstipBericht',
-                utils._format_datetime(parse(signal['created_at']))
+                utils._format_datetime(self.signal.created_at)
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}registratiedatum',
-                utils._format_date(parse(signal['created_at']))
+                utils._format_date(self.signal.created_at)
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}startdatum',
-                utils._format_date(parse(signal['incident_date_start']))
+                utils._format_date(self.signal.incident_date_start)
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}einddatumGepland',
-                utils._format_date(parse(signal['incident_date_end']))
+                utils._format_date(self.signal.incident_date_end)
             )
         ])
         # X and Y need to be checked differently
@@ -143,34 +129,25 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
 
         for element in root.iter():
             # logger.debug('Found: {}'.format(element.tag))
-            if element.tag in NEED_TO_FIND:
-                correct = NEED_TO_FIND[element.tag] == element.text
+            if element.tag in need_to_find:
+                correct = str(need_to_find[element.tag]) == element.text
                 if correct:
-                    del NEED_TO_FIND[element.tag]
+                    del need_to_find[element.tag]
                 else:
                     logger.debug('Found {} and is correct {}'.format(
                         element.tag, correct))
                     logger.debug('element.text {}'.format(element.text))
 
-        self.assertEquals(len(NEED_TO_FIND), 0)
+        self.assertEquals(len(need_to_find), 0)
 
 
 class TestVoegZaakDocumentToeLk01Message(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        fixture_file = os.path.join(
-            settings.FIXTURES_DIR, 'datasets', 'internal', 'auth_signal.json')
 
-        with open(fixture_file, 'r') as f:
-            test_data = json.load(f)
-        cls._example_signal = test_data['results'][0]
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
+    def setUp(self):
+        self.signal: Signal = SignalFactory.create()
 
     def test_is_xml(self):
-        signal = copy.deepcopy(self._example_signal)
+        signal = self.signal
         xml = handler._generate_voeg_zaak_document_toe_lk01(signal)
         try:
             root = etree.fromstring(xml)
@@ -178,8 +155,8 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
             self.fail('Cannot parse STUF message as XML')
 
     def test_escaping(self):
-        poison = copy.deepcopy(self._example_signal)
-        poison.update({'signal_id': '<poison>tastes nice</poison>'})
+        poison: Signal = self.signal
+        poison.text = '<poison>tastes nice</poison>'
         msg = handler._generate_voeg_zaak_document_toe_lk01(poison)
         self.assertTrue('<poison>' not in msg)
 
@@ -200,33 +177,29 @@ class TestSendStufMessage(TestCase):
                 handler._send_stuf_message('TEST BERICHT', action)
 
     @mock.patch('requests.post', side_effect=show_args_kwargs)
+    @override_settings(SIGMAX_AUTH_TOKEN='SLEUTEL')
+    @override_settings(SIGMAX_SERVER='TESTSERVER')
     def test_send_message(self, request_post_mock):
         # Check that headers are set correctly when sending an STUF message.
         message = 'TEST BERICHT'
-        env_override = {
-            'SIGMAX_AUTH_TOKEN': 'SLEUTEL',
-            'SIGMAX_SERVER': 'TESTSERVER',
-        }
+        action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
+        args, kwargs = handler._send_stuf_message(message, action)
 
-        with mock.patch.dict('os.environ', env_override):
-            action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-            args, kwargs = handler._send_stuf_message(message, action)
-
-            self.assertEquals(request_post_mock.called, 1)
-            self.assertEquals(kwargs['url'], 'TESTSERVER')
-            self.assertEquals(
-                kwargs['headers']['Authorization'],
-                'Basic SLEUTEL'
-            )
-            self.assertEquals(
-                kwargs['headers']['SOAPAction'],
-                'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-            )
-            self.assertEquals(
-                kwargs['headers']['Content-Type'],
-                'text/xml; charset=UTF-8'
-            )
-            self.assertEquals(
-                bytes(len(message)),
-                kwargs['headers']['Content-Length']
-            )
+        self.assertEquals(request_post_mock.called, 1)
+        self.assertEquals(kwargs['url'], 'TESTSERVER')
+        self.assertEquals(
+            kwargs['headers']['Authorization'],
+            'Basic SLEUTEL'
+        )
+        self.assertEquals(
+            kwargs['headers']['SOAPAction'],
+            'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
+        )
+        self.assertEquals(
+            kwargs['headers']['Content-Type'],
+            'text/xml; charset=UTF-8'
+        )
+        self.assertEquals(
+            bytes(len(message)),
+            kwargs['headers']['Content-Length']
+        )
