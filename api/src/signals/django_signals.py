@@ -8,5 +8,5 @@ from signals.models import Signal
 @receiver(post_save, sender=Signal)
 def post_save_signal(sender, instance, created, **kwargs):
     if created:
-        tasks.push_to_sigmax.delay(id=instance.id)
-    tasks.send_mail_apptimize.delay(id=instance.id)
+        tasks.push_to_sigmax.delay(key=instance.id)
+    tasks.send_mail_apptimize.delay(key=instance.id)

@@ -4,6 +4,7 @@ from unittest import mock
 from django.conf import settings
 from django.test import TestCase, override_settings
 
+import signals.integrations.apptimize.handler
 from signals import tasks
 from signals.tests.factories import SignalFactory
 
@@ -31,7 +32,7 @@ class TestTaskSendToApptimize(TestCase):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        tasks.send_mail_apptimize(id=signal.id)
+        tasks.send_mail_apptimize(key=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
@@ -46,7 +47,7 @@ class TestTaskSendToApptimize(TestCase):
     @mock.patch('signals.tasks.log')
     def test_send_mail_apptimize_no_signal_found(
             self, mocked_log, mocked_send_mail):
-        tasks.send_mail_apptimize(id=1)  # id `1` shouldn't be found.
+        tasks.send_mail_apptimize(key=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
@@ -58,7 +59,7 @@ class TestTaskSendToApptimize(TestCase):
             self, mocked_is_signal_applicable_for_apptimize, mocked_send_mail):
         signal = SignalFactory.create()
 
-        tasks.send_mail_apptimize(id=signal.id)
+        tasks.send_mail_apptimize(key=signal.id)
 
         mocked_is_signal_applicable_for_apptimize.assert_called_once_with(
             signal)
@@ -91,7 +92,7 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Openbaar groen en water',
             category__sub='Boom')
 
-        result = tasks._is_signal_applicable_for_apptimize(signal)
+        result = signals.integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
@@ -100,7 +101,7 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Some other main category',
             category__sub='Some other sub category')
 
-        result = tasks._is_signal_applicable_for_apptimize(signal)
+        result = signals.integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
 
@@ -110,6 +111,6 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Openbaar groen en water',
             category__sub='Boom')
 
-        result = tasks._is_signal_applicable_for_apptimize(signal)
+        result = signals.integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
