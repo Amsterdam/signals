@@ -65,7 +65,7 @@ class PostTestCase(APITestCase):
             b'\x02\x4c\x01\x00\x3b'
         )
 
-    def test_post_signal(self):
+    def test_post_signal_with_json(self):
         """Post een compleet signaal."""
         url = "/signals/signal/"
         postjson = self._get_fixture('post_signal')
@@ -109,6 +109,42 @@ class PostTestCase(APITestCase):
         self.assertEqual(
             Category.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
         )
+
+    def test_post_signal_with_multipart_and_image(self):
+        url = "/signals/signal/"
+        data = self._get_fixture('post_signal')
+
+        # Adding a testing image to the posting data.
+        image = SimpleUploadedFile(
+            'image.gif', self.small_gif, content_type='image/gif')
+        data['image'] = image
+
+        # Changing data dict structure to work with multipart structure.
+        for key, value in data['status'].items():
+            data['status.{}'.format(key)] = value
+        for key, value in data['location'].items():
+            data['location.{}'.format(key)] = value
+        data['location.geometrie'] = 'POINT (4.893697 52.372840)'
+        for key, value in data['category'].items():
+            data['category.{}'.format(key)] = value
+        for key, value in data['reporter'].items():
+            data['reporter.{}'.format(key)] = value
+
+        del data['status']
+        del data['status.extra_properties']
+        del data['location']
+        del data['location.address']
+        del data['location.extra_properties']
+        del data['category']
+        del data['reporter']
+        del data['reporter.extra_properties']
+        del data['reporter.remove_at']
+        del data['incident_date_end']
+        del data['operational_date']
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 201)
 
     def test_post_signal_image(self):
         url = '/signals/signal/image/'
