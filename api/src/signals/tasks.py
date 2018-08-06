@@ -59,11 +59,16 @@ def _is_signal_applicable_for_apptimize(signal):
     :returns: bool
     """
     eligible_main_categories = ('Openbaar groen en water',
-                                'Wegen, verkeer, straatmeubilair', )
+                                'Wegen, verkeer, straatmeubilair',
+                                'Afval', )
+    all_sub_categories_of_main_categories = (
+        settings.SUB_CATEGORIES_DICT['Openbaar groen en water'] +
+        settings.SUB_CATEGORIES_DICT['Wegen, verkeer, straatmeubilair'])
+
     eligible_sub_categories = ()
-    for main_category in eligible_main_categories:
-        for sub_category in settings.SUB_CATEGORIES_DICT[main_category]:
-            eligible_sub_categories += (sub_category[2], )
+    for sub_category in all_sub_categories_of_main_categories:
+        eligible_sub_categories += (sub_category[2], )
+    eligible_sub_categories += ('Prullenbak is vol', 'Veeg- / zwerfvuil', )
 
     is_applicable_for_apptimize = (
         settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
