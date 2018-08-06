@@ -8,7 +8,6 @@ import os
 import uuid
 from xml.sax.saxutils import escape
 
-
 import requests
 from django.conf import settings
 
@@ -16,7 +15,7 @@ from signals.integrations.sigmax.pdf import _generate_pdf
 from signals.integrations.sigmax.utils import _format_datetime, _format_date
 from signals.integrations.sigmax.xml_templates import CREER_ZAAK
 from signals.integrations.sigmax.xml_templates import VOEG_ZAAK_DOCUMENT_TOE
-from signals.models import Signal
+from signals.models import Signal, Status
 
 logger = logging.getLogger(__name__)
 
@@ -78,10 +77,10 @@ def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
     Generate XML for Sigmax VoegZaakdocumentToe_Lk01 (for the JPG case)
     """
     encoded_jpg = b''
-    if signal.image and signal.image.startswith('http'):
+    if signal.image and str(signal.image).startswith('http'):
         # TODO: add check that we have a JPG and not anything else!
         try:
-            result = requests.get(signal['image'])
+            result = requests.get(signal.image)
         except:
             pass  # for now swallow 404, 401 etc
         else:
@@ -162,11 +161,17 @@ def handle_signal(signal: Signal):
         logger.info('No image, or URL expired for signal %s', signal.signal_id)
 
 
-def is_signal_applicable(signal):
+def is_signal_applicable(signal: Signal) -> bool:
     """
     Determine is signal should be forwarded
-    Todo: take history into account
     :param signal:
     :return: True when eligible
     """
-    return signal.status.state == 'i' and signal.status.text.lower() == 'sigmax'
+    logger.debug("Handling sigmax check for signal id " + str(signal.id))
+    status: Status = signal.status
+    return status.state.lower() == 'i' and \
+           status.text.lower == 'sigmax' and \
+           Status.objects \
+               .filter(signal=signal) \
+               .filter(signal__states__text__iexact='sigmax') \
+               .filter(signal__states__state__iexact='i').count() == 1
