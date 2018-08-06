@@ -146,6 +146,9 @@ class PostTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
 
+        signal = Signal.objects.get(id=response.json()['id'])
+        self.assertTrue(signal.image)
+
     def test_post_signal_image(self):
         url = '/signals/signal/image/'
         image = SimpleUploadedFile(
