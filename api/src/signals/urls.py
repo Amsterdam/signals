@@ -1,17 +1,5 @@
-"""Parkeervakken URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.9/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
+"""
+SIA URL Configuration
 """
 from django.conf.urls import url, include
 
@@ -29,11 +17,21 @@ from django.urls import path
 
 class SignalsView(routers.APIRootView):
     """
-    List Signals and their related information
+    List Signals and their related information.
 
-    Manage the incoming signals in Amsterdam
+    These API endpoints are part of the Signalen Informatievoorziening Amsterdam
+    (SIA) application. SIA can be used by citizens and interested parties to inform
+    the Amsterdam municipality of problems in public spaces (like noise complaints,
+    broken street lights etc.) These signals (signalen in Dutch) are then followed
+    up on by the appropriate municipal services.
 
-    !! IN TEST FASE !!
+    The code for this application (and associated web front-end) is available from:
+    - https://github.com/Amsterdam/signals
+    - https://github.com/Amsterdam/signals-frontend
+
+    Note:
+    Most of these endpoints require authentication. The only fully public endpoint
+    is /signals/signal where new signals can be POSTed.
     """
 
 

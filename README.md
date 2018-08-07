@@ -1,11 +1,16 @@
-# Meldingen
-meldingen systeem amsterdam
+# Signalen Informatievoorziening Amsterdam (SIA)
+SIA can be used by citizens and interested parties to inform the Amsterdam
+municipality of problems in public spaces (like noise complaints,
+broken street lights etc.) These signals (signalen in Dutch) are then followed
+up on by the appropriate municipal services.
 
-The beginning of Signalen Amsterdam Rewrite.
+The code for the associated web front-end is available from:
+- https://github.com/Amsterdam/signals-frontend
 
-Derived from POC git@github.com:Amsterdam/sia.git
 
-https://vaarwatermeldingen.amsterdam.nl/
+SIA will replace MORA and is based on a proof of concept (https://github.com/Amsterdam/sia)
+which ran on https://vaarwatermeldingen.amsterdam.nl/
+
 
 ## Running using Docker for local development
 
@@ -27,19 +32,6 @@ docker-compose exec api python manage.py test
 ```
 
 You will now have the signals API running on http://localhost:8000/signals/.
-
-
-## TODO
-* Better README
-* Check parameters when creating Signal
-* Test for filtering
-* Throttle unauthorized posts. Determine values exclude IP from gemeente and frequent users.
-* IP ranges in config
-* Extend Django  User for authentication
-* Tables for categories, subcategories, departments 
-* Admin maintenance for these tables 
-* Add index on email for user table
-* Add management script to import users 
 
 
 ## Celery
