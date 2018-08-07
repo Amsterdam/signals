@@ -15,11 +15,11 @@ Hieronder staat de samenvatting van het door u ingevulde formulier.
 
 Samenvatting melding: {{ signal_id }}
 
-Adres:  {{ address_text }}
+Adres: {{ location.address_text }}
 
-Stadsdeel: {{ stadsdeel }}
+Stadsdeel: {{ location.get_stadsdeel_display }}
 
-Rubriek: {{ category }}
+Rubriek: {{ maincategory }}
 
 Uw omschrijving: {{ text }}
 

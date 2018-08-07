@@ -95,8 +95,7 @@ def handle_status_change(signal, previous_status):
             context = {
                 'signal_id': signal.id,
                 'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'geannuleerd',
-                'address_text': signal.location.address_text,
-                'stadsdeel': signal.location.stadsdeel,
+                'location': signal.location,
                 'subcategory': signal.category.sub,
                 'maincategory': signal.category.main,
                 'text': signal.text
