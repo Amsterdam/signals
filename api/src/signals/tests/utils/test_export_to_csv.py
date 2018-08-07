@@ -1,5 +1,6 @@
 import csv
 import shutil
+import os
 import tempfile
 
 from django.test import testcases
@@ -20,6 +21,8 @@ class TestUtilExportToCSV(testcases.TestCase):
         signal = SignalFactory.create()
 
         csv_file = export_to_csv.create_signals_csv(self.tmp_dir)
+
+        self.assertEqual(os.path.join(self.tmp_dir, 'signals.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
