@@ -76,3 +76,22 @@ class TestUtilExportToCSV(testcases.TestCase):
                 self.assertEqual(row['updated_at'], str(location.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
 
+    def test_create_reporters_csv(self):
+        signal = SignalFactory.create()
+        reporter = signal.reporter
+
+        csv_file = export_to_csv.create_reporters_csv(self.tmp_dir)
+
+        self.assertEqual(os.path.join(self.tmp_dir, 'reporters.csv'), csv_file)
+
+        with open(csv_file) as opened_csv_file:
+            reader = csv.DictReader(opened_csv_file)
+            for row in reader:
+                self.assertEqual(row['id'], str(reporter.id))
+                self.assertEqual(row['_signal_id'], str(reporter._signal_id))
+                self.assertEqual(row['email'], str(reporter.email))
+                self.assertEqual(row['phone'], str(reporter.phone))
+                self.assertEqual(row['remove_at'], '')
+                self.assertEqual(row['created_at'], str(reporter.created_at))
+                self.assertEqual(row['updated_at'], str(reporter.updated_at))
+                self.assertEqual(json.loads(row['extra_properties']), None)
