@@ -255,5 +255,12 @@ def save_csv_to_object_store(csv_file):
 
 def handle():
     tmp_dir = tempfile.mkdtemp()
-    signals_csv_file = create_signals_csv(tmp_dir)
-    save_csv_to_object_store(signals_csv_file)
+    csv_files = []
+    csv_files.append(create_signals_csv(tmp_dir))
+    csv_files.append(create_locations_csv(tmp_dir))
+    csv_files.append(create_reporters_csv(tmp_dir))
+    csv_files.append(create_categories_csv(tmp_dir))
+    csv_files.append(create_statuses_csv(tmp_dir))
+
+    for csv_file in csv_files:
+        save_csv_to_object_store(csv_file)
