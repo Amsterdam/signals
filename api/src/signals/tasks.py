@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -66,8 +67,9 @@ def send_mail_flex_horeca(id):
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS, ),
+            recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS,),
             fail_silently=False)
+
 
 def _is_signal_applicable_for_flex_horeca(signal):
     """Is given `Signal` applicable for Flex Horeca Team.
@@ -92,7 +94,7 @@ def _is_signal_applicable_for_flex_horeca(signal):
         'Overlast terrassen',
         'Stankoverlast')
     is_applicable_for_flex_horeca = (
-        signal.category.main == eligible_main_categories
-        and signal.category.sub in eligible_sub_categories)
+            signal.category.main == eligible_main_categories
+            and signal.category.sub in eligible_sub_categories)
 
     return is_applicable_for_flex_horeca
