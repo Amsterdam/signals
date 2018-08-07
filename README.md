@@ -7,7 +7,29 @@ Derived from POC git@github.com:Amsterdam/sia.git
 
 https://vaarwatermeldingen.amsterdam.nl/
 
-# TODO
+## Running using Docker for local development
+
+Pull the relevant images and build the services:
+```
+docker-compose pull
+docker-compose build
+```
+
+Start the services (in a new terminal):
+```
+docker-compose up
+```
+
+Finally migrate the database and run the tests to check that everything is working:
+```
+docker-compose migrate
+docker-compose exec api python manage.py test
+```
+
+You will now have the signals API running on http://localhost:8000/signals/.
+
+
+## TODO
 * Better README
 * Check parameters when creating Signal
 * Test for filtering
@@ -20,9 +42,7 @@ https://vaarwatermeldingen.amsterdam.nl/
 * Add management script to import users 
 
 
-
-
-# Celery
+## Celery
 
 We use celery for sending e-mails. That also requires a rabbitmq instance.
 
@@ -62,7 +82,7 @@ Otherwise we need to add a user with:
 
 ...
 
-# Authentication 
+## Authentication 
 
 Authentication can be done with the Authz service with either the _datapunt_ or the _grip_ Idp.
 
@@ -87,7 +107,7 @@ are case sensitive , and then it looks like users do not exist.
 
 
 
-# Django Admin for user maintenance
+## Django Admin for user maintenance
 
 To maintain user and groups we use Django Admin. We cannot yet login to Djang Admin with JWT tokens 
 so for  now we need to set  a password for a staff account.  This is needed to login to Django Admin:

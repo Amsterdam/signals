@@ -35,6 +35,9 @@ services:
       - EMAIL_PORT
       - EMAIL_USE_SSL
       - EMAIL_USE_TLS
+    volumes:
+      - ./api/src:/app
+      - ./api/deploy:/deploy
     command: celery -A signals worker -l info
 
 
@@ -59,6 +62,10 @@ services:
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
       - UWSGI_MODULE=signals.wsgi:application
+    volumes:
+      - ./api/src:/app
+      - ./api/deploy:/deploy
+    command: uwsgi --py-auto-reload=1
 
   import:
     build: ./import
