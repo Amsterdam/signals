@@ -85,8 +85,8 @@ def handle_status_change(signal, previous_status):
              str(signal.status.state),
              str(previous_status.state))
 
-    if signal.status.state in (AFGEHANDELD, GEANNULEERD) \
-            and previous_status.state not in (AFGEHANDELD, GEANNULEERD) \
+    if signal.status.state in (AFGEHANDELD,) \
+            and previous_status.state not in (AFGEHANDELD,) \
             and signal.category:
 
         LOG.debug('Rendering template')
