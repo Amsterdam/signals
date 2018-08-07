@@ -18,7 +18,7 @@ class TestDjangoSignals(testcases.TestCase):
 
         mocked_tasks.push_to_sigmax.delay.assert_called_once_with(key=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(
-            key=signal.id)
+            id=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
             key=signal.id)
 

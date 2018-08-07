@@ -69,7 +69,6 @@ def send_mail_flex_horeca(id):
             recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS, ),
             fail_silently=False)
 
-
 def _is_signal_applicable_for_flex_horeca(signal):
     """Is given `Signal` applicable for Flex Horeca Team.
 
