@@ -5,7 +5,7 @@ import json
 
 from django.core.files.storage import default_storage
 
-from signals.models import Signal, Location, Reporter, Status
+from signals.models import Signal, Location, Reporter, Category, Status
 
 
 def create_signals_csv(directory):
@@ -140,6 +140,63 @@ def create_reporters_csv(directory):
                 reporter.created_at,
                 reporter.updated_at,
                 json.dumps(reporter.extra_properties),
+            ])
+
+    return csv_file.name
+
+
+def create_categories_csv(directory):
+    """Create CSV file with all `Category` objects.
+
+    :param directory: Path to dir for saving the CSV filea
+    :returns: Path to CSV file
+    """
+    with open(os.path.join(directory, 'categories.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # Writing the header to the CSV file.
+        writer.writerow([
+            'id',
+            '_signal_id',
+            'main',
+            'sub',
+            'department',
+            'priority',
+            'ml_priority',
+            'ml_cat',
+            'ml_prob',
+            'ml_cat_all',
+            'ml_cat_all_prob',
+            'ml_sub_cat',
+            'ml_sub_prob',
+            'ml_sub_all',
+            'ml_sub_all_prob',
+            'created_at',
+            'updated_at',
+            'extra_properties',
+        ])
+
+        # Writing all `Category` objects to the CSV file.
+        for category in Category.objects.all():
+            writer.writerow([
+                category.pk,
+                category._signal_id,
+                category.main,
+                category.sub,
+                category.department,
+                category.priority,
+                category.ml_priority,
+                category.ml_cat,
+                category.ml_prob,
+                category.ml_cat_all,
+                category.ml_cat_all_prob,
+                category.ml_sub_cat,
+                category.ml_sub_prob,
+                category.ml_sub_all,
+                category.ml_sub_all_prob,
+                category.created_at,
+                category.updated_at,
+                json.dumps(category.extra_properties),
             ])
 
     return csv_file.name

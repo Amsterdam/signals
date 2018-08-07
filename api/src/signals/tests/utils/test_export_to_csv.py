@@ -96,6 +96,37 @@ class TestUtilExportToCSV(testcases.TestCase):
                 self.assertEqual(row['updated_at'], str(reporter.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
 
+    def test_create_categories_csv(self):
+        signal = SignalFactory.create()
+        category = signal.category
+
+        csv_file = export_to_csv.create_categories_csv(self.tmp_dir)
+
+        self.assertEqual(
+            os.path.join(self.tmp_dir, 'categories.csv'), csv_file)
+
+        with open(csv_file) as opened_csv_file:
+            reader = csv.DictReader(opened_csv_file)
+            for row in reader:
+                self.assertEqual(row['id'], str(category.id))
+                self.assertEqual(row['_signal_id'], str(category._signal_id))
+                self.assertEqual(row['main'], str(category.main))
+                self.assertEqual(row['sub'], str(category.sub))
+                self.assertEqual(row['department'], str(category.department))
+                self.assertEqual(row['priority'], '')
+                self.assertEqual(row['ml_priority'], '')
+                self.assertEqual(row['ml_cat'], str(category.ml_cat))
+                self.assertEqual(row['ml_prob'], str(category.ml_prob))
+                self.assertEqual(row['ml_cat_all'], '')
+                self.assertEqual(row['ml_cat_all_prob'], '')
+                self.assertEqual(row['ml_sub_cat'], str(category.ml_sub_cat))
+                self.assertEqual(row['ml_sub_prob'], str(category.ml_sub_prob))
+                self.assertEqual(row['ml_sub_all'], '')
+                self.assertEqual(row['ml_sub_all_prob'], '')
+                self.assertEqual(row['created_at'], str(category.created_at))
+                self.assertEqual(row['updated_at'], str(category.updated_at))
+                self.assertEqual(json.loads(row['extra_properties']), None)
+
     def test_create_statuses_csv(self):
         signal = SignalFactory.create()
         status = signal.status
