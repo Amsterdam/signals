@@ -5,7 +5,7 @@ import json
 
 from django.core.files.storage import default_storage
 
-from signals.models import Signal, Location, Reporter
+from signals.models import Signal, Location, Reporter, Status
 
 
 def create_signals_csv(directory):
@@ -90,19 +90,19 @@ def create_locations_csv(directory):
         ])
 
         # Writing all `Location` objects to the CSV file.
-        for signal in Location.objects.all():
+        for location in Location.objects.all():
             writer.writerow([
-                signal.pk,
-                signal._signal_id,
-                signal.geometrie.x,
-                signal.geometrie.y,
-                signal.get_stadsdeel_display(),
-                signal.buurt_code,
-                json.dumps(signal.address),
-                signal.address_text,
-                signal.created_at,
-                signal.updated_at,
-                json.dumps(signal.extra_properties),
+                location.pk,
+                location._signal_id,
+                location.geometrie.x,
+                location.geometrie.y,
+                location.get_stadsdeel_display(),
+                location.buurt_code,
+                json.dumps(location.address),
+                location.address_text,
+                location.created_at,
+                location.updated_at,
+                json.dumps(location.extra_properties),
             ])
 
     return csv_file.name
@@ -130,16 +130,57 @@ def create_reporters_csv(directory):
         ])
 
         # Writing all `Reporter` objects to the CSV file.
-        for signal in Reporter.objects.all():
+        for reporter in Reporter.objects.all():
             writer.writerow([
-                signal.pk,
-                signal._signal_id,
-                signal.email,
-                signal.phone,
-                signal.remove_at,
-                signal.created_at,
-                signal.updated_at,
-                json.dumps(signal.extra_properties),
+                reporter.pk,
+                reporter._signal_id,
+                reporter.email,
+                reporter.phone,
+                reporter.remove_at,
+                reporter.created_at,
+                reporter.updated_at,
+                json.dumps(reporter.extra_properties),
+            ])
+
+    return csv_file.name
+
+
+def create_statuses_csv(directory):
+    """Create CSV file with all `Status` objects.
+
+    :param directory: Path to dir for saving the CSV filea
+    :returns: Path to CSV file
+    """
+    with open(os.path.join(directory, 'statuses.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # Writing the header to the CSV file.
+        writer.writerow([
+            'id',
+            '_signal_id',
+            'text',
+            'user',
+            'target_api',
+            'state',
+            'extern',
+            'created_at',
+            'updated_at',
+            'extra_properties',
+        ])
+
+        # Writing all `Status` objects to the CSV file.
+        for status in Status.objects.all():
+            writer.writerow([
+                status.pk,
+                status._signal_id,
+                status.text,
+                status.user,
+                status.target_api,
+                status.get_state_display(),
+                status.extern,
+                status.created_at,
+                status.updated_at,
+                json.dumps(status.extra_properties),
             ])
 
     return csv_file.name
