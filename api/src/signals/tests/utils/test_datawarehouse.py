@@ -12,20 +12,22 @@ from signals.utils import datawarehouse
 from signals.tests.factories import SignalFactory
 
 
-class TestUtilsDatawarehouse(testcases.TestCase):
+class TestDatawarehouse(testcases.TestCase):
 
     def setUp(self):
-       self.tmp_dir = tempfile.mkdtemp()
+       self.csv_tmp_dir = tempfile.mkdtemp()
+       self.file_backend_tmp_dir = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
+        shutil.rmtree(self.csv_tmp_dir)
+        shutil.rmtree(self.file_backend_tmp_dir)
 
     @mock.patch('signals.utils.datawarehouse._get_storage_backend')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the file backend to local file system with tmp directory.
         # In the test we don't want to make usage of the Object Store.
         mocked_get_storage_backend.return_value = FileSystemStorage(
-            location=self.tmp_dir)
+            location=self.file_backend_tmp_dir)
 
         # Creating a few objects in the database.
         for i in range(3):
@@ -35,11 +37,11 @@ class TestUtilsDatawarehouse(testcases.TestCase):
 
         # Checking if we have files on the correct locations and do they
         # have some content.
-        signals_csv = path.join(self.tmp_dir, 'signals.csv')
-        locations_csv = path.join(self.tmp_dir, 'locations.csv')
-        reporters_csv = path.join(self.tmp_dir, 'reporters.csv')
-        categories_csv = path.join(self.tmp_dir, 'categories.csv')
-        statuses_csv = path.join(self.tmp_dir, 'statuses.csv')
+        signals_csv = path.join(self.file_backend_tmp_dir, 'signals.csv')
+        locations_csv = path.join(self.file_backend_tmp_dir, 'locations.csv')
+        reporters_csv = path.join(self.file_backend_tmp_dir, 'reporters.csv')
+        categories_csv = path.join(self.file_backend_tmp_dir, 'categories.csv')
+        statuses_csv = path.join(self.file_backend_tmp_dir, 'statuses.csv')
         self.assertTrue(path.exists(signals_csv))
         self.assertTrue(path.getsize(signals_csv))
         self.assertTrue(path.exists(locations_csv))
@@ -84,9 +86,9 @@ class TestUtilsDatawarehouse(testcases.TestCase):
     def test_create_signals_csv(self):
         signal = SignalFactory.create()
 
-        csv_file = datawarehouse._create_signals_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_signals_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.tmp_dir, 'signals.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'signals.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -117,9 +119,10 @@ class TestUtilsDatawarehouse(testcases.TestCase):
         signal = SignalFactory.create()
         location = signal.location
 
-        csv_file = datawarehouse._create_locations_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_locations_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.tmp_dir, 'locations.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'locations.csv'),
+                         csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -143,9 +146,10 @@ class TestUtilsDatawarehouse(testcases.TestCase):
         signal = SignalFactory.create()
         reporter = signal.reporter
 
-        csv_file = datawarehouse._create_reporters_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_reporters_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.tmp_dir, 'reporters.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'reporters.csv'),
+                         csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -163,9 +167,10 @@ class TestUtilsDatawarehouse(testcases.TestCase):
         signal = SignalFactory.create()
         category = signal.category
 
-        csv_file = datawarehouse._create_categories_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_categories_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.tmp_dir, 'categories.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'categories.csv'),
+                         csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -193,9 +198,9 @@ class TestUtilsDatawarehouse(testcases.TestCase):
         signal = SignalFactory.create()
         status = signal.status
 
-        csv_file = datawarehouse._create_statuses_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_statuses_csv(self.csv_tmp_dir)
 
-        self.assertEqual(path.join(self.tmp_dir, 'statuses.csv'), csv_file)
+        self.assertEqual(path.join(self.csv_tmp_dir, 'statuses.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
