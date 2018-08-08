@@ -8,12 +8,11 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
-from signals.models import Signal, AFGEHANDELD
+from signals.models import Signal, AFWACHTING, AFGEHANDELD
 from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
-from signals.models import AFWACHTING
 from signals.tests import factories
 
 

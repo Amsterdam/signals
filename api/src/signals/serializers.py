@@ -12,16 +12,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField, ModelSerializer
+from rest_framework.throttling import BaseThrottle
 
 from signals.messaging.categories import get_departments
-from signals.messaging.send_emails import handle_status_change, \
-    handle_create_signal
-from signals.models import Category, AFGEHANDELD
+from signals.messaging.send_emails import (
+    handle_status_change, handle_create_signal)
+from signals.models import Category
 from signals.models import Location
 from signals.models import Reporter
-from signals.models import STATUS_OVERGANGEN
-from rest_framework.throttling import BaseThrottle
-from signals.models import Signal
+from signals.models import Signal, STATUS_OVERGANGEN, AFGEHANDELD
 from signals.models import Status
 
 
