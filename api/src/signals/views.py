@@ -349,7 +349,7 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     )
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filter_class = StatusFilter
 
 

@@ -8,11 +8,12 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
-from signals.models import Signal
+from signals.models import Signal, AFGEHANDELD
 from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
+from signals.models import AFWACHTING
 from signals.tests import factories
 
 
@@ -173,14 +174,8 @@ class PostTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_post_status(self):
-        """Update status of signal
-
-        - Add a status object with link to Signal
-        - Change signal object status field.
-
-        """
-        url = "/signals/auth/status/"
+    def test_post_status_all_fields(self):
+        url = '/signals/auth/status/'
         postjson = self._get_fixture('post_status')
         postjson['_signal'] = self.signal.id
         response = self.client.post(url, postjson, format='json')
@@ -188,6 +183,49 @@ class PostTestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.signal.refresh_from_db()
         # check that current status of signal is now this one
+        self.assertEqual(self.signal.status.id, result['id'])
+
+    def test_post_status_minimal_fiels(self):
+        url = '/signals/auth/status/'
+        data = {
+            'text': None,
+            'user': None,
+            'target_api': None,
+            'state': AFWACHTING,
+            'extern': None,
+            'extra_properties': {},
+            '_signal': self.signal.id,
+        }
+        response = self.client.post(url, data, format='json')
+        result = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.signal.refresh_from_db()
+        # check that current status of signal is now this one
+        self.assertEqual(self.signal.status.id, result['id'])
+
+    def test_post_status_afgehandeld_text_required_failed(self):
+        url = '/signals/auth/status/'
+        data = {
+            'state': AFGEHANDELD,
+            '_signal': self.signal.id,
+            'text': None,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 400)
+        errors = response.json()
+        self.assertIn('text', errors.keys())
+
+    def test_post_status_afgehandeld_text_required_success(self):
+        url = '/signals/auth/status/'
+        data = {
+            'state': AFGEHANDELD,
+            '_signal': self.signal.id,
+            'text': 'Uw melding is afgehandeld',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 201)
+        result = response.json()
+        self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.id, result['id'])
 
     def test_post_location(self):
