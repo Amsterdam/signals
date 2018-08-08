@@ -60,6 +60,17 @@ else:
     # noinspection PyUnresolvedReferences
     MEDIA_ROOT = '/tmp/signals/upload'
 
+# Object store - Datawarehouse (DWH)
+DWH_SWIFT_AUTH_URL = os.getenv('DWH_SWIFT_AUTH_URL')
+DWH_SWIFT_USERNAME = os.getenv('DWH_SWIFT_USERNAME')
+DWH_SWIFT_PASSWORD = os.getenv('DWH_SWIFT_PASSWORD')
+DWH_SWIFT_TENANT_NAME = os.getenv('DWH_SWIFT_TENANT_NAME')
+DWH_SWIFT_TENANT_ID = os.getenv('DWH_SWIFT_TENANT_ID')
+DWH_SWIFT_REGION_NAME = os.getenv('DWH_SWIFT_REGION_NAME')
+DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
+DWH_SWIFT_USE_TEMP_URLS = os.getenv('DWH_SWIFT_USE_TEMP_URLS')
+DWH_SWIFT_TEMP_URL_KEY = os.getenv('DWH_SWIFT_TEMP_URL_KEY')
+
 # Database
 
 DATABASES = {"default": DATABASE_OPTIONS[get_database_key()]}
