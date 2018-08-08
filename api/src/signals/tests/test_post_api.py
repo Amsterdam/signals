@@ -205,11 +205,20 @@ class PostTestCase(APITestCase):
 
     def test_post_status_afgehandeld_text_required_failed(self):
         url = '/signals/auth/status/'
+
+        # Test with text value `None`.
         data = {
             'state': AFGEHANDELD,
             '_signal': self.signal.id,
             'text': None,
         }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 400)
+        errors = response.json()
+        self.assertIn('text', errors.keys())
+
+        # Test with text value empty string.
+        data['text'] = ''
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 400)
         errors = response.json()
