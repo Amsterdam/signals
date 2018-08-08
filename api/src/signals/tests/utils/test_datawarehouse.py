@@ -24,8 +24,9 @@ class TestDatawarehouse(testcases.TestCase):
 
     @mock.patch('signals.utils.datawarehouse._get_storage_backend')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
-        # Mocking the file backend to local file system with tmp directory.
-        # In the test we don't want to make usage of the Object Store.
+        # Mocking the storage backend to local file system with tmp directory.
+        # In this test case we don't want to make usage of the remote Object
+        # Store.
         mocked_get_storage_backend.return_value = FileSystemStorage(
             location=self.file_backend_tmp_dir)
 
@@ -35,8 +36,8 @@ class TestDatawarehouse(testcases.TestCase):
 
         datawarehouse.save_csv_files_datawarehouse()
 
-        # Checking if we have files on the correct locations and do they
-        # have some content.
+        # Checking if we have files on the correct locations and that they
+        # do have some content.
         signals_csv = path.join(self.file_backend_tmp_dir, 'signals.csv')
         locations_csv = path.join(self.file_backend_tmp_dir, 'locations.csv')
         reporters_csv = path.join(self.file_backend_tmp_dir, 'reporters.csv')

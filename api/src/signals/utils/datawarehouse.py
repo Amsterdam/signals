@@ -32,7 +32,7 @@ def save_csv_files_datawarehouse():
 
 
 def _get_storage_backend():
-    """Return the storage backend (Object store) specific for Datawarehouse.
+    """Return the storage backend (Object Store) specific for Datawarehouse.
 
     :returns: SwiftStorage instance
     """
@@ -48,13 +48,13 @@ def _get_storage_backend():
         temp_url_key=settings.DWH_SWIFT_TEMP_URL_KEY)
 
 
-def _create_signals_csv(directory):
+def _create_signals_csv(location):
     """Create CSV file with all `Signal` objects.
 
-    :param directory: Path to dir for saving the CSV filea
+    :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    with open(os.path.join(directory, 'signals.csv'), 'w') as csv_file:
+    with open(os.path.join(location, 'signals.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
 
         # Writing the header to the CSV file.
@@ -105,13 +105,13 @@ def _create_signals_csv(directory):
     return csv_file.name
 
 
-def _create_locations_csv(directory):
+def _create_locations_csv(location):
     """Create CSV file with all `Location` objects.
 
-    :param directory: Path to dir for saving the CSV filea
+    :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    with open(os.path.join(directory, 'locations.csv'), 'w') as csv_file:
+    with open(os.path.join(location, 'locations.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
 
         # Writing the header to the CSV file.
@@ -130,31 +130,31 @@ def _create_locations_csv(directory):
         ])
 
         # Writing all `Location` objects to the CSV file.
-        for location in Location.objects.all():
+        for location_obj in Location.objects.all():
             writer.writerow([
-                location.pk,
-                location._signal_id,
-                location.geometrie.x,
-                location.geometrie.y,
-                location.get_stadsdeel_display(),
-                location.buurt_code,
-                json.dumps(location.address),
-                location.address_text,
-                location.created_at,
-                location.updated_at,
-                json.dumps(location.extra_properties),
+                location_obj.pk,
+                location_obj._signal_id,
+                location_obj.geometrie.x,
+                location_obj.geometrie.y,
+                location_obj.get_stadsdeel_display(),
+                location_obj.buurt_code,
+                json.dumps(location_obj.address),
+                location_obj.address_text,
+                location_obj.created_at,
+                location_obj.updated_at,
+                json.dumps(location_obj.extra_properties),
             ])
 
     return csv_file.name
 
 
-def _create_reporters_csv(directory):
+def _create_reporters_csv(location):
     """Create CSV file with all `Reporter` objects.
 
-    :param directory: Path to dir for saving the CSV filea
+    :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    with open(os.path.join(directory, 'reporters.csv'), 'w') as csv_file:
+    with open(os.path.join(location, 'reporters.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
 
         # Writing the header to the CSV file.
@@ -185,13 +185,13 @@ def _create_reporters_csv(directory):
     return csv_file.name
 
 
-def _create_categories_csv(directory):
+def _create_categories_csv(location):
     """Create CSV file with all `Category` objects.
 
-    :param directory: Path to dir for saving the CSV filea
+    :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    with open(os.path.join(directory, 'categories.csv'), 'w') as csv_file:
+    with open(os.path.join(location, 'categories.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
 
         # Writing the header to the CSV file.
@@ -242,13 +242,13 @@ def _create_categories_csv(directory):
     return csv_file.name
 
 
-def _create_statuses_csv(directory):
+def _create_statuses_csv(location):
     """Create CSV file with all `Status` objects.
 
-    :param directory: Path to dir for saving the CSV filea
+    :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    with open(os.path.join(directory, 'statuses.csv'), 'w') as csv_file:
+    with open(os.path.join(location, 'statuses.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
 
         # Writing the header to the CSV file.
