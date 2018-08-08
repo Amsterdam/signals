@@ -14,6 +14,7 @@ from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
+from signals.models import GEMELD
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]
@@ -97,5 +98,5 @@ class StatusFactory(factory.DjangoModelFactory):
     user = 'kees%s@amsterdam.nl' % (int(random.random() * 100))
     text = fuzzy.FuzzyText(length=400)
 
-    state = 'm'  # Initial state is always 'm'
+    state = GEMELD  # Initial state is always 'm'
     extern = fuzzy.FuzzyChoice((True, False))
