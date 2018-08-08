@@ -19,6 +19,7 @@ from rest_framework.viewsets import ViewSet
 
 from signals import settings
 from signals.auth.backend import JWTAuthBackend
+from signals.messaging.categories import ALL_SUB_CATEGORIES
 from signals.models import Buurt
 from signals.models import Category
 from signals.models import Location
@@ -49,7 +50,6 @@ STADSDELEN = (
 
 
 def buurt_choices():
-    # noinspection PyUnresolvedReferences
     options = Buurt.objects.values_list('vollcode', 'naam')
     return [(c, f'{n} ({c})') for c, n in options]
 
@@ -59,8 +59,9 @@ def status_choices():
 
 
 def category_sub_choices():
-    options = Category.objects.values_list("sub").distinct()
-    return [(c, f'{c}') for c, in options]
+    # fixme: use the distinct query again but also supply the list to frontend
+    # options = Category.objects.values_list("sub").distinct()
+    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in ALL_SUB_CATEGORIES]
 
 
 class SignalFilter(FilterSet):
