@@ -43,9 +43,7 @@ def _get_storage_backend():
         tenant_name=settings.DWH_SWIFT_TENANT_NAME,
         tenant_id=settings.DWH_SWIFT_TENANT_ID,
         region_name=settings.DWH_SWIFT_REGION_NAME,
-        container_name=settings.DWH_SWIFT_CONTAINER_NAME,
-        use_temp_urls=settings.DWH_SWIFT_USE_TEMP_URLS,
-        temp_url_key=settings.DWH_SWIFT_TEMP_URL_KEY)
+        container_name=settings.DWH_SWIFT_CONTAINER_NAME)
 
 
 def _create_signals_csv(location):
