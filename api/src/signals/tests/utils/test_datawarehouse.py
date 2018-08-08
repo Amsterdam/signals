@@ -61,9 +61,7 @@ class TestDatawarehouse(testcases.TestCase):
         DWH_SWIFT_TENANT_NAME='dwh_tenant_name',
         DWH_SWIFT_TENANT_ID='dwh_tenant_id',
         DWH_SWIFT_REGION_NAME='dwh_region_name',
-        DWH_SWIFT_CONTAINER_NAME='dwh_container_name',
-        DWH_SWIFT_USE_TEMP_URLS='dwh_use_temp_urls',
-        DWH_SWIFT_TEMP_URL_KEY='dwh_temp_url_key'
+        DWH_SWIFT_CONTAINER_NAME='dwh_container_name'
     )
     @mock.patch('signals.utils.datawarehouse.SwiftStorage', autospec=True)
     def test_get_storage_backend(self, mocked_swift_storage):
@@ -80,9 +78,7 @@ class TestDatawarehouse(testcases.TestCase):
             tenant_name='dwh_tenant_name',
             tenant_id='dwh_tenant_id',
             region_name='dwh_region_name',
-            container_name='dwh_container_name',
-            use_temp_urls='dwh_use_temp_urls',
-            temp_url_key='dwh_temp_url_key')
+            container_name='dwh_container_name')
 
     def test_create_signals_csv(self):
         signal = SignalFactory.create()
