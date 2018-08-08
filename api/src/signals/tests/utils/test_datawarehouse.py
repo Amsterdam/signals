@@ -209,7 +209,7 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['_signal_id'], str(status._signal_id))
                 self.assertEqual(row['text'], str(status.text))
                 self.assertEqual(row['user'], str(status.user))
-                self.assertEqual(row['target_api'], str(status.target_api))
+                self.assertEqual(row['target_api'], '')
                 self.assertEqual(row['state'], status.get_state_display())
                 self.assertEqual(row['extern'], str(status.extern))
                 self.assertEqual(row['created_at'], str(status.created_at))
