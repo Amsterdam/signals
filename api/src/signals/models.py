@@ -261,14 +261,14 @@ class Status(models.Model):
         null=False, on_delete=models.CASCADE
     )
 
-    text = models.CharField(max_length=10000, default='')
-    user = models.EmailField(null=True)
+    text = models.CharField(max_length=10000, null=True, blank=True)
+    user = models.EmailField(null=True, blank=True)
 
-    target_api = models.CharField(max_length=250, default='')
+    target_api = models.CharField(max_length=250, null=True, blank=True)
 
     state = models.CharField(
         max_length=1, choices=STATUS_OPTIONS, blank=True,
-        default='m', help_text='Melding status')
+        default=GEMELD, help_text='Melding status')
 
     extern = models.BooleanField(
         default=False,
@@ -286,4 +286,4 @@ class Status(models.Model):
         get_latest_by = "datetime"
 
     def __str__(self):
-        return self.text
+        return str(self.text)

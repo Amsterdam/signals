@@ -12,16 +12,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import CharField
 from rest_framework.serializers import IntegerField, ModelSerializer
+from rest_framework.throttling import BaseThrottle
 
 from signals.messaging.categories import get_departments
-from signals.messaging.send_emails import handle_status_change, \
-    handle_create_signal
+from signals.messaging.send_emails import (
+    handle_status_change, handle_create_signal)
 from signals.models import Category
 from signals.models import Location
 from signals.models import Reporter
-from signals.models import STATUS_OVERGANGEN
-from rest_framework.throttling import BaseThrottle
-from signals.models import Signal
+from signals.models import Signal, STATUS_OVERGANGEN, AFGEHANDELD
 from signals.models import Status
 
 
@@ -440,10 +439,18 @@ class StatusSerializer(HALSerializer):
     def validate(self, data):
         # Get current status for signal
         signal = data['_signal']
+
+        # Validating "state machine".
         if data['state'] not in STATUS_OVERGANGEN[signal.status.state]:
             raise serializers.ValidationError(
                 f"Invalid state transition from {signal.status.state} "
                 f"to {data['state']}")
+
+        # Validating required field `text` when status is `AFGEHANDELD`.
+        if data['state'] == AFGEHANDELD and not data['text']:
+            raise serializers.ValidationError(
+                {'text': 'This field is required.'})
+
         ip = self.add_ip()
         if ip is not None:
             if 'extra_properties' in data:
