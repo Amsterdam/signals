@@ -15,20 +15,20 @@ def save_csv_files_datawarehouse():
     :returns:
     """
     # Creating all CSV files.
-    tmp_dir = tempfile.mkdtemp()
     csv_files = list()
-    csv_files.append(_create_signals_csv(tmp_dir))
-    csv_files.append(_create_locations_csv(tmp_dir))
-    csv_files.append(_create_reporters_csv(tmp_dir))
-    csv_files.append(_create_categories_csv(tmp_dir))
-    csv_files.append(_create_statuses_csv(tmp_dir))
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        csv_files.append(_create_signals_csv(tmp_dir))
+        csv_files.append(_create_locations_csv(tmp_dir))
+        csv_files.append(_create_reporters_csv(tmp_dir))
+        csv_files.append(_create_categories_csv(tmp_dir))
+        csv_files.append(_create_statuses_csv(tmp_dir))
 
-    # Getting the storage backend and save all CSV files.
-    storage = _get_storage_backend()
-    for csv_file_path in csv_files:
-        with open(csv_file_path, 'rb') as opened_csv_file:
-            file_name = os.path.basename(opened_csv_file.name)
-            storage.save(name=file_name, content=opened_csv_file)
+        # Getting the storage backend and save all CSV files.
+        storage = _get_storage_backend()
+        for csv_file_path in csv_files:
+            with open(csv_file_path, 'rb') as opened_csv_file:
+                file_name = os.path.basename(opened_csv_file.name)
+                storage.save(name=file_name, content=opened_csv_file)
 
 
 def _get_storage_backend():
