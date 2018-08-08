@@ -155,7 +155,7 @@ class PostTestCase(APITestCase):
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
-            url, {'signal_id': self.signal.id, 'image': image})
+            url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 202)
         self.signal.refresh_from_db()
@@ -169,7 +169,7 @@ class PostTestCase(APITestCase):
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
-            url, {'signal_id': self.signal.id, 'image': image})
+            url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
 
