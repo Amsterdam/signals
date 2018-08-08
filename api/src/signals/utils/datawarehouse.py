@@ -9,7 +9,46 @@ from swift.storage import SwiftStorage
 from signals.models import Signal, Location, Reporter, Category, Status
 
 
-def create_signals_csv(directory):
+def save_csv_files_datawarehouse():
+    """Create CSV files for Datawarehouse and save them on the storage backend.
+
+    :returns:
+    """
+    # Creating all CSV files.
+    tmp_dir = tempfile.mkdtemp()
+    csv_files = list()
+    csv_files.append(_create_signals_csv(tmp_dir))
+    csv_files.append(_create_locations_csv(tmp_dir))
+    csv_files.append(_create_reporters_csv(tmp_dir))
+    csv_files.append(_create_categories_csv(tmp_dir))
+    csv_files.append(_create_statuses_csv(tmp_dir))
+
+    # Getting the storage backend and save all CSV files.
+    storage = _get_storage_backend()
+    for csv_file_path in csv_files:
+        with open(csv_file_path, 'r') as opened_csv_file:
+            file_name = os.path.basename(opened_csv_file.name)
+            storage.save(name=file_name, content=opened_csv_file)
+
+
+def _get_storage_backend():
+    """Return the storage backend (Object store) specific for Datawarehouse.
+
+    :returns: SwiftStorage instance
+    """
+    return SwiftStorage(
+        api_auth_url=settings.DWH_SWIFT_AUTH_URL,
+        api_username=settings.DWH_SWIFT_USERNAME,
+        api_key=settings.DWH_SWIFT_PASSWORD,
+        tenant_name=settings.DWH_SWIFT_TENANT_NAME,
+        tenant_id=settings.DWH_SWIFT_TENANT_ID,
+        region_name=settings.DWH_SWIFT_REGION_NAME,
+        container_name=settings.DWH_SWIFT_CONTAINER_NAME,
+        use_temp_urls=settings.DWH_SWIFT_USE_TEMP_URLS,
+        temp_url_key=settings.DWH_SWIFT_TEMP_URL_KEY)
+
+
+def _create_signals_csv(directory):
     """Create CSV file with all `Signal` objects.
 
     :param directory: Path to dir for saving the CSV filea
@@ -66,7 +105,7 @@ def create_signals_csv(directory):
     return csv_file.name
 
 
-def create_locations_csv(directory):
+def _create_locations_csv(directory):
     """Create CSV file with all `Location` objects.
 
     :param directory: Path to dir for saving the CSV filea
@@ -109,7 +148,7 @@ def create_locations_csv(directory):
     return csv_file.name
 
 
-def create_reporters_csv(directory):
+def _create_reporters_csv(directory):
     """Create CSV file with all `Reporter` objects.
 
     :param directory: Path to dir for saving the CSV filea
@@ -146,7 +185,7 @@ def create_reporters_csv(directory):
     return csv_file.name
 
 
-def create_categories_csv(directory):
+def _create_categories_csv(directory):
     """Create CSV file with all `Category` objects.
 
     :param directory: Path to dir for saving the CSV filea
@@ -203,7 +242,7 @@ def create_categories_csv(directory):
     return csv_file.name
 
 
-def create_statuses_csv(directory):
+def _create_statuses_csv(directory):
     """Create CSV file with all `Status` objects.
 
     :param directory: Path to dir for saving the CSV filea
@@ -242,32 +281,3 @@ def create_statuses_csv(directory):
             ])
 
     return csv_file.name
-
-
-def save_csv_to_object_store():
-    tmp_dir = tempfile.mkdtemp()
-    csv_files = []
-    csv_files.append(create_signals_csv(tmp_dir))
-    csv_files.append(create_locations_csv(tmp_dir))
-    csv_files.append(create_reporters_csv(tmp_dir))
-    csv_files.append(create_categories_csv(tmp_dir))
-    csv_files.append(create_statuses_csv(tmp_dir))
-
-    storage = _get_storage_backend()
-
-    for csv_file_path in csv_files:
-        # open file
-        storage.save(csv_file_path)
-
-
-def _get_storage_backend():
-    return SwiftStorage(
-        api_auth_url=settings.DWH_SWIFT_AUTH_URL,
-        api_username=settings.DWH_SWIFT_USERNAME,
-        api_key=settings.DWH_SWIFT_PASSWORD,
-        tenant_name=settings.DWH_SWIFT_TENANT_NAME,
-        tenant_id=settings.DWH_SWIFT_TENANT_ID,
-        region_name=settings.DWH_SWIFT_REGION_NAME,
-        container_name=settings.DWH_SWIFT_CONTAINER_NAME,
-        use_temp_urls=settings.DWH_SWIFT_USE_TEMP_URLS,
-        temp_url_key=settings.DWH_SWIFT_TEMP_URL_KEY)

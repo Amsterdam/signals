@@ -1,17 +1,18 @@
 import csv
 import json
 import shutil
-import os
 import tempfile
+from os import path
 from unittest import mock
 
+from django.core.files.storage import FileSystemStorage
 from django.test import testcases, override_settings
 
-from signals.utils import export_to_csv
-from signals.tests.factories import SignalFactory, LocationFactory
+from signals.utils import datawarehouse
+from signals.tests.factories import SignalFactory
 
 
-class TestUtilExportToCSV(testcases.TestCase):
+class TestUtilsDatawarehouse(testcases.TestCase):
 
     def setUp(self):
        self.tmp_dir = tempfile.mkdtemp()
@@ -19,12 +20,73 @@ class TestUtilExportToCSV(testcases.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
 
+    @mock.patch('signals.utils.datawarehouse._get_storage_backend')
+    def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
+        # Mocking the file backend to local file system with tmp directory.
+        # In the test we don't want to make usage of the Object Store.
+        mocked_get_storage_backend.return_value = FileSystemStorage(
+            location=self.tmp_dir)
+
+        # Creating a few objects in the database.
+        for i in range(3):
+            SignalFactory.create()
+
+        datawarehouse.save_csv_files_datawarehouse()
+
+        # Checking if we have files on the correct locations and do they
+        # have some content.
+        signals_csv = path.join(self.tmp_dir, 'signals.csv')
+        locations_csv = path.join(self.tmp_dir, 'locations.csv')
+        reporters_csv = path.join(self.tmp_dir, 'reporters.csv')
+        categories_csv = path.join(self.tmp_dir, 'categories.csv')
+        statuses_csv = path.join(self.tmp_dir, 'statuses.csv')
+        self.assertTrue(path.exists(signals_csv))
+        self.assertTrue(path.getsize(signals_csv))
+        self.assertTrue(path.exists(locations_csv))
+        self.assertTrue(path.getsize(locations_csv))
+        self.assertTrue(path.exists(reporters_csv))
+        self.assertTrue(path.getsize(reporters_csv))
+        self.assertTrue(path.exists(categories_csv))
+        self.assertTrue(path.getsize(categories_csv))
+        self.assertTrue(path.exists(statuses_csv))
+        self.assertTrue(path.getsize(statuses_csv))
+
+    @override_settings(
+        DWH_SWIFT_AUTH_URL='dwh_auth_url',
+        DWH_SWIFT_USERNAME='dwh_username',
+        DWH_SWIFT_PASSWORD='dwh_password',
+        DWH_SWIFT_TENANT_NAME='dwh_tenant_name',
+        DWH_SWIFT_TENANT_ID='dwh_tenant_id',
+        DWH_SWIFT_REGION_NAME='dwh_region_name',
+        DWH_SWIFT_CONTAINER_NAME='dwh_container_name',
+        DWH_SWIFT_USE_TEMP_URLS='dwh_use_temp_urls',
+        DWH_SWIFT_TEMP_URL_KEY='dwh_temp_url_key'
+    )
+    @mock.patch('signals.utils.datawarehouse.SwiftStorage', autospec=True)
+    def test_get_storage_backend(self, mocked_swift_storage):
+        mocked_swift_storage_instance = mock.Mock()
+        mocked_swift_storage.return_value = mocked_swift_storage_instance
+
+        result = datawarehouse._get_storage_backend()
+
+        self.assertEqual(result, mocked_swift_storage_instance)
+        mocked_swift_storage.assert_called_once_with(
+            api_auth_url='dwh_auth_url',
+            api_username='dwh_username',
+            api_key='dwh_password',
+            tenant_name='dwh_tenant_name',
+            tenant_id='dwh_tenant_id',
+            region_name='dwh_region_name',
+            container_name='dwh_container_name',
+            use_temp_urls='dwh_use_temp_urls',
+            temp_url_key='dwh_temp_url_key')
+
     def test_create_signals_csv(self):
         signal = SignalFactory.create()
 
-        csv_file = export_to_csv.create_signals_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_signals_csv(self.tmp_dir)
 
-        self.assertEqual(os.path.join(self.tmp_dir, 'signals.csv'), csv_file)
+        self.assertEqual(path.join(self.tmp_dir, 'signals.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -55,9 +117,9 @@ class TestUtilExportToCSV(testcases.TestCase):
         signal = SignalFactory.create()
         location = signal.location
 
-        csv_file = export_to_csv.create_locations_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_locations_csv(self.tmp_dir)
 
-        self.assertEqual(os.path.join(self.tmp_dir, 'locations.csv'), csv_file)
+        self.assertEqual(path.join(self.tmp_dir, 'locations.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -81,9 +143,9 @@ class TestUtilExportToCSV(testcases.TestCase):
         signal = SignalFactory.create()
         reporter = signal.reporter
 
-        csv_file = export_to_csv.create_reporters_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_reporters_csv(self.tmp_dir)
 
-        self.assertEqual(os.path.join(self.tmp_dir, 'reporters.csv'), csv_file)
+        self.assertEqual(path.join(self.tmp_dir, 'reporters.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -101,10 +163,9 @@ class TestUtilExportToCSV(testcases.TestCase):
         signal = SignalFactory.create()
         category = signal.category
 
-        csv_file = export_to_csv.create_categories_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_categories_csv(self.tmp_dir)
 
-        self.assertEqual(
-            os.path.join(self.tmp_dir, 'categories.csv'), csv_file)
+        self.assertEqual(path.join(self.tmp_dir, 'categories.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -132,9 +193,9 @@ class TestUtilExportToCSV(testcases.TestCase):
         signal = SignalFactory.create()
         status = signal.status
 
-        csv_file = export_to_csv.create_statuses_csv(self.tmp_dir)
+        csv_file = datawarehouse._create_statuses_csv(self.tmp_dir)
 
-        self.assertEqual(os.path.join(self.tmp_dir, 'statuses.csv'), csv_file)
+        self.assertEqual(path.join(self.tmp_dir, 'statuses.csv'), csv_file)
 
         with open(csv_file) as opened_csv_file:
             reader = csv.DictReader(opened_csv_file)
@@ -149,33 +210,3 @@ class TestUtilExportToCSV(testcases.TestCase):
                 self.assertEqual(row['created_at'], str(status.created_at))
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
-
-    @override_settings(
-        DWH_SWIFT_AUTH_URL='dwh_auth_url',
-        DWH_SWIFT_USERNAME='dwh_username',
-        DWH_SWIFT_PASSWORD='dwh_password',
-        DWH_SWIFT_TENANT_NAME='dwh_tenant_name',
-        DWH_SWIFT_TENANT_ID='dwh_tenant_id',
-        DWH_SWIFT_REGION_NAME='dwh_region_name',
-        DWH_SWIFT_CONTAINER_NAME='dwh_container_name',
-        DWH_SWIFT_USE_TEMP_URLS='dwh_use_temp_urls',
-        DWH_SWIFT_TEMP_URL_KEY='dwh_temp_url_key'
-    )
-    @mock.patch('signals.utils.export_to_csv.SwiftStorage', autospec=True)
-    def test_get_storage_backend(self, mocked_swift_storage):
-        mocked_swift_storage_instance = mock.Mock()
-        mocked_swift_storage.return_value = mocked_swift_storage_instance
-
-        result = export_to_csv._get_storage_backend()
-
-        self.assertEqual(result, mocked_swift_storage_instance)
-        mocked_swift_storage.assert_called_once_with(
-            api_auth_url='dwh_auth_url',
-            api_username='dwh_username',
-            api_key='dwh_password',
-            tenant_name='dwh_tenant_name',
-            tenant_id='dwh_tenant_id',
-            region_name='dwh_region_name',
-            container_name='dwh_container_name',
-            use_temp_urls='dwh_use_temp_urls',
-            temp_url_key='dwh_temp_url_key')
