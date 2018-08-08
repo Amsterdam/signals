@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from signals.celery import app
 from signals.models import Signal
+from signals.utils.datawarehouse import save_csv_files_datawarehouse
 
 log = logging.getLogger(__name__)
 
@@ -136,3 +137,14 @@ def _is_signal_applicable_for_flex_horeca(signal):
         and signal.category.sub in eligible_sub_categories)
 
     return is_applicable_for_flex_horeca
+
+
+@app.task
+def task_save_csv_files_datawarehouse():
+    """Celery task to save CSV files to Datawarehouse.
+
+    This task is scheduled in Celery beat to run periodically.
+
+    :returns:
+    """
+    save_csv_files_datawarehouse()
