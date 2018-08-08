@@ -1,7 +1,7 @@
 import csv
-import tempfile
-import os
 import json
+import os
+import tempfile
 
 from django.conf import settings
 from swift.storage import SwiftStorage
@@ -54,18 +54,12 @@ def _create_signals_csv(location):
     """
     with open(os.path.join(location, 'signals.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
-
-        # Writing the header to the CSV file.
         writer.writerow([
             'id',
             'signal_uuid',
             'source',
             'text',
             'text_extra',
-            'location_id',
-            'status_id',
-            'category_id',
-            'reporter_id',
             'incident_date_start',
             'incident_date_end',
             'created_at',
@@ -75,7 +69,13 @@ def _create_signals_csv(location):
             'image',
             'upload',
             'extra_properties',
+            'category_id',
+            'location_id',
+            'reporter_id',
+            'status_id',
         ])
+
+        # Writing the header to the CSV file.
 
         # Writing all `Signal` objects to the CSV file.
         for signal in Signal.objects.all():
@@ -85,10 +85,6 @@ def _create_signals_csv(location):
                 signal.source,
                 signal.text,
                 signal.text_extra,
-                signal.location_id,
-                signal.status_id,
-                signal.category_id,
-                signal.reporter_id,
                 signal.incident_date_start,
                 signal.incident_date_end,
                 signal.created_at,
@@ -98,6 +94,10 @@ def _create_signals_csv(location):
                 signal.image,
                 signal.upload,
                 json.dumps(signal.extra_properties),
+                signal.category_id,
+                signal.location_id,
+                signal.reporter_id,
+                signal.status_id,
             ])
 
     return csv_file.name
@@ -115,7 +115,6 @@ def _create_locations_csv(location):
         # Writing the header to the CSV file.
         writer.writerow([
             'id',
-            '_signal_id',
             'lat',
             'lng',
             'stadsdeel',
@@ -125,13 +124,13 @@ def _create_locations_csv(location):
             'created_at',
             'updated_at',
             'extra_properties',
+            '_signal_id',
         ])
 
         # Writing all `Location` objects to the CSV file.
         for location_obj in Location.objects.all():
             writer.writerow([
                 location_obj.pk,
-                location_obj._signal_id,
                 location_obj.geometrie.x,
                 location_obj.geometrie.y,
                 location_obj.get_stadsdeel_display(),
@@ -141,6 +140,7 @@ def _create_locations_csv(location):
                 location_obj.created_at,
                 location_obj.updated_at,
                 json.dumps(location_obj.extra_properties),
+                location_obj._signal_id,
             ])
 
     return csv_file.name
@@ -158,26 +158,26 @@ def _create_reporters_csv(location):
         # Writing the header to the CSV file.
         writer.writerow([
             'id',
-            '_signal_id',
             'email',
             'phone',
             'remove_at',
             'created_at',
             'updated_at',
             'extra_properties',
+            '_signal_id',
         ])
 
         # Writing all `Reporter` objects to the CSV file.
         for reporter in Reporter.objects.all():
             writer.writerow([
                 reporter.pk,
-                reporter._signal_id,
                 reporter.email,
                 reporter.phone,
                 reporter.remove_at,
                 reporter.created_at,
                 reporter.updated_at,
                 json.dumps(reporter.extra_properties),
+                reporter._signal_id,
             ])
 
     return csv_file.name
@@ -195,7 +195,6 @@ def _create_categories_csv(location):
         # Writing the header to the CSV file.
         writer.writerow([
             'id',
-            '_signal_id',
             'main',
             'sub',
             'department',
@@ -212,13 +211,13 @@ def _create_categories_csv(location):
             'created_at',
             'updated_at',
             'extra_properties',
+            '_signal_id',
         ])
 
         # Writing all `Category` objects to the CSV file.
         for category in Category.objects.all():
             writer.writerow([
                 category.pk,
-                category._signal_id,
                 category.main,
                 category.sub,
                 category.department,
@@ -235,6 +234,7 @@ def _create_categories_csv(location):
                 category.created_at,
                 category.updated_at,
                 json.dumps(category.extra_properties),
+                category._signal_id,
             ])
 
     return csv_file.name
@@ -252,7 +252,6 @@ def _create_statuses_csv(location):
         # Writing the header to the CSV file.
         writer.writerow([
             'id',
-            '_signal_id',
             'text',
             'user',
             'target_api',
@@ -261,13 +260,13 @@ def _create_statuses_csv(location):
             'created_at',
             'updated_at',
             'extra_properties',
+            '_signal_id',
         ])
 
         # Writing all `Status` objects to the CSV file.
         for status in Status.objects.all():
             writer.writerow([
                 status.pk,
-                status._signal_id,
                 status.text,
                 status.user,
                 status.target_api,
@@ -276,6 +275,7 @@ def _create_statuses_csv(location):
                 status.created_at,
                 status.updated_at,
                 json.dumps(status.extra_properties),
+                status._signal_id,
             ])
 
     return csv_file.name
