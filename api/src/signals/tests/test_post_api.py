@@ -192,7 +192,7 @@ class PostTestCase(APITestCase):
             'user': None,
             'target_api': None,
             'state': AFWACHTING,
-            'extern': None,
+            'extern': False,
             'extra_properties': {},
             '_signal': self.signal.id,
         }

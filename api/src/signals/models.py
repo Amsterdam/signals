@@ -286,4 +286,4 @@ class Status(models.Model):
         get_latest_by = "datetime"
 
     def __str__(self):
-        return self.text
+        return str(self.text)
