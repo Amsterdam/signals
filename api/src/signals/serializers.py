@@ -149,15 +149,15 @@ class SignalUpdateImageSerializer(ModelSerializer):
         This serializer is only used for updating
         """
         signal_id = validated_data.get('signal_id')
-        instance = Signal.objects.get(pk=signal_id)
+        instance = Signal.objects.get(signal_id=signal_id)
         return self.update(instance, validated_data)
 
     def validate(self, attrs):
         # self.data.is_valid()
         image = self.initial_data.get('image', False)
         if image:
-            if image.size > 3145728:  # 3MB = 3*1024*1024
-                raise ValidationError("Foto mag maximaal 3Mb groot zijn.")
+            if image.size > 8388608:  # 3MB = 8*1024*1024
+                raise ValidationError("Foto mag maximaal 8Mb groot zijn.")
         else:
             raise ValidationError("Foto is een verplicht veld.")
 
