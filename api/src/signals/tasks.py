@@ -141,7 +141,7 @@ def _is_signal_applicable_for_flex_horeca(signal):
 
 @app.task
 def task_save_csv_files_datawarehouse():
-    """Celery task to save CSV files to Datawarehouse.
+    """Celery task to save CSV files for Datawarehouse.
 
     This task is scheduled in Celery beat to run periodically.
 
