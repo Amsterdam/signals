@@ -3,7 +3,8 @@ import tempfile
 import os
 import json
 
-from django.core.files.storage import default_storage
+from django.conf import settings
+from swift.storage import SwiftStorage
 
 from signals.models import Signal, Location, Reporter, Category, Status
 
@@ -243,17 +244,7 @@ def create_statuses_csv(directory):
     return csv_file.name
 
 
-def save_csv_to_object_store(csv_file):
-    """Save given CSV file to objectstore.
-
-    :param csv_file:
-    :returns:
-    """
-    # default_storage =
-    pass
-
-
-def handle():
+def save_csv_to_object_store():
     tmp_dir = tempfile.mkdtemp()
     csv_files = []
     csv_files.append(create_signals_csv(tmp_dir))
@@ -262,5 +253,21 @@ def handle():
     csv_files.append(create_categories_csv(tmp_dir))
     csv_files.append(create_statuses_csv(tmp_dir))
 
-    for csv_file in csv_files:
-        save_csv_to_object_store(csv_file)
+    storage = _get_storage_backend()
+
+    for csv_file_path in csv_files:
+        # open file
+        storage.save(csv_file_path)
+
+
+def _get_storage_backend():
+    return SwiftStorage(
+        api_auth_url=settings.DWH_SWIFT_AUTH_URL,
+        api_username=settings.DWH_SWIFT_USERNAME,
+        api_key=settings.DWH_SWIFT_PASSWORD,
+        tenant_name=settings.DWH_SWIFT_TENANT_NAME,
+        tenant_id=settings.DWH_SWIFT_TENANT_ID,
+        region_name=settings.DWH_SWIFT_REGION_NAME,
+        container_name=settings.DWH_SWIFT_CONTAINER_NAME,
+        use_temp_urls=settings.DWH_SWIFT_USE_TEMP_URLS,
+        temp_url_key=settings.DWH_SWIFT_TEMP_URL_KEY)

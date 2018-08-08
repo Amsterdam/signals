@@ -3,8 +3,9 @@ import json
 import shutil
 import os
 import tempfile
+from unittest import mock
 
-from django.test import testcases
+from django.test import testcases, override_settings
 
 from signals.utils import export_to_csv
 from signals.tests.factories import SignalFactory, LocationFactory
@@ -148,3 +149,33 @@ class TestUtilExportToCSV(testcases.TestCase):
                 self.assertEqual(row['created_at'], str(status.created_at))
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
+
+    @override_settings(
+        DWH_SWIFT_AUTH_URL='dwh_auth_url',
+        DWH_SWIFT_USERNAME='dwh_username',
+        DWH_SWIFT_PASSWORD='dwh_password',
+        DWH_SWIFT_TENANT_NAME='dwh_tenant_name',
+        DWH_SWIFT_TENANT_ID='dwh_tenant_id',
+        DWH_SWIFT_REGION_NAME='dwh_region_name',
+        DWH_SWIFT_CONTAINER_NAME='dwh_container_name',
+        DWH_SWIFT_USE_TEMP_URLS='dwh_use_temp_urls',
+        DWH_SWIFT_TEMP_URL_KEY='dwh_temp_url_key'
+    )
+    @mock.patch('signals.utils.export_to_csv.SwiftStorage', autospec=True)
+    def test_get_storage_backend(self, mocked_swift_storage):
+        mocked_swift_storage_instance = mock.Mock()
+        mocked_swift_storage.return_value = mocked_swift_storage_instance
+
+        result = export_to_csv._get_storage_backend()
+
+        self.assertEqual(result, mocked_swift_storage_instance)
+        mocked_swift_storage.assert_called_once_with(
+            api_auth_url='dwh_auth_url',
+            api_username='dwh_username',
+            api_key='dwh_password',
+            tenant_name='dwh_tenant_name',
+            tenant_id='dwh_tenant_id',
+            region_name='dwh_region_name',
+            container_name='dwh_container_name',
+            use_temp_urls='dwh_use_temp_urls',
+            temp_url_key='dwh_temp_url_key')
