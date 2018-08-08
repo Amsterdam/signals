@@ -224,3 +224,13 @@ class TestHelperIsSignalApplicableForFlexHoreca(TestCase):
         result = tasks._is_signal_applicable_for_flex_horeca(signal)
 
         self.assertEqual(result, False)
+
+
+class TestTaskSaveCSVFilesDatawarehouse(TestCase):
+
+    @mock.patch('signals.tasks.save_csv_files_datawarehouse')
+    def test_task_save_csv_files_datawarehouse(
+            self, mocked_save_csv_files_datawarehouse):
+        tasks.task_save_csv_files_datawarehouse()
+
+        mocked_save_csv_files_datawarehouse.assert_called_once()
