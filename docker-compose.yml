@@ -40,6 +40,25 @@ services:
       - ./api/deploy:/deploy
     command: celery -A signals worker -l info
 
+  celery_beat:
+    build: ./api
+    links:
+      - database
+      - rabbit
+    environment:
+      - DB_NAME=meldingen
+      - DB_PASSWORD=insecure
+      - EMAIL_HOST
+      - EMAIL_HOST_PASSWORD
+      - EMAIL_HOST_USER
+      - EMAIL_PORT
+      - EMAIL_USE_SSL
+      - EMAIL_USE_TLS
+    volumes:
+      - ./api/src:/app
+      - ./api/deploy:/deploy
+    command: celery -A signals beat
+
 
   api:
     build: ./api
