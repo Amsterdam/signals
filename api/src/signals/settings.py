@@ -1,3 +1,5 @@
+from celery.schedules import crontab
+
 from signals.messaging.categories import SUB_CATEGORIES_DICT
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
@@ -139,6 +141,12 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}'
                               f'@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
 CELERY_EMAIL_CHUNK_SIZE = 1
+CELERY_BEAT_SCHEDULE = {
+    'save-csv-files-datawarehouse': {
+        'task': 'signals.tasks.task_save_csv_files_datawarehouse',
+        'schedule': crontab(hour=4),
+    },
+}
 
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True
