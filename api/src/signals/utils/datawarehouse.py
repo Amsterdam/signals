@@ -28,6 +28,7 @@ def save_csv_files_datawarehouse():
         for csv_file_path in csv_files:
             with open(csv_file_path, 'rb') as opened_csv_file:
                 file_name = os.path.basename(opened_csv_file.name)
+                storage.delete(name=file_name)
                 storage.save(name=file_name, content=opened_csv_file)
 
 
@@ -255,12 +256,13 @@ def _create_statuses_csv(location):
             'text',
             'user',
             'target_api',
-            'state',
+            'state_display',
             'extern',
             'created_at',
             'updated_at',
             'extra_properties',
             '_signal_id',
+            'state',
         ])
 
         # Writing all `Status` objects to the CSV file.
@@ -276,6 +278,7 @@ def _create_statuses_csv(location):
                 status.updated_at,
                 json.dumps(status.extra_properties),
                 status._signal_id,
+                status.state,
             ])
 
     return csv_file.name
