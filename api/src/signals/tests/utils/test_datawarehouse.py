@@ -54,6 +54,22 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.exists(statuses_csv))
         self.assertTrue(path.getsize(statuses_csv))
 
+    @mock.patch('signals.utils.datawarehouse.SwiftStorage', autospec=True)
+    def test_save_csv_files_datawarehouse_cleanup_previous_files(
+            self, mocked_swift_storage):
+        mocked_swift_storage_instance = mock.Mock()
+        mocked_swift_storage.return_value = mocked_swift_storage_instance
+
+        datawarehouse.save_csv_files_datawarehouse()
+
+        mocked_swift_storage_instance.delete.assert_has_calls([
+            mock.call(name='signals.csv'),
+            mock.call(name='locations.csv'),
+            mock.call(name='reporters.csv'),
+            mock.call(name='categories.csv'),
+            mock.call(name='statuses.csv'),
+        ])
+
     @override_settings(
         DWH_SWIFT_AUTH_URL='dwh_auth_url',
         DWH_SWIFT_USERNAME='dwh_username',

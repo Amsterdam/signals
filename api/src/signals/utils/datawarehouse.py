@@ -28,6 +28,7 @@ def save_csv_files_datawarehouse():
         for csv_file_path in csv_files:
             with open(csv_file_path, 'rb') as opened_csv_file:
                 file_name = os.path.basename(opened_csv_file.name)
+                storage.delete(name=file_name)
                 storage.save(name=file_name, content=opened_csv_file)
 
 
