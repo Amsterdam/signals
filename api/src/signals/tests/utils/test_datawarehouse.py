@@ -207,8 +207,10 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['text'], str(status.text))
                 self.assertEqual(row['user'], str(status.user))
                 self.assertEqual(row['target_api'], '')
-                self.assertEqual(row['state'], status.get_state_display())
+                self.assertEqual(row['state_display'],
+                                 status.get_state_display())
                 self.assertEqual(row['extern'], str(status.extern))
                 self.assertEqual(row['created_at'], str(status.created_at))
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
+                self.assertEqual(row['state'], status.state)

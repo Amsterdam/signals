@@ -255,12 +255,13 @@ def _create_statuses_csv(location):
             'text',
             'user',
             'target_api',
-            'state',
+            'state_display',
             'extern',
             'created_at',
             'updated_at',
             'extra_properties',
             '_signal_id',
+            'state',
         ])
 
         # Writing all `Status` objects to the CSV file.
@@ -276,6 +277,7 @@ def _create_statuses_csv(location):
                 status.updated_at,
                 json.dumps(status.extra_properties),
                 status._signal_id,
+                status.state,
             ])
 
     return csv_file.name
