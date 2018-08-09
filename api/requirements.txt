@@ -18,6 +18,7 @@ django-appconf==1.0.2
 django-braces==1.13.0
 django-celery-beat==1.1.1
 django-celery-email==2.0.0
+django-celery-results==1.0.1
 django-cors-headers==2.4.0
 django-debug-toolbar==1.9.1
 django-extensions==2.1.0
