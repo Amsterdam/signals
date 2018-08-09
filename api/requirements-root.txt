@@ -4,6 +4,7 @@ datapunt-authorization-levels
 Django
 django-braces
 django-cors-headers
+django-celery-beat
 django-debug-toolbar
 django-extensions
 django-filter

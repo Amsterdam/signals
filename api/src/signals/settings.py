@@ -128,7 +128,10 @@ SWAGGER_SETTINGS = {
 }
 
 # E-mail settings for SMTP (SendGrid)
-INSTALLED_APPS += ('djcelery_email',)
+INSTALLED_APPS += (
+    'djcelery_email',
+    'django_celery_beat',
+)
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
@@ -141,6 +144,9 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}'
                               f'@{RABBITMQ_HOST}/{RABBITMQ_VHOST}')
 CELERY_EMAIL_CHUNK_SIZE = 1
+
+# Celery Beat settings.
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
     'save-csv-files-datawarehouse': {
         'task': 'signals.tasks.task_save_csv_files_datawarehouse',
