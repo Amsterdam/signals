@@ -57,7 +57,7 @@ services:
     volumes:
       - ./api/src:/app
       - ./api/deploy:/deploy
-    command: celery -A signals beat
+    command: celery -A signals beat -l info --pidfile /tmp/celerybeat.pid
 
 
   api:
