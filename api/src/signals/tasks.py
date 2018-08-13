@@ -24,37 +24,37 @@ def retrieve_signal(pk: int) -> Optional[Signal]:
 
 
 @app.task
-def push_to_sigmax(key: int):
+def push_to_sigmax(pk: int):
     """
     Send signals to Sigmax if applicable
     :param key:
     :return: Nothing
     """
-    signal: Signal = retrieve_signal(key)
+    signal: Signal = retrieve_signal(pk)
     if signal and sigmax.is_signal_applicable(signal):
         sigmax.handle(signal)
 
 
 @app.task
-def send_mail_apptimize(key: int):
+def send_mail_apptimize(pk: int):
     """Send email to Apptimize when applicable.
     :param key: Signal object id
     :returns:
     """
-    signal: Signal = retrieve_signal(key)
+    signal: Signal = retrieve_signal(pk)
     if signal and apptimize.is_signal_applicable(signal):
         apptimize.handle(signal)
 
 
 @app.task
-def send_mail_flex_horeca(id):
+def send_mail_flex_horeca(pk):
     """Send email to Flex Horeca Team when applicable.
 
     :param id: Signal object id
     :returns:
     """
     try:
-        signal = Signal.objects.get(id=id)
+        signal = Signal.objects.get(id=pk)
     except Signal.DoesNotExist as e:
         log.exception(str(e))
         return

@@ -12,10 +12,9 @@ from signals.tests.factories import SignalFactory
 
 
 class TestTaskSendMailApptimize(TestCase):
-    @unittest.skip("Mocking email backend does not seem to work reliably")
     @mock.patch('signals.integrations.apptimize.handler.is_signal_applicable',
                 return_value=True)
-    @mock.patch('django.core.mail.send_mail')
+    @mock.patch('signals.integrations.apptimize.handler.send_mail')
     def test_send_mail_apptimize(
             self, mocked_send_mail, mocked_is_signal_applicable):
         signal = SignalFactory.create()
@@ -34,7 +33,7 @@ class TestTaskSendMailApptimize(TestCase):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        tasks.send_mail_apptimize(key=signal.id)
+        tasks.send_mail_apptimize(pk=signal.id)
 
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_send_mail.assert_called_with(
@@ -48,7 +47,7 @@ class TestTaskSendMailApptimize(TestCase):
     @mock.patch('signals.tasks.log')
     def test_send_mail_apptimize_no_signal_found(
             self, mocked_log, mocked_handle):
-        tasks.send_mail_apptimize(key=1)  # id `1` shouldn't be found.
+        tasks.send_mail_apptimize(pk=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_handle.assert_not_called()
@@ -60,7 +59,7 @@ class TestTaskSendMailApptimize(TestCase):
             self, mocked_handle, mocked_is_signal_applicable):
         signal = SignalFactory.create()
 
-        tasks.send_mail_apptimize(key=signal.id)
+        tasks.send_mail_apptimize(pk=signal.id)
 
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_handle.assert_not_called()
@@ -139,7 +138,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
 
         # Creating a `Signal` object to use for sending mail to Flex Horeca.
         signal = SignalFactory.create()
-        tasks.send_mail_flex_horeca(id=signal.id)
+        tasks.send_mail_flex_horeca(pk=signal.id)
 
         # Asserting all correct function calls.
         mocked_loader.get_template.assert_called_once_with(
@@ -159,7 +158,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
     @mock.patch('signals.tasks.log')
     def test_send_mail_flex_horeca_no_signal_found(
             self, mocked_log, mocked_send_mail):
-        tasks.send_mail_flex_horeca(id=1)  # id `1` shouldn't be found.
+        tasks.send_mail_flex_horeca(pk=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
@@ -173,7 +172,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
             mocked_send_mail):
         signal = SignalFactory.create()
 
-        tasks.send_mail_flex_horeca(id=signal.id)
+        tasks.send_mail_flex_horeca(pk=signal.id)
 
         mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
             signal)
@@ -245,7 +244,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
 
         # Creating a `Signal` object to use for sending mail to Flex Horeca.
         signal = SignalFactory.create()
-        tasks.send_mail_flex_horeca(id=signal.id)
+        tasks.send_mail_flex_horeca(pk=signal.id)
 
         # Asserting all correct function calls.
         mocked_loader.get_template.assert_called_once_with(
@@ -265,7 +264,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
     @mock.patch('signals.tasks.log')
     def test_send_mail_flex_horeca_no_signal_found(
             self, mocked_log, mocked_send_mail):
-        tasks.send_mail_flex_horeca(id=1)  # id `1` shouldn't be found.
+        tasks.send_mail_flex_horeca(pk=1)  # id `1` shouldn't be found.
 
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
@@ -279,7 +278,7 @@ class TestTaskSendMailFlexHoreca(TestCase):
             mocked_send_mail):
         signal = SignalFactory.create()
 
-        tasks.send_mail_flex_horeca(id=signal.id)
+        tasks.send_mail_flex_horeca(pk=signal.id)
 
         mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
             signal)
