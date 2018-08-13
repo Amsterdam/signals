@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-*./__pycache__/
+**/__pycache__/
 /__pycache__/
 *__py_cache*
 *.py[cod]
@@ -71,7 +71,6 @@ Global/vim.gitignore
 bin/
 tmp/
 *.tmp
-*.bak
 *.swp
 *~.nib
 local.properties
@@ -96,7 +95,6 @@ local.properties
 # TeXlipse plugin
 .texlipse
 Global/Eclipse.gitignore
-*~
 
 # KDE directory preferences
 .directory
@@ -169,9 +167,7 @@ Temporary Items
 .apdisk
 Global/OSX.gitignore
 nbproject/private/
-build/
 nbbuild/
-dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml

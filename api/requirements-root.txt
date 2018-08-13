@@ -1,13 +1,14 @@
 Celery
 datapunt-authorization-django
 datapunt-authorization-levels
-Django
+django>=2.0
 django-braces
 django-cors-headers
 django-celery-beat
 django-celery-results
 django-debug-toolbar
 django-extensions
+django_extensions
 django-filter
 django-rest-swagger
 django-storage-swift
@@ -27,3 +28,18 @@ django-storages
 django-storage-swift
 Pillow
 graypy
+pygelf
+coreapi
+jsonschema
+drf-yasg[validation]
+swagger-spec-validator
+flex
+lxml
+python-dateutil
+WeasyPrint
+requests
+
+# Test Libraries
+pytest
+pytest-flake8
+pytest-django

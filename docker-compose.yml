@@ -12,7 +12,6 @@ services:
 
   rabbit:
     image: rabbitmq:3
-    hostname: signals-rabbit
     ports:
      - "5672:5672"
     environment:
