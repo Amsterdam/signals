@@ -178,6 +178,8 @@ Additionally  there groups defined for departments. They start with 'dep_'
 It is intended that users from a specific department should only see tickets 
 that belong to a specific department (in the category). But this is not yet implemented.
 
+test
+
 
 
 
