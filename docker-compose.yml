@@ -59,7 +59,6 @@ services:
       - ./api/deploy:/deploy
     command: celery -A signals beat -l info --pidfile /tmp/celerybeat.pid
 
-
   api:
     build: ./api
     ports:
