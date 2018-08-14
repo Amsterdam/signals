@@ -7,7 +7,7 @@ from tests.factories import SignalFactory
 
 class TestDjangoSignals(testcases.TestCase):
 
-    @mock.patch('signals.django_signals.tasks')
+    @mock.patch('signals.apps.signals.django_signals.tasks')
     def test_post_save_signal_created(self, mocked_tasks):
         signal = SignalFactory.build()
         signal.location.save()
@@ -22,7 +22,7 @@ class TestDjangoSignals(testcases.TestCase):
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(
             pk=signal.id)
 
-    @mock.patch('signals.django_signals.tasks')
+    @mock.patch('signals.apps.signals.django_signals.tasks')
     def test_post_save_signal_updated(self, mocked_tasks):
         signal = SignalFactory.create()
 

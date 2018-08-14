@@ -1,4 +1,5 @@
 import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField

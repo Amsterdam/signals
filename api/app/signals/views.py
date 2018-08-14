@@ -19,19 +19,20 @@ from rest_framework.views import APIView
 from signals import settings
 from signals.auth.backend import JWTAuthBackend
 from signals.messaging.categories import ALL_SUB_CATEGORIES
-from apps.signals import Buurt
-from apps.signals import Category
-from apps.signals import Location
-from apps.signals import Signal, STATUS_OPTIONS
-from apps.signals import Status
-from signals.apps.signals.permissions import StatusPermission, CategoryPermission, LocationPermission
-from apps.signals import CategorySerializer, \
-    SignalUnauthenticatedSerializer
-from apps.signals import LocationSerializer
-from apps.signals import SignalAuthSerializer
-from apps.signals import SignalCreateSerializer, \
-    SignalUpdateImageSerializer
-from apps.signals import StatusSerializer
+from signals.apps.signals.models import Buurt
+from signals.apps.signals.models import Category
+from signals.apps.signals.models import Location
+from signals.apps.signals.models import Signal, STATUS_OPTIONS
+from signals.apps.signals.models import Status
+from signals.apps.signals.permissions import (
+    StatusPermission, CategoryPermission, LocationPermission)
+from signals.apps.signals.serializers import (
+    CategorySerializer, SignalUnauthenticatedSerializer)
+from signals.apps.signals.serializers import LocationSerializer
+from signals.apps.signals.serializers import SignalAuthSerializer
+from signals.apps.signals.serializers import (
+    SignalCreateSerializer, SignalUpdateImageSerializer)
+from signals.apps.signals.serializers import StatusSerializer
 from signals.throttling import NoUserRateThrottle
 
 LOGGER = logging.getLogger()

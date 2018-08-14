@@ -43,7 +43,7 @@ class TestTaskSendMailApptimize(TestCase):
             fail_silently=False)
 
     @mock.patch('signals.integrations.apptimize.handler.handle')
-    @mock.patch('signals.tasks.log')
+    @mock.patch('signals.apps.signals.tasks.log')
     def test_send_mail_apptimize_no_signal_found(
             self, mocked_log, mocked_handle):
         tasks.send_mail_apptimize(pk=1)  # id `1` shouldn't be found.
@@ -120,9 +120,10 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
 
 class TestTaskSendMailFlexHoreca(TestCase):
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks.loader')
-    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks.loader')
+    @mock.patch('signals.apps.signals.tasks.'
+                '_is_signal_applicable_for_flex_horeca',
                 return_value=True)
     def test_send_mail_flex_horeca(
             self,
@@ -153,8 +154,8 @@ class TestTaskSendMailFlexHoreca(TestCase):
             recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
             fail_silently=False)
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks.log')
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks.log')
     def test_send_mail_flex_horeca_no_signal_found(
             self, mocked_log, mocked_send_mail):
         tasks.send_mail_flex_horeca(pk=1)  # id `1` shouldn't be found.
@@ -162,8 +163,8 @@ class TestTaskSendMailFlexHoreca(TestCase):
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks._is_signal_applicable_for_flex_horeca',
                 return_value=False)
     def test_send_mail_flex_horeca_not_applicable(
             self,
@@ -226,9 +227,10 @@ class TestHelperIsSignalApplicableForFlexHoreca(TestCase):
 
 class TestTaskSendMailFlexHoreca(TestCase):
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks.loader')
-    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks.loader')
+    @mock.patch('signals.apps.signals.tasks.'
+                '_is_signal_applicable_for_flex_horeca',
                 return_value=True)
     def test_send_mail_flex_horeca(
             self,
@@ -259,8 +261,8 @@ class TestTaskSendMailFlexHoreca(TestCase):
             recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
             fail_silently=False)
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks.log')
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks.log')
     def test_send_mail_flex_horeca_no_signal_found(
             self, mocked_log, mocked_send_mail):
         tasks.send_mail_flex_horeca(pk=1)  # id `1` shouldn't be found.
@@ -268,8 +270,9 @@ class TestTaskSendMailFlexHoreca(TestCase):
         mocked_log.exception.assert_called_once()
         mocked_send_mail.assert_not_called()
 
-    @mock.patch('signals.tasks.send_mail')
-    @mock.patch('signals.tasks._is_signal_applicable_for_flex_horeca',
+    @mock.patch('signals.apps.signals.tasks.send_mail')
+    @mock.patch('signals.apps.signals.tasks.'
+                '_is_signal_applicable_for_flex_horeca',
                 return_value=False)
     def test_send_mail_flex_horeca_not_applicable(
             self,
@@ -332,7 +335,7 @@ class TestHelperIsSignalApplicableForFlexHoreca(TestCase):
 
 class TestTaskSaveCSVFilesDatawarehouse(TestCase):
 
-    @mock.patch('signals.tasks.save_csv_files_datawarehouse')
+    @mock.patch('signals.apps.signals.tasks.save_csv_files_datawarehouse')
     def test_task_save_csv_files_datawarehouse(
             self, mocked_save_csv_files_datawarehouse):
         tasks.task_save_csv_files_datawarehouse()

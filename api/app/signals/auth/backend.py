@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.cache import cache
 from rest_framework import exceptions
-from signals import settings
 
 
 class JWTAuthBackend:

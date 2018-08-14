@@ -1,18 +1,16 @@
 """
 SIA URL Configuration
 """
-from django.conf.urls import url, include
-
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from django.conf import settings
+from django.conf.urls import url, include
+from django.contrib import admin
+from django.urls import path
 from rest_framework import routers
 from rest_framework import permissions
 
-from . import views as api_views
-from django.conf import settings
-from django.contrib import admin
-from django.urls import path
+from signals import views as api_views
 
 
 class SignalsView(routers.APIRootView):

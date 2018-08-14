@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class HealthConfig(AppConfig):
-    name = 'health'
+    name = 'signals.apps.health'
     verbose_name = 'Health'
