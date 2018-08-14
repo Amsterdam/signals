@@ -1,10 +1,30 @@
 Signals
-=============
+=======
+
+Provides API services with signals data.
 
 
-provides API and WFS services with signals data
+Project structure
+=================
 
-- all signals.
+```
+/app                   Docker mount /app
+    /signals           Django root
+        apps           Django apps
+            health
+            signals    (SIA core)
+            ...
+        settings.py
+        urls.py
+        wsgi.py
+        ...
+    /tests             All tests
+        ...
+    manage.py
+    tox.ini
+/deploy                Docker mount /deploy
+```
+
 
 Docker Installation
 ===================
