@@ -35,7 +35,7 @@ services:
       - EMAIL_USE_SSL
       - EMAIL_USE_TLS
     volumes:
-      - ./api/src:/app
+      - ./api/app:/app
       - ./api/deploy:/deploy
     command: celery -A signals worker -l info
 
@@ -54,7 +54,7 @@ services:
       - EMAIL_USE_SSL
       - EMAIL_USE_TLS
     volumes:
-      - ./api/src:/app
+      - ./api/app:/app
       - ./api/deploy:/deploy
     command: celery -A signals beat -l info --pidfile /tmp/celerybeat.pid
 
@@ -80,7 +80,7 @@ services:
       - UWSGI_DIE_ON_TERM=1
       - UWSGI_MODULE=signals.wsgi:application
     volumes:
-      - ./api/src:/app
+      - ./api/app:/app
       - ./api/deploy:/deploy
     command: uwsgi --py-auto-reload=1
 
