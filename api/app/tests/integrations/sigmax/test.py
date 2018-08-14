@@ -11,7 +11,7 @@ from lxml import etree
 
 from signals.integrations.sigmax import utils, handler
 from signals.models import Signal
-from signals.tests.factories import SignalFactory
+from tests.factories import SignalFactory
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)

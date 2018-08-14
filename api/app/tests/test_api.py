@@ -6,7 +6,7 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APITestCase
 
 from signals.models import Signal
-from . import factories
+from tests import factories
 
 
 class BrowseDatasetsTestCase(APITestCase):

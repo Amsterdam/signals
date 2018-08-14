@@ -13,7 +13,7 @@ from signals.models import Location
 from signals.models import Reporter
 from signals.models import Category
 from signals.models import Status
-from signals.tests import factories
+from tests import factories
 
 
 class PostTestCase(APITestCase):

@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from signals.integrations.sigmax.handler import \
     _generate_creeer_zaak_lk01_message, _send_stuf_message
 from signals.models import Signal
-from signals.tests.factories import SignalFactory
+from tests import SignalFactory
 
 
 def _get_test_signal():

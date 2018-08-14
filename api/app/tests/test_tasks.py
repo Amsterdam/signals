@@ -3,12 +3,11 @@ from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase, override_settings
-import unittest
 from freezegun import freeze_time
 
 import signals.integrations.apptimize.handler
 from signals import tasks
-from signals.tests.factories import SignalFactory
+from tests.factories import SignalFactory
 
 
 class TestTaskSendMailApptimize(TestCase):
