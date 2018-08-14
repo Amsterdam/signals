@@ -83,7 +83,7 @@ STATIC_URL = '/signals/static/'
 # noinspection PyUnresolvedReferences
 STATIC_ROOT = '/static/'
 
-HEALTH_MODEL = "signals.Signal"  # TODO what is this thing?
+HEALTH_MODEL = 'signals.Signal'
 
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
 # This is a test public/private key def and added for testing .

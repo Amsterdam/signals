@@ -85,4 +85,5 @@ urlpatterns = [
         schema_view.with_ui('redoc', cache_timeout=None),
         name='schema-redoc'),
     path('', include(signal_router.urls)),
+    path('auth/me/', api_views.LocationUserView.as_view()),
 ]
