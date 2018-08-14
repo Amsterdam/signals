@@ -91,7 +91,7 @@ urlpatterns = [
     url(r'^signals/redoc/$',
         schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
     url(r"^signals/", include(urls)),
-    url(r"^status/", include("signals.apps.health.urls")),
+    url(r'^status/', include('signals.apps.health.urls')),
     path("signals/auth/me/", api_views.LocationUserView.as_view()),
     # TODO : where should the Django Admin endpoint be eventually
     path("signals/admin/", admin.site.urls),
