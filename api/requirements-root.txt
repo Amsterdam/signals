@@ -42,5 +42,6 @@ requests
 # Test Libraries
 tox
 flake8
+isort
 pytest
 pytest-django
