@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.core.mail import send_mail
 
-from signals.models import Signal
+from apps.signals import Signal
 
 
 def is_signal_applicable(signal: Signal):

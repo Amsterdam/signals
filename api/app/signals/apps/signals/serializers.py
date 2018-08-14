@@ -17,11 +17,11 @@ from rest_framework.throttling import BaseThrottle
 from signals.messaging.categories import get_departments
 from signals.messaging.send_emails import (
     handle_status_change, handle_create_signal)
-from signals.models import Category
-from signals.models import Location
-from signals.models import Reporter
-from signals.models import Signal, STATUS_OVERGANGEN, AFGEHANDELD
-from signals.models import Status
+from signals.apps.signals.models import Category
+from signals.apps.signals.models import Location
+from signals.apps.signals.models import Reporter
+from signals.apps.signals.models import Signal, STATUS_OVERGANGEN, AFGEHANDELD
+from signals.apps.signals.models import Status
 
 
 log = logging.getLogger(__name__)

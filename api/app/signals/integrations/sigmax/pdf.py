@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 
 # Because weasyprint can produce a lot of warnings (unsupported
 # CSS etc.) we ignore them.
-from signals.models import Signal
+from apps.signals import Signal
 
 logging.getLogger('weasyprint').setLevel(100)
 

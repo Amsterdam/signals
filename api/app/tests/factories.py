@@ -9,12 +9,12 @@ from django.contrib.gis.geos import Point
 from django.db.models.signals import pre_save, post_save
 from factory import fuzzy
 
-from signals.models import Signal
-from signals.models import Location
-from signals.models import Reporter
-from signals.models import Category
-from signals.models import Status
-from signals.models import GEMELD
+from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Location
+from signals.apps.signals.models import Reporter
+from signals.apps.signals.models import Category
+from signals.apps.signals.models import Status
+from signals.apps.signals.models import GEMELD
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]

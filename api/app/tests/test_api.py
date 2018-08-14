@@ -5,7 +5,7 @@ Test gets basic endpoints and authorization
 from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APITestCase
 
-from signals.models import Signal
+from signals.apps.signals.models import Signal
 from tests import factories
 
 

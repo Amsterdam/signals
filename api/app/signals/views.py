@@ -2,7 +2,7 @@ import logging
 import re
 
 from datapunt_api import bbox
-from datapunt_api.rest import DatapuntViewSetWritable, DatapuntViewSet
+from datapunt_api.rest import DatapuntViewSetWritable
 from django.contrib.gis.geos import Polygon
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,24 +15,23 @@ from rest_framework.serializers import ValidationError
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
 
 from signals import settings
 from signals.auth.backend import JWTAuthBackend
 from signals.messaging.categories import ALL_SUB_CATEGORIES
-from signals.models import Buurt
-from signals.models import Category
-from signals.models import Location
-from signals.models import Signal, STATUS_OPTIONS
-from signals.models import Status
-from signals.permissions import StatusPermission, CategoryPermission, LocationPermission
-from signals.serializers import CategorySerializer, \
+from apps.signals import Buurt
+from apps.signals import Category
+from apps.signals import Location
+from apps.signals import Signal, STATUS_OPTIONS
+from apps.signals import Status
+from signals.apps.signals.permissions import StatusPermission, CategoryPermission, LocationPermission
+from apps.signals import CategorySerializer, \
     SignalUnauthenticatedSerializer
-from signals.serializers import LocationSerializer
-from signals.serializers import SignalAuthSerializer
-from signals.serializers import SignalCreateSerializer, \
+from apps.signals import LocationSerializer
+from apps.signals import SignalAuthSerializer
+from apps.signals import SignalCreateSerializer, \
     SignalUpdateImageSerializer
-from signals.serializers import StatusSerializer
+from apps.signals import StatusSerializer
 from signals.throttling import NoUserRateThrottle
 
 LOGGER = logging.getLogger()

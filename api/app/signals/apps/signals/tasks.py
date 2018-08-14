@@ -9,7 +9,7 @@ from django.utils import timezone
 from signals.celery import app
 from signals.integrations.apptimize import handler as apptimize
 from signals.integrations.sigmax import handler as sigmax
-from signals.models import Signal
+from signals.apps.signals.models import Signal
 from signals.utils.datawarehouse import save_csv_files_datawarehouse
 
 log = logging.getLogger(__name__)

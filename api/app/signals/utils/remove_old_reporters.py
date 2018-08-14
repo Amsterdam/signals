@@ -1,9 +1,8 @@
 import logging
-from django.db import transaction
 from django.utils.datetime_safe import datetime
 from datetime import timezone
 
-from signals.models import Reporter
+from apps.signals import Reporter
 
 log = logging.getLogger(__name__)
 

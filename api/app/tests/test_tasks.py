@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from freezegun import freeze_time
 
 import signals.integrations.apptimize.handler
-from signals import tasks
+from signals.apps.signals import tasks
 from tests.factories import SignalFactory
 
 

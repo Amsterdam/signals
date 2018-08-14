@@ -8,7 +8,7 @@ from django.template import loader
 from django.utils import timezone
 
 from signals.messaging.categories import get_afhandeling_text
-from signals.models import AFGEHANDELD, GEANNULEERD, STADSDELEN
+from apps.signals import AFGEHANDELD
 
 LOG = logging.getLogger()
 

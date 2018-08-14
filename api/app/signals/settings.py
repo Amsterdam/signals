@@ -12,12 +12,15 @@ from signals.settings_databases import (
     in_docker)
 
 # Application definition
+INSTALLED_APPS += (
+    'drf_yasg',
+    'storages',
+    'signals.apps.health',
+    'signals.apps.signals',
+)
 
-INSTALLED_APPS += ["drf_yasg", "storages", "signals"]
-
-ROOT_URLCONF = "signals.urls"
-
-WSGI_APPLICATION = "signals.wsgi.application"
+ROOT_URLCONF = 'signals.urls'
+WSGI_APPLICATION = 'signals.wsgi.application'
 
 DATABASE_OPTIONS = {
     LocationKey.docker: {
@@ -80,7 +83,7 @@ STATIC_URL = '/signals/static/'
 # noinspection PyUnresolvedReferences
 STATIC_ROOT = '/static/'
 
-HEALTH_MODEL = "signals.Signal"
+HEALTH_MODEL = "signals.Signal"  # TODO what is this thing?
 
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
 # This is a test public/private key def and added for testing .

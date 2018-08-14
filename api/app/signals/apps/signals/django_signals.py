@@ -1,8 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from signals import tasks
-from signals.models import Signal
+from signals.apps.signals import tasks
+from signals.apps.signals.models import Signal
 
 
 @receiver(post_save, sender=Signal)
