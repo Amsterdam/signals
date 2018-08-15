@@ -10,7 +10,13 @@ from django.db.models.signals import post_save, pre_save
 from factory import fuzzy
 
 from signals.apps.signals.models import (
-    GEMELD, Category, Location, Reporter, Signal, Status)
+    GEMELD,
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status
+)
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]

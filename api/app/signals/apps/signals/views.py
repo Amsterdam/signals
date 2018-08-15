@@ -4,7 +4,7 @@ import re
 from datapunt_api.rest import DatapuntViewSetWritable
 from django.conf import settings
 from django.http import JsonResponse
-from django_filters.rest_framework import (DjangoFilterBackend)
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -15,16 +15,19 @@ from rest_framework.views import APIView
 from signals.apps.signals.filters import (
     LocationFilter,
     SignalFilter,
-    StatusFilter)
+    StatusFilter
+)
 from signals.apps.signals.models import (
     Category,
     Location,
     Signal,
-    Status)
+    Status
+)
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
-    StatusPermission)
+    StatusPermission
+)
 from signals.apps.signals.serializers import (
     CategorySerializer,
     LocationSerializer,
@@ -32,7 +35,8 @@ from signals.apps.signals.serializers import (
     SignalCreateSerializer,
     SignalUnauthenticatedSerializer,
     SignalUpdateImageSerializer,
-    StatusSerializer)
+    StatusSerializer
+)
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 

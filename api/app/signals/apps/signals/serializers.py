@@ -13,11 +13,19 @@ from rest_framework.serializers import CharField, IntegerField, ModelSerializer
 from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.models import (
-    AFGEHANDELD, STATUS_OVERGANGEN, Category, Location, Reporter, Signal,
-    Status)
+    AFGEHANDELD,
+    STATUS_OVERGANGEN,
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status
+)
 from signals.messaging.categories import get_departments
 from signals.messaging.send_emails import (
-    handle_create_signal, handle_status_change)
+    handle_create_signal,
+    handle_status_change
+)
 
 log = logging.getLogger(__name__)
 

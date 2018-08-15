@@ -9,7 +9,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import (
-    AFGEHANDELD, AFWACHTING, Category, Location, Reporter, Signal, Status)
+    AFGEHANDELD,
+    AFWACHTING,
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status
+)
 from tests import factories
 
 

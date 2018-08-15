@@ -7,7 +7,12 @@ from django.conf import settings
 from swift.storage import SwiftStorage
 
 from signals.apps.signals.models import (
-    Category, Location, Reporter, Signal, Status)
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status
+)
 
 
 def save_csv_files_datawarehouse():

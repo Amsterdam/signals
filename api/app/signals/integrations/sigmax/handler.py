@@ -15,7 +15,9 @@ from signals.apps.signals.models import Signal, Status
 from signals.integrations.sigmax.pdf import _generate_pdf
 from signals.integrations.sigmax.utils import _format_date, _format_datetime
 from signals.integrations.sigmax.xml_templates import (
-    CREER_ZAAK, VOEG_ZAAK_DOCUMENT_TOE)
+    CREER_ZAAK,
+    VOEG_ZAAK_DOCUMENT_TOE
+)
 
 logger = logging.getLogger(__name__)
 
