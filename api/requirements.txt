@@ -85,6 +85,7 @@ PyJWT==1.6.4
 pyparsing==2.2.0
 Pyphen==0.9.4
 pytest==3.7.1
+pytest-cov==2.5.1
 pytest-django==3.3.3
 pytest-flake8==1.0.2
 python-dateutil==2.7.3
