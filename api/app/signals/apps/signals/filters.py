@@ -7,7 +7,8 @@ from signals.apps.signals.models import (
     Buurt,
     Location,
     Signal,
-    Status)
+    Status
+)
 from signals.messaging.categories import ALL_SUB_CATEGORIES
 
 STADSDELEN = (
