@@ -6,7 +6,7 @@
 
 # Code, Naam, Intern/Extern
 ALL_DEPARTMENTS = {
-    "POA" : ("Port of Amsterdam", "E"),
+    "POA": ("Port of Amsterdam", "E"),
     "THO": ("THOR", "I"),
     "WAT": ("Waternet", "E"),
     "STW": ("Stadswerken", "I"),
