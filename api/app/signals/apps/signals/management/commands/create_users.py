@@ -24,7 +24,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('csv_path', nargs='+', type=str)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options):  # noqa: C901
         try:
             csv_path = options["csv_path"][0]
             print(f"Processing {csv_path}")
@@ -41,7 +41,16 @@ class Command(BaseCommand):
         if not os.path.exists(csv_path):
             raise CommandError(f"{csv_path} doesnt exist.")
 
-        expected_fields_name = {'inlog', 'naam', 'emailadres', 'adw_account', 'rol', 'actief', 'organisatie', 'dienst'}
+        expected_fields_name = {
+            'inlog',
+            'naam',
+            'emailadres',
+            'adw_account',
+            'rol',
+            'actief',
+            'organisatie',
+            'dienst'
+        }
 
         email_valid = r'[^@]+@[^@]+\.[^@]+'
 
@@ -86,7 +95,8 @@ class Command(BaseCommand):
                 drow = {}
                 for i, field in enumerate(row):
                     stripped_field = field.strip().strip('"')
-                    drow[fields_name[i]] = stripped_field if fields_name[i] == 'naam' else stripped_field.lower()
+                    value = stripped_field if fields_name[i] == 'naam' else stripped_field.lower()
+                    drow[fields_name[i]] = value
 
                 inlog_counter[drow['inlog']] += 1
                 if inlog_counter[drow['inlog']] > 1:
@@ -97,9 +107,10 @@ class Command(BaseCommand):
                     log.warning(f"Ongeldige e-mail {drow['emailadres']} in regel {row_number}")
                     continue
 
-                if drow['organisatie'] != 'gemeente amsterdam' or not re.match(r'[^@]+@amsterdam.nl$',
-                                                                               drow['emailadres']):
-                    log.warning(f"User e-mail {drow['emailadres']} in regel moet in datapunt IDP worden aangemaakt")
+                if drow['organisatie'] != 'gemeente amsterdam' or not re.match(
+                        r'[^@]+@amsterdam.nl$', drow['emailadres']):
+                    log.warning(f"User e-mail {drow['emailadres']} in regel moet in datapunt IDP "
+                                "worden aangemaakt")
 
                 rol = drow['rol']
                 group = rol_group.get(rol)
@@ -137,8 +148,8 @@ class Command(BaseCommand):
                 user = User.objects.create_user(
                     username=email,
                     email=email,
-                    first_name = first_name,
-                    last_name = last_name,
+                    first_name=first_name,
+                    last_name=last_name,
                     password=make_random_password(),
                     is_active=is_active,
                     is_superuser=is_superuser)

@@ -63,8 +63,8 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         xml = handler._generate_creeer_zaak_lk01_message(self.signal)
 
         try:
-            root = etree.fromstring(xml)
-        except:
+            etree.fromstring(xml)
+        except Exception:
             self.fail('Cannot parse STUF message as XML')
 
     def test_escaping(self):
@@ -79,7 +79,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         # first test that we have obtained valid XML
         try:
             root = etree.fromstring(msg)
-        except:
+        except Exception:
             self.fail('Cannot parse STUF message as XML')
 
         # Check whether our properties made it over
@@ -149,8 +149,8 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
         signal = self.signal
         xml = handler._generate_voeg_zaak_document_toe_lk01(signal)
         try:
-            root = etree.fromstring(xml)
-        except:
+            etree.fromstring(xml)
+        except Exception:
             self.fail('Cannot parse STUF message as XML')
 
     def test_escaping(self):

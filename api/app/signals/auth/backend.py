@@ -9,7 +9,7 @@ class JWTAuthBackend:
     Authenticate. Check if required scope is present and get user_email from token
     Create local admin account if not yet present
     """
-    @staticmethod
+    @staticmethod  # noqa: C901
     def authenticate(request):
         USER_NOT_AUTHORIZED = "User {} is not authorized"
 
@@ -41,7 +41,8 @@ class JWTAuthBackend:
                 try:
                     user = User.objects.get(username=user_email)
                 except User.DoesNotExist:
-                    cache.set(user_email, 'None', 5 * 60)  # wait 5 minutes after users have been changed
+                    # wait 5 minutes after users have been changed
+                    cache.set(user_email, 'None', 5 * 60)
                     raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_email))
             cache.set(user_email, user, 5 * 60)  # wait 5 minutes after users have been changed
         if user is None:

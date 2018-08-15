@@ -124,12 +124,12 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     """
     queryset = (
         Signal.objects.all()
-            .order_by("created_at")
-            .select_related('status')
-            .select_related('location')
-            .select_related('category')
-            .select_related('reporter')
-            .order_by('-id')
+        .order_by("created_at")
+        .select_related('status')
+        .select_related('location')
+        .select_related('category')
+        .select_related('reporter')
+        .order_by('-id')
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer
@@ -141,8 +141,8 @@ class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (LocationPermission,)
     queryset = (
         Location.objects.all()
-            .order_by("created_at")
-            .prefetch_related('signal')
+        .order_by("created_at")
+        .prefetch_related('signal')
     )
 
     serializer_detail_class = LocationSerializer
@@ -156,8 +156,7 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (StatusPermission,)
     queryset = (
         Status.objects.all()
-            .order_by("created_at")
-        # .prefetch_related('signal')
+        .order_by("created_at")
     )
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
@@ -171,7 +170,7 @@ class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (CategoryPermission,)
     queryset = (
         Category.objects.all()
-            .order_by("id").prefetch_related("signal")
+        .order_by("id").prefetch_related("signal")
     )
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer
@@ -189,8 +188,8 @@ class LocationUserView(AuthViewSet, APIView):
         if user:
             data['username'] = user.username
             data['email'] = user.email
-            data['is_staff'] = user.is_staff == True
-            data['is_superuser'] = user.is_superuser == True
+            data['is_staff'] = user.is_staff is True
+            data['is_superuser'] = user.is_superuser is True
             groups = []
             departments = []
             for g in request.user.groups.all():

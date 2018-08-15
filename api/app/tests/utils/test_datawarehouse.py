@@ -15,8 +15,8 @@ from tests.factories import SignalFactory
 class TestDatawarehouse(testcases.TestCase):
 
     def setUp(self):
-       self.csv_tmp_dir = tempfile.mkdtemp()
-       self.file_backend_tmp_dir = tempfile.mkdtemp()
+        self.csv_tmp_dir = tempfile.mkdtemp()
+        self.file_backend_tmp_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.csv_tmp_dir)

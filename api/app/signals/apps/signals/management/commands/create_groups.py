@@ -12,7 +12,7 @@ def make_random_password():
 
 class Command(BaseCommand):
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options):  # noqa: C901
         monitors, created = Group.objects.get_or_create(name='monitors')
         behandelaars, created = Group.objects.get_or_create(name='behandelaars')
         coordinatoren, created = Group.objects.get_or_create(name='coordinatoren')
@@ -35,8 +35,8 @@ class Command(BaseCommand):
             monitor = None
         if not monitor:
             monitor = User.objects.create_user(username='signals.monitor@amsterdam.nl',
-                                            email='signals.monitor@amsterdam.nl',
-                                            password=make_random_password())
+                                               email='signals.monitor@amsterdam.nl',
+                                               password=make_random_password())
             monitors.user_set.add(monitor)
         try:
             behandelaar = User.objects.get(username='signals.behandelaar@amsterdam.nl')
@@ -44,8 +44,8 @@ class Command(BaseCommand):
             behandelaar = None
         if not behandelaar:
             behandelaar = User.objects.create_user(username='signals.behandelaar@amsterdam.nl',
-                                            email='signals.behandelaar@amsterdam.nl',
-                                            password=make_random_password())
+                                                   email='signals.behandelaar@amsterdam.nl',
+                                                   password=make_random_password())
             behandelaars.user_set.add(behandelaar)
         try:
             coordinator = User.objects.get(username='signals.coordinator@amsterdam.nl')
@@ -53,6 +53,6 @@ class Command(BaseCommand):
             coordinator = None
         if not coordinator:
             coordinator = User.objects.create_user(username='signals.coordinator@amsterdam.nl',
-                                            email='signals.coordinator@amsterdam.nl',
-                                            password=make_random_password())
+                                                   email='signals.coordinator@amsterdam.nl',
+                                                   password=make_random_password())
             coordinatoren.user_set.add(coordinator)

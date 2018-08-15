@@ -74,7 +74,7 @@ EXAMPLE_MESSAGE_1 = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soa
       </ZKN:zakLk01>
    </soap:Body>
 </soap:Envelope>
-"""
+"""  # noqa
 
 EXAMPLE_MESSAGE_2 = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
    <soap:Body>
@@ -128,7 +128,7 @@ EXAMPLE_MESSAGE_2 = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soa
          </ZKN:object>
       </ZKN:edcLk01>
    </soap:Body>
-</soap:Envelope>"""
+</soap:Envelope>"""  # noqa
 
 
 # -- functions that generate or send messages --

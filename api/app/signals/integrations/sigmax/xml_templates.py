@@ -56,7 +56,7 @@ CREER_ZAAK = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envel
              </ZKN:object>
           </ZKN:zakLk01>
        </soap:Body>
-    </soap:Envelope>"""
+    </soap:Envelope>"""  # noqa
 
 VOEG_ZAAK_DOCUMENT_TOE = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
    <soap:Body>
@@ -110,6 +110,4 @@ VOEG_ZAAK_DOCUMENT_TOE = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.or
          </ZKN:object>
       </ZKN:edcLk01>
    </soap:Body>
-</soap:Envelope>"""
-
-
+</soap:Envelope>"""  # noqa

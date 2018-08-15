@@ -241,7 +241,7 @@ class SignalCreateSerializer(ModelSerializer):
         handle_create_signal(signal)
         return signal
 
-    def validate(self, data):
+    def validate(self, data):  # noqa: C901
         # The status can only be 'm' when created
         if data['status']['state'] not in STATUS_OVERGANGEN['']:
             raise serializers.ValidationError(
@@ -265,7 +265,8 @@ class SignalCreateSerializer(ModelSerializer):
                 raise serializers.ValidationError("Invalid category")
 
             departments = get_departments(data['category']['sub'])
-            if departments and ('department' not in data['category'] or not data['category']['department']):
+            if departments and ('department' not in data['category'] or
+                                not data['category']['department']):
                 data['category']['department'] = departments
             elif not departments:
                 log.warning(f"Department not found for subcategory : {data['category']['sub']}")
