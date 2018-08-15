@@ -51,6 +51,7 @@ idna==2.7
 inflection==0.3.1
 iso8601==0.1.12
 itypes==1.1.0
+isort==4.3.4
 Jinja2==2.10
 jsonpointer==1.14
 jsonschema==2.6.0
@@ -103,6 +104,7 @@ stevedore==1.29.0
 strict-rfc3339==0.7
 swagger-spec-validator==2.3.1
 text-unidecode==1.2
+tox==3.2.1
 tinycss2==0.6.1
 unicodecsv==0.14.1
 uritemplate==3.0.0
