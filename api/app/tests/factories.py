@@ -1,20 +1,16 @@
-import pytz
+import random
 import string
 import uuid
-import random
 from datetime import datetime
 
 import factory
+import pytz
 from django.contrib.gis.geos import Point
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save, pre_save
 from factory import fuzzy
 
-from signals.apps.signals.models import Signal
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Reporter
-from signals.apps.signals.models import Category
-from signals.apps.signals.models import Status
-from signals.apps.signals.models import GEMELD
+from signals.apps.signals.models import (
+    GEMELD, Category, Location, Reporter, Signal, Status)
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]

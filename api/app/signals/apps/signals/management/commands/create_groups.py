@@ -1,5 +1,6 @@
 import random
 import string
+
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management import BaseCommand
 

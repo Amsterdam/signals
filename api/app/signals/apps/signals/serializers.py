@@ -2,27 +2,22 @@ import logging
 from collections import OrderedDict
 from datetime import timedelta, timezone
 
-from datapunt_api.rest import DisplayField
-from datapunt_api.rest import HALSerializer
+from datapunt_api.rest import DisplayField, HALSerializer
 from django.core.exceptions import ValidationError
-from django.db import transaction, connection
+from django.db import connection, transaction
 from django.forms import ImageField
 from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.serializers import CharField
-from rest_framework.serializers import IntegerField, ModelSerializer
+from rest_framework.serializers import CharField, IntegerField, ModelSerializer
 from rest_framework.throttling import BaseThrottle
 
+from signals.apps.signals.models import (
+    AFGEHANDELD, STATUS_OVERGANGEN, Category, Location, Reporter, Signal,
+    Status)
 from signals.messaging.categories import get_departments
 from signals.messaging.send_emails import (
-    handle_status_change, handle_create_signal)
-from signals.apps.signals.models import Category
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Reporter
-from signals.apps.signals.models import Signal, STATUS_OVERGANGEN, AFGEHANDELD
-from signals.apps.signals.models import Status
-
+    handle_create_signal, handle_status_change)
 
 log = logging.getLogger(__name__)
 

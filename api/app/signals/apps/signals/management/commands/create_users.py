@@ -1,12 +1,14 @@
 import csv
-import os
 import logging
+import os
 import random
 import re
 import string
 from collections import Counter
+
 from django.contrib.auth.models import Group, User
 from django.core.management import BaseCommand, CommandError
+
 from signals.messaging.categories import ALL_DEPARTMENTS
 
 log = logging.getLogger(__name__)

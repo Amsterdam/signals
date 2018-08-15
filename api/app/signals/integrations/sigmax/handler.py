@@ -11,11 +11,11 @@ from xml.sax.saxutils import escape
 import requests
 from django.conf import settings
 
-from signals.integrations.sigmax.pdf import _generate_pdf
-from signals.integrations.sigmax.utils import _format_datetime, _format_date
-from signals.integrations.sigmax.xml_templates import CREER_ZAAK
-from signals.integrations.sigmax.xml_templates import VOEG_ZAAK_DOCUMENT_TOE
 from signals.apps.signals.models import Signal, Status
+from signals.integrations.sigmax.pdf import _generate_pdf
+from signals.integrations.sigmax.utils import _format_date, _format_datetime
+from signals.integrations.sigmax.xml_templates import (
+    CREER_ZAAK, VOEG_ZAAK_DOCUMENT_TOE)
 
 logger = logging.getLogger(__name__)
 

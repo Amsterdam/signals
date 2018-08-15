@@ -7,8 +7,8 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from signals.messaging.categories import get_afhandeling_text
 from signals.apps.signals.models import AFGEHANDELD
+from signals.messaging.categories import get_afhandeling_text
 
 LOG = logging.getLogger()
 

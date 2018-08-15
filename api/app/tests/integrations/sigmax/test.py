@@ -9,8 +9,8 @@ from unittest import mock
 from django.test import TestCase, override_settings
 from lxml import etree
 
-from signals.integrations.sigmax import utils, handler
 from signals.apps.signals.models import Signal
+from signals.integrations.sigmax import handler, utils
 from tests.factories import SignalFactory
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'

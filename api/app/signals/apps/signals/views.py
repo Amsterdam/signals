@@ -1,36 +1,40 @@
 import logging
 import re
 
-from datapunt_api import bbox
 from datapunt_api.rest import DatapuntViewSetWritable
+from django.conf import settings
 from django.http import JsonResponse
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
+from django_filters.rest_framework import (DjangoFilterBackend)
+from rest_framework import mixins, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.views import APIView
 
-from signals import settings
-from signals.auth.backend import JWTAuthBackend
-from signals.apps.signals.models import Category
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Signal
-from signals.apps.signals.models import Status
-from signals.apps.signals.permissions import (
-    StatusPermission, CategoryPermission, LocationPermission)
-from signals.apps.signals.serializers import (
-    CategorySerializer, SignalUnauthenticatedSerializer)
-from signals.apps.signals.serializers import LocationSerializer
-from signals.apps.signals.serializers import SignalAuthSerializer
-from signals.apps.signals.serializers import (
-    SignalCreateSerializer, SignalUpdateImageSerializer)
-from signals.apps.signals.serializers import StatusSerializer
-from signals.throttling import NoUserRateThrottle
-
 from signals.apps.signals.filters import (
-    SignalFilter, StatusFilter, LocationFilter, STADSDELEN)
+    LocationFilter,
+    SignalFilter,
+    StatusFilter)
+from signals.apps.signals.models import (
+    Category,
+    Location,
+    Signal,
+    Status)
+from signals.apps.signals.permissions import (
+    CategoryPermission,
+    LocationPermission,
+    StatusPermission)
+from signals.apps.signals.serializers import (
+    CategorySerializer,
+    LocationSerializer,
+    SignalAuthSerializer,
+    SignalCreateSerializer,
+    SignalUnauthenticatedSerializer,
+    SignalUpdateImageSerializer,
+    StatusSerializer)
+from signals.auth.backend import JWTAuthBackend
+from signals.throttling import NoUserRateThrottle
 
 LOGGER = logging.getLogger()
 

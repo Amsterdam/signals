@@ -7,12 +7,8 @@ from signals.messaging.categories import SUB_CATEGORIES_DICT  # noqa
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
 from signals.settings_databases import (
-    LocationKey,
-    get_docker_host,
-    get_database_key,
-    OVERRIDE_HOST_ENV_VAR,
-    OVERRIDE_PORT_ENV_VAR,
-    in_docker)
+    OVERRIDE_HOST_ENV_VAR, OVERRIDE_PORT_ENV_VAR, LocationKey,
+    get_database_key, get_docker_host, in_docker)
 
 # Application definition
 INSTALLED_APPS += (
