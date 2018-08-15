@@ -6,6 +6,8 @@ ENV PYTHONUNBUFFERED 1
 EXPOSE 8000
 
 RUN mkdir -p /static && chown datapunt /static
+RUN mkdir -p /app && chown datapunt /app
+RUN mkdir -p /deploy && chown datapunt /deploy
 
 COPY requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt

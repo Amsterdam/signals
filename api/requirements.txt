@@ -51,6 +51,7 @@ idna==2.7
 inflection==0.3.1
 iso8601==0.1.12
 itypes==1.1.0
+isort==4.3.4
 Jinja2==2.10
 jsonpointer==1.14
 jsonschema==2.6.0
@@ -84,6 +85,7 @@ PyJWT==1.6.4
 pyparsing==2.2.0
 Pyphen==0.9.4
 pytest==3.7.1
+pytest-cov==2.5.1
 pytest-django==3.3.3
 pytest-flake8==1.0.2
 python-dateutil==2.7.3
@@ -103,6 +105,7 @@ stevedore==1.29.0
 strict-rfc3339==0.7
 swagger-spec-validator==2.3.1
 text-unidecode==1.2
+tox==3.2.1
 tinycss2==0.6.1
 unicodecsv==0.14.1
 uritemplate==3.0.0

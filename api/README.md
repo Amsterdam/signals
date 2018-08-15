@@ -25,6 +25,28 @@ Project structure
 /deploy                Docker mount /deploy
 ```
 
+Tox usage
+=========
+
+You can use tox to run all QA tests with one command. This is also used by Jenkins to run the 
+`Test` pipeline. Tox is directly available in the Docker container. 
+
+Tox runs:
+- unit tests (with `pytest`)
+- flake8 (pep8 checker)
+- isort (import sorting)
+
+##  Local usage
+
+    $ cd api/app
+    $ tox
+
+    $ tox -e test
+    $ tox -e flake8
+    $ tox -e isort
+
+    $ tox -e test -- -k specific_test
+
 
 Docker Installation
 ===================
