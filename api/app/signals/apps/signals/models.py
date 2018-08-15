@@ -1,8 +1,7 @@
 import uuid
 
-from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 
 
 class Buurt(models.Model):

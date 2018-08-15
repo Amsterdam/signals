@@ -1,15 +1,19 @@
+import os
+import sys
+
 from celery.schedules import crontab
 
-from signals.messaging.categories import SUB_CATEGORIES_DICT
+from signals.messaging.categories import SUB_CATEGORIES_DICT  # noqa
 from signals.settings_common import *  # noqa F403
 from signals.settings_common import INSTALLED_APPS
 from signals.settings_databases import (
-    LocationKey,
-    get_docker_host,
-    get_database_key,
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
-    in_docker)
+    LocationKey,
+    get_database_key,
+    get_docker_host,
+    in_docker
+)
 
 # Application definition
 INSTALLED_APPS += (
@@ -108,7 +112,7 @@ JWKS_TEST_KEY = """
 
 DATAPUNT_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
-    'ALWAYS_OK': LOCAL
+    'ALWAYS_OK': LOCAL  # noqa
 }
 
 SWAGGER_SETTINGS = {
@@ -116,7 +120,7 @@ SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Signals API - Swagger': {
             'type': 'oauth2',
-            'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",
+            'authorizationUrl': DATAPUNT_API_URL + "oauth2/authorize",  # noqa
             'flow': 'implicit',
             'scopes': {
                 'SIG/ALL': 'Signals alle authorizaties',
@@ -161,7 +165,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-if TESTING:
+if TESTING:  # noqa
     CELERY_TASK_ALWAYS_EAGER = True
 
 # CELERY_EMAIL_TASK_CONFIG = {

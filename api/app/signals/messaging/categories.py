@@ -1,4 +1,5 @@
 # TODO In a future version this should be in the database
+# flake8: noqa
 
 # Afdeling/Diensten
 # Zie : https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:toepassingen:signalen:ontwerp:referentietabellen:dienstenvsrubrieken

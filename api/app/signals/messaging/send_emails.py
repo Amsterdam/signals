@@ -7,13 +7,13 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from signals.messaging.categories import get_afhandeling_text
 from signals.apps.signals.models import AFGEHANDELD
+from signals.messaging.categories import get_afhandeling_text
 
 LOG = logging.getLogger()
 
 
-## Todo: fetch PDF and attach to message?
+# TODO: fetch PDF and attach to message?
 
 
 def get_valid_email(signal):
@@ -81,9 +81,9 @@ def handle_status_change(signal, previous_status):
         LOG.debug('Skipping')
         return
     LOG.debug('Signal %s changed to state: %s from %s',
-             str(signal.id),
-             str(signal.status.state),
-             str(previous_status.state))
+              str(signal.id),
+              str(signal.status.state),
+              str(previous_status.state))
 
     if signal.status.state in (AFGEHANDELD,) \
             and previous_status.state not in (AFGEHANDELD,) \

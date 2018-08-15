@@ -1,6 +1,6 @@
+import logging
 import os
 import re
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -32,8 +32,7 @@ def in_docker():
     try:
         cgroup = open("/proc/1/cgroup", "r").read()
         return ":/docker/" in cgroup or ":/docker-ce/" in cgroup
-
-    except:
+    except Exception:
         return False
 
 

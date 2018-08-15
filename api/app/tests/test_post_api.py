@@ -1,18 +1,22 @@
 """
 Test posting / updating to basic endpoints and authorization
 """
-import os
 import json
+import os
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
-from signals.apps.signals.models import Signal, AFWACHTING, AFGEHANDELD
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Reporter
-from signals.apps.signals.models import Category
-from signals.apps.signals.models import Status
+from signals.apps.signals.models import (
+    AFGEHANDELD,
+    AFWACHTING,
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status
+)
 from tests import factories
 
 

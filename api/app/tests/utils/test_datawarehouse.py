@@ -6,7 +6,7 @@ from os import path
 from unittest import mock
 
 from django.core.files.storage import FileSystemStorage
-from django.test import testcases, override_settings
+from django.test import override_settings, testcases
 
 from signals.utils import datawarehouse
 from tests.factories import SignalFactory
@@ -15,8 +15,8 @@ from tests.factories import SignalFactory
 class TestDatawarehouse(testcases.TestCase):
 
     def setUp(self):
-       self.csv_tmp_dir = tempfile.mkdtemp()
-       self.file_backend_tmp_dir = tempfile.mkdtemp()
+        self.csv_tmp_dir = tempfile.mkdtemp()
+        self.file_backend_tmp_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.csv_tmp_dir)

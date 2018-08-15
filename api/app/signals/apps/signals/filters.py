@@ -1,13 +1,15 @@
-from rest_framework.serializers import ValidationError
-from django_filters.rest_framework import FilterSet
 from django.contrib.gis.geos import Polygon
-from django_filters.rest_framework import filters
+from django_filters.rest_framework import FilterSet, filters
+from rest_framework.serializers import ValidationError
 
+from signals.apps.signals.models import (
+    STATUS_OPTIONS,
+    Buurt,
+    Location,
+    Signal,
+    Status
+)
 from signals.messaging.categories import ALL_SUB_CATEGORIES
-from signals.apps.signals.models import Buurt
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Signal
-from signals.apps.signals.models import Status, STATUS_OPTIONS
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),

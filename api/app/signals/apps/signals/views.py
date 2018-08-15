@@ -1,36 +1,44 @@
 import logging
 import re
 
-from datapunt_api import bbox
 from datapunt_api.rest import DatapuntViewSetWritable
+from django.conf import settings
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
+from rest_framework import mixins, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.views import APIView
 
-from signals import settings
-from signals.auth.backend import JWTAuthBackend
-from signals.apps.signals.models import Category
-from signals.apps.signals.models import Location
-from signals.apps.signals.models import Signal
-from signals.apps.signals.models import Status
-from signals.apps.signals.permissions import (
-    StatusPermission, CategoryPermission, LocationPermission)
-from signals.apps.signals.serializers import (
-    CategorySerializer, SignalUnauthenticatedSerializer)
-from signals.apps.signals.serializers import LocationSerializer
-from signals.apps.signals.serializers import SignalAuthSerializer
-from signals.apps.signals.serializers import (
-    SignalCreateSerializer, SignalUpdateImageSerializer)
-from signals.apps.signals.serializers import StatusSerializer
-from signals.throttling import NoUserRateThrottle
-
 from signals.apps.signals.filters import (
-    SignalFilter, StatusFilter, LocationFilter, STADSDELEN)
+    LocationFilter,
+    SignalFilter,
+    StatusFilter
+)
+from signals.apps.signals.models import (
+    Category,
+    Location,
+    Signal,
+    Status
+)
+from signals.apps.signals.permissions import (
+    CategoryPermission,
+    LocationPermission,
+    StatusPermission
+)
+from signals.apps.signals.serializers import (
+    CategorySerializer,
+    LocationSerializer,
+    SignalAuthSerializer,
+    SignalCreateSerializer,
+    SignalUnauthenticatedSerializer,
+    SignalUpdateImageSerializer,
+    StatusSerializer
+)
+from signals.auth.backend import JWTAuthBackend
+from signals.throttling import NoUserRateThrottle
 
 LOGGER = logging.getLogger()
 
@@ -124,12 +132,12 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     """
     queryset = (
         Signal.objects.all()
-            .order_by("created_at")
-            .select_related('status')
-            .select_related('location')
-            .select_related('category')
-            .select_related('reporter')
-            .order_by('-id')
+        .order_by("created_at")
+        .select_related('status')
+        .select_related('location')
+        .select_related('category')
+        .select_related('reporter')
+        .order_by('-id')
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer
@@ -141,8 +149,8 @@ class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (LocationPermission,)
     queryset = (
         Location.objects.all()
-            .order_by("created_at")
-            .prefetch_related('signal')
+        .order_by("created_at")
+        .prefetch_related('signal')
     )
 
     serializer_detail_class = LocationSerializer
@@ -156,8 +164,7 @@ class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (StatusPermission,)
     queryset = (
         Status.objects.all()
-            .order_by("created_at")
-        # .prefetch_related('signal')
+        .order_by("created_at")
     )
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
@@ -171,7 +178,7 @@ class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     permission_classes = (CategoryPermission,)
     queryset = (
         Category.objects.all()
-            .order_by("id").prefetch_related("signal")
+        .order_by("id").prefetch_related("signal")
     )
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer
@@ -189,8 +196,8 @@ class LocationUserView(AuthViewSet, APIView):
         if user:
             data['username'] = user.username
             data['email'] = user.email
-            data['is_staff'] = user.is_staff == True
-            data['is_superuser'] = user.is_superuser == True
+            data['is_staff'] = user.is_staff is True
+            data['is_superuser'] = user.is_superuser is True
             groups = []
             departments = []
             for g in request.user.groups.all():
