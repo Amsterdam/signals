@@ -17,12 +17,7 @@ from signals.apps.signals.filters import (
     SignalFilter,
     StatusFilter
 )
-from signals.apps.signals.models import (
-    Category,
-    Location,
-    Signal,
-    Status
-)
+from signals.apps.signals.models import Category, Location, Signal, Status
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
