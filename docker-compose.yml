@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: signals
       POSTGRES_USER: signals
       POSTGRES_PASSWORD: insecure
+    volumes:
+      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
   rabbit:
     image: rabbitmq:3
