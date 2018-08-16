@@ -21,7 +21,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.messaging.categories import get_departments
+from signals.settings.categories import get_departments
 from signals.messaging.send_emails import (
     handle_create_signal,
     handle_status_change
