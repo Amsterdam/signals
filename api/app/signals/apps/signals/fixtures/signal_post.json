@@ -13,8 +13,8 @@
         "geometrie": {
             "type": "Point",
             "coordinates": [
-                135.0,
-                45.0
+        		4.898466,
+		        52.361585
             ]
         },
         "stadsdeel": "A",
