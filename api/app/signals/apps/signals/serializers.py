@@ -34,8 +34,11 @@ class NearAmsterdamValidatorMixin:
     def validate_geometrie(self, value):
         fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
 
-        if (not 1 < value.coords[0] < 7) or (not 50 < value.coords[1] < 55):
-            raise ValidationError(fail_msg)
+        lat_not_in_adam_area = not 50 < value.coords[1] < 55
+        lon_not_in_adam_area = not 1 < value.coords[0] < 7
+
+        if lon_not_in_adam_area or lat_not_in_adam_area:
+            raise serializers.ValidationError(fail_msg)
         return value
 
 

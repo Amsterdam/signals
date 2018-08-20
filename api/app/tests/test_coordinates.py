@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from rest_framework import serializers
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.serializers import NearAmsterdamValidatorMixin
@@ -23,7 +24,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
         v = NearAmsterdamValidatorMixin()
         self.assertEquals(correct, v.validate_geometrie(correct))
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(serializers.ValidationError):
             v.validate_geometrie(wrong)
 
 
