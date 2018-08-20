@@ -19,7 +19,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
         correct = Point(IN_AMSTERDAM)
         wrong = Point(OUTSIDE_AMSTERDAM)
 
-        # check that valid data is returned, and wrpng data rejected
+        # check that valid data is returned, and wrong data rejected
         v = NearAmsterdamValidatorMixin()
         self.assertEquals(correct, v.validate_geometrie(correct))
 
