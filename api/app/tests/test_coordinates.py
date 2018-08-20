@@ -2,12 +2,12 @@ import json
 import os
 
 from django.conf import settings
+from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from rest_framework.test import APITestCase
-from django.core.exceptions import ValidationError
 
 from signals.apps.signals.serializers import NearAmsterdamValidatorMixin
-from django.contrib.gis.geos import Point
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 OUTSIDE_AMSTERDAM = tuple(reversed(IN_AMSTERDAM))
@@ -42,7 +42,7 @@ class TestLocationSerializer(APITestCase):
             postjson = json.loads(fixture_file.read())
 
         return postjson
-   
+
     def test_swapped_lon_lat(self):
         """Post een compleet signaal."""
         url = '/signals/signal/'
