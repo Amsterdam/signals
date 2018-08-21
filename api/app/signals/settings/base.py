@@ -14,12 +14,16 @@ from signals.settings.settings_databases import (
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = False
 ALLOWED_HOSTS = [
     'api.data.amsterdam.nl',
     'acc.api.data.amsterdam.nl',
 ]
+ADMIN_LOGIN = 'signals.admin@amsterdam.nl'
+INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -149,6 +153,7 @@ DWH_SWIFT_TENANT_ID = os.getenv('DWH_SWIFT_TENANT_ID')
 DWH_SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
 DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 
+# Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
@@ -177,29 +182,6 @@ DATAPUNT_AUTHZ = {
     'ALWAYS_OK': False,
 }
 
-DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
-    'SECURITY_DEFINITIONS': {
-        'Signals API - Swagger': {
-            'type': 'oauth2',
-            'authorizationUrl': '{url}oauth2/authorize'.format(url=DATAPUNT_API_URL),
-            'flow': 'implicit',
-            'scopes': {
-                'SIG/ALL': 'Signals alle authorizaties',
-            }
-        }
-    },
-    'OAUTH2_CONFIG': {
-        'clientId': 'swagger-ui',
-        #  'clientSecret': 'yourAppClientSecret',
-        'appName': 'Signal Swagger UI',
-    },
-}
-
-# E-mail settings for SMTP (SendGrid)
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-
 # Celery settings
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
@@ -223,26 +205,15 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# CELERY_EMAIL_TASK_CONFIG = {
-#     'queue': 'email',
-#     'rate_limit': '50/m',  # * CELERY_EMAIL_CHUNK_SIZE (default: 10)
-# }
-
-# Can locally be tested with a Google account, for example :
-#
-# export EMAIL_HOST=smtp.gmail.com
-# export EMAIL_HOST_USER=<gmail_account>
-# export EMAIL_HOST_PASSWORD=<gmail_password>
-# export EMAIL_PORT=465
-# export EMAIL_USE_SSL=True
-# export EMAIL_USE_TLS=False
-#
-# These exports have to be set for the task that realy does the sending. So if
-# celery  does the sending then then these export should be set before starting
-# the celery working process
-
-SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
-SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
+# E-mail settings for SMTP (SendGrid)
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
+if not EMAIL_USE_TLS:
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
 EMAIL_APPTIMIZE_INTEGRATION_ADDRESS = os.getenv(
     'EMAIL_APPTIMIZE_INTEGRATION_ADDRESS', None)
@@ -250,74 +221,22 @@ EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS = os.getenv(
     'EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None)
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
-
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
-if not EMAIL_USE_TLS:
-    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
-
-ADMIN_LOGIN = 'signals.admin@amsterdam.nl'
-
-# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.behandelaar@amsterdam.nl")
-# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.coordinator@amsterdam.nl")
-# TEST_LOGIN = os.getenv("TEST_LOGIN", "signals.monitor@amsterdam.nl")
-TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@amsterdam.nl')
-# TEST_LOGIN = os.getenv("TEST_LOGIN", "invalid@invalid.nl")
-
+# Django cache settings
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
-INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
-CORS_ORIGIN_ALLOW_ALL = True
-
-REST_FRAMEWORK = dict(
-    PAGE_SIZE=100,
-    MAX_PAGINATE_BY=100,
-    UNAUTHENTICATED_USER={},
-    UNAUTHENTICATED_TOKEN={},
-    DEFAULT_AUTHENTICATION_CLASSES=(
-        # 'signals.auth.backend.JWTAuthBackend',
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-    ),
-    DEFAULT_PAGINATION_CLASS=(
-        "datapunt_api.pagination.HALPagination",
-    ),
-    DEFAULT_RENDERER_CLASSES=(
-        "rest_framework.renderers.JSONRenderer",
-        "rest_framework.renderers.BrowsableAPIRenderer",
-    ),
-    DEFAULT_FILTER_BACKENDS=(
-        # 'rest_framework.filters.SearchFilter',
-        # 'rest_framework.filters.OrderingFilter',
-        "django_filters.rest_framework.DjangoFilterBackend",
-    ),
-    COERCE_DECIMAL_TO_STRING=True,
-    DEFAULT_THROTTLE_CLASSES=(
-        # Currently no default throttle class
-        # 'signals.throttling.NoUserRateThrottle',
-    ),
-    DEFAULT_THROTTLE_RATES={
-        # 'nouser': '5/hour',
-        'nouser': '60/hour'
-    },
-)
-
-# Logging setup
+# Django Logging settings
 GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
 GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "console": {
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         }
     },
     'filters': {
@@ -330,45 +249,104 @@ LOGGING = {
             },
         },
     },
-    "handlers": {
-        "console": {
-            "level": "INFO",
-            "class": "logging.StreamHandler", "formatter": "console"
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler', 'formatter': 'console'
         },
-        "gelf": {
-            "class": "graypy.GELFHandler",
-            "host": GELF_HOST,
-            "port": GELF_PORT,
+        'gelf': {
+            'class': 'graypy.GELFHandler',
+            'host': GELF_HOST,
+            'port': GELF_PORT,
             'filters': ['static_fields'],
         }
     },
-    "root": {"level": "INFO", "handlers": ["console", "gelf"]},
-    "loggers": {
-        "django": {"handlers": ["console"], "level": "ERROR"},
+    'root': {'level': 'INFO', 'handlers': ['console', 'gelf']},
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': 'ERROR'},
 
         # Debug all batch jobs
-        "doc": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "index": {
-            "handlers": ["console"], "level": "INFO", "propagate": False},
-        "search": {
-            "handlers": ["console"], "level": "ERROR", "propagate": False},
-        "elasticsearch": {
-            "handlers": ["console"], "level": "ERROR", "propagate": False
+        'doc': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'index': {
+            'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'search': {
+            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'elasticsearch': {
+            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
         },
-        "urllib3": {
-            "handlers": ["console"], "level": "ERROR", "propagate": False},
-        "factory.containers": {
-            "handlers": ["console"], "level": "INFO", "propagate": False
+        'urllib3': {
+            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'factory.containers': {
+            'handlers': ['console'], 'level': 'INFO', 'propagate': False
         },
-        "factory.generate": {
-            "handlers": ["console"], "level": "INFO", "propagate": False
+        'factory.generate': {
+            'handlers': ['console'], 'level': 'INFO', 'propagate': False
         },
-        "requests.packages.urllib3.connectionpool": {
-            "handlers": ["console"], "level": "ERROR", "propagate": False
+        'requests.packages.urllib3.connectionpool': {
+            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
         },
         # Log all unhandled exceptions
-        "django.request": {
-            "handlers": ["console"], "level": "ERROR", "propagate": False
+        'django.request': {
+            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
         },
     },
 }
+
+# Django REST framework settings
+REST_FRAMEWORK = dict(
+    PAGE_SIZE=100,
+    MAX_PAGINATE_BY=100,
+    UNAUTHENTICATED_USER={},
+    UNAUTHENTICATED_TOKEN={},
+    DEFAULT_AUTHENTICATION_CLASSES=(
+        # 'signals.auth.backend.JWTAuthBackend',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+    ),
+    DEFAULT_PAGINATION_CLASS=(
+        'datapunt_api.pagination.HALPagination',
+    ),
+    DEFAULT_RENDERER_CLASSES=(
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    DEFAULT_FILTER_BACKENDS=(
+        # 'rest_framework.filters.SearchFilter',
+        # 'rest_framework.filters.OrderingFilter',
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    COERCE_DECIMAL_TO_STRING=True,
+    DEFAULT_THROTTLE_CLASSES=(
+        # Currently no default throttle class
+        # 'signals.throttling.NoUserRateThrottle',
+    ),
+    DEFAULT_THROTTLE_RATES={
+        # 'nouser': '5/hour',
+        'nouser': '60/hour'
+    },
+)
+
+# Swagger settings
+DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Signals API - Swagger': {
+            'type': 'oauth2',
+            'authorizationUrl': '{url}oauth2/authorize'.format(url=DATAPUNT_API_URL),
+            'flow': 'implicit',
+            'scopes': {
+                'SIG/ALL': 'Signals alle authorizaties',
+            }
+        }
+    },
+    'OAUTH2_CONFIG': {
+        'clientId': 'swagger-ui',
+        #  'clientSecret': 'yourAppClientSecret',
+        'appName': 'Signal Swagger UI',
+    },
+}
+
+# Sigmax settings
+SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
+SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)

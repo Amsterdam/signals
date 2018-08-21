@@ -13,6 +13,12 @@ MIDDLEWARE.append(
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
+TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@amsterdam.nl')
+# TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.behandelaar@amsterdam.nl')
+# TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.coordinator@amsterdam.nl')
+# TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.monitor@amsterdam.nl')
+# TEST_LOGIN = os.getenv('TEST_LOGIN', 'invalid@invalid.nl')
+
 try:
     from signals.settings.local_settings import *  # noqa
 except ImportError:
