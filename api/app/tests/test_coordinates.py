@@ -3,7 +3,6 @@ import os
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 from rest_framework import serializers
 from rest_framework.test import APITestCase
