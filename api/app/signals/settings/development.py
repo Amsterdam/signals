@@ -22,6 +22,6 @@ TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@amsterdam.nl')
 # TEST_LOGIN = os.getenv('TEST_LOGIN', 'invalid@invalid.nl')
 
 try:
-    from signals.settings.local_settings import *  # noqa
+    from signals.settings.local import *  # noqa
 except ImportError:
     pass
