@@ -1,15 +1,17 @@
+import os
+
 from signals.settings.base import *  # noqa
 
 SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DATAPUNT_AUTHZ['ALWAYS_OK'] = True
+DATAPUNT_AUTHZ['ALWAYS_OK'] = True  # noqa
 
-INSTALLED_APPS.append(
+INSTALLED_APPS.append(  # noqa
     'debug_toolbar'
 )
-MIDDLEWARE.append(
+MIDDLEWARE.append(  # noqa
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
