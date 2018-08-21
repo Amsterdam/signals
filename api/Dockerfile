@@ -19,7 +19,7 @@ WORKDIR /app
 
 USER datapunt
 
-RUN export DJANGO_SETTINGS_MODULE=signals.settings
+RUN export DJANGO_SETTINGS_MODULE=signals.settings.production
 
 RUN python manage.py collectstatic --no-input
 
