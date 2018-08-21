@@ -30,7 +30,20 @@ from signals.messaging.send_emails import (
 log = logging.getLogger(__name__)
 
 
-class LocationModelSerializer(serializers.ModelSerializer):
+class NearAmsterdamValidatorMixin:
+    def validate_geometrie(self, value):
+        fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
+
+        lat_not_in_adam_area = not 50 < value.coords[1] < 55
+        lon_not_in_adam_area = not 1 < value.coords[0] < 7
+
+        if lon_not_in_adam_area or lat_not_in_adam_area:
+            raise serializers.ValidationError(fail_msg)
+        return value
+
+
+class LocationModelSerializer(serializers.ModelSerializer,
+                              NearAmsterdamValidatorMixin):
     id = IntegerField(label='ID', read_only=True)
 
     class Meta:
@@ -47,7 +60,8 @@ class LocationModelSerializer(serializers.ModelSerializer):
         )
 
 
-class LocationSerializer(HALSerializer):
+class LocationSerializer(HALSerializer,
+                         NearAmsterdamValidatorMixin):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
