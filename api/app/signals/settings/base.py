@@ -263,7 +263,8 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'INFO',
-            'class': 'logging.StreamHandler', 'formatter': 'console'
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
         },
         'gelf': {
             'class': 'graypy.GELFHandler',
@@ -272,33 +273,69 @@ LOGGING = {
             'filters': ['static_fields'],
         }
     },
-    'root': {'level': 'INFO', 'handlers': ['console', 'gelf']},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'gelf'],
+    },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'ERROR'},
+        'signals': {
+            'level': 'WARNING',
+            'handlers': ['console', 'gelf'],
+            'propagate': True,
+        },
+        'django': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': True,
+        },
 
         # Debug all batch jobs
-        'doc': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'doc': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'index': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'search': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'elasticsearch': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'urllib3': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'factory.containers': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'factory.generate': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'requests.packages.urllib3.connectionpool': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
+
         # Log all unhandled exceptions
         'django.request': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
     },
 }
