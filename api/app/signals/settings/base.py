@@ -20,6 +20,11 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'api.data.amsterdam.nl',
     'acc.api.data.amsterdam.nl',
+
+    # Currently this is needed because the deployment process checks the health endpoint with a
+    # request to localhost:port.
+    'localhost',
+    '127.0.0.1',
 ]
 ADMIN_LOGIN = 'signals.admin@amsterdam.nl'
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
