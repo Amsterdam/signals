@@ -30,6 +30,11 @@ ADMIN_LOGIN = 'signals.admin@amsterdam.nl'
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Django security settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
 # Application definition
 INSTALLED_APPS = [
     # Django
