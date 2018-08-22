@@ -30,7 +30,7 @@ Django settings
 ===============
 
 Settings for all different environments are defined in `app/signals/settings/...`. The file
-`base.py` contains all the default settings. Defaults should be production ready, you can
+`base.py` contains all the default settings. Defaults should be production ready. You can
 override this, if needed, in one of the other specific settings files (e.g. `testing`).
 
 Current available settings:
