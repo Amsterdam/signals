@@ -3,6 +3,10 @@ MAINTAINER datapunt@amsterdam.nl
 
 ENV PYTHONUNBUFFERED 1
 
+# Django ENV variables. `SECRET_KEY` must be overriden when running Docker images.
+ENV SECRET_KEY=insecure_docker_build_key
+ENV DJANGO_SETTINGS_MODULE=signals.settings.production
+
 EXPOSE 8000
 
 RUN mkdir -p /static && chown datapunt /static
@@ -18,8 +22,6 @@ COPY deploy /deploy/
 WORKDIR /app
 
 USER datapunt
-
-RUN export DJANGO_SETTINGS_MODULE=signals.settings.production
 
 RUN python manage.py collectstatic --no-input
 
