@@ -31,7 +31,6 @@ class TestLocationSerializer(APITestCase):
     def _get_fixture(self):
         path = os.path.join(
             settings.BASE_DIR,
-            'signals',
             'apps',
             'signals',
             'fixtures',
