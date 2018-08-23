@@ -11,7 +11,7 @@ urlpatterns = [
 
     # The Signals application is routed behind the HAproxy with `/signals/` as path.
     path('signals/', include('signals.apps.signals.urls')),
-    path('signals/auth/me', include('signals.apps.auth.urls')),
+    path('signals/user/', include('signals.apps.users.urls')),
     path('signals/admin/', admin.site.urls),
 ]
 
