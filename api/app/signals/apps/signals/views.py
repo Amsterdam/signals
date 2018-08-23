@@ -3,14 +3,12 @@ import re
 
 from datapunt_api.rest import DatapuntViewSetWritable
 from django.conf import settings
-from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
-from rest_framework.views import APIView
 
 from signals.apps.signals.filters import (
     LocationFilter,
@@ -179,28 +177,3 @@ class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
     serializer_class = CategorySerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ['main', 'sub']
-
-
-class LocationUserView(AuthViewSet, APIView):
-    """
-    Handle information about user me
-    """
-    def get(self, request):
-        data = {}
-        user = request.user
-        if user:
-            data['username'] = user.username
-            data['email'] = user.email
-            data['is_staff'] = user.is_staff is True
-            data['is_superuser'] = user.is_superuser is True
-            groups = []
-            departments = []
-            for g in request.user.groups.all():
-                match = re.match(r"^dep_(\w+)$", g.name)
-                if match:
-                    departments.append(match.group(1))
-                else:
-                    groups.append(g.name)
-            data['groups'] = groups
-            data['departments'] = departments
-        return JsonResponse(data)
