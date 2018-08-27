@@ -32,7 +32,7 @@ class JWTAuthBackend:
                     user = User.objects.get(username=user_email)
                 except User.DoesNotExist:
                     # Create a new user. There's no need to set a password
-                    # because only the password from settings.py is checked.
+                    # because only the password from base.py is checked.
                     user = User(email=user_email, username=user_email)
                     user.is_staff = True
                     user.is_superuser = True

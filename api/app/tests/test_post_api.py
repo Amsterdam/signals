@@ -46,7 +46,6 @@ class PostTestCase(APITestCase):
         filename = self.fixture_files[name]
         path = os.path.join(
             settings.BASE_DIR,
-            'signals',
             'apps',
             'signals',
             'fixtures',

@@ -1,4 +1,5 @@
 from datapunt_api import bbox
+from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
@@ -10,7 +11,6 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.messaging.categories import ALL_SUB_CATEGORIES
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),
@@ -63,7 +63,7 @@ def status_choices():
 def category_sub_choices():
     # fixme: use the distinct query again but also supply the list to frontend
     # options = Category.objects.values_list("sub").distinct()
-    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in ALL_SUB_CATEGORIES]
+    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in settings.ALL_SUB_CATEGORIES]
 
 
 class SignalFilter(FilterSet):

@@ -36,6 +36,7 @@ services:
       - EMAIL_PORT
       - EMAIL_USE_SSL
       - EMAIL_USE_TLS
+      - DJANGO_SETTINGS_MODULE=signals.settings.development
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -55,6 +56,7 @@ services:
       - EMAIL_PORT
       - EMAIL_USE_SSL
       - EMAIL_USE_TLS
+      - DJANGO_SETTINGS_MODULE=signals.settings.development
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -81,6 +83,7 @@ services:
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
       - UWSGI_MODULE=signals.wsgi:application
+      - DJANGO_SETTINGS_MODULE=signals.settings.development
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
