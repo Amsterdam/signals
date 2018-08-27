@@ -6,10 +6,9 @@ from rest_framework.views import APIView
 from signals.apps.signals.views import AuthViewSet
 
 
-class UserView(AuthViewSet, APIView):
-    """
-    Handle information about user me
-    """
+class UserMeView(AuthViewSet, APIView):
+    """Handle information about user me."""
+
     def get(self, request):
         data = {}
         user = request.user

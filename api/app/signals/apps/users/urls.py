@@ -1,7 +1,7 @@
 from django.urls import path
 
-from signals.apps.users.views import UserView
+from signals.apps.users.views import UserMeView
 
 urlpatterns = [
-    path('auth/me/', UserView.as_view()),
+    path('auth/me/', UserMeView.as_view()),
 ]
