@@ -14,7 +14,7 @@ STATUS_ENDPOINT = '/signals/auth/status/'
 LOCATION_ENDPOINT = '/signals/auth/location/'
 
 
-class FilterTestDataMixin(APITestCase):
+class FilterTestDataMixin:
     def setUp(self):
         super()
         signals = [SignalFactory.create() for i in range(N_RECORDS)]
@@ -29,12 +29,8 @@ class FilterTestDataMixin(APITestCase):
             signal.location.geometrie = new_point
             signal.location.save()
 
-    def _get_response(self, endpoint, payload):
-        path = endpoint + '?' + urlencode(payload)
-        return self.client.get(path)
-
-
-# -- refactor away repetitive code --
+    def _get_response(self, endpoint, querystring):
+        return self.client.get(f'{endpoint}?{urlencode(querystring)}')
 
 
 class TestBboxFilter(FilterTestDataMixin, APITestCase):
