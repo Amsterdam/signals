@@ -5,6 +5,7 @@ from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
 from tests.factories import SignalFactory
+from tests.apps.users.factories import SuperUserFacotry
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 N_RECORDS = 10
@@ -14,9 +15,9 @@ STATUS_ENDPOINT = '/signals/auth/status/'
 LOCATION_ENDPOINT = '/signals/auth/location/'
 
 
-class FilterTestDataMixin:
+class FilterTestDataBase(APITestCase):
+
     def setUp(self):
-        super()
         signals = [SignalFactory.create() for i in range(N_RECORDS)]
 
         # Change the coordinates, to be increasing in both longitude and latitude
@@ -29,11 +30,16 @@ class FilterTestDataMixin:
             signal.location.geometrie = new_point
             signal.location.save()
 
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
+
     def _get_response(self, endpoint, querystring):
         return self.client.get(f'{endpoint}?{urlencode(querystring)}')
 
 
-class TestBboxFilter(FilterTestDataMixin, APITestCase):
+class TestBboxFilter(FilterTestDataBase):
+
     def test_match_nothing(self):
         # Determine boundingbox that contains no Signals (see setUp).
         min_lon = IN_AMSTERDAM[0] - 0.5 * self.dlon
@@ -105,7 +111,8 @@ class TestBboxFilter(FilterTestDataMixin, APITestCase):
         self.assertEquals(response.json()['count'], 1)
 
 
-class TestLocatieFilter(FilterTestDataMixin, APITestCase):
+class TestLocatieFilter(FilterTestDataBase):
+
     def test_match_no_instance(self):
         lon = IN_AMSTERDAM[0]
         lat = IN_AMSTERDAM[1] + N_RECORDS * self.dlat

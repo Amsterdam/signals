@@ -18,22 +18,10 @@ from signals.apps.signals.models import (
     Status
 )
 from tests import factories
+from tests.apps.users.factories import SuperUserFacotry
 
 
-class PostTestCase(APITestCase):
-    """
-    Test posts op:
-
-    datasets = [
-        "signals/signal",
-        "signals/status",
-        "signals/category",
-        "signals/location",
-    ]
-
-    TODO ADD AUTHENTICATION
-    """
-
+class TestEnpointsBase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -69,6 +57,19 @@ class PostTestCase(APITestCase):
             b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
             b'\x02\x4c\x01\x00\x3b'
         )
+
+
+class TestUnauthEndpoints(TestEnpointsBase):
+    """
+    Test posts op:
+
+    datasets = [
+        "signals/signal",
+        "signals/status",
+        "signals/category",
+        "signals/location",
+    ]
+    """
 
     def test_post_signal_with_json(self):
         """Post een compleet signaal."""
@@ -177,6 +178,16 @@ class PostTestCase(APITestCase):
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
+
+
+class TestAuthEndpoints(TestEnpointsBase):
+
+    def setUp(self):
+        super().setUp()
+
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
 
     def test_post_status_all_fields(self):
         url = '/signals/auth/status/'
