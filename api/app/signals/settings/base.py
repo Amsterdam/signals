@@ -1,5 +1,6 @@
 import os
 
+import raven
 from celery.schedules import crontab
 
 from signals.settings.categories import *  # noqa
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djcelery_email',
     'drf_yasg',
+    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
     # 'rest_framework_swagger',
@@ -239,12 +241,21 @@ CACHES = {
     }
 }
 
+# Sentry logging
+RAVEN_CONFIG = {
+    'dsn': os.getenv('SENTRY_RAVEN_DSN'),
+}
+
 # Django Logging settings
 GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
 GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'gelf', 'sentry'],
+    },
     'formatters': {
         'console': {
             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -266,16 +277,16 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
         'gelf': {
             'class': 'graypy.GELFHandler',
             'host': GELF_HOST,
             'port': GELF_PORT,
             'filters': ['static_fields'],
         }
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console', 'gelf'],
     },
     'loggers': {
         'signals': {
@@ -287,6 +298,16 @@ LOGGING = {
             'level': 'ERROR',
             'handlers': ['console'],
             'propagate': True,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
         },
 
         # Debug all batch jobs
