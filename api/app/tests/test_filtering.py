@@ -4,8 +4,8 @@ from django.contrib.gis.geos import Point
 from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
-from tests.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFacotry
+from tests.factories import SignalFactory
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 N_RECORDS = 10
