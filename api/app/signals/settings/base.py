@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     # Project
     'signals.apps.health',
     'signals.apps.signals',
+    'signals.apps.users',
 ]
 
 MIDDLEWARE = [
