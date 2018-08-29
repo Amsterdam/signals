@@ -1,6 +1,5 @@
 import os
 
-import raven
 from celery.schedules import crontab
 
 from signals.settings.categories import *  # noqa
