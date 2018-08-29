@@ -69,19 +69,6 @@ class TestAPIEndpoints(APITestCase):
             self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
             self.assertIn('count', response.data)
 
-    def test_signal_detail(self):
-        signal = Signal.objects.all().first()
-        response = self.client.get(f'/signals/signal/{signal.signal_id}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.get('signal_id'), str(signal.signal_id))
-        self.assertEqual(response.data.get('status').get('id'), signal.status.id)
-        self.assertEqual(response.data.get('status').get('state'), str(signal.status.state))
-        self.assertEqual(response.data.get('text'), None)
-        self.assertEqual(response.data.get('category'), None)
-        self.assertEqual(response.data.get('location'), None)
-        self.assertEqual(response.data.get('id'), None)
-
 
 class TestEnpointsBase(APITestCase):
     fixture_files = {
@@ -92,15 +79,8 @@ class TestEnpointsBase(APITestCase):
     }
 
     def _get_fixture(self, name):
-
         filename = self.fixture_files[name]
-        path = os.path.join(
-            settings.BASE_DIR,
-            'apps',
-            'signals',
-            'fixtures',
-            filename
-        )
+        path = os.path.join(settings.BASE_DIR, 'apps', 'signals', 'fixtures', filename)
 
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())
@@ -121,20 +101,22 @@ class TestEnpointsBase(APITestCase):
         )
 
 
-class TestUnauthEndpoints(TestEnpointsBase):
-    """
-    Test posts op:
+class TestSignalEndpoint(TestEnpointsBase):
 
-    datasets = [
-        "signals/signal",
-        "signals/status",
-        "signals/category",
-        "signals/location",
-    ]
-    """
+    def test_signal_detail(self):
+        """Signal detail endpoint should only return the `Status` of the given `Signal`."""
+        response = self.client.get(f'/signals/signal/{self.signal.signal_id}/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get('signal_id'), str(self.signal.signal_id))
+        self.assertEqual(response.data.get('status').get('id'), self.signal.status.id)
+        self.assertEqual(response.data.get('status').get('state'), str(self.signal.status.state))
+        self.assertEqual(response.data.get('text'), None)
+        self.assertEqual(response.data.get('category'), None)
+        self.assertEqual(response.data.get('location'), None)
+        self.assertEqual(response.data.get('id'), None)
 
     def test_post_signal_with_json(self):
-        """Post een compleet signaal."""
         url = '/signals/signal/'
         postjson = self._get_fixture('post_signal')
         response = self.client.post(url, postjson, format='json')
@@ -242,7 +224,7 @@ class TestUnauthEndpoints(TestEnpointsBase):
         self.assertEqual(response.status_code, 403)
 
 
-class TestAuthEndpoints(TestEnpointsBase):
+class TestPostAuthEndpoints(TestEnpointsBase):
 
     def setUp(self):
         super().setUp()
