@@ -15,7 +15,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from tests import factories
+from tests.apps.signals import factories
 from tests.apps.users.factories import SuperUserFacotry
 
 

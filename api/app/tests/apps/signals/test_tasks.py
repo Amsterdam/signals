@@ -7,7 +7,7 @@ from freezegun import freeze_time
 
 import signals.integrations.apptimize.handler
 from signals.apps.signals import tasks
-from tests.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestTaskSendMailApptimize(TestCase):

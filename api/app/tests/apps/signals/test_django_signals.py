@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import testcases
 
-from tests.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestDjangoSignals(testcases.TestCase):

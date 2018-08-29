@@ -9,7 +9,7 @@ from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 
 from signals.utils import datawarehouse
-from tests.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestDatawarehouse(testcases.TestCase):
