@@ -6,6 +6,8 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path
 
+from signals.apps.users.views import UserMeView
+
 urlpatterns = [
     path('status/', include('signals.apps.health.urls')),
 
@@ -13,6 +15,10 @@ urlpatterns = [
     path('signals/', include('signals.apps.signals.urls')),
     path('signals/user/', include('signals.apps.users.urls')),
     path('signals/admin/', admin.site.urls),
+
+    # DEPRECATED url route for `auth/me`. Should be fixed in the frontend before we can remove
+    # this endpoint here.
+    path('signals/auth/me/', UserMeView.as_view())
 ]
 
 if settings.DEBUG:
