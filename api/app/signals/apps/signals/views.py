@@ -36,11 +36,6 @@ from signals.throttling import NoUserRateThrottle
 LOGGER = logging.getLogger()
 
 
-class AuthViewSet:
-    http_method_names = ['get', 'post', 'head', 'options', 'trace']
-    authentication_classes = (JWTAuthBackend,)
-
-
 class SignalImageUpdateView(viewsets.GenericViewSet):
     """
     Add or update image of newly submitted signals
@@ -83,7 +78,6 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     or 'POINT (4.893697  52.372840)'
 
-
     valid address:
     {
         "openbare_ruimte": "Dam",
@@ -114,18 +108,11 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         return Response(serializer.data)
 
 
-class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Signals with reporter information
-
-    !! still in development !!
-
-    only for AUTHENTICATED users
-    ============================
-
-    """
+class SignalAuthView(DatapuntViewSetWritable):
+    authentication_classes = (JWTAuthBackend, )
     queryset = (
         Signal.objects.all()
-        .order_by("created_at")
+        .order_by('created_at')
         .select_related('status')
         .select_related('location')
         .select_related('category')
@@ -134,46 +121,35 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filter_class = SignalFilter
 
 
-class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
-    permission_classes = (LocationPermission,)
-    queryset = (
-        Location.objects.all()
-        .order_by("created_at")
-        .prefetch_related('signal')
-    )
-
+class LocationAuthView(DatapuntViewSetWritable):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (LocationPermission, )
+    queryset = Location.objects.all().order_by('created_at').prefetch_related('signal')
     serializer_detail_class = LocationSerializer
     serializer_class = LocationSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filter_class = LocationFilter
 
 
-class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Status Changes"""
-    permission_classes = (StatusPermission,)
-    queryset = (
-        Status.objects.all()
-        .order_by("created_at")
-    )
+class StatusAuthView(DatapuntViewSetWritable):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (StatusPermission, )
+    queryset = Status.objects.all().order_by('created_at')
     serializer_detail_class = StatusSerializer
     serializer_class = StatusSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = StatusFilter
 
 
-class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Types.
-    """
-    permission_classes = (CategoryPermission,)
-    queryset = (
-        Category.objects.all()
-        .order_by("id").prefetch_related("signal")
-    )
+class CategoryAuthView(DatapuntViewSetWritable):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (CategoryPermission, )
+    queryset = Category.objects.all().order_by('id').prefetch_related('signal')
     serializer_detail_class = CategorySerializer
     serializer_class = CategorySerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filter_fields = ['main', 'sub']
