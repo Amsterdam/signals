@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djcelery_email',
     'drf_yasg',
+    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
     # 'rest_framework_swagger',
@@ -239,12 +240,21 @@ CACHES = {
     }
 }
 
+# Sentry logging
+RAVEN_CONFIG = {
+    'dsn': os.getenv('SENTRY_RAVEN_DSN'),
+}
+
 # Django Logging settings
 GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
 GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'gelf', 'sentry'],
+    },
     'formatters': {
         'console': {
             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -263,7 +273,12 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'INFO',
-            'class': 'logging.StreamHandler', 'formatter': 'console'
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'gelf': {
             'class': 'graypy.GELFHandler',
@@ -272,33 +287,75 @@ LOGGING = {
             'filters': ['static_fields'],
         }
     },
-    'root': {'level': 'INFO', 'handlers': ['console', 'gelf']},
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'ERROR'},
+        'signals': {
+            'level': 'WARNING',
+            'handlers': ['console', 'gelf'],
+            'propagate': True,
+        },
+        'django': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': True,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
 
         # Debug all batch jobs
-        'doc': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'doc': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'index': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'search': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'elasticsearch': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'urllib3': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
         'factory.containers': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
         },
         'factory.generate': {
-            'handlers': ['console'], 'level': 'INFO', 'propagate': False
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'requests.packages.urllib3.connectionpool': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
+
         # Log all unhandled exceptions
         'django.request': {
-            'handlers': ['console'], 'level': 'ERROR', 'propagate': False
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
         },
     },
 }
