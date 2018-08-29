@@ -15,7 +15,7 @@ STATUS_ENDPOINT = '/signals/auth/status/'
 LOCATION_ENDPOINT = '/signals/auth/location/'
 
 
-class FilterTestDataBase(APITestCase):
+class TestFilterBase(APITestCase):
 
     def setUp(self):
         signals = [SignalFactory.create() for i in range(N_RECORDS)]
@@ -38,7 +38,7 @@ class FilterTestDataBase(APITestCase):
         return self.client.get(f'{endpoint}?{urlencode(querystring)}')
 
 
-class TestBboxFilter(FilterTestDataBase):
+class TestBboxFilter(TestFilterBase):
 
     def test_match_nothing(self):
         # Determine boundingbox that contains no Signals (see setUp).
@@ -111,7 +111,7 @@ class TestBboxFilter(FilterTestDataBase):
         self.assertEquals(response.json()['count'], 1)
 
 
-class TestLocatieFilter(FilterTestDataBase):
+class TestLocatieFilter(TestFilterBase):
 
     def test_match_no_instance(self):
         lon = IN_AMSTERDAM[0]
