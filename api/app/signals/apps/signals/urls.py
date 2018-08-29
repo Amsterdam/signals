@@ -33,27 +33,12 @@ class SignalRouter(routers.DefaultRouter):
 
 signal_router = SignalRouter()
 
-signal_router.register(
-    r"signal/image", api_views.SignalImageUpdateView, base_name="img")
-signal_router.register(
-    r"signal", api_views.SignalView, base_name="signal")
-signal_router.register(
-    r"auth/signal", api_views.SignalAuthView, base_name="signal-auth")
-
-# signals.register(
-#     r"status", api_views.StatusView, base_name="status")
-signal_router.register(
-    r"auth/status", api_views.StatusAuthView, base_name="status-auth")
-
-# signal_router.register(
-#     r"category", api_views.CategoryView, base_name="category")
-signal_router.register(
-    r"auth/category", api_views.CategoryAuthView, base_name="category-auth")
-
-# signal_router.register(
-#     r"location", api_views.LocationView, base_name="location")
-signal_router.register(
-    r"auth/location", api_views.LocationAuthView, base_name="location-auth")
+signal_router.register(r'signal/image', api_views.SignalImageUpdateView, base_name='signal-img')
+signal_router.register(r'signal', api_views.SignalViewSet, base_name='signal')
+signal_router.register(r'auth/signal', api_views.SignalAuthViewSet, base_name='signal-auth')
+signal_router.register(r'auth/status', api_views.StatusAuthViewSet, base_name='status-auth')
+signal_router.register(r'auth/category', api_views.CategoryAuthViewSet, base_name='category-auth')
+signal_router.register(r'auth/location', api_views.LocationAuthViewSet, base_name='location-auth')
 
 schema_view = get_schema_view(
    openapi.Info(
