@@ -24,32 +24,35 @@ class TestAPIEndpoints(APITestCase):
         '/signals/auth/status/',
         '/signals/auth/category/',
         '/signals/auth/location/',
+        '/signals/auth/reporter/',
     ]
 
     def setUp(self):
-        self.s = factories.SignalFactory()
+        self.signal = factories.SignalFactory()
 
-        self.loc = factories.LocationFactory(_signal=self.s)
-        self.status = factories.StatusFactory(_signal=self.s)
-        self.category = factories.CategoryFactory(_signal=self.s)
-        self.reporter = factories.ReporterFactory(_signal=self.s)
+        self.location = factories.LocationFactory(_signal=self.signal)
+        self.status = factories.StatusFactory(_signal=self.signal)
+        self.category = factories.CategoryFactory(_signal=self.signal)
+        self.reporter = factories.ReporterFactory(_signal=self.signal)
 
-        self.s.location = self.loc
-        self.s.status = self.status
-        self.s.category = self.category
-        self.s.reporter = self.reporter
-        self.s.save()
+        self.signal.location = self.location
+        self.signal.status = self.status
+        self.signal.category = self.category
+        self.signal.reporter = self.reporter
+        self.signal.save()
 
-    def test_signals_index(self):
-        response = self.client.get('/signals/')
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_auth_lists(self):
         # Forcing authentication
         superuser = SuperUserFacotry.create()
         self.client.force_authenticate(user=superuser)
 
+    def test_signals_index(self):
+        self.client.force_authenticate()
+
+        response = self.client.get('/signals/')
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_auth_endpoints_lists(self):
         for url in self.endpoints:
             response = self.client.get(url)
 
@@ -57,7 +60,7 @@ class TestAPIEndpoints(APITestCase):
             self.assertEqual(response['Content-Type'], 'application/json')
             self.assertIn('count', response.data)
 
-    def test_auth_lists_html(self):
+    def test_auth_endpoints_lists_html(self):
         # Forcing authentication
         superuser = SuperUserFacotry.create()
         self.client.force_authenticate(user=superuser)
@@ -68,6 +71,31 @@ class TestAPIEndpoints(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
             self.assertIn('count', response.data)
+
+    def test_auth_signal_delete_not_allowed(self):
+        response = self.client.delete(f'/signals/auth/signal/{self.signal.id}/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_auth_status_delete_not_allowed(self):
+        response = self.client.delete(f'/signals/auth/status/{self.status.id}/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_auth_category_delete_not_allowed(self):
+        response = self.client.delete(f'/signals/auth/category/{self.category.id}/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_auth_location_delete_not_allowed(self):
+        response = self.client.delete(f'/signals/auth/location/{self.location.id}/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_auth_reporter_delete_not_allowed(self):
+        response = self.client.delete(f'/signals/auth/reporter/{self.reporter.id}/')
+
+        self.assertEqual(response.status_code, 405)
 
 
 class TestEnpointsBase(APITestCase):

@@ -1,11 +1,10 @@
 import logging
 import re
 
-from datapunt_api.rest import DatapuntViewSetWritable
+from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
@@ -106,7 +105,7 @@ class SignalViewSet(mixins.CreateModelMixin,
     lookup_field = 'signal_id'
 
 
-class SignalAuthViewSet(DatapuntViewSetWritable):  # DetailSerializerMixin, viewsets.ModelViewSet
+class SignalAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     queryset = (
         Signal.objects.all()
@@ -123,7 +122,7 @@ class SignalAuthViewSet(DatapuntViewSetWritable):  # DetailSerializerMixin, view
     filter_class = SignalFilter
 
 
-class LocationAuthViewSet(DatapuntViewSetWritable):
+class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (LocationPermission, )
     queryset = Location.objects.all().order_by('created_at').prefetch_related('signal')
@@ -133,7 +132,7 @@ class LocationAuthViewSet(DatapuntViewSetWritable):
     filter_class = LocationFilter
 
 
-class StatusAuthViewSet(DatapuntViewSetWritable):
+class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (StatusPermission, )
     queryset = Status.objects.all().order_by('created_at')
@@ -143,7 +142,7 @@ class StatusAuthViewSet(DatapuntViewSetWritable):
     filter_class = StatusFilter
 
 
-class CategoryAuthViewSet(DatapuntViewSetWritable):
+class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (CategoryPermission, )
     queryset = Category.objects.all().order_by('id').prefetch_related('signal')
