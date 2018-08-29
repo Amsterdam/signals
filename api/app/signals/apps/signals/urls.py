@@ -55,10 +55,6 @@ signal_router.register(
 signal_router.register(
     r"auth/location", api_views.LocationAuthView, base_name="location-auth")
 
-# signals.register(
-#     r"auth/me", api_views.LocationUserView, base_name="me-auth")
-
-
 schema_view = get_schema_view(
    openapi.Info(
       title="Signals API",
@@ -84,5 +80,4 @@ urlpatterns = [
         schema_view.with_ui('redoc', cache_timeout=None),
         name='schema-redoc'),
     path('', include(signal_router.urls)),
-    path('auth/me/', api_views.LocationUserView.as_view()),
 ]

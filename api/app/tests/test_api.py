@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import Signal
 from tests import factories
+from tests.apps.users.factories import SuperUserFacotry
 
 
 class BrowseDatasetsTestCase(APITestCase):
@@ -56,6 +57,10 @@ class BrowseDatasetsTestCase(APITestCase):
         )
 
     def test_lists(self):
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
+
         for url in self.datasets:
             response = self.client.get("/{}/".format(url))
 
@@ -75,6 +80,10 @@ class BrowseDatasetsTestCase(APITestCase):
             )
 
     def test_lists_html(self):
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
+
         for url in self.datasets:
             response = self.client.get("/{}/?format=api".format(url))
 
