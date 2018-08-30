@@ -33,7 +33,7 @@ from signals.apps.signals.serializers import (
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger()
 
 
 # TODO SIG-520 this should be a `action` on the SignalView (set).
