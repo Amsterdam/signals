@@ -1,7 +1,16 @@
 import uuid
 
-from django.contrib.gis.db import models, transaction
+from django.db import transaction
+from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.dispatch import Signal as DjangoSignal
+
+# Declaring custom Django signals for our `SignalManager`.
+create_initial = DjangoSignal(providing_args=['signal'])
+update_location = DjangoSignal(providing_args=['location'])
+update_status = DjangoSignal(providing_args=['status'])
+update_category = DjangoSignal(providing_args=['category'])
+update_reporter = DjangoSignal(providing_args=['reporter'])
 
 
 class SignalManager(models.Manager):
@@ -17,19 +26,23 @@ class SignalManager(models.Manager):
 
             signal.save()
 
-        # TODO trigger custom Django signal for initial create?
+            create_initial.send(signal)
 
     def update_location(self, data):
-        pass
+        location = None
+        update_location.send(location)
 
     def update_status(self, data):
-        pass
+        status = None
+        update_status.send(status)
 
     def update_category(self, data):
-        pass
+        category = None
+        update_category.send(category)
 
     def update_reporter(self, data):
-        pass
+        reporter = None
+        update_reporter.send(reporter)
 
 
 class Buurt(models.Model):
