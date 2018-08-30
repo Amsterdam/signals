@@ -3,11 +3,12 @@ import re
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
-from signals.apps.signals.views import AuthViewSet
+from signals.auth.backend import JWTAuthBackend
 
 
-class UserMeView(AuthViewSet, APIView):
+class UserMeView(APIView):
     """Handle information about user me."""
+    authentication_classes = (JWTAuthBackend, )
 
     def get(self, request):
         data = {}

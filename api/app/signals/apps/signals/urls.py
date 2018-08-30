@@ -1,8 +1,5 @@
-from django.conf.urls import include, url
-from django.urls import path
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
-from rest_framework import permissions, routers
+from django.urls import include, path
+from rest_framework import routers
 
 from signals.apps.signals import views as api_views
 
@@ -32,52 +29,13 @@ class SignalRouter(routers.DefaultRouter):
 
 
 signal_router = SignalRouter()
-
-signal_router.register(
-    r"signal/image", api_views.SignalImageUpdateView, base_name="img")
-signal_router.register(
-    r"signal", api_views.SignalView, base_name="signal")
-signal_router.register(
-    r"auth/signal", api_views.SignalAuthView, base_name="signal-auth")
-
-# signals.register(
-#     r"status", api_views.StatusView, base_name="status")
-signal_router.register(
-    r"auth/status", api_views.StatusAuthView, base_name="status-auth")
-
-# signal_router.register(
-#     r"category", api_views.CategoryView, base_name="category")
-signal_router.register(
-    r"auth/category", api_views.CategoryAuthView, base_name="category-auth")
-
-# signal_router.register(
-#     r"location", api_views.LocationView, base_name="location")
-signal_router.register(
-    r"auth/location", api_views.LocationAuthView, base_name="location-auth")
-
-schema_view = get_schema_view(
-   openapi.Info(
-      title="Signals API",
-      default_version='v1',
-      description="Signals in Amsterdam",
-      terms_of_service="https://data.amsterdam.nl/",
-      contact=openapi.Contact(email="datapunt@amsterdam.nl"),
-      license=openapi.License(name="CC0 1.0 Universal"),
-   ),
-   validators=['flex', 'ssv'],
-   public=True,
-   permission_classes=(permissions.AllowAny,),
-)
+signal_router.register(r'signal/image', api_views.SignalImageUpdateView, base_name='signal-img')
+signal_router.register(r'signal', api_views.SignalViewSet, base_name='signal')
+signal_router.register(r'auth/signal', api_views.SignalAuthViewSet, base_name='signal-auth')
+signal_router.register(r'auth/status', api_views.StatusAuthViewSet, base_name='status-auth')
+signal_router.register(r'auth/category', api_views.CategoryAuthViewSet, base_name='category-auth')
+signal_router.register(r'auth/location', api_views.LocationAuthViewSet, base_name='location-auth')
 
 urlpatterns = [
-    url(r'^swagger(?P<format>\.json|\.yaml)$',
-        schema_view.without_ui(cache_timeout=None),
-        name='schema-json'),
-    url(r'^swagger/$',
-        schema_view.with_ui('swagger', cache_timeout=None),
-        name='schema-swagger-ui'),
-    url(r'^redoc/$',
-        schema_view.with_ui('redoc', cache_timeout=None),
-        name='schema-redoc'),
     path('', include(signal_router.urls)),
 ]

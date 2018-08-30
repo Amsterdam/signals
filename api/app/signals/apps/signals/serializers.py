@@ -330,7 +330,7 @@ class SignalUnauthenticatedLinksField(serializers.HyperlinkedIdentityField):
     lookup_field = 'signal_id'
 
 
-class SignalUnauthenticatedSerializer(HALSerializer):
+class SignalStatusOnlySerializer(HALSerializer):
     _display = DisplayField()
     signal_id = CharField(label='SIGNAL_ID', read_only=True)
     status = StatusUnauthenticatedModelSerializer(read_only=True)

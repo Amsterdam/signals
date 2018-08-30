@@ -9,7 +9,7 @@ from signals.integrations.sigmax.handler import (
     _generate_creeer_zaak_lk01_message,
     _send_stuf_message
 )
-from tests.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 def _get_test_signal():

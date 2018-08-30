@@ -43,13 +43,13 @@ class SignalFactory(factory.DjangoModelFactory):
     text = fuzzy.FuzzyText(length=100)
     text_extra = fuzzy.FuzzyText(length=100)
 
-    location = factory.SubFactory('tests.factories.LocationFactory',
+    location = factory.SubFactory('tests.apps.signals.factories.LocationFactory',
                                   _signal_id=factory.SelfAttribute('..id'))
-    status = factory.SubFactory('tests.factories.StatusFactory',
+    status = factory.SubFactory('tests.apps.signals.factories.StatusFactory',
                                 _signal_id=factory.SelfAttribute('..id'))
-    category = factory.SubFactory('tests.factories.CategoryFactory',
+    category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory',
                                   _signal_id=factory.SelfAttribute('..id'))
-    reporter = factory.SubFactory('tests.factories.ReporterFactory',
+    reporter = factory.SubFactory('tests.apps.signals.factories.ReporterFactory',
                                   _signal_id=factory.SelfAttribute('..id'))
 
     incident_date_start = fuzzy.FuzzyDateTime(
