@@ -1,8 +1,8 @@
 import uuid
 
-from django.db import transaction
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
@@ -18,31 +18,55 @@ class SignalManager(models.Manager):
     def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
         with transaction.atomic():
             signal = self.create(signal_data)
-            location = Location.objects.create(location_data)
-            # ...
 
+            # Create dependent model instances with correct foreign keys to Signal
+            location = Location.objects.create(_signal_id=signal.pk, **location_data)
+            status = Status.objects.create(_signal_id=signal.pk, **status_data)
+            category = Category.objects.create(_signal_id=signal.pk, **category_data)
+            reporter = Reporter.objects.create(_signal_id=signal.pk, **reporter_data)
+
+            # Set Signal to dependent model instance foreign keys
             signal.location = location
-            # ...
+            signal.status = status
+            signal.category = category
+            signal.reporter = reporter
 
             signal.save()
 
             create_initial.send(signal)
 
     def update_location(self, data):
-        location = None
-        update_location.send(location)
+        with transaction.atomic():
+            location = Location.objects.create(**data)
+            signal = Signal.objects.get(pk=location._signal_id)
+            signal.save()
+
+            update_location.send(location)
 
     def update_status(self, data):
-        status = None
-        update_status.send(status)
+        with transaction.atomic():
+            status = Status.objects.create(**data)
+            signal = Signal.objects.get(pk=status._signal_id)
+            signal.save()
+
+            update_status.send(status)
 
     def update_category(self, data):
-        category = None
-        update_category.send(category)
+        with transaction.atomic():
+            category = Category.objects.create(**data)
+            signal = Signal.objects.get(pk=category._signal_id)
+            signal.save()
+
+            update_category.send(category)
+
 
     def update_reporter(self, data):
-        reporter = None
-        update_reporter.send(reporter)
+        with transaction.atomic():
+            reporter = Reporter.objects.create(**data)
+            signal = Signal.objects.get(pk=reporter._signal_id)
+            signal.save()
+
+            update_reporter.send(reporter)
 
 
 class Buurt(models.Model):
@@ -113,6 +137,7 @@ class Signal(models.Model):
 
     extra_properties = JSONField(null=True)
 
+    objects = models.Manager()
     actions = SignalManager()
 
     def __str__(self):
