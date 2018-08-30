@@ -15,3 +15,6 @@ class SuperUserFacotry(UserFactory):
     username = factory.LazyAttribute(lambda u: u.email)
     is_superuser = True
     is_staff = True
+
+    class Meta:
+        django_get_or_create = ('username', )

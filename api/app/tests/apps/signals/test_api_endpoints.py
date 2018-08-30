@@ -24,7 +24,6 @@ class TestAPIEndpoints(APITestCase):
         '/signals/auth/status/',
         '/signals/auth/category/',
         '/signals/auth/location/',
-        '/signals/auth/reporter/',
     ]
 
     def setUp(self):
@@ -46,56 +45,53 @@ class TestAPIEndpoints(APITestCase):
         self.client.force_authenticate(user=superuser)
 
     def test_signals_index(self):
+        # Unauthenticating, singals index page is public.
         self.client.force_authenticate()
 
         response = self.client.get('/signals/')
 
         self.assertEqual(response.status_code, 200)
 
-    def test_auth_endpoints_lists(self):
+    def test_auth_endpoints_get_lists(self):
         for url in self.endpoints:
             response = self.client.get(url)
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response['Content-Type'], 'application/json')
-            self.assertIn('count', response.data)
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'application/json',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
 
-    def test_auth_endpoints_lists_html(self):
-        # Forcing authentication
-        superuser = SuperUserFacotry.create()
-        self.client.force_authenticate(user=superuser)
-
+    def test_auth_endpoints_get_lists_html(self):
         for url in self.endpoints:
             response = self.client.get('{}?format=api'.format(url))
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
-            self.assertIn('count', response.data)
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'text/html; charset=utf-8',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
 
-    def test_auth_signal_delete_not_allowed(self):
-        response = self.client.delete(f'/signals/auth/signal/{self.signal.id}/')
+    def test_auth_endpoints_delete_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405)
 
-    def test_auth_status_delete_not_allowed(self):
-        response = self.client.delete(f'/signals/auth/status/{self.status.id}/')
+    def test_auth_endpoints_put_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.put(url)
 
-        self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405)
 
-    def test_auth_category_delete_not_allowed(self):
-        response = self.client.delete(f'/signals/auth/category/{self.category.id}/')
+    def test_auth_endpoints_patch_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.patch(url)
 
-        self.assertEqual(response.status_code, 405)
-
-    def test_auth_location_delete_not_allowed(self):
-        response = self.client.delete(f'/signals/auth/location/{self.location.id}/')
-
-        self.assertEqual(response.status_code, 405)
-
-    def test_auth_reporter_delete_not_allowed(self):
-        response = self.client.delete(f'/signals/auth/reporter/{self.reporter.id}/')
-
-        self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405)
 
 
 class TestEnpointsBase(APITestCase):
