@@ -77,13 +77,7 @@ class LocationSerializer(HALSerializer,
         )
 
     def create(self, validated_data):
-        # django rest does default the good thing
-        location = Location(**validated_data)
-        location.save()
-        # update status on signal
-        signal = Signal.objects.get(id=location._signal_id)
-        signal.location = location
-        signal.save()
+        location = Signal.actions.update_location(**validated_data)
         return location
 
     def update(self, instance, validated_data):
