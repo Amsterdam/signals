@@ -9,7 +9,6 @@ from django.forms import ImageField
 from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.serializers import CharField, IntegerField, ModelSerializer
 from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.models import (
@@ -27,10 +26,11 @@ from signals.messaging.send_emails import (
 )
 from signals.settings.categories import get_departments
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class NearAmsterdamValidatorMixin:
+
     def validate_geometrie(self, value):
         fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
 
@@ -42,9 +42,8 @@ class NearAmsterdamValidatorMixin:
         return value
 
 
-class LocationModelSerializer(serializers.ModelSerializer,
-                              NearAmsterdamValidatorMixin):
-    id = IntegerField(label='ID', read_only=True)
+class LocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
+    id = serializers.IntegerField(label='ID', read_only=True)
 
     class Meta:
         model = Location
@@ -60,8 +59,7 @@ class LocationModelSerializer(serializers.ModelSerializer,
         )
 
 
-class LocationSerializer(HALSerializer,
-                         NearAmsterdamValidatorMixin):
+class LocationSerializer(NearAmsterdamValidatorMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
@@ -87,7 +85,7 @@ class LocationSerializer(HALSerializer,
 
 
 class StatusModelSerializer(serializers.ModelSerializer):
-    id = IntegerField(label='ID', read_only=True)
+    id = serializers.IntegerField(label='ID', read_only=True)
 
     class Meta:
         model = Status
@@ -105,7 +103,7 @@ class StatusModelSerializer(serializers.ModelSerializer):
 
 
 class StatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
-    id = IntegerField(label='ID', read_only=True)
+    id = serializers.IntegerField(label='ID', read_only=True)
 
     class Meta:
         model = Status
@@ -143,9 +141,9 @@ class CategoryModelSerializer(serializers.ModelSerializer):
         extra_kwargs = {'_signal': {'required': False}}
 
 
-class SignalUpdateImageSerializer(ModelSerializer):
-    id = IntegerField(label='ID', read_only=True)
-    signal_id = CharField(label='SIGNAL_ID')
+class SignalUpdateImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(label='ID', read_only=True)
+    signal_id = serializers.CharField(label='SIGNAL_ID')
 
     class Meta(object):
         model = Signal
@@ -188,9 +186,9 @@ class SignalUpdateImageSerializer(ModelSerializer):
         return instance
 
 
-class SignalCreateSerializer(ModelSerializer):
-    id = IntegerField(label='ID', read_only=True)
-    signal_id = CharField(label='SIGNAL_ID', read_only=True)
+class SignalCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(label='ID', read_only=True)
+    signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
     location = LocationModelSerializer()
     reporter = ReporterModelSerializer()
     status = StatusModelSerializer()
@@ -280,7 +278,7 @@ class SignalCreateSerializer(ModelSerializer):
                                 not data['category']['department']):
                 data['category']['department'] = departments
             elif not departments:
-                log.warning(f"Department not found for subcategory : {data['category']['sub']}")
+                logger.warning(f"Department not found for subcategory : {data['category']['sub']}")
         else:
             raise serializers.ValidationError(
                 f"Invalid category : missing sub")
@@ -326,7 +324,7 @@ class SignalUnauthenticatedLinksField(serializers.HyperlinkedIdentityField):
 
 class SignalStatusOnlySerializer(HALSerializer):
     _display = DisplayField()
-    signal_id = CharField(label='SIGNAL_ID', read_only=True)
+    signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
     status = StatusUnauthenticatedModelSerializer(read_only=True)
 
     _links = SignalUnauthenticatedLinksField('signal-detail')
@@ -348,8 +346,8 @@ class SignalStatusOnlySerializer(HALSerializer):
 
 class SignalAuthSerializer(HALSerializer):
     _display = DisplayField()
-    id = IntegerField(label='ID', read_only=True)
-    signal_id = CharField(label='SIGNAL_ID', read_only=True)
+    id = serializers.IntegerField(label='ID', read_only=True)
+    signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
     location = LocationModelSerializer(read_only=True)
     reporter = ReporterModelSerializer(read_only=True)
     status = StatusModelSerializer(read_only=True)
@@ -540,7 +538,7 @@ class CategorySerializer(HALSerializer):
             if departments and ('department' not in data or not data['department']):
                 data['department'] = departments
             elif not departments:
-                log.warning(f"Department not found for subcategory : {data['sub']}")
+                logger.warning(f"Department not found for subcategory : {data['sub']}")
         else:
             raise serializers.ValidationError(
                 f"Invalid category : missing sub")
