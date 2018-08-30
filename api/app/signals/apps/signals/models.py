@@ -113,7 +113,7 @@ class Location(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="signals",
+        "Signal", related_name="locations",
         null=False, on_delete=models.CASCADE
     )
 
@@ -257,7 +257,7 @@ class Status(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="states",
+        "Signal", related_name="statuses",
         null=False, on_delete=models.CASCADE
     )
 
@@ -282,7 +282,7 @@ class Status(models.Model):
     extra_properties = JSONField(null=True)
 
     class Meta:
-        verbose_name_plural = "States"
+        verbose_name_plural = "Statuses"
         get_latest_by = "datetime"
 
     def __str__(self):
