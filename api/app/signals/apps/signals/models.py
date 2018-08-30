@@ -3,6 +3,8 @@ import uuid
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 
+from signals.apps.signals.managers import SignalManager
+
 
 class Buurt(models.Model):
     ogc_fid = models.IntegerField(primary_key=True)
@@ -71,6 +73,8 @@ class Signal(models.Model):
                 upload_to='uploads/%Y/%m/%d/'), null=True)
 
     extra_properties = JSONField(null=True)
+
+    actions = SignalManager()
 
     def __str__(self):
         """Identifying string.
