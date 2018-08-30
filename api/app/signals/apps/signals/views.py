@@ -74,9 +74,6 @@ class SignalViewSet(mixins.CreateModelMixin,
                     viewsets.GenericViewSet):
     """Public endpoint `signals`.
 
-    - POST (create new signal)
-    - GET (only status field)
-
     valid geometrie points are:
 
         { "type": "Point", "coordinates": [ 4.893697 ,  52.372840 ] }
@@ -93,8 +90,6 @@ class SignalViewSet(mixins.CreateModelMixin,
         "woonplaats": "Amsterdam"
     }
     """
-    http_method_names = ['get', 'post', 'head', 'options', 'trace']
-
     if not re.search('acc', settings.DATAPUNT_API_URL):
         throttle_classes = (NoUserRateThrottle,)
 

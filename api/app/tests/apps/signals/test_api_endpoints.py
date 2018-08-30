@@ -19,6 +19,14 @@ from tests.apps.users.factories import SuperUserFacotry
 
 
 class TestAPIEndpoints(APITestCase):
+
+    def test_signals_index(self):
+        response = self.client.get('/signals/')
+
+        self.assertEqual(response.status_code, 200)
+
+
+class TestAuthAPIEndpoints(APITestCase):
     endpoints = [
         '/signals/auth/signal/',
         '/signals/auth/status/',
@@ -44,15 +52,7 @@ class TestAPIEndpoints(APITestCase):
         superuser = SuperUserFacotry.create()
         self.client.force_authenticate(user=superuser)
 
-    def test_signals_index(self):
-        # Unauthenticating, singals index page is public.
-        self.client.force_authenticate()
-
-        response = self.client.get('/signals/')
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_auth_endpoints_get_lists(self):
+    def test_get_lists(self):
         for url in self.endpoints:
             response = self.client.get(url)
 
@@ -62,7 +62,7 @@ class TestAPIEndpoints(APITestCase):
                              'Wrong Content-Type for {}'.format(url))
             self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
 
-    def test_auth_endpoints_get_lists_html(self):
+    def test_get_lists_html(self):
         for url in self.endpoints:
             response = self.client.get('{}?format=api'.format(url))
 
@@ -72,29 +72,29 @@ class TestAPIEndpoints(APITestCase):
                              'Wrong Content-Type for {}'.format(url))
             self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
 
-    def test_auth_endpoints_delete_not_allowed(self):
+    def test_delete_not_allowed(self):
         for endpoint in self.endpoints:
             url = f'{endpoint}1/'
             response = self.client.delete(url)
 
-            self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
-    def test_auth_endpoints_put_not_allowed(self):
+    def test_put_not_allowed(self):
         for endpoint in self.endpoints:
             url = f'{endpoint}1/'
             response = self.client.put(url)
 
-            self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
-    def test_auth_endpoints_patch_not_allowed(self):
+    def test_patch_not_allowed(self):
         for endpoint in self.endpoints:
             url = f'{endpoint}1/'
             response = self.client.patch(url)
 
-            self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestEnpointsBase(APITestCase):
+class TestAPIEnpointsBase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -125,11 +125,14 @@ class TestEnpointsBase(APITestCase):
         )
 
 
-class TestSignalEndpoint(TestEnpointsBase):
+class TestSignalEndpoint(TestAPIEnpointsBase):
+    """Test for public endpoint `/signals/signal/`."""
 
-    def test_signal_detail(self):
+    endpoint = '/signals/signal/'
+
+    def test_get_detail(self):
         """Signal detail endpoint should only return the `Status` of the given `Signal`."""
-        response = self.client.get(f'/signals/signal/{self.signal.signal_id}/')
+        response = self.client.get(f'{self.endpoint}{self.signal.signal_id}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.get('signal_id'), str(self.signal.signal_id))
@@ -140,10 +143,29 @@ class TestSignalEndpoint(TestEnpointsBase):
         self.assertEqual(response.data.get('location'), None)
         self.assertEqual(response.data.get('id'), None)
 
+    def test_get_list(self):
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_delete_not_allowed(self):
+        response = self.client.delete(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_put_not_allowed(self):
+        response = self.client.put(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_patch_not_allowed(self):
+        response = self.client.patch(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
     def test_post_signal_with_json(self):
-        url = '/signals/signal/'
         postjson = self._get_fixture('post_signal')
-        response = self.client.post(url, postjson, format='json')
+        response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), 2)
         id = response.data['id']
@@ -185,7 +207,6 @@ class TestSignalEndpoint(TestEnpointsBase):
         )
 
     def test_post_signal_with_multipart_and_image(self):
-        url = '/signals/signal/'
         data = self._get_fixture('post_signal')
 
         # Adding a testing image to the posting data.
@@ -217,7 +238,7 @@ class TestSignalEndpoint(TestEnpointsBase):
         del data['incident_date_end']
         del data['operational_date']
 
-        response = self.client.post(url, data)
+        response = self.client.post(self.endpoint, data)
 
         self.assertEqual(response.status_code, 201)
 
@@ -225,7 +246,7 @@ class TestSignalEndpoint(TestEnpointsBase):
         self.assertTrue(signal.image)
 
     def test_post_signal_image(self):
-        url = '/signals/signal/image/'
+        url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
@@ -239,7 +260,7 @@ class TestSignalEndpoint(TestEnpointsBase):
         self.signal.image = 'already_exists'
         self.signal.save()
 
-        url = '/signals/signal/image/'
+        url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
@@ -248,7 +269,7 @@ class TestSignalEndpoint(TestEnpointsBase):
         self.assertEqual(response.status_code, 403)
 
 
-class TestPostAuthEndpoints(TestEnpointsBase):
+class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
     def setUp(self):
         super().setUp()
