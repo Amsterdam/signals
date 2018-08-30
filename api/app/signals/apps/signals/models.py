@@ -39,6 +39,7 @@ class SignalManager(models.Manager):
         with transaction.atomic():
             location = Location.objects.create(**data)
             signal = Signal.objects.get(pk=location._signal_id)
+            signal.location = location
             signal.save()
 
             update_location.send(location)
@@ -47,6 +48,7 @@ class SignalManager(models.Manager):
         with transaction.atomic():
             status = Status.objects.create(**data)
             signal = Signal.objects.get(pk=status._signal_id)
+            signal.status = status
             signal.save()
 
             update_status.send(status)
@@ -55,6 +57,7 @@ class SignalManager(models.Manager):
         with transaction.atomic():
             category = Category.objects.create(**data)
             signal = Signal.objects.get(pk=category._signal_id)
+            signal.category = category
             signal.save()
 
             update_category.send(category)
@@ -64,6 +67,7 @@ class SignalManager(models.Manager):
         with transaction.atomic():
             reporter = Reporter.objects.create(**data)
             signal = Signal.objects.get(pk=reporter._signal_id)
+            signal.reporter = reporter
             signal.save()
 
             update_reporter.send(reporter)
