@@ -17,13 +17,13 @@ class SignalManager(models.Manager):
 
     def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
         with transaction.atomic():
-            signal = self.create(signal_data)
+            signal = self.create(**signal_data)
 
             # Create dependent model instances with correct foreign keys to Signal
-            location = Location.objects.create(_signal_id=signal.pk, **location_data)
-            status = Status.objects.create(_signal_id=signal.pk, **status_data)
-            category = Category.objects.create(_signal_id=signal.pk, **category_data)
-            reporter = Reporter.objects.create(_signal_id=signal.pk, **reporter_data)
+            location = Location.objects.create(**location_data, _signal_id=signal.pk)
+            status = Status.objects.create(**status_data, _signal_id=signal.pk)
+            category = Category.objects.create(**category_data, _signal_id=signal.pk) 
+            reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
 
             # Set Signal to dependent model instance foreign keys
             signal.location = location
@@ -35,6 +35,8 @@ class SignalManager(models.Manager):
 
             create_initial.send(signal)
 
+        return signal
+
     def update_location(self, data):
         with transaction.atomic():
             location = Location.objects.create(**data)
@@ -42,7 +44,9 @@ class SignalManager(models.Manager):
             signal.location = location
             signal.save()
 
-            update_location.send(location)
+            update_location.send(Signal, location=location)
+
+        return signal
 
     def update_status(self, data):
         with transaction.atomic():
@@ -51,7 +55,9 @@ class SignalManager(models.Manager):
             signal.status = status
             signal.save()
 
-            update_status.send(status)
+            update_status.send(Signal, status=status)
+
+        return signal
 
     def update_category(self, data):
         with transaction.atomic():
@@ -60,7 +66,9 @@ class SignalManager(models.Manager):
             signal.category = category
             signal.save()
 
-            update_category.send(category)
+            update_category.send(Signal, category=category)
+
+        return signal
 
     def update_reporter(self, data):
         with transaction.atomic():
@@ -69,7 +77,9 @@ class SignalManager(models.Manager):
             signal.reporter = reporter
             signal.save()
 
-            update_reporter.send(reporter)
+            update_reporter.send(Signal, reporter=reporter)
+
+        return signal
 
 
 class Buurt(models.Model):
