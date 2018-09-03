@@ -406,11 +406,7 @@ class StatusHALSerializer(HALSerializer):
     def create(self, validated_data):
         signal = validated_data.pop('signal')
         status = Signal.actions.update_status(validated_data, signal)
-
-        # TODO fix previous state (move it to Django signals)
-        if status:
-            handle_status_change(signal, previous_status)
-            return status
+        return status
 
     def validate(self, data):
         # Get current status for signal
