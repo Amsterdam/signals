@@ -154,6 +154,7 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
 # Unauth serializers
 #
 
+
 class SignalCreateSerializer(serializers.ModelSerializer):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
@@ -198,28 +199,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        if 'remove_at' not in reporter_data or reporter_data['remove_at'] is None:
-            remove_at = datetime.now(timezone.utc) + timedelta(weeks=2)
-            reporter_data["remove_at"] = remove_at.isoformat()
         category_data = validated_data.pop('category')
-
-        with transaction.atomic():
-            cursor = connection.cursor()
-            cursor.execute("select nextval('signals_signal_id_seq')")
-            (signal_id,) = cursor.fetchone()
-            location = Location.objects.create(_signal_id=signal_id,
-                                               **location_data)
-            category = Category.objects.create(_signal_id=signal_id,
-                                               **category_data)
-
-            status = Status.objects.create(_signal_id=signal_id, **status_data)
-            reporter = Reporter.objects.create(_signal_id=signal_id,
-                                               **reporter_data)
-            signal = Signal.objects.create(id=signal_id, location=location,
-                                           category=category, reporter=reporter,
-                                           status=status, **validated_data)
-
-        handle_create_signal(signal)
+        signal = Signal.actions.create_initial(
+            validated_data, location_data, status_data, category_data, reporter_data)
         return signal
 
     def update(self, instance, validated_data):
@@ -312,7 +294,7 @@ class SignalStatusOnlyHALSerializer(HALSerializer):
 # Auth serializers
 #
 
-class SignalAuthSerializer(HALSerializer):
+class SignalAuthHALSerializer(HALSerializer):
     _display = DisplayField()
     id = serializers.IntegerField(label='ID', read_only=True)
     signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
@@ -353,7 +335,7 @@ class SignalAuthSerializer(HALSerializer):
         ]
 
     def update(self, instance, validated_data):
-        pass
+        raise NotImplementedError('`update()` is not allowed with this serializer.')
 
 
 class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):

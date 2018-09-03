@@ -5,12 +5,12 @@ from signals.apps.signals import tasks
 from signals.apps.signals.models import (
     Signal, Status, create_initial, update_location,
     update_status, update_category, update_reporter)
-from signals.messaging.send_emails import handle_status_change
+from signals.messaging.send_emails import handle_create_signal, handle_status_change
 
 
 @receiver(create_initial, dispatch_uid='create_initial')
 def create_initial_handler(sender, signal, **kwargs):
-    pass
+    handle_create_signal(signal)
 
 
 @receiver(update_location, dispatch_uid='update_location')

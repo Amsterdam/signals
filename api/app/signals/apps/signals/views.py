@@ -24,7 +24,7 @@ from signals.apps.signals.permissions import (
 from signals.apps.signals.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
-    SignalAuthSerializer,
+    SignalAuthHALSerializer,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
@@ -111,8 +111,8 @@ class SignalAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
         .select_related('reporter')
         .order_by('-id')
     )
-    serializer_detail_class = SignalAuthSerializer
-    serializer_class = SignalAuthSerializer
+    serializer_detail_class = SignalAuthHALSerializer
+    serializer_class = SignalAuthHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = SignalFilter
 
