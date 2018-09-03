@@ -37,16 +37,15 @@ class SignalManager(models.Manager):
 
         return signal
 
-    def update_location(self, data):
+    def update_location(self, data, signal):
         with transaction.atomic():
             location = Location.objects.create(**data)
-            signal = Signal.objects.get(pk=location._signal_id)
             signal.location = location
             signal.save()
 
             update_location.send(Signal, location=location)
 
-        return signal
+        return location
 
     def update_status(self, data):
         with transaction.atomic():

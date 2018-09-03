@@ -374,7 +374,7 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
 
     def create(self, validated_data):
         signal = validated_data.pop('signal')
-        location = Signal.actions.update_location(**validated_data)
+        location = Signal.actions.update_location(**validated_data, signal)
         return location
 
     def update(self, instance, validated_data):
