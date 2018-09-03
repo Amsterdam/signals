@@ -2,6 +2,80 @@ import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.db import transaction
+from django.dispatch import Signal as DjangoSignal
+
+# Declaring custom Django signals for our `SignalManager`.
+create_initial = DjangoSignal(providing_args=['signal'])
+update_location = DjangoSignal(providing_args=['location'])
+update_status = DjangoSignal(providing_args=['status'])
+update_category = DjangoSignal(providing_args=['category'])
+update_reporter = DjangoSignal(providing_args=['reporter'])
+
+
+class SignalManager(models.Manager):
+
+    def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
+        with transaction.atomic():
+            signal = self.create(**signal_data)
+
+            # Create dependent model instances with correct foreign keys to Signal
+            location = Location.objects.create(**location_data, _signal_id=signal.pk)
+            status = Status.objects.create(**status_data, _signal_id=signal.pk)
+            category = Category.objects.create(**category_data, _signal_id=signal.pk)
+            reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
+
+            # Set Signal to dependent model instance foreign keys
+            signal.location = location
+            signal.status = status
+            signal.category = category
+            signal.reporter = reporter
+
+            signal.save()
+
+            create_initial.send(signal)
+
+        return signal
+
+    def update_location(self, data, signal):
+        with transaction.atomic():
+            location = Location.objects.create(**data)
+            signal.location = location
+            signal.save()
+
+            update_location.send(Signal, location=location)
+
+        return location
+
+    def update_status(self, data, signal):
+        with transaction.atomic():
+            status = Status.objects.create(**data)
+            signal.status = status
+            signal.save()
+
+            update_status.send(Signal, status=status)
+
+        return status
+
+    def update_category(self, data, signal):
+        with transaction.atomic():
+            category = Category.objects.create(**data)
+            signal.category = category
+            signal.save()
+
+            update_category.send(Signal, category=category)
+
+        return category
+
+    def update_reporter(self, data, signal):
+        with transaction.atomic():
+            reporter = Reporter.objects.create(**data)
+            signal.reporter = reporter
+            signal.save()
+
+            update_reporter.send(Signal, reporter=reporter)
+
+        return reporter
 
 
 class Buurt(models.Model):
@@ -25,6 +99,7 @@ class Signal(models.Model):
             self.signal_id = uuid.uuid4()
 
     # we need an unique id for external systems.
+    # TODO rename `signal_id` to `signal_uuid` to be more specific.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=128, default='public-api')
 
@@ -72,6 +147,9 @@ class Signal(models.Model):
 
     extra_properties = JSONField(null=True)
 
+    objects = models.Manager()
+    actions = SignalManager()
+
     def __str__(self):
         """Identifying string.
         DO NOT expose sensitive stuff here.
@@ -113,7 +191,7 @@ class Location(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="signals",
+        "Signal", related_name="locations",
         null=False, on_delete=models.CASCADE
     )
 
@@ -257,7 +335,7 @@ class Status(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="states",
+        "Signal", related_name="statuses",
         null=False, on_delete=models.CASCADE
     )
 
@@ -282,7 +360,7 @@ class Status(models.Model):
     extra_properties = JSONField(null=True)
 
     class Meta:
-        verbose_name_plural = "States"
+        verbose_name_plural = "Statuses"
         get_latest_by = "datetime"
 
     def __str__(self):

@@ -38,6 +38,7 @@ lxml
 python-dateutil
 WeasyPrint
 requests
+raven
 
 # Test Libraries
 tox

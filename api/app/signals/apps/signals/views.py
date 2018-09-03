@@ -1,16 +1,14 @@
 import logging
 import re
 
-from datapunt_api.rest import DatapuntViewSetWritable
+from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
-from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
-from rest_framework.views import APIView
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.filters import (
     LocationFilter,
@@ -24,25 +22,21 @@ from signals.apps.signals.permissions import (
     StatusPermission
 )
 from signals.apps.signals.serializers import (
-    CategorySerializer,
-    LocationSerializer,
+    CategoryHALSerializer,
+    LocationHALSerializer,
     SignalAuthSerializer,
     SignalCreateSerializer,
-    SignalUnauthenticatedSerializer,
+    SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
-    StatusSerializer
+    StatusHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger()
 
 
-class AuthViewSet:
-    http_method_names = ['get', 'post', 'head', 'options', 'trace']
-    authentication_classes = (JWTAuthBackend,)
-
-
+# TODO SIG-520 this should be a `action` on the SignalView (set).
 class SignalImageUpdateView(viewsets.GenericViewSet):
     """
     Add or update image of newly submitted signals
@@ -74,17 +68,17 @@ class SignalImageUpdateView(viewsets.GenericViewSet):
             return {}
 
 
-class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """View of Signals for public access.
-
-    Only used to create the signal with POST
+class SignalViewSet(mixins.CreateModelMixin,
+                    DetailSerializerMixin,
+                    mixins.RetrieveModelMixin,
+                    viewsets.GenericViewSet):
+    """Public endpoint `signals`.
 
     valid geometrie points are:
 
         { "type": "Point", "coordinates": [ 4.893697 ,  52.372840 ] }
 
     or 'POINT (4.893697  52.372840)'
-
 
     valid address:
     {
@@ -96,38 +90,21 @@ class SignalView(mixins.CreateModelMixin, viewsets.GenericViewSet):
         "woonplaats": "Amsterdam"
     }
     """
-    http_method_names = ['get', 'post', 'head', 'options', 'trace']
-
     if not re.search('acc', settings.DATAPUNT_API_URL):
         throttle_classes = (NoUserRateThrottle,)
 
-    serializer_detail_class = SignalCreateSerializer
+    queryset = Signal.objects.all()
+    serializer_detail_class = SignalStatusOnlyHALSerializer
     serializer_class = SignalCreateSerializer
     pagination_class = None
     lookup_field = 'signal_id'
 
-    def list(self, request, *args, **kwargs):
-        return Response({})
 
-    def retrieve(self, request, signal_id=None, **kwargs):
-        queryset = Signal.objects.all()
-        signal = get_object_or_404(queryset, signal_id=signal_id)
-        serializer = SignalUnauthenticatedSerializer(signal, context={'request': request})
-        return Response(serializer.data)
-
-
-class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Signals with reporter information
-
-    !! still in development !!
-
-    only for AUTHENTICATED users
-    ============================
-
-    """
+class SignalAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    authentication_classes = (JWTAuthBackend, )
     queryset = (
         Signal.objects.all()
-        .order_by("created_at")
+        .order_by('created_at')
         .select_related('status')
         .select_related('location')
         .select_related('category')
@@ -136,71 +113,35 @@ class SignalAuthView(AuthViewSet, DatapuntViewSetWritable):
     )
     serializer_detail_class = SignalAuthSerializer
     serializer_class = SignalAuthSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filter_class = SignalFilter
 
 
-class LocationAuthView(AuthViewSet, DatapuntViewSetWritable):
-    permission_classes = (LocationPermission,)
-    queryset = (
-        Location.objects.all()
-        .order_by("created_at")
-        .prefetch_related('signal')
-    )
-
-    serializer_detail_class = LocationSerializer
-    serializer_class = LocationSerializer
-    filter_backends = (DjangoFilterBackend,)
+class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (LocationPermission, )
+    queryset = Location.objects.all().order_by('created_at').prefetch_related('signal')
+    serializer_detail_class = LocationHALSerializer
+    serializer_class = LocationHALSerializer
+    filter_backends = (DjangoFilterBackend, )
     filter_class = LocationFilter
 
 
-class StatusAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Status Changes"""
-    permission_classes = (StatusPermission,)
-    queryset = (
-        Status.objects.all()
-        .order_by("created_at")
-    )
-    serializer_detail_class = StatusSerializer
-    serializer_class = StatusSerializer
+class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (StatusPermission, )
+    queryset = Status.objects.all().order_by('created_at')
+    serializer_detail_class = StatusHALSerializer
+    serializer_class = StatusHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = StatusFilter
 
 
-class CategoryAuthView(AuthViewSet, DatapuntViewSetWritable):
-    """View of Types.
-    """
-    permission_classes = (CategoryPermission,)
-    queryset = (
-        Category.objects.all()
-        .order_by("id").prefetch_related("signal")
-    )
-    serializer_detail_class = CategorySerializer
-    serializer_class = CategorySerializer
-    filter_backends = (DjangoFilterBackend,)
+class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (CategoryPermission, )
+    queryset = Category.objects.all().order_by('id').prefetch_related('signal')
+    serializer_detail_class = CategoryHALSerializer
+    serializer_class = CategoryHALSerializer
+    filter_backends = (DjangoFilterBackend, )
     filter_fields = ['main', 'sub']
-
-
-class LocationUserView(AuthViewSet, APIView):
-    """
-    Handle information about user me
-    """
-    def get(self, request):
-        data = {}
-        user = request.user
-        if user:
-            data['username'] = user.username
-            data['email'] = user.email
-            data['is_staff'] = user.is_staff is True
-            data['is_superuser'] = user.is_superuser is True
-            groups = []
-            departments = []
-            for g in request.user.groups.all():
-                match = re.match(r"^dep_(\w+)$", g.name)
-                if match:
-                    departments.append(match.group(1))
-                else:
-                    groups.append(g.name)
-            data['groups'] = groups
-            data['departments'] = departments
-        return JsonResponse(data)

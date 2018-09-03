@@ -1,5 +1,6 @@
 from datapunt_api import bbox
-from django.contrib.gis.geos import Polygon
+from django.conf import settings
+from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
 
@@ -10,7 +11,6 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.messaging.categories import ALL_SUB_CATEGORIES
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),
@@ -22,6 +22,33 @@ STADSDELEN = (
     ("K", "Zuid (K)"),
     ("T", "Zuidoost (T)"),
 )
+
+
+def parse_xyr(value):
+    """
+    Parse lon,lat,radius from querystring for location filter.
+
+    Note:
+    - this is a local workaround for the datapunt_api.bbox.parse_xyr which
+      should be fixed.
+    """
+    try:
+        lon, lat, radius = value.split(',')
+    except ValueError:
+        raise ValidationError(
+            'location must be longitude,latitude,radius (in meters)'
+        )
+
+    try:
+        lon = float(lon)
+        lat = float(lat)
+        radius = float(radius)
+    except ValueError:
+        raise(
+            'locatie must be x: float, y: float, r: float'
+        )
+
+    return lon, lat, radius
 
 
 def buurt_choices():
@@ -36,7 +63,7 @@ def status_choices():
 def category_sub_choices():
     # fixme: use the distinct query again but also supply the list to frontend
     # options = Category.objects.values_list("sub").distinct()
-    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in ALL_SUB_CATEGORIES]
+    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in settings.ALL_SUB_CATEGORIES]
 
 
 class SignalFilter(FilterSet):
@@ -47,8 +74,6 @@ class SignalFilter(FilterSet):
     location__stadsdeel = filters.MultipleChoiceFilter(choices=STADSDELEN)
     location__buurt_code = filters.MultipleChoiceFilter(choices=buurt_choices)
     location__address_text = filters.CharFilter(lookup_expr='icontains')
-
-    extra = filters.CharFilter(method='in_extra', label='extra')
 
     created_at = filters.DateFilter(field_name='created_at', lookup_expr='date')
     created_at__gte = filters.DateFilter(field_name='created_at',
@@ -97,7 +122,6 @@ class SignalFilter(FilterSet):
             "location__address_text",
             "reporter__email",
             "in_bbox",
-            "extra",
             "geo",
         )
 
@@ -112,17 +136,12 @@ class SignalFilter(FilterSet):
         return qs.filter(
             location__geometrie__bboverlaps=poly_bbox)
 
-    def in_extra(self, qs, name, value):
-        """
-        Filter in extra json field
-        """
-        # TODO
-        return qs
-
     def locatie_filter(self, qs, name, value):
-        point, radius = bbox.parse_xyr(value)
+        lon, lat, radius = parse_xyr(value)
+        point = Point(lon, lat)
+
         return qs.filter(
-            location__geometrie__dwithin=(point, radius))
+            location__geometrie__dwithin=(point, bbox.dist_to_deg(radius, lat)))
 
 
 class StatusFilter(FilterSet):
@@ -148,8 +167,11 @@ class StatusFilter(FilterSet):
         )
 
     def locatie_filter(self, qs, name, value):
-        point, radius = bbox.parse_xyr(value)
-        return qs.filter(signal__location__geometrie__dwithin=(point, radius))
+        lon, lat, radius = parse_xyr(value)
+        point = Point(lon, lat)
+
+        return qs.filter(
+            signal__location__geometrie__dwithin=(point, bbox.dist_to_deg(radius, lat)))
 
     def in_bbox_filter(self, qs, name, value):
         bbox_values, err = bbox.valid_bbox(value)
@@ -186,8 +208,10 @@ class LocationFilter(FilterSet):
         )
 
     def locatie_filter(self, qs, name, value):
-        point, radius = bbox.parse_xyr(value)
-        return qs.filter(geometrie__dwithin=(point, radius))
+        lon, lat, radius = parse_xyr(value)
+        point = Point(lon, lat)
+
+        return qs.filter(geometrie__dwithin=(point, bbox.dist_to_deg(radius, lat)))
 
     def in_bbox_filter(self, qs, name, value):
         bbox_values, err = bbox.valid_bbox(value)

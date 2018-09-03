@@ -1,6 +1,3 @@
-"""
-Test posting / updating to basic endpoints and authorization
-"""
 import json
 import os
 
@@ -17,23 +14,84 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from tests import factories
+from tests.apps.signals import factories
+from tests.apps.users.factories import SuperUserFacotry
 
 
-class PostTestCase(APITestCase):
-    """
-    Test posts op:
+class TestAPIEndpoints(APITestCase):
 
-    datasets = [
-        "signals/signal",
-        "signals/status",
-        "signals/category",
-        "signals/location",
+    def test_signals_index(self):
+        response = self.client.get('/signals/')
+
+        self.assertEqual(response.status_code, 200)
+
+
+class TestAuthAPIEndpoints(APITestCase):
+    endpoints = [
+        '/signals/auth/signal/',
+        '/signals/auth/status/',
+        '/signals/auth/category/',
+        '/signals/auth/location/',
     ]
 
-    TODO ADD AUTHENTICATION
-    """
+    def setUp(self):
+        self.signal = factories.SignalFactory(id=1, location__id=1, status__id=1, category__id=1,
+                                              reporter__id=1)
 
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
+
+    def test_get_lists(self):
+        for url in self.endpoints:
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'application/json',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
+
+    def test_get_lists_html(self):
+        for url in self.endpoints:
+            response = self.client.get('{}?format=api'.format(url))
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'text/html; charset=utf-8',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
+
+    def test_get_detail(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+
+    def test_delete_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.delete(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+    def test_put_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.put(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+    def test_patch_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.patch(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+
+class TestAPIEnpointsBase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -42,16 +100,8 @@ class PostTestCase(APITestCase):
     }
 
     def _get_fixture(self, name):
-
         filename = self.fixture_files[name]
-        path = os.path.join(
-            settings.BASE_DIR,
-            'signals',
-            'apps',
-            'signals',
-            'fixtures',
-            filename
-        )
+        path = os.path.join(settings.BASE_DIR, 'apps', 'signals', 'fixtures', filename)
 
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())
@@ -71,11 +121,48 @@ class PostTestCase(APITestCase):
             b'\x02\x4c\x01\x00\x3b'
         )
 
+
+class TestSignalEndpoint(TestAPIEnpointsBase):
+    """Test for public endpoint `/signals/signal/`."""
+
+    endpoint = '/signals/signal/'
+
+    def test_get_detail(self):
+        """Signal detail endpoint should only return the `Status` of the given `Signal`."""
+        response = self.client.get(f'{self.endpoint}{self.signal.signal_id}/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get('signal_id'), str(self.signal.signal_id))
+        self.assertEqual(response.data.get('status').get('id'), self.signal.status.id)
+        self.assertEqual(response.data.get('status').get('state'), str(self.signal.status.state))
+        self.assertEqual(response.data.get('text'), None)
+        self.assertEqual(response.data.get('category'), None)
+        self.assertEqual(response.data.get('location'), None)
+        self.assertEqual(response.data.get('id'), None)
+
+    def test_get_list(self):
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_delete_not_allowed(self):
+        response = self.client.delete(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_put_not_allowed(self):
+        response = self.client.put(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_patch_not_allowed(self):
+        response = self.client.patch(f'{self.endpoint}1/')
+
+        self.assertEqual(response.status_code, 405)
+
     def test_post_signal_with_json(self):
-        """Post een compleet signaal."""
-        url = '/signals/signal/'
         postjson = self._get_fixture('post_signal')
-        response = self.client.post(url, postjson, format='json')
+        response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), 2)
         id = response.data['id']
@@ -117,7 +204,6 @@ class PostTestCase(APITestCase):
         )
 
     def test_post_signal_with_multipart_and_image(self):
-        url = '/signals/signal/'
         data = self._get_fixture('post_signal')
 
         # Adding a testing image to the posting data.
@@ -149,7 +235,7 @@ class PostTestCase(APITestCase):
         del data['incident_date_end']
         del data['operational_date']
 
-        response = self.client.post(url, data)
+        response = self.client.post(self.endpoint, data)
 
         self.assertEqual(response.status_code, 201)
 
@@ -157,7 +243,7 @@ class PostTestCase(APITestCase):
         self.assertTrue(signal.image)
 
     def test_post_signal_image(self):
-        url = '/signals/signal/image/'
+        url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
@@ -171,13 +257,23 @@ class PostTestCase(APITestCase):
         self.signal.image = 'already_exists'
         self.signal.save()
 
-        url = '/signals/signal/image/'
+        url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
             'image.gif', self.small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
+
+
+class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
+
+    def setUp(self):
+        super().setUp()
+
+        # Forcing authentication
+        superuser = SuperUserFacotry.create()
+        self.client.force_authenticate(user=superuser)
 
     def test_post_status_all_fields(self):
         url = '/signals/auth/status/'

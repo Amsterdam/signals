@@ -10,17 +10,17 @@ RUN mkdir -p /app && chown datapunt /app
 RUN mkdir -p /deploy && chown datapunt /deploy
 
 COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
-
 COPY app /app/
 COPY deploy /deploy/
+
+RUN pip install --no-cache-dir -r /requirements.txt
 
 WORKDIR /app
 
 USER datapunt
 
-RUN export DJANGO_SETTINGS_MODULE=signals.settings
-
-RUN python manage.py collectstatic --no-input
+ENV DJANGO_SETTINGS_MODULE=signals.settings.production
+ARG DJANGO_SECRET_KEY=insecure_docker_build_key
+RUN SECRET_KEY=$DJANGO_SECRET_KEY python manage.py collectstatic --no-input
 
 CMD uwsgi

@@ -8,7 +8,7 @@ from django.template import loader
 from django.utils import timezone
 
 from signals.apps.signals.models import AFGEHANDELD
-from signals.messaging.categories import get_afhandeling_text
+from signals.settings.categories import get_afhandeling_text
 
 LOG = logging.getLogger()
 
@@ -38,9 +38,6 @@ def get_incident_date_string(dt):
 #       e-mail
 def handle_create_signal(signal):
     LOG.info('Handling create signal')
-    if settings.TESTING or not settings.RABBITMQ_HOST:
-        LOG.info('Aborting')
-        return
     email = get_valid_email(signal)
     LOG.debug('Valid email: ' + str(email))
     if email:
@@ -77,9 +74,6 @@ def handle_create_signal(signal):
 
 def handle_status_change(signal, previous_status):
     LOG.info('Handling status change of signal')
-    if settings.TESTING or not settings.RABBITMQ_HOST:
-        LOG.debug('Skipping')
-        return
     LOG.debug('Signal %s changed to state: %s from %s',
               str(signal.id),
               str(signal.status.state),
