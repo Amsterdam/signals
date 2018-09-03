@@ -55,29 +55,27 @@ class SignalManager(models.Manager):
 
             update_status.send(Signal, status=status)
 
-        return signal
+        return status
 
-    def update_category(self, data):
+    def update_category(self, data, signal):
         with transaction.atomic():
             category = Category.objects.create(**data)
-            signal = Signal.objects.get(pk=category._signal_id)
             signal.category = category
             signal.save()
 
             update_category.send(Signal, category=category)
 
-        return signal
+        return category
 
-    def update_reporter(self, data):
+    def update_reporter(self, data, signal):
         with transaction.atomic():
             reporter = Reporter.objects.create(**data)
-            signal = Signal.objects.get(pk=reporter._signal_id)
             signal.reporter = reporter
             signal.save()
 
             update_reporter.send(Signal, reporter=reporter)
 
-        return signal
+        return reporter
 
 
 class Buurt(models.Model):

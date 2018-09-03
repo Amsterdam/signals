@@ -357,7 +357,6 @@ class SignalAuthSerializer(HALSerializer):
 
 
 class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
-
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
@@ -374,7 +373,7 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
 
     def create(self, validated_data):
         signal = validated_data.pop('signal')
-        location = Signal.actions.update_location(**validated_data, signal)
+        location = Signal.actions.update_location(validated_data, signal)
         return location
 
     def update(self, instance, validated_data):
@@ -405,9 +404,8 @@ class StatusHALSerializer(HALSerializer):
         # extra_kwargs = {'_signal': {'required': False}}
 
     def create(self, validated_data):
-        with transaction.atomic():
-            signal = validated_data['signal']
-            status = Signal.actions.update_status(**validated_data, signal)
+        signal = validated_data.pop('signal')
+        status = Signal.actions.update_status(validated_data, signal)
 
         # TODO fix previous state (move it to Django signals)
         if status:
@@ -473,15 +471,9 @@ class CategoryHALSerializer(HALSerializer):
         ]
 
     def create(self, validated_data):
-        with transaction.atomic():
-            # django rest does default the good thing
-            category = Category(**validated_data)
-            category.save()
-            # update status on signal
-            signal = Signal.objects.get(id=category._signal_id)
-            signal.category = category
-            signal.save()
-            return category
+        signal = validated_data.pop('signal')
+        category = Signal.actions.update_category(validated_data, signal)
+        return category
 
     def validate(self, data):
         if 'sub' in data:
