@@ -47,10 +47,9 @@ class SignalManager(models.Manager):
 
         return location
 
-    def update_status(self, data):
+    def update_status(self, data, signal):
         with transaction.atomic():
             status = Status.objects.create(**data)
-            signal = Signal.objects.get(pk=status._signal_id)
             signal.status = status
             signal.save()
 
