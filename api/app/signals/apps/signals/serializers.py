@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 from datetime import timedelta, timezone
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -20,6 +19,14 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.fields import (
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField,
+    CategoryLinksField,
+    ReporterLinksField
+)
+from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 from signals.messaging.send_emails import (
     handle_create_signal,
     handle_status_change
@@ -29,134 +36,19 @@ from signals.settings.categories import get_departments
 logger = logging.getLogger(__name__)
 
 
-class NearAmsterdamValidatorMixin:
-
-    def validate_geometrie(self, value):
-        fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
-
-        lat_not_in_adam_area = not 50 < value.coords[1] < 55
-        lon_not_in_adam_area = not 1 < value.coords[0] < 7
-
-        if lon_not_in_adam_area or lat_not_in_adam_area:
-            raise serializers.ValidationError(fail_msg)
-        return value
-
-
-class LocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
-    id = serializers.IntegerField(label='ID', read_only=True)
-
-    class Meta:
-        model = Location
-        geo_field = 'geometrie'
-        fields = (
-            'id',
-            'stadsdeel',
-            'buurt_code',
-            'address',
-            'address_text',
-            'geometrie',
-            'extra_properties',
-        )
-
-
-class LocationSerializer(NearAmsterdamValidatorMixin, HALSerializer):
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
-
-    class Meta:
-        model = Location
-        fields = (
-            'id',
-            '_signal',
-            'stadsdeel',
-            'buurt_code',
-            'address',
-            'geometrie',
-            'extra_properties',
-        )
-
-    def create(self, validated_data):
-        location = Signal.actions.update_location(**validated_data)
-        return location
-
-    def update(self, instance, validated_data):
-        """Should not be implemented.
-        """
-        pass
-
-
-class StatusModelSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(label='ID', read_only=True)
-
-    class Meta:
-        model = Status
-        fields = (
-            'id',
-            'text',
-            'user',
-            'target_api',
-            'state',
-            'extern',
-            'extra_properties',
-        )
-
-        extra_kwargs = {'_signal': {'required': False}}
-
-
-class StatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(label='ID', read_only=True)
-
-    class Meta:
-        model = Status
-        fields = (
-            'id',
-            'state',
-        )
-
-        extra_kwargs = {'_signal': {'required': False}}
-
-
-class ReporterModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reporter
-        fields = (
-            'email',
-            'phone',
-            'remove_at',
-            'created_at',
-            'updated_at',
-            'extra_properties',
-        )
-
-
-class CategoryModelSerializer(serializers.ModelSerializer):
-    class Meta(object):
-        model = Category
-        fields = [
-            "main",
-            "sub",
-            "department",
-            "priority",
-        ]
-
-        extra_kwargs = {'_signal': {'required': False}}
-
-
 class SignalUpdateImageSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(label='ID', read_only=True)
     signal_id = serializers.CharField(label='SIGNAL_ID')
 
     class Meta(object):
         model = Signal
-        fields = [
+        fields = (
             'id',
             'signal_id',
             'image'
-        ]
+        )
 
     def create(self, validated_data):
-        """
-        This serializer is only used for updating
-        """
         signal_id = validated_data.get('signal_id')
         instance = Signal.objects.get(signal_id=signal_id)
         return self.update(instance, validated_data)
@@ -186,13 +78,87 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
         return instance
 
 
+class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Location
+        geo_field = 'geometrie'
+        fields = (
+            'id',
+            'stadsdeel',
+            'buurt_code',
+            'address',
+            'address_text',
+            'geometrie',
+            'extra_properties',
+        )
+        read_only_fields = (
+            'id',
+        )
+        extra_kwargs = {
+            'id': {'label': 'ID', },
+        }
+
+
+class _NestedStatusModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Status
+        fields = (
+            'id',
+            'text',
+            'user',
+            'target_api',
+            'state',
+            'extern',
+            'extra_properties',
+        )
+        read_only_fields = (
+            'id',
+        )
+        extra_kwargs = {
+            'id': {'label': 'ID'},
+            '_signal': {'required': False},  # TODO is this needed?
+        }
+
+
+class _NestedCategoryModelSerializer(serializers.ModelSerializer):
+
+    class Meta(object):
+        model = Category
+        fields = (
+            'main',
+            'sub',
+            'department',
+            'priority',
+        )
+        extra_kwargs = {
+            '_signal': {'required': False},  # TODO is this needed?
+        }
+
+
+class _NestedReporterModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Reporter
+        fields = (
+            'email',
+            'phone',
+            'remove_at',
+            'created_at',
+            'updated_at',
+            'extra_properties',
+        )
+
+#
+# Unauth serializers
+#
+
 class SignalCreateSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(label='ID', read_only=True)
-    signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
-    location = LocationModelSerializer()
-    reporter = ReporterModelSerializer()
-    status = StatusModelSerializer()
-    category = CategoryModelSerializer()
+    location = _NestedLocationModelSerializer()
+    reporter = _NestedReporterModelSerializer()
+    status = _NestedStatusModelSerializer()
+    category = _NestedCategoryModelSerializer()
 
     # Explicitly specify fields with auto_now_add=True
     # to show in the rest framework
@@ -201,26 +167,32 @@ class SignalCreateSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = Signal
-        fields = [
-            # "pk",
-            "id",
-            "signal_id",
-            "source",
-            "text",
-            "text_extra",
-            "status",
-            "location",
-            "category",
-            "reporter",
-            "created_at",
-            "updated_at",
-            "incident_date_start",
-            "incident_date_end",
-            "operational_date",
-            "image",
-            "extra_properties",
-            # "upload",   For now we only upload one image
-        ]
+        fields = (
+            'id',
+            'signal_id',
+            'source',
+            'text',
+            'text_extra',
+            'status',
+            'location',
+            'category',
+            'reporter',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+            'image',
+            'extra_properties',
+        )
+        read_only_fields = (
+            'id',
+            'signal_id',
+        )
+        extra_kwargs = {
+            'id': {'label': 'ID'},
+            'signal_id': {'label': 'SIGNAL_ID'},
+        }
 
     def create(self, validated_data):
         status_data = validated_data.pop('status')
@@ -249,6 +221,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
 
         handle_create_signal(signal)
         return signal
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError('`update()` is not allowed with this serializer.')
 
     def validate(self, data):  # noqa: C901
         # The status can only be 'm' when created
@@ -298,34 +273,23 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         return ip
 
 
-class SignalLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
+class _NestedStatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(label='ID', read_only=True)
 
-    def to_representation(self, value):
-        request = self.context.get('request')
+    class Meta:
+        model = Status
+        fields = (
+            'id',
+            'state',
+        )
 
-        result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, "signal-auth-detail", request, None))
-             ),
-        ])
-
-        return result
+        extra_kwargs = {'_signal': {'required': False}}
 
 
-class SignalUnauthenticatedLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return url based on UUID instead of normal database id
-    """
-    lookup_field = 'signal_id'
-
-
-class SignalStatusOnlySerializer(HALSerializer):
+class SignalStatusOnlyHALSerializer(HALSerializer):
     _display = DisplayField()
     signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
-    status = StatusUnauthenticatedModelSerializer(read_only=True)
+    status = _NestedStatusUnauthenticatedModelSerializer(read_only=True)
 
     _links = SignalUnauthenticatedLinksField('signal-detail')
 
@@ -344,14 +308,18 @@ class SignalStatusOnlySerializer(HALSerializer):
         ]
 
 
+#
+# Auth serializers
+#
+
 class SignalAuthSerializer(HALSerializer):
     _display = DisplayField()
     id = serializers.IntegerField(label='ID', read_only=True)
     signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
-    location = LocationModelSerializer(read_only=True)
-    reporter = ReporterModelSerializer(read_only=True)
-    status = StatusModelSerializer(read_only=True)
-    category = CategoryModelSerializer(read_only=True)
+    location = _NestedLocationModelSerializer(read_only=True)
+    reporter = _NestedReporterModelSerializer(read_only=True)
+    status = _NestedStatusModelSerializer(read_only=True)
+    category = _NestedCategoryModelSerializer(read_only=True)
 
     image = ImageField(max_length=50, allow_empty_file=False)
 
@@ -388,24 +356,32 @@ class SignalAuthSerializer(HALSerializer):
         pass
 
 
-class StatusLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
+class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
 
-    def to_representation(self, value):
-        request = self.context.get('request')
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
-        result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, "status-auth-detail", request, None))
-             ),
-        ])
+    class Meta:
+        model = Location
+        fields = (
+            'id',
+            '_signal',
+            'stadsdeel',
+            'buurt_code',
+            'address',
+            'geometrie',
+            'extra_properties',
+        )
 
-        return result
+    def create(self, validated_data):
+        signal = validated_data.pop('signal')
+        location = Signal.actions.update_location(**validated_data)
+        return location
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError('`update()` is not allowed with this serializer.')
 
 
-class StatusSerializer(HALSerializer):
+class StatusHALSerializer(HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(
         queryset=Signal.objects.all().order_by("id"))
@@ -485,24 +461,7 @@ class StatusSerializer(HALSerializer):
         return ip
 
 
-class CategoryLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
-
-    def to_representation(self, value):
-        request = self.context.get('request')
-
-        result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, "category-auth-detail", request, None))
-             ),
-        ])
-
-        return result
-
-
-class CategorySerializer(HALSerializer):
+class CategoryHALSerializer(HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(
         queryset=Signal.objects.all().order_by("id"))
@@ -545,39 +504,3 @@ class CategorySerializer(HALSerializer):
 
         # TODO add validation
         return data
-
-
-class ReporterLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
-
-    def to_representation(self, value):
-        request = self.context.get('request')
-
-        result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, "reporter-auth-detail", request, None))
-             ),
-        ])
-
-        return result
-
-
-class ReporterSerializer(HALSerializer):
-    _display = DisplayField()
-    serializer_url_field = ReporterLinksField
-
-    # signal = RelatedSummaryField()
-
-    class Meta(object):
-        model = Reporter
-        fields = [
-            "_links",
-            "_display",
-            "id",
-            "email",
-            "phone",
-            "created_at",
-            "remove_at",
-        ]
