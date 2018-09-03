@@ -22,7 +22,7 @@ class SignalManager(models.Manager):
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)
             status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category = Category.objects.create(**category_data, _signal_id=signal.pk) 
+            category = Category.objects.create(**category_data, _signal_id=signal.pk)
             reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
 
             # Set Signal to dependent model instance foreign keys
