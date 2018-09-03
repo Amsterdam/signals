@@ -2,9 +2,17 @@ from django.dispatch import receiver
 
 from signals.apps.signals import tasks
 from signals.apps.signals.models import (
-    Status, create_initial, update_location,
-    update_status, update_category, update_reporter)
-from signals.messaging.send_emails import handle_create_signal, handle_status_change
+    Status,
+    create_initial,
+    update_category,
+    update_location,
+    update_reporter,
+    update_status
+)
+from signals.messaging.send_emails import (
+    handle_create_signal,
+    handle_status_change
+)
 
 
 @receiver(create_initial, dispatch_uid='create_initial')

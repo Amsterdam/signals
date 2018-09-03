@@ -8,9 +8,17 @@ from django.dispatch import receiver
 from django.test import TestCase
 
 from signals.apps.signals.models import (
-    Category, Location, Reporter, Signal, Status)
-from signals.apps.signals.models import(
-    create_initial, update_category, update_location, update_reporter, update_status)
+    Category,
+    Location,
+    Reporter,
+    Signal,
+    Status,
+    create_initial,
+    update_category,
+    update_location,
+    update_reporter,
+    update_status
+)
 
 
 class TestSignalManager(TestCase):

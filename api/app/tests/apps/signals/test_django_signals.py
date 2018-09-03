@@ -2,8 +2,13 @@ from unittest import mock
 
 from django.test import testcases
 
-from signals.apps.signals.models import create_initial, update_location, update_status, \
-    update_category, update_reporter
+from signals.apps.signals.models import (
+    create_initial,
+    update_category,
+    update_location,
+    update_reporter,
+    update_status
+)
 from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 

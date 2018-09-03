@@ -1,15 +1,18 @@
 import logging
-from datetime import timedelta, timezone
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.core.exceptions import ValidationError
-from django.db import connection, transaction
 from django.forms import ImageField
-from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.throttling import BaseThrottle
 
+from signals.apps.signals.fields import (
+    CategoryLinksField,
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField
+)
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
@@ -18,12 +21,6 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status
-)
-from signals.apps.signals.fields import (
-    SignalLinksField,
-    SignalUnauthenticatedLinksField,
-    StatusLinksField,
-    CategoryLinksField
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 from signals.settings.categories import get_departments
