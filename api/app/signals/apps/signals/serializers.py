@@ -405,19 +405,11 @@ class StatusHALSerializer(HALSerializer):
         # extra_kwargs = {'_signal': {'required': False}}
 
     def create(self, validated_data):
-        """
-        """
-
         with transaction.atomic():
-            # django rest does default the good thing
-            status = Status(**validated_data)
-            status.save()
-            # update status on signal
-            signal = Signal.objects.get(id=status._signal_id)
-            previous_status = signal.status
-            signal.status = status
-            signal.save()
+            signal = validated_data['signal']
+            status = Signal.actions.update_status(**validated_data, signal)
 
+        # TODO fix previous state (move it to Django signals)
         if status:
             handle_status_change(signal, previous_status)
             return status
