@@ -6,7 +6,7 @@ from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
-create_initial = DjangoSignal(providing_args=['signal'])
+create_initial = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['location'])
 update_status = DjangoSignal(providing_args=['status'])
 update_category = DjangoSignal(providing_args=['category'])
@@ -33,47 +33,47 @@ class SignalManager(models.Manager):
 
             signal.save()
 
-            create_initial.send(signal)
+            create_initial.send(sender=self.__class__, signal_obj=signal)
 
         return signal
 
     def update_location(self, data, signal):
         with transaction.atomic():
-            location = Location.objects.create(**data)
+            location = Location.objects.create(**data, _signal_id=signal.id)
             signal.location = location
             signal.save()
 
-            update_location.send(Signal, location=location)
+            update_location.send(sender=self.__class__, location=location)
 
         return location
 
     def update_status(self, data, signal):
         with transaction.atomic():
-            status = Status.objects.create(**data)
+            status = Status.objects.create(**data, _signal_id=signal.id)
             signal.status = status
             signal.save()
 
-            update_status.send(Signal, status=status)
+            update_status.send(sender=self.__class__, status=status)
 
         return status
 
     def update_category(self, data, signal):
         with transaction.atomic():
-            category = Category.objects.create(**data)
+            category = Category.objects.create(**data, _signal_id=signal.id)
             signal.category = category
             signal.save()
 
-            update_category.send(Signal, category=category)
+            update_category.send(sender=self.__class__, category=category)
 
         return category
 
     def update_reporter(self, data, signal):
         with transaction.atomic():
-            reporter = Reporter.objects.create(**data)
+            reporter = Reporter.objects.create(**data, _signal_id=signal.id)
             signal.reporter = reporter
             signal.save()
 
-            update_reporter.send(Signal, reporter=reporter)
+            update_reporter.send(sender=self.__class__, reporter=reporter)
 
         return reporter
 

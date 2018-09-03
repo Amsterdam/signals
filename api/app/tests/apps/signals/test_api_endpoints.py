@@ -35,7 +35,10 @@ class TestAuthAPIEndpoints(APITestCase):
     ]
 
     def setUp(self):
-        self.signal = factories.SignalFactory(id=1, location__id=1, status__id=1, category__id=1,
+        self.signal = factories.SignalFactory(id=1,
+                                              location__id=1,
+                                              status__id=1,
+                                              category__id=1,
                                               reporter__id=1)
 
         # Forcing authentication

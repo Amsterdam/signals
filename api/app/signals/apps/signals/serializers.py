@@ -23,14 +23,9 @@ from signals.apps.signals.fields import (
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField,
-    CategoryLinksField,
-    ReporterLinksField
+    CategoryLinksField
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.messaging.send_emails import (
-    handle_create_signal,
-    handle_status_change
-)
 from signals.settings.categories import get_departments
 
 logger = logging.getLogger(__name__)
@@ -354,7 +349,7 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
         )
 
     def create(self, validated_data):
-        signal = validated_data.pop('signal')
+        signal = validated_data.pop('_signal')
         location = Signal.actions.update_location(validated_data, signal)
         return location
 
@@ -364,29 +359,27 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
 
 class StatusHALSerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(
-        queryset=Signal.objects.all().order_by("id"))
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = StatusLinksField
 
     class Meta(object):
         model = Status
-        fields = [
-            "_links",
-            "_display",
-            "id",
-            "text",
-            "user",
-            "extern",
-            "_signal",
-            "state",
-            "created_at",
-            "updated_at",
-            "extra_properties",
-        ]
-        # extra_kwargs = {'_signal': {'required': False}}
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'text',
+            'user',
+            'extern',
+            '_signal',
+            'state',
+            'created_at',
+            'updated_at',
+            'extra_properties',
+        )
 
     def create(self, validated_data):
-        signal = validated_data.pop('signal')
+        signal = validated_data.pop('_signal')
         status = Signal.actions.update_status(validated_data, signal)
         return status
 
@@ -431,8 +424,7 @@ class StatusHALSerializer(HALSerializer):
 
 class CategoryHALSerializer(HALSerializer):
     _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(
-        queryset=Signal.objects.all().order_by("id"))
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = CategoryLinksField
 
     class Meta(object):
@@ -449,7 +441,7 @@ class CategoryHALSerializer(HALSerializer):
         ]
 
     def create(self, validated_data):
-        signal = validated_data.pop('signal')
+        signal = validated_data.pop('_signal')
         category = Signal.actions.update_category(validated_data, signal)
         return category
 

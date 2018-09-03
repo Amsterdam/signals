@@ -9,8 +9,8 @@ from signals.messaging.send_emails import handle_create_signal, handle_status_ch
 
 
 @receiver(create_initial, dispatch_uid='create_initial')
-def create_initial_handler(sender, signal, **kwargs):
-    handle_create_signal(signal)
+def create_initial_handler(sender, signal_obj, **kwargs):
+    handle_create_signal(signal_obj)
 
 
 @receiver(update_location, dispatch_uid='update_location')
