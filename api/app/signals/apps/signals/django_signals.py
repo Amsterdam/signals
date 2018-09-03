@@ -3,8 +3,9 @@ from django.dispatch import receiver
 
 from signals.apps.signals import tasks
 from signals.apps.signals.models import (
-    Signal, create_initial, update_location,
+    Signal, Status, create_initial, update_location,
     update_status, update_category, update_reporter)
+from signals.messaging.send_emails import handle_status_change
 
 
 @receiver(create_initial, dispatch_uid='create_initial')
@@ -19,7 +20,8 @@ def update_location_handler(sender, location, **kwargs):
 
 @receiver(update_status, dispatch_uid='update_status')
 def update_status_handler(sender, status, **kwargs):
-    pass
+    previous_status = Status.objects.exclude(id=status.id).last()
+    handle_status_change(status, previous_status)
 
 
 @receiver(update_category, dispatch_uid='update_category')
