@@ -7,10 +7,10 @@ from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
-update_location = DjangoSignal(providing_args=['location'])
-update_status = DjangoSignal(providing_args=['status'])
-update_category = DjangoSignal(providing_args=['category'])
-update_reporter = DjangoSignal(providing_args=['reporter'])
+update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
+update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
+update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
+update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 
 
 class SignalManager(models.Manager):
@@ -54,11 +54,16 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         with transaction.atomic():
+            prev_location = signal.location
+
             location = Location.objects.create(**data, _signal_id=signal.id)
             signal.location = location
             signal.save()
 
-            update_location.send(sender=self.__class__, location=location)
+            update_location.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 location=location,
+                                 prev_location=prev_location)
 
         return location
 
@@ -70,11 +75,16 @@ class SignalManager(models.Manager):
         :returns: Status object
         """
         with transaction.atomic():
+            prev_status = signal.status
+
             status = Status.objects.create(**data, _signal_id=signal.id)
             signal.status = status
             signal.save()
 
-            update_status.send(sender=self.__class__, status=status)
+            update_status.send(sender=self.__class__,
+                               signal_obj=signal,
+                               status=status,
+                               prev_status=prev_status)
 
         return status
 
@@ -86,11 +96,16 @@ class SignalManager(models.Manager):
         :returns: Category object
         """
         with transaction.atomic():
+            prev_category = signal.category
+
             category = Category.objects.create(**data, _signal_id=signal.id)
             signal.category = category
             signal.save()
 
-            update_category.send(sender=self.__class__, category=category)
+            update_category.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 category=category,
+                                 prev_category=prev_category)
 
         return category
 
@@ -102,11 +117,16 @@ class SignalManager(models.Manager):
         :returns: Reporter object
         """
         with transaction.atomic():
+            prev_reporter = signal.reporter
+
             reporter = Reporter.objects.create(**data, _signal_id=signal.id)
             signal.reporter = reporter
             signal.save()
 
-            update_reporter.send(sender=self.__class__, reporter=reporter)
+            update_reporter.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 reporter=reporter,
+                                 prev_reporter=prev_reporter)
 
         return reporter
 

@@ -64,7 +64,7 @@ class TestSignalManager(TestCase):
         return signal_data, location_data, status_data, category_data, reporter_data
 
     @mock.patch('signals.apps.signals.models.create_initial')
-    def test_create_initial(self, patched_django_signal):
+    def test_create_initial(self, patched_create_initial):
         (signal_data,
          location_data,
          status_data,
@@ -83,8 +83,8 @@ class TestSignalManager(TestCase):
         self.assertEquals(Reporter.objects.count(), 1)
 
         # Check that we sent the correct Django signal
-        patched_django_signal.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                           signal_obj=signal)
+        patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                            signal_obj=signal)
 
     @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_location')
@@ -100,7 +100,8 @@ class TestSignalManager(TestCase):
             signal_data, location_data, status_data, category_data, reporter_data)
         original_location_pk = signal.location.pk
 
-        # Update the signal:
+        # Update the signal
+        prev_location = signal.location
         location = Signal.actions.update_location(location_data, signal)
 
         # Check that the signal was updated in db
@@ -108,8 +109,11 @@ class TestSignalManager(TestCase):
         self.assertEqual(Location.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_location.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                             location=location)
+        patched_update_location.send.assert_called_once_with(
+            sender=Signal.actions.__class__,
+            signal_obj=signal,
+            location=location,
+            prev_location=prev_location)
 
     @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_status')
@@ -125,7 +129,8 @@ class TestSignalManager(TestCase):
             signal_data, location_data, status_data, category_data, reporter_data)
         original_status_pk = signal.status.pk
 
-        # Update the signal:
+        # Update the signal
+        prev_status = signal.status
         status = Signal.actions.update_status(status_data, signal)
 
         # Check that the signal was updated in db
@@ -133,8 +138,11 @@ class TestSignalManager(TestCase):
         self.assertEqual(Status.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_status.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                           status=status)
+        patched_update_status.send.assert_called_once_with(
+            sender=Signal.actions.__class__,
+            signal_obj=signal,
+            status=status,
+            prev_status=prev_status)
 
     @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_category')
@@ -150,7 +158,8 @@ class TestSignalManager(TestCase):
             signal_data, location_data, status_data, category_data, reporter_data)
         original_category_pk = signal.category.pk
 
-        # Update the signal:
+        # Update the signal
+        prev_category = signal.category
         category = Signal.actions.update_category(category_data, signal)
 
         # Check that the signal was updated in db
@@ -158,8 +167,11 @@ class TestSignalManager(TestCase):
         self.assertEqual(Category.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_category.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                             category=category)
+        patched_update_category.send.assert_called_once_with(
+            sender=Signal.actions.__class__,
+            signal_obj=signal,
+            category=category,
+            prev_category=prev_category)
 
     @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_reporter')
@@ -175,12 +187,16 @@ class TestSignalManager(TestCase):
             signal_data, location_data, status_data, category_data, reporter_data)
         original_reporter_pk = signal.reporter.pk
 
-        # Update the signal:
+        # Update the signal
+        prev_reporter = signal.reporter
         reporter = Signal.actions.update_reporter(reporter_data, signal)
 
         # Check that the signal was updated in db
         self.assertNotEqual(original_reporter_pk, reporter.pk)
         self.assertEqual(Reporter.objects.count(), 2)
 
-        patched_update_reporter.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                             reporter=reporter)
+        patched_update_reporter.send.assert_called_once_with(
+            sender=Signal.actions.__class__,
+            signal_obj=signal,
+            reporter=reporter,
+            prev_reporter=prev_reporter)

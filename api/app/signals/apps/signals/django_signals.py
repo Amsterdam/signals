@@ -2,7 +2,6 @@ from django.dispatch import receiver
 
 from signals.apps.signals import tasks
 from signals.apps.signals.models import (
-    Status,
     create_initial,
     update_category,
     update_location,
@@ -24,22 +23,21 @@ def create_initial_handler(sender, signal_obj, **kwargs):
 
 
 @receiver(update_location, dispatch_uid='update_location')
-def update_location_handler(sender, location, **kwargs):
-    tasks.send_mail_apptimize.delay(pk=location.signal.id)
+def update_location_handler(sender, signal_obj, location, prev_location, **kwargs):
+    tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 
 @receiver(update_status, dispatch_uid='update_status')
-def update_status_handler(sender, status, **kwargs):
-    previous_status = Status.objects.exclude(id=status.id).last()
-    handle_status_change(status, previous_status)
-    tasks.send_mail_apptimize.delay(pk=status.signal.id)
+def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
+    handle_status_change(status, prev_status)
+    tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 
 @receiver(update_category, dispatch_uid='update_category')
-def update_category_handler(sender, category, **kwargs):
-    tasks.send_mail_apptimize.delay(pk=category.signal.id)
+def update_category_handler(sender, signal_obj, category, prev_category, **kwargs):
+    tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 
 @receiver(update_reporter, dispatch_uid='update_reporter')
-def update_reporter_handler(sender, reporter, **kwargs):
-    tasks.send_mail_apptimize.delay(pk=reporter.signal.id)
+def update_reporter_handler(sender, signal_obj, reporter, prev_reporter, **kwargs):
+    tasks.send_mail_apptimize.delay(pk=signal_obj.id)
