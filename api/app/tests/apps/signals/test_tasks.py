@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from freezegun import freeze_time
 
-import signals.apps.signals.tasks.apptimize.handler
+import signals.apps.email_integrations.apptimize.handler
 from signals.apps.signals import tasks
 from tests.apps.signals.factories import SignalFactory
 
@@ -94,7 +94,7 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Openbaar groen en water',
             category__sub='Boom')
 
-        result = signals.apps.signals.tasks.apptimize.handler.is_signal_applicable(signal)
+        result = signals.apps.email_integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
@@ -103,7 +103,7 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Some other main category',
             category__sub='Some other sub category')
 
-        result = signals.apps.signals.tasks.apptimize.handler.is_signal_applicable(signal)
+        result = signals.apps.email_integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
 
@@ -113,7 +113,7 @@ class TestHelperIsSignalApplicableForApptimize(TestCase):
             category__main='Openbaar groen en water',
             category__sub='Boom')
 
-        result = signals.apps.signals.tasks.apptimize.handler.is_signal_applicable(signal)
+        result = signals.apps.email_integrations.apptimize.handler.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
 
