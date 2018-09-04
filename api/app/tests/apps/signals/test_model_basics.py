@@ -9,29 +9,18 @@ serializers are broken, these tests will stop working as well.
 
 import json
 import os
-import unittest
 from unittest import mock
 
 from django.conf import settings
-from django.db.models import signals as django_built_in_signals
-from django.dispatch import receiver
 from django.test import TestCase
-from factory.django import mute_signals
 
 from signals.apps.signals.models import (
     Category,
     Location,
     Reporter,
     Signal,
-    Status,
-    create_initial,
-    update_category,
-    update_location,
-    update_reporter,
-    update_status
+    Status
 )
-from signals.apps.signals.models import(
-    create_initial, update_category, update_location, update_reporter, update_status)
 from signals.apps.signals.serializers import SignalCreateSerializer
 
 
@@ -76,8 +65,11 @@ class TestSignalManager(TestCase):
 
     @mock.patch('signals.apps.signals.models.create_initial')
     def test_create_initial(self, patched_django_signal):
-
-        signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
+        (signal_data,
+         location_data,
+         status_data,
+         category_data,
+         reporter_data) = self._get_signal_data()
 
         # Create the full Signal
         signal = Signal.actions.create_initial(
@@ -98,7 +90,11 @@ class TestSignalManager(TestCase):
     @mock.patch('signals.apps.signals.models.update_location')
     def test_update_location(self, patched_update_location, patched_create_initial):
         # Create a full signal (to be updated later)
-        signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
+        (signal_data,
+         location_data,
+         status_data,
+         category_data,
+         reporter_data) = self._get_signal_data()
 
         signal = Signal.actions.create_initial(
             signal_data, location_data, status_data, category_data, reporter_data)
@@ -119,7 +115,11 @@ class TestSignalManager(TestCase):
     @mock.patch('signals.apps.signals.models.update_status')
     def test_update_status(self, patched_update_status, patched_create_initial):
         # Create a full signal (to be updated later)
-        signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
+        (signal_data,
+         location_data,
+         status_data,
+         category_data,
+         reporter_data) = self._get_signal_data()
 
         signal = Signal.actions.create_initial(
             signal_data, location_data, status_data, category_data, reporter_data)
@@ -140,7 +140,11 @@ class TestSignalManager(TestCase):
     @mock.patch('signals.apps.signals.models.update_category')
     def test_update_category(self, patched_update_category, patched_create_initial):
         # Create a full signal (to be updated later)
-        signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
+        (signal_data,
+         location_data,
+         status_data,
+         category_data,
+         reporter_data) = self._get_signal_data()
 
         signal = Signal.actions.create_initial(
             signal_data, location_data, status_data, category_data, reporter_data)
@@ -161,7 +165,11 @@ class TestSignalManager(TestCase):
     @mock.patch('signals.apps.signals.models.update_reporter')
     def test_update_reporter(self, patched_update_reporter, patched_create_initial):
         # Create a full signal (to be updated later)
-        signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
+        (signal_data,
+         location_data,
+         status_data,
+         category_data,
+         reporter_data) = self._get_signal_data()
 
         signal = Signal.actions.create_initial(
             signal_data, location_data, status_data, category_data, reporter_data)
