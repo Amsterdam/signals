@@ -2,7 +2,7 @@
 Tests for the model manager in signals.apps.signals.models
 
 Note:
-The need to have correctly deserialized data, creates a dependence on the serializers 
+The need to have correctly deserialized data, creates a dependence on the serializers
 module (we need correctly deserialized data, not just JSON from our fixtures). If the
 serializers are broken, these tests will stop working as well.
 """
@@ -57,7 +57,7 @@ class TestSignalManager(TestCase):
 
         # Disable the validation of the SignalCreateSerializer as it assumes a request to
         # be present and protects against various bad user inputs which we do not have to
-        # protect agains at this point (not dealing with user data). We also do not care 
+        # protect agains at this point (not dealing with user data). We also do not care
         # about the the correct link between main and sub category, image sizes, etc.
         SignalCreateSerializer.validate = lambda _, x: x
         serializer = SignalCreateSerializer(data=data)
@@ -74,13 +74,13 @@ class TestSignalManager(TestCase):
 
         return signal_data, location_data, status_data, category_data, reporter_data
 
-    @mute_signals(django_built_in_signals.post_save)
     @mock.patch('signals.apps.signals.models.create_initial')
     def test_create_initial(self, patched_django_signal):
+
         signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
 
         # Create the full Signal
-        Signal.actions.create_initial(
+        signal = Signal.actions.create_initial(
             signal_data, location_data, status_data, category_data, reporter_data)
 
         # Check everything is present:
@@ -91,11 +91,12 @@ class TestSignalManager(TestCase):
         self.assertEquals(Reporter.objects.count(), 1)
 
         # Check that we sent the correct Django signal
-        self.assertTrue(patched_django_signal.send.called_once())
+        patched_django_signal.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                           signal_obj=signal)
 
-    @mute_signals(django_built_in_signals.post_save)
+    @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_location')
-    def test_update_location(self, patched_django_signal):
+    def test_update_location(self, patched_update_location, patched_create_initial):
         # Create a full signal (to be updated later)
         signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
 
@@ -111,11 +112,12 @@ class TestSignalManager(TestCase):
         self.assertEqual(Location.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        self.assertTrue(patched_django_signal.send.called_once())
+        patched_update_location.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                             location=location)
 
-    @mute_signals(django_built_in_signals.post_save)
+    @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_status')
-    def test_update_status(self, patched_django_signal):
+    def test_update_status(self, patched_update_status, patched_create_initial):
         # Create a full signal (to be updated later)
         signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
 
@@ -131,11 +133,12 @@ class TestSignalManager(TestCase):
         self.assertEqual(Status.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        self.assertTrue(patched_django_signal.send.called_once())
+        patched_update_status.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                           status=status)
 
-    @mute_signals(django_built_in_signals.post_save)
+    @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_category')
-    def test_update_category(self, patched_django_signal):
+    def test_update_category(self, patched_update_category, patched_create_initial):
         # Create a full signal (to be updated later)
         signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
 
@@ -151,11 +154,12 @@ class TestSignalManager(TestCase):
         self.assertEqual(Category.objects.count(), 2)
 
         # Check that we sent the correct Django signal
-        self.assertTrue(patched_django_signal.send.called_once())
+        patched_update_category.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                             category=category)
 
-    @mute_signals(django_built_in_signals.post_save)
+    @mock.patch('signals.apps.signals.models.create_initial')
     @mock.patch('signals.apps.signals.models.update_reporter')
-    def test_update_reporter(self, patched_signal):
+    def test_update_reporter(self, patched_update_reporter, patched_create_initial):
         # Create a full signal (to be updated later)
         signal_data, location_data, status_data, category_data, reporter_data = self._get_signal_data()
 
@@ -170,6 +174,5 @@ class TestSignalManager(TestCase):
         self.assertNotEqual(original_reporter_pk, reporter.pk)
         self.assertEqual(Reporter.objects.count(), 2)
 
-        self.assertTrue(patched_signal.send.called_once())
-
- 
+        patched_update_reporter.send.assert_called_once_with(sender=Signal.actions.__class__,
+                                                             reporter=reporter)
