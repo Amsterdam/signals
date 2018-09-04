@@ -18,8 +18,7 @@ LOG = logging.getLogger()
 
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
-    if signal.reporter and signal.reporter.email and re.match(email_valid,
-                                                              signal.reporter.email):
+    if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
         return signal.reporter.email
     else:
         return None
@@ -72,16 +71,19 @@ def handle_create_signal(signal):
         )
 
 
-def handle_status_change(signal, previous_status):
+def handle_status_change(status, previous_status):
+    signal = status.signal
+
     LOG.info('Handling status change of signal')
     LOG.debug('Signal %s changed to state: %s from %s',
               str(signal.id),
               str(signal.status.state),
-              str(previous_status.state))
+              str(previous_status.state) if previous_status else '')
 
-    if signal.status.state in (AFGEHANDELD,) \
-            and previous_status.state not in (AFGEHANDELD,) \
-            and signal.category:
+    signal_is_afgehandeld = signal.status.state in (AFGEHANDELD, )
+    previous_signal_is_not_afgehandeld = (previous_status and
+                                          previous_status.state not in (AFGEHANDELD, ))
+    if signal_is_afgehandeld and previous_signal_is_not_afgehandeld and signal.category:
 
         LOG.debug('Rendering template')
         email = get_valid_email(signal)

@@ -35,18 +35,11 @@ class TestAuthAPIEndpoints(APITestCase):
     ]
 
     def setUp(self):
-        self.signal = factories.SignalFactory()
-
-        self.location = factories.LocationFactory(_signal=self.signal)
-        self.status = factories.StatusFactory(_signal=self.signal)
-        self.category = factories.CategoryFactory(_signal=self.signal)
-        self.reporter = factories.ReporterFactory(_signal=self.signal)
-
-        self.signal.location = self.location
-        self.signal.status = self.status
-        self.signal.category = self.category
-        self.signal.reporter = self.reporter
-        self.signal.save()
+        self.signal = factories.SignalFactory(id=1,
+                                              location__id=1,
+                                              status__id=1,
+                                              category__id=1,
+                                              reporter__id=1)
 
         # Forcing authentication
         superuser = SuperUserFacotry.create()
@@ -71,6 +64,13 @@ class TestAuthAPIEndpoints(APITestCase):
                              'text/html; charset=utf-8',
                              'Wrong Content-Type for {}'.format(url))
             self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
+
+    def test_get_detail(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1/'
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
 
     def test_delete_not_allowed(self):
         for endpoint in self.endpoints:

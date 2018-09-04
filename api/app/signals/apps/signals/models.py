@@ -2,6 +2,133 @@ import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.db import transaction
+from django.dispatch import Signal as DjangoSignal
+
+# Declaring custom Django signals for our `SignalManager`.
+create_initial = DjangoSignal(providing_args=['signal_obj'])
+update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
+update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
+update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
+update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
+
+
+class SignalManager(models.Manager):
+
+    def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
+        """Create a new `Signal` object with all related objects.
+
+        :param signal_data: deserialized data dict
+        :param location_data: deserialized data dict
+        :param status_data: deserialized data dict
+        :param category_data: deserialized data dict
+        :param reporter_data: deserialized data dict
+        :returns: Signal object
+        """
+        with transaction.atomic():
+            signal = self.create(**signal_data)
+
+            # Create dependent model instances with correct foreign keys to Signal
+            location = Location.objects.create(**location_data, _signal_id=signal.pk)
+            status = Status.objects.create(**status_data, _signal_id=signal.pk)
+            category = Category.objects.create(**category_data, _signal_id=signal.pk)
+            reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
+
+            # Set Signal to dependent model instance foreign keys
+            signal.location = location
+            signal.status = status
+            signal.category = category
+            signal.reporter = reporter
+
+            signal.save()
+
+            create_initial.send(sender=self.__class__, signal_obj=signal)
+
+        return signal
+
+    def update_location(self, data, signal):
+        """Update (create new) `Location` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Location object
+        """
+        with transaction.atomic():
+            prev_location = signal.location
+
+            location = Location.objects.create(**data, _signal_id=signal.id)
+            signal.location = location
+            signal.save()
+
+            update_location.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 location=location,
+                                 prev_location=prev_location)
+
+        return location
+
+    def update_status(self, data, signal):
+        """Update (create new) `Status` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Status object
+        """
+        with transaction.atomic():
+            prev_status = signal.status
+
+            status = Status.objects.create(**data, _signal_id=signal.id)
+            signal.status = status
+            signal.save()
+
+            update_status.send(sender=self.__class__,
+                               signal_obj=signal,
+                               status=status,
+                               prev_status=prev_status)
+
+        return status
+
+    def update_category(self, data, signal):
+        """Update (create new) `Category` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Category object
+        """
+        with transaction.atomic():
+            prev_category = signal.category
+
+            category = Category.objects.create(**data, _signal_id=signal.id)
+            signal.category = category
+            signal.save()
+
+            update_category.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 category=category,
+                                 prev_category=prev_category)
+
+        return category
+
+    def update_reporter(self, data, signal):
+        """Update (create new) `Reporter` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Reporter object
+        """
+        with transaction.atomic():
+            prev_reporter = signal.reporter
+
+            reporter = Reporter.objects.create(**data, _signal_id=signal.id)
+            signal.reporter = reporter
+            signal.save()
+
+            update_reporter.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 reporter=reporter,
+                                 prev_reporter=prev_reporter)
+
+        return reporter
 
 
 class Buurt(models.Model):
@@ -25,6 +152,7 @@ class Signal(models.Model):
             self.signal_id = uuid.uuid4()
 
     # we need an unique id for external systems.
+    # TODO SIG-563 rename `signal_id` to `signal_uuid` to be more specific.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=128, default='public-api')
 
@@ -72,6 +200,9 @@ class Signal(models.Model):
 
     extra_properties = JSONField(null=True)
 
+    objects = models.Manager()
+    actions = SignalManager()
+
     def __str__(self):
         """Identifying string.
         DO NOT expose sensitive stuff here.
@@ -113,7 +244,7 @@ class Location(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="signals",
+        "Signal", related_name="locations",
         null=False, on_delete=models.CASCADE
     )
 
@@ -257,11 +388,12 @@ class Status(models.Model):
     """
 
     _signal = models.ForeignKey(
-        "Signal", related_name="states",
+        "Signal", related_name="statuses",
         null=False, on_delete=models.CASCADE
     )
 
     text = models.CharField(max_length=10000, null=True, blank=True)
+    # TODO rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
 
     target_api = models.CharField(max_length=250, null=True, blank=True)
@@ -282,7 +414,7 @@ class Status(models.Model):
     extra_properties = JSONField(null=True)
 
     class Meta:
-        verbose_name_plural = "States"
+        verbose_name_plural = "Statuses"
         get_latest_by = "datetime"
 
     def __str__(self):

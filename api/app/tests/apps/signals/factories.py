@@ -6,7 +6,6 @@ from datetime import datetime
 import factory
 import pytz
 from django.contrib.gis.geos import Point
-from django.db.models.signals import post_save, pre_save
 from factory import fuzzy
 
 from signals.apps.signals.models import (
@@ -29,7 +28,6 @@ def get_puntje():
     return Point(float(lat), float(lon))
 
 
-@factory.django.mute_signals(pre_save, post_save)
 class SignalFactory(factory.DjangoModelFactory):
 
     class Meta:

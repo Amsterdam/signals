@@ -22,18 +22,18 @@ from signals.apps.signals.permissions import (
     StatusPermission
 )
 from signals.apps.signals.serializers import (
-    CategorySerializer,
-    LocationSerializer,
-    SignalAuthSerializer,
+    CategoryHALSerializer,
+    LocationHALSerializer,
+    SignalAuthHALSerializer,
     SignalCreateSerializer,
-    SignalStatusOnlySerializer,
+    SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
-    StatusSerializer
+    StatusHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger()
 
 
 # TODO SIG-520 this should be a `action` on the SignalView (set).
@@ -94,7 +94,7 @@ class SignalViewSet(mixins.CreateModelMixin,
         throttle_classes = (NoUserRateThrottle,)
 
     queryset = Signal.objects.all()
-    serializer_detail_class = SignalStatusOnlySerializer
+    serializer_detail_class = SignalStatusOnlyHALSerializer
     serializer_class = SignalCreateSerializer
     pagination_class = None
     lookup_field = 'signal_id'
@@ -111,8 +111,8 @@ class SignalAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
         .select_related('reporter')
         .order_by('-id')
     )
-    serializer_detail_class = SignalAuthSerializer
-    serializer_class = SignalAuthSerializer
+    serializer_detail_class = SignalAuthHALSerializer
+    serializer_class = SignalAuthHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = SignalFilter
 
@@ -121,8 +121,8 @@ class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (LocationPermission, )
     queryset = Location.objects.all().order_by('created_at').prefetch_related('signal')
-    serializer_detail_class = LocationSerializer
-    serializer_class = LocationSerializer
+    serializer_detail_class = LocationHALSerializer
+    serializer_class = LocationHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = LocationFilter
 
@@ -131,8 +131,8 @@ class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (StatusPermission, )
     queryset = Status.objects.all().order_by('created_at')
-    serializer_detail_class = StatusSerializer
-    serializer_class = StatusSerializer
+    serializer_detail_class = StatusHALSerializer
+    serializer_class = StatusHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_class = StatusFilter
 
@@ -141,7 +141,7 @@ class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (CategoryPermission, )
     queryset = Category.objects.all().order_by('id').prefetch_related('signal')
-    serializer_detail_class = CategorySerializer
-    serializer_class = CategorySerializer
+    serializer_detail_class = CategoryHALSerializer
+    serializer_class = CategoryHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ['main', 'sub']
