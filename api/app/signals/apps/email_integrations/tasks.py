@@ -1,6 +1,6 @@
 from signals.celery import app
 
-from signals.apps.email_integrations import apptimize, default, flex_horeca
+from signals.apps.email_integrations.integrations import apptimize, flex_horeca, default
 
 
 @app.task
