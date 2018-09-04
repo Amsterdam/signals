@@ -16,6 +16,15 @@ update_reporter = DjangoSignal(providing_args=['reporter'])
 class SignalManager(models.Manager):
 
     def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
+        """Create a new `Signal` object with all related objects.
+
+        :param signal_data: deserialized data dict
+        :param location_data: deserialized data dict
+        :param status_data: deserialized data dict
+        :param category_data: deserialized data dict
+        :param reporter_data: deserialized data dict
+        :returns: Signal object
+        """
         with transaction.atomic():
             signal = self.create(**signal_data)
 
@@ -38,6 +47,12 @@ class SignalManager(models.Manager):
         return signal
 
     def update_location(self, data, signal):
+        """Update (create new) `Location` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Location object
+        """
         with transaction.atomic():
             location = Location.objects.create(**data, _signal_id=signal.id)
             signal.location = location
@@ -48,6 +63,12 @@ class SignalManager(models.Manager):
         return location
 
     def update_status(self, data, signal):
+        """Update (create new) `Status` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Status object
+        """
         with transaction.atomic():
             status = Status.objects.create(**data, _signal_id=signal.id)
             signal.status = status
@@ -58,6 +79,12 @@ class SignalManager(models.Manager):
         return status
 
     def update_category(self, data, signal):
+        """Update (create new) `Category` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Category object
+        """
         with transaction.atomic():
             category = Category.objects.create(**data, _signal_id=signal.id)
             signal.category = category
@@ -68,6 +95,12 @@ class SignalManager(models.Manager):
         return category
 
     def update_reporter(self, data, signal):
+        """Update (create new) `Reporter` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Reporter object
+        """
         with transaction.atomic():
             reporter = Reporter.objects.create(**data, _signal_id=signal.id)
             signal.reporter = reporter
@@ -340,6 +373,7 @@ class Status(models.Model):
     )
 
     text = models.CharField(max_length=10000, null=True, blank=True)
+    # TODO rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
 
     target_api = models.CharField(max_length=250, null=True, blank=True)
