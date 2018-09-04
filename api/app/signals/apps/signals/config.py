@@ -7,4 +7,4 @@ class SignalsConfig(AppConfig):
 
     def ready(self):
         # Import Django signals to connect receiver functions.
-        import signals.apps.signals.django_signals  # noqa
+        import signals.apps.signals.signal_receivers  # noqa
