@@ -110,7 +110,6 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
-            '_signal': {'required': False},  # TODO is this needed?
         }
 
 
@@ -124,9 +123,6 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'department',
             'priority',
         )
-        extra_kwargs = {
-            '_signal': {'required': False},  # TODO is this needed?
-        }
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
