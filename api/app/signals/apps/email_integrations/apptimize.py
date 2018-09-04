@@ -5,14 +5,12 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from signals.apps.signals.models import Signal
-from signals.celery import app
 
 logger = logging.getLogger(__name__)
 
 
-@app.task
-def send_mail_apptimize(pk: int):
-    """Send email to Apptimize when applicable.
+def send_mail(pk: int):
+    """Send e-mail to Apptimize when applicable.
 
     :param pk: Signal object id
     :returns:

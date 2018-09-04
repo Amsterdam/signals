@@ -1,11 +1,6 @@
 import logging
 from typing import Optional
 
-from django.conf import settings
-from django.core.mail import send_mail
-from django.template import loader
-from django.utils import timezone
-
 from signals.apps.signals.models import Signal
 from signals.celery import app
 from signals.integrations.sigmax import handler as sigmax
