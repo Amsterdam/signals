@@ -152,7 +152,7 @@ class Signal(models.Model):
             self.signal_id = uuid.uuid4()
 
     # we need an unique id for external systems.
-    # TODO rename `signal_id` to `signal_uuid` to be more specific.
+    # TODO SIG-563 rename `signal_id` to `signal_uuid` to be more specific.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=128, default='public-api')
 
