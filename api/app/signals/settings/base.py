@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     # 'rest_framework_swagger',
     'storages',
 
-    # Project
+    # Signals project
+    'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
     'signals.apps.users',
