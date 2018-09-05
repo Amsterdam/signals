@@ -71,20 +71,20 @@ class TestTasks(TestCase):
 
         mocked_flex_horeca.send_mail.assert_not_called()
 
-    @mock.patch('signals.apps.email_integrations.tasks.handhaving_or', autospec=True)
-    def test_send_mail_handhaving_or(self, mocked_handhaving_or):
+    @mock.patch('signals.apps.email_integrations.tasks.handhaving_or_oost', autospec=True)
+    def test_send_mail_handhaving_or(self, mocked_handhaving_or_oost):
         signal = SignalFactory.create()
 
-        tasks.send_mail_handhaving_or(pk=signal.id)
+        tasks.send_mail_handhaving_or_oost(pk=signal.id)
 
-        mocked_handhaving_or.send_mail.assert_called_once_with(signal)
+        mocked_handhaving_or_oost.send_mail.assert_called_once_with(signal)
 
-    @mock.patch('signals.apps.email_integrations.tasks.handhaving_or', autospec=True)
-    def test_send_mail_handhaving_or_signal_not_found(self, mocked_handhaving_or):
+    @mock.patch('signals.apps.email_integrations.tasks.handhaving_or_oost', autospec=True)
+    def test_send_mail_handhaving_or_signal_not_found(self, mocked_handhaving_or_oost):
         with self.assertRaises(Signal.DoesNotExist):
-            tasks.send_mail_handhaving_or(pk=999)
+            tasks.send_mail_handhaving_or_oost(pk=999)
 
-        mocked_handhaving_or.send_mail.assert_not_called()
+        mocked_handhaving_or_oost.send_mail.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.vth_nieuw_west', autospec=True)
     def test_send_mail_vth_nieuw_west(self, mocked_vth_nieuw_west):

@@ -21,7 +21,7 @@ def send_mail(signal: Signal) -> int:
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_HANDHAVING_OR_INTEGRATION_ADDRESS, ))
+            recipient_list=(settings.EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS, ))
 
     return 0
 
