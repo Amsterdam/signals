@@ -4,7 +4,8 @@ from signals.apps.email_integrations.integrations import (
     apptimize,
     flex_horeca,
     default,
-    handhaving_or
+    handhaving_or,
+    vth_nieuw_west
 )
 from signals.apps.signals.models import Signal, Status
 
@@ -39,3 +40,8 @@ def send_mail_handhaving_or(pk):
     signal = Signal.objects.get(pk=pk)
     handhaving_or.send_mail(signal)
 
+
+@app.task
+def send_mail_vth_nieuw_west(pk):
+    signal = Signal.objects.get(pk=pk)
+    vth_nieuw_west.send_mail(signal)
