@@ -38,7 +38,7 @@ def is_signal_applicable(signal: Signal) -> bool:
     :param signal: Signal object
     :returns: bool
     """
-    today = timezone.now()
+    today = timezone.localtime(timezone.now())  # Current datetime in the Netherlands
     weekday = today.isoweekday()
     is_friday_or_saterday = weekday == 5 or weekday == 6
     if not is_friday_or_saterday:
