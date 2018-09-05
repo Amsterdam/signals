@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from unittest import mock
 
 from django.test import TestCase
@@ -7,7 +7,7 @@ from freezegun import freeze_time
 
 from signals.apps.email_integrations.utils import (
     create_default_notification_message,
-    is_now_business_hour
+    is_business_hour
 )
 from tests.apps.signals.factories import SignalFactory
 
@@ -37,33 +37,15 @@ class TestUtils(TestCase):
         mocked_loader.get_template.assert_called_once_with('email/default_notification_message.txt')
         mocked_template.render.assert_called_once_with({'signal': signal})
 
-    def test_is_now_business_hour(self):
-        utcoffset = timezone.localtime(timezone.now()).utcoffset()
-        time_0859 = datetime(2018, 9, 5, 8, 59) - utcoffset
-        time_0900 = datetime(2018, 9, 5, 9, 0) - utcoffset
-        time_0901 = datetime(2018, 9, 5, 9, 1) - utcoffset
-        time_1433 = datetime(2018, 9, 5, 14, 33) - utcoffset
-        time_1659 = datetime(2018, 9, 5, 16, 59) - utcoffset
-        time_1700 = datetime(2018, 9, 5, 17, 0) - utcoffset
-        time_1701 = datetime(2018, 9, 5, 17, 1) - utcoffset
-        time_0023 = datetime(2018, 9, 5, 0, 23) - utcoffset
+    def test_is_business_hour(self):
+        # Assertion for is business hour.
+        self.assertEqual(is_business_hour(time(9, 0)), True)
+        self.assertEqual(is_business_hour(time(9, 1)), True)
+        self.assertEqual(is_business_hour(time(14, 33)), True)
+        self.assertEqual(is_business_hour(time(16, 59)), True)
+        self.assertEqual(is_business_hour(time(17, 00)), True)
 
-        # Assertion for now is business hour.
-        with freeze_time(time_0900):
-            self.assertEqual(is_now_business_hour(), True, 'Time: 09:00:00')
-        with freeze_time(time_0901):
-            self.assertEqual(is_now_business_hour(), True, 'Time: 09:01:00')
-        with freeze_time(time_1433):
-            self.assertEqual(is_now_business_hour(), True, 'Time: 14:33:00')
-        with freeze_time(time_1659):
-            self.assertEqual(is_now_business_hour(), True, 'Time: 16:59:00')
-        with freeze_time(time_1700):
-            self.assertEqual(is_now_business_hour(), True, 'Time: 17:00:00')
-
-        # Assertion for now is not business hour.
-        with freeze_time(time_0859):
-            self.assertEqual(is_now_business_hour(), False, 'Time: 08:59:00')
-        with freeze_time(time_1701):
-            self.assertEqual(is_now_business_hour(), False, 'Time: 17:01:00')
-        with freeze_time(time_0023):
-            self.assertEqual(is_now_business_hour(), False, 'Time: 00:23:00')
+        # Assertion for is not business hour.
+        self.assertEqual(is_business_hour(time(8, 59)), False)
+        self.assertEqual(is_business_hour(time(17, 1)), False)
+        self.assertEqual(is_business_hour(time(0, 23)), False)
