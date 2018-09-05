@@ -14,13 +14,7 @@ from unittest import mock
 from django.conf import settings
 from django.test import TestCase
 
-from signals.apps.signals.models import (
-    Category,
-    Location,
-    Reporter,
-    Signal,
-    Status
-)
+from signals.apps.signals.models import Category, Location, Reporter, Signal, Status
 from signals.apps.signals.serializers import SignalCreateSerializer
 
 
