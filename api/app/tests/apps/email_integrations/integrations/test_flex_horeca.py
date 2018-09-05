@@ -31,9 +31,9 @@ class TestIntegrationFlexHoreca(TestCase):
         signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
                                       category__sub='Geluidsoverlast muziek')
 
-        number_of_message = flex_horeca.send_mail(signal)
+        number_of_messages = flex_horeca.send_mail(signal)
 
-        self.assertEqual(number_of_message, 1)
+        self.assertEqual(number_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Nieuwe melding op meldingen.amsterdam.nl')
 

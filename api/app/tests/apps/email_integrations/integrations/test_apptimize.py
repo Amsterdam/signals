@@ -2,6 +2,7 @@ import json
 from unittest import mock
 
 from django.conf import settings
+from django.core import mail
 from django.test import TestCase, override_settings
 
 from signals.apps.email_integrations.integrations import apptimize
@@ -33,10 +34,22 @@ from tests.apps.signals.factories import SignalFactory
 )
 class TestIntegrationApptimize(TestCase):
 
+    def test_send_mail_integration_test(self):
+        """Integration test for `send_mail` function."""
+        signal = SignalFactory.create(category__main='Openbaar groen en water',
+                                      category__sub='Boom')
+
+        number_of_messages = apptimize.send_mail(signal)
+
+        self.assertEqual(number_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Nieuwe melding op meldingen.amsterdam.nl')
+
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail',
+                return_value=1, autospec=True)
     @mock.patch('signals.apps.email_integrations.integrations.apptimize.is_signal_applicable',
                 return_value=True, autospec=True)
-    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail')
-    def test_send_mail(self, mocked_django_send_mail, mocked_is_signal_applicable):
+    def test_send_mail(self, mocked_is_signal_applicable, mocked_django_send_mail):
         signal = SignalFactory.create()
         message = json.dumps({
             'mora_nummer': signal.id,
@@ -53,24 +66,26 @@ class TestIntegrationApptimize(TestCase):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        apptimize.send_mail(signal)
+        number_of_messages = apptimize.send_mail(signal)
 
+        self.assertEqual(number_of_messages, 1)
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_django_send_mail.assert_called_once_with(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
-            fail_silently=False)
+            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ))
 
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail',
+                autospec=True)
     @mock.patch('signals.apps.email_integrations.integrations.apptimize.is_signal_applicable',
                 return_value=False, autospec=True)
-    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail')
-    def test_send_mail_not_applicable(self, mocked_django_send_mail, mocked_is_signal_applicable):
+    def test_send_mail_not_applicable(self, mocked_is_signal_applicable, mocked_django_send_mail):
         signal = SignalFactory.create()
 
-        apptimize.send_mail(signal)
+        number_of_messages = apptimize.send_mail(signal)
 
+        self.assertEqual(number_of_messages, 0)
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_django_send_mail.assert_not_called()
 

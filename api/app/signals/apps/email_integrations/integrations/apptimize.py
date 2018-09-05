@@ -6,11 +6,11 @@ from django.core.mail import send_mail as django_send_mail
 from signals.apps.signals.models import Signal
 
 
-def send_mail(signal: Signal):
+def send_mail(signal: Signal) -> int:
     """Send e-mail to Apptimize when applicable.
 
     :param signal: Signal object
-    :returns:
+    :returns: number of successfully send messages
     """
     if is_signal_applicable(signal):
         message = json.dumps({
@@ -28,12 +28,13 @@ def send_mail(signal: Signal):
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
 
-        django_send_mail(
+        return django_send_mail(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
-            fail_silently=False)
+            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ))
+
+    return 0
 
 
 def is_signal_applicable(signal: Signal) -> bool:
