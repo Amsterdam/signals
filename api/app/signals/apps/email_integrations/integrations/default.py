@@ -35,7 +35,7 @@ def get_incident_date_string(dt):
 #       the e-mail till the image has been uploaded. Then there has to be
 #       some kind of delay after creating the the signal before sending the
 #       e-mail
-def handle_create_signal(signal):
+def send_mail_reporter(signal):
     LOG.info('Handling create signal')
     email = get_valid_email(signal)
     LOG.debug('Valid email: ' + str(email))
@@ -71,7 +71,7 @@ def handle_create_signal(signal):
         )
 
 
-def handle_status_change(status, previous_status):
+def send_mail_status_change(status, previous_status):
     signal = status.signal
 
     LOG.info('Handling status change of signal')
