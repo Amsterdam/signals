@@ -1,0 +1,103 @@
+from unittest import mock
+
+from django.conf import settings
+from django.core import mail
+from django.test import TestCase, override_settings
+
+from signals.apps.email_integrations.integrations import handhaving_or
+from signals.apps.signals.models import STADSDEEL_OOST, STADSDEEL_NOORD
+from tests.apps.signals.factories import SignalFactory
+
+
+@override_settings(
+    EMAIL_HANDHAVING_OR_INTEGRATION_ADDRESS='test@test.com',
+    SUB_CATEGORIES_DICT={
+        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
+        'Overlast in de openbare ruimte': (
+            ('F29', 'Overlast in de openbare ruimte', 'Parkeeroverlast', 'A3DMC', 'CCA,ASC,THO'),
+            ('F30', 'Overlast in de openbare ruimte', 'Fietswrak', 'A3WMC', 'CCA,ASC,STW,THO'),
+            ('F31', 'Overlast in de openbare ruimte', 'Stank- / geluidsoverlast', 'A3WMC',
+             'CCA,ASC,THO,VTH'),
+            # ...
+        ),
+    }
+)
+class TestIntegrationHandhavingOR(TestCase):
+
+    def test_send_mail_integration_test(self):
+        """Integration test for `send_mail` function."""
+        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
+                                      category__sub='Parkeeroverlast',
+                                      location__stadsdeel=STADSDEEL_OOST)
+
+        number_of_messages = handhaving_or.send_mail(signal)
+
+        self.assertEqual(number_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Nieuwe melding op meldingen.amsterdam.nl')
+
+    @mock.patch('signals.apps.email_integrations.integrations.handhaving_or.django_send_mail',
+                return_value=1, autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.handhaving_or.'
+                'create_default_notification_message', autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.handhaving_or.is_signal_applicable',
+                return_value=True, autospec=True)
+    def test_send_mail(
+            self,
+            mocked_is_signal_applicable,
+            mocked_create_default_notification_message,
+            mocked_django_send_mail):
+        # Setting up mocked notification message.
+        mocked_message = mock.Mock()
+        mocked_create_default_notification_message.return_value = mocked_message
+
+        signal = SignalFactory.create()
+        number_of_messages = handhaving_or.send_mail(signal)
+
+        self.assertEqual(number_of_messages, 1)
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_called_once_with(
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
+            message=mocked_message,
+            from_email=settings.NOREPLY,
+            recipient_list=(settings.EMAIL_HANDHAVING_OR_INTEGRATION_ADDRESS, ))
+
+    @mock.patch('signals.apps.email_integrations.integrations.handhaving_or.django_send_mail',
+                autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.handhaving_or.is_signal_applicable',
+                return_value=False, autospec=True)
+    def test_send_mail_not_applicable(self, mocked_is_signal_applicable, mocked_django_send_mail):
+        signal = SignalFactory.create()
+
+        number_of_messages = handhaving_or.send_mail(signal)
+
+        self.assertEqual(number_of_messages, 0)
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_not_called()
+
+    def test_is_signal_applicable_in_category_in_stadsdeel_oost(self):
+        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
+                                      category__sub='Fietswrak',
+                                      location__stadsdeel=STADSDEEL_OOST)
+
+        result = handhaving_or.is_signal_applicable(signal)
+
+        self.assertEqual(result, True)
+
+    def test_is_signal_applicable_outside_category_in_stadsdeel_oost(self):
+        signal = SignalFactory.create(category__main='Some other main category',
+                                      category__sub='Some other sub category',
+                                      location__stadsdeel=STADSDEEL_OOST)
+
+        result = handhaving_or.is_signal_applicable(signal)
+
+        self.assertEqual(result, False)
+
+    def test_is_signal_applicable_in_category_outside_stadsdeel(self):
+        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
+                                      category__sub='Fietswrak',
+                                      location__stadsdeel=STADSDEEL_NOORD)
+
+        result = handhaving_or.is_signal_applicable(signal)
+
+        self.assertEqual(result, False)
