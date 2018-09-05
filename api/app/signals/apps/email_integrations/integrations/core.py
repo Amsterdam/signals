@@ -1,5 +1,5 @@
 """
-E-mail integration for 'default' Signal actions.
+E-mail integration for 'core' Signal behaviour.
 """
 import logging
 import re
@@ -59,7 +59,7 @@ def send_mail_reporter(signal):
 
         if signal.reporter.phone:
             context['phone'] = signal.reporter.phone
-        template = loader.get_template('templates/email/melding_bevestiging.txt')
+        template = loader.get_template('email/melding_bevestiging.txt')
         body = template.render(context)
         subject = f"Bedankt voor uw melding ({signal.id})"
         to = signal.reporter.email

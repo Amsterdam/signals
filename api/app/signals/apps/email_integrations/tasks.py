@@ -3,7 +3,7 @@ from signals.celery import app
 from signals.apps.email_integrations.integrations import (
     apptimize,
     flex_horeca,
-    default,
+    core,
     handhaving_or_oost,
     toezicht_or_nieuw_west,
     vth_nieuw_west
@@ -14,14 +14,14 @@ from signals.apps.signals.models import Signal, Status
 @app.task
 def send_mail_reporter(pk):
     signal = Signal.objects.get(pk=pk)
-    default.send_mail_reporter(signal)
+    core.send_mail_reporter(signal)
 
 
 @app.task
 def send_mail_status_change(status_pk, prev_status_pk):
     status = Status.objects.get(pk=status_pk)
     prev_status = Status.objects.get(pk=prev_status_pk)
-    default.send_mail_status_change(status, prev_status)
+    core.send_mail_status_change(status, prev_status)
 
 
 @app.task
