@@ -1,25 +1,48 @@
 from unittest import mock
 
 from django.conf import settings
-from django.test import TestCase
+from django.core import mail
+from django.test import TestCase, override_settings
 from freezegun import freeze_time
 
-from signals.apps.signals import tasks
+from signals.apps.email_integrations.integrations import flex_horeca
 from tests.apps.signals.factories import SignalFactory
 
 
-class TestTaskSendMailFlexHoreca(TestCase):
+@override_settings(
+    EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS='test@test.com',
+    SUB_CATEGORIES_DICT={
+        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
+        'Overlast Bedrijven en Horeca': (
+            ('F63', 'Overlast Bedrijven en Horeca', 'Geluidsoverlast muziek', 'I5DMC',
+             'CCA,ASC,VTH'),
+            ('F64', 'Overlast Bedrijven en Horeca', 'Geluidsoverlast installaties', 'I5DMC',
+             'CCA,ASC,VTH'),
+            ('F65', 'Overlast Bedrijven en Horeca', 'Overlast terrassen', 'I5DMC', 'CCA,ASC,VTH'),
+            # ...
+        ),
+    }
+)
+class TestIntegrationFlexHoreca(TestCase):
 
-    @mock.patch('signals.apps.signals.tasks.send_mail')
-    @mock.patch('signals.apps.signals.tasks.loader')
-    @mock.patch('signals.apps.signals.tasks.'
-                '_is_signal_applicable_for_flex_horeca',
-                return_value=True)
-    def test_send_mail_flex_horeca(
-            self,
-            mocked_is_signal_applicable_for_flex_horeca,
-            mocked_loader,
-            mocked_send_mail):
+    @freeze_time('2018-08-03')  # Friday
+    def test_send_mail_integration_test(self):
+        """Integration test for `send_mail` function."""
+        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
+                                      category__sub='Geluidsoverlast muziek')
+
+        number_of_message = flex_horeca.send_mail(signal)
+
+        self.assertEqual(number_of_message, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Nieuwe melding op meldingen.amsterdam.nl')
+
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.django_send_mail',
+                return_value=1, autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.loader', autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.is_signal_applicable',
+                return_value=True, autospec=True)
+    def test_send_mail(self, mocked_is_signal_applicable, mocked_loader, mocked_django_send_mail):
         # Setting up template mocking.
         mocked_rendered_template = mock.Mock()
         mocked_template = mock.Mock()
@@ -28,89 +51,65 @@ class TestTaskSendMailFlexHoreca(TestCase):
 
         # Creating a `Signal` object to use for sending mail to Flex Horeca.
         signal = SignalFactory.create()
-        tasks.send_mail_flex_horeca(pk=signal.id)
+        number_of_messages = flex_horeca.send_mail(signal)
 
         # Asserting all correct function calls.
-        mocked_loader.get_template.assert_called_once_with(
-            'mail_flex_horeca.txt')
+        mocked_loader.get_template.assert_called_once_with('email/flex_horeca.txt')
         mocked_template.render.assert_called_once_with({'signal': signal})
 
-        mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
-            signal)
-        mocked_send_mail.assert_called_once_with(
+        self.assertEqual(number_of_messages, 1)
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_called_once_with(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=mocked_rendered_template,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
-            fail_silently=False)
+            recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS, ))
 
-    @mock.patch('signals.apps.signals.tasks.send_mail')
-    @mock.patch('signals.apps.signals.tasks.log')
-    def test_send_mail_flex_horeca_no_signal_found(
-            self, mocked_log, mocked_send_mail):
-        tasks.send_mail_flex_horeca(pk=1)  # id `1` shouldn't be found.
-
-        mocked_log.exception.assert_called_once()
-        mocked_send_mail.assert_not_called()
-
-    @mock.patch('signals.apps.signals.tasks.send_mail')
-    @mock.patch('signals.apps.signals.tasks.'
-                '_is_signal_applicable_for_flex_horeca',
-                return_value=False)
-    def test_send_mail_flex_horeca_not_applicable(
-            self,
-            mocked_is_signal_applicable_for_flex_horeca,
-            mocked_send_mail):
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.django_send_mail',
+                autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.is_signal_applicable',
+                return_value=False, autospec=True)
+    def test_send_mail_not_applicable(self, mocked_is_signal_applicable, mocked_django_send_mail):
         signal = SignalFactory.create()
 
-        tasks.send_mail_flex_horeca(pk=signal.id)
+        number_of_messages = flex_horeca.send_mail(signal)
 
-        mocked_is_signal_applicable_for_flex_horeca.assert_called_once_with(
-            signal)
-        mocked_send_mail.assert_not_called()
-
-
-class TestHelperIsSignalApplicableForFlexHoreca(TestCase):
+        self.assertEqual(number_of_messages, 0)
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_not_called()
 
     @freeze_time('2018-08-03')  # Friday
-    def test_is_signal_applicable_for_flex_horeca_in_category_on_friday(self):
-        signal = SignalFactory.create(
-            category__main='Overlast Bedrijven en Horeca',
-            category__sub='Geluidsoverlast muziek')
+    def test_is_signal_applicable_in_category_on_friday(self):
+        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
+                                      category__sub='Geluidsoverlast muziek')
 
-        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+        result = flex_horeca.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
     @freeze_time('2018-08-04')  # Saterday
-    def test_is_signal_applicable_for_flex_horeca_in_category_on_saterday(
-            self):
-        signal = SignalFactory.create(
-            category__main='Overlast Bedrijven en Horeca',
-            category__sub='Geluidsoverlast muziek')
+    def test_is_signal_applicable_in_category_on_saterday(self):
+        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
+                                      category__sub='Geluidsoverlast muziek')
 
-        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+        result = flex_horeca.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
     @freeze_time('2018-08-03')  # Friday
-    def test_is_signal_applicable_for_flex_horeca_outside_category_on_friday(
-            self):
-        signal = SignalFactory.create(
-            category__main='Some other main category',
-            category__sub='Some other sub category')
+    def test_is_signal_applicable_outside_category_on_friday(self):
+        signal = SignalFactory.create(category__main='Some other main category',
+                                      category__sub='Some other sub category')
 
-        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+        result = flex_horeca.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
 
     @freeze_time('2018-08-05')  # Sunday
-    def test_is_signal_applicable_for_flex_horeca_in_category_on_sunday(
-            self):
-        signal = SignalFactory.create(
-            category__main='Overlast Bedrijven en Horeca',
-            category__sub='Geluidsoverlast muziek')
+    def test_is_signal_applicable_in_category_on_sunday(self):
+        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
+                                      category__sub='Geluidsoverlast muziek')
 
-        result = tasks._is_signal_applicable_for_flex_horeca(signal)
+        result = flex_horeca.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
