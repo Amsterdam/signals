@@ -5,6 +5,7 @@ from signals.apps.email_integrations.integrations import (
     flex_horeca,
     default,
     handhaving_or_oost,
+    toezicht_or_nieuw_west,
     vth_nieuw_west
 )
 from signals.apps.signals.models import Signal, Status
@@ -39,6 +40,12 @@ def send_mail_flex_horeca(pk):
 def send_mail_handhaving_or_oost(pk):
     signal = Signal.objects.get(pk=pk)
     handhaving_or_oost.send_mail(signal)
+
+
+@app.task
+def send_mail_toezicht_or_nieuw_west(pk):
+    signal = Signal.objects.get(pk=pk)
+    toezicht_or_nieuw_west.send_mail(signal)
 
 
 @app.task

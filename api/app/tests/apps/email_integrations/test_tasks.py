@@ -72,7 +72,7 @@ class TestTasks(TestCase):
         mocked_flex_horeca.send_mail.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.handhaving_or_oost', autospec=True)
-    def test_send_mail_handhaving_or(self, mocked_handhaving_or_oost):
+    def test_send_mail_handhaving_or_oost(self, mocked_handhaving_or_oost):
         signal = SignalFactory.create()
 
         tasks.send_mail_handhaving_or_oost(pk=signal.id)
@@ -80,11 +80,26 @@ class TestTasks(TestCase):
         mocked_handhaving_or_oost.send_mail.assert_called_once_with(signal)
 
     @mock.patch('signals.apps.email_integrations.tasks.handhaving_or_oost', autospec=True)
-    def test_send_mail_handhaving_or_signal_not_found(self, mocked_handhaving_or_oost):
+    def test_send_mail_handhaving_or_oost_signal_not_found(self, mocked_handhaving_or_oost):
         with self.assertRaises(Signal.DoesNotExist):
             tasks.send_mail_handhaving_or_oost(pk=999)
 
         mocked_handhaving_or_oost.send_mail.assert_not_called()
+
+    @mock.patch('signals.apps.email_integrations.tasks.toezicht_or_nieuw_west', autospec=True)
+    def test_send_mail_toezicht_or_nieuw_west(self, mocked_toezicht_or_nieuw_west):
+        signal = SignalFactory.create()
+
+        tasks.send_mail_toezicht_or_nieuw_west(pk=signal.id)
+
+        mocked_toezicht_or_nieuw_west.send_mail.assert_called_once_with(signal)
+
+    @mock.patch('signals.apps.email_integrations.tasks.toezicht_or_nieuw_west', autospec=True)
+    def test_send_mail_toezicht_or_nieuw_west_signal_not_found(self, mocked_toezicht_or_nieuw_west):
+        with self.assertRaises(Signal.DoesNotExist):
+            tasks.send_mail_toezicht_or_nieuw_west(pk=999)
+
+        mocked_toezicht_or_nieuw_west.send_mail.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.vth_nieuw_west', autospec=True)
     def test_send_mail_vth_nieuw_west(self, mocked_vth_nieuw_west):
