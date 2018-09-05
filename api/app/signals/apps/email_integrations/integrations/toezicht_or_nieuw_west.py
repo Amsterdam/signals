@@ -1,5 +1,5 @@
 """
-E-mail integration for VTH Nieuw West.
+E-mail integration for Toezicht openbare ruimte Nieuw west.
 """
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
@@ -9,7 +9,7 @@ from signals.apps.signals.models import Signal, STADSDEEL_NIEUWWEST
 
 
 def send_mail(signal: Signal) -> int:
-    """Send e-mail to VTH Nieuw West when applicable.
+    """Send e-mail to Toezicht openbare ruimte Nieuw west when applicable.
 
     :param signal: Signal object
     :returns: number of successfully send messages
@@ -21,13 +21,13 @@ def send_mail(signal: Signal) -> int:
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=message,
             from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS, ))
+            recipient_list=(settings.EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS, ))
 
     return 0
 
 
 def is_signal_applicable(signal: Signal) -> bool:
-    """Is given `Signal` applicable for VTH Nieuw West.
+    """Is given `Signal` applicable for Toezicht openbare ruimte Nieuw west.
 
     TODO SIG-409 refactor categories.
 
@@ -37,13 +37,17 @@ def is_signal_applicable(signal: Signal) -> bool:
     if signal.location.stadsdeel != STADSDEEL_NIEUWWEST:
         return False
 
-    eligible_main_category = 'Overlast Bedrijven en Horeca'
+    eligible_main_category = 'Overlast in de openbare ruimte'
     eligible_sub_categories = (
-        'Geluidsoverlast muziek',
-        'Geluidsoverlast installaties',
-        'Overlast terrassen',
-        'Stankoverlast',
-        'Overlast door bezoekers (niet op terras)',
+        'Parkeeroverlast',
+        'Fietswrak',
+        'Stank- / geluidsoverlast',
+        'Bouw- / sloopoverlast',
+        'Auto- / scooter- / bromfiets(wrak)',
+        'Graffiti / wildplak',
+        'Honden(poep)',
+        'Hinderlijk geplaatst object',
+        'Deelfiets',
     )
     is_applicable = (
         signal.category.main == eligible_main_category and

@@ -54,4 +54,3 @@ def is_signal_applicable(signal: Signal) -> bool:
         signal.category.sub in eligible_sub_categories)
 
     return is_applicable
-
