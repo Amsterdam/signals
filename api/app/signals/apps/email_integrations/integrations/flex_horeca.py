@@ -32,6 +32,11 @@ def is_signal_applicable(signal: Signal) -> bool:
     Flex Horeca Team can't check the Signals Dashboard on friday and saterday. That's why we send
     them an e-mail notification on these days for new `Signal` objects that are created.
 
+    TODO SIG-409 refactor categories.
+    Note, this logic isn't tenable anymore.. The concept `categories` needs
+    to be refactored soon. Take a look at `signals.messaging.categories` as
+    well.
+
     :param signal: Signal object
     :returns: bool
     """
