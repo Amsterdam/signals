@@ -1,34 +1,45 @@
 import json
-import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail as django_send_mail
 
 from signals.apps.signals.models import Signal
 
-logger = logging.getLogger(__name__)
 
-
-def send_mail(pk: int):
+def send_mail(signal: Signal):
     """Send e-mail to Apptimize when applicable.
 
-    :param pk: Signal object id
+    :param signal: Signal object
     :returns:
     """
-    try:
-        signal = Signal.objects.get(id=pk)
-    except Signal.DoesNotExist as e:
-        logger.exception(str(e))
-        # TODO raise celery failed
-        return None
+    if is_signal_applicable(signal):
+        message = json.dumps({
+            'mora_nummer': signal.id,
+            'signal_id': signal.signal_id,
+            'tijdstip': signal.incident_date_start,
+            'email_melder': signal.reporter.email,
+            'telefoonnummer_melder': signal.reporter.phone,
+            'adres': signal.location.address,
+            'stadsdeel': signal.location.stadsdeel,
+            'categorie': {
+                'hoofdrubriek': signal.category.main,
+                'subrubriek': signal.category.sub,
+            },
+            'omschrijving': signal.text,
+        }, indent=4, sort_keys=True, default=str)
 
-    if signal and is_signal_applicable(signal):
-        handle(signal)
+        django_send_mail(
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
+            message=message,
+            from_email=settings.NOREPLY,
+            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
+            fail_silently=False)
 
 
-def is_signal_applicable(signal: Signal):
+def is_signal_applicable(signal: Signal) -> bool:
     """Is given `Signal` applicable for Apptimize.
 
+    TODO SIG-409 refactor categories.
     Note, this logic isn't tenable anymore.. The concept `categories` needs
     to be refactored soon. Take a look at `signals.messaging.categories` as
     well.
@@ -54,27 +65,3 @@ def is_signal_applicable(signal: Signal):
             and signal.category.sub in eligible_sub_categories)
 
     return is_applicable_for_apptimize
-
-
-def handle(signal: Signal) -> None:
-    message = json.dumps({
-        'mora_nummer': signal.id,
-        'signal_id': signal.signal_id,
-        'tijdstip': signal.incident_date_start,
-        'email_melder': signal.reporter.email,
-        'telefoonnummer_melder': signal.reporter.phone,
-        'adres': signal.location.address,
-        'stadsdeel': signal.location.stadsdeel,
-        'categorie': {
-            'hoofdrubriek': signal.category.main,
-            'subrubriek': signal.category.sub,
-        },
-        'omschrijving': signal.text,
-    }, indent=4, sort_keys=True, default=str)
-
-    send_mail(
-        subject='Nieuwe melding op meldingen.amsterdam.nl',
-        message=message,
-        from_email=settings.NOREPLY,
-        recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS,),
-        fail_silently=False)

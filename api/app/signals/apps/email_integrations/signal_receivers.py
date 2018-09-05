@@ -12,7 +12,7 @@ from signals.apps.signals.models import (
 
 @receiver(create_initial, dispatch_uid='email_integrations_create_initial')
 def create_initial_handler(sender, signal_obj, **kwargs):
-    tasks.send_mail_reporter(signal=signal_obj)
+    tasks.send_mail_reporter(pk=signal_obj.id)
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
     tasks.send_mail_flex_horeca.delay(pk=signal_obj.id)
 

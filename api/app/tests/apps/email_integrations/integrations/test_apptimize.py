@@ -4,62 +4,8 @@ from unittest import mock
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from signals.apps.signals import tasks
+from signals.apps.email_integrations.integrations import apptimize
 from tests.apps.signals.factories import SignalFactory
-
-
-class TestTaskSendMailApptimize(TestCase):
-    @mock.patch('signals.integrations.apptimize.handler.is_signal_applicable',
-                return_value=True)
-    @mock.patch('signals.integrations.apptimize.handler.send_mail')
-    def test_send_mail_apptimize(
-            self, mocked_send_mail, mocked_is_signal_applicable):
-        signal = SignalFactory.create()
-        message = json.dumps({
-            'mora_nummer': signal.id,
-            'signal_id': signal.signal_id,
-            'tijdstip': signal.incident_date_start,
-            'email_melder': signal.reporter.email,
-            'telefoonnummer_melder': signal.reporter.phone,
-            'adres': signal.location.address,
-            'stadsdeel': signal.location.stadsdeel,
-            'categorie': {
-                'hoofdrubriek': signal.category.main,
-                'subrubriek': signal.category.sub,
-            },
-            'omschrijving': signal.text,
-        }, indent=4, sort_keys=True, default=str)
-
-        tasks.send_mail_apptimize(pk=signal.id)
-
-        mocked_is_signal_applicable.assert_called_once_with(signal)
-        mocked_send_mail.assert_called_with(
-            subject='Nieuwe melding op meldingen.amsterdam.nl',
-            message=message,
-            from_email=settings.NOREPLY,
-            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
-            fail_silently=False)
-
-    @mock.patch('signals.integrations.apptimize.handler.handle')
-    @mock.patch('signals.apps.signals.tasks.log')
-    def test_send_mail_apptimize_no_signal_found(
-            self, mocked_log, mocked_handle):
-        tasks.send_mail_apptimize(pk=1)  # id `1` shouldn't be found.
-
-        mocked_log.exception.assert_called_once()
-        mocked_handle.assert_not_called()
-
-    @mock.patch('signals.integrations.apptimize.handler.is_signal_applicable',
-                return_value=False)
-    @mock.patch('signals.integrations.apptimize.handler.handle')
-    def test_send_mail_apptimize_not_applicable(
-            self, mocked_handle, mocked_is_signal_applicable):
-        signal = SignalFactory.create()
-
-        tasks.send_mail_apptimize(pk=signal.id)
-
-        mocked_is_signal_applicable.assert_called_once_with(signal)
-        mocked_handle.assert_not_called()
 
 
 @override_settings(
@@ -85,32 +31,70 @@ class TestTaskSendMailApptimize(TestCase):
         ),
     }
 )
-class TestHelperIsSignalApplicableForApptimize(TestCase):
+class TestIntegrationApptimize(TestCase):
 
-    def test_is_signal_applicable_for_apptimize_in_category(self):
-        signal = SignalFactory.create(
-            category__main='Openbaar groen en water',
-            category__sub='Boom')
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.is_signal_applicable',
+                return_value=True, autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail')
+    def test_send_mail(self, mocked_django_send_mail, mocked_is_signal_applicable):
+        signal = SignalFactory.create()
+        message = json.dumps({
+            'mora_nummer': signal.id,
+            'signal_id': signal.signal_id,
+            'tijdstip': signal.incident_date_start,
+            'email_melder': signal.reporter.email,
+            'telefoonnummer_melder': signal.reporter.phone,
+            'adres': signal.location.address,
+            'stadsdeel': signal.location.stadsdeel,
+            'categorie': {
+                'hoofdrubriek': signal.category.main,
+                'subrubriek': signal.category.sub,
+            },
+            'omschrijving': signal.text,
+        }, indent=4, sort_keys=True, default=str)
 
-        result = signals.apps.email_integrations.integrations.apptimize.handler.is_signal_applicable(signal)
+        apptimize.send_mail(signal)
+
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_called_once_with(
+            subject='Nieuwe melding op meldingen.amsterdam.nl',
+            message=message,
+            from_email=settings.NOREPLY,
+            recipient_list=(settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS, ),
+            fail_silently=False)
+
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.is_signal_applicable',
+                return_value=False, autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.apptimize.django_send_mail')
+    def test_send_mail_not_applicable(self, mocked_django_send_mail, mocked_is_signal_applicable):
+        signal = SignalFactory.create()
+
+        apptimize.send_mail(signal)
+
+        mocked_is_signal_applicable.assert_called_once_with(signal)
+        mocked_django_send_mail.assert_not_called()
+
+    def test_is_signal_applicable_in_category(self):
+        signal = SignalFactory.create(category__main='Openbaar groen en water',
+                                      category__sub='Boom')
+
+        result = apptimize.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
-    def test_is_signal_applicable_for_apptimize_outside_category(self):
-        signal = SignalFactory.create(
-            category__main='Some other main category',
-            category__sub='Some other sub category')
+    def test_is_signal_applicable_outside_category(self):
+        signal = SignalFactory.create(category__main='Some other main category',
+                                      category__sub='Some other sub category')
 
-        result = signals.apps.email_integrations.integrations.apptimize.handler.is_signal_applicable(signal)
+        result = apptimize.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
 
     @override_settings(EMAIL_APPTIMIZE_INTEGRATION_ADDRESS=None)
-    def test_is_signal_applicable_for_apptimize_no_email(self):
-        signal = SignalFactory.create(
-            category__main='Openbaar groen en water',
-            category__sub='Boom')
+    def test_is_signal_applicable_no_email(self):
+        signal = SignalFactory.create(category__main='Openbaar groen en water',
+                                      category__sub='Boom')
 
-        result = signals.apps.email_integrations.integrations.apptimize.handler.is_signal_applicable(signal)
+        result = apptimize.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
