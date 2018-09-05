@@ -1,6 +1,11 @@
 from signals.celery import app
 
-from signals.apps.email_integrations.integrations import apptimize, flex_horeca, default
+from signals.apps.email_integrations.integrations import (
+    apptimize,
+    flex_horeca,
+    default,
+    handhaving_or
+)
 from signals.apps.signals.models import Signal, Status
 
 
@@ -27,4 +32,10 @@ def send_mail_apptimize(pk):
 def send_mail_flex_horeca(pk):
     signal = Signal.objects.get(pk=pk)
     flex_horeca.send_mail(signal)
+
+
+@app.task
+def send_mail_handhaving_or(pk):
+    signal = Signal.objects.get(pk=pk)
+    handhaving_or.send_mail(signal)
 

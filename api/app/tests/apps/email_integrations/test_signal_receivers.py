@@ -28,6 +28,7 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.send_mail_reporter.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_handhaving_or.delay.assert_called_once_with(pk=signal.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_location_handler(self, mocked_tasks):
