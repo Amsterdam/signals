@@ -3,10 +3,10 @@ from django.dispatch import receiver
 from signals.apps.email_integrations import tasks
 from signals.apps.signals.models import (
     create_initial,
-    update_location,
-    update_status,
     update_category,
-    update_reporter
+    update_location,
+    update_reporter,
+    update_status
 )
 
 

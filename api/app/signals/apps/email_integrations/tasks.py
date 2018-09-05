@@ -1,14 +1,13 @@
-from signals.celery import app
-
 from signals.apps.email_integrations.integrations import (
     apptimize,
-    flex_horeca,
     core,
+    flex_horeca,
     handhaving_or_oost,
     toezicht_or_nieuw_west,
     vth_nieuw_west
 )
 from signals.apps.signals.models import Signal, Status
+from signals.celery import app
 
 
 @app.task

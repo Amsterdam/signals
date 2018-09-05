@@ -10,12 +10,12 @@ from factory import fuzzy
 
 from signals.apps.signals.models import (
     GEMELD,
+    STADSDELEN,
     Category,
     Location,
     Reporter,
     Signal,
-    Status,
-    STADSDELEN
+    Status
 )
 
 # Amsterdam.

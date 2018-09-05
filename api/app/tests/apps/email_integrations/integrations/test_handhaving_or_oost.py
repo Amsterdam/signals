@@ -5,7 +5,7 @@ from django.core import mail
 from django.test import TestCase, override_settings
 
 from signals.apps.email_integrations.integrations import handhaving_or_oost
-from signals.apps.signals.models import STADSDEEL_OOST, STADSDEEL_NOORD
+from signals.apps.signals.models import STADSDEEL_NOORD, STADSDEEL_OOST
 from tests.apps.signals.factories import SignalFactory
 
 

@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 
 from signals.apps.email_integrations.utils import create_default_notification_message
-from signals.apps.signals.models import Signal, STADSDEEL_OOST
+from signals.apps.signals.models import STADSDEEL_OOST, Signal
 
 
 def send_mail(signal: Signal) -> int:
