@@ -1,3 +1,6 @@
+"""
+E-mail integration for 'default' Signal actions.
+"""
 import logging
 import re
 

@@ -1,3 +1,6 @@
+"""
+E-mail integration for Apptimize.
+"""
 import json
 
 from django.conf import settings
@@ -41,9 +44,8 @@ def is_signal_applicable(signal: Signal) -> bool:
     """Is given `Signal` applicable for Apptimize.
 
     TODO SIG-409 refactor categories.
-    Note, this logic isn't tenable anymore.. The concept `categories` needs
-    to be refactored soon. Take a look at `signals.messaging.categories` as
-    well.
+    Note, this logic isn't tenable anymore.. The concept `categories` needs to be refactored
+    soon. Take a look at `signals.settings.categories` as well.
 
     :param signal: Signal object
     :returns: bool

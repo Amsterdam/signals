@@ -1,3 +1,6 @@
+"""
+E-mail integration for Flex Horeca Team.
+"""
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.utils import timezone
@@ -31,9 +34,6 @@ def is_signal_applicable(signal: Signal) -> bool:
     them an e-mail notification on these days for new `Signal` objects that are created.
 
     TODO SIG-409 refactor categories.
-    Note, this logic isn't tenable anymore.. The concept `categories` needs
-    to be refactored soon. Take a look at `signals.messaging.categories` as
-    well.
 
     :param signal: Signal object
     :returns: bool
