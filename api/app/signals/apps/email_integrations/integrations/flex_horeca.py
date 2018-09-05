@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
-from django.template import loader
 from django.utils import timezone
 
+from signals.apps.email_integrations.utils import create_default_notification_message
 from signals.apps.signals.models import Signal
 
 
@@ -13,9 +13,7 @@ def send_mail(signal: Signal) -> int:
     :returns: number of successfully send messages
     """
     if is_signal_applicable(signal):
-        template = loader.get_template('email/flex_horeca.txt')
-        context = {'signal': signal, }
-        message = template.render(context)
+        message = create_default_notification_message(signal)
 
         return django_send_mail(
             subject='Nieuwe melding op meldingen.amsterdam.nl',

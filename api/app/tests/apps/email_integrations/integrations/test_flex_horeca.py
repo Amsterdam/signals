@@ -39,29 +39,27 @@ class TestIntegrationFlexHoreca(TestCase):
 
     @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.django_send_mail',
                 return_value=1, autospec=True)
-    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.loader', autospec=True)
+    @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.'
+                'create_default_notification_message', autospec=True)
     @mock.patch('signals.apps.email_integrations.integrations.flex_horeca.is_signal_applicable',
                 return_value=True, autospec=True)
-    def test_send_mail(self, mocked_is_signal_applicable, mocked_loader, mocked_django_send_mail):
-        # Setting up template mocking.
-        mocked_rendered_template = mock.Mock()
-        mocked_template = mock.Mock()
-        mocked_template.render.return_value = mocked_rendered_template
-        mocked_loader.get_template.return_value = mocked_template
+    def test_send_mail(
+            self,
+            mocked_is_signal_applicable,
+            mocked_create_default_notification_message,
+            mocked_django_send_mail):
+        # Setting up mocked notification message.
+        mocked_message = mock.Mock()
+        mocked_create_default_notification_message.return_value = mocked_message
 
-        # Creating a `Signal` object to use for sending mail to Flex Horeca.
         signal = SignalFactory.create()
         number_of_messages = flex_horeca.send_mail(signal)
-
-        # Asserting all correct function calls.
-        mocked_loader.get_template.assert_called_once_with('email/flex_horeca.txt')
-        mocked_template.render.assert_called_once_with({'signal': signal})
 
         self.assertEqual(number_of_messages, 1)
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_django_send_mail.assert_called_once_with(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
-            message=mocked_rendered_template,
+            message=mocked_message,
             from_email=settings.NOREPLY,
             recipient_list=(settings.EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS, ))
 
