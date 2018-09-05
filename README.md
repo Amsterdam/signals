@@ -12,29 +12,72 @@ SIA will replace MORA and is based on a proof of concept (https://github.com/Ams
 which ran on https://vaarwatermeldingen.amsterdam.nl/
 
 
-## Running using Docker for local development
+## Project structure
+This project is setup such that it can be built and run using Docker with minimal
+effort. The root directory therefore contains some Docker prerequisites and documentation.
+The actual Django application is present in the `/api/app` directory. The Django project
+structure is documented in `/api/README.md`.
 
+
+## Running using Docker for local development
+### Prerequisites
+* Git
+* Docker
+
+
+### Building the Docker images
 Pull the relevant images and build the services:
 ```
 docker-compose pull
 docker-compose build
 ```
 
-Start the services (in a new terminal):
+
+### Running the test suite and style checks
+Start the Postgres database and Rabbit MQ services in the background, then run the test
+suite (we use Pytest as test runner, the tests themselves are Django unittest style):
+```
+docker-compose up -d database rabbit
+docker-compose run --rm api pytest --ds=signals.settings.testing
+```
+
+Our build pipeline checks that the full test suite runs successfully, that the style
+checks are passed, and that test code coverage is high enough. All these checks can
+be replicated locally by runnning Tox. 
+```
+docker-compose run --rm api tox
+```
+
+During development make sure that the Tox checks succeed before putting in a pull
+request, as any failed checks will abort the build pipeline.
+
+
+### Running and developing locally using Docker and docker-compose
+Assuming no services are running, start the database and queue:
+```
+docker-compose up -d database rabbit
+```
+
+Migrate the database:
+```
+docker-compose run --rm python manage.py migrate
+```
+
+Start the Signals web application:
 ```
 docker-compose up
 ```
 
-Finally migrate the database and run the tests to check that everything is working:
-```
-docker-compose migrate
-docker-compose exec api python manage.py test
-```
+You will now have the Signals API running on http://localhost:8000/signals/ .
 
-You will now have the signals API running on http://localhost:8000/signals/.
+The docker-compose.yml file that is provided mounts the application source in the
+running `api` container, where UWSGI is set up to automatically reload the source.
+This means that you can edit the application source on the host system and see the
+results reflected in the running application immediately, i.e. without rebuilding
+the `api` service.
 
-
-## Celery
+## Other topics
+### Celery
 
 We use celery for sending e-mails. That also requires a rabbitmq instance.
 
@@ -74,7 +117,7 @@ Otherwise we need to add a user with:
 
 ...
 
-## Authentication 
+### Authentication 
 
 Authentication can be done with the Authz service with either the _datapunt_ or the _grip_ Idp.
 
@@ -99,7 +142,7 @@ are case sensitive , and then it looks like users do not exist.
 
 
 
-## Django Admin for user maintenance
+### Django Admin for user maintenance
 
 To maintain user and groups we use Django Admin. We cannot yet login to Djang Admin with JWT tokens 
 so for  now we need to set  a password for a staff account.  This is needed to login to Django Admin:
