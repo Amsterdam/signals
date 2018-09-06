@@ -3,6 +3,7 @@ from unittest import mock
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase, override_settings
+from freezegun import freeze_time
 
 from signals.apps.email_integrations.integrations import vth_nieuw_west
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST, STADSDEEL_NOORD
@@ -25,6 +26,7 @@ from tests.apps.signals.factories import SignalFactory
 )
 class TestIntegrationVTHNieuwWest(TestCase):
 
+    @freeze_time('2018-09-05 23:00:00')  # Outside business hour
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
         signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
@@ -76,7 +78,9 @@ class TestIntegrationVTHNieuwWest(TestCase):
         mocked_is_signal_applicable.assert_called_once_with(signal)
         mocked_django_send_mail.assert_not_called()
 
-    def test_is_signal_applicable_in_category_in_stadsdeel_nieuwwest(self):
+    @mock.patch('signals.apps.email_integrations.integrations.vth_nieuw_west.is_business_hour',
+                return_value=False, autospec=True)
+    def test_is_signal_applicable_true(self, mocked_is_business_hour):
         signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
                                       category__sub='Overlast terrassen',
                                       location__stadsdeel=STADSDEEL_NIEUWWEST)
@@ -85,7 +89,21 @@ class TestIntegrationVTHNieuwWest(TestCase):
 
         self.assertEqual(result, True)
 
-    def test_is_signal_applicable_outside_category_in_stadsdeel_nieuwwest(self):
+    @mock.patch('signals.apps.email_integrations.integrations.vth_nieuw_west.is_business_hour',
+                return_value=True, autospec=True)
+    def test_is_signal_applicable_is_business_hour(self, mocked_is_business_hour):
+        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
+                                      category__sub='Overlast terrassen',
+                                      location__stadsdeel=STADSDEEL_NIEUWWEST)
+
+        result = vth_nieuw_west.is_signal_applicable(signal)
+
+        self.assertEqual(result, False)
+
+    @mock.patch('signals.apps.email_integrations.integrations.vth_nieuw_west.is_business_hour',
+                return_value=False, autospec=True)
+    def test_is_signal_applicable_outside_category_in_stadsdeel_nieuwwest(
+            self, mocked_is_business_hour):
         signal = SignalFactory.create(category__main='Some other main category',
                                       category__sub='Some other sub category',
                                       location__stadsdeel=STADSDEEL_NIEUWWEST)
@@ -94,7 +112,10 @@ class TestIntegrationVTHNieuwWest(TestCase):
 
         self.assertEqual(result, False)
 
-    def test_is_signal_applicable_in_category_outside_stadsdeel_nieuwwest(self):
+    @mock.patch('signals.apps.email_integrations.integrations.vth_nieuw_west.is_business_hour',
+                return_value=False, autospec=True)
+    def test_is_signal_applicable_in_category_outside_stadsdeel_nieuwwest(
+            self, mocked_is_business_hour):
         signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
                                       category__sub='Overlast terrassen',
                                       location__stadsdeel=STADSDEEL_NOORD)

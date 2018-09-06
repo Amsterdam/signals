@@ -3,8 +3,12 @@ E-mail integration for Toezicht openbare ruimte Nieuw west.
 """
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
+from django.utils import timezone
 
-from signals.apps.email_integrations.utils import create_default_notification_message
+from signals.apps.email_integrations.utils import (
+    create_default_notification_message,
+    is_business_hour
+)
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST, Signal
 
 
@@ -34,6 +38,12 @@ def is_signal_applicable(signal: Signal) -> bool:
     :param signal: Signal object
     :returns: bool
     """
+    # We're only sending notification e-mails when the current Dutch time is outside
+    # business / working hours.
+    current_dutch_time = timezone.localtime(timezone.now()).time()
+    if is_business_hour(current_dutch_time):
+        return False
+
     if signal.location.stadsdeel != STADSDEEL_NIEUWWEST:
         return False
 

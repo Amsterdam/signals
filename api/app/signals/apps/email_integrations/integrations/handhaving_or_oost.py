@@ -38,7 +38,8 @@ def is_signal_applicable(signal: Signal) -> bool:
     :param signal: Signal object
     :returns: bool
     """
-    # We're only sending e-mails outside business/working hours.
+    # We're only sending notification e-mails when the current Dutch time is outside
+    # business / working hours.
     current_dutch_time = timezone.localtime(timezone.now()).time()
     if is_business_hour(current_dutch_time):
         return False
