@@ -1,6 +1,6 @@
 from unittest import mock
 
-from django.test import testcases
+from django.test import TestCase
 
 from signals.apps.signals.models import (
     create_initial,
@@ -18,20 +18,21 @@ from tests.apps.signals.factories import (
 )
 
 
-class TestDjangoSignals(testcases.TestCase):
+class TestSignalReceivers(TestCase):
 
-    @mock.patch('signals.apps.signals.django_signals.handle_create_signal')
-    @mock.patch('signals.apps.signals.django_signals.tasks')
-    def test_create_initial_handler(self, mocked_tasks, mocked_handle_create_signal):
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
+    def test_create_initial_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         create_initial.send(sender=self.__class__, signal_obj=signal)
 
-        mocked_handle_create_signal.assert_called_once_with(signal)
-        mocked_tasks.push_to_sigmax.delay.assert_called_once_with(pk=signal.id)
-        mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_reporter.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_handhaving_or_oost.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_toezicht_or_nieuw_west.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_vth_nieuw_west.delay.assert_called_once_with(pk=signal.id)
 
-    @mock.patch('signals.apps.signals.django_signals.tasks')
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_location_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         prev_location = signal.location
@@ -48,9 +49,8 @@ class TestDjangoSignals(testcases.TestCase):
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
-    @mock.patch('signals.apps.signals.django_signals.handle_status_change')
-    @mock.patch('signals.apps.signals.django_signals.tasks')
-    def test_update_status_handler(self, mocked_tasks, mocked_handle_status_change):
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
+    def test_update_status_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         prev_status = signal.status
         new_status = StatusFactory.create(_signal=signal)
@@ -62,10 +62,12 @@ class TestDjangoSignals(testcases.TestCase):
                            status=new_status,
                            prev_status=prev_status)
 
-        mocked_handle_status_change.assert_called_once_with(new_status, prev_status)
+        mocked_tasks.send_mail_status_change.delay.assert_called_once_with(
+            status_pk=new_status.id,
+            prev_status_pk=prev_status.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
-    @mock.patch('signals.apps.signals.django_signals.tasks')
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_category_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         prev_category = signal.category
@@ -80,7 +82,7 @@ class TestDjangoSignals(testcases.TestCase):
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
-    @mock.patch('signals.apps.signals.django_signals.tasks')
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_reporter_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         prev_reporter = signal.reporter

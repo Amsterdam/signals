@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     # 'rest_framework_swagger',
     'storages',
 
-    # Project
+    # Signals project
+    'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
     'signals.apps.users',
@@ -227,10 +228,14 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
-EMAIL_APPTIMIZE_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_APPTIMIZE_INTEGRATION_ADDRESS', None)
-EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None)
+EMAIL_APPTIMIZE_INTEGRATION_ADDRESS = os.getenv('EMAIL_APPTIMIZE_INTEGRATION_ADDRESS', None)
+EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS = os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None)
+EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS = os.getenv(
+    'EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS', None)
+EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
+    'EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None)
+EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
+    'EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None)
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
 # Django cache settings

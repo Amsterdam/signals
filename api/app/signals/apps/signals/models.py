@@ -223,15 +223,23 @@ class Signal(models.Model):
         )
 
 
+STADSDEEL_CENTRUM = 'A'
+STADSDEEL_WESTPOORT = 'B'
+STADSDEEL_WEST = 'E'
+STADSDEEL_OOST = 'M'
+STADSDEEL_NOORD = 'N'
+STADSDEEL_ZUIDOOST = 'T'
+STADSDEEL_ZUID = 'K'
+STADSDEEL_NIEUWWEST = 'F'
 STADSDELEN = (
-    ('A', 'Centrum'),
-    ('B', 'Westpoort'),
-    ('E', 'West'),
-    ('M', 'Oost'),
-    ('N', 'Noord'),
-    ('T', 'Zuidoost'),
-    ('K', 'Zuid'),
-    ('F', 'Nieuw-West')
+    (STADSDEEL_CENTRUM, 'Centrum'),
+    (STADSDEEL_WESTPOORT, 'Westpoort'),
+    (STADSDEEL_WEST, 'West'),
+    (STADSDEEL_OOST, 'Oost'),
+    (STADSDEEL_NOORD, 'Noord'),
+    (STADSDEEL_ZUIDOOST, 'Zuidoost'),
+    (STADSDEEL_ZUID, 'Zuid'),
+    (STADSDEEL_NIEUWWEST, 'Nieuw-West'),
 )
 
 

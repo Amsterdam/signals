@@ -10,11 +10,7 @@ from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.filters import (
-    LocationFilter,
-    SignalFilter,
-    StatusFilter
-)
+from signals.apps.signals.filters import LocationFilter, SignalFilter, StatusFilter
 from signals.apps.signals.models import Category, Location, Signal, Status
 from signals.apps.signals.permissions import (
     CategoryPermission,

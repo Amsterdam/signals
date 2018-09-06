@@ -6,13 +6,7 @@ import tempfile
 from django.conf import settings
 from swift.storage import SwiftStorage
 
-from signals.apps.signals.models import (
-    Category,
-    Location,
-    Reporter,
-    Signal,
-    Status
-)
+from signals.apps.signals.models import Category, Location, Reporter, Signal, Status
 
 
 def save_csv_files_datawarehouse():

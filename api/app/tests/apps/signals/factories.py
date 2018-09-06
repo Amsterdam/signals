@@ -10,6 +10,7 @@ from factory import fuzzy
 
 from signals.apps.signals.models import (
     GEMELD,
+    STADSDELEN,
     Category,
     Location,
     Reporter,
@@ -67,7 +68,7 @@ class LocationFactory(factory.DjangoModelFactory):
         model = Location
 
     buurt_code = fuzzy.FuzzyText(length=4)
-    stadsdeel = fuzzy.FuzzyText(length=1)
+    stadsdeel = fuzzy.FuzzyChoice(choices=(s[0] for s in STADSDELEN))
     geometrie = get_puntje()
     address = {'straat': 'Sesamstraat',
                'huisnummer': 666,

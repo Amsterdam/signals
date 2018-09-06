@@ -1,3 +1,6 @@
+"""
+E-mail integration for 'core' Signal behaviour.
+"""
 import logging
 import re
 
@@ -35,7 +38,7 @@ def get_incident_date_string(dt):
 #       the e-mail till the image has been uploaded. Then there has to be
 #       some kind of delay after creating the the signal before sending the
 #       e-mail
-def handle_create_signal(signal):
+def send_mail_reporter(signal):
     LOG.info('Handling create signal')
     email = get_valid_email(signal)
     LOG.debug('Valid email: ' + str(email))
@@ -56,7 +59,7 @@ def handle_create_signal(signal):
 
         if signal.reporter.phone:
             context['phone'] = signal.reporter.phone
-        template = loader.get_template('melding_bevestiging.txt')
+        template = loader.get_template('email/melding_bevestiging.txt')
         body = template.render(context)
         subject = f"Bedankt voor uw melding ({signal.id})"
         to = signal.reporter.email
@@ -71,7 +74,7 @@ def handle_create_signal(signal):
         )
 
 
-def handle_status_change(status, previous_status):
+def send_mail_status_change(status, previous_status):
     signal = status.signal
 
     LOG.info('Handling status change of signal')
@@ -104,7 +107,7 @@ def handle_status_change(status, previous_status):
             if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
                 context['resultaat_text'] = ss.extra_properties['resultaat_text']
 
-            template = loader.get_template('melding_gereed.txt')
+            template = loader.get_template('email/melding_gereed.txt')
             body = template.render(context)
             subject = f"Betreft melding : {signal.id}"
             to = signal.reporter.email
