@@ -14,7 +14,7 @@ Wat doen we met uw melding?
 Hier is het : {{ address_text }}
 {% endif %}
 
-Tijdstip : {{ incident_date_start }}
+Tijdstip : {{ incident_date_start.incident_date_start|date:"DATETIME_FORMAT" }}
 {% if text_extra %}
 
 {{ text_extra }}

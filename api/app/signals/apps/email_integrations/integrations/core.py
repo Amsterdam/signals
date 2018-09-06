@@ -55,7 +55,7 @@ def send_mail_reporter_created(signal):
 
         if signal.reporter.phone:
             context['phone'] = signal.reporter.phone
-        template = loader.get_template('email/melding_bevestiging.txt')
+        template = loader.get_template('email/signal_created.txt')
         body = template.render(context)
         subject = f"Bedankt voor uw melding ({signal.id})"
         to = signal.reporter.email
@@ -103,7 +103,7 @@ def send_mail_reporter_status_changed(status, previous_status):
             if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
                 context['resultaat_text'] = ss.extra_properties['resultaat_text']
 
-            template = loader.get_template('email/melding_gereed.txt')
+            template = loader.get_template('email/signal_status_changed.txt')
             body = template.render(context)
             subject = f"Betreft melding : {signal.id}"
             to = signal.reporter.email
