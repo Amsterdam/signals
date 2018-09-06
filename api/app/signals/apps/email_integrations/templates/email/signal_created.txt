@@ -1,8 +1,8 @@
 Bedankt!
 
-Uw melding ({{ signal_id }}):
+Uw melding ({{ signal.id }}):
 
-{{ text }}
+{{ signal.text }}
 
 Wat doen we met uw melding?
 
@@ -10,28 +10,28 @@ Wat doen we met uw melding?
 
 *** Details van uw melding ***
 
-{% if address_text %}
-Hier is het : {{ address_text }}
+{% if signal.location.address_text %}
+Hier is het : {{ signal.location.address_text }}
 {% endif %}
 
-Tijdstip : {{ incident_date_start.incident_date_start|date:"DATETIME_FORMAT" }}
-{% if text_extra %}
+Tijdstip : {{ signal.incident_date_start.incident_date_start|date:"DATETIME_FORMAT" }}
+{% if signal.text_extra %}
 
-{{ text_extra }}
+{{ signal.text_extra }}
 {% endif %}
-{% if extra_properties %}
+{% if signal.extra_properties %}
 
-{% for key, value in extra_properties.items %}
-{{key}} - {{value}}
+{% for key, value in signal.extra_properties.items %}
+{{ key }} - {{ value }}
 {% endfor %}
 {% endif %}
 
-Uw e-mailadres : {{ email  }}
+Uw e-mailadres : {{ signal.reporter.email  }}
 
-{% if phone %}
-Uw (mobiele) telefoon : {{ phone }}
+{% if signal.reporter.phone %}
+Uw (mobiele) telefoon : {{ signal.reporter.phone }}
 {% endif %}
 
 ******************************
 
-Als u vragen hebt, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal_id }}.
+Als u vragen hebt, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.id }}.

@@ -39,22 +39,10 @@ def send_mail_reporter_created(signal):
     if email:
         LOG.debug('Trying to compose message')
         context = {
-            'signal_id': signal.id,
-            'text': signal.text,
-            'subcategory': signal.category_assignment.sub_category.name,
-            'afhandelings_text': (
-                ALL_AFHANDELING_TEXT[signal.category_assignment.sub_category.handling]
-            ),
-            'address_text': signal.location.address_text,
-            'incident_date_start': get_incident_date_string(
-                signal.incident_date_start),
-            'text_extra': signal.text_extra,
-            'extra_properties': signal.extra_properties,
-            'email': signal.reporter.email,
+            'signal': signal,
+            'afhandelings_text': get_afhandeling_text(signal.category.sub),
         }
 
-        if signal.reporter.phone:
-            context['phone'] = signal.reporter.phone
         template = loader.get_template('email/signal_created.txt')
         body = template.render(context)
         subject = f"Bedankt voor uw melding ({signal.id})"
