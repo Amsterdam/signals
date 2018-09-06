@@ -1,5 +1,4 @@
 from datetime import time
-from django.utils import timezone
 from django.template import loader
 
 from signals.apps.signals.models import Signal
