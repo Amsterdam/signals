@@ -4,11 +4,9 @@ E-mail integration for 'core' Signal behaviour.
 import logging
 import re
 
-import pytz
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
-from django.utils import timezone
 
 from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
 from signals.apps.signals.workflow import AFGEHANDELD
@@ -22,14 +20,6 @@ def get_valid_email(signal):
         return signal.reporter.email
     else:
         return None
-
-
-def get_incident_date_string(dt):
-    # TODO Can be removed, use date filter in template
-    local_dt = timezone.localtime(dt, pytz.timezone('Europe/Amsterdam'))
-    week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag',
-                 'Vrijdag', 'Zaterdag', 'Zondag')
-    return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
 
 
 def send_mail_reporter_created(signal):
