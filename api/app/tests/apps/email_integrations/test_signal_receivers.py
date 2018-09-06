@@ -25,7 +25,7 @@ class TestSignalReceivers(TestCase):
         signal = SignalFactory.create()
         create_initial.send(sender=self.__class__, signal_obj=signal)
 
-        mocked_tasks.send_mail_reporter.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_reporter_created.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_handhaving_or_oost.delay.assert_called_once_with(pk=signal.id)
@@ -62,7 +62,7 @@ class TestSignalReceivers(TestCase):
                            status=new_status,
                            prev_status=prev_status)
 
-        mocked_tasks.send_mail_status_change.delay.assert_called_once_with(
+        mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
             status_pk=new_status.id,
             prev_status_pk=prev_status.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)

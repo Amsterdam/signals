@@ -16,9 +16,6 @@ from signals.apps.signals.workflow import AFGEHANDELD
 LOG = logging.getLogger()
 
 
-# TODO: fetch PDF and attach to message?
-
-
 def get_valid_email(signal):
     email_valid = r'[^@]+@[^@]+\.[^@]+'
     if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
@@ -28,17 +25,14 @@ def get_valid_email(signal):
 
 
 def get_incident_date_string(dt):
+    # TODO Can be removed, use date filter in template
     local_dt = timezone.localtime(dt, pytz.timezone('Europe/Amsterdam'))
     week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag',
                  'Vrijdag', 'Zaterdag', 'Zondag')
     return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
 
 
-# TODO: If the image has to be attached to the e-mail, we have to postpone
-#       the e-mail till the image has been uploaded. Then there has to be
-#       some kind of delay after creating the the signal before sending the
-#       e-mail
-def send_mail_reporter(signal):
+def send_mail_reporter_created(signal):
     LOG.info('Handling create signal')
     email = get_valid_email(signal)
     LOG.debug('Valid email: ' + str(email))
@@ -76,7 +70,7 @@ def send_mail_reporter(signal):
         )
 
 
-def send_mail_status_change(status, previous_status):
+def send_mail_reporter_status_changed(status, previous_status):
     signal = status.signal
 
     LOG.info('Handling status change of signal')

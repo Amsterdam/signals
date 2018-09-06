@@ -11,16 +11,16 @@ from signals.celery import app
 
 
 @app.task
-def send_mail_reporter(pk):
+def send_mail_reporter_created(pk):
     signal = Signal.objects.get(pk=pk)
-    core.send_mail_reporter(signal)
+    core.send_mail_reporter_created(signal)
 
 
 @app.task
-def send_mail_status_change(status_pk, prev_status_pk):
+def send_mail_reporter_status_changed(status_pk, prev_status_pk):
     status = Status.objects.get(pk=status_pk)
     prev_status = Status.objects.get(pk=prev_status_pk)
-    core.send_mail_status_change(status, prev_status)
+    core.send_mail_reporter_status_changed(status, prev_status)
 
 
 @app.task
