@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import time
 from unittest import mock
 
 from django.test import TestCase

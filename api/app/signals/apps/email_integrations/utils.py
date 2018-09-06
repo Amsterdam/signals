@@ -1,4 +1,5 @@
 from datetime import time
+
 from django.template import loader
 
 from signals.apps.signals.models import Signal
