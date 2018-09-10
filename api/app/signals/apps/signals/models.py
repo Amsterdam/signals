@@ -11,6 +11,7 @@ update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_l
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
+update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 
 
 class SignalManager(models.Manager):
@@ -39,6 +40,8 @@ class SignalManager(models.Manager):
             signal.status = status
             signal.category = category
             signal.reporter = reporter
+
+            # TODO SIG-595 implement `priority` create
 
             signal.save()
 
@@ -130,6 +133,27 @@ class SignalManager(models.Manager):
                                                                prev_reporter=prev_reporter))
 
         return reporter
+
+    def update_priority(self, data, signal):
+        """Update (create new) `Priority` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Priority object
+        """
+        with transaction.atomic():
+            prev_priority = signal.priority
+
+            priority = Priority.objects.create(**data, _signal_id=signal.id)
+            signal.priority = priority
+            signal.save()
+
+            update_priority.send(sender=self.__class__,
+                                 signal_obj=signal,
+                                 priority=priority,
+                                 prev_priority=prev_priority)
+
+        return priority
 
 
 class CreatedUpdatedModel(models.Model):
