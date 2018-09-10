@@ -181,29 +181,28 @@ class Signal(CreatedUpdatedModel):
     source = models.CharField(max_length=128, default='public-api')
 
     text = models.CharField(max_length=1000)
+    text_extra = models.CharField(max_length=10000, default='', blank=True)
 
-    text_extra = models.CharField(
-        max_length=10000, default='', blank=True)
-
-    location = models.OneToOneField(
-        'Location', related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    status = models.OneToOneField(
-        "Status", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    category = models.OneToOneField(
-        "Category", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    reporter = models.OneToOneField(
-        "Reporter", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
+    location = models.OneToOneField('signals.Location',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    status = models.OneToOneField('signals.Status',
+                                  related_name='signal',
+                                  null=True,
+                                  on_delete=models.SET_NULL)
+    category = models.OneToOneField('signals.Category',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    reporter = models.OneToOneField('signals.Reporter',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    priority = models.OneToOneField('signals.Priority',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
 
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)
@@ -214,13 +213,10 @@ class Signal(CreatedUpdatedModel):
 
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
-    image = models.ImageField(
-        upload_to='images/%Y/%m/%d/', null=True, blank=True)
+    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
-    upload = ArrayField(
-        models.FileField(
-                upload_to='uploads/%Y/%m/%d/'), null=True)
+    upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
 
     extra_properties = JSONField(null=True)
 

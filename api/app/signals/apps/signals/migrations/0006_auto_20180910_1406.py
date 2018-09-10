@@ -76,4 +76,10 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
                                     related_name='priorities', to='signals.Signal'),
         ),
+        migrations.AddField(
+            model_name='signal',
+            name='priority',
+            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                       related_name='signal', to='signals.Priority'),
+        ),
     ]
