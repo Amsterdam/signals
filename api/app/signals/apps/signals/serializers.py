@@ -132,9 +132,6 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
         fields = (
             'email',
             'phone',
-            'remove_at',
-            'created_at',
-            'updated_at',
             'extra_properties',
         )
 
@@ -149,9 +146,6 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer()
 
-    # Explicitly specify fields with auto_now_add=True
-    # to show in the rest framework
-    created_at = serializers.DateTimeField()
     incident_date_start = serializers.DateTimeField()
 
     class Meta(object):
@@ -166,8 +160,6 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'location',
             'category',
             'reporter',
-            'created_at',
-            'updated_at',
             'incident_date_start',
             'incident_date_end',
             'operational_date',
@@ -270,8 +262,6 @@ class SignalStatusOnlyHALSerializer(HALSerializer):
             "_display",
             "signal_id",
             "status",
-            "created_at",
-            "updated_at",
             "incident_date_start",
             "incident_date_end",
             "operational_date",
@@ -312,8 +302,6 @@ class SignalAuthHALSerializer(HALSerializer):
             # DO NOT ENABLE
             # make test for this
             "reporter",
-            "created_at",
-            "updated_at",
             "incident_date_start",
             "incident_date_end",
             "operational_date",
@@ -366,8 +354,6 @@ class StatusHALSerializer(HALSerializer):
             'extern',
             '_signal',
             'state',
-            'created_at',
-            'updated_at',
             'extra_properties',
         )
 
