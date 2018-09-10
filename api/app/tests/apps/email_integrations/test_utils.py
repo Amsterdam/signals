@@ -17,7 +17,7 @@ class TestUtils(TestCase):
 
         message = create_default_notification_message(signal)
 
-        self.assertIn(str(signal.signal_id), message)
+        self.assertIn(str(signal.id), message)
         self.assertIn(signal.text, message)
 
     @mock.patch('signals.apps.email_integrations.utils.loader', autospec=True)

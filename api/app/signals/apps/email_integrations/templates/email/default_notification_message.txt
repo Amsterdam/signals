@@ -1,4 +1,4 @@
-Nieuwe melding ({{ signal.signal_id }}):
+Nieuwe melding ({{ signal.id }}):
 
 {{ signal.text }}
 
