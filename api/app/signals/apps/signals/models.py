@@ -132,6 +132,14 @@ class SignalManager(models.Manager):
         return reporter
 
 
+class CreatedUpdatedModel(models.Model):
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+    updated_at = models.DateTimeField(editable=False, auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
 class Buurt(models.Model):
     ogc_fid = models.IntegerField(primary_key=True)
     id = models.CharField(max_length=14)
@@ -142,16 +150,7 @@ class Buurt(models.Model):
         db_table = 'buurt_simple'
 
 
-class Signal(models.Model):
-    """
-    Reporting object
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(Signal, self).__init__(*args, **kwargs)
-        if not self.signal_id:
-            self.signal_id = uuid.uuid4()
-
+class Signal(CreatedUpdatedModel):
     # we need an unique id for external systems.
     # TODO SIG-563 rename `signal_id` to `signal_uuid` to be more specific.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
@@ -185,10 +184,10 @@ class Signal(models.Model):
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)
     incident_date_end = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, auto_now=True)
+
     # Date action is expected
     operational_date = models.DateTimeField(null=True)
+
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
     image = models.ImageField(
@@ -203,6 +202,11 @@ class Signal(models.Model):
 
     objects = models.Manager()
     actions = SignalManager()
+
+    def __init__(self, *args, **kwargs):
+        super(Signal, self).__init__(*args, **kwargs)
+        if not self.signal_id:
+            self.signal_id = uuid.uuid4()
 
     def __str__(self):
         """Identifying string.
@@ -248,9 +252,8 @@ def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
-class Location(models.Model):
-    """All location related information
-    """
+class Location(CreatedUpdatedModel):
+    """All location related information."""
 
     _signal = models.ForeignKey(
         "Signal", related_name="locations",
@@ -265,8 +268,6 @@ class Location(models.Model):
     buurt_code = models.CharField(null=True, max_length=4)
     address = JSONField(null=True)
     address_text = models.CharField(null=True, max_length=256, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     extra_properties = JSONField(null=True)
 
@@ -292,9 +293,8 @@ class Location(models.Model):
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
 
-class Reporter(models.Model):
-    """Privacy sensitive information on reporter
-    """
+class Reporter(CreatedUpdatedModel):
+    """Privacy sensitive information on reporter."""
 
     _signal = models.ForeignKey(
         "Signal", related_name="reporters",
@@ -304,15 +304,12 @@ class Reporter(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=17, blank=True)
     remove_at = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     extra_properties = JSONField(null=True)
 
 
-class Category(models.Model):
-    """Store Category information and Automatically suggested category
-    """
+class Category(CreatedUpdatedModel):
+    """Store Category information and Automatically suggested category."""
 
     _signal = models.ForeignKey(
         "Signal", related_name="categories",
@@ -344,14 +341,10 @@ class Category(models.Model):
         max_length=50, blank=True), null=True)
     ml_sub_all_prob = ArrayField(models.IntegerField(), null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     extra_properties = JSONField(null=True)
 
     def __str__(self):
-        """Identifying string.
-        """
+        """Identifying string."""
         return '{} - {} - {} - {}'.format(
             self.main,
             self.sub,
@@ -390,11 +383,8 @@ STATUS_OVERGANGEN = {
 }
 
 
-class Status(models.Model):
-    """Signal Status
-
-    Updates / Changes are handeled here
-    """
+class Status(CreatedUpdatedModel):
+    """Signal status."""
 
     _signal = models.ForeignKey(
         "Signal", related_name="statuses",
@@ -414,11 +404,6 @@ class Status(models.Model):
     extern = models.BooleanField(
         default=False,
         help_text='Wel of niet status extern weergeven')
-
-    created_at = models.DateTimeField(
-        auto_now_add=True, null=False, db_index=True)
-    updated_at = models.DateTimeField(
-        auto_now_add=True, null=True, db_index=True)
 
     extra_properties = JSONField(null=True)
 
