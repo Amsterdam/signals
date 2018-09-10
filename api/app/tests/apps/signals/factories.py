@@ -15,8 +15,8 @@ from signals.apps.signals.models import (
     Location,
     Reporter,
     Signal,
-    Status
-)
+    Status,
+    Priority)
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]
@@ -49,6 +49,8 @@ class SignalFactory(factory.DjangoModelFactory):
     category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory',
                                   _signal_id=factory.SelfAttribute('..id'))
     reporter = factory.SubFactory('tests.apps.signals.factories.ReporterFactory',
+                                  _signal_id=factory.SelfAttribute('..id'))
+    priority = factory.SubFactory('tests.apps.signals.factories.PriorityFactory',
                                   _signal_id=factory.SelfAttribute('..id'))
 
     incident_date_start = fuzzy.FuzzyDateTime(
@@ -104,3 +106,9 @@ class StatusFactory(factory.DjangoModelFactory):
 
     state = GEMELD  # Initial state is always 'm'
     extern = fuzzy.FuzzyChoice((True, False))
+
+
+class PriorityFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = Priority
