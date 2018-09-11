@@ -137,6 +137,15 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
             'extra_properties',
         )
 
+
+class _NestedPriorityModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Priority
+        fields = (
+            'priority',
+        )
+
 #
 # Unauth serializers
 #
@@ -147,6 +156,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer()
+    priority = _NestedPriorityModelSerializer()
 
     incident_date_start = serializers.DateTimeField()
 
@@ -162,6 +172,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'location',
             'category',
             'reporter',
+            'priority',
             'created_at',
             'updated_at',
             'incident_date_start',
@@ -186,8 +197,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_data = validated_data.pop('category')
+        priority_data = validated_data.pop('priority')
         signal = Signal.actions.create_initial(
-            validated_data, location_data, status_data, category_data, reporter_data)
+            validated_data, location_data, status_data, category_data, reporter_data, priority_data)
         return signal
 
     def update(self, instance, validated_data):
@@ -291,6 +303,7 @@ class SignalAuthHALSerializer(HALSerializer):
     reporter = _NestedReporterModelSerializer(read_only=True)
     status = _NestedStatusModelSerializer(read_only=True)
     category = _NestedCategoryModelSerializer(read_only=True)
+    priority = _NestedPriorityModelSerializer(read_only=True)
 
     image = ImageField(max_length=50, allow_empty_file=False)
 
@@ -310,6 +323,7 @@ class SignalAuthHALSerializer(HALSerializer):
             'location',
             'category',
             'reporter',
+            'priority',
             'created_at',
             'updated_at',
             'incident_date_start',
