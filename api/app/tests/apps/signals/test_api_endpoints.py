@@ -10,12 +10,13 @@ from signals.apps.signals.models import (
     AFWACHTING,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
-    Status,
-    Priority)
+    Status
+)
 from tests.apps.signals import factories
-from tests.apps.users.factories import UserFactory, SuperUserFactory
+from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
 class TestAPIEndpoints(APITestCase):

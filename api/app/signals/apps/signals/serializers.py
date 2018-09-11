@@ -9,19 +9,21 @@ from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.fields import (
     CategoryLinksField,
+    PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
-    StatusLinksField,
-    PriorityLinksField)
+    StatusLinksField
+)
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
-    Status,
-    Priority)
+    Status
+)
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 from signals.settings.categories import get_departments
 
