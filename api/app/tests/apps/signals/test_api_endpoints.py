@@ -32,6 +32,7 @@ class TestAuthAPIEndpoints(APITestCase):
         '/signals/auth/status/',
         '/signals/auth/category/',
         '/signals/auth/location/',
+        '/signals/auth/priority/',
     ]
 
     def setUp(self):
@@ -39,7 +40,8 @@ class TestAuthAPIEndpoints(APITestCase):
                                               location__id=1,
                                               status__id=1,
                                               category__id=1,
-                                              reporter__id=1)
+                                              reporter__id=1,
+                                              priority__id=1)
 
         # Forcing authentication
         superuser = SuperUserFacotry.create()
