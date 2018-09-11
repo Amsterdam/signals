@@ -81,8 +81,8 @@ class TestSignalManager(TransactionTestCase):
         location = Signal.actions.update_location(self.location_data, signal)
 
         # Check that the signal was updated in db
-        self.assertNotEqual(prev_location.pk, location.pk)
-        self.assertEqual(Location.objects.count(), 2)
+        self.assertEqual(signal.location, location)
+        self.assertEqual(signal.locations.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_location.send.assert_called_once_with(
@@ -100,8 +100,8 @@ class TestSignalManager(TransactionTestCase):
         status = Signal.actions.update_status(self.status_data, signal)
 
         # Check that the signal was updated in db
-        self.assertNotEqual(prev_status.pk, status.pk)
-        self.assertEqual(Status.objects.count(), 2)
+        self.assertEqual(signal.status, status)
+        self.assertEqual(signal.statuses.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_status.send.assert_called_once_with(
@@ -119,8 +119,8 @@ class TestSignalManager(TransactionTestCase):
         category = Signal.actions.update_category(self.category_data, signal)
 
         # Check that the signal was updated in db
-        self.assertNotEqual(prev_category.pk, category.pk)
-        self.assertEqual(Category.objects.count(), 2)
+        self.assertEqual(signal.category, category)
+        self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_category.send.assert_called_once_with(
@@ -138,8 +138,8 @@ class TestSignalManager(TransactionTestCase):
         reporter = Signal.actions.update_reporter(self.reporter_data, signal)
 
         # Check that the signal was updated in db
-        self.assertNotEqual(prev_reporter.pk, reporter.pk)
-        self.assertEqual(Reporter.objects.count(), 2)
+        self.assertEqual(signal.reporter, reporter)
+        self.assertEqual(signal.reporters.count(), 2)
 
         patched_update_reporter.send.assert_called_once_with(
             sender=Signal.actions.__class__,
@@ -156,8 +156,8 @@ class TestSignalManager(TransactionTestCase):
         priority = Signal.actions.update_priority(self.priority_data, signal)
 
         # Check that the signal was updated in db
-        self.assertNotEqual(prev_priority.pk, priority.pk)
-        self.assertEqual(Priority.objects.count(), 2)
+        self.assertEqual(signal.priority, priority)
+        self.assertEqual(signal.priorities.count(), 2)
 
         patched_update_priority.send.assert_called_once_with(
             sender=Signal.actions.__class__,
