@@ -15,7 +15,7 @@ def migrate_date_fields(apps, schema_editor):
         if not signal.created_at:
             signal.created_at = timezone.now()
         if not signal.updated_at:
-            signal.updated_at = timezone.now()
+            signal.updated_at = signal.created_at or timezone.now()
         signal.save()
 
     Status = apps.get_model('signals', 'Status')
@@ -23,7 +23,7 @@ def migrate_date_fields(apps, schema_editor):
         if not status.created_at:
             status.created_at = timezone.now()
         if not status.updated_at:
-            status.updated_at = timezone.now()
+            status.updated_at = status.created_at or timezone.now()
         status.save()
 
 
