@@ -11,8 +11,8 @@ from signals.apps.signals.fields import (
     CategoryLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
-    StatusLinksField
-)
+    StatusLinksField,
+    PriorityLinksField)
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
@@ -20,8 +20,8 @@ from signals.apps.signals.models import (
     Location,
     Reporter,
     Signal,
-    Status
-)
+    Status,
+    Priority)
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 from signals.settings.categories import get_departments
 
@@ -450,3 +450,24 @@ class CategoryHALSerializer(HALSerializer):
 
         # TODO add validation
         return data
+
+
+class PriorityHALSerializer(HALSerializer):
+    _display = DisplayField()
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    serializer_url_field = PriorityLinksField
+
+    class Meta:
+        model = Priority
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            '_signal',
+            'priority',
+        )
+
+    def create(self, validated_data):
+        signal = validated_data.pop('_signal')
+        priority = Signal.actions.update_priority(validated_data, signal)
+        return priority
