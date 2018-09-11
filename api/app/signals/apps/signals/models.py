@@ -42,7 +42,8 @@ class SignalManager(models.Manager):
 
             signal.save()
 
-            create_initial.send(sender=self.__class__, signal_obj=signal)
+            transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
+                                                              signal_obj=signal))
 
         return signal
 
@@ -60,10 +61,10 @@ class SignalManager(models.Manager):
             signal.location = location
             signal.save()
 
-            update_location.send(sender=self.__class__,
-                                 signal_obj=signal,
-                                 location=location,
-                                 prev_location=prev_location)
+            transaction.on_commit(lambda: update_location.send(sender=self.__class__,
+                                                               signal_obj=signal,
+                                                               location=location,
+                                                               prev_location=prev_location))
 
         return location
 
@@ -81,10 +82,10 @@ class SignalManager(models.Manager):
             signal.status = status
             signal.save()
 
-            update_status.send(sender=self.__class__,
-                               signal_obj=signal,
-                               status=status,
-                               prev_status=prev_status)
+            transaction.on_commit(lambda: update_status.send(sender=self.__class__,
+                                                             signal_obj=signal,
+                                                             status=status,
+                                                             prev_status=prev_status))
 
         return status
 
@@ -102,10 +103,10 @@ class SignalManager(models.Manager):
             signal.category = category
             signal.save()
 
-            update_category.send(sender=self.__class__,
-                                 signal_obj=signal,
-                                 category=category,
-                                 prev_category=prev_category)
+            transaction.on_commit(lambda: update_category.send(sender=self.__class__,
+                                                               signal_obj=signal,
+                                                               category=category,
+                                                               prev_category=prev_category))
 
         return category
 
@@ -123,10 +124,10 @@ class SignalManager(models.Manager):
             signal.reporter = reporter
             signal.save()
 
-            update_reporter.send(sender=self.__class__,
-                                 signal_obj=signal,
-                                 reporter=reporter,
-                                 prev_reporter=prev_reporter)
+            transaction.on_commit(lambda: update_reporter.send(sender=self.__class__,
+                                                               signal_obj=signal,
+                                                               reporter=reporter,
+                                                               prev_reporter=prev_reporter))
 
         return reporter
 
