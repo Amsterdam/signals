@@ -284,8 +284,8 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         user = UserFactory.create()  # Normal user without any extra permissions.
         self.client.force_authenticate(user=user)
 
-        # These endpoints are protected with user permissions. Check if we don't have permissions
-        # with a default `User` instance.
+        # These endpoints are protected with object-level permissions. Check if we can't POST to
+        # these endpoints with a normal `User` instance.
         endpoints = [
             '/signals/auth/status/',
             '/signals/auth/category/',
