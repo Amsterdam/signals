@@ -70,7 +70,7 @@ class LocationFactory(factory.DjangoModelFactory):
     class Meta:
         model = Location
 
-    _signal = factory.SubFactory(SignalFactory, locations=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', locations=None)
 
     buurt_code = fuzzy.FuzzyText(length=4)
     stadsdeel = fuzzy.FuzzyChoice(choices=(s[0] for s in STADSDELEN))
@@ -90,7 +90,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
         model = Reporter
 
-    _signal = factory.SubFactory(SignalFactory, reporters=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', reporters=None)
 
     phone = fuzzy.FuzzyText(length=10, chars=string.digits)
     email = 'john%d@example.org' % (int(random.random() * 100))
@@ -105,7 +105,7 @@ class CategoryFactory(factory.DjangoModelFactory):
     class Meta:
         model = Category
 
-    _signal = factory.SubFactory(SignalFactory, categories=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', categories=None)
 
     main = fuzzy.FuzzyText(length=10)
     sub = fuzzy.FuzzyText(length=10)
@@ -120,7 +120,7 @@ class StatusFactory(factory.DjangoModelFactory):
     class Meta:
         model = Status
 
-    _signal = factory.SubFactory(SignalFactory, statuses=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', statuses=None)
 
     text = fuzzy.FuzzyText(length=400)
     user = 'kees%s@amsterdam.nl' % (int(random.random() * 100))
@@ -137,7 +137,7 @@ class PriorityFactory(factory.DjangoModelFactory):
     class Meta:
         model = Priority
 
-    _signal = factory.SubFactory(SignalFactory, priorities=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', priorities=None)
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

@@ -276,7 +276,7 @@ class Location(CreatedUpdatedModel):
     """All location related information."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="locations",
+        "signals.Signal", related_name="locations",
         null=False, on_delete=models.CASCADE
     )
 
@@ -317,7 +317,7 @@ class Reporter(CreatedUpdatedModel):
     """Privacy sensitive information on reporter."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="reporters",
+        "signals.Signal", related_name="reporters",
         null=False, on_delete=models.CASCADE
     )
 
@@ -332,7 +332,7 @@ class Category(CreatedUpdatedModel):
     """Store Category information and Automatically suggested category."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="categories",
+        "signals.Signal", related_name="categories",
         null=False, on_delete=models.CASCADE
     )
 
@@ -407,7 +407,7 @@ class Status(CreatedUpdatedModel):
     """Signal status."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="statuses",
+        "signals.Signal", related_name="statuses",
         null=False, on_delete=models.CASCADE
     )
 
