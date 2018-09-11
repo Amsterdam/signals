@@ -11,6 +11,7 @@ update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_l
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
+update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 
 
 class SignalManager(models.Manager):
@@ -39,6 +40,8 @@ class SignalManager(models.Manager):
             signal.status = status
             signal.category = category
             signal.reporter = reporter
+
+            # TODO SIG-595 implement `priority` create
 
             signal.save()
 
@@ -131,6 +134,35 @@ class SignalManager(models.Manager):
 
         return reporter
 
+    def update_priority(self, data, signal):
+        """Update (create new) `Priority` object for given `Signal` object.
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Priority object
+        """
+        with transaction.atomic():
+            prev_priority = signal.priority
+
+            priority = Priority.objects.create(**data, _signal_id=signal.id)
+            signal.priority = priority
+            signal.save()
+
+            transaction.on_commit(lambda: update_priority.send(sender=self.__class__,
+                                                               signal_obj=signal,
+                                                               priority=priority,
+                                                               prev_priority=prev_priority))
+
+        return priority
+
+
+class CreatedUpdatedModel(models.Model):
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+    updated_at = models.DateTimeField(editable=False, auto_now=True)
+
+    class Meta:
+        abstract = True
+
 
 class Buurt(models.Model):
     ogc_fid = models.IntegerField(primary_key=True)
@@ -142,67 +174,59 @@ class Buurt(models.Model):
         db_table = 'buurt_simple'
 
 
-class Signal(models.Model):
-    """
-    Reporting object
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(Signal, self).__init__(*args, **kwargs)
-        if not self.signal_id:
-            self.signal_id = uuid.uuid4()
-
+class Signal(CreatedUpdatedModel):
     # we need an unique id for external systems.
     # TODO SIG-563 rename `signal_id` to `signal_uuid` to be more specific.
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=128, default='public-api')
 
     text = models.CharField(max_length=1000)
+    text_extra = models.CharField(max_length=10000, default='', blank=True)
 
-    text_extra = models.CharField(
-        max_length=10000, default='', blank=True)
-
-    location = models.OneToOneField(
-        'Location', related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    status = models.OneToOneField(
-        "Status", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    category = models.OneToOneField(
-        "Category", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
-
-    reporter = models.OneToOneField(
-        "Reporter", related_name="signal",
-        null=True, on_delete=models.SET_NULL
-    )
+    location = models.OneToOneField('signals.Location',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    status = models.OneToOneField('signals.Status',
+                                  related_name='signal',
+                                  null=True,
+                                  on_delete=models.SET_NULL)
+    category = models.OneToOneField('signals.Category',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    reporter = models.OneToOneField('signals.Reporter',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
+    priority = models.OneToOneField('signals.Priority',
+                                    related_name='signal',
+                                    null=True,
+                                    on_delete=models.SET_NULL)
 
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)
     incident_date_end = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, auto_now=True)
+
     # Date action is expected
     operational_date = models.DateTimeField(null=True)
+
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
-    image = models.ImageField(
-        upload_to='images/%Y/%m/%d/', null=True, blank=True)
+    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
-    upload = ArrayField(
-        models.FileField(
-                upload_to='uploads/%Y/%m/%d/'), null=True)
+    upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
 
     extra_properties = JSONField(null=True)
 
     objects = models.Manager()
     actions = SignalManager()
+
+    def __init__(self, *args, **kwargs):
+        super(Signal, self).__init__(*args, **kwargs)
+        if not self.signal_id:
+            self.signal_id = uuid.uuid4()
 
     def __str__(self):
         """Identifying string.
@@ -248,12 +272,11 @@ def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
-class Location(models.Model):
-    """All location related information
-    """
+class Location(CreatedUpdatedModel):
+    """All location related information."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="locations",
+        "signals.Signal", related_name="locations",
         null=False, on_delete=models.CASCADE
     )
 
@@ -265,8 +288,6 @@ class Location(models.Model):
     buurt_code = models.CharField(null=True, max_length=4)
     address = JSONField(null=True)
     address_text = models.CharField(null=True, max_length=256, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     extra_properties = JSONField(null=True)
 
@@ -292,30 +313,26 @@ class Location(models.Model):
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
 
-class Reporter(models.Model):
-    """Privacy sensitive information on reporter
-    """
+class Reporter(CreatedUpdatedModel):
+    """Privacy sensitive information on reporter."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="reporters",
+        "signals.Signal", related_name="reporters",
         null=False, on_delete=models.CASCADE
     )
 
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=17, blank=True)
     remove_at = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     extra_properties = JSONField(null=True)
 
 
-class Category(models.Model):
-    """Store Category information and Automatically suggested category
-    """
+class Category(CreatedUpdatedModel):
+    """Store Category information and Automatically suggested category."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="categories",
+        "signals.Signal", related_name="categories",
         null=False, on_delete=models.CASCADE
     )
 
@@ -344,14 +361,10 @@ class Category(models.Model):
         max_length=50, blank=True), null=True)
     ml_sub_all_prob = ArrayField(models.IntegerField(), null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     extra_properties = JSONField(null=True)
 
     def __str__(self):
-        """Identifying string.
-        """
+        """Identifying string."""
         return '{} - {} - {} - {}'.format(
             self.main,
             self.sub,
@@ -390,14 +403,11 @@ STATUS_OVERGANGEN = {
 }
 
 
-class Status(models.Model):
-    """Signal Status
-
-    Updates / Changes are handeled here
-    """
+class Status(CreatedUpdatedModel):
+    """Signal status."""
 
     _signal = models.ForeignKey(
-        "Signal", related_name="statuses",
+        "signals.Signal", related_name="statuses",
         null=False, on_delete=models.CASCADE
     )
 
@@ -415,11 +425,6 @@ class Status(models.Model):
         default=False,
         help_text='Wel of niet status extern weergeven')
 
-    created_at = models.DateTimeField(
-        auto_now_add=True, null=False, db_index=True)
-    updated_at = models.DateTimeField(
-        auto_now_add=True, null=True, db_index=True)
-
     extra_properties = JSONField(null=True)
 
     class Meta:
@@ -428,3 +433,26 @@ class Status(models.Model):
 
     def __str__(self):
         return str(self.text)
+
+
+class Priority(CreatedUpdatedModel):
+    PRIORITY_NORMAL = 'normal'
+    PRIORITY_HIGH = 'high'
+    PRIORITY_CHOICES = (
+        (PRIORITY_NORMAL, 'Normal'),
+        (PRIORITY_HIGH, 'High'),
+    )
+
+    _signal = models.ForeignKey('signals.Signal',
+                                related_name='priorities',
+                                null=False,
+                                on_delete=models.CASCADE)
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default=PRIORITY_NORMAL)
+    created_by = models.EmailField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'Priorities'
+
+    def __str__(self):
+        """String representation."""
+        return self.get_priority_display()
