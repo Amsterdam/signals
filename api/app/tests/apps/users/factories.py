@@ -8,7 +8,7 @@ class UserFactory(factory.DjangoModelFactory):
         model = settings.AUTH_USER_MODEL
 
 
-class SuperUserFacotry(UserFactory):
+class SuperUserFactory(UserFactory):
     first_name = 'John'
     last_name = 'Doe'
     email = 'signals.admin@amsterdam.nl'

@@ -5,7 +5,7 @@ from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
 from tests.apps.signals.factories import SignalFactory
-from tests.apps.users.factories import SuperUserFacotry
+from tests.apps.users.factories import SuperUserFactory
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 N_RECORDS = 10
@@ -31,7 +31,7 @@ class TestFilterBase(APITestCase):
             signal.location.save()
 
         # Forcing authentication
-        superuser = SuperUserFacotry.create()
+        superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
 
     def _get_response(self, endpoint, querystring):

@@ -2,13 +2,13 @@ import json
 
 from rest_framework.test import APITestCase
 
-from tests.apps.users.factories import SuperUserFacotry
+from tests.apps.users.factories import SuperUserFactory
 
 
 class TestUserMeView(APITestCase):
 
     def test_get_authenticated(self):
-        superuser = SuperUserFacotry.create()
+        superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
         response = self.client.get('/signals/user/auth/me/')
 

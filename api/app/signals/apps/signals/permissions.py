@@ -42,7 +42,7 @@ class ReporterPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.user:
-            if request.method == 'POST' and not request.user.has_perm('siognals.add_reporter'):
+            if request.method == 'POST' and not request.user.has_perm('signals.add_reporter'):
                 return False
             return True
         else:
@@ -54,7 +54,7 @@ class PriorityPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.user:
-            if request.method == 'POST' and not request.user.has_perm('siognals.add_priority'):
+            if request.method == 'POST' and not request.user.has_perm('signals.add_priority'):
                 return False
             return True
         else:
