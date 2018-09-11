@@ -148,10 +148,10 @@ class SignalManager(models.Manager):
             signal.priority = priority
             signal.save()
 
-            update_priority.send(sender=self.__class__,
-                                 signal_obj=signal,
-                                 priority=priority,
-                                 prev_priority=prev_priority)
+            transaction.on_commit(lambda: update_priority.send(sender=self.__class__,
+                                                               signal_obj=signal,
+                                                               priority=priority,
+                                                               prev_priority=prev_priority))
 
         return priority
 
