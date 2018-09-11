@@ -1,10 +1,10 @@
 """
 Tests for the model manager in signals.apps.signals.models
 """
-from datetime import datetime
 from unittest import mock
 
 from django.test import TransactionTestCase
+from django.utils import timezone
 from django.contrib.gis.geos import Point
 
 from signals.apps.signals.models import (
@@ -27,7 +27,7 @@ class TestSignalManager(TransactionTestCase):
         self.signal_data = {
             'text': 'text message',
             'text_extra': 'test message extra',
-            'incident_date_start': datetime(2018, 6, 18, 13, 30),
+            'incident_date_start': timezone.now(),
         }
         self.location_data = {
             'geometrie': Point(4.898466, 52.361585),
