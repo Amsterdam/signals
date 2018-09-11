@@ -12,8 +12,8 @@ from signals.apps.signals.models import (
     Location,
     Reporter,
     Signal,
-    Status
-)
+    Status,
+    Priority)
 from tests.apps.signals import factories
 from tests.apps.users.factories import UserFactory, SuperUserFactory
 
@@ -385,3 +385,18 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         # check that current location of signal is now this one
         self.assertEqual(self.signal.category.id, result['id'])
         self.assertEqual(self.signal.category.department, 'CCA,ASC,WAT')
+
+    def test_post_priority(self):
+        url = '/signals/auth/priority/'
+        data = {
+            '_signal': self.signal.id,
+            'priority': Priority.PRIORITY_HIGH,
+        }
+        response = self.client.post(url, data, format='json')
+        result = response.json()
+
+        self.assertEqual(response.status_code, 201)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.priority.id, result['id'])
+        self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
