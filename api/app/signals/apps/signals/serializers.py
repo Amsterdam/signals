@@ -160,6 +160,8 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'location',
             'category',
             'reporter',
+            'created_at',
+            'updated_at',
             'incident_date_start',
             'incident_date_end',
             'operational_date',
@@ -169,6 +171,8 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'signal_id',
+            'created_at',
+            'updated_at',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
@@ -244,7 +248,6 @@ class _NestedStatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
             'id',
             'state',
         )
-
         extra_kwargs = {'_signal': {'required': False}}
 
 
@@ -257,15 +260,21 @@ class SignalStatusOnlyHALSerializer(HALSerializer):
 
     class Meta(object):
         model = Signal
-        fields = [
-            "_links",
-            "_display",
-            "signal_id",
-            "status",
-            "incident_date_start",
-            "incident_date_end",
-            "operational_date",
-        ]
+        fields = (
+            '_links',
+            '_display',
+            'signal_id',
+            'status',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+        )
+        read_only_fields = (
+            'created_at',
+            'updated_at',
+        )
 
 
 #
@@ -287,28 +296,33 @@ class SignalAuthHALSerializer(HALSerializer):
 
     class Meta(object):
         model = Signal
-        fields = [
-            "_links",
-            "_display",
-            # "pk",
-            "id",
-            "signal_id",
-            "source",
-            "text",
-            "text_extra",
-            "status",
-            "location",
-            "category",
-            # DO NOT ENABLE
-            # make test for this
-            "reporter",
-            "incident_date_start",
-            "incident_date_end",
-            "operational_date",
-            "image",
-            "extra_properties",
-            # "upload",
-        ]
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'signal_id',
+            'source',
+            'text',
+            'text_extra',
+            'status',
+            'location',
+            'category',
+            'reporter',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+            'image',
+            'extra_properties',
+        )
+        read_only_fields = (
+            'id',
+            'signal_id',
+            'created_at',
+            'updated_at',
+        )
+
 
     def update(self, instance, validated_data):
         raise NotImplementedError('`update()` is not allowed with this serializer.')
