@@ -15,7 +15,8 @@ from signals.apps.signals.models import Category, Location, Signal, Status, Prio
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
-    StatusPermission
+    StatusPermission,
+    PriorityPermission
 )
 from signals.apps.signals.serializers import (
     CategoryHALSerializer,
@@ -145,7 +146,7 @@ class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
-    # permission_classes = (PriorityPermission, )
+    permission_classes = (PriorityPermission, )
     queryset = Priority.objects.all().order_by('id').prefetch_related('signal')
     serializer_detail_class = PriorityHALSerializer
     serializer_class = PriorityHALSerializer
