@@ -39,11 +39,11 @@ class SignalFactory(factory.DjangoModelFactory):
     text_extra = fuzzy.FuzzyText(length=100)
 
     # Creating (reverse FK) related objects after this `Signal` is created.
-    locations = factory.RelatedFactory('tests.apps.signals.factories.LocationFactory', '_signal')
-    statuses = factory.RelatedFactory('tests.apps.signals.factories.StatusFactory', '_signal')
-    categories = factory.RelatedFactory('tests.apps.signals.factories.CategoryFactory', '_signal')
-    reporters = factory.RelatedFactory('tests.apps.signals.factories.ReporterFactory', '_signal')
-    priorities = factory.RelatedFactory('tests.apps.signals.factories.PriorityFactory', '_signal')
+    location = factory.RelatedFactory('tests.apps.signals.factories.LocationFactory', '_signal')
+    status = factory.RelatedFactory('tests.apps.signals.factories.StatusFactory', '_signal')
+    category = factory.RelatedFactory('tests.apps.signals.factories.CategoryFactory', '_signal')
+    reporter = factory.RelatedFactory('tests.apps.signals.factories.ReporterFactory', '_signal')
+    priority = factory.RelatedFactory('tests.apps.signals.factories.PriorityFactory', '_signal')
 
     incident_date_start = fuzzy.FuzzyDateTime(
         datetime(2017, 11, 1, tzinfo=pytz.UTC),
@@ -90,7 +90,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
         model = Reporter
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', reporters=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', reporter=None)
 
     phone = fuzzy.FuzzyText(length=10, chars=string.digits)
     email = 'john%d@example.org' % (int(random.random() * 100))
@@ -105,7 +105,7 @@ class CategoryFactory(factory.DjangoModelFactory):
     class Meta:
         model = Category
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', categories=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', category=None)
 
     main = fuzzy.FuzzyText(length=10)
     sub = fuzzy.FuzzyText(length=10)
@@ -120,7 +120,7 @@ class StatusFactory(factory.DjangoModelFactory):
     class Meta:
         model = Status
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', statuses=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', status=None)
 
     text = fuzzy.FuzzyText(length=400)
     user = 'kees%s@amsterdam.nl' % (int(random.random() * 100))
@@ -137,7 +137,7 @@ class PriorityFactory(factory.DjangoModelFactory):
     class Meta:
         model = Priority
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', priorities=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', priority=None)
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
