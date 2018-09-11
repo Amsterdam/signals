@@ -1,10 +1,5 @@
 """
 Tests for the model manager in signals.apps.signals.models
-
-Note:
-The need to have correctly deserialized data, creates a dependence on the serializers
-module (we need correctly deserialized data, not just JSON from our fixtures). If the
-serializers are broken, these tests will stop working as well.
 """
 from datetime import datetime
 from unittest import mock
@@ -13,8 +8,15 @@ from django.test import TransactionTestCase
 from django.contrib.gis.geos import Point
 
 from signals.apps.signals.models import (
-    Category, Location, Reporter, Signal, Status, Priority,
-    STADSDEEL_CENTRUM, GEMELD)
+    GEMELD,
+    STADSDEEL_CENTRUM,
+    Category,
+    Location,
+    Priority,
+    Reporter,
+    Signal,
+    Status
+)
 from tests.apps.signals.factories import SignalFactory
 
 
