@@ -13,10 +13,11 @@ from signals.apps.signals.models import (
     STADSDELEN,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
-    Status,
-    Priority)
+    Status
+)
 
 # Amsterdam.
 BBOX = [52.03560, 4.58565, 52.48769, 5.31360]

@@ -3,16 +3,15 @@ Tests for the model manager in signals.apps.signals.models
 """
 from unittest import mock
 
+from django.contrib.gis.geos import Point
 from django.test import TransactionTestCase
 from django.utils import timezone
-from django.contrib.gis.geos import Point
 
 from signals.apps.signals.models import (
     GEMELD,
     STADSDEEL_CENTRUM,
     Category,
     Location,
-    Priority,
     Reporter,
     Signal,
     Status
