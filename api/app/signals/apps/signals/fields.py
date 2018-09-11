@@ -61,23 +61,6 @@ class CategoryLinksField(serializers.HyperlinkedIdentityField):
         return result
 
 
-class ReporterLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
-
-    def to_representation(self, value):
-        request = self.context.get('request')
-
-        result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, "reporter-auth-detail", request, None))
-             ),
-        ])
-
-        return result
-
-
 class PriorityLinksField(serializers.HyperlinkedIdentityField):
     """
     Return authorized url. handy for development.
