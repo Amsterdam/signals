@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 # Known to still be problematic, work in progress
-from signals.integrations.sigmax.send_example import send_example
+from signals.apps.sigmax.send_example import send_example
 
 
 class Command(BaseCommand):

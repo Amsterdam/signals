@@ -1,6 +1,6 @@
 from django.dispatch import receiver
 
-from signals.apps.signals import tasks
+from signals.apps.sigmax import tasks
 from signals.apps.signals.models import create_initial
 
 

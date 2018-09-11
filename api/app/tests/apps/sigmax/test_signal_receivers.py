@@ -8,7 +8,7 @@ from tests.apps.signals.factories import SignalFactory
 
 class TestSignalReceivers(TestCase):
 
-    @mock.patch('signals.apps.signals.signal_receivers.tasks', autospec=True)
+    @mock.patch('signals.apps.sigmax.signal_receivers.tasks', autospec=True)
     def test_create_initial_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         create_initial.send(sender=self.__class__, signal_obj=signal)

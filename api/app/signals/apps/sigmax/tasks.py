@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
+from signals.apps.sigmax import handler as sigmax
 from signals.apps.signals.models import Signal
 from signals.celery import app
-from signals.utils.datawarehouse import save_csv_files_datawarehouse
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,13 @@ def retrieve_signal(pk: int) -> Optional[Signal]:
 
 
 @app.task
-def task_save_csv_files_datawarehouse():
-    """Celery task to save CSV files for Datawarehouse.
-
-    This task is scheduled in Celery beat to run periodically.
-
-    :returns:
+def push_to_sigmax(pk: int):
     """
-    save_csv_files_datawarehouse()
+    Send signals to Sigmax if applicable
+
+    :param pk:
+    :return: Nothing
+    """
+    signal: Signal = retrieve_signal(pk)
+    if signal and sigmax.is_signal_applicable(signal):
+        sigmax.handle(signal)
