@@ -35,6 +35,7 @@ signal_router.register(r'auth/signal', api_views.SignalAuthViewSet, base_name='s
 signal_router.register(r'auth/status', api_views.StatusAuthViewSet, base_name='status-auth')
 signal_router.register(r'auth/category', api_views.CategoryAuthViewSet, base_name='category-auth')
 signal_router.register(r'auth/location', api_views.LocationAuthViewSet, base_name='location-auth')
+signal_router.register(r'auth/priority', api_views.PriorityAuthViewSet, base_name='priority-auth')
 
 urlpatterns = [
     path('', include(signal_router.urls)),

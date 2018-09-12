@@ -9,6 +9,7 @@ from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.fields import (
     CategoryLinksField,
+    PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField
@@ -18,6 +19,7 @@ from signals.apps.signals.models import (
     STATUS_OVERGANGEN,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
     Status
@@ -450,3 +452,24 @@ class CategoryHALSerializer(HALSerializer):
 
         # TODO add validation
         return data
+
+
+class PriorityHALSerializer(HALSerializer):
+    _display = DisplayField()
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    serializer_url_field = PriorityLinksField
+
+    class Meta:
+        model = Priority
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            '_signal',
+            'priority',
+        )
+
+    def create(self, validated_data):
+        signal = validated_data.pop('_signal')
+        priority = Signal.actions.update_priority(validated_data, signal)
+        return priority

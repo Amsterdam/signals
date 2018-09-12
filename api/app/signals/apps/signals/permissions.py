@@ -2,9 +2,8 @@ from rest_framework import permissions
 
 
 class StatusPermission(permissions.BasePermission):
-    """
-    Permission check for status.
-    """
+    """Permission check for `Status`."""
+
     def has_permission(self, request, view):
         if request.user:
             if request.method == 'POST' and not request.user.has_perm('signals.add_status'):
@@ -15,9 +14,8 @@ class StatusPermission(permissions.BasePermission):
 
 
 class CategoryPermission(permissions.BasePermission):
-    """
-    Permission check for status.
-    """
+    """Permission check for `Category`."""
+
     def has_permission(self, request, view):
         if request.user:
             if request.method == 'POST' and not request.user.has_perm('signals.add_category'):
@@ -28,9 +26,8 @@ class CategoryPermission(permissions.BasePermission):
 
 
 class LocationPermission(permissions.BasePermission):
-    """
-    Permission check for status.
-    """
+    """Permission check for `Location`."""
+
     def has_permission(self, request, view):
         if request.user:
             if request.method == 'POST' and not request.user.has_perm('signals.add_location'):
@@ -40,13 +37,12 @@ class LocationPermission(permissions.BasePermission):
             return False
 
 
-class ReporterPermission(permissions.BasePermission):
-    """
-    Permission check for status.
-    """
+class PriorityPermission(permissions.BasePermission):
+    """Permission check for `Priority`."""
+
     def has_permission(self, request, view):
         if request.user:
-            if request.method == 'POST' and not request.user.has_perm('siognals.add_reporter'):
+            if request.method == 'POST' and not request.user.has_perm('signals.add_priority'):
                 return False
             return True
         else:

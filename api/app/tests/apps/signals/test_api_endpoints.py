@@ -10,12 +10,13 @@ from signals.apps.signals.models import (
     AFWACHTING,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
     Status
 )
 from tests.apps.signals import factories
-from tests.apps.users.factories import SuperUserFacotry
+from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
 class TestAPIEndpoints(APITestCase):
@@ -32,6 +33,7 @@ class TestAuthAPIEndpoints(APITestCase):
         '/signals/auth/status/',
         '/signals/auth/category/',
         '/signals/auth/location/',
+        '/signals/auth/priority/',
     ]
 
     def setUp(self):
@@ -39,11 +41,12 @@ class TestAuthAPIEndpoints(APITestCase):
                                               location__id=1,
                                               status__id=1,
                                               category__id=1,
-                                              reporter__id=1)
+                                              reporter__id=1,
+                                              priority__id=1)
 
         # Forcing authentication
-        superuser = SuperUserFacotry.create()
-        self.client.force_authenticate(user=superuser)
+        user = UserFactory.create()  # Normal user without any extra permissions.
+        self.client.force_authenticate(user=user)
 
     def test_get_lists(self):
         for url in self.endpoints:
@@ -275,8 +278,26 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         super().setUp()
 
         # Forcing authentication
-        superuser = SuperUserFacotry.create()
+        superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
+
+    def test_endpoints_forbidden(self):
+        user = UserFactory.create()  # Normal user without any extra permissions.
+        self.client.force_authenticate(user=user)
+
+        # These endpoints are protected with object-level permissions. Check if we can't POST to
+        # these endpoints with a normal `User` instance.
+        endpoints = [
+            '/signals/auth/status/',
+            '/signals/auth/category/',
+            '/signals/auth/location/',
+            '/signals/auth/priority/',
+        ]
+        for endpoint in endpoints:
+            response = self.client.post(endpoint, {}, format='json')
+            self.assertEqual(response.status_code,
+                             403,
+                             'Wrong response code for {}'.format(endpoint))
 
     def test_post_status_all_fields(self):
         url = '/signals/auth/status/'
@@ -354,14 +375,29 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(self.signal.location.id, result['id'])
 
     def test_post_category(self):
-        """Category Post"""
-        url = "/signals/auth/category/"
+        url = '/signals/auth/category/'
         postjson = self._get_fixture('post_category')
         postjson['_signal'] = self.signal.id
         response = self.client.post(url, postjson, format='json')
         result = response.json()
+
         self.assertEqual(response.status_code, 201)
         self.signal.refresh_from_db()
         # check that current location of signal is now this one
         self.assertEqual(self.signal.category.id, result['id'])
-        self.assertEqual(self.signal.category.department, "CCA,ASC,WAT")
+        self.assertEqual(self.signal.category.department, 'CCA,ASC,WAT')
+
+    def test_post_priority(self):
+        url = '/signals/auth/priority/'
+        data = {
+            '_signal': self.signal.id,
+            'priority': Priority.PRIORITY_HIGH,
+        }
+        response = self.client.post(url, data, format='json')
+        result = response.json()
+
+        self.assertEqual(response.status_code, 201)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.priority.id, result['id'])
+        self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
