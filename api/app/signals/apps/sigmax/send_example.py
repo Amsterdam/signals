@@ -11,7 +11,7 @@ import uuid
 
 import requests
 
-from signals.integrations.sigmax.handler import ServiceNotConfigured
+from signals.apps.sigmax.handler import ServiceNotConfigured
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)

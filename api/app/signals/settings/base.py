@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'signals.apps.health',
     'signals.apps.signals',
     'signals.apps.users',
+    'signals.apps.sigmax',
 ]
 
 MIDDLEWARE = [
