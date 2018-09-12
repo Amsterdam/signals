@@ -98,7 +98,7 @@ class SignalViewSet(mixins.CreateModelMixin,
     lookup_field = 'signal_id'
 
 
-class SignalAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+class SignalAuthViewSet(DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     queryset = (
         Signal.objects.all()

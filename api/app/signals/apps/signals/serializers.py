@@ -338,9 +338,6 @@ class SignalAuthHALSerializer(HALSerializer):
             'updated_at',
         )
 
-    def update(self, instance, validated_data):
-        raise NotImplementedError('`update()` is not allowed with this serializer.')
-
 
 class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())

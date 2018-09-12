@@ -283,6 +283,12 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
 
+    def test_signal_post_not_allowed(self):
+        endpoint = '/signals/auth/signal/'
+        response = self.client.post(endpoint, {}, format='json')
+
+        self.assertEqual(response.status_code, 405)
+
     def test_endpoints_forbidden(self):
         user = UserFactory.create()  # Normal user without any extra permissions.
         self.client.force_authenticate(user=user)
