@@ -22,7 +22,7 @@ class SignalManager(models.Manager):
                        status_data,
                        category_data,
                        reporter_data,
-                       priority_data):
+                       priority_data=None):
         """Create a new `Signal` object with all related objects.
 
         :param signal_data: deserialized data dict
@@ -30,11 +30,14 @@ class SignalManager(models.Manager):
         :param status_data: deserialized data dict
         :param category_data: deserialized data dict
         :param reporter_data: deserialized data dict
-        :param priority_data: deserialized data dict
+        :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
         with transaction.atomic():
             signal = self.create(**signal_data)
+
+            # Set default (empty dict) value for `priority_data` if None is given.
+            priority_data = priority_data or {}
 
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)

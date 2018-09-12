@@ -156,7 +156,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer()
-    priority = _NestedPriorityModelSerializer()
+    priority = _NestedPriorityModelSerializer(required=False, read_only=True)
 
     incident_date_start = serializers.DateTimeField()
 
@@ -197,9 +197,8 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_data = validated_data.pop('category')
-        priority_data = validated_data.pop('priority')
         signal = Signal.actions.create_initial(
-            validated_data, location_data, status_data, category_data, reporter_data, priority_data)
+            validated_data, location_data, status_data, category_data, reporter_data)
         return signal
 
     def update(self, instance, validated_data):

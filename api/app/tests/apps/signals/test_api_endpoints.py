@@ -144,6 +144,8 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
         self.assertEqual(response.data.get('text'), None)
         self.assertEqual(response.data.get('category'), None)
         self.assertEqual(response.data.get('location'), None)
+        self.assertEqual(response.data.get('reporter'), None)
+        self.assertEqual(response.data.get('priority'), None)
         self.assertEqual(response.data.get('id'), None)
 
     def test_get_list(self):
