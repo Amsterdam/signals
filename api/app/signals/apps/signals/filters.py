@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
 
-from signals.apps.signals.models import STATUS_OPTIONS, Buurt, Location, Signal, Status, Priority
+from signals.apps.signals.models import STATUS_OPTIONS, Buurt, Location, Priority, Signal, Status
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),

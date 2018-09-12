@@ -12,10 +12,11 @@ from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
-    Status,
-    Priority)
+    Status
+)
 from tests.apps.signals.factories import SignalFactory
 
 
