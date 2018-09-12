@@ -1,7 +1,5 @@
 import logging
-from typing import Optional
 
-from signals.apps.signals.models import Signal
 from signals.celery import app
 from signals.utils.datawarehouse import save_csv_files_datawarehouse
 
