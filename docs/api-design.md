@@ -122,7 +122,8 @@ Onze API draait op:
 
 - Ik zou de namespace niet opdelen in een `/private/` en `/public/` deel.
     - Ok, wat zou het dan moeten worden? Willen we wel een duidelijk splitsing tussen auth en unauth endpoints?
-    - We (wij als Datapunt) willen geen endpoints die verschillend gedrag vertonen bij wel of niet ingelogd zijn??  
+    - We (wij als Datapunt) willen geen endpoints die verschillend gedrag vertonen bij wel of niet ingelogd zijn??
+- Uitzoeken: HAL (`_embedded`) (links naar sub resources)  
 - Na denken over: Doe iets POE-achtigs (Post Once Exactly). —PvB
     - Lijkt nog geen standaard voor te zijn?
         - ID's vanuit de client meesturen? Vraagt ook om FE aanpassingen
