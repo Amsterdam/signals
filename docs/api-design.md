@@ -1,4 +1,4 @@
-# API ontwerp voor SIA (voorstel versie: 2018-09-10)
+# API ontwerp voor SIA (voorstel versie: 1)
 
 Context:
     Het doorvoeren van API versionering vereist een aanpassing van de URL
