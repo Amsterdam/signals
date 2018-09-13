@@ -336,7 +336,7 @@ class Reporter(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)
 
-
+# TODO Rename to through model category
 class Category(CreatedUpdatedModel):
     """Store Category information and Automatically suggested category."""
 
@@ -465,3 +465,59 @@ class Priority(CreatedUpdatedModel):
     def __str__(self):
         """String representation."""
         return self.get_priority_display()
+
+
+#
+# Category declarations
+#
+
+
+class MainCategory(models.Model):
+    name = models.CharField(max_length=255)
+
+
+class SubCategory(models.Model):
+    HANDLING_A3DMC = 'A3DMC'
+    HANDLING_A3DEC = 'A3DEC'
+    HANDLING_A3WMC = 'A3WMC'
+    HANDLING_A3WEC = 'A3WEC'
+    HANDLING_I5DMC = 'I5DMC'
+    HANDLING_STOPEC = 'STOPEC'
+    HANDLING_KLOKLICHTZC = 'KLOKLICHTZC'
+    HANDLING_GLADZC = 'GLADZC'
+    HANDLING_A3DEVOMC = 'A3DEVOMC'
+    HANDLING_WS1EC = 'WS1EC'
+    HANDLING_WS2EC = 'WS2EC'
+    HANDLING_REST = 'REST'
+    HANDLING_CHOICES = (
+        (HANDLING_A3DMC, HANDLING_A3DMC),
+        (HANDLING_A3DEC, HANDLING_A3DEC),
+        (HANDLING_A3WMC, HANDLING_A3WMC),
+        (HANDLING_A3WEC, HANDLING_A3WEC),
+        (HANDLING_I5DMC, HANDLING_I5DMC),
+        (HANDLING_STOPEC, HANDLING_STOPEC),
+        (HANDLING_KLOKLICHTZC, HANDLING_KLOKLICHTZC),
+        (HANDLING_GLADZC, HANDLING_GLADZC),
+        (HANDLING_A3DEVOMC, HANDLING_A3DEVOMC),
+        (HANDLING_WS1EC, HANDLING_WS1EC),
+        (HANDLING_WS2EC, HANDLING_WS2EC),
+        (HANDLING_REST, HANDLING_REST),
+    )
+
+    main_category = models.ForeignKey('signals.MainCategory',
+                                      related_name='sub_categories',
+                                      on_delete=models.PROTECT)
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=4)
+    handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
+    departments = models.ManyToManyField('signals.Department')
+
+
+class Department(models.Model):
+    code = models.CharField(max_length=3)
+    name = models.CharField(max_length=255)
+    is_intern = models.BooleanField(default=True)
+
+    @property
+    def is_extern(self):
+        return not self.is_intern
