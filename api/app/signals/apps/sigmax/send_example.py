@@ -167,7 +167,7 @@ def send_example(**options):
 
     msg = {
         '1': EXAMPLE_MESSAGE_1,
-        '2': EXAMPLE_MESSAGE_2,  # does not seem to work as yet
+        '2': EXAMPLE_MESSAGE_2,
     }[example]
 
     action = {
@@ -182,15 +182,18 @@ def send_example(**options):
         'ZKN_UUID': zkn_uuid,
         'DOC_UUID': doc_uuid,
     })).encode('utf-8')
+
+    import ipdb; ipdb.set_trace()
+
     logger.debug('-- Send the following --')
     logger.debug(encoded)
     logger.debug('--')
 
     # -- uncomment this to get the message
     #    dumped to a file in the local directory --
-    # fn = 'attempt-{}.xml'.format(uuid.uuid4())
-    # with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
-    #        f.write(encoded)
+    fn = 'attempt-{}.xml'.format(uuid.uuid4())
+    with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
+           f.write(encoded)
 
     headers = {
         'SOAPAction': action,

@@ -26,12 +26,13 @@ VOEG_ZAAKDOCUMENT_TOE_SOAPACTION = \
 
 SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
-PLACEHOLDER_STRING = ''
 
 
 class ServiceNotConfigured(Exception):
     pass
 
+
+# TODO SIG-593: implement data mapping if and when it is defined
 
 def _generate_creeer_zaak_lk01_message(signal: Signal):
     """
@@ -44,9 +45,12 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
         'STARTDATUM': escape(_format_date(signal.incident_date_start)),
         'REGISTRATIEDATUM': escape(_format_date(signal.created_at)),
         'EINDDATUMGEPLAND': escape(_format_date(signal.incident_date_end)),
-        'OPENBARERUIMTENAAM': escape(signal.location.address['openbare_ruimte']),
-        'HUISNUMMER': escape(str(signal.location.address['huisnummer'])),
-        'POSTCODE': escape(signal.location.address['postcode']),
+#        'OPENBARERUIMTENAAM': escape(signal.location.address['openbare_ruimte']),
+#        'HUISNUMMER': escape(str(signal.location.address['huisnummer'])),
+#        'POSTCODE': '1011 AA',
+        'OPENBARERUIMTENAAM': 'Capriweg',
+        'HUISNUMMER': '30',
+        'POSTCODE': '1044 AL',
         'X': escape(str(signal.location.geometrie.x)),
         'Y': escape(str(signal.location.geometrie.y)),
     })
@@ -94,9 +98,9 @@ def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
             'ZKN_UUID': str(signal.signal_id),
             'DOC_UUID': escape(str(uuid.uuid4())),
             'DATA': encoded_jpg.decode('utf-8'),
-            'DOC_TYPE': 'PDF',
-            'DOC_TYPE_LOWER': 'pdf',
-            'FILE_NAME': f'MORA-{str(signal.id)}.pdf'
+            'DOC_TYPE': 'JPG',
+            'DOC_TYPE_LOWER': 'jpg',
+            'FILE_NAME': f'MORA-{str(signal.id)}.jpg'
         })
 
     return ''
@@ -112,6 +116,13 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
 
     # Prepare our request to Sigmax
     encoded = stuf_msg.encode('utf-8')
+
+    # -- uncomment this to get the message
+    #    dumped to a file in the local directory --
+    fn = 'compare-{}.xml'.format(uuid.uuid4())
+    with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
+           f.write(encoded)
+
     headers = {
         'SOAPAction': soap_action,
         'Content-Type': 'text/xml; charset=UTF-8',

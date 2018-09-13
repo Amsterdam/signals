@@ -25,3 +25,6 @@ try:
     from signals.settings.local import *  # noqa
 except ImportError:
     pass
+
+
+LOGGING['loggers']['signals']['level'] = 'DEBUG' 

@@ -18,16 +18,17 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from tests.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
-BBOX = [52.03560, 4.58565, 52.48769, 5.31360]
+BBOX = [4.58565, 52.03560, 5.31360, 52.48769]
 
 
 def get_puntje():
 
-    lat = fuzzy.FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
-    lon = fuzzy.FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
-    return Point(float(lat), float(lon))
+    lon = fuzzy.FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
+    lat = fuzzy.FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
+    return Point(float(lon), float(lat))
 
 
 class SignalFactory(factory.DjangoModelFactory):
