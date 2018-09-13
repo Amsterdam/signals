@@ -473,7 +473,11 @@ class Priority(CreatedUpdatedModel):
 
 
 class MainCategory(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        # TODO
+        pass
 
 
 class SubCategory(models.Model):
@@ -507,16 +511,24 @@ class SubCategory(models.Model):
     main_category = models.ForeignKey('signals.MainCategory',
                                       related_name='sub_categories',
                                       on_delete=models.PROTECT)
+    code = models.CharField(max_length=4, unique=True)
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=4)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')
+
+    def __str__(self):
+        # TODO
+        pass
 
 
 class Department(models.Model):
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=255)
     is_intern = models.BooleanField(default=True)
+
+    def __str__(self):
+        # TODO
+        pass
 
     @property
     def is_extern(self):
