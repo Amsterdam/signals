@@ -137,6 +137,15 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
             'extra_properties',
         )
 
+
+class _NestedPriorityModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Priority
+        fields = (
+            'priority',
+        )
+
 #
 # Unauth serializers
 #
@@ -147,6 +156,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer()
+    priority = _NestedPriorityModelSerializer(required=False, read_only=True)
 
     incident_date_start = serializers.DateTimeField()
 
@@ -162,6 +172,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'location',
             'category',
             'reporter',
+            'priority',
             'created_at',
             'updated_at',
             'incident_date_start',
@@ -291,6 +302,7 @@ class SignalAuthHALSerializer(HALSerializer):
     reporter = _NestedReporterModelSerializer(read_only=True)
     status = _NestedStatusModelSerializer(read_only=True)
     category = _NestedCategoryModelSerializer(read_only=True)
+    priority = _NestedPriorityModelSerializer(read_only=True)
 
     image = ImageField(max_length=50, allow_empty_file=False)
 
@@ -310,6 +322,7 @@ class SignalAuthHALSerializer(HALSerializer):
             'location',
             'category',
             'reporter',
+            'priority',
             'created_at',
             'updated_at',
             'incident_date_start',
@@ -324,9 +337,6 @@ class SignalAuthHALSerializer(HALSerializer):
             'created_at',
             'updated_at',
         )
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError('`update()` is not allowed with this serializer.')
 
 
 class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):

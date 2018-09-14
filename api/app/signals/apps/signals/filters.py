@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
 
-from signals.apps.signals.models import STATUS_OPTIONS, Buurt, Location, Signal, Status
+from signals.apps.signals.models import STATUS_OPTIONS, Buurt, Location, Priority, Signal, Status
 
 STADSDELEN = (
     ("B", "Westpoort (B)"),
@@ -101,6 +101,7 @@ class SignalFilter(FilterSet):
 
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
     category__sub = filters.MultipleChoiceFilter(choices=category_sub_choices)
+    priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)
 
     class Meta(object):
         model = Signal

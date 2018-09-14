@@ -12,6 +12,7 @@ from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     Category,
     Location,
+    Priority,
     Reporter,
     Signal,
     Status
@@ -47,7 +48,7 @@ class TestSignalManager(TransactionTestCase):
             'user': 'test@example.com',
         }
         self.priority_data = {
-            'priority': 'high'
+            'priority': Priority.PRIORITY_HIGH,
         }
 
     @mock.patch('signals.apps.signals.models.create_initial', autospec=True)
@@ -66,10 +67,22 @@ class TestSignalManager(TransactionTestCase):
         self.assertEquals(Status.objects.count(), 1)
         self.assertEquals(Category.objects.count(), 1)
         self.assertEquals(Reporter.objects.count(), 1)
+        self.assertEquals(Priority.objects.count(), 1)
 
         # Check that we sent the correct Django signal
         patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
                                                             signal_obj=signal)
+
+    def test_create_initial_with_priority_data(self):
+        signal = Signal.actions.create_initial(
+            self.signal_data,
+            self.location_data,
+            self.status_data,
+            self.category_data,
+            self.reporter_data,
+            self.priority_data)
+
+        self.assertEqual(signal.priority.priority, Priority.PRIORITY_HIGH)
 
     @mock.patch('signals.apps.signals.models.update_location', autospec=True)
     def test_update_location(self, patched_update_location):

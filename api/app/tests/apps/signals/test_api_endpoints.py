@@ -144,6 +144,8 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
         self.assertEqual(response.data.get('text'), None)
         self.assertEqual(response.data.get('category'), None)
         self.assertEqual(response.data.get('location'), None)
+        self.assertEqual(response.data.get('reporter'), None)
+        self.assertEqual(response.data.get('priority'), None)
         self.assertEqual(response.data.get('id'), None)
 
     def test_get_list(self):
@@ -280,6 +282,12 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         # Forcing authentication
         superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
+
+    def test_signal_post_not_allowed(self):
+        endpoint = '/signals/auth/signal/'
+        response = self.client.post(endpoint, {}, format='json')
+
+        self.assertEqual(response.status_code, 405)
 
     def test_endpoints_forbidden(self):
         user = UserFactory.create()  # Normal user without any extra permissions.

@@ -16,7 +16,13 @@ update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_p
 
 class SignalManager(models.Manager):
 
-    def create_initial(self, signal_data, location_data, status_data, category_data, reporter_data):
+    def create_initial(self,
+                       signal_data,
+                       location_data,
+                       status_data,
+                       category_data,
+                       reporter_data,
+                       priority_data=None):
         """Create a new `Signal` object with all related objects.
 
         :param signal_data: deserialized data dict
@@ -24,25 +30,28 @@ class SignalManager(models.Manager):
         :param status_data: deserialized data dict
         :param category_data: deserialized data dict
         :param reporter_data: deserialized data dict
+        :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
         with transaction.atomic():
             signal = self.create(**signal_data)
+
+            # Set default (empty dict) value for `priority_data` if None is given.
+            priority_data = priority_data or {}
 
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)
             status = Status.objects.create(**status_data, _signal_id=signal.pk)
             category = Category.objects.create(**category_data, _signal_id=signal.pk)
             reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
+            priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
             # Set Signal to dependent model instance foreign keys
             signal.location = location
             signal.status = status
             signal.category = category
             signal.reporter = reporter
-
-            # TODO SIG-595 implement `priority` create
-
+            signal.priority = priority
             signal.save()
 
             transaction.on_commit(lambda: create_initial.send(sender=self.__class__,

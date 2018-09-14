@@ -4,6 +4,7 @@ from django.contrib.gis.geos import Point
 from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
+from signals.apps.signals.models import Priority, Signal
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
 
@@ -155,3 +156,45 @@ class TestLocatieFilter(TestFilterBase):
         self.assertEquals(response.status_code, 200)
         # will have N_RECORDS signals because the filter is not yet implemented
         self.assertEquals(response.json()['count'], 1)
+
+
+class TestPriorityFilter(APITestCase):
+
+    def setUp(self):
+        # Forcing authentication
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        SignalFactory.create(id=1)
+        SignalFactory.create(id=2)
+        SignalFactory.create(id=3, priority__priority=Priority.PRIORITY_HIGH)
+        SignalFactory.create(id=4)
+        SignalFactory.create(id=5, priority__priority=Priority.PRIORITY_HIGH)
+
+    def test_all(self):
+        response = self.client.get(SIGNAL_ENDPOINT)
+        json_response = response.json()
+
+        self.assertEqual(Signal.objects.count(), 5)
+        self.assertEqual(json_response['count'], 5)
+
+    def test_priority_filter_normal(self):
+        querystring = {'priority__priority': Priority.PRIORITY_NORMAL}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(querystring)}'
+        response = self.client.get(url)
+        json_response = response.json()
+
+        self.assertEqual(json_response['count'], 3)
+        self.assertEqual(json_response['results'][2]['id'], 1)
+        self.assertEqual(json_response['results'][1]['id'], 2)
+        self.assertEqual(json_response['results'][0]['id'], 4)
+
+    def test_priority_filter_high(self):
+        querystring = {'priority__priority': Priority.PRIORITY_HIGH}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(querystring)}'
+        response = self.client.get(url)
+        json_response = response.json()
+
+        self.assertEqual(json_response['count'], 2)
+        self.assertEqual(json_response['results'][1]['id'], 3)
+        self.assertEqual(json_response['results'][0]['id'], 5)
