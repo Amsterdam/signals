@@ -143,7 +143,7 @@ def create_initial_data_categories(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0006_auto_20180910_1406'),
+        ('signals', '0007_auto_20180913_0848'),
     ]
 
     operations = [
