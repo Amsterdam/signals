@@ -40,8 +40,9 @@ def is_signal_applicable(signal: Signal) -> bool:
     """
     today = timezone.localtime(timezone.now())  # Current datetime in the Netherlands
     weekday = today.isoweekday()
-    is_friday_or_saterday = weekday == 5 or weekday == 6
-    if not is_friday_or_saterday:
+    applicable_weekdays = settings.EMAIL_FLEX_HORECA_WEEKDAYS  # Default: [5, 6]  # friday, saterday
+    is_weekday_applicable = weekday in applicable_weekdays
+    if not is_weekday_applicable:
         return False
 
     eligible_main_categories = 'Overlast Bedrijven en Horeca'
