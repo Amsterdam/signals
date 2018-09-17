@@ -38,9 +38,12 @@ def is_signal_applicable(signal: Signal) -> bool:
     :param signal: Signal object
     :returns: bool
     """
+    # Default: `'5,6'` (friday, saterday).
+    applicable_weekdays_setting = settings.EMAIL_FLEX_HORECA_WEEKDAYS.split(',')
+    applicable_weekdays = [int(weekday) for weekday in applicable_weekdays_setting]
+
     today = timezone.localtime(timezone.now())  # Current datetime in the Netherlands
     weekday = today.isoweekday()
-    applicable_weekdays = settings.EMAIL_FLEX_HORECA_WEEKDAYS  # Default: [5, 6]  # friday, saterday
     is_weekday_applicable = weekday in applicable_weekdays
     if not is_weekday_applicable:
         return False
