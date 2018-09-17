@@ -11,6 +11,7 @@ from tests.apps.signals.factories import SignalFactory
 
 @override_settings(
     EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS='test@test.com',
+    EMAIL_FLEX_HORECA_WEEKDAYS='5,6',  # friday, saterday
     SUB_CATEGORIES_DICT={
         # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
         'Overlast Bedrijven en Horeca': (
