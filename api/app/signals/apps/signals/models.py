@@ -336,7 +336,8 @@ class Reporter(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)
 
-# TODO Rename to through model category
+
+# TODO SIG-619 Rename and implement through model with category declaration.
 class Category(CreatedUpdatedModel):
     """Store Category information and Automatically suggested category."""
 

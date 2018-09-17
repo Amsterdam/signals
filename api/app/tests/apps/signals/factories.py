@@ -13,14 +13,14 @@ from signals.apps.signals.models import (
     GEMELD,
     STADSDELEN,
     Category,
+    Department,
     Location,
+    MainCategory,
     Priority,
     Reporter,
     Signal,
     Status,
-    MainCategory,
-    SubCategory,
-    Department
+    SubCategory
 )
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
