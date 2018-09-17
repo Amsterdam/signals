@@ -43,9 +43,9 @@ def is_signal_applicable(signal: Signal) -> bool:
     applicable_weekdays = [int(weekday) for weekday in applicable_weekdays_setting]
 
     today = timezone.localtime(timezone.now())  # Current datetime in the Netherlands
-    weekday = today.isoweekday()
-    is_weekday_applicable = weekday in applicable_weekdays
-    if not is_weekday_applicable:
+    today_weekday = today.isoweekday()
+    is_today_applicable = today_weekday in applicable_weekdays
+    if not is_today_applicable:
         return False
 
     eligible_main_categories = 'Overlast Bedrijven en Horeca'
