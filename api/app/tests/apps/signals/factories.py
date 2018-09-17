@@ -192,11 +192,9 @@ class SubCategoryFactory(factory.DjangoModelFactory):
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):
         if not create:
-            # Simple build, do nothing.
             return
 
         if extracted:
-            # A list of departments were passed in, use them
             for department in extracted:
                 self.departments.add(department)
 
