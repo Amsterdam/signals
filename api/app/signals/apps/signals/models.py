@@ -476,8 +476,8 @@ class MainCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        # TODO
-        pass
+        """String representation."""
+        return self.name
 
 
 class SubCategory(models.Model):
@@ -517,8 +517,10 @@ class SubCategory(models.Model):
     departments = models.ManyToManyField('signals.Department')
 
     def __str__(self):
-        # TODO
-        pass
+        """String representation."""
+        return '{code} ({main_category} - {name})'.format(code=self.code,
+                                                          main_category=self.main_category.name,
+                                                          name=self.name)
 
 
 class Department(models.Model):
@@ -527,9 +529,5 @@ class Department(models.Model):
     is_intern = models.BooleanField(default=True)
 
     def __str__(self):
-        # TODO
-        pass
-
-    @property
-    def is_extern(self):
-        return not self.is_intern
+        """String representation."""
+        return '{code} ({name})'.format(code=self.code, name=self.name)
