@@ -2,39 +2,14 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
-from django.utils import timezone
-
-
-def migrate_date_fields(apps, schema_editor):
-    """
-    Data migration for `created_at` and `updated_at` fields on models that had this fields
-    implemented with `null=True`..
-    """
-    Signal = apps.get_model('signals', 'Signal')
-    for signal in Signal.objects.all():
-        if not signal.created_at:
-            signal.created_at = timezone.now()
-        if not signal.updated_at:
-            signal.updated_at = signal.created_at or timezone.now()
-        signal.save()
-
-    Status = apps.get_model('signals', 'Status')
-    for status in Status.objects.all():
-        if not status.created_at:
-            status.created_at = timezone.now()
-        if not status.updated_at:
-            status.updated_at = status.created_at or timezone.now()
-        status.save()
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('signals', '0005_auto_20180905_1620'),
+        ('signals', '0006a_auto_20180910_1406'),
     ]
 
     operations = [
-        migrations.RunPython(migrate_date_fields),
         migrations.CreateModel(
             name='Priority',
             fields=[
