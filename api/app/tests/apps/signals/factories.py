@@ -12,7 +12,7 @@ from factory import fuzzy
 from signals.apps.signals.models import (
     GEMELD,
     STADSDELEN,
-    Category,
+    SignalCategory,
     Department,
     Location,
     MainCategory,
@@ -127,7 +127,7 @@ class ReporterFactory(factory.DjangoModelFactory):
 class CategoryFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = Category
+        model = SignalCategory
 
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', category=None)
 

@@ -17,7 +17,7 @@ from signals.apps.signals.fields import (
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
-    Category,
+    SignalCategory,
     Location,
     Priority,
     Reporter,
@@ -118,9 +118,9 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
     class Meta(object):
-        model = Category
+        model = SignalCategory
         fields = [
-            'main',
+            'main',  # TODO
             'sub',
         ]
 
@@ -431,7 +431,7 @@ class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryLinksField
 
     class Meta(object):
-        model = Category
+        model = SignalCategory
         fields = [
             '_links',
             '_display',

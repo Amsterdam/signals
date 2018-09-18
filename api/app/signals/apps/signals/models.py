@@ -200,12 +200,11 @@ class Signal(CreatedUpdatedModel):
                                   related_name='signal',
                                   null=True,
                                   on_delete=models.SET_NULL)
-    category = models.OneToOneField('signals.Category',
+    category = models.OneToOneField('signals.SignalCategory',
                                     related_name='signal',
                                     null=True,
                                     on_delete=models.SET_NULL)
-    sub_categories = models.ManyToManyField('signals.SubCategory',
-                                            through='signals.Category')
+    sub_categories = models.ManyToManyField('signals.SubCategory', through='signals.SignalCategory')
     reporter = models.OneToOneField('signals.Reporter',
                                     related_name='signal',
                                     null=True,
@@ -339,7 +338,7 @@ class Reporter(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
 
 
-class Category(CreatedUpdatedModel):
+class SignalCategory(CreatedUpdatedModel):
     """Many-to-Many through model for `Signal` <-> `SubCategory`."""
     _signal = models.ForeignKey('signals.Signal',
                                 on_delete=models.CASCADE,
