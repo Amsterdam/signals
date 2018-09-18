@@ -119,12 +119,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = Category
-        fields = (
+        fields = [
             'main',
             'sub',
-            'department',
-            'priority',
-        )
+        ]
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -435,14 +433,12 @@ class CategoryHALSerializer(HALSerializer):
     class Meta(object):
         model = Category
         fields = [
-            "_links",
-            "_display",
-            "id",
-            "main",
-            "sub",
-            "department",
-            "priority",
-            "_signal",
+            '_links',
+            '_display',
+            'id',
+            'main',
+            'sub',
+            '_signal',
         ]
 
     def create(self, validated_data):

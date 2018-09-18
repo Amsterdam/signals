@@ -348,37 +348,14 @@ class Category(CreatedUpdatedModel):
 
     main = models.CharField(max_length=50, default='', null=True, blank=True)
     sub = models.CharField(max_length=50, default='', null=True, blank=True)
-    department = models.CharField(max_length=50, default='',
-                                  null=True, blank=True)
-    priority = models.IntegerField(null=True)
-    ml_priority = models.IntegerField(null=True)
-
-    # machine learning properties.
-    ml_cat = models.CharField(
-        max_length=50, default='', blank=True, null=True)
-    ml_prob = models.CharField(
-        max_length=50, default='', blank=True, null=True)
-    ml_cat_all = ArrayField(
-        models.TextField(max_length=50, blank=True),
-        null=True)
-    ml_cat_all_prob = ArrayField(models.IntegerField(), null=True)
-
-    ml_sub_cat = models.CharField(
-        max_length=500, default='', blank=True, null=True)
-    ml_sub_prob = models.CharField(
-        max_length=500, default='', blank=True, null=True)
-    ml_sub_all = ArrayField(models.TextField(
-        max_length=50, blank=True), null=True)
-    ml_sub_all_prob = ArrayField(models.IntegerField(), null=True)
 
     extra_properties = JSONField(null=True)
 
     def __str__(self):
         """Identifying string."""
-        return '{} - {} - {} - {}'.format(
+        return '{} - {} - {}'.format(
             self.main,
             self.sub,
-            self.priority,
             self.created_at
         )
 
