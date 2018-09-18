@@ -12,7 +12,8 @@ from signals.apps.sigmax.handler import (
     VOEG_ZAAKDOCUMENT_TOE_SOAPACTION,
 )
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactory, VALID_LOCATIONS
+from tests.apps.signals.factories import (
+    SignalFactoryValidLocation, VALID_LOCATIONS)
 
 
 # Known to still be problematic, work in progress
@@ -21,14 +22,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Send a message to Sigmax.')
-
-
-        valid_location = random.choose(VALID_LOCATIONS)
-        lat = valid_location.pop('lat')
-        lon = valid_location.pop('lon')
-        stadsdeel = valid_location.pop('stadsdeel')
-
-        test_signal: Signal = SignalFactory.create(
+        test_signal: Signal = SignalFactoryValidLocation.create(
             text='Dit is een test bericht van Datapunt Amsterdam aan Sigmax City Control',
         )
 

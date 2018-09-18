@@ -191,9 +191,9 @@ def send_example(**options):
 
     # -- uncomment this to get the message
     #    dumped to a file in the local directory --
-    fn = 'attempt-{}.xml'.format(uuid.uuid4())
-    with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
-           f.write(encoded)
+    # fn = 'attempt-{}.xml'.format(uuid.uuid4())
+    # with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
+    #        f.write(encoded)
 
     headers = {
         'SOAPAction': action,

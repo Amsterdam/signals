@@ -11,7 +11,7 @@ from lxml import etree
 
 from signals.apps.sigmax import handler, utils
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -57,7 +57,7 @@ class TestSigmaxHelpers(TestCase):
 class TestGenerateCreeerZaakLk01Message(TestCase):
 
     def setUp(self):
-        self.signal: Signal = SignalFactory.create()
+        self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
         xml = handler._generate_creeer_zaak_lk01_message(self.signal)
@@ -123,9 +123,6 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
             )
         ])
         # X and Y need to be checked differently
-
-        logger.debug(msg)
-
         for element in root.iter():
             # logger.debug('Found: {}'.format(element.tag))
             if element.tag in need_to_find:
@@ -143,7 +140,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
 class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def setUp(self):
-        self.signal: Signal = SignalFactory.create()
+        self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
         signal = self.signal

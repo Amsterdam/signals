@@ -1,3 +1,6 @@
+# Address and coordinates found through meldingingen.amsterdam.nl front-end.
+# Buurt code extracted from geosearch endpoint.
+
 VALID_LOCATIONS = [
     # Stadhuis
     {
@@ -6,10 +9,11 @@ VALID_LOCATIONS = [
         'huisletter': '',
         'huisnummer_toevoeging': '',
         'postcode': '1011PN',
-        'woonsplaats': 'Amsterdam',
+        'woonplaats': 'Amsterdam',
         'lat': 52.36768424,
         'lon': 4.90022563,
-        'stadsdeel': 'A', 
+        'stadsdeel': 'A',
+        'buurt_code': 'A04i',
     },
     # Centraal Station, IJ-hal
     {
@@ -18,10 +22,11 @@ VALID_LOCATIONS = [
         'huisletter': 'A',
         'huisnummer_toevoeging': '',
         'postcode': '1012AA',
-        'woonsplaats': 'Amsterdam',
+        'woonplaats': 'Amsterdam',
         'lat': 52.37993429553087,
         'lon': 4.900771379470825,
-        'stadsdeel': 'A', 
+        'stadsdeel': 'A',
+        'buurt_code': 'A01a',
     },
     # Blauwe Theehuis
     {
@@ -30,10 +35,11 @@ VALID_LOCATIONS = [
         'huisletter': '',
         'huisnummer_toevoeging': '',
         'postcode': '1071AA',
-        'woonsplaats': 'Amsterdam',
+        'woonplaats': 'Amsterdam',
         'lat': 52.35889969222666,
         'lon': 4.872569837607443,
-        'stadsdeel': 'K', 
+        'stadsdeel': 'K',
+        'buurt_code': 'K47i',
     },
     # Filmmuseum Eye
     {
@@ -42,10 +48,11 @@ VALID_LOCATIONS = [
         'huisletter': '',
         'huisnummer_toevoeging': '',
         'postcode': '1031KT',
-        'woonsplaats': 'Amsterdam',
+        'woonplaats': 'Amsterdam',
         'lat': 52.38438747525033,
         'lon': 4.900717735290528,
-        'stadsdeel': 'N', 
+        'stadsdeel': 'N',
+        'buurt_code': 'N71h',
     },
     # Amsterdam Arena
     {
@@ -54,9 +61,12 @@ VALID_LOCATIONS = [
         'huisletter': '',
         'huisnummer_toevoeging': '',
         'postcode': '1101AX',
-        'woonsplaats': 'Amsterdam',
+        'woonplaats': 'Amsterdam',
         'lat': 52.31376354398833,
         'lon': 4.942337153479458,
-        'stadsdeel': 'T', 
+        'stadsdeel': 'T',
+        'buurt_code': 'T92a',
     }
 ]
+
+# TODO: add examples of addresses with letters in it

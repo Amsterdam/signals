@@ -38,6 +38,13 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
     """
     Generate XML for Sigmax CreeerZaak_Lk01
     """
+    # SIGMAX will be set up to receive Signals (meldingen) that have no
+    # address but do have coordinates (middle of park, somewhere on a
+    # body of water, etc.) Here we set the address if we have it.
+    openbare_ruimte = signal.location.address.get('openbare_ruimte', '')
+    huisnummer = signal.location.address.get('huisnummer', '')
+    postcode = signal.location.address.get('postcode', '')
+
     return render_to_string('sigmax/creeer_zaak_lk01.xml', context={
         'PRIMARY_KEY': str(signal.signal_id),
         'OMSCHRIJVING': escape(signal.text),
@@ -45,12 +52,9 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
         'STARTDATUM': escape(_format_date(signal.incident_date_start)),
         'REGISTRATIEDATUM': escape(_format_date(signal.created_at)),
         'EINDDATUMGEPLAND': escape(_format_date(signal.incident_date_end)),
-#        'OPENBARERUIMTENAAM': escape(signal.location.address['openbare_ruimte']),
-#        'HUISNUMMER': escape(str(signal.location.address['huisnummer'])),
-#        'POSTCODE': '1011 AA',
-        'OPENBARERUIMTENAAM': 'Capriweg',
-        'HUISNUMMER': '30',
-        'POSTCODE': '1044 AL',
+        'OPENBARERUIMTENAAM': escape(openbare_ruimte),
+        'HUISNUMMER': escape(str(huisnummer)),
+        'POSTCODE': escape(postcode),
         'X': escape(str(signal.location.geometrie.x)),
         'Y': escape(str(signal.location.geometrie.y)),
     })
@@ -119,9 +123,9 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
 
     # -- uncomment this to get the message
     #    dumped to a file in the local directory --
-    fn = 'compare-{}.xml'.format(uuid.uuid4())
-    with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
-           f.write(encoded)
+    # fn = 'compare-{}.xml'.format(uuid.uuid4())
+    # with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
+    #        f.write(encoded)
 
     headers = {
         'SOAPAction': soap_action,
