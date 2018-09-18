@@ -100,7 +100,7 @@ class SignalFilter(FilterSet):
                                           lookup_expr='date__lte')
 
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
-    category__sub = filters.MultipleChoiceFilter(choices=category_sub_choices)
+    category__sub_category__name = filters.MultipleChoiceFilter(choices=category_sub_choices)  # TODO, change to queryset `SubCategories`
     priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)
 
     class Meta(object):
@@ -109,8 +109,8 @@ class SignalFilter(FilterSet):
             "id",
             "signal_id",
             "status__state",
-            "category__main",
-            "category__sub",
+            "category__sub_category__main_category__name",
+            "category__sub_category__name",
             "updated_at",
             "location__buurt_code",
             "location__stadsdeel",

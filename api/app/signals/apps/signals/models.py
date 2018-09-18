@@ -204,6 +204,8 @@ class Signal(CreatedUpdatedModel):
                                     related_name='signal',
                                     null=True,
                                     on_delete=models.SET_NULL)
+    sub_categories = models.ManyToManyField('signals.SubCategory',
+                                            through='signals.Category')
     reporter = models.OneToOneField('signals.Reporter',
                                     related_name='signal',
                                     null=True,
@@ -337,25 +339,20 @@ class Reporter(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
 
 
-# TODO SIG-619 Rename and implement through model with category declaration.
 class Category(CreatedUpdatedModel):
-    """Store Category information and Automatically suggested category."""
-
-    _signal = models.ForeignKey(
-        "signals.Signal", related_name="categories",
-        null=False, on_delete=models.CASCADE
-    )
-
-    main = models.CharField(max_length=50, default='', null=True, blank=True)
-    sub = models.CharField(max_length=50, default='', null=True, blank=True)
+    """Many-to-Many through model for `Signal` <-> `SubCategory`."""
+    _signal = models.ForeignKey('signals.Signal',
+                                on_delete=models.CASCADE,
+                                related_name='signal_sub_categories')
+    sub_category = models.ForeignKey('signals.SubCategory', on_delete=models.CASCADE, null=True)
 
     extra_properties = JSONField(null=True)
 
     def __str__(self):
         """Identifying string."""
         return '{} - {} - {}'.format(
-            self.main,
-            self.sub,
+            self.sub_category.main_category.name,
+            self.sub_category.name,
             self.created_at
         )
 
