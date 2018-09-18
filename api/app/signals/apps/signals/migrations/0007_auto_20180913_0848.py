@@ -17,7 +17,7 @@ def create_priority_for_existing_signals(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0006_auto_20180910_1406'),
+        ('signals', '0006b_hotfix'),
     ]
 
     operations = [
