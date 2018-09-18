@@ -10,7 +10,7 @@ from signals.apps.signals.models import (
     update_status
 )
 from tests.apps.signals.factories import (
-    CategoryFactory,
+    SignalCategoryFactory,
     LocationFactory,
     ReporterFactory,
     SignalFactory,
@@ -71,7 +71,7 @@ class TestSignalReceivers(TestCase):
     def test_update_category_handler(self, mocked_tasks):
         signal = SignalFactory.create()
         prev_category = signal.category
-        new_category = CategoryFactory.create(_signal=signal)
+        new_category = SignalCategoryFactory.create(_signal=signal)
         signal.category = new_category
         signal.save()
 

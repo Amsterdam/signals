@@ -47,7 +47,8 @@ class SignalFactory(factory.DjangoModelFactory):
     # Creating (reverse FK) related objects after this `Signal` is created.
     location = factory.RelatedFactory('tests.apps.signals.factories.LocationFactory', '_signal')
     status = factory.RelatedFactory('tests.apps.signals.factories.StatusFactory', '_signal')
-    category = factory.RelatedFactory('tests.apps.signals.factories.CategoryFactory', '_signal')
+    category = factory.RelatedFactory('tests.apps.signals.factories.SignalCategoryFactory',
+                                      '_signal')
     reporter = factory.RelatedFactory('tests.apps.signals.factories.ReporterFactory', '_signal')
     priority = factory.RelatedFactory('tests.apps.signals.factories.PriorityFactory', '_signal')
 
@@ -66,7 +67,7 @@ class SignalFactory(factory.DjangoModelFactory):
         """Set o2o relations on given `Signal` object."""
         self.location = self.locations.first()
         self.status = self.statuses.first()
-        self.category = self.categories.first()
+        self.category = self.signal_category_set.first()
         self.reporter = self.reporters.first()
         self.priority = self.priorities.first()
 
@@ -124,15 +125,13 @@ class ReporterFactory(factory.DjangoModelFactory):
         self.signal = self._signal
 
 
-class CategoryFactory(factory.DjangoModelFactory):
+class SignalCategoryFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = SignalCategory
 
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', category=None)
-
-    main = fuzzy.FuzzyText(length=10)
-    sub = fuzzy.FuzzyText(length=10)
+    sub_category = factory.SubFactory('tests.apps.signals.factories.SubCategoryFactory')
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
@@ -178,6 +177,7 @@ class MainCategoryFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = MainCategory
+        django_get_or_create = ('name', )
 
 
 class SubCategoryFactory(factory.DjangoModelFactory):
@@ -188,6 +188,7 @@ class SubCategoryFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = SubCategory
+        django_get_or_create = ('code', )
 
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):
