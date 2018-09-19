@@ -350,7 +350,6 @@ class CategoryAssignment(CreatedUpdatedModel):
                                 related_name='category_assignments')
     sub_category = models.ForeignKey('signals.SubCategory',
                                      on_delete=models.CASCADE,
-                                     null=True,  # TODO remove
                                      related_name='category_assignments')
 
     extra_properties = JSONField(null=True)
