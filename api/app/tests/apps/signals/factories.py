@@ -1,3 +1,4 @@
+import copy
 import random
 import string
 import uuid
@@ -18,16 +19,17 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
-BBOX = [52.03560, 4.58565, 52.48769, 5.31360]
+BBOX = [4.58565, 52.03560, 5.31360, 52.48769]
 
 
 def get_puntje():
 
-    lat = fuzzy.FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
-    lon = fuzzy.FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
-    return Point(float(lat), float(lon))
+    lon = fuzzy.FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
+    lat = fuzzy.FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
+    return Point(float(lon), float(lat))
 
 
 class SignalFactory(factory.DjangoModelFactory):
@@ -66,6 +68,11 @@ class SignalFactory(factory.DjangoModelFactory):
         self.priority = self.priorities.first()
 
 
+class SignalFactoryValidLocation(SignalFactory):
+    location = factory.RelatedFactory(
+        'tests.apps.signals.factories.ValidLocationFactory', '_signal')
+
+
 class LocationFactory(factory.DjangoModelFactory):
 
     class Meta:
@@ -84,6 +91,19 @@ class LocationFactory(factory.DjangoModelFactory):
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
+
+
+class ValidLocationFactory(LocationFactory):
+    @factory.post_generation
+    def set_valid_location(self, create, extracted, **kwargs):
+        valid_location = copy.copy(random.choice(VALID_LOCATIONS))
+
+        longitude = valid_location.pop('lon')
+        lattitude = valid_location.pop('lat')
+        self.geometrie = Point(longitude, lattitude)
+        self.buurt_code = valid_location.pop('buurt_code')
+        self.stadsdeel = valid_location.pop('stadsdeel')
+        self.address = valid_location
 
 
 class ReporterFactory(factory.DjangoModelFactory):

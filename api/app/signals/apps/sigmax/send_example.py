@@ -167,7 +167,7 @@ def send_example(**options):
 
     msg = {
         '1': EXAMPLE_MESSAGE_1,
-        '2': EXAMPLE_MESSAGE_2,  # does not seem to work as yet
+        '2': EXAMPLE_MESSAGE_2,
     }[example]
 
     action = {

@@ -84,6 +84,8 @@ services:
       - UWSGI_DIE_ON_TERM=1
       - UWSGI_MODULE=signals.wsgi:application
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - SIGMAX_AUTH_TOKEN
+      - SIGMAX_SERVER
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

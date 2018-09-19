@@ -11,12 +11,14 @@ from lxml import etree
 
 from signals.apps.sigmax import handler, utils
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactory
+from tests.apps.signals.factories import SignalFactoryValidLocation
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
 logging.disable(logging.NOTSET)
 logger = logging.getLogger(__name__)
+
+REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
 
 
 class TestSigmaxHelpers(TestCase):
@@ -57,7 +59,7 @@ class TestSigmaxHelpers(TestCase):
 class TestGenerateCreeerZaakLk01Message(TestCase):
 
     def setUp(self):
-        self.signal: Signal = SignalFactory.create()
+        self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
         xml = handler._generate_creeer_zaak_lk01_message(self.signal)
@@ -123,9 +125,6 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
             )
         ])
         # X and Y need to be checked differently
-
-        logger.debug(msg)
-
         for element in root.iter():
             # logger.debug('Found: {}'.format(element.tag))
             if element.tag in need_to_find:
@@ -143,7 +142,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
 class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def setUp(self):
-        self.signal: Signal = SignalFactory.create()
+        self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
         signal = self.signal
@@ -160,11 +159,11 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
         self.assertTrue('<poison>' not in msg)
 
 
-def show_args_kwargs(*args, **kwargs):
-    return args, kwargs
-
-
 class TestSendStufMessage(TestCase):
+    @override_settings(
+        SIGMAX_AUTH_TOKEN='',
+        SIGMAX_SERVER='',
+    )
     def test_no_environment_variables(self):
         # Check that missing enviroment variables for server and auth token
         # raises an error when a message is sent.
@@ -175,20 +174,27 @@ class TestSendStufMessage(TestCase):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
                 handler._send_stuf_message('TEST BERICHT', action)
 
-    @mock.patch('requests.post', side_effect=show_args_kwargs)
-    @override_settings(SIGMAX_AUTH_TOKEN='SLEUTEL')
-    @override_settings(SIGMAX_SERVER='TESTSERVER')
-    def test_send_message(self, request_post_mock):
-        # Check that headers are set correctly when sending an STUF message.
+    @override_settings(
+        SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
+        SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
+    )
+    @mock.patch('requests.post', autospec=True)
+    def test_send_message(self, mocked_request_post):
+        mocked_request_post.return_value.status_code = 200
+        mocked_request_post.return_value.text = 'Message from Sigmax'
+
         message = 'TEST BERICHT'
         action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-        args, kwargs = handler._send_stuf_message(message, action)
+        handler._send_stuf_message(message, action)
 
-        self.assertEquals(request_post_mock.called, 1)
-        self.assertEquals(kwargs['url'], 'TESTSERVER')
+        # Check that headers are set correctly when sending an STUF message.
+        args, kwargs = mocked_request_post.call_args
+
+        self.assertEquals(mocked_request_post.called, 1)
+        self.assertEquals(kwargs['url'], REQUIRED_ENV['SIGMAX_SERVER'])
         self.assertEquals(
             kwargs['headers']['Authorization'],
-            'Basic SLEUTEL'
+            'Basic ' + REQUIRED_ENV['SIGMAX_AUTH_TOKEN']
         )
         self.assertEquals(
             kwargs['headers']['SOAPAction'],
