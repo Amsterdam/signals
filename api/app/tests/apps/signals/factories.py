@@ -69,7 +69,8 @@ class SignalFactory(factory.DjangoModelFactory):
 
 
 class SignalFactoryValidLocation(SignalFactory):
-    location = factory.RelatedFactory('tests.apps.signals.factories.ValidLocationFactory', '_signal')
+    location = factory.RelatedFactory(
+        'tests.apps.signals.factories.ValidLocationFactory', '_signal')
 
 
 class LocationFactory(factory.DjangoModelFactory):

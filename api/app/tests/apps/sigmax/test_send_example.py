@@ -6,6 +6,7 @@ from django.test import TestCase
 
 REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
 
+
 class CommandTestCase(TestCase):
     @mock.patch('requests.post', autospec=True)
     @mock.patch.dict(os.environ, REQUIRED_ENV)

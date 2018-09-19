@@ -1,10 +1,10 @@
-import os
 from unittest import mock
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
 REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
+
 
 @override_settings(
     SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],

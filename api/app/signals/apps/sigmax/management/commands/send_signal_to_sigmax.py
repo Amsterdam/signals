@@ -1,21 +1,14 @@
-import json
-import os
-import random
-import uuid
-
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from signals.apps.sigmax.handler import (
-    _generate_creeer_zaak_lk01_message,
-    _generate_voeg_zaak_document_toe_lk01,
-    _send_stuf_message,
     CREEER_ZAAK_SOAPACTION,
     VOEG_ZAAKDOCUMENT_TOE_SOAPACTION,
+    _generate_creeer_zaak_lk01_message,
+    _generate_voeg_zaak_document_toe_lk01,
+    _send_stuf_message
 )
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import (
-    SignalFactoryValidLocation, VALID_LOCATIONS)
+from tests.apps.signals.factories import SignalFactoryValidLocation
 
 
 # Known to still be problematic, work in progress

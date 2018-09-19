@@ -11,7 +11,7 @@ from lxml import etree
 
 from signals.apps.sigmax import handler, utils
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from tests.apps.signals.factories import SignalFactoryValidLocation
 
 LOG_FORMAT = '%(asctime)-15s - %(name)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT, level=logging.DEBUG)
@@ -159,7 +159,6 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
         self.assertTrue('<poison>' not in msg)
 
 
-
 class TestSendStufMessage(TestCase):
     @override_settings(
         SIGMAX_AUTH_TOKEN='',
@@ -184,11 +183,9 @@ class TestSendStufMessage(TestCase):
         mocked_request_post.return_value.status_code = 200
         mocked_request_post.return_value.text = 'Message from Sigmax'
 
-
         message = 'TEST BERICHT'
         action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
         handler._send_stuf_message(message, action)
-
 
         # Check that headers are set correctly when sending an STUF message.
         args, kwargs = mocked_request_post.call_args
