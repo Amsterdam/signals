@@ -22,7 +22,7 @@ class SignalManager(models.Manager):
                        signal_data,
                        location_data,
                        status_data,
-                       category_data,
+                       category_assignment_data,
                        reporter_data,
                        priority_data=None):
         """Create a new `Signal` object with all related objects.
@@ -30,7 +30,7 @@ class SignalManager(models.Manager):
         :param signal_data: deserialized data dict
         :param location_data: deserialized data dict
         :param status_data: deserialized data dict
-        :param category_data: deserialized data dict
+        :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
@@ -44,7 +44,7 @@ class SignalManager(models.Manager):
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)
             status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category_assignment = CategoryAssignment.objects.create(**category_data,
+            category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
                                                                     _signal_id=signal.pk)
             reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
             priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)

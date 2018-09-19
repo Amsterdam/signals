@@ -17,12 +17,13 @@ from signals.apps.signals.fields import (
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
-    SignalCategory,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 from signals.settings.categories import get_departments
@@ -116,12 +117,20 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_code = serializers.CharField(source='sub_category.code', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
 
-    class Meta(object):
-        model = SignalCategory
+    sub_category = serializers.PrimaryKeyRelatedField(queryset=SubCategory.objects.all(),
+                                                      write_only=True)
+
+    class Meta:
+        model = CategoryAssignment
         fields = [
-            'main',  # TODO
             'sub',
+            'sub_code',
+            'main',
+            'sub_category',
         ]
 
 
@@ -153,7 +162,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
-    category = _NestedCategoryModelSerializer()
+    category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
 
     incident_date_start = serializers.DateTimeField()
@@ -194,9 +203,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        category_data = validated_data.pop('category')
+        category_assignment_data = validated_data.pop('category_assignment')
         signal = Signal.actions.create_initial(
-            validated_data, location_data, status_data, category_data, reporter_data)
+            validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
 
     def update(self, instance, validated_data):
@@ -299,7 +308,7 @@ class SignalAuthHALSerializer(HALSerializer):
     location = _NestedLocationModelSerializer(read_only=True)
     reporter = _NestedReporterModelSerializer(read_only=True)
     status = _NestedStatusModelSerializer(read_only=True)
-    category = _NestedCategoryModelSerializer(read_only=True)
+    category = _NestedCategoryModelSerializer(source='category_assignment', read_only=True)
     priority = _NestedPriorityModelSerializer(read_only=True)
 
     image = ImageField(max_length=50, allow_empty_file=False)
@@ -426,19 +435,23 @@ class StatusHALSerializer(HALSerializer):
 
 
 class CategoryHALSerializer(HALSerializer):
-    _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = CategoryLinksField
+    _display = DisplayField()
+
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_code = serializers.CharField(source='sub_category.code', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
 
     class Meta(object):
-        model = SignalCategory
+        model = CategoryAssignment
         fields = [
             '_links',
             '_display',
-            'id',
-            'main',
-            'sub',
             '_signal',
+            'sub',
+            'sub_code',
+            'main',
         ]
 
     def create(self, validated_data):

@@ -58,7 +58,7 @@ class TestSignalManager(TransactionTestCase):
             self.signal_data,
             self.location_data,
             self.status_data,
-            self.category_data,
+            self.category_assignment_data,
             self.reporter_data)
 
         # Check everything is present:

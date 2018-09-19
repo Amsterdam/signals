@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 from signals.apps.signals.models import (
     AFGEHANDELD,
     AFWACHTING,
-    SignalCategory,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
@@ -40,7 +40,7 @@ class TestAuthAPIEndpoints(APITestCase):
         self.signal = factories.SignalFactory(id=1,
                                               location__id=1,
                                               status__id=1,
-                                              category__id=1,
+                                              category_assignment__id=1,
                                               reporter__id=1,
                                               priority__id=1)
 
@@ -187,13 +187,13 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
             Location.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
-            SignalCategory.objects.filter(signal=s.id).count(), 1)
+            CategoryAssignment.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
             Status.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
-            SignalCategory.objects.filter(signal=s.id).first()._signal.id, s.id,
+            CategoryAssignment.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Category is missing _signal field?"
         )
 
@@ -208,7 +208,7 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
         )
 
         self.assertEqual(
-            SignalCategory.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
+            CategoryAssignment.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
         )
 
     def test_post_signal_with_multipart_and_image(self):
