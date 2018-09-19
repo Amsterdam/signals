@@ -182,9 +182,6 @@ def send_example(**options):
         'ZKN_UUID': zkn_uuid,
         'DOC_UUID': doc_uuid,
     })).encode('utf-8')
-
-    import ipdb; ipdb.set_trace()
-
     logger.debug('-- Send the following --')
     logger.debug(encoded)
     logger.debug('--')

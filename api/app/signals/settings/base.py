@@ -298,7 +298,7 @@ LOGGING = {
     'loggers': {
         'signals': {
             'level': 'WARNING',
-            'handlers': ['console'],
+            'handlers': ['console', 'gelf'],
             'propagate': True,
         },
         'django': {
