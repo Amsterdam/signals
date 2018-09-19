@@ -443,7 +443,7 @@ class CategoryHALSerializer(HALSerializer):
 
     def create(self, validated_data):
         signal = validated_data.pop('_signal')
-        category = Signal.actions.update_category(validated_data, signal)
+        category = Signal.actions.update_category_assignment(validated_data, signal)
         return category
 
     def validate(self, data):

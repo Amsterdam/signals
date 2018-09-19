@@ -9,7 +9,9 @@ from django.dispatch import Signal as DjangoSignal
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
-update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
+update_category_assignment = DjangoSignal(providing_args=['signal_obj',
+                                                          'category_assignment',
+                                                          'prev_category_assignment'])
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 
@@ -102,26 +104,27 @@ class SignalManager(models.Manager):
 
         return status
 
-    def update_category(self, data, signal):
-        """Update (create new) `Category` object for given `Signal` object.
+    def update_category_assignment(self, data, signal):
+        """Update (create new) `CategoryAssignment` object for given `Signal` object.
 
         :param data: deserialized data dict
         :param signal: Signal object
         :returns: Category object
         """
         with transaction.atomic():
-            prev_category = signal.category
+            prev_category_assignment = signal.category_assignment
 
-            category = Category.objects.create(**data, _signal_id=signal.id)
-            signal.category = category
+            category_assignment = CategoryAssignment.objects.create(**data, _signal_id=signal.id)
+            signal.category_assignment = category_assignment
             signal.save()
 
-            transaction.on_commit(lambda: update_category.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               category=category,
-                                                               prev_category=prev_category))
+            transaction.on_commit(lambda: update_category_assignment.send(
+                sender=self.__class__,
+                signal_obj=signal,
+                category_assignment=category_assignment,
+                prev_category_assignment=prev_category_assignment))
 
-        return category
+        return category_assignment
 
     def update_reporter(self, data, signal):
         """Update (create new) `Reporter` object for given `Signal` object.

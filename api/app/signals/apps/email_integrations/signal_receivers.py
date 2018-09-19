@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from signals.apps.email_integrations import tasks
 from signals.apps.signals.models import (
     create_initial,
-    update_category,
+    update_category_assignment,
     update_location,
     update_reporter,
     update_status
@@ -31,8 +31,9 @@ def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 
-@receiver(update_category, dispatch_uid='email_integrations_update_category')
-def update_category_handler(sender, signal_obj, category, prev_category, **kwargs):
+@receiver(update_category_assignment, dispatch_uid='email_integrations_update_category_assignment')
+def update_category_assignment_handler(
+        sender, signal_obj, category_assignment, prev_category_assignment, **kwargs):
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 

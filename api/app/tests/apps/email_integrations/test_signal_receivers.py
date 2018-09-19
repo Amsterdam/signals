@@ -4,13 +4,13 @@ from django.test import TestCase
 
 from signals.apps.signals.models import (
     create_initial,
-    update_category,
+    update_category_assignment,
     update_location,
     update_reporter,
     update_status
 )
 from tests.apps.signals.factories import (
-    SignalCategoryFactory,
+    CategoryAssignmentFactory,
     LocationFactory,
     ReporterFactory,
     SignalFactory,
@@ -68,17 +68,17 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
-    def test_update_category_handler(self, mocked_tasks):
+    def test_update_category_assignment_handler(self, mocked_tasks):
         signal = SignalFactory.create()
-        prev_category = signal.category
-        new_category = SignalCategoryFactory.create(_signal=signal)
-        signal.category = new_category
+        prev_category_assignment = signal.category_assignment
+        new_category_assignment = CategoryAssignmentFactory.create(_signal=signal)
+        signal.category_assignment = new_category_assignment
         signal.save()
 
-        update_category.send(sender=self.__class__,
-                             signal_obj=signal,
-                             category=new_category,
-                             prev_category=prev_category)
+        update_category_assignment.send(sender=self.__class__,
+                                        signal_obj=signal,
+                                        category_assignment=new_category_assignment,
+                                        prev_category_assignment=prev_category_assignment)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 

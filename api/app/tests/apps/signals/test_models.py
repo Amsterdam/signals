@@ -122,24 +122,24 @@ class TestSignalManager(TransactionTestCase):
             status=status,
             prev_status=prev_status)
 
-    @mock.patch('signals.apps.signals.models.update_category', autospec=True)
-    def test_update_category(self, patched_update_category):
+    @mock.patch('signals.apps.signals.models.update_category_assignment', autospec=True)
+    def test_update_category_assignment(self, patched_update_category_assignment):
         signal = factories.SignalFactory.create()
 
         # Update the signal
-        prev_category = signal.category
-        category = Signal.actions.update_category(self.category_data, signal)
+        prev_category_assignment = signal.category_assignment
+        category_assignment = Signal.actions.update_category_assignment(self.category_data, signal)
 
         # Check that the signal was updated in db
-        self.assertEqual(signal.category, category)
+        self.assertEqual(signal.category_assignment, category_assignment)
         self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_category.send.assert_called_once_with(
+        patched_update_category_assignment.send.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
-            category=category,
-            prev_category=prev_category)
+            category_assignment=category_assignment,
+            prev_category_assignment=prev_category_assignment)
 
     @mock.patch('signals.apps.signals.models.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
