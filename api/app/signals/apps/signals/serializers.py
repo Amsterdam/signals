@@ -121,17 +121,35 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     sub_code = serializers.CharField(source='sub_category.code', read_only=True)
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
 
-    sub_category = serializers.PrimaryKeyRelatedField(queryset=SubCategory.objects.all(),
-                                                      write_only=True)
+    # Should be required, but to make it work with the backwards compatibility fix it's not required
+    # at the moment..
+    sub_category = serializers.PrimaryKeyRelatedField(
+        queryset=SubCategory.objects.all(),
+        write_only=True,
+        required=False)
 
     class Meta:
         model = CategoryAssignment
-        fields = [
+        fields = (
             'sub',
             'sub_code',
             'main',
             'sub_category',
-        ]
+        )
+
+    def to_internal_value(self, data):
+        internal_data = super().to_internal_value(data)
+
+        # Backwards compatibility fix to let this endpoint work with `sub` as key.
+        if 'sub' in data and 'sub_category' not in data:
+            try:
+                sub_category = SubCategory.objects.get(name=data['sub'])
+            except SubCategory.DoesNotExist:
+                pass
+            else:
+                internal_data['sub_category'] = sub_category
+
+        return internal_data
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -439,6 +457,14 @@ class CategoryHALSerializer(HALSerializer):
     _display = DisplayField()
 
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+
+    # Should be required, but to make it work with the backwards compatibility fix it's not required
+    # at the moment..
+    sub_category = serializers.PrimaryKeyRelatedField(
+        queryset=SubCategory.objects.all(),
+        write_only=True,
+        required=False)
+
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_code = serializers.CharField(source='sub_category.code', read_only=True)
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)

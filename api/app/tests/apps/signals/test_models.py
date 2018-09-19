@@ -15,14 +15,17 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status
-)
+    Status,
+    SubCategory)
 from tests.apps.signals import factories
+from tests.apps.signals.factories import SubCategoryFactory
 
 
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
+        SubCategoryFactory.create(code='F01', name='Veeg- / zwerfvuil')
+
         # Deserialized data
         self.signal_data = {
             'text': 'text message',
@@ -38,9 +41,8 @@ class TestSignalManager(TransactionTestCase):
             'email': 'test_reporter@example.com',
             'phone': '0123456789',
         }
-        self.category_data = {
-            'main': 'Afval',
-            'sub': 'Veeg- / zwerfvuil',
+        self.category_assignment_data = {
+            'sub_category': SubCategory.objects.get(name='Veeg- / zwerfvuil'),
         }
         self.status_data = {
             'state': GEMELD,
@@ -78,7 +80,7 @@ class TestSignalManager(TransactionTestCase):
             self.signal_data,
             self.location_data,
             self.status_data,
-            self.category_data,
+            self.category_assignment_data,
             self.reporter_data,
             self.priority_data)
 
@@ -128,11 +130,12 @@ class TestSignalManager(TransactionTestCase):
 
         # Update the signal
         prev_category_assignment = signal.category_assignment
-        category_assignment = Signal.actions.update_category_assignment(self.category_data, signal)
+        category_assignment = Signal.actions.update_category_assignment(
+            self.category_assignment_data, signal)
 
         # Check that the signal was updated in db
         self.assertEqual(signal.category_assignment, category_assignment)
-        self.assertEqual(signal.categories.count(), 2)
+        self.assertEqual(signal.sub_categories.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_category_assignment.send.assert_called_once_with(
