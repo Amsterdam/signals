@@ -12,7 +12,7 @@ from factory import fuzzy
 from signals.apps.signals.models import (
     GEMELD,
     STADSDELEN,
-    SignalCategory,
+    CategoryAssignment,
     Department,
     Location,
     MainCategory,
@@ -47,8 +47,8 @@ class SignalFactory(factory.DjangoModelFactory):
     # Creating (reverse FK) related objects after this `Signal` is created.
     location = factory.RelatedFactory('tests.apps.signals.factories.LocationFactory', '_signal')
     status = factory.RelatedFactory('tests.apps.signals.factories.StatusFactory', '_signal')
-    category = factory.RelatedFactory('tests.apps.signals.factories.SignalCategoryFactory',
-                                      '_signal')
+    category_assignment = factory.RelatedFactory(
+        'tests.apps.signals.factories.CategoryAssignmentFactory', '_signal')
     reporter = factory.RelatedFactory('tests.apps.signals.factories.ReporterFactory', '_signal')
     priority = factory.RelatedFactory('tests.apps.signals.factories.PriorityFactory', '_signal')
 
@@ -67,7 +67,7 @@ class SignalFactory(factory.DjangoModelFactory):
         """Set o2o relations on given `Signal` object."""
         self.location = self.locations.first()
         self.status = self.statuses.first()
-        self.category = self.signal_category_set.first()
+        self.category_assignment = self.category_assignments.first()
         self.reporter = self.reporters.first()
         self.priority = self.priorities.first()
 
@@ -125,12 +125,13 @@ class ReporterFactory(factory.DjangoModelFactory):
         self.signal = self._signal
 
 
-class SignalCategoryFactory(factory.DjangoModelFactory):
+class CategoryAssignmentFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = SignalCategory
+        model = CategoryAssignment
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', category=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory',
+                                 category_assignment=None)
     sub_category = factory.SubFactory('tests.apps.signals.factories.SubCategoryFactory')
 
     @factory.post_generation

@@ -42,14 +42,15 @@ class SignalManager(models.Manager):
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)
             status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category = Category.objects.create(**category_data, _signal_id=signal.pk)
+            category_assignment = CategoryAssignment.objects.create(**category_data,
+                                                                    _signal_id=signal.pk)
             reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
             priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
             # Set Signal to dependent model instance foreign keys
             signal.location = location
             signal.status = status
-            signal.category = category
+            signal.category_assignment = category_assignment
             signal.reporter = reporter
             signal.priority = priority
             signal.save()
@@ -200,11 +201,12 @@ class Signal(CreatedUpdatedModel):
                                   related_name='signal',
                                   null=True,
                                   on_delete=models.SET_NULL)
-    category = models.OneToOneField('signals.SignalCategory',
-                                    related_name='signal',
-                                    null=True,
-                                    on_delete=models.SET_NULL)
-    sub_categories = models.ManyToManyField('signals.SubCategory', through='signals.SignalCategory')
+    category_assignment = models.OneToOneField('signals.CategoryAssignment',
+                                               related_name='signal',
+                                               null=True,
+                                               on_delete=models.SET_NULL)
+    sub_categories = models.ManyToManyField('signals.SubCategory',
+                                            through='signals.CategoryAssignment')
     reporter = models.OneToOneField('signals.Reporter',
                                     related_name='signal',
                                     null=True,
@@ -338,12 +340,15 @@ class Reporter(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
 
 
-class SignalCategory(CreatedUpdatedModel):
+class CategoryAssignment(CreatedUpdatedModel):
     """Many-to-Many through model for `Signal` <-> `SubCategory`."""
     _signal = models.ForeignKey('signals.Signal',
                                 on_delete=models.CASCADE,
-                                related_name='signal_sub_categories')
-    sub_category = models.ForeignKey('signals.SubCategory', on_delete=models.CASCADE, null=True)
+                                related_name='category_assignments')
+    sub_category = models.ForeignKey('signals.SubCategory',
+                                     on_delete=models.CASCADE,
+                                     null=True,  # TODO remove
+                                     related_name='category_assignments')
 
     extra_properties = JSONField(null=True)
 

@@ -10,7 +10,7 @@ from django.utils import timezone
 from signals.apps.signals.models import (
     GEMELD,
     STADSDEEL_CENTRUM,
-    SignalCategory,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
@@ -65,7 +65,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEquals(Signal.objects.count(), 1)
         self.assertEquals(Location.objects.count(), 1)
         self.assertEquals(Status.objects.count(), 1)
-        self.assertEquals(SignalCategory.objects.count(), 1)
+        self.assertEquals(CategoryAssignment.objects.count(), 1)
         self.assertEquals(Reporter.objects.count(), 1)
         self.assertEquals(Priority.objects.count(), 1)
 
