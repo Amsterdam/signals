@@ -17,7 +17,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from tests.apps.signals.factories import SignalFactory
+from tests.apps.signals import factories
 
 
 class TestSignalManager(TransactionTestCase):
@@ -86,7 +86,7 @@ class TestSignalManager(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.models.update_location', autospec=True)
     def test_update_location(self, patched_update_location):
-        signal = SignalFactory.create()
+        signal = factories.SignalFactory.create()
 
         # Update the signal
         prev_location = signal.location
@@ -105,7 +105,7 @@ class TestSignalManager(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.models.update_status', autospec=True)
     def test_update_status(self, patched_update_status):
-        signal = SignalFactory.create()
+        signal = factories.SignalFactory.create()
 
         # Update the signal
         prev_status = signal.status
@@ -124,7 +124,7 @@ class TestSignalManager(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.models.update_category', autospec=True)
     def test_update_category(self, patched_update_category):
-        signal = SignalFactory.create()
+        signal = factories.SignalFactory.create()
 
         # Update the signal
         prev_category = signal.category
@@ -143,7 +143,7 @@ class TestSignalManager(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.models.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
-        signal = SignalFactory.create()
+        signal = factories.SignalFactory.create()
 
         # Update the signal
         prev_reporter = signal.reporter
@@ -161,7 +161,7 @@ class TestSignalManager(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.models.update_priority')
     def test_update_priority(self, patched_update_priority):
-        signal = SignalFactory.create()
+        signal = factories.SignalFactory.create()
 
         # Update the signal
         prev_priority = signal.priority
@@ -176,3 +176,23 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             priority=priority,
             prev_priority=prev_priority)
+
+
+class TestCategoryDeclarations(TransactionTestCase):
+
+    def test_main_category_string(self):
+        main_category = factories.MainCategoryFactory.create(name='First category')
+
+        self.assertEqual(str(main_category), 'First category')
+
+    def test_sub_category_string(self):
+        sub_category = factories.SubCategoryFactory.create(main_category__name='First category',
+                                                           code='F01',
+                                                           name='Sub')
+
+        self.assertEqual(str(sub_category), 'F01 (First category - Sub)')
+
+    def test_department_string(self):
+        department = factories.DepartmentFactory.create(code='ABC', name='Department A')
+
+        self.assertEqual(str(department), 'ABC (Department A)')

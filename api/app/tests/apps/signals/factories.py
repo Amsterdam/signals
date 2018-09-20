@@ -13,11 +13,14 @@ from signals.apps.signals.models import (
     GEMELD,
     STADSDELEN,
     Category,
+    Department,
     Location,
+    MainCategory,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    SubCategory
 )
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
@@ -163,3 +166,43 @@ class PriorityFactory(factory.DjangoModelFactory):
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
+
+
+#
+# Category declarations
+#
+
+
+class MainCategoryFactory(factory.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Main category {}'.format(n))
+
+    class Meta:
+        model = MainCategory
+
+
+class SubCategoryFactory(factory.DjangoModelFactory):
+    main_category = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
+    code = factory.Sequence(lambda n: 'F{}'.format(n))
+    name = factory.Sequence(lambda n: 'Sub category {}'.format(n))
+    handling = fuzzy.FuzzyChoice([c[0] for c in SubCategory.HANDLING_CHOICES])
+
+    class Meta:
+        model = SubCategory
+
+    @factory.post_generation
+    def departments(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for department in extracted:
+                self.departments.add(department)
+
+
+class DepartmentFactory(factory.DjangoModelFactory):
+    code = fuzzy.FuzzyText(length=3)
+    name = fuzzy.FuzzyText(length=10)
+    is_intern = fuzzy.FuzzyChoice(choices=[True, False])
+
+    class Meta:
+        model = Department
