@@ -9,35 +9,14 @@ from signals.apps.email_integrations.integrations import apptimize
 from tests.apps.signals.factories import SignalFactory
 
 
-@override_settings(
-    EMAIL_APPTIMIZE_INTEGRATION_ADDRESS='test@test.com',
-    SUB_CATEGORIES_DICT={
-        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
-        'Openbaar groen en water': (
-            ('F41', 'Openbaar groen en water', 'Boom', 'I5DMC', 'CCA,ASC,STW'),
-            ('F42', 'Openbaar groen en water', 'Maaien / snoeien', 'I5DMC',
-             'CCA,ASC,STW'),
-            # ...
-        ),
-        'Wegen, verkeer, straatmeubilair': (
-            ('F14', 'Wegen, verkeer, straatmeubilair',
-             'Onderhoud stoep, straat en fietspad', 'A3DEC', 'CCA,ASC,STW'),
-            ('F15', 'Wegen, verkeer, straatmeubilair',
-             'Verkeersbord, verkeersafzetting', 'A3DEC', 'CCA,ASC,STW'),
-            # ...
-        ),
-        'Afval': (
-            ('F01', 'Afval', 'Veeg- / zwerfvuil', 'A3DEC', "CCA,ASC,STW"),
-            ('F07', 'Afval', 'Prullenbak is vol', 'A3DEC', "CCA,ASC,STW"),
-        ),
-    }
-)
+@override_settings(EMAIL_APPTIMIZE_INTEGRATION_ADDRESS='test@test.com')
 class TestIntegrationApptimize(TestCase):
 
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
-        signal = SignalFactory.create(category__main='Openbaar groen en water',
-                                      category__sub='Boom')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Openbaar groen en water',
+            category_assignment__sub_category__name='Boom')
 
         number_of_messages = apptimize.send_mail(signal)
 
@@ -60,8 +39,8 @@ class TestIntegrationApptimize(TestCase):
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category.main,
-                'subrubriek': signal.category.sub,
+                'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
+                'subrubriek': signal.category_assignment.sub_category.name,
             },
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
@@ -90,16 +69,18 @@ class TestIntegrationApptimize(TestCase):
         mocked_django_send_mail.assert_not_called()
 
     def test_is_signal_applicable_in_category(self):
-        signal = SignalFactory.create(category__main='Openbaar groen en water',
-                                      category__sub='Boom')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Openbaar groen en water',
+            category_assignment__sub_category__name='Boom')
 
         result = apptimize.is_signal_applicable(signal)
 
         self.assertEqual(result, True)
 
     def test_is_signal_applicable_outside_category(self):
-        signal = SignalFactory.create(category__main='Some other main category',
-                                      category__sub='Some other sub category')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Some other main category',
+            category_assignment__sub_category__name='Some other sub category')
 
         result = apptimize.is_signal_applicable(signal)
 
@@ -107,8 +88,9 @@ class TestIntegrationApptimize(TestCase):
 
     @override_settings(EMAIL_APPTIMIZE_INTEGRATION_ADDRESS=None)
     def test_is_signal_applicable_no_email(self):
-        signal = SignalFactory.create(category__main='Openbaar groen en water',
-                                      category__sub='Boom')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Openbaar groen en water',
+            category_assignment__sub_category__name='Boom')
 
         result = apptimize.is_signal_applicable(signal)
 
