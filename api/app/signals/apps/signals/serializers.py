@@ -380,6 +380,7 @@ class StatusHALSerializer(HALSerializer):
             '_signal',
             'state',
             'extra_properties',
+            'created_at',
         )
 
     def create(self, validated_data):
