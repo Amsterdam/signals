@@ -20,7 +20,7 @@ def save_csv_files_datawarehouse():
         csv_files.append(_create_signals_csv(tmp_dir))
         csv_files.append(_create_locations_csv(tmp_dir))
         csv_files.append(_create_reporters_csv(tmp_dir))
-        csv_files.append(_create_categories_csv(tmp_dir))
+        csv_files.append(_create_category_assignments_csv(tmp_dir))
         csv_files.append(_create_statuses_csv(tmp_dir))
 
         # Getting the storage backend and save all CSV files.
@@ -55,6 +55,8 @@ def _create_signals_csv(location):
     """
     with open(os.path.join(location, 'signals.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
+
+        # Writing the header to the CSV file.
         writer.writerow([
             'id',
             'signal_uuid',
@@ -70,13 +72,11 @@ def _create_signals_csv(location):
             'image',
             'upload',
             'extra_properties',
-            'category_id',
+            'category_assignment_id',
             'location_id',
             'reporter_id',
             'status_id',
         ])
-
-        # Writing the header to the CSV file.
 
         # Writing all `Signal` objects to the CSV file.
         for signal in Signal.objects.all():
@@ -95,7 +95,7 @@ def _create_signals_csv(location):
                 signal.image,
                 signal.upload,
                 json.dumps(signal.extra_properties),
-                signal.category_id,
+                signal.category_assignment_id,
                 signal.location_id,
                 signal.reporter_id,
                 signal.status_id,
@@ -184,8 +184,8 @@ def _create_reporters_csv(location):
     return csv_file.name
 
 
-def _create_categories_csv(location):
-    """Create CSV file with all `Category` objects.
+def _create_category_assignments_csv(location):
+    """Create CSV file with all `CategoryAssignment` objects.
 
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
@@ -199,43 +199,23 @@ def _create_categories_csv(location):
             'main',
             'sub',
             'department',
-            'priority',
-            'ml_priority',
-            'ml_cat',
-            'ml_prob',
-            'ml_cat_all',
-            'ml_cat_all_prob',
-            'ml_sub_cat',
-            'ml_sub_prob',
-            'ml_sub_all',
-            'ml_sub_all_prob',
             'created_at',
             'updated_at',
             'extra_properties',
             '_signal_id',
         ])
 
-        # Writing all `Category` objects to the CSV file.
-        for category in Category.objects.all():
+        # Writing all `CategoryAssignment` objects to the CSV file.
+        for category_assignment in CategoryAssignment.objects.all():
             writer.writerow([
-                category.pk,
-                category.main,
-                category.sub,
-                category.department,
-                category.priority,
-                category.ml_priority,
-                category.ml_cat,
-                category.ml_prob,
-                category.ml_cat_all,
-                category.ml_cat_all_prob,
-                category.ml_sub_cat,
-                category.ml_sub_prob,
-                category.ml_sub_all,
-                category.ml_sub_all_prob,
-                category.created_at,
-                category.updated_at,
-                json.dumps(category.extra_properties),
-                category._signal_id,
+                category_assignment.pk,
+                category_assignment.sub_category.main_category.name,
+                category_assignment.sub_category.name,
+                category_assignment.sub_category.departments.values_list('name', flat=True),
+                category_assignment.created_at,
+                category_assignment.updated_at,
+                json.dumps(category_assignment.extra_properties),
+                category_assignment._signal_id,
             ])
 
     return csv_file.name
