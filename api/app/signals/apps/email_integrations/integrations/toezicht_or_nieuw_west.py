@@ -3,13 +3,14 @@ E-mail integration for Toezicht openbare ruimte Nieuw west.
 """
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
+from django.db.models import Q
 from django.utils import timezone
 
 from signals.apps.email_integrations.utils import (
     create_default_notification_message,
     is_business_hour
 )
-from signals.apps.signals.models import STADSDEEL_NIEUWWEST, Signal
+from signals.apps.signals.models import STADSDEEL_NIEUWWEST, Signal, SubCategory
 
 
 def send_mail(signal: Signal) -> int:
@@ -33,8 +34,6 @@ def send_mail(signal: Signal) -> int:
 def is_signal_applicable(signal: Signal) -> bool:
     """Is given `Signal` applicable for Toezicht openbare ruimte Nieuw west.
 
-    TODO SIG-409 refactor categories.
-
     :param signal: Signal object
     :returns: bool
     """
@@ -47,20 +46,17 @@ def is_signal_applicable(signal: Signal) -> bool:
     if signal.location.stadsdeel != STADSDEEL_NIEUWWEST:
         return False
 
-    eligible_main_category = 'Overlast in de openbare ruimte'
-    eligible_sub_categories = (
-        'Parkeeroverlast',
-        'Fietswrak',
-        'Stank- / geluidsoverlast',
-        'Bouw- / sloopoverlast',
-        'Auto- / scooter- / bromfiets(wrak)',
-        'Graffiti / wildplak',
-        'Honden(poep)',
-        'Hinderlijk geplaatst object',
-        'Deelfiets',
-    )
-    is_applicable = (
-        signal.category.main == eligible_main_category and
-        signal.category.sub in eligible_sub_categories)
+    # TODO: move this query to object manager.
+    eligible_sub_categories = SubCategory.objects.filter(
+        Q(main_category__name='Overlast in de openbare ruimte') & (
+            Q(name='Parkeeroverlast') |
+            Q(name='Fietswrak') |
+            Q(name='Stank- / geluidsoverlast') |
+            Q(name='Bouw- / sloopoverlast') |
+            Q(name='Auto- / scooter- / bromfiets(wrak)') |
+            Q(name='Graffiti / wildplak') |
+            Q(name='Honden(poep)') |
+            Q(name='Hinderlijk geplaatst object') |
+            Q(name='Deelfiets')))
 
-    return is_applicable
+    return signal.category_assignment.sub_category in eligible_sub_categories
