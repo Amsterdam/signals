@@ -10,27 +10,16 @@ from signals.apps.signals.models import STADSDEEL_NOORD, STADSDEEL_OOST
 from tests.apps.signals.factories import SignalFactory
 
 
-@override_settings(
-    EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS='test@test.com',
-    SUB_CATEGORIES_DICT={
-        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
-        'Overlast in de openbare ruimte': (
-            ('F29', 'Overlast in de openbare ruimte', 'Parkeeroverlast', 'A3DMC', 'CCA,ASC,THO'),
-            ('F30', 'Overlast in de openbare ruimte', 'Fietswrak', 'A3WMC', 'CCA,ASC,STW,THO'),
-            ('F31', 'Overlast in de openbare ruimte', 'Stank- / geluidsoverlast', 'A3WMC',
-             'CCA,ASC,THO,VTH'),
-            # ...
-        ),
-    }
-)
+@override_settings(EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS='test@test.com')
 class TestIntegrationHandhavingOROost(TestCase):
 
     @freeze_time('2018-09-05 23:00:00')  # Outside business hour
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
-        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
-                                      category__sub='Parkeeroverlast',
-                                      location__stadsdeel=STADSDEEL_OOST)
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__sub_category__name='Parkeeroverlast',
+            location__stadsdeel=STADSDEEL_OOST)
 
         number_of_messages = handhaving_or_oost.send_mail(signal)
 
@@ -80,9 +69,10 @@ class TestIntegrationHandhavingOROost(TestCase):
     @mock.patch('signals.apps.email_integrations.integrations.handhaving_or_oost.is_business_hour',
                 return_value=False, autospec=True)
     def test_is_signal_applicable_true(self, mocked_is_business_hour):
-        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
-                                      category__sub='Fietswrak',
-                                      location__stadsdeel=STADSDEEL_OOST)
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__sub_category__name='Fietswrak',
+            location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
 
@@ -91,9 +81,10 @@ class TestIntegrationHandhavingOROost(TestCase):
     @mock.patch('signals.apps.email_integrations.integrations.handhaving_or_oost.is_business_hour',
                 return_value=True, autospec=True)
     def test_is_signal_applicable_is_business_hour(self, mocked_is_business_hour):
-        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
-                                      category__sub='Fietswrak',
-                                      location__stadsdeel=STADSDEEL_OOST)
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__sub_category__name='Fietswrak',
+            location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
 
@@ -102,9 +93,10 @@ class TestIntegrationHandhavingOROost(TestCase):
     @mock.patch('signals.apps.email_integrations.integrations.handhaving_or_oost.is_business_hour',
                 return_value=False, autospec=True)
     def test_is_signal_applicable_outside_category_in_stadsdeel_oost(self, mocked_is_business_hour):
-        signal = SignalFactory.create(category__main='Some other main category',
-                                      category__sub='Some other sub category',
-                                      location__stadsdeel=STADSDEEL_OOST)
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Some other main category',
+            category_assignment__sub_category__name='Some other sub category',
+            location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
 
@@ -113,9 +105,10 @@ class TestIntegrationHandhavingOROost(TestCase):
     @mock.patch('signals.apps.email_integrations.integrations.handhaving_or_oost.is_business_hour',
                 return_value=False, autospec=True)
     def test_is_signal_applicable_in_category_outside_stadsdeel_oost(self, mocked_is_business_hour):
-        signal = SignalFactory.create(category__main='Overlast in de openbare ruimte',
-                                      category__sub='Fietswrak',
-                                      location__stadsdeel=STADSDEEL_NOORD)
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__sub_category__name='Fietswrak',
+            location__stadsdeel=STADSDEEL_NOORD)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
 
