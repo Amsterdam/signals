@@ -117,8 +117,9 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_code = serializers.CharField(source='sub_category.code', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
@@ -131,8 +132,9 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         model = CategoryAssignment
         fields = (
             'sub',
-            'sub_code',
+            'sub_slug',
             'main',
+            'main_slug',
             'sub_category',
         )
 
@@ -453,8 +455,9 @@ class CategoryHALSerializer(HALSerializer):
         required=False)
 
     sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_code = serializers.CharField(source='sub_category.code', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
     class Meta(object):
         model = CategoryAssignment
@@ -464,8 +467,9 @@ class CategoryHALSerializer(HALSerializer):
             '_signal',
             'sub_category',
             'sub',
-            'sub_code',
+            'sub_slug',
             'main',
+            'main_slug',
         ]
 
     def to_internal_value(self, data):
