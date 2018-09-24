@@ -141,9 +141,13 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         internal_data = super().to_internal_value(data)
 
         # Backwards compatibility fix to let this endpoint work with `sub` as key.
-        if 'sub' in data and 'sub_category' not in data:
+        is_main_name_posted = 'main' in data
+        is_sub_name_posted = 'sub' in data
+        is_sub_category_not_posted = 'sub_category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
             try:
-                sub_category = SubCategory.objects.get(name=data['sub'])
+                sub_category = SubCategory.objects.get(main_category__name=data['main'],
+                                                       name=data['sub'])
             except SubCategory.DoesNotExist:
                 pass
             else:
@@ -229,7 +233,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         raise NotImplementedError('`update()` is not allowed with this serializer.')
 
-    def validate(self, data):  # noqa: C901
+    def validate(self, data):
         # The status can only be 'm' when created
         if data['status']['state'] not in STATUS_OVERGANGEN['']:
             raise serializers.ValidationError(
@@ -248,25 +252,10 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             extra_properties['IP'] = ip
             data['status']['extra_properties'] = extra_properties
 
-        if 'category' in data and 'sub' in data['category']:
-            if len(data['category']) < 1:
-                raise serializers.ValidationError("Invalid category")
-
-            departments = get_departments(data['category']['sub'])
-            if departments and ('department' not in data['category'] or
-                                not data['category']['department']):
-                data['category']['department'] = departments
-            elif not departments:
-                logger.warning(f"Department not found for subcategory : {data['category']['sub']}")
-        else:
-            raise serializers.ValidationError(
-                f"Invalid category : missing sub")
-
         request = self.context.get("request")
         if request.user and not request.user.is_anonymous:
             data['user'] = request.user.get_username()
 
-        # TODO add further validation
         return data
 
     def add_ip(self):
@@ -441,7 +430,6 @@ class StatusHALSerializer(HALSerializer):
         if request.user and not request.user.is_anonymous:
             data['user'] = request.user.get_username()
 
-        # TODO add further validation
         return data
 
     def add_ip(self):
@@ -475,29 +463,34 @@ class CategoryHALSerializer(HALSerializer):
             '_links',
             '_display',
             '_signal',
+            'sub_category',
             'sub',
             'sub_code',
             'main',
         ]
 
+    def to_internal_value(self, data):
+        internal_data = super().to_internal_value(data)
+
+        # Backwards compatibility fix to let this endpoint work with `sub` as key.
+        is_main_name_posted = 'main' in data
+        is_sub_name_posted = 'sub' in data
+        is_sub_category_not_posted = 'sub_category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+            try:
+                sub_category = SubCategory.objects.get(main_category__name=data['main'],
+                                                       name=data['sub'])
+            except SubCategory.DoesNotExist:
+                pass
+            else:
+                internal_data['sub_category'] = sub_category
+
+        return internal_data
+
     def create(self, validated_data):
         signal = validated_data.pop('_signal')
         category = Signal.actions.update_category_assignment(validated_data, signal)
         return category
-
-    def validate(self, data):
-        if 'sub' in data:
-            departments = get_departments(data['sub'])
-            if departments and ('department' not in data or not data['department']):
-                data['department'] = departments
-            elif not departments:
-                logger.warning(f"Department not found for subcategory : {data['sub']}")
-        else:
-            raise serializers.ValidationError(
-                f"Invalid category : missing sub")
-
-        # TODO add validation
-        return data
 
 
 class PriorityHALSerializer(HALSerializer):

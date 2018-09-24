@@ -451,7 +451,7 @@ class Priority(CreatedUpdatedModel):
 
 
 #
-# Category declarations
+# Category terms
 #
 
 
