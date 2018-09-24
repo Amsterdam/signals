@@ -26,7 +26,6 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.settings.categories import get_departments
 
 logger = logging.getLogger(__name__)
 

@@ -184,13 +184,3 @@ def get_afhandeling_text(sub_categorie):
     else:
         afhandeling_code = REST
     return ALL_AFHANDELING_TEXT[afhandeling_code]
-
-
-def get_departments(sub_categorie):
-    sub = SUB_CATEGORIES_DICT.get(sub_categorie)
-    if sub:
-        departments = sub[4]
-        #ldepartments = map( lambda x: ALL_DEPARTMENTS[x][0], departments.split(","))
-        return departments
-    else:
-        return None
