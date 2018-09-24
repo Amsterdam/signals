@@ -4,7 +4,7 @@ Tests for the model manager in signals.apps.signals.models
 from unittest import mock
 
 from django.contrib.gis.geos import Point
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, TestCase
 from django.utils import timezone
 
 from signals.apps.signals.models import (
@@ -15,8 +15,7 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status,
-    SubCategory)
+    Status)
 from tests.apps.signals import factories
 from tests.apps.signals.factories import SubCategoryFactory
 
@@ -181,7 +180,7 @@ class TestSignalManager(TransactionTestCase):
             prev_priority=prev_priority)
 
 
-class TestCategoryDeclarations(TransactionTestCase):
+class TestCategoryDeclarations(TestCase):
 
     def test_main_category_string(self):
         main_category = factories.MainCategoryFactory.create(name='First category')
