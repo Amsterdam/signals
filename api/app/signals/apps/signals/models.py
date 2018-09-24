@@ -372,8 +372,6 @@ BEHANDELING = 'b'
 AFGEHANDELD = 'o'
 ON_HOLD = 'h'
 GEANNULEERD = 'a'
-
-
 STATUS_OPTIONS = (
     (GEMELD, 'Gemeld'),
     (AFWACHTING, 'In afwachting van behandeling'),
