@@ -28,10 +28,6 @@ class Migration(migrations.Migration):
             name='slug',
             field=models.SlugField(null=True, unique=True),
         ),
-        migrations.RemoveField(
-            model_name='subcategory',
-            name='code',
-        ),
         migrations.AlterUniqueTogether(
             name='subcategory',
             unique_together={('main_category', 'slug')},

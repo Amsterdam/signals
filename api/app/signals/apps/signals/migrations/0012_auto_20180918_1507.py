@@ -72,7 +72,28 @@ class Migration(migrations.Migration):
             model_name='category',
             name='_signal',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                    related_name='signal_category_set',
+                                    related_name='category_assignments',
                                     to='signals.Signal'),
+        ),
+        migrations.AlterField(
+            model_name='category',
+            name='sub_category',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='category_assignments',
+                                    to='signals.SubCategory'),
+        ),
+        migrations.AlterField(
+            model_name='maincategory',
+            name='slug',
+            field=models.SlugField(unique=True),
+        ),
+        migrations.AlterField(
+            model_name='subcategory',
+            name='slug',
+            field=models.SlugField(unique=True),
+        ),
+        migrations.RemoveField(
+            model_name='subcategory',
+            name='code',
         ),
     ]

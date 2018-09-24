@@ -457,7 +457,7 @@ class Priority(CreatedUpdatedModel):
 
 class MainCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True, null=True)
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
         """String representation."""
@@ -499,7 +499,7 @@ class SubCategory(models.Model):
     main_category = models.ForeignKey('signals.MainCategory',
                                       related_name='sub_categories',
                                       on_delete=models.PROTECT)
-    slug = models.SlugField(unique=True, null=True)
+    slug = models.SlugField(unique=True)
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')

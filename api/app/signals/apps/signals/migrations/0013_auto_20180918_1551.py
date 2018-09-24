@@ -10,6 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RenameField(
+            model_name='signal',
+            old_name='category',
+            new_name='category_assignment',
+        ),
         migrations.RenameModel(
             old_name='Category',
             new_name='CategoryAssignment',
