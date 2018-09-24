@@ -499,7 +499,7 @@ class SubCategory(models.Model):
     main_category = models.ForeignKey('signals.MainCategory',
                                       related_name='sub_categories',
                                       on_delete=models.PROTECT)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField()
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')
@@ -509,9 +509,8 @@ class SubCategory(models.Model):
 
     def __str__(self):
         """String representation."""
-        return '{code} ({main_category} - {name})'.format(code=self.code,
-                                                          main_category=self.main_category.name,
-                                                          name=self.name)
+        return '{name} ({main_category})'.format(name=self.name,
+                                                 main_category=self.main_category.name)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

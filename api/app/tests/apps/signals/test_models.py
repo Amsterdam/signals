@@ -24,7 +24,7 @@ from tests.apps.signals.factories import SubCategoryFactory
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
-        SubCategoryFactory.create(code='F01', name='Veeg- / zwerfvuil')
+        sub_category = SubCategoryFactory.create(name='Veeg- / zwerfvuil')
 
         # Deserialized data
         self.signal_data = {
@@ -42,7 +42,7 @@ class TestSignalManager(TransactionTestCase):
             'phone': '0123456789',
         }
         self.category_assignment_data = {
-            'sub_category': SubCategory.objects.get(name='Veeg- / zwerfvuil'),
+            'sub_category': sub_category,
         }
         self.status_data = {
             'state': GEMELD,
@@ -190,10 +190,9 @@ class TestCategoryDeclarations(TransactionTestCase):
 
     def test_sub_category_string(self):
         sub_category = factories.SubCategoryFactory.create(main_category__name='First category',
-                                                           code='F01',
                                                            name='Sub')
 
-        self.assertEqual(str(sub_category), 'F01 (First category - Sub)')
+        self.assertEqual(str(sub_category), 'Sub (First category)')
 
     def test_department_string(self):
         department = factories.DepartmentFactory.create(code='ABC', name='Department A')

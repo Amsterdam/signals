@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='subcategory',
             name='slug',
-            field=models.SlugField(null=True, unique=True),
+            field=models.SlugField(null=True),
         ),
         migrations.AlterUniqueTogether(
             name='subcategory',

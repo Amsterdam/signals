@@ -90,7 +90,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='subcategory',
             name='slug',
-            field=models.SlugField(unique=True),
+            field=models.SlugField(),
         ),
         migrations.RemoveField(
             model_name='subcategory',
