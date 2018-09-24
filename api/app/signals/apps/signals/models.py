@@ -6,6 +6,8 @@ from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
+from django.utils.text import slugify
+
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
@@ -455,10 +457,15 @@ class Priority(CreatedUpdatedModel):
 
 class MainCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True, null=True)
 
     def __str__(self):
         """String representation."""
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class SubCategory(models.Model):
@@ -492,16 +499,23 @@ class SubCategory(models.Model):
     main_category = models.ForeignKey('signals.MainCategory',
                                       related_name='sub_categories',
                                       on_delete=models.PROTECT)
-    code = models.CharField(max_length=4, unique=True)
+    slug = models.SlugField(unique=True, null=True)
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')
+
+    class Meta:
+        unique_together = ('main_category', 'slug', )
 
     def __str__(self):
         """String representation."""
         return '{code} ({main_category} - {name})'.format(code=self.code,
                                                           main_category=self.main_category.name,
                                                           name=self.name)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class Department(models.Model):

@@ -18,4 +18,22 @@ class Migration(migrations.Migration):
                                     on_delete=django.db.models.deletion.CASCADE,
                                     to='signals.SubCategory'),
         ),
+        migrations.AddField(
+            model_name='maincategory',
+            name='slug',
+            field=models.SlugField(null=True, unique=True),
+        ),
+        migrations.AddField(
+            model_name='subcategory',
+            name='slug',
+            field=models.SlugField(null=True, unique=True),
+        ),
+        migrations.RemoveField(
+            model_name='subcategory',
+            name='code',
+        ),
+        migrations.AlterUniqueTogether(
+            name='subcategory',
+            unique_together={('main_category', 'slug')},
+        ),
     ]

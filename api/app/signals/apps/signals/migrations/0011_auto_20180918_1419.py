@@ -1,4 +1,5 @@
 from django.db import migrations
+from django.utils.text import slugify
 
 
 def populate_sub_category_field(apps, schema_editor):
@@ -26,6 +27,20 @@ def populate_sub_category_field(apps, schema_editor):
         category.save()
 
 
+def populate_slug_fields(apps, schema_editor):
+    """Populate `slug` fields on category models."""
+    MainCategory = apps.get_model('signals', 'MainCategory')
+    SubCategory = apps.get_model('signals', 'SubCategory')
+
+    for main_category in MainCategory.objects.all():
+        main_category.slug = slugify(main_category.name)
+        main_category.save()
+
+    for sub_category in SubCategory.objects.all():
+        sub_category.slug = slugify(sub_category.name)
+        sub_category.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -34,4 +49,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(populate_sub_category_field),
+        migrations.RunPython(populate_slug_fields),
     ]
