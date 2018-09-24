@@ -7,6 +7,7 @@ from datetime import datetime
 import factory
 import pytz
 from django.contrib.gis.geos import Point
+from django.utils.text import slugify
 from factory import fuzzy
 
 from signals.apps.signals.models import (
@@ -65,11 +66,11 @@ class SignalFactory(factory.DjangoModelFactory):
     @factory.post_generation
     def set_one_to_one_relations(self, create, extracted, **kwargs):
         """Set o2o relations on given `Signal` object."""
-        self.location = self.locations.first()
-        self.status = self.statuses.first()
-        self.category_assignment = self.category_assignments.first()
-        self.reporter = self.reporters.first()
-        self.priority = self.priorities.first()
+        self.location = self.locations.last()
+        self.status = self.statuses.last()
+        self.category_assignment = self.category_assignments.last()
+        self.reporter = self.reporters.last()
+        self.priority = self.priorities.last()
 
 
 class SignalFactoryValidLocation(SignalFactory):
@@ -175,21 +176,22 @@ class PriorityFactory(factory.DjangoModelFactory):
 
 class MainCategoryFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Main category {}'.format(n))
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
 
     class Meta:
         model = MainCategory
-        django_get_or_create = ('name', )
+        django_get_or_create = ('slug', )
 
 
 class SubCategoryFactory(factory.DjangoModelFactory):
     main_category = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
-    code = factory.Sequence(lambda n: 'F{}'.format(n))
     name = factory.Sequence(lambda n: 'Sub category {}'.format(n))
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in SubCategory.HANDLING_CHOICES])
 
     class Meta:
         model = SubCategory
-        django_get_or_create = ('code', )
+        django_get_or_create = ('main_category', 'slug', )
 
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):
