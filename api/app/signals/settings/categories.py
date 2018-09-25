@@ -4,25 +4,7 @@
 # Afdeling/Diensten
 # Zie : https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:toepassingen:signalen:ontwerp:referentietabellen:dienstenvsrubrieken
 
-# Code, Naam, Intern/Extern
-ALL_DEPARTMENTS = {
-    "POA": ("Port of Amsterdam", "E"),
-    "THO": ("THOR", "I"),
-    "WAT": ("Waternet", "E"),
-    "STW": ("Stadswerken", "I"),
-    "AEG": ("Afval en Grondstoffen", "I"),
-    "ASC": ("Actie Service Centrum","I" ),
-    "POL": ("Politie", "E"),
-    "GGD": ("GGD", "E"),
-    # "VOR": ("V&OR", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
-    "OVL": ("V&OR OVL", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
-    "VRI": ("V&OR VRI", "I"),  # Onderscheid V&OR OVL en V&OR VRI ???
-    "CCA": ("CCA", "I"),
-    "STL": ("Stadsloket", "I"),
-    "OMG": ("Omgevingsdienst", "I"), # Intern/extern ???
-    "VTH": ("VTH", "I"), # Wat is VTH ? Intern/Extern ?
-    "FB": ("FB", "I"), # ?? what is FB
-}
+# TODO this file is obsolete, should be removed when all usage is gone.
 
 # Constants for afhandeling
 A3DMC = 'A3DMC'

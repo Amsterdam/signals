@@ -6,9 +6,10 @@ import re
 import string
 from collections import Counter
 
-from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.management import BaseCommand, CommandError
+
+from signals.apps.signals.models import Department
 
 log = logging.getLogger(__name__)
 
@@ -66,11 +67,11 @@ class Command(BaseCommand):
         }
 
         departments_map = {}
-        for key, value in settings.ALL_DEPARTMENTS.items():
-            key = key.lower()
-            value = value[0].lower()
-            departments_map[key] = key
-            departments_map[value] = key
+        for department in Department.objects.all():
+            code = department.code.lower()
+            name = department.name.lower()
+            departments_map[code] = code
+            departments_map[name] = code
 
         all_groups = {}
         for group in Group.objects.all():
