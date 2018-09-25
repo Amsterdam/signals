@@ -4,7 +4,7 @@ Tests for the model manager in signals.apps.signals.models
 from unittest import mock
 
 from django.contrib.gis.geos import Point
-from django.test import TransactionTestCase, TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from signals.apps.signals.models import (
@@ -15,7 +15,8 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status)
+    Status
+)
 from tests.apps.signals import factories
 from tests.apps.signals.factories import SubCategoryFactory
 

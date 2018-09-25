@@ -4,8 +4,17 @@ from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
 
-from signals.apps.signals.models import STADSDELEN, STATUS_OPTIONS, Buurt, Location, Priority, \
-    Signal, Status, MainCategory, SubCategory
+from signals.apps.signals.models import (
+    STADSDELEN,
+    STATUS_OPTIONS,
+    Buurt,
+    Location,
+    MainCategory,
+    Priority,
+    Signal,
+    Status,
+    SubCategory
+)
 
 
 def parse_xyr(value):

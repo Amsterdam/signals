@@ -179,7 +179,8 @@ class TestDatawarehouse(testcases.TestCase):
                                  str(category_assignment.sub_category.main_category.name))
                 self.assertEqual(row['sub'], str(category_assignment.sub_category.name))
                 self.assertEqual(row['department'],
-                                 str(category_assignment.sub_category.departments.values_list('name', flat=True)))
+                                 str(category_assignment.sub_category.departments.values_list(
+                                     'name', flat=True)))
                 self.assertEqual(row['created_at'], str(category_assignment.created_at))
                 self.assertEqual(row['updated_at'], str(category_assignment.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
