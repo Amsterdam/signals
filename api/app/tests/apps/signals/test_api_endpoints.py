@@ -207,10 +207,6 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
             "Reporter is missing _signal field?"
         )
 
-        # self.assertEqual(
-        #     CategoryAssignment.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
-        # )
-
     def test_post_signal_with_multipart_and_image(self):
         data = self._get_fixture('post_signal')
 
