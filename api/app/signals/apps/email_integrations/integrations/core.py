@@ -10,8 +10,7 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from signals.apps.signals.models import AFGEHANDELD
-from signals.settings.categories import get_afhandeling_text
+from signals.apps.signals.models import AFGEHANDELD, ALL_AFHANDELING_TEXT
 
 LOG = logging.getLogger()
 
@@ -47,8 +46,10 @@ def send_mail_reporter(signal):
         context = {
             'signal_id': signal.id,
             'text': signal.text,
-            'subcategory': signal.category.sub,
-            'afhandelings_text': get_afhandeling_text(signal.category.sub),
+            'subcategory': signal.category_assignment.sub_category.name,
+            'afhandelings_text': (
+                ALL_AFHANDELING_TEXT[signal.category_assignment.sub_category.handling]
+            ),
             'address_text': signal.location.address_text,
             'incident_date_start': get_incident_date_string(
                 signal.incident_date_start),
