@@ -49,10 +49,10 @@ def is_signal_applicable(signal: Signal) -> bool:
     """
     # TODO: move this query to object manager.
     eligible_sub_categories = SubCategory.objects.filter(
-        Q(main_category__name='Openbaar groen en water') |
-        Q(main_category__name='Wegen, verkeer, straatmeubilair') |
-        Q(main_category__name='Afval', name='Prullenbak is vol') |
-        Q(main_category__name='Afval', name='Veeg- / zwerfvuil'))
+        Q(main_category__slug='openbaar-groen-en-water') |
+        Q(main_category__slug='wegen-verkeer-straatmeubilair') |
+        Q(main_category__slug='afval', slug='prullenbak-is-vol') |
+        Q(main_category__slug='afval', slug='veeg-zwerfvuil'))
 
     is_applicable_for_apptimize = (
             settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None

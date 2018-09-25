@@ -49,10 +49,10 @@ def is_signal_applicable(signal: Signal) -> bool:
 
     # TODO: move this query to object manager.
     eligible_sub_categories = SubCategory.objects.filter(
-        Q(main_category__name='Overlast Bedrijven en Horeca') & (
-            Q(name='Geluidsoverlast muziek') |
-            Q(name='Geluidsoverlast installaties') |
-            Q(name='Overlast terrassen') |
-            Q(name='Stankoverlast')))
+        Q(main_category__slug='overlast-bedrijven-en-horeca') & (
+            Q(slug='geluidsoverlast-muziek') |
+            Q(slug='geluidsoverlast-installaties') |
+            Q(slug='overlast-terrassen') |
+            Q(slug='stankoverlast')))
 
     return signal.category_assignment.sub_category in eligible_sub_categories
