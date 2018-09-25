@@ -356,12 +356,8 @@ class CategoryAssignment(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
 
     def __str__(self):
-        """Identifying string."""
-        return '{} - {} - {}'.format(
-            self.sub_category.main_category.name,
-            self.sub_category.name,
-            self.created_at
-        )
+        """String representation."""
+        return '{sub} - {signal}'.format(sub=self.sub_category, signal=self._signal)
 
 
 LEEG = ''
