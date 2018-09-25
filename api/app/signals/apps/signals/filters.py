@@ -1,5 +1,4 @@
 from datapunt_api import bbox
-from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError

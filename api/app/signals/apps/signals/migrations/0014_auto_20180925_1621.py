@@ -11,12 +11,14 @@ def migrate_old_category_permissions(apps, schema_editor):
     CategoryAssignment = apps.get_model('signals', 'CategoryAssignment')
 
     ca_content_type = ContentType.objects.get_for_model(CategoryAssignment)
-    add_category = Permission.objects.get(codename='add_category', content_type=ca_content_type)
-    change_category = Permission.objects.get(codename='change_category',
-                                             content_type=ca_content_type)
-    delete_category = Permission.objects.get(codename='delete_category',
-                                             content_type=ca_content_type)
-    view_category = Permission.objects.get(codename='view_category', content_type=ca_content_type)
+    add_category, _ = Permission.objects.get_or_create(codename='add_category',
+                                                       content_type=ca_content_type)
+    change_category, _ = Permission.objects.get_or_create(codename='change_category',
+                                                          content_type=ca_content_type)
+    delete_category, _ = Permission.objects.get_or_create(codename='delete_category',
+                                                          content_type=ca_content_type)
+    view_category, _ = Permission.objects.get_or_create(codename='view_category',
+                                                        content_type=ca_content_type)
 
     add_categoryassignment, _ = Permission.objects.get_or_create(
         codename='add_categoryassignment',
