@@ -142,7 +142,6 @@ class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_detail_class = CategoryHALSerializer
     serializer_class = CategoryHALSerializer
     filter_backends = (DjangoFilterBackend, )
-    filter_fields = ['main', 'sub']
 
 
 class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
