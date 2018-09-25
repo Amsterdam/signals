@@ -116,17 +116,19 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
-    sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
-
+    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
+    # http://www.django-rest-framework.org/api-guide/relations/#example_2
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
     sub_category = serializers.PrimaryKeyRelatedField(
         queryset=SubCategory.objects.all(),
         write_only=True,
         required=False)
+
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
     class Meta:
         model = CategoryAssignment
@@ -447,6 +449,8 @@ class CategoryHALSerializer(HALSerializer):
 
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
+    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
+    # http://www.django-rest-framework.org/api-guide/relations/#example_2
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
     sub_category = serializers.PrimaryKeyRelatedField(
