@@ -53,12 +53,6 @@ def status_choices():
     return [(c, f'{n} ({c})') for c, n in STATUS_OPTIONS]
 
 
-def category_sub_choices():
-    # fixme: use the distinct query again but also supply the list to frontend
-    # options = Category.objects.values_list("sub").distinct()
-    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in settings.ALL_SUB_CATEGORIES]
-
-
 class SignalFilter(FilterSet):
     id = filters.CharFilter()
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
@@ -101,12 +95,12 @@ class SignalFilter(FilterSet):
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
     category__main = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
-        to_field_name='slug',
-        field_name='category_assignment__sub_category__main_category__slug')
+        to_field_name='name',
+        field_name='category_assignment__sub_category__main_category__name')
     category__sub = filters.ModelMultipleChoiceFilter(
         queryset=SubCategory.objects.all(),
-        to_field_name='slug',
-        field_name='category_assignment__sub_category__slug')
+        to_field_name='name',
+        field_name='category_assignment__sub_category__name')
     priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)
 
     class Meta(object):
