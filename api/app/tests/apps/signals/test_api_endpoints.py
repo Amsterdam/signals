@@ -6,8 +6,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import (
-    AFGEHANDELD,
-    AFWACHTING,
     CategoryAssignment,
     Location,
     MainCategory,
@@ -16,6 +14,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING
 from tests.apps.signals import factories
 from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory

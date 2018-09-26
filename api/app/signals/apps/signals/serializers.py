@@ -18,8 +18,6 @@ from signals.apps.signals.fields import (
     SubCategoryHyperlinkedRelatedField
 )
 from signals.apps.signals.models import (
-    AFGEHANDELD,
-    STATUS_OVERGANGEN,
     CategoryAssignment,
     Department,
     Location,
@@ -31,6 +29,7 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
+from signals.apps.signals.workflow import AFGEHANDELD, STATUS_OVERGANGEN
 
 logger = logging.getLogger(__name__)
 

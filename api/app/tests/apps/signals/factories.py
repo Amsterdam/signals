@@ -11,7 +11,6 @@ from django.utils.text import slugify
 from factory import fuzzy
 
 from signals.apps.signals.models import (
-    GEMELD,
     STADSDELEN,
     CategoryAssignment,
     Department,
@@ -23,6 +22,7 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
+from signals.apps.signals.workflow import GEMELD
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
