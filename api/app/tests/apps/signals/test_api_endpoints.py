@@ -10,12 +10,14 @@ from signals.apps.signals.models import (
     AFWACHTING,
     CategoryAssignment,
     Location,
+    MainCategory,
     Priority,
     Reporter,
     Signal,
     Status
 )
 from tests.apps.signals import factories
+from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
@@ -379,17 +381,58 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(self.signal.location.id, result['id'])
 
     def test_post_category(self):
-        url = '/signals/auth/category/'
-        postjson = self._get_fixture('post_category')
-        postjson['_signal'] = self.signal.id
-        response = self.client.post(url, postjson, format='json')
-        result = response.json()
+        sub_category_name = 'Overlast op het water - snel varen'
+        sub_category = SubCategoryFactory.create(name=sub_category_name,
+                                                 main_category__name='Overlast op het water')
 
+        # Asserting that we don't change the sub category to the same value the signal object
+        # already has.
+        self.assertNotEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+
+        url = '/signals/auth/category/'
+        postjson = {
+            '_signal': self.signal.id,
+            'sub_category': '/signals/v1/public/terms/categories/{slug}/{sub_slug}'.format(
+                slug=sub_category.main_category.slug,
+                sub_slug=sub_category.slug),
+        }
+        response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
+
+        result = response.json()
+        self.assertEqual(result['sub'], sub_category_name)
+
         self.signal.refresh_from_db()
-        # check that current location of signal is now this one
-        self.assertEqual(self.signal.category_assignment.sub_category.name, result['sub'])
-        # self.assertEqual(self.signal.category.department, 'CCA,ASC,WAT')
+        self.assertEqual(self.signal.category_assignment.sub_category, sub_category)
+
+    def test_post_category_backwards_compatibility_style(self):
+        """
+        Note, this is a backwards compatibility test for changing the category "old-style" posting.
+        Implementation and test should be removed after the FE is updated to "new-style" of changing
+        categories.
+        """
+        sub_category_name = 'Overlast op het water - snel varen'
+        SubCategoryFactory.create(name=sub_category_name,
+                                  main_category__name='Overlast op het water')
+
+        # Asserting that we don't change the sub category to the same value the signal object
+        # already has.
+        self.assertNotEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+
+        url = '/signals/auth/category/'
+        postjson = {
+            '_signal': self.signal.id,
+            'main': 'Overlast op het water',
+            'sub': sub_category_name,
+        }
+        response = self.client.post(url, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        result = response.json()
+        self.assertEqual(result['sub'], sub_category_name)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
 
     def test_post_priority(self):
         url = '/signals/auth/priority/'
@@ -405,3 +448,43 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.priority.id, result['id'])
         self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+
+
+class TestCategoryTermsEndpoints(APITestCase):
+    fixtures = ['categories.json', ]
+
+    def test_category_list(self):
+        # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
+        self.assertEqual(MainCategory.objects.count(), 9)
+
+        url = '/signals/v1/public/terms/categories'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(len(data['results']), 9)
+
+    def test_category_detail(self):
+        # Asserting that we've 13 sub categories for our main category "Afval".
+        main_category = MainCategoryFactory.create(name='Afval')
+        self.assertEqual(main_category.sub_categories.count(), 13)
+
+        url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['name'], 'Afval')
+        self.assertEqual(len(data['sub_categories']), 13)
+
+    def test_sub_category_detail(self):
+        sub_category = SubCategoryFactory.create(name='Grofvuil', main_category__name='Afval')
+
+        url = '/signals/v1/public/terms/categories/{slug}/{sub_slug}'.format(
+            slug=sub_category.main_category.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['name'], 'Grofvuil')

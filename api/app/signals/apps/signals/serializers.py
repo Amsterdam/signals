@@ -9,16 +9,21 @@ from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.fields import (
     CategoryLinksField,
+    MainCategoryHyperlinkedIdentityField,
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
-    StatusLinksField
+    StatusLinksField,
+    SubCategoryHyperlinkedIdentityField,
+    SubCategoryHyperlinkedRelatedField
 )
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
     CategoryAssignment,
+    Department,
     Location,
+    MainCategory,
     Priority,
     Reporter,
     Signal,
@@ -116,14 +121,9 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
-    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
-    # http://www.django-rest-framework.org/api-guide/relations/#example_2
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = serializers.PrimaryKeyRelatedField(
-        queryset=SubCategory.objects.all(),
-        write_only=True,
-        required=False)
+    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
 
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
@@ -449,14 +449,9 @@ class CategoryHALSerializer(HALSerializer):
 
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
-    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
-    # http://www.django-rest-framework.org/api-guide/relations/#example_2
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = serializers.PrimaryKeyRelatedField(
-        queryset=SubCategory.objects.all(),
-        write_only=True,
-        required=False)
+    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
 
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
@@ -519,3 +514,51 @@ class PriorityHALSerializer(HALSerializer):
         signal = validated_data.pop('_signal')
         priority = Signal.actions.update_priority(validated_data, signal)
         return priority
+
+
+#
+# Category terms
+#
+
+class _NestedDepartmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Department
+        fields = (
+            'code',
+            'name',
+            'is_intern',
+        )
+
+
+class SubCategoryHALSerializer(HALSerializer):
+    serializer_url_field = SubCategoryHyperlinkedIdentityField
+    _display = DisplayField()
+    departments = _NestedDepartmentSerializer(many=True)
+
+    class Meta:
+        model = SubCategory
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'slug',
+            'handling',
+            'departments',
+        )
+
+
+class MainCategoryHALSerializer(HALSerializer):
+    serializer_url_field = MainCategoryHyperlinkedIdentityField
+    _display = DisplayField()
+    sub_categories = SubCategoryHALSerializer(many=True)
+
+    class Meta:
+        model = MainCategory
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'slug',
+            'sub_categories',
+        )
