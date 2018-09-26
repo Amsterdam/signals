@@ -1,0 +1,47 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<ZAK-Lk01 xmlns="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<stuurgegevens xmlns="http://www.egem.nl/StUF/sector/zkn/0310">
+				<berichtcode xmlns="http://www.egem.nl/StUF/StUF0301">Lk01</berichtcode>
+				<zender xmlns="http://www.egem.nl/StUF/StUF0301">
+					<organisatie />
+					<applicatie />
+				</zender>
+				<ontvanger xmlns="http://www.egem.nl/StUF/StUF0301">
+					<organisatie />
+					<applicatie />
+				</ontvanger>
+				<referentienummer xmlns="http://www.egem.nl/StUF/StUF0301">ed919712-d026-4949-a51e-5a8b60141a0d</referentienummer>
+				<tijdstipBericht xmlns="http://www.egem.nl/StUF/StUF0301">2018070409112747</tijdstipBericht>
+				<entiteittype xmlns="http://www.egem.nl/StUF/StUF0301">ZAK</entiteittype>
+			</stuurgegevens>
+			<parameters xmlns="http://www.egem.nl/StUF/sector/zkn/0310">
+				<mutatiesoort xmlns="http://www.egem.nl/StUF/StUF0301">W</mutatiesoort>
+				<indicatorOvername xmlns="http://www.egem.nl/StUF/StUF0301">V</indicatorOvername>
+			</parameters>
+			<object d2p1:entiteittype="ZAK" d2p1:verwerkingssoort="W" xmlns:d2p1="http://www.egem.nl/StUF/StUF0301" xmlns="http://www.egem.nl/StUF/sector/zkn/0310">
+				<resultaat>
+					<omschrijving>Geseponeerd</omschrijving>
+				</resultaat>
+				<einddatum>20180704</einddatum>
+				<heeft d2p1:entiteittype="ZAKSTT" d2p1:verwerkingssoort="T">
+					<gerelateerde d2p1:entiteittype="STT" d2p1:verwerkingssoort="T">
+						<volgnummer>1</volgnummer>
+						<omschrijving>Afgehandeld</omschrijving>
+					</gerelateerde>
+					<datumStatusGezet>2018070409102946</datumStatusGezet>
+					<isGezetDoor d2p1:entiteittype="ZAKSTTBTR" d2p1:verwerkingssoort="T">
+						<gerelateerde>
+							<medewerker d2p1:entiteittype="MDW" d2p1:verwerkingssoort="T">
+								<identificatie>000036</identificatie>
+								<achternaam>Buiten</achternaam>
+								<voorletters>L</voorletters>
+								<voorvoegselAchternaam>van</voorvoegselAchternaam>
+							</medewerker>
+						</gerelateerde>
+					</isGezetDoor>
+				</heeft>
+			</object>
+		</ZAK-Lk01>
+	</soap:Body>
+</soap:Envelope>

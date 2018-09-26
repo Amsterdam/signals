@@ -1,0 +1,24 @@
+<Fo03Bericht xmlns="http://www.egem.nl/StUF/StUF0301">
+    <stuurgegevens>
+        <berichtcode>Fo03</berichtcode>
+        <zender>
+            <organisatie>AMS</organisatie>
+            <applicatie/>
+        </zender>
+        <ontvanger>
+            <organisatie>SMX</organisatie>
+            <applicatie>CTC</applicatie>
+        </ontvanger>
+        <referentienummer>{{ zaak_uuid }}</referentienummer>
+        <tijdstipBericht>20180926125511405</tijdstipBericht>
+    </stuurgegevens>
+    <body>
+        <code>Fo03</code>
+        <plek>server</plek>
+        <omschrijving>Bericht kon niet verwerkt worden, zie details voor meer informatie.</omschrijving>
+        <details>{{ error_msg }}</details>
+        <detailsXML>
+            <error xmlns="">Foutreden 1 in xml vorm</error>
+        </detailsXML>
+    </body>
+</Fo03Bericht>
