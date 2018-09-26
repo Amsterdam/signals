@@ -24,7 +24,7 @@ from signals.apps.signals.models import (
     Signal,
     Status,
     SubCategory,
-    MainCategory)
+    MainCategory, Department)
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 
 logger = logging.getLogger(__name__)
@@ -525,9 +525,21 @@ class PriorityHALSerializer(HALSerializer):
 # Category terms
 #
 
+class _NestedDepartmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Department
+        fields = (
+            'code',
+            'name',
+            'is_intern',
+        )
+
+
 class SubCategoryHALSerializer(HALSerializer):
     serializer_url_field = SubCategoryLinksField
     _display = DisplayField()
+    departments = _NestedDepartmentSerializer(many=True)
 
     class Meta:
         model = SubCategory
@@ -537,7 +549,7 @@ class SubCategoryHALSerializer(HALSerializer):
             'name',
             'slug',
             'handling',
-            # 'departments',
+            'departments',
         )
 
 
