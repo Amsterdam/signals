@@ -3,10 +3,11 @@ E-mail integration for Flex Horeca Team.
 """
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
+from django.db.models import Q
 from django.utils import timezone
 
 from signals.apps.email_integrations.utils import create_default_notification_message
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, SubCategory
 
 
 def send_mail(signal: Signal) -> int:
@@ -33,8 +34,6 @@ def is_signal_applicable(signal: Signal) -> bool:
     Flex Horeca Team can't check the Signals Dashboard on friday and saterday. That's why we send
     them an e-mail notification on these days for new `Signal` objects that are created.
 
-    TODO SIG-409 refactor categories.
-
     :param signal: Signal object
     :returns: bool
     """
@@ -48,14 +47,12 @@ def is_signal_applicable(signal: Signal) -> bool:
     if not is_today_applicable:
         return False
 
-    eligible_main_categories = 'Overlast Bedrijven en Horeca'
-    eligible_sub_categories = (
-        'Geluidsoverlast muziek',
-        'Geluidsoverlast installaties',
-        'Overlast terrassen',
-        'Stankoverlast')
-    is_applicable_for_flex_horeca = (
-            signal.category.main == eligible_main_categories
-            and signal.category.sub in eligible_sub_categories)
+    # TODO: move this query to object manager.
+    eligible_sub_categories = SubCategory.objects.filter(
+        Q(main_category__slug='overlast-bedrijven-en-horeca') & (
+            Q(slug='geluidsoverlast-muziek') |
+            Q(slug='geluidsoverlast-installaties') |
+            Q(slug='overlast-terrassen') |
+            Q(slug='stankoverlast')))
 
-    return is_applicable_for_flex_horeca
+    return signal.category_assignment.sub_category in eligible_sub_categories

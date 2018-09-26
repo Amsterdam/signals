@@ -7,12 +7,13 @@ from datetime import datetime
 import factory
 import pytz
 from django.contrib.gis.geos import Point
+from django.utils.text import slugify
 from factory import fuzzy
 
 from signals.apps.signals.models import (
     GEMELD,
     STADSDELEN,
-    Category,
+    CategoryAssignment,
     Department,
     Location,
     MainCategory,
@@ -47,7 +48,8 @@ class SignalFactory(factory.DjangoModelFactory):
     # Creating (reverse FK) related objects after this `Signal` is created.
     location = factory.RelatedFactory('tests.apps.signals.factories.LocationFactory', '_signal')
     status = factory.RelatedFactory('tests.apps.signals.factories.StatusFactory', '_signal')
-    category = factory.RelatedFactory('tests.apps.signals.factories.CategoryFactory', '_signal')
+    category_assignment = factory.RelatedFactory(
+        'tests.apps.signals.factories.CategoryAssignmentFactory', '_signal')
     reporter = factory.RelatedFactory('tests.apps.signals.factories.ReporterFactory', '_signal')
     priority = factory.RelatedFactory('tests.apps.signals.factories.PriorityFactory', '_signal')
 
@@ -64,11 +66,11 @@ class SignalFactory(factory.DjangoModelFactory):
     @factory.post_generation
     def set_one_to_one_relations(self, create, extracted, **kwargs):
         """Set o2o relations on given `Signal` object."""
-        self.location = self.locations.first()
-        self.status = self.statuses.first()
-        self.category = self.categories.first()
-        self.reporter = self.reporters.first()
-        self.priority = self.priorities.first()
+        self.location = self.locations.last()
+        self.status = self.statuses.last()
+        self.category_assignment = self.category_assignments.last()
+        self.reporter = self.reporters.last()
+        self.priority = self.priorities.last()
 
 
 class SignalFactoryValidLocation(SignalFactory):
@@ -124,15 +126,14 @@ class ReporterFactory(factory.DjangoModelFactory):
         self.signal = self._signal
 
 
-class CategoryFactory(factory.DjangoModelFactory):
+class CategoryAssignmentFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = Category
+        model = CategoryAssignment
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', category=None)
-
-    main = fuzzy.FuzzyText(length=10)
-    sub = fuzzy.FuzzyText(length=10)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory',
+                                 category_assignment=None)
+    sub_category = factory.SubFactory('tests.apps.signals.factories.SubCategoryFactory')
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
@@ -175,19 +176,22 @@ class PriorityFactory(factory.DjangoModelFactory):
 
 class MainCategoryFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Main category {}'.format(n))
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
 
     class Meta:
         model = MainCategory
+        django_get_or_create = ('slug', )
 
 
 class SubCategoryFactory(factory.DjangoModelFactory):
     main_category = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
-    code = factory.Sequence(lambda n: 'F{}'.format(n))
     name = factory.Sequence(lambda n: 'Sub category {}'.format(n))
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in SubCategory.HANDLING_CHOICES])
 
     class Meta:
         model = SubCategory
+        django_get_or_create = ('main_category', 'slug', )
 
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):

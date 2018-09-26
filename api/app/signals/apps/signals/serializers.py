@@ -17,15 +17,15 @@ from signals.apps.signals.fields import (
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
-    Category,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.settings.categories import get_departments
 
 logger = logging.getLogger(__name__)
 
@@ -116,15 +116,47 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
+    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
+    # http://www.django-rest-framework.org/api-guide/relations/#example_2
+    # Should be required, but to make it work with the backwards compatibility fix it's not required
+    # at the moment..
+    sub_category = serializers.PrimaryKeyRelatedField(
+        queryset=SubCategory.objects.all(),
+        write_only=True,
+        required=False)
 
-    class Meta(object):
-        model = Category
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+
+    class Meta:
+        model = CategoryAssignment
         fields = (
-            'main',
             'sub',
-            'department',
-            'priority',
+            'sub_slug',
+            'main',
+            'main_slug',
+            'sub_category',
         )
+
+    def to_internal_value(self, data):
+        internal_data = super().to_internal_value(data)
+
+        # Backwards compatibility fix to let this endpoint work with `sub` as key.
+        is_main_name_posted = 'main' in data
+        is_sub_name_posted = 'sub' in data
+        is_sub_category_not_posted = 'sub_category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+            try:
+                sub_category = SubCategory.objects.get(main_category__name=data['main'],
+                                                       name=data['sub'])
+            except SubCategory.DoesNotExist:
+                pass
+            else:
+                internal_data['sub_category'] = sub_category
+
+        return internal_data
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -155,7 +187,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
-    category = _NestedCategoryModelSerializer()
+    category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
 
     incident_date_start = serializers.DateTimeField()
@@ -196,15 +228,15 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
-        category_data = validated_data.pop('category')
+        category_assignment_data = validated_data.pop('category_assignment')
         signal = Signal.actions.create_initial(
-            validated_data, location_data, status_data, category_data, reporter_data)
+            validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
 
     def update(self, instance, validated_data):
         raise NotImplementedError('`update()` is not allowed with this serializer.')
 
-    def validate(self, data):  # noqa: C901
+    def validate(self, data):
         # The status can only be 'm' when created
         if data['status']['state'] not in STATUS_OVERGANGEN['']:
             raise serializers.ValidationError(
@@ -223,25 +255,10 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             extra_properties['IP'] = ip
             data['status']['extra_properties'] = extra_properties
 
-        if 'category' in data and 'sub' in data['category']:
-            if len(data['category']) < 1:
-                raise serializers.ValidationError("Invalid category")
-
-            departments = get_departments(data['category']['sub'])
-            if departments and ('department' not in data['category'] or
-                                not data['category']['department']):
-                data['category']['department'] = departments
-            elif not departments:
-                logger.warning(f"Department not found for subcategory : {data['category']['sub']}")
-        else:
-            raise serializers.ValidationError(
-                f"Invalid category : missing sub")
-
         request = self.context.get("request")
         if request.user and not request.user.is_anonymous:
             data['user'] = request.user.get_username()
 
-        # TODO add further validation
         return data
 
     def add_ip(self):
@@ -301,7 +318,7 @@ class SignalAuthHALSerializer(HALSerializer):
     location = _NestedLocationModelSerializer(read_only=True)
     reporter = _NestedReporterModelSerializer(read_only=True)
     status = _NestedStatusModelSerializer(read_only=True)
-    category = _NestedCategoryModelSerializer(read_only=True)
+    category = _NestedCategoryModelSerializer(source='category_assignment', read_only=True)
     priority = _NestedPriorityModelSerializer(read_only=True)
 
     image = ImageField(max_length=50, allow_empty_file=False)
@@ -416,7 +433,6 @@ class StatusHALSerializer(HALSerializer):
         if request.user and not request.user.is_anonymous:
             data['user'] = request.user.get_username()
 
-        # TODO add further validation
         return data
 
     def add_ip(self):
@@ -428,41 +444,60 @@ class StatusHALSerializer(HALSerializer):
 
 
 class CategoryHALSerializer(HALSerializer):
-    _display = DisplayField()
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = CategoryLinksField
+    _display = DisplayField()
+
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+
+    # TODO SIG-612 use a `HyperlinkedRelatedField` when we've a REST endpoint for categories.
+    # http://www.django-rest-framework.org/api-guide/relations/#example_2
+    # Should be required, but to make it work with the backwards compatibility fix it's not required
+    # at the moment..
+    sub_category = serializers.PrimaryKeyRelatedField(
+        queryset=SubCategory.objects.all(),
+        write_only=True,
+        required=False)
+
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
     class Meta(object):
-        model = Category
+        model = CategoryAssignment
         fields = [
-            "_links",
-            "_display",
-            "id",
-            "main",
-            "sub",
-            "department",
-            "priority",
-            "_signal",
+            '_links',
+            '_display',
+            '_signal',
+            'sub_category',
+            'sub',
+            'sub_slug',
+            'main',
+            'main_slug',
         ]
+
+    def to_internal_value(self, data):
+        internal_data = super().to_internal_value(data)
+
+        # Backwards compatibility fix to let this endpoint work with `sub` as key.
+        is_main_name_posted = 'main' in data
+        is_sub_name_posted = 'sub' in data
+        is_sub_category_not_posted = 'sub_category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+            try:
+                sub_category = SubCategory.objects.get(main_category__name=data['main'],
+                                                       name=data['sub'])
+            except SubCategory.DoesNotExist:
+                pass
+            else:
+                internal_data['sub_category'] = sub_category
+
+        return internal_data
 
     def create(self, validated_data):
         signal = validated_data.pop('_signal')
-        category = Signal.actions.update_category(validated_data, signal)
+        category = Signal.actions.update_category_assignment(validated_data, signal)
         return category
-
-    def validate(self, data):
-        if 'sub' in data:
-            departments = get_departments(data['sub'])
-            if departments and ('department' not in data or not data['department']):
-                data['department'] = departments
-            elif not departments:
-                logger.warning(f"Department not found for subcategory : {data['sub']}")
-        else:
-            raise serializers.ValidationError(
-                f"Invalid category : missing sub")
-
-        # TODO add validation
-        return data
 
 
 class PriorityHALSerializer(HALSerializer):

@@ -18,7 +18,8 @@ class CategoryPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.user:
-            if request.method == 'POST' and not request.user.has_perm('signals.add_category'):
+            if (request.method == 'POST' and
+                    not request.user.has_perm('signals.add_categoryassignment')):
                 return False
             return True
         else:

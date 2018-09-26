@@ -11,7 +11,7 @@ from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.filters import LocationFilter, SignalFilter, StatusFilter
-from signals.apps.signals.models import Category, Location, Priority, Signal, Status
+from signals.apps.signals.models import CategoryAssignment, Location, Priority, Signal, Status
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
@@ -105,7 +105,7 @@ class SignalAuthViewSet(DatapuntViewSet):
         .order_by('created_at')
         .select_related('status')
         .select_related('location')
-        .select_related('category')
+        .select_related('category_assignment')
         .select_related('reporter')
         .order_by('-id')
     )
@@ -138,11 +138,10 @@ class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (CategoryPermission, )
-    queryset = Category.objects.all().order_by('id').prefetch_related('signal')
+    queryset = CategoryAssignment.objects.all().order_by('id').prefetch_related('signal')
     serializer_detail_class = CategoryHALSerializer
     serializer_class = CategoryHALSerializer
     filter_backends = (DjangoFilterBackend, )
-    filter_fields = ['main', 'sub']
 
 
 class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):

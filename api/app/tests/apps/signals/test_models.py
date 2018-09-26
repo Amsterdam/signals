@@ -4,13 +4,13 @@ Tests for the model manager in signals.apps.signals.models
 from unittest import mock
 
 from django.contrib.gis.geos import Point
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from signals.apps.signals.models import (
     GEMELD,
     STADSDEEL_CENTRUM,
-    Category,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
@@ -18,11 +18,14 @@ from signals.apps.signals.models import (
     Status
 )
 from tests.apps.signals import factories
+from tests.apps.signals.factories import SubCategoryFactory
 
 
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
+        sub_category = SubCategoryFactory.create(name='Veeg- / zwerfvuil')
+
         # Deserialized data
         self.signal_data = {
             'text': 'text message',
@@ -38,9 +41,8 @@ class TestSignalManager(TransactionTestCase):
             'email': 'test_reporter@example.com',
             'phone': '0123456789',
         }
-        self.category_data = {
-            'main': 'Afval',
-            'sub': 'Veeg- / zwerfvuil',
+        self.category_assignment_data = {
+            'sub_category': sub_category,
         }
         self.status_data = {
             'state': GEMELD,
@@ -58,14 +60,14 @@ class TestSignalManager(TransactionTestCase):
             self.signal_data,
             self.location_data,
             self.status_data,
-            self.category_data,
+            self.category_assignment_data,
             self.reporter_data)
 
         # Check everything is present:
         self.assertEquals(Signal.objects.count(), 1)
         self.assertEquals(Location.objects.count(), 1)
         self.assertEquals(Status.objects.count(), 1)
-        self.assertEquals(Category.objects.count(), 1)
+        self.assertEquals(CategoryAssignment.objects.count(), 1)
         self.assertEquals(Reporter.objects.count(), 1)
         self.assertEquals(Priority.objects.count(), 1)
 
@@ -78,7 +80,7 @@ class TestSignalManager(TransactionTestCase):
             self.signal_data,
             self.location_data,
             self.status_data,
-            self.category_data,
+            self.category_assignment_data,
             self.reporter_data,
             self.priority_data)
 
@@ -122,24 +124,25 @@ class TestSignalManager(TransactionTestCase):
             status=status,
             prev_status=prev_status)
 
-    @mock.patch('signals.apps.signals.models.update_category', autospec=True)
-    def test_update_category(self, patched_update_category):
+    @mock.patch('signals.apps.signals.models.update_category_assignment', autospec=True)
+    def test_update_category_assignment(self, patched_update_category_assignment):
         signal = factories.SignalFactory.create()
 
         # Update the signal
-        prev_category = signal.category
-        category = Signal.actions.update_category(self.category_data, signal)
+        prev_category_assignment = signal.category_assignment
+        category_assignment = Signal.actions.update_category_assignment(
+            self.category_assignment_data, signal)
 
         # Check that the signal was updated in db
-        self.assertEqual(signal.category, category)
-        self.assertEqual(signal.categories.count(), 2)
+        self.assertEqual(signal.category_assignment, category_assignment)
+        self.assertEqual(signal.sub_categories.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_category.send.assert_called_once_with(
+        patched_update_category_assignment.send.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
-            category=category,
-            prev_category=prev_category)
+            category_assignment=category_assignment,
+            prev_category_assignment=prev_category_assignment)
 
     @mock.patch('signals.apps.signals.models.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
@@ -178,7 +181,7 @@ class TestSignalManager(TransactionTestCase):
             prev_priority=prev_priority)
 
 
-class TestCategoryDeclarations(TransactionTestCase):
+class TestCategoryDeclarations(TestCase):
 
     def test_main_category_string(self):
         main_category = factories.MainCategoryFactory.create(name='First category')
@@ -187,10 +190,9 @@ class TestCategoryDeclarations(TransactionTestCase):
 
     def test_sub_category_string(self):
         sub_category = factories.SubCategoryFactory.create(main_category__name='First category',
-                                                           code='F01',
                                                            name='Sub')
 
-        self.assertEqual(str(sub_category), 'F01 (First category - Sub)')
+        self.assertEqual(str(sub_category), 'Sub (First category)')
 
     def test_department_string(self):
         department = factories.DepartmentFactory.create(code='ABC', name='Department A')

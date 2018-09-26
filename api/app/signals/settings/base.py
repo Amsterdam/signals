@@ -2,7 +2,6 @@ import os
 
 from celery.schedules import crontab
 
-from signals.settings.categories import *  # noqa
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,

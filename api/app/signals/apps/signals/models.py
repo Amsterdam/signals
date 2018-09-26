@@ -4,12 +4,15 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
+from django.utils.text import slugify
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
-update_category = DjangoSignal(providing_args=['signal_obj', 'category', 'prev_category'])
+update_category_assignment = DjangoSignal(providing_args=['signal_obj',
+                                                          'category_assignment',
+                                                          'prev_category_assignment'])
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 
@@ -20,7 +23,7 @@ class SignalManager(models.Manager):
                        signal_data,
                        location_data,
                        status_data,
-                       category_data,
+                       category_assignment_data,
                        reporter_data,
                        priority_data=None):
         """Create a new `Signal` object with all related objects.
@@ -28,7 +31,7 @@ class SignalManager(models.Manager):
         :param signal_data: deserialized data dict
         :param location_data: deserialized data dict
         :param status_data: deserialized data dict
-        :param category_data: deserialized data dict
+        :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
@@ -42,14 +45,15 @@ class SignalManager(models.Manager):
             # Create dependent model instances with correct foreign keys to Signal
             location = Location.objects.create(**location_data, _signal_id=signal.pk)
             status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category = Category.objects.create(**category_data, _signal_id=signal.pk)
+            category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
+                                                                    _signal_id=signal.pk)
             reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
             priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
             # Set Signal to dependent model instance foreign keys
             signal.location = location
             signal.status = status
-            signal.category = category
+            signal.category_assignment = category_assignment
             signal.reporter = reporter
             signal.priority = priority
             signal.save()
@@ -101,26 +105,27 @@ class SignalManager(models.Manager):
 
         return status
 
-    def update_category(self, data, signal):
-        """Update (create new) `Category` object for given `Signal` object.
+    def update_category_assignment(self, data, signal):
+        """Update (create new) `CategoryAssignment` object for given `Signal` object.
 
         :param data: deserialized data dict
         :param signal: Signal object
         :returns: Category object
         """
         with transaction.atomic():
-            prev_category = signal.category
+            prev_category_assignment = signal.category_assignment
 
-            category = Category.objects.create(**data, _signal_id=signal.id)
-            signal.category = category
+            category_assignment = CategoryAssignment.objects.create(**data, _signal_id=signal.id)
+            signal.category_assignment = category_assignment
             signal.save()
 
-            transaction.on_commit(lambda: update_category.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               category=category,
-                                                               prev_category=prev_category))
+            transaction.on_commit(lambda: update_category_assignment.send(
+                sender=self.__class__,
+                signal_obj=signal,
+                category_assignment=category_assignment,
+                prev_category_assignment=prev_category_assignment))
 
-        return category
+        return category_assignment
 
     def update_reporter(self, data, signal):
         """Update (create new) `Reporter` object for given `Signal` object.
@@ -200,10 +205,12 @@ class Signal(CreatedUpdatedModel):
                                   related_name='signal',
                                   null=True,
                                   on_delete=models.SET_NULL)
-    category = models.OneToOneField('signals.Category',
-                                    related_name='signal',
-                                    null=True,
-                                    on_delete=models.SET_NULL)
+    category_assignment = models.OneToOneField('signals.CategoryAssignment',
+                                               related_name='signal',
+                                               null=True,
+                                               on_delete=models.SET_NULL)
+    sub_categories = models.ManyToManyField('signals.SubCategory',
+                                            through='signals.CategoryAssignment')
     reporter = models.OneToOneField('signals.Reporter',
                                     related_name='signal',
                                     null=True,
@@ -337,50 +344,20 @@ class Reporter(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
 
 
-# TODO SIG-619 Rename and implement through model with category declaration.
-class Category(CreatedUpdatedModel):
-    """Store Category information and Automatically suggested category."""
-
-    _signal = models.ForeignKey(
-        "signals.Signal", related_name="categories",
-        null=False, on_delete=models.CASCADE
-    )
-
-    main = models.CharField(max_length=50, default='', null=True, blank=True)
-    sub = models.CharField(max_length=50, default='', null=True, blank=True)
-    department = models.CharField(max_length=50, default='',
-                                  null=True, blank=True)
-    priority = models.IntegerField(null=True)
-    ml_priority = models.IntegerField(null=True)
-
-    # machine learning properties.
-    ml_cat = models.CharField(
-        max_length=50, default='', blank=True, null=True)
-    ml_prob = models.CharField(
-        max_length=50, default='', blank=True, null=True)
-    ml_cat_all = ArrayField(
-        models.TextField(max_length=50, blank=True),
-        null=True)
-    ml_cat_all_prob = ArrayField(models.IntegerField(), null=True)
-
-    ml_sub_cat = models.CharField(
-        max_length=500, default='', blank=True, null=True)
-    ml_sub_prob = models.CharField(
-        max_length=500, default='', blank=True, null=True)
-    ml_sub_all = ArrayField(models.TextField(
-        max_length=50, blank=True), null=True)
-    ml_sub_all_prob = ArrayField(models.IntegerField(), null=True)
+class CategoryAssignment(CreatedUpdatedModel):
+    """Many-to-Many through model for `Signal` <-> `SubCategory`."""
+    _signal = models.ForeignKey('signals.Signal',
+                                on_delete=models.CASCADE,
+                                related_name='category_assignments')
+    sub_category = models.ForeignKey('signals.SubCategory',
+                                     on_delete=models.CASCADE,
+                                     related_name='category_assignments')
 
     extra_properties = JSONField(null=True)
 
     def __str__(self):
-        """Identifying string."""
-        return '{} - {} - {} - {}'.format(
-            self.main,
-            self.sub,
-            self.priority,
-            self.created_at
-        )
+        """String representation."""
+        return '{sub} - {signal}'.format(sub=self.sub_category, signal=self._signal)
 
 
 LEEG = ''
@@ -390,8 +367,6 @@ BEHANDELING = 'b'
 AFGEHANDELD = 'o'
 ON_HOLD = 'h'
 GEANNULEERD = 'a'
-
-
 STATUS_OPTIONS = (
     (GEMELD, 'Gemeld'),
     (AFWACHTING, 'In afwachting van behandeling'),
@@ -469,16 +444,21 @@ class Priority(CreatedUpdatedModel):
 
 
 #
-# Category declarations
+# Category terms
 #
 
 
 class MainCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
         """String representation."""
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class SubCategory(models.Model):
@@ -512,16 +492,22 @@ class SubCategory(models.Model):
     main_category = models.ForeignKey('signals.MainCategory',
                                       related_name='sub_categories',
                                       on_delete=models.PROTECT)
-    code = models.CharField(max_length=4, unique=True)
+    slug = models.SlugField()
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')
 
+    class Meta:
+        unique_together = ('main_category', 'slug', )
+
     def __str__(self):
         """String representation."""
-        return '{code} ({main_category} - {name})'.format(code=self.code,
-                                                          main_category=self.main_category.name,
-                                                          name=self.name)
+        return '{name} ({main_category})'.format(name=self.name,
+                                                 main_category=self.main_category.name)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class Department(models.Model):
@@ -532,3 +518,51 @@ class Department(models.Model):
     def __str__(self):
         """String representation."""
         return '{code} ({name})'.format(code=self.code, name=self.name)
+
+
+#
+# SubCategory "afhandeling teksten"
+# TODO, Move these text to the database and create a helper method on `SubCategory` to get this text
+#
+
+ALL_AFHANDELING_TEXT = {
+    SubCategory.HANDLING_A3DMC: """
+We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
+We houden u op de hoogte via e-mail.""",  # noqa E501
+    SubCategory.HANDLING_A3DEC: """
+Wij handelen uw melding binnen 3 werkdagen af.
+En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
+    SubCategory.HANDLING_A3WMC: """
+We laten u binnen 3 weken weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
+We houden u op de hoogte via e-mail.""",  # noqa E501
+    SubCategory.HANDLING_A3WEC: """
+Wij handelen uw melding binnen drie weken af.
+En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
+    SubCategory.HANDLING_I5DMC: """
+Uw melding wordt ingepland: wij laten u binnen 5 werkdagen weten hoe en wanneer uw melding wordt afgehandeld. Dat doen we via e-mail.""",  # noqa E501
+    SubCategory.HANDLING_STOPEC: """
+Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties handelen wij meestal binnen 5 werkdagen af.
+Als we uw melding niet binnen 5 werkdagen kunnen afhandelen, hoort u - via e-mail – hoe wij uw melding oppakken.""",  # noqa E501
+    SubCategory.HANDLING_KLOKLICHTZC: """
+Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties kunnen wat langer duren. Wij kunnen u hier helaas niet altijd van op de hoogte houden.""",  # noqa E501
+    SubCategory.HANDLING_GLADZC: """
+Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.
+
+Bij gladheid door sneeuw of bladeren pakken we hoofdwegen en fietsroutes als eerste aan. Andere meldingen behandelen we als de belangrijkste routes zijn gedaan.
+
+U ontvangt geen apart bericht meer over de afhandeling van uw melding.""",  # noqa E501
+    SubCategory.HANDLING_A3DEVOMC: """
+We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.  In Nieuw-West komen we de volgende ophaaldag.
+We houden u op de hoogte via e-mail.""",  # noqa E501
+    SubCategory.HANDLING_WS1EC: """
+We geven uw melding door aan onze handhavers. Als dat mogelijk is ondernemen we direct actie. Maar we kunnen niet altijd snel genoeg aanwezig zijn.
+
+Blijf overlast aan ons melden. Ook als we niet altijd direct iets voor u kunnen doen. We gebruiken alle meldingen om overlast in de toekomst te kunnen beperken.""",  # noqa E501
+    SubCategory.HANDLING_WS2EC: """
+We geven uw melding door aan onze handhavers. Zij beoordelen of het nodig en mogelijk is direct actie te ondernemen. Bijvoorbeeld omdat er olie lekt of omdat de situatie gevaar oplevert voor andere boten.
+
+Als er geen directe actie nodig is, dan pakken we uw melding op buiten het vaarseizoen (september - maart).
+Bekijk in welke situaties we een wrak weghalen. Boten die vol met water staan, maar nog wél drijven, mogen we bijvoorbeeld niet weghalen.""",  # noqa E501
+    SubCategory.HANDLING_REST: """
+Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze gaat behandelen. Heeft u contactgegevens achtergelaten? Dan nemen wij bij onduidelijkheid contact met u op.""",  # noqa E501
+}

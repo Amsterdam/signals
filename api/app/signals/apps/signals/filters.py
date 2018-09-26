@@ -1,20 +1,18 @@
 from datapunt_api import bbox
-from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.serializers import ValidationError
 
-from signals.apps.signals.models import STATUS_OPTIONS, Buurt, Location, Priority, Signal, Status
-
-STADSDELEN = (
-    ("B", "Westpoort (B)"),
-    ("M", "Oost (M)"),
-    ("N", "Noord (N)"),
-    ("A", "Centrum (A)"),
-    ("E", "West (E)"),
-    ("F", "Nieuw-West (F)"),
-    ("K", "Zuid (K)"),
-    ("T", "Zuidoost (T)"),
+from signals.apps.signals.models import (
+    STADSDELEN,
+    STATUS_OPTIONS,
+    Buurt,
+    Location,
+    MainCategory,
+    Priority,
+    Signal,
+    Status,
+    SubCategory
 )
 
 
@@ -52,12 +50,6 @@ def buurt_choices():
 
 def status_choices():
     return [(c, f'{n} ({c})') for c, n in STATUS_OPTIONS]
-
-
-def category_sub_choices():
-    # fixme: use the distinct query again but also supply the list to frontend
-    # options = Category.objects.values_list("sub").distinct()
-    return [(subcat, f'{subcat}') for _, _, subcat, _, _ in settings.ALL_SUB_CATEGORIES]
 
 
 class SignalFilter(FilterSet):
@@ -100,24 +92,30 @@ class SignalFilter(FilterSet):
                                           lookup_expr='date__lte')
 
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
-    category__sub = filters.MultipleChoiceFilter(choices=category_sub_choices)
+    category__main = filters.ModelMultipleChoiceFilter(
+        queryset=MainCategory.objects.all(),
+        to_field_name='name',
+        field_name='category_assignment__sub_category__main_category__name')
+    category__sub = filters.ModelMultipleChoiceFilter(
+        queryset=SubCategory.objects.all(),
+        to_field_name='name',
+        field_name='category_assignment__sub_category__name')
     priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)
 
     class Meta(object):
         model = Signal
         fields = (
-            "id",
-            "signal_id",
-            "status__state",
-            "category__main",
-            "category__sub",
-            "updated_at",
-            "location__buurt_code",
-            "location__stadsdeel",
-            "location__address_text",
-            "reporter__email",
-            "in_bbox",
-            "geo",
+            'id',
+            'signal_id',
+            'status__state',
+            'category__main',
+            'category__sub',
+            'location__buurt_code',
+            'location__stadsdeel',
+            'location__address_text',
+            'reporter__email',
+            'in_bbox',
+            'geo',
         )
 
     def in_bbox_filter(self, qs, name, value):

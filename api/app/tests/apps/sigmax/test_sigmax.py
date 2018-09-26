@@ -22,6 +22,7 @@ REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.c
 
 
 class TestSigmaxHelpers(TestCase):
+
     def test_format_datetime(self):
         dt = datetime.datetime(2018, 7, 9, 10, 0, 30)
         self.assertEqual(

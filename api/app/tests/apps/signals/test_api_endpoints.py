@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 from signals.apps.signals.models import (
     AFGEHANDELD,
     AFWACHTING,
-    Category,
+    CategoryAssignment,
     Location,
     Priority,
     Reporter,
@@ -40,7 +40,7 @@ class TestAuthAPIEndpoints(APITestCase):
         self.signal = factories.SignalFactory(id=1,
                                               location__id=1,
                                               status__id=1,
-                                              category__id=1,
+                                              category_assignment__id=1,
                                               reporter__id=1,
                                               priority__id=1)
 
@@ -115,10 +115,10 @@ class TestAPIEnpointsBase(APITestCase):
         return postjson
 
     def setUp(self):
-        self.signal = factories.SignalFactory()
+        self.signal = factories.SignalFactory.create()
         self.location = self.signal.location
         self.status = self.signal.status
-        self.category = self.signal.category
+        self.category_assignment = self.signal.category_assignment
         self.reporter = self.signal.reporter
 
         self.small_gif = (
@@ -187,13 +187,13 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
             Location.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
-            Category.objects.filter(signal=s.id).count(), 1)
+            CategoryAssignment.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
             Status.objects.filter(signal=s.id).count(), 1)
 
         self.assertEqual(
-            Category.objects.filter(signal=s.id).first()._signal.id, s.id,
+            CategoryAssignment.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Category is missing _signal field?"
         )
 
@@ -205,10 +205,6 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
         self.assertEqual(
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
-        )
-
-        self.assertEqual(
-            Category.objects.filter(signal=s.id).first().department, "CCA,ASC,STW"
         )
 
     def test_post_signal_with_multipart_and_image(self):
@@ -392,8 +388,8 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(response.status_code, 201)
         self.signal.refresh_from_db()
         # check that current location of signal is now this one
-        self.assertEqual(self.signal.category.id, result['id'])
-        self.assertEqual(self.signal.category.department, 'CCA,ASC,WAT')
+        self.assertEqual(self.signal.category_assignment.sub_category.name, result['sub'])
+        # self.assertEqual(self.signal.category.department, 'CCA,ASC,WAT')
 
     def test_post_priority(self):
         url = '/signals/auth/priority/'

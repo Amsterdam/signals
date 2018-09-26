@@ -12,25 +12,15 @@ from tests.apps.signals.factories import SignalFactory
 @override_settings(
     EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS='test@test.com',
     EMAIL_FLEX_HORECA_WEEKDAYS='5,6',  # friday, saterday
-    SUB_CATEGORIES_DICT={
-        # Sample snippet of `SUB_CATEGORIES_DICT` from settings.
-        'Overlast Bedrijven en Horeca': (
-            ('F63', 'Overlast Bedrijven en Horeca', 'Geluidsoverlast muziek', 'I5DMC',
-             'CCA,ASC,VTH'),
-            ('F64', 'Overlast Bedrijven en Horeca', 'Geluidsoverlast installaties', 'I5DMC',
-             'CCA,ASC,VTH'),
-            ('F65', 'Overlast Bedrijven en Horeca', 'Overlast terrassen', 'I5DMC', 'CCA,ASC,VTH'),
-            # ...
-        ),
-    }
 )
 class TestIntegrationFlexHoreca(TestCase):
 
     @freeze_time('2018-08-03')  # Friday
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
-        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
-                                      category__sub='Geluidsoverlast muziek')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
+            category_assignment__sub_category__name='Geluidsoverlast muziek')
 
         number_of_messages = flex_horeca.send_mail(signal)
 
@@ -79,8 +69,9 @@ class TestIntegrationFlexHoreca(TestCase):
 
     @freeze_time('2018-08-03')  # Friday
     def test_is_signal_applicable_in_category_on_friday(self):
-        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
-                                      category__sub='Geluidsoverlast muziek')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
+            category_assignment__sub_category__name='Geluidsoverlast muziek')
 
         result = flex_horeca.is_signal_applicable(signal)
 
@@ -88,8 +79,9 @@ class TestIntegrationFlexHoreca(TestCase):
 
     @freeze_time('2018-08-04')  # Saterday
     def test_is_signal_applicable_in_category_on_saterday(self):
-        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
-                                      category__sub='Geluidsoverlast muziek')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
+            category_assignment__sub_category__name='Geluidsoverlast muziek')
 
         result = flex_horeca.is_signal_applicable(signal)
 
@@ -97,8 +89,9 @@ class TestIntegrationFlexHoreca(TestCase):
 
     @freeze_time('2018-08-03')  # Friday
     def test_is_signal_applicable_outside_category_on_friday(self):
-        signal = SignalFactory.create(category__main='Some other main category',
-                                      category__sub='Some other sub category')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Some other main category',
+            category_assignment__sub_category__name='Some other sub category')
 
         result = flex_horeca.is_signal_applicable(signal)
 
@@ -106,8 +99,9 @@ class TestIntegrationFlexHoreca(TestCase):
 
     @freeze_time('2018-08-05')  # Sunday
     def test_is_signal_applicable_in_category_on_sunday(self):
-        signal = SignalFactory.create(category__main='Overlast Bedrijven en Horeca',
-                                      category__sub='Geluidsoverlast muziek')
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
+            category_assignment__sub_category__name='Geluidsoverlast muziek')
 
         result = flex_horeca.is_signal_applicable(signal)
 

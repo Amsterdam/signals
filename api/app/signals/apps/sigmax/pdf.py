@@ -21,8 +21,8 @@ def _render_html(signal: Signal):
         'signal': signal,
         'datum': dt.strftime('%Y %m %d'),
         'tijdstip': dt.strftime('%H:%M:%S'),
-        'hoofdrubriek': signal.category.main,
-        'subrubriek': signal.category.sub,
+        'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
+        'subrubriek': signal.category_assignment.sub_category.name,
         'omschrijving': signal.text,
         'stadsdeel': '',  # TODO, extract from gebieden API?
         'adres': signal.location.address_text,

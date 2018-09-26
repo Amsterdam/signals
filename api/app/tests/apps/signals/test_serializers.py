@@ -28,6 +28,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
 
 
 class TestLocationSerializer(APITestCase):
+    fixtures = ['categories.json', ]
 
     def _get_fixture(self):
         path = os.path.join(

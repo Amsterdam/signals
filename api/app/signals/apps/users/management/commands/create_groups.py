@@ -1,9 +1,10 @@
 import random
 import string
 
-from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management import BaseCommand
+
+from signals.apps.signals.models import Department
 
 
 def make_random_password():
@@ -24,7 +25,8 @@ class Command(BaseCommand):
         coordinatoren.permissions.add(add_category)
         coordinatoren.permissions.add(add_status)
 
-        all_departments = map(lambda x: 'dep_' + x.lower(), settings.ALL_DEPARTMENTS.keys())
+        departments = Department.objects.values_list('code', flat=True)
+        all_departments = map(lambda x: 'dep_' + x.lower(), departments)
         for dep_name in all_departments:
             _, created = Group.objects.get_or_create(name=dep_name)
 

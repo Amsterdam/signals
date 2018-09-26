@@ -5,8 +5,9 @@ import json
 
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
+from django.db.models import Q
 
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, SubCategory
 
 
 def send_mail(signal: Signal) -> int:
@@ -25,8 +26,8 @@ def send_mail(signal: Signal) -> int:
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category.main,
-                'subrubriek': signal.category.sub,
+                'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
+                'subrubriek': signal.category_assignment.sub_category.name,
             },
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
@@ -43,28 +44,18 @@ def send_mail(signal: Signal) -> int:
 def is_signal_applicable(signal: Signal) -> bool:
     """Is given `Signal` applicable for Apptimize.
 
-    TODO SIG-409 refactor categories.
-    Note, this logic isn't tenable anymore.. The concept `categories` needs to be refactored
-    soon. Take a look at `signals.settings.categories` as well.
-
     :param signal: Signal object
     :returns: bool
     """
-    eligible_main_categories = ('Openbaar groen en water',
-                                'Wegen, verkeer, straatmeubilair',
-                                'Afval',)
-    all_sub_categories_of_main_categories = (
-            settings.SUB_CATEGORIES_DICT['Openbaar groen en water'] +
-            settings.SUB_CATEGORIES_DICT['Wegen, verkeer, straatmeubilair'])
-
-    eligible_sub_categories = ()
-    for sub_category in all_sub_categories_of_main_categories:
-        eligible_sub_categories += (sub_category[2],)
-    eligible_sub_categories += ('Prullenbak is vol', 'Veeg- / zwerfvuil',)
+    # TODO: move this query to object manager.
+    eligible_sub_categories = SubCategory.objects.filter(
+        Q(main_category__slug='openbaar-groen-en-water') |
+        Q(main_category__slug='wegen-verkeer-straatmeubilair') |
+        Q(main_category__slug='afval', slug='prullenbak-is-vol') |
+        Q(main_category__slug='afval', slug='veeg-zwerfvuil'))
 
     is_applicable_for_apptimize = (
             settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
-            and signal.category.main in eligible_main_categories
-            and signal.category.sub in eligible_sub_categories)
+            and signal.category_assignment.sub_category in eligible_sub_categories)
 
     return is_applicable_for_apptimize
