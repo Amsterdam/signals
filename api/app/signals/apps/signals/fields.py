@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 
 class SignalLinksField(serializers.HyperlinkedIdentityField):
@@ -83,6 +84,13 @@ class MainCategoryLinksField(serializers.HyperlinkedIdentityField):
 
 
 class SubCategoryLinksField(serializers.HyperlinkedIdentityField):
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            'slug': obj.main_category.slug,
+            'sub_slug': obj.slug,
+        }
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
 
     def to_representation(self, value):
         request = self.context.get('request')
