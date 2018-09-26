@@ -198,7 +198,7 @@ def _create_category_assignments_csv(location):
             'id',
             'main',
             'sub',
-            'department',
+            'departments',
             'created_at',
             'updated_at',
             'extra_properties',
@@ -211,7 +211,8 @@ def _create_category_assignments_csv(location):
                 category_assignment.pk,
                 category_assignment.sub_category.main_category.name,
                 category_assignment.sub_category.name,
-                category_assignment.sub_category.departments.values_list('name', flat=True),
+                ', '.join(category_assignment.sub_category.departments.values_list(
+                    'name', flat=True)),
                 category_assignment.created_at,
                 category_assignment.updated_at,
                 json.dumps(category_assignment.extra_properties),
