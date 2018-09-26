@@ -13,9 +13,10 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status
-)
+    Status,
+    MainCategory)
 from tests.apps.signals import factories
+from tests.apps.signals.factories import MainCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
@@ -405,3 +406,34 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.priority.id, result['id'])
         self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+
+
+class TestCategoryTermsEndpoints(APITestCase):
+    fixtures = ['categories.json', ]
+
+    def setUp(self):
+        self.signal = factories.SignalFactory.create()
+
+    def test_category_list(self):
+        # Asserting that we've 10 `MainCategory` objects loaded from the json fixture.
+        self.assertEqual(MainCategory.objects.count(), 10)
+
+        url = '/signals/v1/public/terms/categories/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(len(data['results']), 10)
+
+    def test_category_detail(self):
+        # Asserting that we've 13 sub categories for our main category "Afval".
+        main_category = MainCategoryFactory.create(name='Afval')
+        self.assertEqual(main_category.sub_categories.count(), 13)
+
+        url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['name'], 'Afval')
+        self.assertEqual(len(data['sub_categories']), 13)
