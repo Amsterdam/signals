@@ -39,14 +39,16 @@ signal_router_v0.register(r'auth/location', views.LocationAuthViewSet, base_name
 signal_router_v0.register(r'auth/priority', views.PriorityAuthViewSet, base_name='priority-auth')
 
 # API Version 1
-signal_router_v1 = SignalRouter(trailing_slash=False)  # TODO Fix trailing slash issue?
+signal_router_v1 = SignalRouter(trailing_slash=False)
 signal_router_v1.register(r'public/terms/categories',
                           views.MainCategoryViewSet,
                           base_name='category')
 
 urlpatterns = [
+    # API Version 0
     path('', include(signal_router_v0.urls)),
 
+    # API Version 1
     path('v1/', include(signal_router_v1.urls)),
     path('v1/public/terms/categories/<str:slug>/<str:sub_slug>',
          views.SubCategoryViewSet.as_view({'get': 'retrieve'}),

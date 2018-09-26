@@ -9,23 +9,27 @@ from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals.fields import (
     CategoryLinksField,
+    MainCategoryHyperlinkedIdentityField,
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField,
     SubCategoryHyperlinkedIdentityField,
-    MainCategoryHyperlinkedIdentityField, SubCategoryHyperlinkedRelatedField)
+    SubCategoryHyperlinkedRelatedField
+)
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
     CategoryAssignment,
+    Department,
     Location,
+    MainCategory,
     Priority,
     Reporter,
     Signal,
     Status,
-    SubCategory,
-    MainCategory, Department)
+    SubCategory
+)
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 
 logger = logging.getLogger(__name__)

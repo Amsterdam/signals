@@ -13,8 +13,15 @@ from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.filters import LocationFilter, SignalFilter, StatusFilter
-from signals.apps.signals.models import CategoryAssignment, Location, Priority, Signal, Status, \
-    MainCategory, SubCategory
+from signals.apps.signals.models import (
+    CategoryAssignment,
+    Location,
+    MainCategory,
+    Priority,
+    Signal,
+    Status,
+    SubCategory
+)
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
@@ -24,13 +31,15 @@ from signals.apps.signals.permissions import (
 from signals.apps.signals.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
+    MainCategoryHALSerializer,
     PriorityHALSerializer,
     SignalAuthHALSerializer,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
     StatusHALSerializer,
-    MainCategoryHALSerializer, SubCategoryHALSerializer)
+    SubCategoryHALSerializer
+)
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
