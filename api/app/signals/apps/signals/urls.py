@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from signals.apps.signals import views as api_views
+from signals.apps.signals import views
 
 
 class SignalsView(routers.APIRootView):
@@ -29,14 +29,24 @@ class SignalRouter(routers.DefaultRouter):
 
 
 signal_router = SignalRouter()
-signal_router.register(r'signal/image', api_views.SignalImageUpdateView, base_name='signal-img')
-signal_router.register(r'signal', api_views.SignalViewSet, base_name='signal')
-signal_router.register(r'auth/signal', api_views.SignalAuthViewSet, base_name='signal-auth')
-signal_router.register(r'auth/status', api_views.StatusAuthViewSet, base_name='status-auth')
-signal_router.register(r'auth/category', api_views.CategoryAuthViewSet, base_name='category-auth')
-signal_router.register(r'auth/location', api_views.LocationAuthViewSet, base_name='location-auth')
-signal_router.register(r'auth/priority', api_views.PriorityAuthViewSet, base_name='priority-auth')
+
+# API Version 0
+signal_router.register(r'signal/image', views.SignalImageUpdateView, base_name='signal-img')
+signal_router.register(r'signal', views.SignalViewSet, base_name='signal')
+signal_router.register(r'auth/signal', views.SignalAuthViewSet, base_name='signal-auth')
+signal_router.register(r'auth/status', views.StatusAuthViewSet, base_name='status-auth')
+signal_router.register(r'auth/category', views.CategoryAuthViewSet, base_name='category-auth')
+signal_router.register(r'auth/location', views.LocationAuthViewSet, base_name='location-auth')
+signal_router.register(r'auth/priority', views.PriorityAuthViewSet, base_name='priority-auth')
+
+# API Version 1
+signal_router.register(r'v1/public/terms/categories',
+                       views.MainCategoryViewSet,
+                       base_name='category')
 
 urlpatterns = [
     path('', include(signal_router.urls)),
+    path('v1/public/terms/categories/<str:slug>/<str:sub_slug>',
+         views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
+         name='sub-category-detail'),
 ]

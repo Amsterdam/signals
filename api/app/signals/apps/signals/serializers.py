@@ -12,8 +12,8 @@ from signals.apps.signals.fields import (
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
-    StatusLinksField
-)
+    StatusLinksField,
+    SubCategoryLinksField, MainCategoryLinksField)
 from signals.apps.signals.models import (
     AFGEHANDELD,
     STATUS_OVERGANGEN,
@@ -23,8 +23,8 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status,
-    SubCategory
-)
+    SubCategory,
+    MainCategory)
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 
 logger = logging.getLogger(__name__)
@@ -519,3 +519,39 @@ class PriorityHALSerializer(HALSerializer):
         signal = validated_data.pop('_signal')
         priority = Signal.actions.update_priority(validated_data, signal)
         return priority
+
+
+#
+# Category terms
+#
+
+class SubCategoryHALSerializer(HALSerializer):
+    serializer_url_field = SubCategoryLinksField
+    _display = DisplayField()
+
+    class Meta:
+        model = SubCategory
+        fields = (
+            # '_links',
+            '_display',
+            'name',
+            'slug',
+            'handling',
+            # 'departments',
+        )
+
+
+class MainCategoryHALSerializer(HALSerializer):
+    serializer_url_field = MainCategoryLinksField
+    _display = DisplayField()
+    # sub_categories = SubCategoryHALSerializer()
+
+    class Meta:
+        model = MainCategory
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'slug',
+            # 'sub_categories',
+        )

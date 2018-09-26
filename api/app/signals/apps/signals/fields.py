@@ -45,9 +45,6 @@ class StatusLinksField(serializers.HyperlinkedIdentityField):
 
 
 class CategoryLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
 
     def to_representation(self, value):
         request = self.context.get('request')
@@ -62,15 +59,35 @@ class CategoryLinksField(serializers.HyperlinkedIdentityField):
 
 
 class PriorityLinksField(serializers.HyperlinkedIdentityField):
-    """
-    Return authorized url. handy for development.
-    """
 
     def to_representation(self, value):
         request = self.context.get('request')
 
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, 'priority-auth-detail', request, None))),
+        ])
+
+        return result
+
+
+class MainCategoryLinksField(serializers.HyperlinkedIdentityField):
+    lookup_field = 'slug'
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+        result = OrderedDict([
+            ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+        ])
+
+        return result
+
+
+class SubCategoryLinksField(serializers.HyperlinkedIdentityField):
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+        result = OrderedDict([
+            ('self', dict(href=self.get_url(value, 'sub-category-detail', request, None))),
         ])
 
         return result
