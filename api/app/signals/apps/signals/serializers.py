@@ -29,7 +29,7 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.apps.signals.workflow import AFGEHANDELD, STATUS_OVERGANGEN
+from signals.apps.signals.workflow import AFGEHANDELD, ALLOWED_STATUS_CHANGES
 
 logger = logging.getLogger(__name__)
 
@@ -237,7 +237,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # The status can only be 'm' when created
-        if data['status']['state'] not in STATUS_OVERGANGEN['']:
+        if data['status']['state'] not in ALLOWED_STATUS_CHANGES['']:
             raise serializers.ValidationError(
                 f"Invalid status: {data['status']['state']}")
 

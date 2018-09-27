@@ -7,15 +7,15 @@ LEEG = ''
 GEMELD = 'm'
 AFWACHTING = 'i'
 BEHANDELING = 'b'
-AFGEHANDELD = 'o'
 ON_HOLD = 'h'
+AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
 STATUS_OPTIONS_API = (
     (GEMELD, 'Gemeld'),
     (AFWACHTING, 'In afwachting van behandeling'),
     (BEHANDELING, 'In behandeling'),
-    (AFGEHANDELD, 'Afgehandeld'),
     (ON_HOLD, 'On hold'),
+    (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd')
 )
 
@@ -33,44 +33,46 @@ STATUS_OPTIONS_EXTERNAL_SYSTEMS = (
 
 STATUS_CHOICES = STATUS_OPTIONS_API + STATUS_OPTIONS_EXTERNAL_SYSTEMS
 
-STATUS_OVERGANGEN = {
+ALLOWED_STATUS_CHANGES = {
     LEEG: [
         GEMELD
     ],
     GEMELD: [
-        AFGEHANDELD,
+        GEMELD,
         AFWACHTING,
         BEHANDELING,
-        GEANNULEERD,
-        GEMELD,
         ON_HOLD,
+        AFGEHANDELD,
+        GEANNULEERD,
         TE_VERZENDEN,
     ],
     AFWACHTING: [
-        AFGEHANDELD,
+        # GEMELD,      ???
         AFWACHTING,
         BEHANDELING,
-        GEANNULEERD,
         ON_HOLD,
+        AFGEHANDELD,
+        GEANNULEERD,
         TE_VERZENDEN,
     ],
     BEHANDELING: [
-        AFGEHANDELD,
+        # GEMELD,      ???
+        # AFWACHTING,  ???
         BEHANDELING,
-        GEANNULEERD,
         ON_HOLD,
+        AFGEHANDELD,
+        GEANNULEERD,
         TE_VERZENDEN,
     ],
     ON_HOLD: [
-        AFGEHANDELD,
+        GEMELD,
         AFWACHTING,
         BEHANDELING,
+        # ON_HOLD,  ????
+        AFGEHANDELD,
         GEANNULEERD,
-        GEMELD,
         TE_VERZENDEN,
     ],
-    AFGEHANDELD: [],
-    GEANNULEERD: [],
     TE_VERZENDEN: [
         VERZONDEN,
         VERZENDEN_MISLUKT,
@@ -78,8 +80,14 @@ STATUS_OVERGANGEN = {
     VERZONDEN: [
         AFGEHANDELD_EXTERN,
     ],
+    VERZENDEN_MISLUKT: [
+        GEMELD,
+        TE_VERZENDEN,
+    ],
     AFGEHANDELD_EXTERN: [
         AFGEHANDELD,
         GEANNULEERD,
     ],
+    AFGEHANDELD: [],
+    GEANNULEERD: [],
 }
