@@ -405,19 +405,11 @@ class StatusHALSerializer(HALSerializer):
         return status
 
     def validate(self, data):
-        # Get current status for signal
-        signal = data['_signal']
-
-        # Validating "state machine".
-        if data['state'] not in ALLOWED_STATUS_CHANGES[signal.status.state]:
-            raise serializers.ValidationError(
-                f"Invalid state transition from {signal.status.state} "
-                f"to {data['state']}")
-
-        # Validating required field `text` when status is `AFGEHANDELD`.
-        if data['state'] == AFGEHANDELD and not data['text']:
-            raise serializers.ValidationError(
-                {'text': 'This field is required.'})
+        try:
+            status = Status(**data)
+            status.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError(e.error_dict)
 
         ip = self.add_ip()
         if ip is not None:
