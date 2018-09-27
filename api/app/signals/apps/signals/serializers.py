@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.throttling import BaseThrottle
 
+from signals.apps.signals import workflow
 from signals.apps.signals.fields import (
     CategoryLinksField,
     MainCategoryHyperlinkedIdentityField,
@@ -18,8 +19,6 @@ from signals.apps.signals.fields import (
     SubCategoryHyperlinkedRelatedField
 )
 from signals.apps.signals.models import (
-    AFGEHANDELD,
-    STATUS_OVERGANGEN,
     CategoryAssignment,
     Department,
     Location,
@@ -114,6 +113,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+            'state',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
@@ -237,11 +237,6 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         raise NotImplementedError('`update()` is not allowed with this serializer.')
 
     def validate(self, data):
-        # The status can only be 'm' when created
-        if data['status']['state'] not in STATUS_OVERGANGEN['']:
-            raise serializers.ValidationError(
-                f"Invalid status: {data['status']['state']}")
-
         image = self.initial_data.get('image', False)
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
@@ -399,6 +394,9 @@ class StatusHALSerializer(HALSerializer):
             'extra_properties',
             'created_at',
         )
+        extra_kwargs = {
+            'state': {'choices': workflow.STATUS_CHOICES_API}
+        }
 
     def create(self, validated_data):
         signal = validated_data.pop('_signal')
@@ -406,19 +404,11 @@ class StatusHALSerializer(HALSerializer):
         return status
 
     def validate(self, data):
-        # Get current status for signal
-        signal = data['_signal']
-
-        # Validating "state machine".
-        if data['state'] not in STATUS_OVERGANGEN[signal.status.state]:
-            raise serializers.ValidationError(
-                f"Invalid state transition from {signal.status.state} "
-                f"to {data['state']}")
-
-        # Validating required field `text` when status is `AFGEHANDELD`.
-        if data['state'] == AFGEHANDELD and not data['text']:
-            raise serializers.ValidationError(
-                {'text': 'This field is required.'})
+        try:
+            status = Status(**data)
+            status.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError(e.error_dict)
 
         ip = self.add_ip()
         if ip is not None:

@@ -5,9 +5,8 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import (
-    AFGEHANDELD,
-    AFWACHTING,
     CategoryAssignment,
     Location,
     MainCategory,
@@ -322,7 +321,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
             'text': None,
             'user': None,
             'target_api': None,
-            'state': AFWACHTING,
+            'state': workflow.AFWACHTING,
             'extern': False,
             'extra_properties': {},
             '_signal': self.signal.id,
@@ -334,12 +333,29 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         # check that current status of signal is now this one
         self.assertEqual(self.signal.status.id, result['id'])
 
+    def test_post_status_not_allowed_choice(self):
+        # Prepare current state.
+        self.signal.status.state = workflow.TE_VERZENDEN
+        self.signal.status.save()
+
+        # Post an unallowed status change from the API.
+        url = '/signals/auth/status/'
+        data = {
+            '_signal': self.signal.id,
+            'state': workflow.VERZONDEN,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        result = response.json()
+        self.assertIn('state', result)
+
     def test_post_status_afgehandeld_text_required_failed(self):
         url = '/signals/auth/status/'
 
         # Test with text value `None`.
         data = {
-            'state': AFGEHANDELD,
+            'state': workflow.AFGEHANDELD,
             '_signal': self.signal.id,
             'text': None,
         }
@@ -358,7 +374,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
     def test_post_status_afgehandeld_text_required_success(self):
         url = '/signals/auth/status/'
         data = {
-            'state': AFGEHANDELD,
+            'state': workflow.AFGEHANDELD,
             '_signal': self.signal.id,
             'text': 'Uw melding is afgehandeld',
         }

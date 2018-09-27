@@ -1,14 +1,12 @@
-"""
-Tests for the model manager in signals.apps.signals.models
-"""
 from unittest import mock
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import (
-    GEMELD,
     STADSDEEL_CENTRUM,
     CategoryAssignment,
     Location,
@@ -18,13 +16,12 @@ from signals.apps.signals.models import (
     Status
 )
 from tests.apps.signals import factories
-from tests.apps.signals.factories import SubCategoryFactory
 
 
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
-        sub_category = SubCategoryFactory.create(name='Veeg- / zwerfvuil')
+        sub_category = factories.SubCategoryFactory.create(name='Veeg- / zwerfvuil')
 
         # Deserialized data
         self.signal_data = {
@@ -45,7 +42,7 @@ class TestSignalManager(TransactionTestCase):
             'sub_category': sub_category,
         }
         self.status_data = {
-            'state': GEMELD,
+            'state': workflow.GEMELD,
             'text': 'text message',
             'user': 'test@example.com',
         }
@@ -106,15 +103,23 @@ class TestSignalManager(TransactionTestCase):
             prev_location=prev_location)
 
     @mock.patch('signals.apps.signals.models.update_status', autospec=True)
-    def test_update_status(self, patched_update_status):
+    @mock.patch.object(Status, 'clean')
+    def test_update_status(self, mocked_status_clean, patched_update_status):
         signal = factories.SignalFactory.create()
-
-        # Update the signal
         prev_status = signal.status
-        status = Signal.actions.update_status(self.status_data, signal)
 
-        # Check that the signal was updated in db
+        # Update status
+        data = {
+            'state': workflow.AFGEHANDELD,
+            'text': 'Opgelost',
+        }
+        status = Signal.actions.update_status(data, signal)
+
+        mocked_status_clean.assert_called_once()
+
+        # Check that the signal status is updated
         self.assertEqual(signal.status, status)
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD)
         self.assertEqual(signal.statuses.count(), 2)
 
         # Check that we sent the correct Django signal
@@ -179,6 +184,31 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             priority=priority,
             prev_priority=prev_priority)
+
+
+class TestStatusModel(TestCase):
+
+    def setUp(self):
+        self.signal = factories.SignalFactory.create()
+        self.status = self.signal.status
+        self.assertEqual(self.status.state, workflow.GEMELD)
+
+    def test_state_transition_valid(self):
+        new_status = Status(_signal=self.signal,
+                            state=workflow.AFGEHANDELD,
+                            text='Consider it done.')
+        new_status.full_clean()
+        new_status.save()
+
+    def test_state_transition_invalid(self):
+        new_status = Status(_signal=self.signal, state=workflow.VERZONDEN, text=None)
+        with self.assertRaises(ValidationError):
+            new_status.full_clean()
+
+    def test_afgehandeld_change_no_text(self):
+        new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text=None)
+        with self.assertRaises(ValidationError):
+            new_status.full_clean()
 
 
 class TestCategoryDeclarations(TestCase):

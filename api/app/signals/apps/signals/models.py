@@ -2,9 +2,12 @@ import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 from django.utils.text import slugify
+
+from signals.apps.signals import workflow
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
@@ -92,9 +95,11 @@ class SignalManager(models.Manager):
         :returns: Status object
         """
         with transaction.atomic():
-            prev_status = signal.status
+            status = Status(_signal=signal, **data)
+            status.full_clean()
+            status.save()
 
-            status = Status.objects.create(**data, _signal_id=signal.id)
+            prev_status = signal.status
             signal.status = status
             signal.save()
 
@@ -360,64 +365,54 @@ class CategoryAssignment(CreatedUpdatedModel):
         return '{sub} - {signal}'.format(sub=self.sub_category, signal=self._signal)
 
 
-LEEG = ''
-GEMELD = 'm'
-AFWACHTING = 'i'
-BEHANDELING = 'b'
-AFGEHANDELD = 'o'
-ON_HOLD = 'h'
-GEANNULEERD = 'a'
-STATUS_OPTIONS = (
-    (GEMELD, 'Gemeld'),
-    (AFWACHTING, 'In afwachting van behandeling'),
-    (BEHANDELING, 'In behandeling'),
-    (AFGEHANDELD, 'Afgehandeld'),
-    (ON_HOLD, 'On hold'),
-    (GEANNULEERD, 'Geannuleerd')
-)
-
-
-STATUS_OVERGANGEN = {
-    LEEG: [GEMELD],  # Een nieuw melding mag alleen aangemaakt worden met gemeld
-    GEMELD: [AFWACHTING, GEANNULEERD, ON_HOLD, GEMELD, BEHANDELING, AFGEHANDELD],
-    AFWACHTING: [BEHANDELING, ON_HOLD, AFWACHTING, GEANNULEERD, AFGEHANDELD],
-    BEHANDELING: [AFGEHANDELD, ON_HOLD, GEANNULEERD, BEHANDELING],
-    ON_HOLD: [AFWACHTING, BEHANDELING, GEANNULEERD, GEMELD, AFGEHANDELD],
-    AFGEHANDELD: [],
-    GEANNULEERD: [],
-}
-
-
 class Status(CreatedUpdatedModel):
-    """Signal status."""
-
-    _signal = models.ForeignKey(
-        "signals.Signal", related_name="statuses",
-        null=False, on_delete=models.CASCADE
-    )
+    _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
 
     text = models.CharField(max_length=10000, null=True, blank=True)
     # TODO rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
-
     target_api = models.CharField(max_length=250, null=True, blank=True)
+    state = models.CharField(max_length=20,
+                             blank=True,
+                             choices=workflow.STATUS_CHOICES,
+                             default=workflow.GEMELD,
+                             help_text='Melding status')
+    extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
-    state = models.CharField(
-        max_length=1, choices=STATUS_OPTIONS, blank=True,
-        default=GEMELD, help_text='Melding status')
-
-    extern = models.BooleanField(
-        default=False,
-        help_text='Wel of niet status extern weergeven')
-
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Statuses"
-        get_latest_by = "datetime"
+        verbose_name_plural = 'Statuses'
+        get_latest_by = 'datetime'
 
     def __str__(self):
         return str(self.text)
+
+    def clean(self):
+        """Validate instance.
+
+        Most important validation is the state transition.
+
+        :raises: ValidationError
+        :returns:
+        """
+        current_state = self._signal.status.state
+        new_state = self.state
+
+        # Validating state transition.
+        if new_state not in workflow.ALLOWED_STATUS_CHANGES[current_state]:
+            raise ValidationError({
+                'state': 'Invalid state transition from `{from_state}` to `{to_state}`.'.format(
+                    from_state=self._signal.status.get_state_display(),
+                    to_state=self.get_state_display())
+            })
+
+        # Validating text field required.
+        if new_state == workflow.AFGEHANDELD and not self.text:
+            raise ValidationError({
+                'text': 'This field is required when changing `state` to `{new_state}`.'.format(
+                    new_state=self.get_state_display())
+            })
 
 
 class Priority(CreatedUpdatedModel):
@@ -518,51 +513,3 @@ class Department(models.Model):
     def __str__(self):
         """String representation."""
         return '{code} ({name})'.format(code=self.code, name=self.name)
-
-
-#
-# SubCategory "afhandeling teksten"
-# TODO, Move these text to the database and create a helper method on `SubCategory` to get this text
-#
-
-ALL_AFHANDELING_TEXT = {
-    SubCategory.HANDLING_A3DMC: """
-We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
-We houden u op de hoogte via e-mail.""",  # noqa E501
-    SubCategory.HANDLING_A3DEC: """
-Wij handelen uw melding binnen 3 werkdagen af.
-En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
-    SubCategory.HANDLING_A3WMC: """
-We laten u binnen 3 weken weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.
-We houden u op de hoogte via e-mail.""",  # noqa E501
-    SubCategory.HANDLING_A3WEC: """
-Wij handelen uw melding binnen drie weken af.
-En anders hoort u - via e-mail - wanneer wij uw melding kunnen oppakken.""",
-    SubCategory.HANDLING_I5DMC: """
-Uw melding wordt ingepland: wij laten u binnen 5 werkdagen weten hoe en wanneer uw melding wordt afgehandeld. Dat doen we via e-mail.""",  # noqa E501
-    SubCategory.HANDLING_STOPEC: """
-Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties handelen wij meestal binnen 5 werkdagen af.
-Als we uw melding niet binnen 5 werkdagen kunnen afhandelen, hoort u - via e-mail – hoe wij uw melding oppakken.""",  # noqa E501
-    SubCategory.HANDLING_KLOKLICHTZC: """
-Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties kunnen wat langer duren. Wij kunnen u hier helaas niet altijd van op de hoogte houden.""",  # noqa E501
-    SubCategory.HANDLING_GLADZC: """
-Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.
-
-Bij gladheid door sneeuw of bladeren pakken we hoofdwegen en fietsroutes als eerste aan. Andere meldingen behandelen we als de belangrijkste routes zijn gedaan.
-
-U ontvangt geen apart bericht meer over de afhandeling van uw melding.""",  # noqa E501
-    SubCategory.HANDLING_A3DEVOMC: """
-We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.  In Nieuw-West komen we de volgende ophaaldag.
-We houden u op de hoogte via e-mail.""",  # noqa E501
-    SubCategory.HANDLING_WS1EC: """
-We geven uw melding door aan onze handhavers. Als dat mogelijk is ondernemen we direct actie. Maar we kunnen niet altijd snel genoeg aanwezig zijn.
-
-Blijf overlast aan ons melden. Ook als we niet altijd direct iets voor u kunnen doen. We gebruiken alle meldingen om overlast in de toekomst te kunnen beperken.""",  # noqa E501
-    SubCategory.HANDLING_WS2EC: """
-We geven uw melding door aan onze handhavers. Zij beoordelen of het nodig en mogelijk is direct actie te ondernemen. Bijvoorbeeld omdat er olie lekt of omdat de situatie gevaar oplevert voor andere boten.
-
-Als er geen directe actie nodig is, dan pakken we uw melding op buiten het vaarseizoen (september - maart).
-Bekijk in welke situaties we een wrak weghalen. Boten die vol met water staan, maar nog wél drijven, mogen we bijvoorbeeld niet weghalen.""",  # noqa E501
-    SubCategory.HANDLING_REST: """
-Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze gaat behandelen. Heeft u contactgegevens achtergelaten? Dan nemen wij bij onduidelijkheid contact met u op.""",  # noqa E501
-}

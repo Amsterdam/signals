@@ -5,7 +5,6 @@ from rest_framework.serializers import ValidationError
 
 from signals.apps.signals.models import (
     STADSDELEN,
-    STATUS_OPTIONS,
     Buurt,
     Location,
     MainCategory,
@@ -14,6 +13,7 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 
 def parse_xyr(value):
@@ -49,7 +49,7 @@ def buurt_choices():
 
 
 def status_choices():
-    return [(c, f'{n} ({c})') for c, n in STATUS_OPTIONS]
+    return [(c, f'{n} ({c})') for c, n in STATUS_CHOICES]
 
 
 class SignalFilter(FilterSet):

@@ -10,7 +10,8 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils import timezone
 
-from signals.apps.signals.models import AFGEHANDELD, ALL_AFHANDELING_TEXT
+from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+from signals.apps.signals.workflow import AFGEHANDELD
 
 LOG = logging.getLogger()
 
