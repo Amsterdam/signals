@@ -4,10 +4,12 @@ applies to communication between the SIA system and Sigmax CityControl.
 """
 import logging
 
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from lxml import etree
 from rest_framework.views import APIView
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -78,6 +80,19 @@ def _handle_actualiseerZaakstatus_Lk01(request):
         )
 
     # TODO: implement status updates
+    status_data = {
+        'state': workflow.AFGEHANDELD_EXTERN,
+        'text': 'Afgehandeld door via SIGMAX / CITYCONTROL',
+    }
+
+    try:
+        Signal.actions.update_status(data=status_data, signal=signal)
+    except ValidationError as e:
+        return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
+                'error_msg': f'Melding met signal_id {zaak_uuid} was niet in verzonden staat'
+            },
+            content_type='text/xml; charset=utf-8', status=500
+        )
 
     return render(request, 'sigmax/actualiseerZaakstatus_Bv03.xml', context={
         'zaak_uuid': signal.signal_id

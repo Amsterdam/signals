@@ -11,6 +11,7 @@ from signals.apps.sigmax.views import (
     ACTUALISEER_ZAAK_STATUS_SOAPACTION,
     _parse_actualiseerZaakstatus_Lk01
 )
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.apps.users.factories import SuperUserFactory
@@ -104,7 +105,7 @@ class TestSoapEndpoint(APITestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn('Melding met signal_id', response.content.decode('utf-8', 'strict'))
 
-    def test_with_signal_for_message(self):
+    def test_with_signal_for_message_wrong_state(self):
         signal = SignalFactoryValidLocation.create()
         self.assertEqual(Signal.objects.count(), 1)
 
@@ -124,8 +125,37 @@ class TestSoapEndpoint(APITestCase):
             content_type='text/xml',
         )
 
+        self.assertEqual(response.status_code, 500)
+        self.assertIn(str(signal.signal_id), response.content.decode('utf-8', 'strict'))
+        self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
+
+    def test_with_signal_for_message_correct_state(self):
+        signal = SignalFactoryValidLocation.create()
+        signal.status.state = workflow.VERZONDEN
+        signal.status.save()
+        signal.refresh_from_db()
+
+        self.assertEqual(Signal.objects.count(), 1)
+
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+            'zaak_uuid': signal.signal_id,
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'HALLO',
+        })
+
+        # authenticate
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # call our SOAP endpoint
+        response = self.client.post(
+            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml',
+        )
+
         self.assertEqual(response.status_code, 200)
-        # self.assertIn(bytes(signal.signal_id), response.content)
+        self.assertIn(str(signal.signal_id), response.content.decode('utf-8', 'strict'))
+        self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
 
 
 class TestProcessTestActualiseerZaakStatus(TestCase):
