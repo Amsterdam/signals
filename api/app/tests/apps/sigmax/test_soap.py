@@ -1,28 +1,132 @@
+import datetime
+from unittest import mock
+import uuid
+from xml.sax.saxutils import escape
+
 import lxml
 from django.template.loader import render_to_string
 from rest_framework.test import APITestCase
-from django.test import TestCase
-from rest_framework.test import APIClient
+from django.test import TestCase, override_settings
+from django.http import HttpResponse
 
+from signals.apps.signals.models import Signal
+from signals.apps.sigmax import handler, utils
 from signals.apps.sigmax.views import (
     _parse_actualiseerZaakstatus_Lk01, ACTUALISEER_ZAAK_STATUS_SOAPACTION)
+from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.apps.users.factories import SuperUserFactory
 
+REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
+SOAP_ENDPOINT = '/signals/sigmax/soap'
 
 
-class TestActualiseerZaakstatus(APITestCase):
-    def test_send_example(self):
-        payload = render_to_string('sigmax/example-actualiseerZaakstatus_Lk01.xml')
+class TestSoapEndpoint(APITestCase):
+    def test_routing(self):
+        """Check that routing for Sigmax is active and correct"""
+        response = self.client.get(SOAP_ENDPOINT)
+        self.assertNotEqual(response.status_code, 404)
+
+    def test_http_verbs(self):
+        """Check that the SOAP endpoint only accepts POST and OPTIONS"""
+        not_allowed = ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']
+        allowed = ['POST', 'OPTIONS']
 
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
+
+        for verb in not_allowed:
+            method = getattr(self.client, verb.lower())
+            response = method(SOAP_ENDPOINT)
+            self.assertEqual(response.status_code, 405)
+
+        for verb in allowed:
+            method = getattr(self.client, verb.lower())
+            response = method(SOAP_ENDPOINT)
+            self.assertNotEqual(response.status_code, 405)
+
+    def test_soap_action_missing(self):
+        """SOAP endpoint must reject messages with missing SOAPaction header"""
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.post(SOAP_ENDPOINT)        
+        self.assertEqual(response.status_code, 500)
+        self.assertIn(b'Fo03', response.content)  # deal with the encodings here
+        
+    @mock.patch('signals.apps.sigmax.views._handle_actualiseerZaakstatus_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.views._handle_unknown_soap_action', autospec=True)
+    def test_soap_action_routing(self, handle_unknown, handle_known):
+        """Check that correct function is called based on SOAPAction header"""
+        handle_unknown.return_value = HttpResponse('Required by view function')
+        handle_known.return_value = HttpResponse('Required by view function')
+
+        # authenticate
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # check that actualiseerZaakstatus_lk01 is routed correctly
+        self.client.post(SOAP_ENDPOINT, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml')
+        handle_known.assert_called_once()
+        handle_unknown.assert_not_called()
+        handle_known.reset_mock()
+        handle_unknown.reset_mock()
+
+        # check that something else is send to _handle_unknown_soap_action
+        wrong_action = 'http://example.com/unknown'
+        self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', SOAPAction=wrong_action, 
+            content_type='text/xml')
+
+        handle_known.assert_not_called()
+        handle_unknown.assert_called_once()
+
+    def test_no_signal_for_message(self):
+        """Test that we generate a Fo03 if no signal can be found to go with it."""
+        self.assertEqual(Signal.objects.count(), 0)
+        
+        # generate test message
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+            'zaak_uuid': uuid.uuid4(),
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'HALLO',
+        })
+
+        # authenticate 
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # call our SOAP endpoint
         response = self.client.post(
-            '/signals/sigmax/soap',
-            data=payload,
-            content_type='application/xml',
-            **{'SOAPAction': ACTUALISEER_ZAAK_STATUS_SOAPACTION}
+            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml',
         )
 
+        # check that the request was rejected because no signal is present in database
+        self.assertEqual(response.status_code, 500)
+        self.assertIn(b'Melding met signal_id', response.content)
+        
+    def test_with_signal_for_message(self):
+        signal = SignalFactoryValidLocation.create()
+        self.assertEqual(Signal.objects.count(), 1)
+
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+            'zaak_uuid': signal.signal_id,
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'HALLO',
+        })
+
+        # authenticate 
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # call our SOAP endpoint
+        response = self.client.post(
+            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # self.assertIn(bytes(signal.signal_id), response.content)
 
 
 class TestProcessTestActualiseerZaakStatus(TestCase):
@@ -32,21 +136,26 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
             _parse_actualiseerZaakstatus_Lk01(test_msg)
 
     def test_extract_properties(self):
-        test_msg = render_to_string('sigmax/example-actualiseerZaakstatus_Lk01.xml')
+        signal = SignalFactoryValidLocation()
+        resultaat = 'Er is gehandhaafd'
+
+        test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+            'zaak_uuid': signal.signal_id,
+            'resultaat_omschrijving': resultaat
+        })
         msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg)
 
         # test uses knowledge of test XML message content
         self.assertEqual(
             msg_content['zaak_uuid'],
-            'ed919712-d026-4949-a51e-5a8b60141a0d'
+            str(signal.signal_id)
         )
         self.assertEqual(
             msg_content['datum_afgehandeld'],
-            '2018070409102946'
+            '2018092613025501'
         )
         self.assertEqual(
             msg_content['resultaat'],
-            'Geseponeerd'
+            resultaat
         )
         self.assertIn('reden', msg_content)
-

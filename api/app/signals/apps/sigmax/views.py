@@ -16,7 +16,7 @@ from signals.auth.backend import JWTAuthBackend
 logger = logging.getLogger(__name__)
 
 ACTUALISEER_ZAAK_STATUS_SOAPACTION = \
-    'http://www.egem.nl/StUF/sector/zkn/0310/UpdateZaak_Lk01'
+    'http://www.egem.nl/StUF/sector/zkn/0310/actualiseerZaakstatus_Lk01'
 
 
 def _parse_actualiseerZaakstatus_Lk01(xml):
@@ -48,11 +48,23 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
     }
 
 
+def _handle_unknown_soap_action(request):
+    """
+    Requests with unknown/unsupported SOAPActions are handled here
+    """
+    # TODO: add extra logging
+    # TODO: nicer Fo03 message template (this is not for actualiseerZaakstatus ..
+    return render(request, 'sigmax/actualiseerZaakstatus_Fo03', context={
+        'error_msg': 'SOAPAction: {} is not supported'.format(request.META['SOAPAction'])
+    }, content_type='text/xml; charset=utf-8', status=500)
+
+
 def _handle_actualiseerZaakstatus_Lk01(request):
     """
     Checks that incoming message has required info, updates Signal if ok.
     """    
-    # Check that the incoming message matches our expectations
+    # TODO: Check that the incoming message matches our expectations, else Fo03
+
     request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
     zaak_uuid = request_data['zaak_uuid']
 
@@ -63,20 +75,17 @@ def _handle_actualiseerZaakstatus_Lk01(request):
         return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
             'error_msg': f'Melding met signal_id {zaak_uuid}',
             },
-            content_type='text/xml'
+            content_type='text/xml; charset=utf-8', status=500
         )
 
-    # Generate status update data, then update the signal with the new status
-    status_data = {
-        'state': AFGEHANDELD_EXTERN,
-        'text': 'AFGEHANDELD',
-    }
+    # TODO:
+    # * implement status updates
+    # * 
 
-    Signal.actions.update_status(status_data, signal)
+    return render(request, 'sigmax/actualiseerZaakstatus_Bv03.xml', context={
+        'zaak_uuid': zaak_uuid
+    }, content_type='text/xml; charset=utf-8', status=200)
 
-
-# Not using CreateModelview here as it includes some functionality that is not needed.
-# Through the CreateModelMixin and GenericAPIView (querysets, serializer class).
 
 class CityControlReceiver(APIView):
     """
@@ -88,18 +97,14 @@ class CityControlReceiver(APIView):
         """
         Dispatch 
         """
+        # https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383528
+        if 'SOAPAction' not in request.META:
+            return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', context={
+                'error_msg': 'SOAPAction header not set'
+            }, content_type='text/xml; charset=utf-8', status=500)
+
+
         if request.META['SOAPAction'] == ACTUALISEER_ZAAK_STATUS_SOAPACTION:
             return _handle_actualiseerZaakstatus_Lk01(request)
         else:
-            log.debug()
-
-        # emit Bv03 if ok
-        # emit Fo03 if wrong 
-
-# TODO:
-# * dispatch on SOAPAction
-# * find way of requiring message content
-# * generate signal, send to sigmax, how do we test that the status is set to done? 
-#   All this is asynchronous.
-# * An endpoint that does nothing with incoming messages.
-# * Full round trip test scenario.
+            return _handle_unknown_soap_action(request)
