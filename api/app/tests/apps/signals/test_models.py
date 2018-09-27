@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     CategoryAssignment,
@@ -14,7 +15,6 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.apps.signals import workflow
 from tests.apps.signals import factories
 
 

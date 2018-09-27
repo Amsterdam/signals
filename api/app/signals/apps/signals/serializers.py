@@ -29,7 +29,7 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.apps.signals.workflow import AFGEHANDELD, ALLOWED_STATUS_CHANGES
+from signals.apps.signals.workflow import ALLOWED_STATUS_CHANGES
 
 logger = logging.getLogger(__name__)
 

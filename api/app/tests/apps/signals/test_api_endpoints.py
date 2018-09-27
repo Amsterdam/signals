@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
@@ -14,7 +15,6 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.apps.signals import workflow
 from tests.apps.signals import factories
 from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
