@@ -4,10 +4,8 @@ applies to communication between the SIA system and Sigmax CityControl.
 """
 import logging
 
-from django.template.loader import render_to_string
 from django.shortcuts import render
 from lxml import etree
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from signals.apps.signals.models import Signal
@@ -62,7 +60,7 @@ def _handle_unknown_soap_action(request):
 def _handle_actualiseerZaakstatus_Lk01(request):
     """
     Checks that incoming message has required info, updates Signal if ok.
-    """    
+    """
     # TODO: Check that the incoming message matches our expectations, else Fo03
 
     request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
@@ -70,7 +68,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
 
     # Retrieve the relevant Signal, error out if it cannot be found
     try:
-        signals = Signal.objects.get(signal_id=request_data['zaak_uuid'])
+        signal = Signal.objects.get(signal_id=request_data['zaak_uuid'])
     except Signal.DoesNotExist:
         return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
             'error_msg': f'Melding met signal_id {zaak_uuid}',
@@ -78,12 +76,10 @@ def _handle_actualiseerZaakstatus_Lk01(request):
             content_type='text/xml; charset=utf-8', status=500
         )
 
-    # TODO:
-    # * implement status updates
-    # * 
+    # TODO: implement status updates
 
     return render(request, 'sigmax/actualiseerZaakstatus_Bv03.xml', context={
-        'zaak_uuid': zaak_uuid
+        'zaak_uuid': signal.signal_id
     }, content_type='text/xml; charset=utf-8', status=200)
 
 
@@ -95,14 +91,13 @@ class CityControlReceiver(APIView):
 
     def post(self, request, format=None):
         """
-        Dispatch 
+        Handle SOAP requests, dispatch on SOAPAction header.
         """
         # https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383528
         if 'SOAPAction' not in request.META:
             return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', context={
                 'error_msg': 'SOAPAction header not set'
             }, content_type='text/xml; charset=utf-8', status=500)
-
 
         if request.META['SOAPAction'] == ACTUALISEER_ZAAK_STATUS_SOAPACTION:
             return _handle_actualiseerZaakstatus_Lk01(request)

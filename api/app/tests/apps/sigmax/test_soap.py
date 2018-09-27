@@ -1,18 +1,17 @@
-import datetime
-from unittest import mock
 import uuid
-from xml.sax.saxutils import escape
+from unittest import mock
 
 import lxml
-from django.template.loader import render_to_string
-from rest_framework.test import APITestCase
-from django.test import TestCase, override_settings
 from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.test import TestCase
+from rest_framework.test import APITestCase
 
-from signals.apps.signals.models import Signal
-from signals.apps.sigmax import handler, utils
 from signals.apps.sigmax.views import (
-    _parse_actualiseerZaakstatus_Lk01, ACTUALISEER_ZAAK_STATUS_SOAPACTION)
+    ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+    _parse_actualiseerZaakstatus_Lk01
+)
+from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.apps.users.factories import SuperUserFactory
 
@@ -49,10 +48,10 @@ class TestSoapEndpoint(APITestCase):
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
 
-        response = self.client.post(SOAP_ENDPOINT)        
+        response = self.client.post(SOAP_ENDPOINT)
         self.assertEqual(response.status_code, 500)
         self.assertIn(b'Fo03', response.content)  # deal with the encodings here
-        
+
     @mock.patch('signals.apps.sigmax.views._handle_actualiseerZaakstatus_Lk01', autospec=True)
     @mock.patch('signals.apps.sigmax.views._handle_unknown_soap_action', autospec=True)
     def test_soap_action_routing(self, handle_unknown, handle_known):
@@ -66,7 +65,7 @@ class TestSoapEndpoint(APITestCase):
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
         self.client.post(SOAP_ENDPOINT, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
-            content_type='text/xml')
+                         content_type='text/xml')
         handle_known.assert_called_once()
         handle_unknown.assert_not_called()
         handle_known.reset_mock()
@@ -74,8 +73,8 @@ class TestSoapEndpoint(APITestCase):
 
         # check that something else is send to _handle_unknown_soap_action
         wrong_action = 'http://example.com/unknown'
-        self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', SOAPAction=wrong_action, 
-            content_type='text/xml')
+        self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', SOAPAction=wrong_action,
+                         content_type='text/xml')
 
         handle_known.assert_not_called()
         handle_unknown.assert_called_once()
@@ -83,7 +82,7 @@ class TestSoapEndpoint(APITestCase):
     def test_no_signal_for_message(self):
         """Test that we generate a Fo03 if no signal can be found to go with it."""
         self.assertEqual(Signal.objects.count(), 0)
-        
+
         # generate test message
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
             'zaak_uuid': uuid.uuid4(),
@@ -91,7 +90,7 @@ class TestSoapEndpoint(APITestCase):
             'resultaat_omschrijving': 'HALLO',
         })
 
-        # authenticate 
+        # authenticate
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
 
@@ -104,7 +103,7 @@ class TestSoapEndpoint(APITestCase):
         # check that the request was rejected because no signal is present in database
         self.assertEqual(response.status_code, 500)
         self.assertIn(b'Melding met signal_id', response.content)
-        
+
     def test_with_signal_for_message(self):
         signal = SignalFactoryValidLocation.create()
         self.assertEqual(Signal.objects.count(), 1)
@@ -115,7 +114,7 @@ class TestSoapEndpoint(APITestCase):
             'resultaat_omschrijving': 'HALLO',
         })
 
-        # authenticate 
+        # authenticate
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
 
