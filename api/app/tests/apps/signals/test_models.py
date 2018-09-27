@@ -1,9 +1,7 @@
-"""
-Tests for the model manager in signals.apps.signals.models
-"""
 from unittest import mock
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
@@ -17,14 +15,14 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals import workflow
 from tests.apps.signals import factories
-from tests.apps.signals.factories import SubCategoryFactory
 
 
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
-        sub_category = SubCategoryFactory.create(name='Veeg- / zwerfvuil')
+        sub_category = factories.SubCategoryFactory.create(name='Veeg- / zwerfvuil')
 
         # Deserialized data
         self.signal_data = {
@@ -179,6 +177,25 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             priority=priority,
             prev_priority=prev_priority)
+
+
+class TestStatusModel(TestCase):
+
+    def test_validation_state_machine(self):
+        signal = factories.SignalFactory.create()
+        status = signal.status
+        self.assertEqual(status.state, workflow.GEMELD)
+
+        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD)
+        new_status.full_clean()
+        new_status.save()
+
+    def test_afgehandeld_change_no_text(self):
+        signal = factories.SignalFactory.create()
+
+        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD, text=None)
+        with self.assertRaises(ValidationError):
+            new_status.full_clean()
 
 
 class TestCategoryDeclarations(TestCase):
