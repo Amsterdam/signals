@@ -409,7 +409,7 @@ class StatusHALSerializer(HALSerializer):
         signal = data['_signal']
 
         # Validating "state machine".
-        if data['state'] not in STATUS_OVERGANGEN[signal.status.state]:
+        if data['state'] not in ALLOWED_STATUS_CHANGES[signal.status.state]:
             raise serializers.ValidationError(
                 f"Invalid state transition from {signal.status.state} "
                 f"to {data['state']}")

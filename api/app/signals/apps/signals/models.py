@@ -2,11 +2,12 @@ import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 from django.utils.text import slugify
 
-from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES
+from signals.apps.signals import workflow
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
@@ -363,8 +364,6 @@ class CategoryAssignment(CreatedUpdatedModel):
 
 
 class Status(CreatedUpdatedModel):
-    """Signal status."""
-
     _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
 
     text = models.CharField(max_length=10000, null=True, blank=True)
@@ -373,12 +372,12 @@ class Status(CreatedUpdatedModel):
     target_api = models.CharField(max_length=250, null=True, blank=True)
     state = models.CharField(max_length=20,
                              blank=True,
-                             choices=STATUS_CHOICES,
-                             default=GEMELD,
+                             choices=workflow.STATUS_CHOICES,
+                             default=workflow.GEMELD,
                              help_text='Melding status')
     extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Statuses'
@@ -386,6 +385,13 @@ class Status(CreatedUpdatedModel):
 
     def __str__(self):
         return str(self.text)
+
+    def clean(self):
+        if self.state == workflow.AFGEHANDELD and not self.text:
+            raise ValidationError({
+                'text': 'This field is required when changing `state` to `{}`.'.format(
+                    self.get_state_display())
+            })
 
 
 class Priority(CreatedUpdatedModel):

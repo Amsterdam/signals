@@ -6,7 +6,6 @@ from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from signals.apps.signals.models import (
-    GEMELD,
     STADSDEEL_CENTRUM,
     CategoryAssignment,
     Location,
@@ -43,7 +42,7 @@ class TestSignalManager(TransactionTestCase):
             'sub_category': sub_category,
         }
         self.status_data = {
-            'state': GEMELD,
+            'state': workflow.GEMELD,
             'text': 'text message',
             'user': 'test@example.com',
         }
@@ -186,7 +185,7 @@ class TestStatusModel(TestCase):
         status = signal.status
         self.assertEqual(status.state, workflow.GEMELD)
 
-        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD)
+        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD, text='Consider it done.')
         new_status.full_clean()
         new_status.save()
 
