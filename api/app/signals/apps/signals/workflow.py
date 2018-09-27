@@ -40,7 +40,8 @@ STATUS_CHOICES_APP = (
 # All allowed choices, used for the model `Status`.
 STATUS_CHOICES = STATUS_CHOICES_API + STATUS_CHOICES_APP
 
-# Should chaning to "your self" be possible.
+# TODO, Should changing to "your self" be possible. Currently it's used to update the text field
+# with notes to other users.
 ALLOWED_STATUS_CHANGES = {
     LEEG: [
         GEMELD
