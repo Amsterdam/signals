@@ -6,7 +6,7 @@ from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 from django.utils.text import slugify
 
-from signals.apps.signals.workflow import GEMELD, STATUS_OPTIONS
+from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
@@ -365,30 +365,24 @@ class CategoryAssignment(CreatedUpdatedModel):
 class Status(CreatedUpdatedModel):
     """Signal status."""
 
-    _signal = models.ForeignKey(
-        "signals.Signal", related_name="statuses",
-        null=False, on_delete=models.CASCADE
-    )
+    _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
 
     text = models.CharField(max_length=10000, null=True, blank=True)
     # TODO rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
-
     target_api = models.CharField(max_length=250, null=True, blank=True)
-
-    state = models.CharField(
-        max_length=1, choices=STATUS_OPTIONS, blank=True,
-        default=GEMELD, help_text='Melding status')
-
-    extern = models.BooleanField(
-        default=False,
-        help_text='Wel of niet status extern weergeven')
+    state = models.CharField(max_length=20,
+                             blank=True,
+                             choices=STATUS_CHOICES,
+                             default=GEMELD,
+                             help_text='Melding status')
+    extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
     extra_properties = JSONField(null=True)
 
     class Meta:
-        verbose_name_plural = "Statuses"
-        get_latest_by = "datetime"
+        verbose_name_plural = 'Statuses'
+        get_latest_by = 'datetime'
 
     def __str__(self):
         return str(self.text)

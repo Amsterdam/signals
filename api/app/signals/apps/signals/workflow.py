@@ -20,23 +20,22 @@ STATUS_OPTIONS_API = (
 )
 
 # SIA statusses to track progress in external systems
-TE_VERZENDEN = 'T'
-VERZONDEN = 'V'
-VERZENDEN_MISLUKT = 'M'
-AFGEHANDELD_EXTERN = 'A'
-
+TE_VERZENDEN = 'ready to send'
+VERZONDEN = 'send'
+VERZENDEN_MISLUKT = 'send failed'
+AFGEHANDELD_EXTERN = 'done external'
 STATUS_OPTIONS_EXTERNAL_SYSTEMS = (
-    (TE_VERZENDEN, 'Te verzenden naar extern systeem.'),
-    (VERZONDEN, 'Verzonden naar extern systeem.'),
+    (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
+    (VERZONDEN, 'Verzonden naar extern systeem'),
     (VERZENDEN_MISLUKT, 'Verzending naar extern systeem mislukt'),
-    (AFGEHANDELD_EXTERN, 'Melding is afgehandeld in extern systeem.'),
+    (AFGEHANDELD_EXTERN, 'Melding is afgehandeld in extern systeem'),
 )
 
-STATUS_OPTIONS = STATUS_OPTIONS_API + STATUS_OPTIONS_EXTERNAL_SYSTEMS
+STATUS_CHOICES = STATUS_OPTIONS_API + STATUS_OPTIONS_EXTERNAL_SYSTEMS
 
 STATUS_OVERGANGEN = {
     LEEG: [
-        GEMELD  # Een nieuw melding mag alleen aangemaakt worden met gemeld
+        GEMELD
     ],
     GEMELD: [
         AFGEHANDELD,
