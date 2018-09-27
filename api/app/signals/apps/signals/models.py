@@ -199,7 +199,7 @@ class Signal(CreatedUpdatedModel):
     signal_id = models.UUIDField(default=uuid.uuid4, db_index=True)
     source = models.CharField(max_length=128, default='public-api')
 
-    text = models.CharField(max_length=1000)
+    text = models.CharField(max_length=3000)
     text_extra = models.CharField(max_length=10000, default='', blank=True)
 
     location = models.OneToOneField('signals.Location',
