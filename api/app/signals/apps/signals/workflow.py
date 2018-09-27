@@ -40,6 +40,7 @@ STATUS_CHOICES_APP = (
 # All allowed choices, used for the model `Status`.
 STATUS_CHOICES = STATUS_CHOICES_API + STATUS_CHOICES_APP
 
+# Should chaning to "your self" be possible.
 ALLOWED_STATUS_CHANGES = {
     LEEG: [
         GEMELD
@@ -54,7 +55,6 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
     ],
     AFWACHTING: [
-        # GEMELD,      ???
         AFWACHTING,
         BEHANDELING,
         ON_HOLD,
@@ -63,8 +63,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
     ],
     BEHANDELING: [
-        # GEMELD,      ???
-        # AFWACHTING,  ???
+        # AFWACHTING,  # This should be possible?
         BEHANDELING,
         ON_HOLD,
         AFGEHANDELD,
@@ -72,10 +71,10 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
     ],
     ON_HOLD: [
-        GEMELD,
+        GEMELD,  # Should this be possible?
         AFWACHTING,
         BEHANDELING,
-        # ON_HOLD,  ????
+        ON_HOLD,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
