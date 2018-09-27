@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.throttling import BaseThrottle
 
+from signals.apps.signals import workflow
 from signals.apps.signals.fields import (
     CategoryLinksField,
     MainCategoryHyperlinkedIdentityField,
@@ -393,6 +394,9 @@ class StatusHALSerializer(HALSerializer):
             'extra_properties',
             'created_at',
         )
+        extra_kwargs = {
+            'state': {'choices': workflow.STATUS_CHOICES_API}
+        }
 
     def create(self, validated_data):
         signal = validated_data.pop('_signal')

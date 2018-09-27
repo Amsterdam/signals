@@ -2,7 +2,7 @@
 Model the workflow of responding to a Signal (melding) as state machine.
 """
 
-# SIA internal statusses
+# Internal statusses
 LEEG = ''
 GEMELD = 'm'
 AFWACHTING = 'i'
@@ -10,28 +10,35 @@ BEHANDELING = 'b'
 ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
-STATUS_OPTIONS_API = (
-    (GEMELD, 'Gemeld'),
-    (AFWACHTING, 'In afwachting van behandeling'),
-    (BEHANDELING, 'In behandeling'),
-    (ON_HOLD, 'On hold'),
-    (AFGEHANDELD, 'Afgehandeld'),
-    (GEANNULEERD, 'Geannuleerd')
-)
 
-# SIA statusses to track progress in external systems
+# Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
 VERZONDEN = 'send'
 VERZENDEN_MISLUKT = 'send failed'
 AFGEHANDELD_EXTERN = 'done external'
-STATUS_OPTIONS_EXTERNAL_SYSTEMS = (
+
+# Choices for the API/Serializer layer. Users that can change the state via the API are only allowed
+# to use one of the following choices.
+STATUS_CHOICES_API = (
+    (GEMELD, 'Gemeld'),
+    (AFWACHTING, 'In afwachting van behandeling'),
+    (BEHANDELING, 'In behandeling'),
+    (ON_HOLD, 'On hold'),
     (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
+    (AFGEHANDELD, 'Afgehandeld'),
+    (GEANNULEERD, 'Geannuleerd'),
+)
+
+# Choices used by the application. These choices can be set from within the application, not via the
+# API/Serializer layer.
+STATUS_CHOICES_APP = (
     (VERZONDEN, 'Verzonden naar extern systeem'),
     (VERZENDEN_MISLUKT, 'Verzending naar extern systeem mislukt'),
     (AFGEHANDELD_EXTERN, 'Melding is afgehandeld in extern systeem'),
 )
 
-STATUS_CHOICES = STATUS_OPTIONS_API + STATUS_OPTIONS_EXTERNAL_SYSTEMS
+# All allowed choices, used for the model `Status`.
+STATUS_CHOICES = STATUS_CHOICES_API + STATUS_CHOICES_APP
 
 ALLOWED_STATUS_CHANGES = {
     LEEG: [
