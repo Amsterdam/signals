@@ -50,7 +50,7 @@ class TestSoapEndpoint(APITestCase):
 
         response = self.client.post(SOAP_ENDPOINT)
         self.assertEqual(response.status_code, 500)
-        self.assertIn(b'Fo03', response.content)  # deal with the encodings here
+        self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
     @mock.patch('signals.apps.sigmax.views._handle_actualiseerZaakstatus_Lk01', autospec=True)
     @mock.patch('signals.apps.sigmax.views._handle_unknown_soap_action', autospec=True)
@@ -102,7 +102,7 @@ class TestSoapEndpoint(APITestCase):
 
         # check that the request was rejected because no signal is present in database
         self.assertEqual(response.status_code, 500)
-        self.assertIn(b'Melding met signal_id', response.content)
+        self.assertIn('Melding met signal_id', response.content.decode('utf-8', 'strict'))
 
     def test_with_signal_for_message(self):
         signal = SignalFactoryValidLocation.create()
