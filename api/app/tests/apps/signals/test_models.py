@@ -180,19 +180,25 @@ class TestSignalManager(TransactionTestCase):
 
 class TestStatusModel(TestCase):
 
-    def test_validation_state_machine(self):
-        signal = factories.SignalFactory.create()
-        status = signal.status
-        self.assertEqual(status.state, workflow.GEMELD)
+    def setUp(self):
+        self.signal = factories.SignalFactory.create()
+        self.status = self.signal.status
+        self.assertEqual(self.status.state, workflow.GEMELD)
 
-        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD, text='Consider it done.')
+    def test_state_transition_valid(self):
+        new_status = Status(_signal=self.signal,
+                            state=workflow.AFGEHANDELD,
+                            text='Consider it done.')
         new_status.full_clean()
         new_status.save()
 
-    def test_afgehandeld_change_no_text(self):
-        signal = factories.SignalFactory.create()
+    def test_state_transition_invalid(self):
+        new_status = Status(_signal=self.signal, state=workflow.VERZONDEN, text=None)
+        with self.assertRaises(ValidationError):
+            new_status.full_clean()
 
-        new_status = Status(_signal=signal, state=workflow.AFGEHANDELD, text=None)
+    def test_afgehandeld_change_no_text(self):
+        new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text=None)
         with self.assertRaises(ValidationError):
             new_status.full_clean()
 

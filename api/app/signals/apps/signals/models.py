@@ -387,10 +387,29 @@ class Status(CreatedUpdatedModel):
         return str(self.text)
 
     def clean(self):
-        if self.state == workflow.AFGEHANDELD and not self.text:
+        """Validate instance.
+
+        Most important validation is the state transition.
+
+        :raises: ValidationError
+        :returns:
+        """
+        current_state = self._signal.status.state
+        new_state = self.state
+
+        # Validating state transition.
+        if new_state not in workflow.ALLOWED_STATUS_CHANGES[current_state]:
             raise ValidationError({
-                'text': 'This field is required when changing `state` to `{}`.'.format(
-                    self.get_state_display())
+                'state': 'Invalid state transition from `{from_state}` to `{to_state}`.'.format(
+                    from_state=self._signal.status.get_state_display(),
+                    to_state=self.get_state_display())
+            })
+
+        # Validating text field required.
+        if new_state == workflow.AFGEHANDELD and not self.text:
+            raise ValidationError({
+                'text': 'This field is required when changing `state` to `{new_state}`.'.format(
+                    new_state=self.get_state_display())
             })
 
 
