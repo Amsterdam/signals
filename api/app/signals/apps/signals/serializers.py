@@ -29,7 +29,6 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.apps.signals.workflow import ALLOWED_STATUS_CHANGES
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +112,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+            'state',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
@@ -236,11 +236,6 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         raise NotImplementedError('`update()` is not allowed with this serializer.')
 
     def validate(self, data):
-        # The status can only be 'm' when created
-        if data['status']['state'] not in ALLOWED_STATUS_CHANGES['']:
-            raise serializers.ValidationError(
-                f"Invalid status: {data['status']['state']}")
-
         image = self.initial_data.get('image', False)
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
