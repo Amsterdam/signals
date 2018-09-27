@@ -5,7 +5,6 @@ from rest_framework.serializers import ValidationError
 
 from signals.apps.signals.models import (
     STADSDELEN,
-    STATUS_CHOICES,
     Buurt,
     Location,
     MainCategory,
@@ -14,6 +13,7 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 
 def parse_xyr(value):

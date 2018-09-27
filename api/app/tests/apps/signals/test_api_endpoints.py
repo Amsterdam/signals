@@ -14,7 +14,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING
+from signals.apps.signals import workflow
 from tests.apps.signals import factories
 from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
@@ -321,7 +321,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
             'text': None,
             'user': None,
             'target_api': None,
-            'state': AFWACHTING,
+            'state': workflow.AFWACHTING,
             'extern': False,
             'extra_properties': {},
             '_signal': self.signal.id,
@@ -338,7 +338,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         # Test with text value `None`.
         data = {
-            'state': AFGEHANDELD,
+            'state': workflow.AFGEHANDELD,
             '_signal': self.signal.id,
             'text': None,
         }
@@ -357,7 +357,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
     def test_post_status_afgehandeld_text_required_success(self):
         url = '/signals/auth/status/'
         data = {
-            'state': AFGEHANDELD,
+            'state': workflow.AFGEHANDELD,
             '_signal': self.signal.id,
             'text': 'Uw melding is afgehandeld',
         }

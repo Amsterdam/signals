@@ -103,15 +103,23 @@ class TestSignalManager(TransactionTestCase):
             prev_location=prev_location)
 
     @mock.patch('signals.apps.signals.models.update_status', autospec=True)
-    def test_update_status(self, patched_update_status):
+    @mock.patch.object(Status, 'clean')
+    def test_update_status(self, mocked_status_clean, patched_update_status):
         signal = factories.SignalFactory.create()
-
-        # Update the signal
         prev_status = signal.status
-        status = Signal.actions.update_status(self.status_data, signal)
 
-        # Check that the signal was updated in db
+        # Update status
+        data = {
+            'state': workflow.AFGEHANDELD,
+            'text': 'Opgelost',
+        }
+        status = Signal.actions.update_status(data, signal)
+
+        mocked_status_clean.assert_called_once()
+
+        # Check that the signal status is updated
         self.assertEqual(signal.status, status)
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD)
         self.assertEqual(signal.statuses.count(), 2)
 
         # Check that we sent the correct Django signal

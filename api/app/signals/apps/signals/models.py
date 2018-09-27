@@ -95,9 +95,11 @@ class SignalManager(models.Manager):
         :returns: Status object
         """
         with transaction.atomic():
-            prev_status = signal.status
+            status = Status(_signal=signal, **data)
+            status.full_clean()
+            status.save()
 
-            status = Status.objects.create(**data, _signal_id=signal.id)
+            prev_status = signal.status
             signal.status = status
             signal.save()
 
