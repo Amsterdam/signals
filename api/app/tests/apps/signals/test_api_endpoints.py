@@ -305,33 +305,47 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
                              'Wrong response code for {}'.format(endpoint))
 
     def test_post_status_all_fields(self):
-        url = '/signals/auth/status/'
-        postjson = self._get_fixture('post_status')
-        postjson['_signal'] = self.signal.id
-        response = self.client.post(url, postjson, format='json')
-        result = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.signal.refresh_from_db()
-        # check that current status of signal is now this one
-        self.assertEqual(self.signal.status.id, result['id'])
+        # Asserting initial state.
+        self.assertEqual(self.signal.status.state, workflow.GEMELD)
 
-    def test_post_status_minimal_fiels(self):
+        # Posting a new status change.
         url = '/signals/auth/status/'
         data = {
-            'text': None,
-            'user': None,
-            'target_api': None,
-            'state': workflow.AFWACHTING,
-            'extern': False,
-            'extra_properties': {},
             '_signal': self.signal.id,
+            'text': 'Changing status to "afwachting"',
+            'user': 'user@example.com',
+            'target_api': 'sigmax',
+            'state': workflow.AFWACHTING,
+            'extra_properties': {},
         }
         response = self.client.post(url, data, format='json')
-        result = response.json()
         self.assertEqual(response.status_code, 201)
+
+        result = response.json()
         self.signal.refresh_from_db()
-        # check that current status of signal is now this one
-        self.assertEqual(self.signal.status.id, result['id'])
+        self.assertEqual(self.signal.status.state, result['state'])
+        self.assertEqual(self.signal.status.user, result['user'])
+
+    def test_post_status_minimal_fiels(self):
+        # Asserting initial state.
+        self.assertEqual(self.signal.status.state, workflow.GEMELD)
+
+        # Posting a new status change.
+        url = '/signals/auth/status/'
+        data = {
+            '_signal': self.signal.id,
+            'text': None,
+            'user': None,
+            'state': workflow.AFWACHTING,
+            'extra_properties': {},
+            # 'target_api': None,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        self.signal.refresh_from_db()
+        result = response.json()
+        self.assertEqual(self.signal.status.state, result['state'])
 
     def test_post_status_not_allowed_choice(self):
         # Prepare current state.
@@ -380,9 +394,10 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 201)
+
         result = response.json()
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.id, result['id'])
+        self.assertEqual(self.signal.status.state, result['state'])
 
     def test_post_location(self):
         """We only create new location items"""

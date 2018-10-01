@@ -372,7 +372,7 @@ class Status(CreatedUpdatedModel):
     _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
 
     text = models.CharField(max_length=10000, null=True, blank=True)
-    # TODO rename field to `email` it's not a `User` it's a `email`...
+    # TODO, rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
     target_api = models.CharField(max_length=250, null=True, blank=True)
     state = models.CharField(max_length=20,
@@ -380,6 +380,8 @@ class Status(CreatedUpdatedModel):
                              choices=workflow.STATUS_CHOICES,
                              default=workflow.GEMELD,
                              help_text='Melding status')
+
+    # TODO, do we need this field or can we remove it?
     extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
     extra_properties = JSONField(null=True, blank=True)

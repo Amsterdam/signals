@@ -379,18 +379,18 @@ class StatusHALSerializer(HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = StatusLinksField
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
 
     class Meta(object):
         model = Status
         fields = (
             '_links',
             '_display',
-            'id',
+            '_signal',
             'text',
             'user',
-            'extern',
-            '_signal',
             'state',
+            'state_display',
             'extra_properties',
             'created_at',
         )
