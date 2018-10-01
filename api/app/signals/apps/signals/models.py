@@ -485,7 +485,7 @@ class SubCategory(models.Model):
     )
 
     main_category = models.ForeignKey('signals.MainCategory',
-                                      related_name='sub_categories',
+                                      related_name='subcategories',
                                       on_delete=models.PROTECT)
     slug = models.SlugField()
     name = models.CharField(max_length=255)

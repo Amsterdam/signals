@@ -541,7 +541,7 @@ class SubCategoryHALSerializer(HALSerializer):
 class MainCategoryHALSerializer(HALSerializer):
     serializer_url_field = MainCategoryHyperlinkedIdentityField
     _display = DisplayField()
-    sub_categories = SubCategoryHALSerializer(many=True)
+    subcategories = SubCategoryHALSerializer(many=True)
 
     class Meta:
         model = MainCategory
@@ -550,5 +550,5 @@ class MainCategoryHALSerializer(HALSerializer):
             '_display',
             'name',
             'slug',
-            'sub_categories',
+            'subcategories',
         )
