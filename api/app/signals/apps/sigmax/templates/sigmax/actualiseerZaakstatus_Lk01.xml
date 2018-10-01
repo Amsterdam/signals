@@ -1,0 +1,49 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <zakLk01 xmlns="http://www.egem.nl/StUF/sector/zkn/0310">
+            <stuurgegevens>
+                <berichtcode xmlns="http://www.egem.nl/StUF/StUF0301">Lk01</berichtcode>
+                <zender xmlns="http://www.egem.nl/StUF/StUF0301">
+                    <organisatie>AMS</organisatie>
+                    <applicatie />
+                </zender>
+                <ontvanger xmlns="http://www.egem.nl/StUF/StUF0301">
+                    <organisatie>SMX</organisatie>
+                    <applicatie>CTC</applicatie>
+                </ontvanger>
+                <referentienummer xmlns="http://www.egem.nl/StUF/StUF0301">{{ zaak_uuid }}</referentienummer>
+                <tijdstipBericht xmlns="http://www.egem.nl/StUF/StUF0301">{{ tijdstipbericht }}</tijdstipBericht>
+                <entiteittype xmlns="http://www.egem.nl/StUF/StUF0301">ZAK</entiteittype>
+            </stuurgegevens>
+            <parameters>
+                <mutatiesoort xmlns="http://www.egem.nl/StUF/StUF0301">W</mutatiesoort>
+                <indicatorOvername xmlns="http://www.egem.nl/StUF/StUF0301">V</indicatorOvername>
+            </parameters>
+            <object d4p1:entiteittype="ZAK" d4p1:verwerkingssoort="W" xmlns:d4p1="http://www.egem.nl/StUF/StUF0301">
+                <identificatie>TEST12380</identificatie>
+                <resultaat>
+                    <omschrijving>{{ resultaat_omschrijving }}</omschrijving>
+                    <toelichting>Hier de reden voor afhandeling ingevoerd door de gebruiker</toelichting>
+                </resultaat>
+                <einddatum>20180926</einddatum>
+                <heeft d4p1:entiteittype="ZAKSTT" d4p1:verwerkingssoort="T">
+                    <gerelateerde d4p1:entiteittype="STT" d4p1:verwerkingssoort="T">
+                        <volgnummer>2</volgnummer>
+                        <omschrijving>Afgehandeld</omschrijving>
+                    </gerelateerde>
+                    <datumStatusGezet>2018092613025501</datumStatusGezet>
+                    <isGezetDoor d4p1:entiteittype="ZAKSTTBTR" d4p1:verwerkingssoort="T">
+                        <gerelateerde>
+                            <medewerker d4p1:entiteittype="MDW" d4p1:verwerkingssoort="T">
+                                <identificatie>1034</identificatie>
+                                <achternaam>Buiten</achternaam>
+                                <voorletters>L</voorletters>
+                                <voorvoegselAchternaam>van</voorvoegselAchternaam>
+                            </medewerker>
+                        </gerelateerde>
+                    </isGezetDoor>
+                </heeft>
+            </object>
+        </zakLk01>
+    </soap:Body>
+</soap:Envelope>

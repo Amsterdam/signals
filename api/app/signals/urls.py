@@ -34,6 +34,9 @@ urlpatterns = [
     # this endpoint here.
     path('signals/auth/me/', UserMeView.as_view()),
 
+    # SOAP stand-in endpoints
+    path('signals/sigmax/', include('signals.apps.sigmax.urls')),
+
     # Swagger
     url(r'^signals/swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=None),

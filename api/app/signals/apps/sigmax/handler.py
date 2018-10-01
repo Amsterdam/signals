@@ -95,7 +95,7 @@ def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
         with open(os.path.join(os.path.split(__file__)[0], 'raket.jpg'),
                   'rb') as f:
             encoded_jpg = base64.b64encode(f.read())
-            print(encoded_jpg)
+            # print(encoded_jpg)
 
     if encoded_jpg:
         return render_to_string('sigmax/voeg_zaak_document_toe_lk01.xml', context={
