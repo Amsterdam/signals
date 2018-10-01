@@ -99,25 +99,22 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
 
 
 class _NestedStatusModelSerializer(serializers.ModelSerializer):
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
 
     class Meta:
         model = Status
         fields = (
-            'id',
             'text',
             'user',
-            'target_api',
             'state',
-            'extern',
+            'state_display',
             'extra_properties',
+            'created_at',
         )
         read_only_fields = (
-            'id',
             'state',
+            'created_at',
         )
-        extra_kwargs = {
-            'id': {'label': 'ID'},
-        }
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
