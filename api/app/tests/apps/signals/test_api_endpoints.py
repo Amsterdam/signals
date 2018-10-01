@@ -408,9 +408,8 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         url = '/signals/auth/category/'
         postjson = {
             '_signal': self.signal.id,
-            'sub_category': '/signals/v1/public/terms/categories/{slug}/{sub_slug}'.format(
-                slug=sub_category.main_category.slug,
-                sub_slug=sub_category.slug),
+            'sub_category': '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+                sub_category.main_category.slug, sub_category.slug),
         }
         response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
@@ -496,7 +495,7 @@ class TestCategoryTermsEndpoints(APITestCase):
     def test_sub_category_detail(self):
         sub_category = SubCategoryFactory.create(name='Grofvuil', main_category__name='Afval')
 
-        url = '/signals/v1/public/terms/categories/{slug}/{sub_slug}'.format(
+        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
             slug=sub_category.main_category.slug,
             sub_slug=sub_category.slug)
         response = self.client.get(url)
