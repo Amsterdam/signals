@@ -73,7 +73,7 @@ class TestSoapEndpoint(APITestCase):
         self.client.force_authenticate(user=superuser)
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
-        self.client.post(SOAP_ENDPOINT, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+        self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
                          content_type='text/xml')
         handle_known.assert_called_once()
         handle_unknown.assert_not_called()
@@ -82,7 +82,7 @@ class TestSoapEndpoint(APITestCase):
 
         # check that something else is send to _handle_unknown_soap_action
         wrong_action = 'http://example.com/unknown'
-        self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', SOAPAction=wrong_action,
+        self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', HTTP_SOAPACTION=wrong_action,
                          content_type='text/xml')
 
         handle_known.assert_not_called()
@@ -105,7 +105,7 @@ class TestSoapEndpoint(APITestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
             content_type='text/xml',
         )
 
@@ -129,7 +129,7 @@ class TestSoapEndpoint(APITestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
             content_type='text/xml',
         )
 
@@ -157,7 +157,7 @@ class TestSoapEndpoint(APITestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, SOAPAction=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
             content_type='text/xml',
         )
 
