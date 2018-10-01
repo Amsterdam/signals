@@ -8,7 +8,9 @@ import os
 import uuid
 from xml.sax.saxutils import escape
 
+from lxml import etree
 import requests
+from requests import exceptions
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -32,11 +34,15 @@ class ServiceNotConfigured(Exception):
     pass
 
 
+class WrongBerichtCodeException(Exception):
+    pass
+
+
 # TODO SIG-593: implement data mapping if and when it is defined
 
-def _generate_creeer_zaak_lk01_message(signal: Signal):
+def _generate_creeerZaak_Lk01(signal: Signal):
     """
-    Generate XML for Sigmax CreeerZaak_Lk01
+    Generate XML for Sigmax creeerZaak_Lk01
     """
     # SIGMAX will be set up to receive Signals (meldingen) that have no
     # address but do have coordinates (middle of park, somewhere on a
@@ -45,7 +51,7 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
     huisnummer = signal.location.address.get('huisnummer', '')
     postcode = signal.location.address.get('postcode', '')
 
-    return render_to_string('sigmax/creeer_zaak_lk01.xml', context={
+    return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
         'PRIMARY_KEY': str(signal.signal_id),
         'OMSCHRIJVING': escape(signal.text),
         'TIJDSTIPBERICHT': escape(_format_datetime(signal.created_at)),
@@ -60,72 +66,56 @@ def _generate_creeer_zaak_lk01_message(signal: Signal):
     })
 
 
-def _generate_voeg_zaak_document_toe_lk01(signal: Signal):
+def _generate_voegZaakdocumentToe_Lk01(signal: Signal):
     """
-    Generate XML for Sigmax VoegZaakdocumentToe_Lk01 (for the PDF case)
+    Generate XML for Sigmax voegZaakdocumentToe_Lk01 (for the PDF case)
     """
+    # TODO: generalize, so that either PDF or JPG can be sent.
     encoded_pdf = _generate_pdf(signal)
 
-    return render_to_string('sigmax/voeg_zaak_document_toe_lk01.xml', context={
+    return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={
         'ZKN_UUID': str(signal.signal_id),
         'DOC_UUID': escape(str(uuid.uuid4())),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
-        'DOC_TYPE_LOWER': 'pdf',
         'FILE_NAME': f'MORA-{str(signal.id)}.pdf'
     })
 
 
-# noinspection PyBroadException
-def _generate_voeg_zaak_document_toe_lk01_jpg(signal: Signal):
+def _stuf_response_ok(response):
     """
-    Generate XML for Sigmax VoegZaakdocumentToe_Lk01 (for the JPG case)
+    Checks that a response is a Bv03 message.
     """
-    encoded_jpg = b''
-    if signal.image and str(signal.image).startswith('http'):
-        # TODO: add check that we have a JPG and not anything else!
-        try:
-            result = requests.get(signal.image)
-        except Exception:
-            pass  # for now swallow 404, 401 etc
-        else:
-            encoded_jpg = result.content
-    else:
-        # TODO: CODE PATH FOR TESTING, REMOVE THE WHOLE ELSE CLAUSE
-        with open(os.path.join(os.path.split(__file__)[0], 'raket.jpg'),
-                  'rb') as f:
-            encoded_jpg = base64.b64encode(f.read())
-            # print(encoded_jpg)
+    namespaces = {
+        'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
+        'stuf': 'http://www.egem.nl/StUF/StUF0301',
+    }
 
-    if encoded_jpg:
-        return render_to_string('sigmax/voeg_zaak_document_toe_lk01.xml', context={
-            'ZKN_UUID': str(signal.signal_id),
-            'DOC_UUID': escape(str(uuid.uuid4())),
-            'DATA': encoded_jpg.decode('utf-8'),
-            'DOC_TYPE': 'JPG',
-            'DOC_TYPE_LOWER': 'jpg',
-            'FILE_NAME': f'MORA-{str(signal.id)}.jpg'
-        })
+    try:
+        tree = etree.fromstring(response.text)  # raises if not XML
+    except etree.XMLSyntaxError:
+        return False
 
-    return ''
+    found = tree.xpath('//stuf:stuurgegevens/stuf:berichtcode', namespaces=namespaces)
+
+    if len(found) != 1 or found.text != 'Bv03':
+        return False
+    return True
 
 
 def _send_stuf_message(stuf_msg: str, soap_action: str):
     """
     Send a STUF message to the server that is configured.
     """
+    print('> settings.SIGMAX_AUTH_TOKEN:', settings.SIGMAX_AUTH_TOKEN)
+    print('> settings.SIGMAX_SERVER:', settings.SIGMAX_SERVER)
+
     if not settings.SIGMAX_AUTH_TOKEN or not settings.SIGMAX_SERVER:
         raise ServiceNotConfigured(
             'SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.')
 
     # Prepare our request to Sigmax
     encoded = stuf_msg.encode('utf-8')
-
-    # -- uncomment this to get the message
-    #    dumped to a file in the local directory --
-    # fn = 'compare-{}.xml'.format(uuid.uuid4())
-    # with open(os.path.join(os.path.split(__file__)[0], fn), 'wb') as f:
-    #        f.write(encoded)
 
     headers = {
         'SOAPAction': soap_action,
@@ -134,56 +124,51 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
         'Content-Length': bytes(len(encoded))
     }
 
-    # Send our message to Sigmax
+    # Send our message to Sigmax. Network problems, and HTTP status codes
+    # are all raised as errors.
     response = requests.post(
         url=settings.SIGMAX_SERVER,
         headers=headers,
         data=encoded,
         verify=False
     )
+    response.raise_for_status()
 
-    # We return the response object so that we can check the response from
-    # the external API handler.
+    # Inspect response content with lxml, check for Fo03/Bv03. Raise if we
+    # receive anything other than XML or a message `berichtcode` other than 
+    # StUF Bv03.
+    if not _stuf_response_ok(response):
+        raise WrongBerichtCodeException('Geen Bv03 ontvangen van Sigmax/CityControl')
+
+    return response
+
+
+def send_creeerZaak_Lk01(signal):
+    soap_action = CREEER_ZAAK_SOAPACTION
+    msg = _generate_creeerZaak_Lk01_message(signal)
+    response = _send_stuf_message(msg, soap_action)
+
+    logger.info('Sent %s', soap_action)
+    logger.info('Received:\n%s', response.text)
+    return response
+
+
+def send_voegZaakdocumentToe_Lk01(signal):
+    # TODO: refactor message generation to support PDF and JPG
+    #       arguments like: (signal, encoded_message, doctype)
+    soap_action = VOEG_ZAAKDOCUMENT_TOE_SOAPACTION
+    msg = _generate_voegZaakdocumentToe_Lk01(signal)
+    response = _send_stuf_message(msg, soap_action)
+
+    logger.info('Sent %s', soap_action)
+    logger.info('Received:\n%s', response.text)
     return response
 
 
 def handle(signal: Signal) -> None:
-    """Signal can be send to Sigmax at this point"""
-    soap_action = CREEER_ZAAK_SOAPACTION
-    msg = _generate_creeer_zaak_lk01_message(signal)
-    response = _send_stuf_message(msg, soap_action)
-    logger.info('Sent %s', soap_action)
-    logger.info('Received:\n%s', response.text)
-
-    soap_action = VOEG_ZAAKDOCUMENT_TOE_SOAPACTION
-    msg = _generate_voeg_zaak_document_toe_lk01(signal)
-    response = _send_stuf_message(msg, soap_action)
-    logger.info('Sent %s', soap_action)
-    logger.info('Received:\n%s', response.text)
-
-    # Try to also send the image for this zaak
-    soap_action = VOEG_ZAAKDOCUMENT_TOE_SOAPACTION
-    msg = _generate_voeg_zaak_document_toe_lk01_jpg(signal)
-    if msg:
-        response = _send_stuf_message(msg, soap_action)
-        logger.info('Sent %s', soap_action)
-        logger.info('Received:\n%s', response.text)
-    else:
-        logger.info('No image, or URL expired for signal %s', signal.signal_id)
-
-
-def is_signal_applicable(signal: Signal) -> bool:
     """
-    Determine is signal should be forwarded
-    :param signal:
-    :return: True when eligible
+    Create a case (zaak) in Sigmax/CityControl, attach extra info in PDF
     """
-    logger.debug("Handling sigmax check for signal id " + str(signal.id))
-    status: Status = signal.status
-    return (
-        status.state.lower() == 'i' and
-        status.text.lower == 'sigmax' and
-        (Status.objects.filter(signal=signal)
-                       .filter(signal__states__text__iexact='sigmax')
-                       .filter(signal__states__state__iexact='i').count()) == 1
-    )
+    # Note: functions below may raise, exceptions are handled at Celery level.
+    send_creeerZaak_Lk01(signal)
+    send_voegZaakdocumentToe_Lk01(signal)

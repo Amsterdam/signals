@@ -11,10 +11,12 @@ REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.c
     SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER']
 )
 class CommandTestCase(TestCase):
+    @mock.patch('signals.apps.sigmax.outgoing._stuf_response_ok')
     @mock.patch('requests.post', autospec=True)
-    def test_send_signal_to_sigmax(self, mocked_request_post):
+    def test_send_signal_to_sigmax(self, mocked_request_post, mocked_stuf_response_ok):
         mocked_request_post.return_value.status_code = 200
         mocked_request_post.return_value.text = 'Some text from Sigmax'
+        mocked_stuf_response_ok.return_value = True
 
         call_command('send_signal_to_sigmax')
 

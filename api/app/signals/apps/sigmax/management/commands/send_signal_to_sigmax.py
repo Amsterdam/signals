@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 
-from signals.apps.sigmax.handler import (
+from signals.apps.sigmax.outgoing import (
     CREEER_ZAAK_SOAPACTION,
     VOEG_ZAAKDOCUMENT_TOE_SOAPACTION,
-    _generate_creeer_zaak_lk01_message,
-    _generate_voeg_zaak_document_toe_lk01,
-    _send_stuf_message
+    _generate_creeerZaak_Lk01,
+    _generate_voegZaakdocumentToe_Lk01,
+    _send_stuf_message,
 )
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
@@ -22,7 +22,7 @@ class Command(BaseCommand):
             text='Dit is een test bericht van Datapunt Amsterdam aan Sigmax City Control',
         )
 
-        msg = _generate_creeer_zaak_lk01_message(test_signal)
+        msg = _generate_creeerZaak_Lk01(test_signal)
         self.stdout.write('Hier het bericht:')
         self.stdout.write(msg)
         self.stdout.write('Einde bericht')
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         self.stdout.write(r.text)
 
         # second step; generate PDF and send it to SIGMAX
-        msg_2 = _generate_voeg_zaak_document_toe_lk01(test_signal)
+        msg_2 = _generate_voegZaakdocumentToe_Lk01(test_signal)
 
         self.stdout.write('Sending a PDF to Sigmax.')
         r = _send_stuf_message(msg_2, VOEG_ZAAKDOCUMENT_TOE_SOAPACTION)

@@ -1,9 +1,10 @@
 from django.dispatch import receiver
 
 from signals.apps.sigmax import tasks
-from signals.apps.signals.models import create_initial
+from signals.apps.signals.models import update_status
 
 
-@receiver(create_initial, dispatch_uid='signals_create_initial')
-def create_initial_handler(sender, signal_obj, **kwargs):
-    tasks.push_to_sigmax.delay(pk=signal_obj.id)
+@receiver(update_status, dispatch_uid='sigmax_update_status')
+def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
+    # call via Celery signal sending code
+    tasks.push_to_sigmax(pk=signal_obj.id)
