@@ -74,12 +74,12 @@ def _handle_actualiseerZaakstatus_Lk01(request):
         signal = Signal.objects.get(signal_id=request_data['zaak_uuid'])
     except Signal.DoesNotExist:
         return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
-            'error_msg': f'Melding met signal_id {zaak_uuid}',
+            'error_msg': f'Melding met signal_id {zaak_uuid} niet gevonden.',
             },
             content_type='text/xml; charset=utf-8', status=500
         )
 
-    # TODO: implement status updates
+    # update Signal status upon receiving message
     status_data = {
         'state': workflow.AFGEHANDELD_EXTERN,
         'text': 'Afgehandeld door via SIGMAX / CITYCONTROL',

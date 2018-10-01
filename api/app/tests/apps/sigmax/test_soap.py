@@ -37,12 +37,20 @@ class TestSoapEndpoint(APITestCase):
         for verb in not_allowed:
             method = getattr(self.client, verb.lower())
             response = method(SOAP_ENDPOINT)
-            self.assertEqual(response.status_code, 405)
+            self.assertEqual(
+                response.status_code,
+                405,
+                f'{SOAP_ENDPOINT} must not accept HTTP method {verb}'
+            )
 
         for verb in allowed:
             method = getattr(self.client, verb.lower())
             response = method(SOAP_ENDPOINT)
-            self.assertNotEqual(response.status_code, 405)
+            self.assertNotEqual(
+                response.status_code,
+                405,
+                f'{SOAP_ENDPOINT} must accept HTTP method {verb}'
+            )
 
     def test_soap_action_missing(self):
         """SOAP endpoint must reject messages with missing SOAPaction header"""
