@@ -3,7 +3,7 @@ import logging
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import connection, Error
+from django.db import Error, connection
 from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
