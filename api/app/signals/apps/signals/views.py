@@ -54,6 +54,7 @@ class SignalImageUpdateView(viewsets.GenericViewSet):
     serializer_detail_class = SignalUpdateImageSerializer
     serializer_class = SignalUpdateImageSerializer
     pagination_class = None
+    queryset = Signal.objects.all()
 
     def list(self, request, *args, **kwargs):
         return Response({})
