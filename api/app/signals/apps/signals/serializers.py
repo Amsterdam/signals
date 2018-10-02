@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.forms import ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.throttling import BaseThrottle
 
 from signals.apps.signals import workflow
 from signals.apps.signals.fields import (
@@ -18,6 +17,7 @@ from signals.apps.signals.fields import (
     SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
+from signals.apps.signals.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
@@ -180,7 +180,7 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
 #
 
 
-class SignalCreateSerializer(serializers.ModelSerializer):
+class SignalCreateSerializer(AddExtrasMixin, serializers.ModelSerializer):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
@@ -222,6 +222,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        validated_data = self.add_extra_properties(validated_data)
+        validated_data = self.add_user(validated_data)
+
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
@@ -230,35 +233,13 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
 
-    def update(self, instance, validated_data):
-        raise NotImplementedError('`update()` is not allowed with this serializer.')
-
     def validate(self, data):
         image = self.initial_data.get('image', False)
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
                 raise ValidationError("Maximum photo size is 3Mb.")
-        ip = self.add_ip()
-        if ip is not None:
-            if 'extra_properties' in data['status']:
-                extra_properties = data['status']['extra_properties']
-            else:
-                extra_properties = {}
-            extra_properties['IP'] = ip
-            data['status']['extra_properties'] = extra_properties
-
-        request = self.context.get("request")
-        if request.user and not request.user.is_anonymous:
-            data['user'] = request.user.get_username()
 
         return data
-
-    def add_ip(self):
-        ip = None
-        request = self.context.get("request")
-        if request and hasattr(request, "get_token_subject"):
-            ip = BaseThrottle.get_ident(None, request)
-        return ip
 
 
 class _NestedStatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
@@ -270,7 +251,9 @@ class _NestedStatusUnauthenticatedModelSerializer(serializers.ModelSerializer):
             'id',
             'state',
         )
-        extra_kwargs = {'_signal': {'required': False}}
+        extra_kwargs = {
+            '_signal': {'required': False},
+        }
 
 
 class SignalStatusOnlyHALSerializer(HALSerializer):
@@ -368,11 +351,8 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
         location = Signal.actions.update_location(validated_data, signal)
         return location
 
-    def update(self, instance, validated_data):
-        raise NotImplementedError('`update()` is not allowed with this serializer.')
 
-
-class StatusHALSerializer(HALSerializer):
+class StatusHALSerializer(AddExtrasMixin, HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = StatusLinksField
@@ -396,6 +376,9 @@ class StatusHALSerializer(HALSerializer):
         }
 
     def create(self, validated_data):
+        validated_data = self.add_extra_properties(validated_data)
+        validated_data = self.add_user(validated_data)
+
         signal = validated_data.pop('_signal')
         status = Signal.actions.update_status(validated_data, signal)
         return status
@@ -407,27 +390,7 @@ class StatusHALSerializer(HALSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e.error_dict)
 
-        ip = self.add_ip()
-        if ip is not None:
-            if 'extra_properties' in data:
-                extra_properties = data['extra_properties']
-            else:
-                extra_properties = {}
-            extra_properties['IP'] = ip
-            data['extra_properties'] = extra_properties
-
-        request = self.context.get("request")
-        if request.user and not request.user.is_anonymous:
-            data['user'] = request.user.get_username()
-
         return data
-
-    def add_ip(self):
-        ip = None
-        request = self.context.get("request")
-        if request and hasattr(request, "get_token_subject"):
-            ip = BaseThrottle.get_ident(None, request)
-        return ip
 
 
 class CategoryHALSerializer(HALSerializer):
@@ -447,7 +410,7 @@ class CategoryHALSerializer(HALSerializer):
 
     class Meta(object):
         model = CategoryAssignment
-        fields = [
+        fields = (
             '_links',
             '_display',
             '_signal',
@@ -456,7 +419,7 @@ class CategoryHALSerializer(HALSerializer):
             'sub_slug',
             'main',
             'main_slug',
-        ]
+        )
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
