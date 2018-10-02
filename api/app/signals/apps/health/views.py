@@ -1,56 +1,42 @@
 import logging
 
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import connection
+from django.db import Error, connection
 from django.http import HttpResponse
 
-try:
-    # noinspection PyUnresolvedReferences
-    from django.apps import apps
-
-    get_model = apps.get_model
-except ImportError:
-    from django.db.models.loading import get_model
-
-try:
-    model = get_model(settings.HEALTH_MODEL)
-except:  # noqa E722
-    raise ImproperlyConfigured(
-        "settings.HEALTH_MODEL {} doesn't resolve to "
-        "a useable model".format(settings.HEALTH_MODEL)
-    )
-
-
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def health(request):
-    # check database
     try:
         with connection.cursor() as cursor:
-            cursor.execute("select 1")
+            cursor.execute('select 1')
             assert cursor.fetchone()
-    except:  # noqa E722
-        log.exception("Database connectivity failed")
-        return HttpResponse(
-            "Database connectivity failed",
-            content_type="text/plain", status=500
-        )
-
-    return HttpResponse(
-        "Connectivity OK", content_type="text/plain", status=200)
+    except Error:
+        error_msg = 'Database connectivity failed'
+        logger.exception(error_msg)
+        return HttpResponse(error_msg, content_type='text/plain', status=500)
+    else:
+        return HttpResponse('Connectivity OK', content_type='text/plain', status=200)
 
 
 def check_data(request):
+    try:
+        health_check_model = apps.get_model(settings.HEALTH_MODEL)
+    except LookupError:
+        raise ImproperlyConfigured(
+            "`settings.HEALTH_MODEL` {} doesn't resolve to a useable model".format(
+                settings.HEALTH_MODEL))
 
-    count = model.objects.count()
+    count = health_check_model.objects.count()
     if count < 2:
-        return HttpResponse(
-            "Too few items in the database",
-            content_type="text/plain", status=500
-        )
+        error_msg = 'Too few items in the database'
+        logger.error(error_msg)
+        return HttpResponse(error_msg, content_type='text/plain', status=500)
 
     return HttpResponse(
-        f"Data OK {count} {model.__name__}",
-        content_type="text/plain", status=200)
+        'Data OK {count} {model}'.format(count=count, model=health_check_model.__name__),
+        content_type='text/plain',
+        status=200)
