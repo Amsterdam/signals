@@ -244,6 +244,9 @@ class Signal(CreatedUpdatedModel):
     objects = models.Manager()
     actions = SignalManager()
 
+    class Meta:
+        ordering = ('created_at', )
+
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
         if not self.signal_id:
@@ -447,6 +450,10 @@ class MainCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True)
 
+    class Meta:
+        ordering = ('name', )
+        verbose_name_plural = 'Main Categories'
+
     def __str__(self):
         """String representation."""
         return self.name
@@ -493,7 +500,9 @@ class SubCategory(models.Model):
     departments = models.ManyToManyField('signals.Department')
 
     class Meta:
+        ordering = ('name', )
         unique_together = ('main_category', 'slug', )
+        verbose_name_plural = 'Sub Categories'
 
     def __str__(self):
         """String representation."""
@@ -509,6 +518,9 @@ class Department(models.Model):
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=255)
     is_intern = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('name', )
 
     def __str__(self):
         """String representation."""
