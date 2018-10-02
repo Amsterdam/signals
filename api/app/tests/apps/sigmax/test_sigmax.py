@@ -170,7 +170,7 @@ class TestSendStufMessage(TestCase):
         env_override = {'SIGMAX_AUTH_TOKEN': '', 'SIGMAX_SERVER': ''}
 
         with mock.patch.dict('os.environ', env_override):
-            with self.assertRaises(outgoing.ServiceNotConfigured):
+            with self.assertRaises(outgoing.SigmaxException):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
                 outgoing._send_stuf_message('TEST BERICHT', action)
 

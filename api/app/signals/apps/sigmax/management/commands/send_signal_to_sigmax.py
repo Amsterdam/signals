@@ -5,7 +5,7 @@ from signals.apps.sigmax.outgoing import (
     VOEG_ZAAKDOCUMENT_TOE_SOAPACTION,
     _generate_creeerZaak_Lk01,
     _generate_voegZaakdocumentToe_Lk01,
-    _send_stuf_message,
+    _send_stuf_message
 )
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation

@@ -2,21 +2,19 @@
 Handle sending a signal to sigmax.
 Retry logic ao are handled by Celery.
 """
-import base64
 import logging
 import os
 import uuid
 from xml.sax.saxutils import escape
 
-from lxml import etree
 import requests
-from requests import exceptions
 from django.conf import settings
 from django.template.loader import render_to_string
+from lxml import etree
 
 from signals.apps.sigmax.pdf import _generate_pdf
 from signals.apps.sigmax.utils import _format_date, _format_datetime
-from signals.apps.signals.models import Signal, Status
+from signals.apps.signals.models import Signal
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +28,13 @@ SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
 
 
-class ServiceNotConfigured(Exception):
-    pass
-
-
-class WrongBerichtCodeException(Exception):
+class SigmaxException(Exception):
     pass
 
 
 # TODO SIG-593: implement data mapping if and when it is defined
 
-def _generate_creeerZaak_Lk01(signal: Signal):
+def _generate_creeerZaak_Lk01(signal):
     """
     Generate XML for Sigmax creeerZaak_Lk01
     """
@@ -66,7 +60,7 @@ def _generate_creeerZaak_Lk01(signal: Signal):
     })
 
 
-def _generate_voegZaakdocumentToe_Lk01(signal: Signal):
+def _generate_voegZaakdocumentToe_Lk01(signal):
     """
     Generate XML for Sigmax voegZaakdocumentToe_Lk01 (for the PDF case)
     """
@@ -107,12 +101,8 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     """
     Send a STUF message to the server that is configured.
     """
-    print('> settings.SIGMAX_AUTH_TOKEN:', settings.SIGMAX_AUTH_TOKEN)
-    print('> settings.SIGMAX_SERVER:', settings.SIGMAX_SERVER)
-
     if not settings.SIGMAX_AUTH_TOKEN or not settings.SIGMAX_SERVER:
-        raise ServiceNotConfigured(
-            'SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.')
+        raise SigmaxException('SIGMAX_AUTH_TOKEN or SIGMAX_SERVER not configured.')
 
     # Prepare our request to Sigmax
     encoded = stuf_msg.encode('utf-8')
@@ -126,26 +116,29 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
 
     # Send our message to Sigmax. Network problems, and HTTP status codes
     # are all raised as errors.
-    response = requests.post(
-        url=settings.SIGMAX_SERVER,
-        headers=headers,
-        data=encoded,
-        verify=False
-    )
-    response.raise_for_status()
+    try:
+        response = requests.post(
+            url=settings.SIGMAX_SERVER,
+            headers=headers,
+            data=encoded,
+            verify=False
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise SigmaxException from e
 
     # Inspect response content with lxml, check for Fo03/Bv03. Raise if we
-    # receive anything other than XML or a message `berichtcode` other than 
+    # receive anything other than XML or a message `berichtcode` other than
     # StUF Bv03.
     if not _stuf_response_ok(response):
-        raise WrongBerichtCodeException('Geen Bv03 ontvangen van Sigmax/CityControl')
+        raise SigmaxException('Geen Bv03 ontvangen van Sigmax/CityControl')
 
     return response
 
 
 def send_creeerZaak_Lk01(signal):
     soap_action = CREEER_ZAAK_SOAPACTION
-    msg = _generate_creeerZaak_Lk01_message(signal)
+    msg = _generate_creeerZaak_Lk01(signal)
     response = _send_stuf_message(msg, soap_action)
 
     logger.info('Sent %s', soap_action)
