@@ -56,7 +56,7 @@ def _handle_unknown_soap_action(request):
     # TODO: add extra logging
     # TODO: nicer Fo03 message template (this is not for actualiseerZaakstatus ..
     return render(request, 'sigmax/actualiseerZaakstatus_Fo03', context={
-        'error_msg': 'SOAPAction: {} is not supported'.format(request.META['SOAPAction'])
+        'error_msg': 'SOAPAction: {} is not supported'.format(request.META['HTTP_SOAPACTION'])
     }, content_type='text/xml; charset=utf-8', status=500)
 
 

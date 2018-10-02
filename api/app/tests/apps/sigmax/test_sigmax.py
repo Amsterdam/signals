@@ -9,7 +9,7 @@ from unittest import mock
 from django.test import TestCase, override_settings
 from lxml import etree
 
-from signals.apps.sigmax import handler, utils
+from signals.apps.sigmax import outgoing, utils
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 
@@ -63,21 +63,20 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
-        xml = handler._generate_creeer_zaak_lk01_message(self.signal)
-
+        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
         try:
-            etree.fromstring(xml)
+            etree.fromstring(msg)
         except Exception:
             self.fail('Cannot parse STUF message as XML')
 
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        msg = handler._generate_creeer_zaak_lk01_message(poison)
+        msg = outgoing._generate_creeerZaak_Lk01(poison)
         self.assertTrue('<poison>' not in msg)
 
     def test_propagate_signal_properties_to_message(self):
-        msg = handler._generate_creeer_zaak_lk01_message(self.signal)
+        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
 
         # first test that we have obtained valid XML
         try:
@@ -147,7 +146,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def test_is_xml(self):
         signal = self.signal
-        xml = handler._generate_voeg_zaak_document_toe_lk01(signal)
+        xml = outgoing._generate_voegZaakdocumentToe_Lk01(signal)
         try:
             etree.fromstring(xml)
         except Exception:
@@ -156,8 +155,8 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        msg = handler._generate_voeg_zaak_document_toe_lk01(poison)
-        self.assertTrue('<poison>' not in msg)
+        xml = outgoing._generate_voegZaakdocumentToe_Lk01(poison)
+        self.assertTrue('<poison>' not in xml)
 
 
 class TestSendStufMessage(TestCase):
@@ -171,22 +170,24 @@ class TestSendStufMessage(TestCase):
         env_override = {'SIGMAX_AUTH_TOKEN': '', 'SIGMAX_SERVER': ''}
 
         with mock.patch.dict('os.environ', env_override):
-            with self.assertRaises(handler.ServiceNotConfigured):
+            with self.assertRaises(outgoing.SigmaxException):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-                handler._send_stuf_message('TEST BERICHT', action)
+                outgoing._send_stuf_message('TEST BERICHT', action)
 
     @override_settings(
         SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
         SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
     )
+    @mock.patch('signals.apps.sigmax.outgoing._stuf_response_ok', autospec=True)
     @mock.patch('requests.post', autospec=True)
-    def test_send_message(self, mocked_request_post):
+    def test_send_message(self, mocked_request_post, mocked_stuf_response_ok):
         mocked_request_post.return_value.status_code = 200
         mocked_request_post.return_value.text = 'Message from Sigmax'
+        mocked_stuf_response_ok.return_value = True
 
         message = 'TEST BERICHT'
         action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-        handler._send_stuf_message(message, action)
+        outgoing._send_stuf_message(message, action)
 
         # Check that headers are set correctly when sending an STUF message.
         args, kwargs = mocked_request_post.call_args
