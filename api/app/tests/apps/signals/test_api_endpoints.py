@@ -323,8 +323,9 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         result = response.json()
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.state, result['state'])
+        self.assertEqual(self.signal.status.text, result['text'])
         self.assertEqual(self.signal.status.user, result['user'])
+        self.assertEqual(self.signal.status.state, result['state'])
 
     def test_post_status_minimal_fiels(self):
         # Asserting initial state.
@@ -334,11 +335,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         url = '/signals/auth/status/'
         data = {
             '_signal': self.signal.id,
-            'text': None,
-            'user': None,
             'state': workflow.AFWACHTING,
-            'extra_properties': {},
-            # 'target_api': None,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 201)
@@ -347,57 +344,23 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         result = response.json()
         self.assertEqual(self.signal.status.state, result['state'])
 
-    def test_post_status_not_allowed_choice(self):
+    def test_post_status_invalid(self):
         # Prepare current state.
-        self.signal.status.state = workflow.TE_VERZENDEN
+        self.signal.status.state = workflow.VERZONDEN
         self.signal.status.save()
 
         # Post an unallowed status change from the API.
         url = '/signals/auth/status/'
         data = {
             '_signal': self.signal.id,
-            'state': workflow.VERZONDEN,
+            'state': workflow.TE_VERZENDEN,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 400)
 
         result = response.json()
         self.assertIn('state', result)
-
-    def test_post_status_afgehandeld_text_required_failed(self):
-        url = '/signals/auth/status/'
-
-        # Test with text value `None`.
-        data = {
-            'state': workflow.AFGEHANDELD,
-            '_signal': self.signal.id,
-            'text': None,
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, 400)
-        errors = response.json()
-        self.assertIn('text', errors.keys())
-
-        # Test with text value empty string.
-        data['text'] = ''
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, 400)
-        errors = response.json()
-        self.assertIn('text', errors.keys())
-
-    def test_post_status_afgehandeld_text_required_success(self):
-        url = '/signals/auth/status/'
-        data = {
-            'state': workflow.AFGEHANDELD,
-            '_signal': self.signal.id,
-            'text': 'Uw melding is afgehandeld',
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, 201)
-
-        result = response.json()
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.state, result['state'])
+        self.assertIn('target_api', result)
 
     def test_post_location(self):
         """We only create new location items"""
