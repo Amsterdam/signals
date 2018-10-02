@@ -3,7 +3,7 @@ import logging
 # from signals.apps.sigmax import outgoing as sigmax
 from signals.apps.sigmax import outgoing
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, Status
 from signals.celery import app
 
 logger = logging.getLogger(__name__)
@@ -11,9 +11,8 @@ logger = logging.getLogger(__name__)
 
 def is_signal_applicable(signal):
     """Check that signal instance should be sent to Sigmax/CityControl."""
-    # TODO: use choice constant on Status model
     return signal.status.state == workflow.TE_VERZENDEN and \
-        signal.status.target_api == 'sigmax'
+        signal.status.target_api == Status.TARGET_API_SIGMAX
 
 
 @app.task
@@ -43,4 +42,4 @@ def push_to_sigmax(pk):
             Signal.actions.update_status({
                 'state': workflow.VERZONDEN,
                 'text': 'Versturen van melding naar Sigmax/CityControl is gelukt.',
-            })
+            }, signal=signal)
