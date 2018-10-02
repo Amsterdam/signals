@@ -92,7 +92,7 @@ def _stuf_response_ok(response):
 
     found = tree.xpath('//stuf:stuurgegevens/stuf:berichtcode', namespaces=namespaces)
 
-    if len(found) != 1 or found.text != 'Bv03':
+    if len(found) != 1 or found[0].text != 'Bv03':
         return False
     return True
 
