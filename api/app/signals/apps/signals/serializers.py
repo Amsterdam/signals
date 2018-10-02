@@ -366,6 +366,7 @@ class StatusHALSerializer(AddExtrasMixin, HALSerializer):
             '_signal',
             'text',
             'user',
+            'target_api',
             'state',
             'state_display',
             'extra_properties',
