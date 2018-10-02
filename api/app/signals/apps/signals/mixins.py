@@ -1,7 +1,7 @@
 from signals.utils.ip import get_ip
 
 
-class AddExtrasMixin(object):
+class AddExtrasMixin:
     """Mixin class to add extra values to the validated data."""
 
     def add_extra_properties(self, data):
