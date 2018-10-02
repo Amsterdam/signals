@@ -12,7 +12,8 @@ def _format_datetime(dt: datetime) -> str:
 
 def _format_date(dt: datetime) -> str:
     """Format date as YYYYMMDD."""
-    return dt.strftime('%Y%m%d')
+    if dt:
+        return dt.strftime('%Y%m%d')
 
 
 def _get_session_with_retries() -> requests.Session:

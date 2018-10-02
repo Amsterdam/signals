@@ -3,6 +3,7 @@ Test suite for Sigmax message generation.
 """
 import datetime
 import logging
+import os
 import time
 from unittest import mock
 
@@ -19,6 +20,10 @@ logging.disable(logging.NOTSET)
 logger = logging.getLogger(__name__)
 
 REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
+DATA_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'data'
+)
 
 
 class TestSigmaxHelpers(TestCase):
@@ -50,8 +55,6 @@ class TestSigmaxHelpers(TestCase):
             t = time.time()
             utils._format_datetime(t)
 
-        with self.assertRaises(AttributeError):
-            utils._format_date(None)
         with self.assertRaises(AttributeError):
             t = time.time()
             utils._format_date(t)
@@ -210,3 +213,25 @@ class TestSendStufMessage(TestCase):
             bytes(len(message)),
             kwargs['headers']['Content-Length']
         )
+
+
+class TestStufResponseOk(TestCase):
+    def test_Bv03(self):
+        test_xml_file = os.path.join(DATA_DIR, 'example-bv03.xml')
+        with open(test_xml_file, 'rt', encoding='utf-8') as f:
+            test_xml = f.read()
+
+        fake_response = mock.MagicMock()
+        fake_response.text = test_xml
+
+        self.assertEqual(outgoing._stuf_response_ok(fake_response), True)
+
+    def test_Fo03(self):
+        test_xml_file = os.path.join(DATA_DIR, 'example-fo03.xml')
+        with open(test_xml_file, 'rt', encoding='utf-8') as f:
+            test_xml = f.read()
+
+        fake_response = mock.MagicMock()
+        fake_response.text = test_xml
+
+        self.assertEqual(outgoing._stuf_response_ok(fake_response), False)
