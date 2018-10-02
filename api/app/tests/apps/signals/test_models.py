@@ -194,21 +194,57 @@ class TestStatusModel(TestCase):
         self.assertEqual(self.status.state, workflow.GEMELD)
 
     def test_state_transition_valid(self):
-        new_status = Status(_signal=self.signal,
-                            state=workflow.AFGEHANDELD,
-                            text='Consider it done.')
+        new_status = Status(_signal=self.signal, state=workflow.AFWACHTING)
         new_status.full_clean()
         new_status.save()
 
-    def test_state_transition_invalid(self):
-        new_status = Status(_signal=self.signal, state=workflow.VERZONDEN, text=None)
-        with self.assertRaises(ValidationError):
-            new_status.full_clean()
+        self.assertTrue(new_status.id)
 
-    def test_afgehandeld_change_no_text(self):
-        new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text=None)
-        with self.assertRaises(ValidationError):
+    def test_state_transition_invalid(self):
+        new_status = Status(_signal=self.signal, state=workflow.VERZONDEN)
+
+        with self.assertRaises(ValidationError) as error:
             new_status.full_clean()
+        self.assertIn('state', error.exception.error_dict)
+
+    def test_state_te_verzenden_required_target_api_valid(self):
+        new_status = Status(_signal=self.signal,
+                            state=workflow.TE_VERZENDEN,
+                            target_api=Status.TARGET_API_SIGMAX)
+        new_status.full_clean()
+        new_status.save()
+
+        self.assertTrue(new_status.id)
+
+    def test_state_te_verzenden_required_target_api_invalid_empty_choice(self):
+        new_status = Status(_signal=self.signal, state=workflow.TE_VERZENDEN, target_api=None)
+
+        with self.assertRaises(ValidationError) as error:
+            new_status.full_clean()
+        self.assertIn('target_api', error.exception.error_dict)
+
+    def test_state_transition_not_required_target_api(self):
+        new_status = Status(_signal=self.signal,
+                            state=workflow.ON_HOLD,
+                            target_api=Status.TARGET_API_SIGMAX)
+
+        with self.assertRaises(ValidationError) as error:
+            new_status.full_clean()
+        self.assertIn('target_api', error.exception.error_dict)
+
+    def test_state_afgehandeld_text_required_valid(self):
+        new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done with it.')
+        new_status.full_clean()
+        new_status.save()
+
+        self.assertTrue(new_status.id)
+
+    def test_state_afgehandeld_text_required_invalid(self):
+        new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text=None)
+
+        with self.assertRaises(ValidationError) as error:
+            new_status.full_clean()
+        self.assertIn('text', error.exception.error_dict)
 
 
 class TestCategoryDeclarations(TestCase):

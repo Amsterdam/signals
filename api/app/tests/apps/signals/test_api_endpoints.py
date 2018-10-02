@@ -314,7 +314,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
             '_signal': self.signal.id,
             'text': 'Changing status to "afwachting"',
             'user': 'user@example.com',
-            'target_api': 'sigmax',
+            'target_api': None,
             'state': workflow.AFWACHTING,
             'extra_properties': {},
         }
