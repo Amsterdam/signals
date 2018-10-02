@@ -13,7 +13,7 @@ GEANNULEERD = 'a'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
-VERZONDEN = 'send'
+VERZONDEN = 'sent'
 VERZENDEN_MISLUKT = 'send failed'
 AFGEHANDELD_EXTERN = 'done external'
 

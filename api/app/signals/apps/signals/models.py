@@ -369,17 +369,24 @@ class CategoryAssignment(CreatedUpdatedModel):
 
 
 class Status(CreatedUpdatedModel):
+    TARGET_API_SIGMAX = 'sigmax'
+    TARGET_API_CHOICES = (
+        (TARGET_API_SIGMAX, 'Sigmax (City Control)'),
+    )
+
     _signal = models.ForeignKey('signals.Signal', related_name='statuses', on_delete=models.CASCADE)
 
     text = models.CharField(max_length=10000, null=True, blank=True)
-    # TODO rename field to `email` it's not a `User` it's a `email`...
+    # TODO, rename field to `email` it's not a `User` it's a `email`...
     user = models.EmailField(null=True, blank=True)
-    target_api = models.CharField(max_length=250, null=True, blank=True)
+    target_api = models.CharField(max_length=250, null=True, blank=True, choices=TARGET_API_CHOICES)
     state = models.CharField(max_length=20,
                              blank=True,
                              choices=workflow.STATUS_CHOICES,
                              default=workflow.GEMELD,
                              help_text='Melding status')
+
+    # TODO, do we need this field or can we remove it?
     extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
     extra_properties = JSONField(null=True, blank=True)
@@ -399,23 +406,38 @@ class Status(CreatedUpdatedModel):
         :raises: ValidationError
         :returns:
         """
+        errors = {}
         current_state = self._signal.status.state
+        current_state_display = self._signal.status.get_state_display()
         new_state = self.state
+        new_state_display = self.get_state_display()
 
         # Validating state transition.
         if new_state not in workflow.ALLOWED_STATUS_CHANGES[current_state]:
-            raise ValidationError({
-                'state': 'Invalid state transition from `{from_state}` to `{to_state}`.'.format(
-                    from_state=self._signal.status.get_state_display(),
-                    to_state=self.get_state_display())
-            })
+            error_msg = 'Invalid state transition from `{from_state}` to `{to_state}`.'.format(
+                from_state=current_state_display,
+                to_state=new_state_display)
+            errors['state'] = ValidationError(error_msg, code='invalid')
+
+        # Validating state "TE_VERZENDEN".
+        if new_state == workflow.TE_VERZENDEN and not self.target_api:
+            error_msg = 'This field is required when changing `state` to `{new_state}`.'.format(
+                new_state=new_state_display)
+            errors['target_api'] = ValidationError(error_msg, code='required')
+
+        if new_state != workflow.TE_VERZENDEN and self.target_api:
+            error_msg = 'This field can only be set when changing `state` to `{state}`.'.format(
+                state=workflow.TE_VERZENDEN)
+            errors['target_api'] = ValidationError(error_msg, code='invalid')
 
         # Validating text field required.
         if new_state == workflow.AFGEHANDELD and not self.text:
-            raise ValidationError({
-                'text': 'This field is required when changing `state` to `{new_state}`.'.format(
-                    new_state=self.get_state_display())
-            })
+            error_msg = 'This field is required when changing `state` to `{new_state}`.'.format(
+                new_state=new_state_display)
+            errors['text'] = ValidationError(error_msg, code='required')
+
+        if errors:
+            raise ValidationError(errors)
 
 
 class Priority(CreatedUpdatedModel):
