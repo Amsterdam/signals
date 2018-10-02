@@ -56,8 +56,6 @@ class TestSigmaxHelpers(TestCase):
             utils._format_datetime(t)
 
         with self.assertRaises(AttributeError):
-            utils._format_date(None)
-        with self.assertRaises(AttributeError):
             t = time.time()
             utils._format_date(t)
 
