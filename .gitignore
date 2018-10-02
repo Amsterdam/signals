@@ -175,14 +175,3 @@ nb-configuration.xml
 Global/NetBeans.gitignore
 
 
-# Apache Avro
-avro_files/
-*.avro
-
-deploy/backups
-
-*.doc
-data/
-
-setup_env_acctest.sh
-env.sh
