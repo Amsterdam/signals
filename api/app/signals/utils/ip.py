@@ -4,8 +4,6 @@ from rest_framework.throttling import BaseThrottle
 def get_ip(request):
     """Get IP address from given request.
 
-    TODO, tests!
-
     :param request: Request object
     :returns: str or None
     """
