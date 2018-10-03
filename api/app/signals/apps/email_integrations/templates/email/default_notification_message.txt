@@ -4,8 +4,8 @@ Nieuwe melding ({{ signal.id }}):
 
 *** Details melding ***
 
-Categorie: {{ signal.category.main }}
-Subcategorie: {{ signal.category.sub }}
+Categorie: {{ signal.category_assignment.sub_category.main_category.name }}
+Subcategorie: {{ signal.category_assignment.sub_category.name }}
 {% if signal.location.address_text %}Adres: {{ signal.location.address_text }}{% endif %}
 Tijdstip: {{ signal.incident_date_start|date:"l d-m-Y, H:i" }}
 E-mailadres: {{ signal.reporter.email }}
