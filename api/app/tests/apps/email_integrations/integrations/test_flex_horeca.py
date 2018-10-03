@@ -11,7 +11,8 @@ from tests.apps.signals.factories import SignalFactory
 
 @override_settings(
     EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS='test@test.com',
-    EMAIL_FLEX_HORECA_WEEKDAYS='5,6',  # friday, saterday
+    EMAIL_FLEX_HORECA_WEEKDAYS='5,6,7',  # friday, saterday, sunday
+    EMAIL_FLEX_HORECA_END_TIME='04:00',
 )
 class TestIntegrationFlexHoreca(TestCase):
 
@@ -77,8 +78,8 @@ class TestIntegrationFlexHoreca(TestCase):
 
         self.assertEqual(result, True)
 
-    @freeze_time('2018-08-04')  # Saterday
-    def test_is_signal_applicable_in_category_on_saterday(self):
+    @freeze_time('2018-08-05 01:00:00')  # Sunday 01:00
+    def test_is_signal_applicable_in_category_on_sunday_before_end_time(self):
         signal = SignalFactory.create(
             category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
             category_assignment__sub_category__name='Geluidsoverlast muziek')
@@ -97,8 +98,8 @@ class TestIntegrationFlexHoreca(TestCase):
 
         self.assertEqual(result, False)
 
-    @freeze_time('2018-08-05')  # Sunday
-    def test_is_signal_applicable_in_category_on_sunday(self):
+    @freeze_time('2018-08-05 05:00:00')  # Sunday 05:00
+    def test_is_signal_applicable_in_category_on_sunday_after_end_time(self):
         signal = SignalFactory.create(
             category_assignment__sub_category__main_category__name='Overlast Bedrijven en Horeca',
             category_assignment__sub_category__name='Geluidsoverlast muziek')
