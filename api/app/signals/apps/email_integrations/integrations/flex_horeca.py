@@ -1,7 +1,7 @@
 """
 E-mail integration for Flex Horeca Team.
 """
-from datetime import time
+from datetime import datetime
 
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
@@ -50,10 +50,7 @@ def is_signal_applicable(signal: Signal) -> bool:
 
     # Is 'today' last applicable weekday, check end time.
     is_today_last_applicable_weekday = today_weekday == applicable_weekdays[-1]
-    end_time_setting = settings.EMAIL_FLEX_HORECA_END_TIME.split(',')
-    end_time_hour = int(end_time_setting[0])
-    end_time_min = int(end_time_setting[1])
-    end_time = time(end_time_hour, end_time_min)
+    end_time = datetime.strptime(settings.EMAIL_FLEX_HORECA_END_TIME, '%H:%M').time()
     is_now_gt_end_time = today.time() > end_time
     if is_today_last_applicable_weekday and is_now_gt_end_time:
         return False
