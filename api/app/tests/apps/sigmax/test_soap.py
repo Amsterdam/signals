@@ -2,10 +2,10 @@ import uuid
 from unittest import mock
 
 import lxml
-from lxml import etree
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.test import TestCase
+from lxml import etree
 from rest_framework.test import APITestCase
 
 from signals.apps.sigmax.views import (
