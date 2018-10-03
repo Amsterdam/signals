@@ -116,3 +116,4 @@ vine==1.1.4
 WeasyPrint==0.42.3
 webencodings==0.5.1
 wrapt==1.10.11
+xmlunittest==0.5.0

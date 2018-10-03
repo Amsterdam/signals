@@ -42,7 +42,6 @@ def _generate_creeerZaak_Lk01(signal):
     # SIGMAX will be set up to receive Signals (meldingen) that have no
     # address but do have coordinates (middle of park, somewhere on a
     # body of water, etc.) Here we set the address if we have it.
-
     num_days_priority_mapping = {
         Priority.PRIORITY_HIGH: 1,
         Priority.PRIORITY_NORMAL: 3,

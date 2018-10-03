@@ -47,3 +47,4 @@ isort
 pytest
 pytest-cov
 pytest-django
+xmlunittest
