@@ -5,6 +5,7 @@ import lxml
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.test import TestCase
+from lxml import etree
 from rest_framework.test import APITestCase
 
 from signals.apps.sigmax.views import (
@@ -87,6 +88,27 @@ class TestSoapEndpoint(APITestCase):
 
         handle_known.assert_not_called()
         handle_unknown.assert_called_once()
+
+    def test_wrong_soapaction_results_in_fo03(self):
+        """Check that we send a StUF Fo03 when we receive an unknown SOAPAction"""
+        # authenticate
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # Check that wrong action is replied to with XML, StUF Fo03, status 500, utf-8 encoding.
+        wrong_action = 'http://example.com/unknown'
+        response = self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>',
+                                    HTTP_SOAPACTION=wrong_action, content_type='text/xml')
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.charset, 'utf-8')
+        xml_text = response.content.decode('utf-8')
+        tree = etree.fromstring(xml_text)  # will fail if not XML
+
+        namespaces = {'stuf': 'http://www.egem.nl/StUF/StUF0301'}
+        found = tree.xpath('//stuf:stuurgegevens/stuf:berichtcode', namespaces=namespaces)
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].text, 'Fo03')
 
     def test_no_signal_for_message(self):
         """Test that we generate a Fo03 if no signal can be found to go with it."""

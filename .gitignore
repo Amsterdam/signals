@@ -174,4 +174,5 @@ nbactions.xml
 nb-configuration.xml
 Global/NetBeans.gitignore
 
-
+# ignore visual studio code settings
+.vscode/
