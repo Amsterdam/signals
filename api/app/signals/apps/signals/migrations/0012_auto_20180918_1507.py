@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0011b_rerun_data_migration'),
+        ('signals', '0011d_rerun_data_migration'),
     ]
 
     operations = [
