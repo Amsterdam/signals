@@ -35,6 +35,7 @@ def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
 def update_category_assignment_handler(
         sender, signal_obj, category_assignment, prev_category_assignment, **kwargs):
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
+    tasks.send_mail_flex_horeca.delay(pk=signal_obj.id)
 
 
 @receiver(update_reporter, dispatch_uid='email_integrations_update_reporter')
