@@ -81,6 +81,7 @@ class TestSignalReceivers(TestCase):
                                         prev_category_assignment=prev_category_assignment)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_reporter_handler(self, mocked_tasks):
