@@ -127,6 +127,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
     main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
+    # Backwards compatibility fix for departments, should be retrieved from category terms resource.
+    department = serializers.SerializerMethodField(source='sub_category.departments',
+                                                   read_only=True)
+
     class Meta:
         model = CategoryAssignment
         fields = (
@@ -135,7 +139,11 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'main',
             'main_slug',
             'sub_category',
+            'department',
         )
+
+    def get_department(self, obj):
+        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
@@ -405,6 +413,10 @@ class CategoryHALSerializer(HALSerializer):
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
     main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
+    # Backwards compatibility fix for departments, should be retrieved from category terms resource.
+    department = serializers.SerializerMethodField(source='sub_category.departments',
+                                                   read_only=True)
+
     class Meta(object):
         model = CategoryAssignment
         fields = (
@@ -416,7 +428,11 @@ class CategoryHALSerializer(HALSerializer):
             'sub_slug',
             'main',
             'main_slug',
+            'department',
         )
+
+    def get_department(self, obj):
+        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
