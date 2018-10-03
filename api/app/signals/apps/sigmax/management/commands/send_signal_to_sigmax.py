@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
 
-from signals.apps.signals.models import Signal, Status
 from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal, Status
 from tests.apps.signals.factories import SignalFactoryValidLocation
 
-# Known to still be problematic, work in progress
+
 class Command(BaseCommand):
     help = 'Send a message to "Sigmax" as a manual test WITH Celery.'
 
