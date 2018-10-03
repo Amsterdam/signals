@@ -104,7 +104,8 @@ class TestAPIEnpointsBase(APITestCase):
         "post_status": "status_auth_post.json",
         "post_category": "category_auth_post.json",
         "post_location": "location_auth_post.json",
-    }
+    }  # Custom fixture files
+    fixtures = ['categories.json', ]  # Django initial data
 
     def _get_fixture(self, name):
         filename = self.fixture_files[name]
