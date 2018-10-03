@@ -1,55 +1,55 @@
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-       <soap:Body>
-          <ZKN:zakLk01 xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:gml="http://www.opengis.net/gml" xmlns:bag="http://www.vrom.nl/bag/0120" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:tns="http://www.circlesoftware.nl/verseon/mng/webservice/2012" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xlink="http://www.w3.org/1999/xlink">
-             <ZKN:stuurgegevens>
+    <soap:Body>
+        <ZKN:zakLk01 xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:gml="http://www.opengis.net/gml" xmlns:bag="http://www.vrom.nl/bag/0120" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:tns="http://www.circlesoftware.nl/verseon/mng/webservice/2012" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <ZKN:stuurgegevens>
                 <StUF:berichtcode>Lk01</StUF:berichtcode>
                 <StUF:zender>
-                   <StUF:organisatie>AMS</StUF:organisatie>
-                   <StUF:applicatie>VER</StUF:applicatie>
+                    <StUF:organisatie>AMS</StUF:organisatie>
+                    <StUF:applicatie>VER</StUF:applicatie>
                 </StUF:zender>
                 <StUF:ontvanger>
-                   <StUF:organisatie>SMX</StUF:organisatie>
-                   <StUF:applicatie>CTC</StUF:applicatie>
+                    <StUF:organisatie>SMX</StUF:organisatie>
+                    <StUF:applicatie>CTC</StUF:applicatie>
                 </StUF:ontvanger>
-                <StUF:referentienummer>{{ PRIMARY_KEY|safe }}</StUF:referentienummer>
-                <StUF:tijdstipBericht>{{ TIJDSTIPBERICHT|safe }}</StUF:tijdstipBericht>
+                <StUF:referentienummer>{{ signal.signal_id }}</StUF:referentienummer>
+                <StUF:tijdstipBericht>{{ signal.created_at|date:"YmdHis" }}</StUF:tijdstipBericht>
                 <StUF:entiteittype>ZAK</StUF:entiteittype>
-             </ZKN:stuurgegevens>
-             <ZKN:parameters>
+            </ZKN:stuurgegevens>
+            <ZKN:parameters>
                 <StUF:mutatiesoort>T</StUF:mutatiesoort>
                 <StUF:indicatorOvername>V</StUF:indicatorOvername>
-             </ZKN:parameters>
-             <ZKN:object StUF:entiteittype="ZAK" StUF:sleutelGegevensbeheer="" StUF:verwerkingssoort="T">
-                <ZKN:identificatie>{{ PRIMARY_KEY|safe }}</ZKN:identificatie>
-                <ZKN:omschrijving>{{ OMSCHRIJVING|safe }}</ZKN:omschrijving>
-                <ZKN:startdatum>{{ STARTDATUM }}</ZKN:startdatum>
-                <ZKN:registratiedatum>{{ REGISTRATIEDATUM|safe }}</ZKN:registratiedatum>
-                <ZKN:einddatumGepland>{{ EINDDATUMGEPLAND|safe }}</ZKN:einddatumGepland>
+            </ZKN:parameters>
+            <ZKN:object StUF:entiteittype="ZAK" StUF:sleutelGegevensbeheer="" StUF:verwerkingssoort="T">
+                <ZKN:identificatie>{{ signal.signal_id }}</ZKN:identificatie>
+                <ZKN:omschrijving>{{ signal.text }}</ZKN:omschrijving>
+                <ZKN:startdatum>{{ signal.incident_date_start|date:"Ymd" }}</ZKN:startdatum>
+                <ZKN:registratiedatum>{{ signal.created_at|date:"Ymd" }}</ZKN:registratiedatum>
+                <ZKN:einddatumGepland>{{ incident_date_end|date:"Ymd" }}</ZKN:einddatumGepland>
                 <ZKN:archiefnominatie>N</ZKN:archiefnominatie>
                 <ZKN:zaakniveau>1</ZKN:zaakniveau>
                 <ZKN:deelzakenIndicatie>N</ZKN:deelzakenIndicatie>
                 <StUF:extraElementen>
-                   <StUF:extraElement naam="Ycoordinaat">{{ Y|safe }}</StUF:extraElement>
-                   <StUF:extraElement naam="Xcoordinaat">{{ X|safe }}</StUF:extraElement>
+                    <StUF:extraElement naam="Ycoordinaat">{{ signal.location.geometrie.y }}</StUF:extraElement>
+                    <StUF:extraElement naam="Xcoordinaat">{{ signal.location.geometrie.x }}</StUF:extraElement>
                 </StUF:extraElementen>
                 <ZKN:isVan StUF:entiteittype="ZAKZKT" StUF:verwerkingssoort="T">
-                   <ZKN:gerelateerde StUF:entiteittype="ZKT" StUF:sleutelOntvangend="1" StUF:verwerkingssoort="T">
-                      <ZKN:omschrijving>Uitvoeren controle</ZKN:omschrijving>
-                      <ZKN:code>2</ZKN:code>
-                   </ZKN:gerelateerde>
+                    <ZKN:gerelateerde StUF:entiteittype="ZKT" StUF:sleutelOntvangend="1" StUF:verwerkingssoort="T">
+                        <ZKN:omschrijving>Uitvoeren controle</ZKN:omschrijving>
+                        <ZKN:code>2</ZKN:code>
+                    </ZKN:gerelateerde>
                 </ZKN:isVan>
                 <ZKN:heeftBetrekkingOp StUF:entiteittype="ZAKOBJ" StUF:verwerkingssoort="T">
-                   <ZKN:gerelateerde>
-                      <ZKN:adres StUF:entiteittype="AOA" StUF:verwerkingssoort="T">
-                         <BG:wpl.woonplaatsNaam>Amsterdam</BG:wpl.woonplaatsNaam>
-                         <BG:gor.openbareRuimteNaam>{{ OPENBARERUIMTENAAM|safe }}</BG:gor.openbareRuimteNaam>
-                         <BG:huisnummer>{{ HUISNUMMER|safe }}</BG:huisnummer>
-                         <BG:huisletter StUF:noValue="geenWaarde" xsi:nil="true"/>
-                         <BG:postcode>{{ POSTCODE|safe }}</BG:postcode>
-                      </ZKN:adres>
-                   </ZKN:gerelateerde>
+                    <ZKN:gerelateerde>
+                        <ZKN:adres StUF:entiteittype="AOA" StUF:verwerkingssoort="T">
+                            <BG:wpl.woonplaatsNaam>Amsterdam</BG:wpl.woonplaatsNaam>
+                            <BG:gor.openbareRuimteNaam>{{ signal.location.address.openbare_ruimte }}</BG:gor.openbareRuimteNaam>
+                            <BG:huisnummer>{{ signal.location.address.huisnummer }}</BG:huisnummer>
+                            <BG:huisletter StUF:noValue="geenWaarde" xsi:nil="true"/>
+                            <BG:postcode>{{ signal.location.address.postcode }}</BG:postcode>
+                        </ZKN:adres>
+                    </ZKN:gerelateerde>
                 </ZKN:heeftBetrekkingOp>
-             </ZKN:object>
-          </ZKN:zakLk01>
-       </soap:Body>
-    </soap:Envelope>
+            </ZKN:object>
+        </ZKN:zakLk01>
+    </soap:Body>
+</soap:Envelope>

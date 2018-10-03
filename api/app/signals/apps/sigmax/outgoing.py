@@ -5,6 +5,7 @@ Retry logic ao are handled by Celery.
 import logging
 import os
 import uuid
+from datetime import timedelta
 from xml.sax.saxutils import escape
 
 import requests
@@ -13,8 +14,7 @@ from django.template.loader import render_to_string
 from lxml import etree
 
 from signals.apps.sigmax.pdf import _generate_pdf
-from signals.apps.sigmax.utils import _format_date, _format_datetime
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Priority, Signal
 
 logger = logging.getLogger(__name__)
 
@@ -35,28 +35,21 @@ class SigmaxException(Exception):
 # TODO SIG-593: implement data mapping if and when it is defined
 
 def _generate_creeerZaak_Lk01(signal):
+    """Generate XML for Sigmax creeerZaak_Lk01
+
+    SIGMAX will be set up to receive Signals (meldingen) that have no address but do have
+    coordinates (middle of park, somewhere on a body of water, etc.).
     """
-    Generate XML for Sigmax creeerZaak_Lk01
-    """
-    # SIGMAX will be set up to receive Signals (meldingen) that have no
-    # address but do have coordinates (middle of park, somewhere on a
-    # body of water, etc.) Here we set the address if we have it.
-    openbare_ruimte = signal.location.address.get('openbare_ruimte', '')
-    huisnummer = signal.location.address.get('huisnummer', '')
-    postcode = signal.location.address.get('postcode', '')
+    num_days_priority_mapping = {
+        Priority.PRIORITY_HIGH: 1,
+        Priority.PRIORITY_NORMAL: 3,
+    }
+    incident_date_end = (
+        signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))
 
     return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
-        'PRIMARY_KEY': str(signal.signal_id),
-        'OMSCHRIJVING': escape(signal.text),
-        'TIJDSTIPBERICHT': escape(_format_datetime(signal.created_at)),
-        'STARTDATUM': escape(_format_date(signal.incident_date_start)),
-        'REGISTRATIEDATUM': escape(_format_date(signal.created_at)),
-        'EINDDATUMGEPLAND': escape(_format_date(signal.incident_date_end)),
-        'OPENBARERUIMTENAAM': escape(openbare_ruimte),
-        'HUISNUMMER': escape(str(huisnummer)),
-        'POSTCODE': escape(postcode),
-        'X': escape(str(signal.location.geometrie.x)),
-        'Y': escape(str(signal.location.geometrie.y)),
+        'signal': signal,
+        'incident_date_end': signal.incident_date_end or incident_date_end,
     })
 
 

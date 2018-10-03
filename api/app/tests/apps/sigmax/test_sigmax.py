@@ -1,16 +1,15 @@
 """
 Test suite for Sigmax message generation.
 """
-import datetime
 import logging
 import os
-import time
 from unittest import mock
 
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from lxml import etree
 
-from signals.apps.sigmax import outgoing, utils
+from signals.apps.sigmax import outgoing
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 
@@ -24,40 +23,6 @@ DATA_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'data'
 )
-
-
-class TestSigmaxHelpers(TestCase):
-
-    def test_format_datetime(self):
-        dt = datetime.datetime(2018, 7, 9, 10, 0, 30)
-        self.assertEqual(
-            utils._format_datetime(dt),
-            '20180709100030'
-        )
-
-        dt = datetime.datetime(2018, 7, 9, 22, 0, 30)
-        self.assertEqual(
-            utils._format_datetime(dt),
-            '20180709220030'
-        )
-
-    def test_format_date(self):
-        dt = datetime.datetime(2018, 7, 9, 10, 59, 34)
-        self.assertEqual(
-            utils._format_date(dt),
-            '20180709'
-        )
-
-    def test_wrong_type(self):
-        with self.assertRaises(AttributeError):
-            utils._format_datetime(None)
-        with self.assertRaises(AttributeError):
-            t = time.time()
-            utils._format_datetime(t)
-
-        with self.assertRaises(AttributeError):
-            t = time.time()
-            utils._format_date(t)
 
 
 class TestGenerateCreeerZaakLk01Message(TestCase):
@@ -80,6 +45,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
 
     def test_propagate_signal_properties_to_message(self):
         msg = outgoing._generate_creeerZaak_Lk01(self.signal)
+        current_tz = timezone.get_current_timezone()
 
         # first test that we have obtained valid XML
         try:
@@ -112,19 +78,19 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
             ),
             (
                 '{http://www.egem.nl/StUF/StUF0301}tijdstipBericht',
-                utils._format_datetime(self.signal.created_at)
+                self.signal.created_at.astimezone(current_tz).strftime('%Y%m%d%H%M%S')
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}registratiedatum',
-                utils._format_date(self.signal.created_at)
+                self.signal.created_at.astimezone(current_tz).strftime('%Y%m%d')
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}startdatum',
-                utils._format_date(self.signal.incident_date_start)
+                self.signal.incident_date_start.astimezone(current_tz).strftime('%Y%m%d')
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}einddatumGepland',
-                utils._format_date(self.signal.incident_date_end)
+                self.signal.incident_date_end.astimezone(current_tz).strftime('%Y%m%d')
             )
         ])
         # X and Y need to be checked differently
