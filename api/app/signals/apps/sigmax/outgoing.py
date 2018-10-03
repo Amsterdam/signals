@@ -14,8 +14,7 @@ from django.template.loader import render_to_string
 from lxml import etree
 
 from signals.apps.sigmax.pdf import _generate_pdf
-from signals.apps.sigmax.utils import _format_date, _format_datetime
-from signals.apps.signals.models import Signal, Priority
+from signals.apps.signals.models import Priority, Signal
 
 logger = logging.getLogger(__name__)
 
