@@ -180,7 +180,7 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
 #
 
 
-class SignalCreateSerializer(AddExtrasMixin, serializers.ModelSerializer):
+class SignalCreateSerializer(serializers.ModelSerializer):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer()
@@ -222,9 +222,6 @@ class SignalCreateSerializer(AddExtrasMixin, serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        validated_data = self.add_extra_properties(validated_data)
-        validated_data = self.add_user(validated_data)
-
         status_data = validated_data.pop('status')
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
@@ -377,7 +374,6 @@ class StatusHALSerializer(AddExtrasMixin, HALSerializer):
         }
 
     def create(self, validated_data):
-        validated_data = self.add_extra_properties(validated_data)
         validated_data = self.add_user(validated_data)
 
         signal = validated_data.pop('_signal')
