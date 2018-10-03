@@ -154,10 +154,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         is_sub_category_not_posted = 'sub_category' not in data
         if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
             try:
-                sub_category = SubCategory.objects.get(main_category__name=data['main'],
-                                                       name=data['sub'])
+                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
+                                                       name__iexact=data['sub'])
             except SubCategory.DoesNotExist:
-                pass
+                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
             else:
                 internal_data['sub_category'] = sub_category
 
@@ -443,10 +443,10 @@ class CategoryHALSerializer(HALSerializer):
         is_sub_category_not_posted = 'sub_category' not in data
         if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
             try:
-                sub_category = SubCategory.objects.get(main_category__name=data['main'],
-                                                       name=data['sub'])
+                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
+                                                       name__iexact=data['sub'])
             except SubCategory.DoesNotExist:
-                pass
+                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
             else:
                 internal_data['sub_category'] = sub_category
 
