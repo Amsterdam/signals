@@ -90,7 +90,7 @@ class TestSoapEndpoint(APITestCase):
         handle_unknown.assert_called_once()
 
     def test_wrong_soapaction_results_in_fo03(self):
-        """Check that correct function is called based on SOAPAction header"""
+        """Check that we send a StUF Fo03 when we receive an unknown SOAPAction"""
         # authenticate
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
