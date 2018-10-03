@@ -51,8 +51,8 @@ def is_signal_applicable(signal: Signal) -> bool:
     # Is 'today' last applicable weekday, check end time.
     is_today_last_applicable_weekday = today_weekday == applicable_weekdays[-1]
     end_time = time.fromisoformat(settings.EMAIL_FLEX_HORECA_END_TIME)
-    is_now_lt_end_time = today.time() > end_time
-    if is_today_last_applicable_weekday and is_now_lt_end_time:
+    is_now_gt_end_time = today.time() > end_time
+    if is_today_last_applicable_weekday and is_now_gt_end_time:
         return False
 
     # TODO: move this query to object manager.
