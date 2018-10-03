@@ -1,19 +1,6 @@
-import datetime
-
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
-
-
-def _format_datetime(dt: datetime) -> str:
-    """Format datetime as YYYYMMDDHHMMSS."""
-    return dt.strftime('%Y%m%d%H%M%S')
-
-
-def _format_date(dt: datetime) -> str:
-    """Format date as YYYYMMDD."""
-    if dt:
-        return dt.strftime('%Y%m%d')
 
 
 def _get_session_with_retries() -> requests.Session:
