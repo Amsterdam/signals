@@ -12,7 +12,7 @@ from tests.apps.signals.factories import SignalFactory
 @override_settings(
     EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS='test@test.com',
     EMAIL_FLEX_HORECA_WEEKDAYS='5,6,7',  # friday, saterday, sunday
-    EMAIL_FLEX_HORECA_END_TIME='04:00',
+    EMAIL_FLEX_HORECA_END_TIME='4,0',  # 04:00 o'clock
 )
 class TestIntegrationFlexHoreca(TestCase):
 
