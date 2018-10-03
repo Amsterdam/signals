@@ -88,7 +88,7 @@ def send_mail_status_change(status, previous_status):
     signal_is_afgehandeld = signal.status.state in (AFGEHANDELD, )
     previous_signal_is_not_afgehandeld = (previous_status and
                                           previous_status.state not in (AFGEHANDELD, ))
-    if signal_is_afgehandeld and previous_signal_is_not_afgehandeld and signal.category:
+    if signal_is_afgehandeld and previous_signal_is_not_afgehandeld:
 
         LOG.debug('Rendering template')
         email = get_valid_email(signal)
@@ -97,8 +97,8 @@ def send_mail_status_change(status, previous_status):
                 'signal_id': signal.id,
                 'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'geannuleerd',
                 'location': signal.location,
-                'subcategory': signal.category.sub,
-                'maincategory': signal.category.main,
+                'subcategory': signal.category_assignment.sub_category.name,
+                'maincategory': signal.category_assignment.sub_category.main_category.name,
                 'text': signal.text
             }
 
