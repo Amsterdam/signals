@@ -18,11 +18,12 @@ from signals.apps.signals.models import Priority, Signal
 
 logger = logging.getLogger(__name__)
 
+# The douvble quotes are part of the SOAP spec
 CREEER_ZAAK_SOAPACTION = \
-    'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
+    '"http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01"'
 
 VOEG_ZAAKDOCUMENT_TOE_SOAPACTION = \
-    'http://www.egem.nl/StUF/sector/zkn/0310/VoegZaakdocumentToe_Lk01'
+    '"http://www.egem.nl/StUF/sector/zkn/0310/VoegZaakdocumentToe_Lk01"'
 
 SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
