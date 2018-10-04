@@ -43,7 +43,7 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
     reden = xpath('//zaak:object/zaak:resultaat/zaak:toelichting')
 
     return {
-        'zaak_uuid': zaak_uuid,
+        'zaak_uuid': zaak_uuid.strip(),
         'datum_afgehandeld': datum_status_gezet or einddatum,
         'resultaat': resultaat_omschrijving,
         'reden': reden,
@@ -76,7 +76,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
 
     # Retrieve the relevant Signal, error out if it cannot be found
     try:
-        signal = Signal.objects.get(signal_id=request_data['zaak_uuid'])
+        signal = Signal.objects.get(signal_id=zaak_uuid)
     except Signal.DoesNotExist:
         error_msg = f'Melding met signal_id {zaak_uuid} niet gevonden.'
         logger.warning(error_msg, exc_info=True)
