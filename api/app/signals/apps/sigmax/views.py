@@ -54,11 +54,15 @@ def _handle_unknown_soap_action(request):
     """
     Requests with unknown/unsupported SOAPActions are handled here
     """
-    # TODO: add extra logging
     # TODO: nicer Fo03 message template (this is not for actualiseerZaakstatus ..
-    return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', context={
-        'error_msg': 'SOAPAction: {} is not supported'.format(request.META['HTTP_SOAPACTION'])
-    }, content_type='text/xml; charset=utf-8', status=500)
+    error_msg = 'SOAPAction: {} is not supported'.format(request.META['HTTP_SOAPACTION'])
+    logger.warning(error_msg, stack_info=True)
+    return render(
+        request,
+        'sigmax/actualiseerZaakstatus_Fo03.xml',
+        context={'error_msg': error_msg, },
+        content_type='text/xml; charset=utf-8',
+        status=500)
 
 
 def _handle_actualiseerZaakstatus_Lk01(request):
@@ -74,11 +78,14 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     try:
         signal = Signal.objects.get(signal_id=request_data['zaak_uuid'])
     except Signal.DoesNotExist:
-        return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
-            'error_msg': f'Melding met signal_id {zaak_uuid} niet gevonden.',
-            },
-            content_type='text/xml; charset=utf-8', status=500
-        )
+        error_msg = f'Melding met signal_id {zaak_uuid} niet gevonden.'
+        logger.warning(error_msg, exc_info=True)
+        return render(
+            request,
+            'sigmax/actualiseerZaakstatus_Fo03.xml',
+            context={'error_msg': error_msg, },
+            content_type='text/xml; charset=utf-8',
+            status=500)
 
     # update Signal status upon receiving message
     status_data = {
@@ -88,12 +95,15 @@ def _handle_actualiseerZaakstatus_Lk01(request):
 
     try:
         Signal.actions.update_status(data=status_data, signal=signal)
-    except ValidationError as e:
-        return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', {
-                'error_msg': f'Melding met signal_id {zaak_uuid} was niet in verzonden staat'
-            },
-            content_type='text/xml; charset=utf-8', status=500
-        )
+    except ValidationError:
+        error_msg = f'Melding met signal_id {zaak_uuid} was niet in verzonden staat'
+        logger.warning(error_msg, exc_info=True)
+        return render(
+            request,
+            'sigmax/actualiseerZaakstatus_Fo03.xml',
+            context={'error_msg': error_msg, },
+            content_type='text/xml; charset=utf-8',
+            status=500)
 
     return render(request, 'sigmax/actualiseerZaakstatus_Bv03.xml', context={
         'zaak_uuid': signal.signal_id
@@ -112,9 +122,14 @@ class CityControlReceiver(APIView):
         """
         # https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383528
         if 'HTTP_SOAPACTION' not in request.META:
-            return render(request, 'sigmax/actualiseerZaakstatus_Fo03.xml', context={
-                'error_msg': 'SOAPAction header not set'
-            }, content_type='text/xml; charset=utf-8', status=500)
+            error_msg = 'SOAPAction header not set'
+            logger.warning(error_msg, stack_info=True)
+            return render(
+                request,
+                'sigmax/actualiseerZaakstatus_Fo03.xml',
+                context={'error_msg': error_msg, },
+                content_type='text/xml; charset=utf-8',
+                status=500)
 
         if request.META['HTTP_SOAPACTION'] == ACTUALISEER_ZAAK_STATUS_SOAPACTION:
             return _handle_actualiseerZaakstatus_Lk01(request)
