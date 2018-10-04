@@ -110,8 +110,8 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     }, content_type='text/xml; charset=utf-8', status=200)
 
     logging.warning('SIA sent the following Bv03 message:', extra={
-        'httpresponse.content': response.content.decode('utf-8')
-    })
+        'content': response.content.decode('utf-8')
+    }, stack_info=True)
     return response
 
 
