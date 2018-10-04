@@ -190,7 +190,7 @@ class TestSoapEndpoint(APITestCase):
 
 class TestProcessTestActualiseerZaakStatus(TestCase):
     def test_reject_not_xml(self):
-        test_msg = 'THIS IS NOT XML'
+        test_msg = b'THIS IS NOT XML'
         with self.assertRaises(lxml.etree.XMLSyntaxError):
             _parse_actualiseerZaakstatus_Lk01(test_msg)
 
@@ -202,7 +202,7 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
             'zaak_uuid': signal.signal_id,
             'resultaat_omschrijving': resultaat
         })
-        msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg)
+        msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
 
         # test uses knowledge of test XML message content
         self.assertEqual(

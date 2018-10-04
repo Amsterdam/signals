@@ -28,7 +28,7 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
     }
 
     # strip the relevant information from the return message
-    assert type(xml) != type(b'a')  # noqa: E721
+    assert type(xml) == type(b'a')  # noqa: E721
     tree = etree.fromstring(xml)
 
     def xpath(expression):
@@ -71,7 +71,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     """
     # TODO: Check that the incoming message matches our expectations, else Fo03
 
-    request_data = _parse_actualiseerZaakstatus_Lk01(request.body.decode('utf-8', 'strict'))
+    request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
     zaak_uuid = request_data['zaak_uuid']
 
     # Retrieve the relevant Signal, error out if it cannot be found
