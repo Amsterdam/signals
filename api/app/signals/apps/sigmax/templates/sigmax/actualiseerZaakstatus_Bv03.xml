@@ -3,7 +3,7 @@
         <berichtcode>Bv03</berichtcode>
         <zender>
             <organisatie>AMS</organisatie>
-            <applicatie/>
+            <applicatie>SIA</applicatie>
         </zender>
         <ontvanger>
             <organisatie>SMX</organisatie>

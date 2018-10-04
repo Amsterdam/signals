@@ -5,7 +5,7 @@
                 <berichtcode xmlns="http://www.egem.nl/StUF/StUF0301">Lk01</berichtcode>
                 <zender xmlns="http://www.egem.nl/StUF/StUF0301">
                     <organisatie>AMS</organisatie>
-                    <applicatie />
+                    <applicatie>SIA</applicatie>
                 </zender>
                 <ontvanger xmlns="http://www.egem.nl/StUF/StUF0301">
                     <organisatie>SMX</organisatie>
