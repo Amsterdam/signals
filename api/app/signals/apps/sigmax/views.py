@@ -15,8 +15,9 @@ from signals.auth.backend import JWTAuthBackend
 
 logger = logging.getLogger(__name__)
 
+# Note the quotes in SOAPAction header are required by SOAP
 ACTUALISEER_ZAAK_STATUS_SOAPACTION = \
-    'http://www.egem.nl/StUF/sector/zkn/0310/actualiseerZaakstatus_Lk01'
+    '"http://www.egem.nl/StUF/sector/zkn/0310/actualiseerZaakstatus_Lk01"'
 
 
 def _parse_actualiseerZaakstatus_Lk01(xml):
