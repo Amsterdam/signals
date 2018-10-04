@@ -36,7 +36,7 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
         return found[0].text if found else ''
 
     # TODO: handle missing data / nice error reporting
-    zaak_uuid = xpath('//zaak:stuurgegevens/stuf:referentienummer')
+    zaak_uuid = xpath('//zaak:object/zaak:identificatie')
     resultaat_omschrijving = xpath('//zaak:object/zaak:resultaat/zaak:omschrijving')
     datum_status_gezet = xpath('//zaak:object/zaak:heeft/zaak:datumStatusGezet')
     einddatum = xpath('//zaak:object/zaak:einddatum')
