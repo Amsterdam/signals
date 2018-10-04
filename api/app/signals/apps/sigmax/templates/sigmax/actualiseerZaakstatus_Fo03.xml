@@ -1,24 +1,34 @@
-<Fo03Bericht xmlns="http://www.egem.nl/StUF/StUF0301">
-    <stuurgegevens>
-        <berichtcode>Fo03</berichtcode>
-        <zender>
-            <organisatie>AMS</organisatie>
-            <applicatie/>
-        </zender>
-        <ontvanger>
-            <organisatie>SMX</organisatie>
-            <applicatie>CTC</applicatie>
-        </ontvanger>
-        <referentienummer>{{ zaak_uuid }}</referentienummer>
-        <tijdstipBericht>20180926125511405</tijdstipBericht>
-    </stuurgegevens>
-    <body>
-        <code>Fo03</code>
-        <plek>server</plek>
-        <omschrijving>Bericht kon niet verwerkt worden, zie details voor meer informatie.</omschrijving>
-        <details>{{ error_msg }}</details>
-        <detailsXML>
-            <error xmlns="">Foutreden 1 in xml vorm</error>
-        </detailsXML>
-    </body>
-</Fo03Bericht>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:stuf="http://www.egem.nl/StUF/StUF0301">
+  <soapenv:Body>
+    <soapenv:Fault>
+      <faultcode>Fo03 - code</faultcode>
+      <faultstring xml:lang="NL">Faultstring</faultstring>
+      <detail>
+        <Fo03Bericht xmlns="http://www.egem.nl/StUF/StUF0301">
+         <stuurgegevens>
+            <berichtcode>Fo03</berichtcode>
+            <zender>
+               <organisatie>AMS</organisatie>
+               <applicatie>SIA</applicatie>
+            </zender>
+            <ontvanger>
+               <organisatie>SMX</organisatie>
+               <applicatie>CTC</applicatie>
+            </ontvanger>
+            <referentienummer>{{ zaak_uuid }}</referentienummer>
+            <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
+         </stuurgegevens>
+         <body>
+            <code>Fo03</code>
+            <plek>server</plek>
+            <omschrijving>Bericht kon niet verwerkt worden, zie details voor meer informatie.</omschrijving>
+            <details>{{ error_msg }}</details>
+            <detailsXML>
+               <error xmlns="">Foutreden 1 in xml vorm</error>
+            </detailsXML>
+         </body>
+      </Fo03Bericht>
+      </detail>
+    </soapenv:Fault>
+  </soapenv:Body>
+</soapenv:Envelope>
