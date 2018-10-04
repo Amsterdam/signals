@@ -11,7 +11,7 @@
                     <organisatie>SMX</organisatie>
                     <applicatie>CTC</applicatie>
                 </ontvanger>
-                <referentienummer xmlns="http://www.egem.nl/StUF/StUF0301">{{ zaak_uuid }}</referentienummer>
+                <referentienummer xmlns="http://www.egem.nl/StUF/StUF0301">UUID_ABC</referentienummer>
                 <tijdstipBericht xmlns="http://www.egem.nl/StUF/StUF0301">{{ tijdstipbericht }}</tijdstipBericht>
                 <entiteittype xmlns="http://www.egem.nl/StUF/StUF0301">ZAK</entiteittype>
             </stuurgegevens>
@@ -20,7 +20,7 @@
                 <indicatorOvername xmlns="http://www.egem.nl/StUF/StUF0301">V</indicatorOvername>
             </parameters>
             <object d4p1:entiteittype="ZAK" d4p1:verwerkingssoort="W" xmlns:d4p1="http://www.egem.nl/StUF/StUF0301">
-                <identificatie>TEST12380</identificatie>
+                <identificatie>{{ zaak_uuid }}</identificatie>
                 <resultaat>
                     <omschrijving>{{ resultaat_omschrijving }}</omschrijving>
                     <toelichting>Hier de reden voor afhandeling ingevoerd door de gebruiker</toelichting>
