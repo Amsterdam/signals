@@ -187,6 +187,9 @@ class TestSoapEndpoint(APITestCase):
         self.assertIn(str(signal.signal_id), response.content.decode('utf-8', 'strict'))
         self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
 
+        signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+
 
 class TestProcessTestActualiseerZaakStatus(TestCase):
     def test_reject_not_xml(self):
