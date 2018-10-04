@@ -16,7 +16,7 @@
                <applicatie>CTC</applicatie>
             </ontvanger>
             <referentienummer>{{ zaak_uuid }}</referentienummer>
-            <tijdstipBericht>{% now "YmdHis"}</tijdstipBericht>
+            <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
          </stuurgegevens>
          <body>
             <code>Fo03</code>
