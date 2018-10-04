@@ -29,8 +29,8 @@
                 <ZKN:zaakniveau>1</ZKN:zaakniveau>
                 <ZKN:deelzakenIndicatie>N</ZKN:deelzakenIndicatie>
                 <StUF:extraElementen>
-                    <StUF:extraElement naam="Ycoordinaat">{{ signal.location.geometrie.y }}</StUF:extraElement>
-                    <StUF:extraElement naam="Xcoordinaat">{{ signal.location.geometrie.x }}</StUF:extraElement>
+                    <StUF:extraElement naam="Ycoordinaat">{{ y }}</StUF:extraElement>
+                    <StUF:extraElement naam="Xcoordinaat">{{ x }}</StUF:extraElement>
                 </StUF:extraElementen>
                 <ZKN:isVan StUF:entiteittype="ZAKZKT" StUF:verwerkingssoort="T">
                     <ZKN:gerelateerde StUF:entiteittype="ZKT" StUF:sleutelOntvangend="1" StUF:verwerkingssoort="T">

@@ -51,6 +51,8 @@ def _generate_creeerZaak_Lk01(signal):
     return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
         'signal': signal,
         'incident_date_end': signal.incident_date_end or incident_date_end,
+        'x': str(signal.location.geometrie.x),
+        'y': str(signal.location.geometrie.y),
     })
 
 

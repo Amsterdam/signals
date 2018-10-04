@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.gis.geos import Point
 from django.test import TestCase
 from django.utils import timezone
 from xmlunittest import XmlTestMixin
@@ -13,7 +14,8 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
     def test_generate_creeerZaak_Lk01(self):
         current_tz = timezone.get_current_timezone()
-        signal = SignalFactory.create(incident_date_end=None)
+        location = Point(4.1234, 52.1234)
+        signal = SignalFactory.create(incident_date_end=None, location__geometrie=location)
 
         xml_message = _generate_creeerZaak_Lk01(signal)
 
@@ -33,6 +35,12 @@ class TestOutgoing(TestCase, XmlTestMixin):
         self.assertIn(
             '<ZKN:einddatumGepland>{}</ZKN:einddatumGepland>'.format(
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
+            xml_message)
+        self.assertIn(
+            '<StUF:extraElement naam="Ycoordinaat">{}</StUF:extraElement>'.format(location.y),
+            xml_message)
+        self.assertIn(
+            '<StUF:extraElement naam="Xcoordinaat">{}</StUF:extraElement>'.format(location.x),
             xml_message)
 
     def test_generate_creeerZaak_Lk01_priority_high(self):
