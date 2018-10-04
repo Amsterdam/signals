@@ -1,15 +1,20 @@
-<Bv03Bericht xmlns="http://www.egem.nl/StUF/StUF0301">
-    <stuurgegevens>
-        <berichtcode>Bv03</berichtcode>
-        <zender>
-            <organisatie>AMS</organisatie>
-            <applicatie>SIA</applicatie>
-        </zender>
-        <ontvanger>
-            <organisatie>SMX</organisatie>
-            <applicatie>CTC</applicatie>
-        </ontvanger>
-        <referentienummer>{{ zaak_uuid }}</referentienummer>
-        <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
-    </stuurgegevens>
-</Bv03Bericht>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:stuf="http://www.egem.nl/StUF/StUF0301">
+  <soapenv:Header/>
+  <soapenv:Body>
+     <Bv03Bericht xmlns="http://www.egem.nl/StUF/StUF0301">
+        <stuurgegevens>
+           <berichtcode>Bv03</berichtcode>
+           <zender>
+              <organisatie>AMS</organisatie>
+              <applicatie>SIA</applicatie>
+           </zender>
+           <ontvanger>
+              <organisatie>SMX</organisatie>
+              <applicatie>CTC</applicatie>
+           </ontvanger>
+           <referentienummer>{{ zaak_uuid }}</referentienummer>
+           <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
+        </stuurgegevens>
+     </Bv03Bericht>
+  </soapenv:Body>
+</soapenv:Envelope>
