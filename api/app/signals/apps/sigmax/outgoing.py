@@ -18,7 +18,7 @@ from signals.apps.signals.models import Priority, Signal
 
 logger = logging.getLogger(__name__)
 
-# The douvble quotes are part of the SOAP spec
+# The double quotes are part of the SOAP spec
 CREEER_ZAAK_SOAPACTION = \
     '"http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01"'
 
