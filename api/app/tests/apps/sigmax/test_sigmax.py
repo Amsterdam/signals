@@ -176,7 +176,7 @@ class TestSendStufMessage(TestCase):
             'text/xml; charset=UTF-8'
         )
         self.assertEquals(
-            bytes(len(message)),
+            b'%d' % len(message),
             kwargs['headers']['Content-Length']
         )
 
