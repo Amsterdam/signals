@@ -8,6 +8,10 @@ ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DATAPUNT_AUTHZ['ALWAYS_OK'] = True  # noqa
 
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
+MEDIA_URL = '/signals/media/'
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
+
 INSTALLED_APPS.append(  # noqa
     'debug_toolbar'
 )
