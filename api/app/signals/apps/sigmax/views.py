@@ -90,7 +90,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     # update Signal status upon receiving message
     status_data = {
         'state': workflow.AFGEHANDELD_EXTERN,
-        'text': 'Afgehandeld door via SIGMAX / CITYCONTROL',
+        'text': 'Melding is afgehandeld door THOR.',
     }
 
     try:
