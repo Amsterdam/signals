@@ -34,7 +34,7 @@ def push_to_sigmax(pk):
             outgoing.handle(signal)
         except outgoing.SigmaxException:
             Signal.actions.update_status({
-                'state': workflow.MISLUKT,
+                'state': workflow.VERZENDEN_MISLUKT,
                 'text': 'Verzending van melding naar THOR is mislukt.',
             }, signal=signal)
             raise  # Fail task in Celery.
