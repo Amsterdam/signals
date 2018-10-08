@@ -186,6 +186,14 @@ class TestSignalManager(TransactionTestCase):
             prev_priority=prev_priority)
 
 
+class TestSignalModel(TestCase):
+
+    def test_sia_id(self):
+        signal = factories.SignalFactory.create(id=999)
+
+        self.assertEqual('SIA-999', signal.sia_id)
+
+
 class TestStatusModel(TestCase):
 
     def setUp(self):

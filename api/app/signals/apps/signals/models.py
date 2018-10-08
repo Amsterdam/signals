@@ -271,6 +271,14 @@ class Signal(CreatedUpdatedModel):
             self.created_at
         )
 
+    @property
+    def sia_id(self):
+        """SIA identifier used for external communication.
+
+        :returns: str
+        """
+        return 'SIA-{id}'.format(id=self.id)
+
 
 STADSDEEL_CENTRUM = 'A'
 STADSDEEL_WESTPOORT = 'B'

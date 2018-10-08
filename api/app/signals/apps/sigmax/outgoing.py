@@ -68,7 +68,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal):
         'DOC_UUID': escape(str(uuid.uuid4())),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
-        'FILE_NAME': f'MORA-{str(signal.id)}.pdf'
+        'FILE_NAME': f'{signal.sia_id}.pdf'
     })
 
 
