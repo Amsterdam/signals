@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from signals.apps.sigmax.pdf import _render_html, _generate_pdf
+from signals.apps.sigmax.pdf import _generate_pdf, _render_html
 from tests.apps.signals import factories
 
 
