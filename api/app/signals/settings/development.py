@@ -7,6 +7,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DATAPUNT_AUTHZ['ALWAYS_OK'] = True  # noqa
+SITE_DOMAIN = 'localhost:8000'
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL = '/signals/media/'

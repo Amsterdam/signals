@@ -1,6 +1,8 @@
 FROM amsterdam/python
 MAINTAINER datapunt@amsterdam.nl
 
+RUN apt-get update && apt-get install -y gdk-pixbuf
+
 ENV PYTHONUNBUFFERED 1
 
 EXPOSE 8000
