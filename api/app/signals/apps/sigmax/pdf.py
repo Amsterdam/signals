@@ -32,7 +32,7 @@ def _render_html(signal: Signal):
             # Generating a fully qualified url ourself.
             current_site = Site.objects.get_current()
             local = 'localhost' in current_site.domain or settings.DEBUG
-            context['image_url'] = '{scheme}://{domain}/{path}'.format(
+            context['image_url'] = '{scheme}://{domain}{path}'.format(
                 scheme='http' if local else 'https',
                 domain=current_site.domain,
                 path=signal.image.url)

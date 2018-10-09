@@ -27,7 +27,7 @@ class TestPDF(TestCase):
 
         html = _render_html(signal)
 
-        self.assertIn('<img src="http://localhost:8000/{}'.format(signal.image.url), html)
+        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image.url), html)
 
     @mock.patch('signals.apps.sigmax.pdf.isinstance', return_value=True)
     def test_render_html_with_swift_image(self, mocked_isinstance):
