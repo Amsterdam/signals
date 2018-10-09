@@ -47,7 +47,8 @@ coverage.xml
 # Django stuff:
 *.log
 api/app/signals/settings/local.py
-api/app/media
+api/media
+api/static
 
 # Sphinx documentation
 docs/_build/
