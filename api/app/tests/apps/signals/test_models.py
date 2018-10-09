@@ -1,3 +1,4 @@
+import copy
 from unittest import mock
 
 from django.contrib.gis.geos import Point
@@ -7,6 +8,7 @@ from django.utils import timezone
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
+    get_address_text,
     STADSDEEL_CENTRUM,
     CategoryAssignment,
     Location,
@@ -16,6 +18,7 @@ from signals.apps.signals.models import (
     Status
 )
 from tests.apps.signals import factories
+from tests.apps.signals import valid_locations
 
 
 class TestSignalManager(TransactionTestCase):
@@ -264,3 +267,40 @@ class TestCategoryDeclarations(TestCase):
         department = factories.DepartmentFactory.create(code='ABC', name='Department A')
 
         self.assertEqual(str(department), 'ABC (Department A)')
+
+
+class GetAddressTextTest(TestCase):
+    def setUp(self):
+        self.signal = factories.SignalFactoryValidLocation.create()
+        self.location = self.signal.location
+
+        self.location.address = valid_locations.STADHUIS
+        self.location.save()
+
+    def test_full_address_text(self):
+        correct = 'Amstel 1 1011PN Amsterdam'
+        address_text = get_address_text(self.location)
+
+        self.assertEqual(correct, address_text)
+        self.assertEqual(self.signal.location.address_text, address_text)
+
+    def test_short_address_text(self):
+        correct = 'Amstel 1'
+        address_text = get_address_text(self.location, short=True)
+
+        self.assertEqual(address_text, correct)
+        self.assertEqual(self.signal.location.short_address_text, correct)
+
+    def test_full_address_with_toevoeging(self):
+        address = {
+            'openbare_ruimte': 'Sesamstraat',
+            'huisnummer': 1,
+            'huisletter': 'A',
+            'huisnummer_toevoeging': 'achter',
+            'postcode': '9999ZZ',
+            'woonplaats': 'Amsterdam',
+        }
+        self.location.address = address
+
+        correct = 'Sesamstraat 1A-achter 9999ZZ Amsterdam'
+        self.assertEqual(get_address_text(self.location, short=False), correct)

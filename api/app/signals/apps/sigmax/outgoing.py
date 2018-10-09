@@ -35,6 +35,19 @@ class SigmaxException(Exception):
 
 # TODO SIG-593: implement data mapping if and when it is defined
 
+def _generate_omschrijving(signal):
+    """Generate brief descriptive text for list view in CityControl"""
+    # Note: we do not mention main or subcategory here (too many characters)
+    is_urgent = 'JA' if signal.priority.priority == Priority.PRIORITY_HIGH else 'NEE'
+    stadsdeel = signal.location.stadsdeel if signal.location.stadsdeel else '-'
+
+    return 'SIA-{} {} {} {}'.format(
+        signal.id,
+        is_urgent,
+        stadsdeel,
+        signal.location.short_address_text,
+    )
+
 def _generate_creeerZaak_Lk01(signal):
     """Generate XML for Sigmax creeerZaak_Lk01
 
@@ -53,6 +66,7 @@ def _generate_creeerZaak_Lk01(signal):
         'incident_date_end': signal.incident_date_end or incident_date_end,
         'x': str(signal.location.geometrie.x),
         'y': str(signal.location.geometrie.y),
+        'omschrijving': _generate_omschrijving(signal),
     })
 
 

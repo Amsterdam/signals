@@ -21,10 +21,11 @@
             </ZKN:parameters>
             <ZKN:object StUF:entiteittype="ZAK" StUF:sleutelGegevensbeheer="" StUF:verwerkingssoort="T">
                 <ZKN:identificatie>{{ signal.signal_id }}</ZKN:identificatie>
-                <ZKN:omschrijving>{{ signal.text }}</ZKN:omschrijving>
+                <ZKN:omschrijving>{{ omschrijving }}</ZKN:omschrijving>
                 <ZKN:startdatum>{{ signal.incident_date_start|date:"Ymd" }}</ZKN:startdatum>
                 <ZKN:registratiedatum>{{ signal.created_at|date:"Ymd" }}</ZKN:registratiedatum>
                 <ZKN:einddatumGepland>{{ incident_date_end|date:"Ymd" }}</ZKN:einddatumGepland>
+                <ZKN:toelichting>{{ signal.text|truncatechars:1000 }}</ZKN:toelichting>
                 <ZKN:archiefnominatie>N</ZKN:archiefnominatie>
                 <ZKN:zaakniveau>1</ZKN:zaakniveau>
                 <ZKN:deelzakenIndicatie>N</ZKN:deelzakenIndicatie>
