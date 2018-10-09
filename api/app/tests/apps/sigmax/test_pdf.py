@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from signals.apps.sigmax.pdf import _render_html
+from signals.apps.sigmax.pdf import _render_html, _generate_pdf
 from tests.apps.signals import factories
 
 
@@ -37,3 +37,21 @@ class TestPDF(TestCase):
         html = _render_html(signal)
 
         self.assertIn('<img src="url/to/image.jpg'.format(signal.image.url), html)
+
+    @mock.patch('signals.apps.sigmax.pdf._render_html')
+    @mock.patch('signals.apps.sigmax.pdf.weasyprint')
+    def test_generate_pdf(self, mocked_weasyprint, mocked_render_html):
+        fake_pdf = b'abc'
+        mocked_rendered_html = mock.Mock()
+        mocked_weasyprint_html = mock.Mock()
+        mocked_weasyprint_html.write_pdf.return_value = fake_pdf
+        mocked_render_html.return_value = mocked_rendered_html
+        mocked_weasyprint.HTML.return_value = mocked_weasyprint_html
+
+        signal = factories.SignalFactory.create()
+
+        pdf = _generate_pdf(signal)
+
+        mocked_render_html.assert_called_once_with(signal)
+        mocked_weasyprint.HTML.assert_called_once_with(string=mocked_rendered_html)
+        self.assertEqual(pdf, b'YWJj')  # base64 encoded `fake_pdf`

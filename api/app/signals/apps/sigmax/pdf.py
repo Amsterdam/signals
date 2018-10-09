@@ -10,14 +10,19 @@ from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from swift.storage import SwiftStorage
 
-# Because weasyprint can produce a lot of warnings (unsupported
-# CSS etc.) we ignore them.
 from signals.apps.signals.models import Signal
 
+# Because weasyprint can produce a lot of warnings (unsupported
+# CSS etc.) we ignore them.
 logging.getLogger('weasyprint').setLevel(100)
 
 
 def _render_html(signal: Signal):
+    """Render given `Signal` with HTML template used for PDF generation.
+
+    :param signal: Signal object
+    :returns: HTML str
+    """
     context = {'signal': signal, }
     if signal.image:
         is_swift = isinstance(signal.image.storage, SwiftStorage)
@@ -36,8 +41,10 @@ def _render_html(signal: Signal):
 
 
 def _generate_pdf(signal: Signal):
-    """
-    Generate PDF to send to VoegZaakdocumentToe_Lk01 (returns base64 encoded data).
+    """Generate PDF to send to VoegZaakdocumentToe_Lk01.
+
+    :param signal: Signal object
+    :returns: base64 encoded data
     """
     html = _render_html(signal)
     pdf = weasyprint.HTML(string=html).write_pdf()
