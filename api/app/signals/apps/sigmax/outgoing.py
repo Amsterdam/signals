@@ -107,7 +107,7 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
         'SOAPAction': soap_action,
         'Content-Type': 'text/xml; charset=UTF-8',
         'Authorization': 'Basic ' + settings.SIGMAX_AUTH_TOKEN,
-        'Content-Length': bytes(len(encoded))
+        'Content-Length': b'%d' % len(encoded)
     }
 
     # Send our message to Sigmax. Network problems, and HTTP status codes
