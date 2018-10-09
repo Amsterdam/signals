@@ -1,9 +1,9 @@
 # Documentatie workflow in Signalen Informatievoorziening Amsterdam (SIA)
 
 De meldingen in de SIA doorlopen een proces van een aantal stappen. Deze
-workflow wordt in SIA gemodelleerd wordt in technische termen gemodelleerd als
+workflow wordt in SIA gemodelleerd als een, in technische termen,
 "state machine". De status van een melding wordt gebruikt om bij te houden waar
-in het proces een melding zich bevind en welke vervolgstappen mogelijk zijn.
+in het proces een melding zich bevindt en welke vervolgstappen mogelijk zijn.
 
 
 ## Statussen in de SIA workflow
@@ -17,7 +17,7 @@ gebruikt worden. Een status van het tweede type noemen we in het vervolg een
 * **GEMELD**: Status van de eerste stap in het behandel proces binnen SIA.
 * **AFWACHTING**: (input nodig van functioneel beheer)
 * **ON_HOLD**: (input nodig van functioneel beheer)
-* **BEHANDELING**: Status voor meldingen die in behandeling zijn, en waarvan dat
+* **BEHANDELING**: Status voor meldingen die in behandeling zijn en waarvan dat
   proces vanuit de SIA back office applicatie wordt begeleid.
 * **AFGEHANDELD**: Status voor meldingen die afgehandeld zijn in SIA.
 * **GEANNULEERD**: Status voor meldingen die niet in behandeling genomen worden.
