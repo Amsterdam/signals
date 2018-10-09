@@ -73,6 +73,10 @@ class SignalFactory(factory.DjangoModelFactory):
         self.priority = self.priorities.last()
 
 
+class SignalFactoryWithImage(SignalFactory):
+    image = factory.django.ImageField()
+
+
 class SignalFactoryValidLocation(SignalFactory):
     location = factory.RelatedFactory(
         'tests.apps.signals.factories.ValidLocationFactory', '_signal')

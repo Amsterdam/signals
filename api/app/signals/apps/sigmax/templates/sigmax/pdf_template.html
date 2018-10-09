@@ -2,54 +2,52 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Melding MORA-{{ signal.id }} </title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-</head>
+    <title>Melding {{ signal.sia_id }} </title>
 </head>
 <body>
 
-<h2>Melding MORA-{{ signal.id }} </h2>
-<table style="width:100%" class="table">
-  <tr>
-    <td>Datum</td>
-    <td>{{ datum }}</td> 
-  </tr>
-  <tr>
-    <td>Tijdstip</td>
-    <td>{{ tijdstip }}</td> 
-  </tr>
-  <tr>
-    <td>Hoofdrubriek</td>
-    <td>{{ hoofdrubriek }}</td> 
-  </tr>
-  <tr>
-    <td>Subrubriek</td>
-    <td>{{ subrubriek }}</td> 
-  </tr>
-  <tr>
-    <td>Omschrijving</td>
-    <td>{{ omschrijving }} </td> 
-  </tr>
-  <tr>
-    <td>Stadsdeel</td>
-    <td>{{ stadsdeel }}</td> 
-  </tr>
-  <tr>
-    <td>Adres</td>
-    <td>{{ adres }}</td> 
-  </tr>
-  <tr>
-    <td>Bron</td>
-    <td>{{ bron }}</td> 
-  </tr>
-  <tr>
-    <td>Email</td>
-    <td>{{ email }}</td> 
-  </tr>
-  <tr>
-    <td>Telefoonnummer</td>
-    <td>{{ telefoonnummer }}</td> 
-  </tr>
+<h2>Melding {{ signal.sia_id }} </h2>
+<table class="table">
+    <tr>
+        <td>Datum</td>
+        <td>{{ signal.created_at|date:"Y m d" }}</td>
+    </tr>
+    <tr>
+        <td>Tijdstip</td>
+        <td>{{ signal.created_at|date:"H:m:s" }}</td>
+    </tr>
+    <tr>
+        <td>Hoofdrubriek</td>
+        <td>{{ signal.category_assignment.sub_category.main_category.name }}</td>
+    </tr>
+    <tr>
+        <td>Subrubriek</td>
+        <td>{{ signal.category_assignment.sub_category.name }}</td>
+    </tr>
+    <tr>
+        <td>Urgentie</td>
+        <td>{{ signal.priority.get_priority_display }}</td>
+    </tr>
+    <tr>
+        <td>Omschrijving</td>
+        <td>{{ signal.text }}</td>
+    </tr>
+    <tr>
+        <td>Stadsdeel</td>
+        <td>{{ signal.location.get_stadsdeel_display }}</td>
+    </tr>
+    <tr>
+        <td>Adres</td>
+        <td>{{ signal.location.address_text }}</td>
+    </tr>
+    <tr>
+        <td>Bron</td>
+        <td>{{ signal.source }}</td>
+    </tr>
+    <tr>
+        <td>Foto</td>
+        <td><img src="{{ image_url }}" width="500" alt=""></td>
+    </tr>
 </table>
 
 </body>

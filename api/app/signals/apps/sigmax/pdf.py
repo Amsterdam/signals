@@ -5,7 +5,10 @@ import base64
 import logging
 
 import weasyprint
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
+from swift.storage import SwiftStorage
 
 # Because weasyprint can produce a lot of warnings (unsupported
 # CSS etc.) we ignore them.
@@ -15,21 +18,21 @@ logging.getLogger('weasyprint').setLevel(100)
 
 
 def _render_html(signal: Signal):
-    dt = signal.created_at
+    context = {'signal': signal, }
+    if signal.image:
+        is_swift = isinstance(signal.image.storage, SwiftStorage)
+        if is_swift:
+            context['image_url'] = signal.image.url  # Generated temp url to Swift Object Store.
+        else:
+            # Generating a fully qualified url ourself.
+            current_site = Site.objects.get_current()
+            local = 'localhost' in current_site.domain or settings.DEBUG
+            context['image_url'] = '{scheme}://{domain}/{path}'.format(
+                scheme='http' if local else 'https',
+                domain=current_site.domain,
+                path=signal.image.url)
 
-    return render_to_string('sigmax/pdf_template.html', context={
-        'signal': signal,
-        'datum': dt.strftime('%Y %m %d'),
-        'tijdstip': dt.strftime('%H:%M:%S'),
-        'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
-        'subrubriek': signal.category_assignment.sub_category.name,
-        'omschrijving': signal.text,
-        'stadsdeel': '',  # TODO, extract from gebieden API?
-        'adres': signal.location.address_text,
-        'bron': signal.source,
-        'email': 'placeholder@example.com',
-        'telefoonnummer': 'nvt',
-    })
+    return render_to_string('sigmax/pdf_template.html', context=context)
 
 
 def _generate_pdf(signal: Signal):
