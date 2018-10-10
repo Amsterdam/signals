@@ -21,7 +21,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
         self.assertXmlDocument(xml_message)
         self.assertIn(
-            '<StUF:referentienummer>{}</StUF:referentienummer>'.format(signal.signal_id),
+            '<StUF:referentienummer>{}</StUF:referentienummer>'.format(signal.sia_id),
             xml_message)
         self.assertIn(
             '<StUF:tijdstipBericht>{}</StUF:tijdstipBericht>'.format(

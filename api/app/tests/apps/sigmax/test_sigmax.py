@@ -58,11 +58,11 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         need_to_find = dict([
             (
                 '{http://www.egem.nl/StUF/StUF0301}referentienummer',
-                self.signal.signal_id
+                self.signal.sia_id
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}identificatie',
-                self.signal.signal_id
+                self.signal.sia_id
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',

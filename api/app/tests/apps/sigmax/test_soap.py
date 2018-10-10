@@ -1,4 +1,3 @@
-import uuid
 from unittest import mock
 
 import lxml
@@ -10,7 +9,8 @@ from rest_framework.test import APITestCase
 
 from signals.apps.sigmax.views import (
     ACTUALISEER_ZAAK_STATUS_SOAPACTION,
-    _parse_actualiseerZaakstatus_Lk01
+    _parse_actualiseerZaakstatus_Lk01,
+    _parse_sia_id
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -114,9 +114,10 @@ class TestSoapEndpoint(APITestCase):
         """Test that we generate a Fo03 if no signal can be found to go with it."""
         self.assertEqual(Signal.objects.count(), 0)
 
+        mocked_signal = mock.Mock(sia_id='SIA-1234567890')
         # generate test message
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'zaak_uuid': uuid.uuid4(),
+            'signal': mocked_signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -133,14 +134,14 @@ class TestSoapEndpoint(APITestCase):
 
         # check that the request was rejected because no signal is present in database
         self.assertEqual(response.status_code, 500)
-        self.assertIn('Melding met signal_id', response.content.decode('utf-8', 'strict'))
+        self.assertIn('Melding met sia_id', response.content.decode('utf-8', 'strict'))
 
     def test_with_signal_for_message_wrong_state(self):
         signal = SignalFactoryValidLocation.create()
         self.assertEqual(Signal.objects.count(), 1)
 
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'zaak_uuid': signal.signal_id,
+            'signal': signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -156,7 +157,7 @@ class TestSoapEndpoint(APITestCase):
         )
 
         self.assertEqual(response.status_code, 500)
-        self.assertIn(str(signal.signal_id), response.content.decode('utf-8', 'strict'))
+        self.assertIn(str(signal.sia_id), response.content.decode('utf-8', 'strict'))
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
     def test_with_signal_for_message_correct_state(self):
@@ -168,7 +169,7 @@ class TestSoapEndpoint(APITestCase):
         self.assertEqual(Signal.objects.count(), 1)
 
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'zaak_uuid': signal.signal_id,
+            'signal': signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -184,7 +185,7 @@ class TestSoapEndpoint(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(str(signal.signal_id), response.content.decode('utf-8', 'strict'))
+        self.assertIn(str(signal.sia_id), response.content.decode('utf-8', 'strict'))
         self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
 
         signal.refresh_from_db()
@@ -202,15 +203,15 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
         resultaat = 'Er is gehandhaafd'
 
         test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'zaak_uuid': signal.signal_id,
+            'signal': signal,
             'resultaat_omschrijving': resultaat
         })
         msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
 
         # test uses knowledge of test XML message content
         self.assertEqual(
-            msg_content['zaak_uuid'],
-            str(signal.signal_id)
+            msg_content['sia_id'],
+            str(signal.sia_id)
         )
         self.assertEqual(
             msg_content['datum_afgehandeld'],
@@ -221,3 +222,26 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
             resultaat
         )
         self.assertIn('reden', msg_content)
+
+
+class TestParseSiaId(TestCase):
+    def test_correct_sia_id(self):
+        self.assertEqual(_parse_sia_id('SIA-987'), 987)
+
+    def test_wrong_sia_id(self):
+        with self.assertRaises(ValueError):
+            _parse_sia_id('NOT A SIA ID')
+
+        with self.assertRaises(ValueError):
+            _parse_sia_id('SIA-NOTNUMBER')
+
+    def test_empty_sia_id(self):
+        with self.assertRaises(ValueError):
+            _parse_sia_id('')
+
+        with self.assertRaises(ValueError):
+            _parse_sia_id('SIA-')
+
+    def test_incorrect_type(self):
+        with self.assertRaises(AttributeError):
+            _parse_sia_id(None)

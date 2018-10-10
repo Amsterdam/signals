@@ -11,7 +11,7 @@
                     <StUF:organisatie>SMX</StUF:organisatie>
                     <StUF:applicatie>CTC</StUF:applicatie>
                 </StUF:ontvanger>
-                <StUF:referentienummer>{{ signal.signal_id }}</StUF:referentienummer>
+                <StUF:referentienummer>{{ signal.sia_id }}</StUF:referentienummer>
                 <StUF:tijdstipBericht>{{ signal.created_at|date:"YmdHis" }}</StUF:tijdstipBericht>
                 <StUF:entiteittype>ZAK</StUF:entiteittype>
             </ZKN:stuurgegevens>
@@ -20,7 +20,7 @@
                 <StUF:indicatorOvername>V</StUF:indicatorOvername>
             </ZKN:parameters>
             <ZKN:object StUF:entiteittype="ZAK" StUF:sleutelGegevensbeheer="" StUF:verwerkingssoort="T">
-                <ZKN:identificatie>{{ signal.signal_id }}</ZKN:identificatie>
+                <ZKN:identificatie>{{ signal.sia_id }}</ZKN:identificatie>
                 <ZKN:omschrijving>{{ omschrijving }}</ZKN:omschrijving>
                 <ZKN:startdatum>{{ signal.incident_date_start|date:"Ymd" }}</ZKN:startdatum>
                 <ZKN:registratiedatum>{{ signal.created_at|date:"Ymd" }}</ZKN:registratiedatum>
