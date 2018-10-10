@@ -240,7 +240,10 @@ class Signal(CreatedUpdatedModel):
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
     image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
-    image_crop = ImageSpecField(source='image', processors=[ResizeToFit(600, 600), ])
+    image_crop = ImageSpecField(source='image',
+                                processors=[ResizeToFit(800, 800), ],
+                                format='JPEG',
+                                options={'quality': 80})
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
     upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
