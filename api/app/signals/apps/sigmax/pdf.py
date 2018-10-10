@@ -7,34 +7,31 @@ import logging
 import weasyprint
 from django.template.loader import render_to_string
 
-# Because weasyprint can produce a lot of warnings (unsupported
-# CSS etc.) we ignore them.
 from signals.apps.signals.models import Signal
 
+# Because weasyprint can produce a lot of warnings (unsupported
+# CSS etc.) we ignore them.
 logging.getLogger('weasyprint').setLevel(100)
 
 
 def _render_html(signal: Signal):
-    dt = signal.created_at
+    """Render given `Signal` with HTML template used for PDF generation.
 
-    return render_to_string('sigmax/pdf_template.html', context={
+    :param signal: Signal object
+    :returns: HTML str
+    """
+    context = {
         'signal': signal,
-        'datum': dt.strftime('%Y %m %d'),
-        'tijdstip': dt.strftime('%H:%M:%S'),
-        'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
-        'subrubriek': signal.category_assignment.sub_category.name,
-        'omschrijving': signal.text,
-        'stadsdeel': '',  # TODO, extract from gebieden API?
-        'adres': signal.location.address_text,
-        'bron': signal.source,
-        'email': 'placeholder@example.com',
-        'telefoonnummer': 'nvt',
-    })
+        'image_url': signal.get_fqdn_image_url()
+    }
+    return render_to_string('sigmax/pdf_template.html', context=context)
 
 
 def _generate_pdf(signal: Signal):
-    """
-    Generate PDF to send to VoegZaakdocumentToe_Lk01 (returns base64 encoded data).
+    """Generate PDF to send to VoegZaakdocumentToe_Lk01.
+
+    :param signal: Signal object
+    :returns: base64 encoded data
     """
     html = _render_html(signal)
     pdf = weasyprint.HTML(string=html).write_pdf()

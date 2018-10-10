@@ -1,6 +1,8 @@
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
@@ -184,6 +186,40 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             priority=priority,
             prev_priority=prev_priority)
+
+
+class TestSignalModel(TestCase):
+
+    def test_sia_id(self):
+        signal = factories.SignalFactory.create(id=999)
+
+        self.assertEqual('SIA-999', signal.sia_id)
+
+    def test_get_fqdn_image_url_no_image(self):
+        signal = factories.SignalFactory.create()
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual(image_url, None)
+
+    def test_get_fqdn_image_url_with_local_image(self):
+        Site.objects.update_or_create(
+            id=settings.SITE_ID,
+            defaults={'domain': settings.SITE_DOMAIN, 'name': settings.SITE_NAME})
+        signal = factories.SignalFactoryWithImage.create()
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual('http://localhost:8000{}'.format(signal.image.url), image_url)
+
+    @mock.patch('signals.apps.signals.models.isinstance', return_value=True)
+    def test_get_fqdn_image_url_with_swift_image(self, mocked_isinstance):
+        signal = factories.SignalFactory.create()
+        signal.image = mock.Mock(url='https://objectstore.com/url/coming/from/swift/image.jpg')
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 
 
 class TestStatusModel(TestCase):

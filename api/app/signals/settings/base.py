@@ -28,6 +28,9 @@ ALLOWED_HOSTS = [
 ADMIN_LOGIN = 'signals.admin@amsterdam.nl'
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 CORS_ORIGIN_ALLOW_ALL = True
+SITE_ID = 1
+SITE_NAME = 'Signalen API'
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
 
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
@@ -41,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.gis',
@@ -76,6 +80,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
 ]
@@ -137,9 +142,11 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images) and media files
 STATIC_URL = '/signals/static/'
-STATIC_ROOT = '/static/'
+STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
+MEDIA_URL = '/signals/media/'
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
 if os.getenv('SWIFT_ENABLED', 'false') == 'true':
@@ -153,9 +160,6 @@ if os.getenv('SWIFT_ENABLED', 'false') == 'true':
     SWIFT_CONTAINER_NAME = os.getenv('SWIFT_CONTAINER_NAME')
     SWIFT_TEMP_URL_KEY = os.getenv('SWIFT_TEMP_URL_KEY')
     SWIFT_USE_TEMP_URLS = True
-else:
-    # noinspection PyUnresolvedReferences
-    MEDIA_ROOT = '/tmp/signals/upload'
 
 # Object store - Datawarehouse (DWH)
 DWH_SWIFT_AUTH_URL = os.getenv('SWIFT_AUTH_URL')

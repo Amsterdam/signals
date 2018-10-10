@@ -1,12 +1,16 @@
 FROM amsterdam/python
 MAINTAINER datapunt@amsterdam.nl
 
+# libgdk-pixbuf is needed to generate PDF files with rendered JPEG images.
+RUN apt-get update && apt-get install -y libgdk-pixbuf2.0-0
+
 ENV PYTHONUNBUFFERED 1
 
 EXPOSE 8000
 
-RUN mkdir -p /static && chown datapunt /static
 RUN mkdir -p /app && chown datapunt /app
+RUN mkdir -p /static && chown datapunt /static
+RUN mkdir -p /media && chown datapunt /media
 RUN mkdir -p /deploy && chown datapunt /deploy
 
 COPY requirements.txt /requirements.txt
