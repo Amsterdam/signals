@@ -1,6 +1,8 @@
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
@@ -201,6 +203,9 @@ class TestSignalModel(TestCase):
         self.assertEqual(image_url, None)
 
     def test_get_fqdn_image_url_with_local_image(self):
+        Site.objects.update_or_create(
+            id=settings.SITE_ID,
+            defaults={'domain': settings.SITE_DOMAIN, 'name': settings.SITE_NAME})
         signal = factories.SignalFactoryWithImage.create()
 
         image_url = signal.get_fqdn_image_url()
