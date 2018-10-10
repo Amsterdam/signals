@@ -69,7 +69,7 @@ def _handle_unknown_soap_action(request):
 
 def _parse_sia_id(sia_id):
     """Extract `id` from `Signal.sia_id` type strings."""
-    if sia_id[:4] == 'SIA-':
+    if sia_id.startswith('SIA-'):
         return int(sia_id[4:])
     raise ValueError("Incorrect value for sia_id: '{}'".format(sia_id))
 
@@ -85,9 +85,9 @@ def _handle_actualiseerZaakstatus_Lk01(request):
 
     # Retrieve the relevant Signal, error out if it cannot be found
     try:
-        _id = _parse_sia_id(sia_id)  # raise ValueError or TypeError
+        _id = _parse_sia_id(sia_id)  # raise ValueError or AttributeError
         signal = Signal.objects.get(pk=_id)
-    except (Signal.DoesNotExist, ValueError, TypeError):
+    except (Signal.DoesNotExist, ValueError, AttributeError):
         error_msg = f'Melding met sia_id {sia_id} niet gevonden.'
         logger.warning(error_msg, exc_info=True)
         return render(

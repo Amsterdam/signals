@@ -243,5 +243,5 @@ class TestParseSiaId(TestCase):
             _parse_sia_id('SIA-')
 
     def test_incorrect_type(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             _parse_sia_id(None)
