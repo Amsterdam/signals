@@ -328,6 +328,30 @@ def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
+def get_address_text(location, short=False):
+    """Generate address text, shortened if needed."""
+
+    field_prefixes = (
+        ('openbare_ruimte', ''),
+        ('huisnummer', ' '),
+        ('huisletter', ''),
+        ('huisnummer_toevoeging', '-'),
+        ('postcode', ' '),
+        ('woonplaats', ' ')
+    )
+
+    if short:
+        field_prefixes = field_prefixes[:-2]
+
+    address_text = ''
+    if location.address and isinstance(location.address, dict):
+        for field, prefix in field_prefixes:
+            if field in location.address and location.address[field]:
+                address_text += prefix + str(location.address[field])
+
+    return address_text
+
+
 class Location(CreatedUpdatedModel):
     """All location related information."""
 
@@ -347,21 +371,12 @@ class Location(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)
 
+    @property
+    def short_address_text(self):
+        return get_address_text(self, short=True)
+
     def set_address_text(self):
-        field_prefixes = (
-            ('openbare_ruimte', ''),
-            ('huisnummer', ' '),
-            ('huisletter', ''),
-            ('huisnummer_toevoeging', '-'),
-            ('postcode', ' '),
-            ('woonplaats', ' ')
-        )
-        address_text = ''
-        if self.address and isinstance(self.address, dict):
-            for field, prefix in field_prefixes:
-                if field in self.address and self.address[field]:
-                    address_text += prefix + str(self.address[field])
-            self.address_text = address_text
+        self.address_text = get_address_text(self)
 
     def save(self, *args, **kwargs):
         # Set address_text
