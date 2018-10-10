@@ -43,7 +43,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         msg = outgoing._generate_creeerZaak_Lk01(poison)
         self.assertTrue('<poison>' not in msg)
 
-    def test_propagate_signal_properties_to_message(self):
+    def test_propagate_signal_properties_to_message_full_address(self):
         msg = outgoing._generate_creeerZaak_Lk01(self.signal)
         current_tz = timezone.get_current_timezone()
 
@@ -106,6 +106,23 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
                     logger.debug('element.text {}'.format(element.text))
 
         self.assertEquals(len(need_to_find), 0)
+
+    def test_no_address_means_no_address_fields(self):
+        self.signal.location.address = None
+        self.signal.save()
+
+        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
+
+        # first test that we have obtained valid XML
+        try:
+            tree = etree.fromstring(msg)
+        except Exception:
+            self.fail('Cannot parse STUF message as XML')
+
+        namespaces = {'zaak': 'http://www.egem.nl/StUF/sector/zkn/0310'}
+
+        found = tree.xpath('//zaak:object//zaak:heeftBetrekkingOp', namespaces=namespaces)
+        self.assertEqual(found, [])
 
 
 class TestVoegZaakDocumentToeLk01Message(TestCase):
