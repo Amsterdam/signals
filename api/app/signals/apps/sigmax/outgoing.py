@@ -39,7 +39,7 @@ def _generate_omschrijving(signal):
     """Generate brief descriptive text for list view in CityControl"""
     # Note: we do not mention main or subcategory here (too many characters)
     is_urgent = 'JA' if signal.priority.priority == Priority.PRIORITY_HIGH else 'NEE'
-    stadsdeel = signal.location.stadsdeel if signal.location.stadsdeel else '-'
+    stadsdeel = signal.location.stadsdeel or '-'
 
     return 'SIA-{} {} {} {}'.format(
         signal.id,

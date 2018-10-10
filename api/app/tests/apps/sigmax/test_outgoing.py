@@ -60,8 +60,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
 class TestGenerateOmschrijving(TestCase):
     def setUp(self):
-        self.signal = SignalFactoryValidLocation()
-        self.signal.priority.priority = Priority.PRIORITY_HIGH
+        self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
     def test_generate_omschrijving(self):
         correct = 'SIA-{} JA {} {}'.format(
