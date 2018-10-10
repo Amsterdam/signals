@@ -118,7 +118,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal):
     encoded_pdf = _generate_pdf(signal)
 
     return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={
-        'ZKN_UUID': str(signal.signal_id),
+        'signal': signal,
         'DOC_UUID': escape(str(uuid.uuid4())),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
