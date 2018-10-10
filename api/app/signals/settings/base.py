@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djcelery_email',
     'drf_yasg',
+    'imagekit',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',

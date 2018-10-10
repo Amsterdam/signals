@@ -196,29 +196,30 @@ class TestSignalModel(TestCase):
 
         self.assertEqual('SIA-999', signal.sia_id)
 
-    def test_get_fqdn_image_url_no_image(self):
+    def test_get_fqdn_image_crop_url_no_image(self):
         signal = factories.SignalFactory.create()
 
-        image_url = signal.get_fqdn_image_url()
+        image_url = signal.get_fqdn_image_crop_url()
 
         self.assertEqual(image_url, None)
 
-    def test_get_fqdn_image_url_with_local_image(self):
+    def test_get_fqdn_image_crop_url_with_local_image(self):
         Site.objects.update_or_create(
             id=settings.SITE_ID,
             defaults={'domain': settings.SITE_DOMAIN, 'name': settings.SITE_NAME})
         signal = factories.SignalFactoryWithImage.create()
 
-        image_url = signal.get_fqdn_image_url()
+        image_url = signal.get_fqdn_image_crop_url()
 
-        self.assertEqual('http://localhost:8000{}'.format(signal.image.url), image_url)
+        self.assertEqual('http://localhost:8000{}'.format(signal.image_crop.url), image_url)
 
+    @mock.patch('imagekit.cachefiles.ImageCacheFile.url', new_callable=mock.PropertyMock)
     @mock.patch('signals.apps.signals.models.isinstance', return_value=True)
-    def test_get_fqdn_image_url_with_swift_image(self, mocked_isinstance):
-        signal = factories.SignalFactory.create()
-        signal.image = mock.Mock(url='https://objectstore.com/url/coming/from/swift/image.jpg')
+    def test_get_fqdn_image_crop_url_with_swift_image(self, mocked_isinstance, mocked_url):
+        mocked_url.return_value = 'https://objectstore.com/url/coming/from/swift/image.jpg'
+        signal = factories.SignalFactoryWithImage.create()
 
-        image_url = signal.get_fqdn_image_url()
+        image_url = signal.get_fqdn_image_crop_url()
 
         self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 

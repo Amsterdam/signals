@@ -21,7 +21,7 @@ class TestPDF(TestCase):
         self.assertIn(signal.location.get_stadsdeel_display(), html)
         self.assertIn(signal.location.address_text, html)
         self.assertIn(signal.source, html)
-        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image.url), html)
+        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
 
     @mock.patch('signals.apps.sigmax.pdf._render_html')
     @mock.patch('signals.apps.sigmax.pdf.weasyprint')
