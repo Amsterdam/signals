@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>Melding {{ signal.sia_id }} </title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -46,8 +52,10 @@
         <td>{{ signal.source }}</td>
     </tr>
     <tr>
-        <td>Foto</td>
-        <td><img src="{{ image_url }}" width="300" alt=""></td>
+        <td colspan="2">
+            Foto <br>
+            <img src="{{ image_url }}" width="400" alt="">
+        </td>
     </tr>
 </table>
 
