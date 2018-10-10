@@ -12,7 +12,7 @@
               <organisatie>SMX</organisatie>
               <applicatie>CTC</applicatie>
            </ontvanger>
-           <referentienummer>{{ zaak_uuid }}</referentienummer>
+           <referentienummer>{{ signal.sia_id }}</referentienummer>
            <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
         </stuurgegevens>
      </Bv03Bericht>
