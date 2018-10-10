@@ -20,7 +20,7 @@
                 <indicatorOvername xmlns="http://www.egem.nl/StUF/StUF0301">V</indicatorOvername>
             </parameters>
             <object d4p1:entiteittype="ZAK" d4p1:verwerkingssoort="W" xmlns:d4p1="http://www.egem.nl/StUF/StUF0301">
-                <identificatie>{{ sia_id }}</identificatie>
+                <identificatie>{{ signal.sia_id }}</identificatie>
                 <resultaat>
                     <omschrijving>{{ resultaat_omschrijving }}</omschrijving>
                     <toelichting>Hier de reden voor afhandeling ingevoerd door de gebruiker</toelichting>

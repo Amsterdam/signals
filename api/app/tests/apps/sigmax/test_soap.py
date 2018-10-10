@@ -117,7 +117,7 @@ class TestSoapEndpoint(APITestCase):
         mocked_signal = mock.Mock(sia_id='SIA-1234567890')
         # generate test message
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'sia_id': mocked_signal,
+            'signal': mocked_signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -141,7 +141,7 @@ class TestSoapEndpoint(APITestCase):
         self.assertEqual(Signal.objects.count(), 1)
 
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'sia_id': signal.sia_id,
+            'signal': signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -169,7 +169,7 @@ class TestSoapEndpoint(APITestCase):
         self.assertEqual(Signal.objects.count(), 1)
 
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'sia_id': signal.sia_id,
+            'signal': signal,
             'tijdstipbericht': '20180927100000',
             'resultaat_omschrijving': 'HALLO',
         })
@@ -203,7 +203,7 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
         resultaat = 'Er is gehandhaafd'
 
         test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
-            'sia_id': signal.sia_id,
+            'signal': signal,
             'resultaat_omschrijving': resultaat
         })
         msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
