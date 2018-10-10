@@ -1,11 +1,14 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 from django.utils.text import slugify
+from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
 
@@ -278,6 +281,27 @@ class Signal(CreatedUpdatedModel):
         :returns: str
         """
         return 'SIA-{id}'.format(id=self.id)
+
+    def get_fqdn_image_url(self):
+        """Get FQDN image url.
+
+        :returns: url str or None
+        """
+        if not self.image:
+            return None
+
+        is_swift = isinstance(self.image.storage, SwiftStorage)
+        if is_swift:
+            return self.image.url  # Generated temp url from Swift Object Store.
+        else:
+            # Generating a fully qualified url ourself.
+            current_site = Site.objects.get_current()
+            is_local = 'localhost' in current_site.domain or settings.DEBUG
+            fqdm_url = '{scheme}://{domain}{path}'.format(
+                scheme='http' if is_local else 'https',
+                domain=current_site.domain,
+                path=self.image.url)
+            return fqdm_url
 
 
 STADSDEEL_CENTRUM = 'A'

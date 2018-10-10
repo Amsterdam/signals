@@ -193,6 +193,29 @@ class TestSignalModel(TestCase):
 
         self.assertEqual('SIA-999', signal.sia_id)
 
+    def test_get_fqdn_image_url_no_image(self):
+        signal = factories.SignalFactory.create()
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual(image_url, None)
+
+    def test_get_fqdn_image_url_with_local_image(self):
+        signal = factories.SignalFactoryWithImage.create()
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual('http://localhost:8000{}'.format(signal.image.url), image_url)
+
+    @mock.patch('signals.apps.signals.models.isinstance', return_value=True)
+    def test_get_fqdn_image_url_with_swift_image(self, mocked_isinstance):
+        signal = factories.SignalFactory.create()
+        signal.image = mock.Mock(url='https://objectstore.com/url/coming/from/swift/image.jpg')
+
+        image_url = signal.get_fqdn_image_url()
+
+        self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
+
 
 class TestStatusModel(TestCase):
 
