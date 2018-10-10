@@ -28,6 +28,8 @@ VOEG_ZAAKDOCUMENT_TOE_SOAPACTION = \
 SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
 
+SIGMAX_REQUIRED_ADDRESS_FIELDS = ['woonplaats', 'openbare_ruimte', 'huisnummer']
+
 
 class SigmaxException(Exception):
     pass
@@ -49,6 +51,41 @@ def _generate_omschrijving(signal):
     )
 
 
+def _address_matches_sigmax_expectation(address_dict):
+    """Return whether an address has all information Sigmax/CityControl needs.
+
+    Note: we do not validate the address against the Basisadministratie
+    Adresses en Gebouwen (BAG). We do check that all required components are
+    non-empty.
+    """
+    # TODO: consider checking the existence of an address / make it impossible
+    # for non (BAG) validated addresses to reach Sigmax.
+    # TODO: consider moving to a JSONSchema style check here (more concise)
+    if not address_dict:  # protect against empty address fields
+        return False
+
+    for field in SIGMAX_REQUIRED_ADDRESS_FIELDS:
+        if field not in address_dict:
+            return False
+
+    # We want a "huisnummer" to be (convertable to) an actual number
+    try:
+        int(address_dict['huisnummer'])
+    except (ValueError, TypeError):
+        return False
+
+    # We want non-empty strings for "woonplaats" and "openbare_ruimte"
+    if (not isinstance(address_dict['woonplaats'], str) or
+            not isinstance(address_dict['openbare_ruimte'], str)):
+        return False
+
+    if (not address_dict['woonplaats'].strip() or
+            not address_dict['openbare_ruimte'].strip()):
+        return False
+
+    return True
+
+
 def _generate_creeerZaak_Lk01(signal):
     """Generate XML for Sigmax creeerZaak_Lk01
 
@@ -63,6 +100,8 @@ def _generate_creeerZaak_Lk01(signal):
         signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))
 
     return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
+        'address_matches_sigmax_expectation':
+            _address_matches_sigmax_expectation(signal.location.address),
         'signal': signal,
         'incident_date_end': signal.incident_date_end or incident_date_end,
         'x': str(signal.location.geometrie.x),

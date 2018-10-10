@@ -1,3 +1,4 @@
+import copy
 from datetime import timedelta
 
 from django.contrib.gis.geos import Point
@@ -5,9 +6,15 @@ from django.test import TestCase
 from django.utils import timezone
 from xmlunittest import XmlTestMixin
 
-from signals.apps.sigmax.outgoing import _generate_creeerZaak_Lk01, _generate_omschrijving
+from signals.apps.sigmax.outgoing import (
+    SIGMAX_REQUIRED_ADDRESS_FIELDS,
+    _address_matches_sigmax_expectation,
+    _generate_creeerZaak_Lk01,
+    _generate_omschrijving
+)
 from signals.apps.signals.models import Priority
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from tests.apps.signals.valid_locations import STADHUIS
 
 
 class TestOutgoing(TestCase, XmlTestMixin):
@@ -67,3 +74,59 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.pk, self.signal.location.stadsdeel, self.signal.location.short_address_text)
 
         self.assertEqual(_generate_omschrijving(self.signal), correct)
+
+
+class TestAddressMatchesSigmaxExpectation(TestCase):
+    def setUp(self):
+        self.valid_address_dict = copy.copy(STADHUIS)  # has more fields than Location.address, so:
+        self.valid_address_dict.pop('lon')
+        self.valid_address_dict.pop('lat')
+        self.valid_address_dict.pop('buurt_code')
+        self.valid_address_dict.pop('stadsdeel')
+
+    def test_full_valid(self):
+        address_dict = copy.copy(self.valid_address_dict)
+
+        self.assertEqual(True, _address_matches_sigmax_expectation(address_dict))
+
+    def test_minimum_valid(self):
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict = {
+            k: v for k, v in address_dict.items() if k in SIGMAX_REQUIRED_ADDRESS_FIELDS
+        }
+
+        self.assertEqual(True, _address_matches_sigmax_expectation(address_dict))
+
+    def test_empty(self):
+        self.assertEqual(False, _address_matches_sigmax_expectation({}))
+
+    def test_invalid(self):
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict.pop('woonplaats')
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict.pop('openbare_ruimte')
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict.pop('huisnummer')
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+    def test_invalid_because_of_whitespace_values(self):
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict['woonplaats'] = ' '
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict['woonplaats'] = ' '
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+        address_dict = copy.copy(self.valid_address_dict)
+        address_dict['woonplaats'] = ' '
+        self.assertEqual(False, _address_matches_sigmax_expectation(address_dict))
+
+    def test_none_value(self):
+        # simulate empty address field
+        self.assertEqual(False, _address_matches_sigmax_expectation(None))
+        self.assertEqual(False, _address_matches_sigmax_expectation({}))

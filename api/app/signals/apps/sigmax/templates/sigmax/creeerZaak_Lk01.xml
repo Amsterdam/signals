@@ -39,6 +39,7 @@
                         <ZKN:code>2</ZKN:code>
                     </ZKN:gerelateerde>
                 </ZKN:isVan>
+                {% if address_matches_sigmax_expectation %}{% comment %}Only relevant with valid address{% endcomment %}
                 <ZKN:heeftBetrekkingOp StUF:entiteittype="ZAKOBJ" StUF:verwerkingssoort="T">
                     <ZKN:gerelateerde>
                         <ZKN:adres StUF:entiteittype="AOA" StUF:verwerkingssoort="T">
@@ -50,6 +51,7 @@
                         </ZKN:adres>
                     </ZKN:gerelateerde>
                 </ZKN:heeftBetrekkingOp>
+                {% endif %}
             </ZKN:object>
         </ZKN:zakLk01>
     </soap:Body>
