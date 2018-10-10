@@ -57,6 +57,7 @@ class TestOutgoing(TestCase, XmlTestMixin):
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
 
+
 class TestGenerateOmschrijving(TestCase):
     def setUp(self):
         self.signal = SignalFactoryValidLocation()

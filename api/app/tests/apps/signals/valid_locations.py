@@ -26,7 +26,7 @@ CENTRAAL_STATION_IJHAL = {
     'stadsdeel': 'A',
     'buurt_code': 'A01a',
 }
- 
+
 BLAUWE_THEEHUIS = {
     'openbare_ruimte': 'Vondelpark',
     'huisnummer': 5,

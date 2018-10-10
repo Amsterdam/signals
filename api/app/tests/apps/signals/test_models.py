@@ -1,4 +1,3 @@
-import copy
 from unittest import mock
 
 from django.contrib.gis.geos import Point
@@ -8,17 +7,16 @@ from django.utils import timezone
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
-    get_address_text,
     STADSDEEL_CENTRUM,
     CategoryAssignment,
     Location,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    get_address_text
 )
-from tests.apps.signals import factories
-from tests.apps.signals import valid_locations
+from tests.apps.signals import factories, valid_locations
 
 
 class TestSignalManager(TransactionTestCase):

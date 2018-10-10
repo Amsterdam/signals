@@ -48,6 +48,7 @@ def _generate_omschrijving(signal):
         signal.location.short_address_text,
     )
 
+
 def _generate_creeerZaak_Lk01(signal):
     """Generate XML for Sigmax creeerZaak_Lk01
 
