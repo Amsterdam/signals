@@ -304,32 +304,6 @@ class SignalAuthHALSerializer(HALSerializer):
 
     serializer_url_field = SignalLinksField
 
-    def get_image(self, obj):
-        """Get url for cropped image.
-
-        Returning the url for the cropped image uploaded by the user. Serving full size images is
-        not needed for the frontend UI and is not ideal for the performance either.
-
-        Note, we check if the image exists on the file system to create a cropped variant. If that's
-        not the case we just return the cropped image name (not the url). This is needed for
-        development when you're working with a production database (backup loaded) and you don't
-        have all the uploaded images on your file system.
-
-        :param obj: Signal object
-        :returns: url (str) or None
-        """
-        try:
-            if obj.image_crop and obj.image_crop.url:
-                request = self.context.get('request', None)
-                url = obj.image_crop.url
-                if request is not None:
-                    return request.build_absolute_uri(url)
-                return url
-        except FileNotFoundError:
-            return obj.image_crop.name
-
-        return None
-
     class Meta(object):
         model = Signal
         fields = (
@@ -359,6 +333,36 @@ class SignalAuthHALSerializer(HALSerializer):
             'created_at',
             'updated_at',
         )
+
+    def get_image(self, obj):
+        """Get url for cropped image.
+
+        Returning the url for the cropped image uploaded by the user. Serving full size images is
+        not needed for the frontend UI and is not ideal for the performance either.
+
+        Note, we check if the image exists on the file system to create a cropped variant. If that's
+        not the case we just return the cropped image name (not the url). This is needed for
+        development when you're working with a production database (backup loaded) and you don't
+        have all the uploaded images on your file system.
+
+        :param obj: Signal object
+        :returns: url (str) or None
+        """
+        try:
+            url = getattr(obj.image_crop, 'url', None)
+            if not obj.image_crop or not url:
+                return None
+        except FileNotFoundError:
+            # Can't generated a cropped variant of image (because the image is not found on the
+            # file system). Just use the url from original image in that case.
+            url = getattr(obj.image, 'url', None)
+            if not obj.image or not url:
+                return None
+        print(url)
+        request = self.context.get('request', None)
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
