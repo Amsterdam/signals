@@ -22,7 +22,7 @@ def _render_html(signal: Signal):
     """
     context = {
         'signal': signal,
-        'image_url': signal.get_fqdn_image_url()
+        'image_url': signal.get_fqdn_image_crop_url()
     }
     return render_to_string('sigmax/pdf_template.html', context=context)
 

@@ -288,17 +288,17 @@ class Signal(CreatedUpdatedModel):
         """
         return 'SIA-{id}'.format(id=self.id)
 
-    def get_fqdn_image_url(self):
-        """Get FQDN image url.
+    def get_fqdn_image_crop_url(self):
+        """Get FQDN image crop url.
 
-        :returns: url str or None
+        :returns: url (str) or None
         """
-        if not self.image:
+        if not self.image_crop:
             return None
 
-        is_swift = isinstance(self.image.storage, SwiftStorage)
+        is_swift = isinstance(self.image_crop.storage, SwiftStorage)
         if is_swift:
-            return self.image.url  # Generated temp url from Swift Object Store.
+            return self.image_crop.url  # Generated temp url from Swift Object Store.
         else:
             # Generating a fully qualified url ourself.
             current_site = Site.objects.get_current()
@@ -306,7 +306,7 @@ class Signal(CreatedUpdatedModel):
             fqdn_url = '{scheme}://{domain}{path}'.format(
                 scheme='http' if is_local else 'https',
                 domain=current_site.domain,
-                path=self.image.url)
+                path=self.image_crop.url)
             return fqdn_url
 
 
