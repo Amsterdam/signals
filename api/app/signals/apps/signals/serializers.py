@@ -2,7 +2,6 @@ import logging
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.core.exceptions import ValidationError
-from django.forms import ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -292,6 +291,7 @@ class SignalStatusOnlyHALSerializer(HALSerializer):
 #
 
 class SignalAuthHALSerializer(HALSerializer):
+    """Read-only serializer for `Signal` object."""
     _display = DisplayField()
     id = serializers.IntegerField(label='ID', read_only=True)
     signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
@@ -300,10 +300,35 @@ class SignalAuthHALSerializer(HALSerializer):
     status = _NestedStatusModelSerializer(read_only=True)
     category = _NestedCategoryModelSerializer(source='category_assignment', read_only=True)
     priority = _NestedPriorityModelSerializer(read_only=True)
-
-    image = ImageField(max_length=50, allow_empty_file=False)
+    image = serializers.SerializerMethodField()
 
     serializer_url_field = SignalLinksField
+
+    def get_image(self, obj):
+        """Get url for cropped image.
+
+        Returning the url for the cropped image uploaded by the user. Serving full size images is
+        not needed for the frontend UI and is not ideal for the performance either.
+
+        Note, we check if the image exists on the file system to create a cropped variant. If that's
+        not the case we just return the cropped image name (not the url). This is needed for
+        development when you're working with a production database (backup loaded) and you don't
+        have all the uploaded images on your file system.
+
+        :param obj: Signal object
+        :returns: url (str) or None
+        """
+        try:
+            if obj.image_crop and obj.image_crop.url:
+                request = self.context.get('request', None)
+                url = obj.image_crop.url
+                if request is not None:
+                    return request.build_absolute_uri(url)
+                return url
+        except FileNotFoundError:
+            return obj.image_crop.name
+
+        return None
 
     class Meta(object):
         model = Signal
