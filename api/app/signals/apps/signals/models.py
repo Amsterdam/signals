@@ -297,11 +297,11 @@ class Signal(CreatedUpdatedModel):
             # Generating a fully qualified url ourself.
             current_site = Site.objects.get_current()
             is_local = 'localhost' in current_site.domain or settings.DEBUG
-            fqdm_url = '{scheme}://{domain}{path}'.format(
+            fqdn_url = '{scheme}://{domain}{path}'.format(
                 scheme='http' if is_local else 'https',
                 domain=current_site.domain,
                 path=self.image.url)
-            return fqdm_url
+            return fqdn_url
 
 
 STADSDEEL_CENTRUM = 'A'
