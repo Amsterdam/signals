@@ -21,7 +21,7 @@
             <StUF:indicatorOvername>V</StUF:indicatorOvername>
          </ZKN:parameters>
          <ZKN:object StUF:entiteittype="EDC" StUF:sleutelVerzendend="2356402" StUF:sleutelOntvangend="" StUF:sleutelGegevensbeheer="2356402" StUF:verwerkingssoort="T">
-            <ZKN:identificatie>{{ DOC_UUID|safe }}</ZKN:identificatie>
+            <ZKN:identificatie>{{ signal.sia_id }}</ZKN:identificatie>
             <ZKN:dct.omschrijving>Foto</ZKN:dct.omschrijving>
             <ZKN:creatiedatum>20170520</ZKN:creatiedatum>
             <ZKN:ontvangstdatum StUF:noValue="geenWaarde" xsi:nil="true"/>
