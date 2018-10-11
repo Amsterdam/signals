@@ -130,7 +130,7 @@ class TestAPIEnpointsBase(APITestCase):
         )
 
 
-class TestSignalEndpoint(TestAPIEnpointsBase):
+class TestPublicSignalEndpoint(TestAPIEnpointsBase):
     """Test for public endpoint `/signals/signal/`."""
 
     endpoint = '/signals/signal/'
@@ -270,6 +270,30 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
+
+
+class TestAuthSignalEndpoint(APITestCase):
+
+    def setUp(self):
+        # Forcing authentication
+        superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
+        self.client.force_authenticate(user=superuser)
+
+    def test_ordering_by_field_desc(self):
+        first = factories.SignalFactory.create()
+        factories.SignalFactory.create()
+        factories.SignalFactory.create()
+        last = factories.SignalFactory.create()
+
+        response = self.client.get('/signals/auth/signal/?ordering=created_at')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['results'][0]['signal_id'], str(first.signal_id))
+        self.assertEqual(data['results'][3]['signal_id'], str(last.signal_id))
+
+    def test_ordering_by_field_asc(self):
+        pass
 
 
 class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):

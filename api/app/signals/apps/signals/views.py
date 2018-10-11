@@ -6,6 +6,7 @@ from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -115,17 +116,24 @@ class SignalAuthViewSet(DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     queryset = (
         Signal.objects.all()
-        .order_by('created_at')
         .select_related('status')
         .select_related('location')
         .select_related('category_assignment')
-        .select_related('reporter')
-        .order_by('-id')
-    )
+        .select_related('reporter'))
     serializer_detail_class = SignalAuthHALSerializer
     serializer_class = SignalAuthHALSerializer
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend, OrderingFilter, )
     filter_class = SignalFilter
+    ordering_fields = (
+        'id',
+        'created_at',
+        'updated_at',
+        'location__stadsdeel',
+        'status__state',
+        'priority__priority',
+        'location__address_text',
+    )
+    ordering = ('-created_at', )
 
 
 class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
