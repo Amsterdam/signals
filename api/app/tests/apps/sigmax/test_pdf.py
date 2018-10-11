@@ -10,7 +10,8 @@ from tests.apps.signals import factories
 class TestPDF(TestCase):
 
     def test_render_html(self):
-        signal = factories.SignalFactoryWithImage.create()
+        signal = factories.SignalFactoryWithImage.create(reporter__email='foo@bar.com',
+                                                         reporter__phone='0612345678')
         factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
         factories.StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, text='please hold')
         status = factories.StatusFactory.create(_signal=signal,
@@ -21,6 +22,7 @@ class TestPDF(TestCase):
 
         html = _render_html(signal)
 
+        # General information about the `Signal` object.
         self.assertIn(signal.sia_id, html)
         self.assertIn(signal.category_assignment.sub_category.main_category.name, html)
         self.assertIn(signal.category_assignment.sub_category.name, html)
@@ -29,12 +31,19 @@ class TestPDF(TestCase):
         self.assertIn(signal.location.get_stadsdeel_display(), html)
         self.assertIn(signal.location.address_text, html)
         self.assertIn(signal.source, html)
-        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
 
+        # Reporter information.
+        self.assertIn(signal.reporter.email, 'foo@bar.com')
+        self.assertIn(signal.reporter.phone, '0612345678')
+
+        # All status transitions.
         for status in signal.statuses.all():
             self.assertIn(status.state, html)
             self.assertIn(status.text, html)
             self.assertIn(status.user, html)
+
+        # Uploaded photo.
+        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
 
     @mock.patch('signals.apps.sigmax.pdf._render_html')
     @mock.patch('signals.apps.sigmax.pdf.weasyprint')
