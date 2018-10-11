@@ -98,9 +98,15 @@ def _handle_actualiseerZaakstatus_Lk01(request):
             status=500)
 
     # update Signal status upon receiving message
+    default_text = 'Melding is afgehandeld door THOR.'
     status_data = {
         'state': workflow.AFGEHANDELD_EXTERN,
-        'text': 'Melding is afgehandeld door THOR.',
+        'text': request_data['reden'] or default_text,
+        'extra_properties': {
+            'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
+            'sigmax_resultaat': request_data['resultaat'],
+            'sigmax_reden': request_data['reden'],
+        }
     }
 
     try:
