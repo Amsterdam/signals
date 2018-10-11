@@ -87,7 +87,7 @@ class TestGenerateOmschrijving(TestCase):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
     def test_generate_omschrijving(self):
-        correct = 'SIA-{} JA {} {}'.format(
+        correct = 'SIA-{} URGENT {} {}'.format(
             self.signal.pk, self.signal.location.stadsdeel, self.signal.location.short_address_text)
 
         self.assertEqual(_generate_omschrijving(self.signal), correct)

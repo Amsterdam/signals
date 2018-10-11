@@ -39,7 +39,7 @@ class SigmaxException(Exception):
 def _generate_omschrijving(signal):
     """Generate brief descriptive text for list view in CityControl"""
     # Note: we do not mention main or subcategory here (too many characters)
-    is_urgent = 'JA' if signal.priority.priority == Priority.PRIORITY_HIGH else 'NEE'
+    is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
     stadsdeel = signal.location.stadsdeel or '-'
 
     return 'SIA-{} {} {} {}'.format(
