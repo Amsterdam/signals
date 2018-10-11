@@ -168,11 +168,14 @@ class TestSoapEndpoint(APITestCase):
 
         self.assertEqual(Signal.objects.count(), 1)
 
-        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+        incoming_context = {
             'signal': signal,
             'tijdstipbericht': '20180927100000',
-            'resultaat_omschrijving': 'HALLO',
-        })
+            'resultaat_omschrijving': 'Op locatie geweest, niets aangetroffen',
+            'resultaat_toelichting': 'Het probleem is opgelost',
+            'resultaat_datum': '2018101111485276',
+        }
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
         superuser = SuperUserFactory.create()
@@ -180,7 +183,9 @@ class TestSoapEndpoint(APITestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT,
+            data=incoming_msg,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
             content_type='text/xml',
         )
 
@@ -189,6 +194,14 @@ class TestSoapEndpoint(APITestCase):
         self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
 
         signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+        self.assertEqual(signal.status.text, 'Het probleem is opgelost')
+        self.assertEqual(signal.status.extra_properties, {
+            'sigmax_datum_afgehandeld': incoming_context['resultaat_datum'],
+            'sigmax_resultaat': incoming_context['resultaat_omschrijving'],
+            'sigmax_reden': incoming_context['resultaat_toelichting'],
+        })
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
 
 

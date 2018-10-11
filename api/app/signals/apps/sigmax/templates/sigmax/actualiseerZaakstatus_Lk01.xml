@@ -22,8 +22,8 @@
             <object d4p1:entiteittype="ZAK" d4p1:verwerkingssoort="W" xmlns:d4p1="http://www.egem.nl/StUF/StUF0301">
                 <identificatie>{{ signal.sia_id }}</identificatie>
                 <resultaat>
-                    <omschrijving>{{ resultaat_omschrijving }}</omschrijving>
-                    <toelichting>Hier de reden voor afhandeling ingevoerd door de gebruiker</toelichting>
+                    <omschrijving>{{ resultaat_omschrijving|default_if_none:"Er is gehandhaafd" }}</omschrijving>
+                    <toelichting>{{ resultaat_toelichting }}</toelichting>
                 </resultaat>
                 <einddatum>20180926</einddatum>
                 <heeft d4p1:entiteittype="ZAKSTT" d4p1:verwerkingssoort="T">
@@ -31,7 +31,7 @@
                         <volgnummer>2</volgnummer>
                         <omschrijving>Afgehandeld</omschrijving>
                     </gerelateerde>
-                    <datumStatusGezet>2018092613025501</datumStatusGezet>
+                    <datumStatusGezet>{{ resultaat_datum }}</datumStatusGezet>
                     <isGezetDoor d4p1:entiteittype="ZAKSTTBTR" d4p1:verwerkingssoort="T">
                         <gerelateerde>
                             <medewerker d4p1:entiteittype="MDW" d4p1:verwerkingssoort="T">
