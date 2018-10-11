@@ -7,14 +7,16 @@ from rest_framework.test import APITestCase
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
+    STADSDEEL_CENTRUM,
+    STADSDEEL_OOST,
     CategoryAssignment,
     Location,
     MainCategory,
     Priority,
     Reporter,
     Signal,
-    Status,
-    STADSDEEL_CENTRUM, STADSDEEL_OOST)
+    Status
+)
 from tests.apps.signals import factories
 from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
