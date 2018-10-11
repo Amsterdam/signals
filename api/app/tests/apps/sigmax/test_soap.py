@@ -213,28 +213,20 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
 
     def test_extract_properties(self):
         signal = SignalFactoryValidLocation()
-        resultaat = 'Er is gehandhaafd'
 
-        test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', {
+        test_context = {
             'signal': signal,
-            'resultaat_omschrijving': resultaat
-        })
+            'resultaat_toelichting': 'Het probleem is opgelost',
+            'resultaat_datum': '2018101111485276',
+        }
+        test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', test_context)
         msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
 
         # test uses knowledge of test XML message content
-        self.assertEqual(
-            msg_content['sia_id'],
-            str(signal.sia_id)
-        )
-        self.assertEqual(
-            msg_content['datum_afgehandeld'],
-            '2018092613025501'
-        )
-        self.assertEqual(
-            msg_content['resultaat'],
-            resultaat
-        )
-        self.assertIn('reden', msg_content)
+        self.assertEqual(msg_content['sia_id'], str(signal.sia_id))
+        self.assertEqual(msg_content['datum_afgehandeld'], test_context['resultaat_datum'])
+        self.assertEqual(msg_content['resultaat'], 'Er is gehandhaafd')
+        self.assertEqual(msg_content['reden'], test_context['resultaat_toelichting'])
 
 
 class TestParseSiaId(TestCase):
