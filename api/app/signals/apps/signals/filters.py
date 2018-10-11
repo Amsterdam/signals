@@ -1,6 +1,7 @@
 from datapunt_api import bbox
 from django.contrib.gis.geos import Point, Polygon
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework.filters import OrderingFilter
 from rest_framework.serializers import ValidationError
 
 from signals.apps.signals.models import (
@@ -135,6 +136,18 @@ class SignalFilter(FilterSet):
 
         return qs.filter(
             location__geometrie__dwithin=(point, bbox.dist_to_deg(radius, lat)))
+
+
+class SignalOrderingFilter(OrderingFilter):
+
+    def get_ordering(self, request, queryset, view):
+        ordering = super().get_ordering(request, queryset, view)
+
+        field_mappings = {}
+        for field, mapping in view.ordering_field_mappings:
+            field_mappings[field] = mapping
+            field_mappings[f'-{field}'] = f'-{mapping}'
+        return [field_mappings[field] for field in ordering]
 
 
 class StatusFilter(FilterSet):

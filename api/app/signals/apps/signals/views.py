@@ -4,17 +4,16 @@ import re
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
-from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.filters import LocationFilter, SignalFilter, StatusFilter
+from signals.apps.signals.filters import LocationFilter, SignalFilter, StatusFilter, \
+    SignalOrderingFilter
 from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
@@ -118,19 +117,30 @@ class SignalAuthViewSet(DatapuntViewSet):
     queryset = Signal.objects.all()
     serializer_detail_class = SignalAuthHALSerializer
     serializer_class = SignalAuthHALSerializer
-    filter_backends = (DjangoFilterBackend, OrderingFilter, )
+    filter_backends = (DjangoFilterBackend, SignalOrderingFilter, )
     filter_class = SignalFilter
     ordering_fields = (
         'id',
         'created_at',
         'updated_at',
-        'stadsdeel',  # Annotated: `location__stadsdeel`
-        'sub_category',  # Annotated: `category_assignment__sub_category__slug`
-        'main_category',  # Annotated: `category_assignment__sub_category__main_category__slug`
-        'state',  # Annotated: `status__state`
-        'priority__priority',
-        'address',  # Annotated: `location__address_text`
+        'stadsdeel',
+        'sub_category',
+        'main_category',
+        'state',
+        'priority',
+        'address',
     )
+    ordering_field_mappings = {
+        'id': 'id',
+        'created_at': 'created_at',
+        'updated_at': 'updated_at',
+        'stadsdeel': 'location__stadsdeel',
+        'sub_category': 'category_assignment__sub_category__slug',
+        'main_category': 'category_assignment__sub_category__main_category__slug',
+        'status': 'status__state',
+        'priority': 'priority__priority',
+        'address': 'location__address_text',
+    }
     ordering = ('-created_at', )
 
     def get_queryset(self):
@@ -141,12 +151,6 @@ class SignalAuthViewSet(DatapuntViewSet):
             .select_related('location')
             .select_related('category_assignment')
             .select_related('reporter')
-            .annotate(
-                stadsdeel=F('location__stadsdeel'),
-                sub_category=F('category_assignment__sub_category__slug'),
-                main_category=F('category_assignment__sub_category__main_category__slug'),
-                state=F('status__state'),
-                address=F('location__address_text'))
         )
         return queryset
 
