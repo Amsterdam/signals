@@ -144,7 +144,7 @@ class SignalOrderingFilter(OrderingFilter):
         ordering = super().get_ordering(request, queryset, view)
 
         field_mappings = {}
-        for field, mapping in view.ordering_field_mappings:
+        for field, mapping in view.ordering_field_mappings.items():
             field_mappings[field] = mapping
             field_mappings[f'-{field}'] = f'-{mapping}'
         return [field_mappings[field] for field in ordering]
