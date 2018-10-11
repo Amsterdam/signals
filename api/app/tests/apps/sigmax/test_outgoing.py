@@ -10,7 +10,8 @@ from signals.apps.sigmax.outgoing import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
     _address_matches_sigmax_expectation,
     _generate_creeerZaak_Lk01,
-    _generate_omschrijving
+    _generate_omschrijving,
+    _generate_voegZaakdocumentToe_Lk01
 )
 from signals.apps.signals.models import Priority
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
@@ -63,6 +64,22 @@ class TestOutgoing(TestCase, XmlTestMixin):
             '<ZKN:einddatumGepland>{}</ZKN:einddatumGepland>'.format(
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
+
+    def test_generate_voegZaakdocumentToe_Lk01(self):
+        signal = SignalFactoryValidLocation.create()
+        xml_message = _generate_voegZaakdocumentToe_Lk01(signal)
+        self.assertXmlDocument(xml_message)
+
+        self.assertIn(
+            f'<ZKN:identificatie>{signal.sia_id}</ZKN:identificatie>',
+            xml_message
+        )
+
+    def test_generate_voegZaakdocumentToe_Lk01_escaping(self):
+        poison = SignalFactoryValidLocation.create()
+        poison.text = '<poison>tastes nice</poison>'
+        xml_message = _generate_voegZaakdocumentToe_Lk01(poison)
+        self.assertTrue('<poison>' not in xml_message)
 
 
 class TestGenerateOmschrijving(TestCase):
