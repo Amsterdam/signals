@@ -6,7 +6,6 @@ import logging
 import os
 import uuid
 from datetime import timedelta
-from xml.sax.saxutils import escape
 
 import requests
 from django.conf import settings
@@ -119,7 +118,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal):
 
     return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={
         'signal': signal,
-        'DOC_UUID': escape(str(uuid.uuid4())),
+        'DOC_UUID': str(uuid.uuid4()),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
         'FILE_NAME': f'{signal.sia_id}.pdf'

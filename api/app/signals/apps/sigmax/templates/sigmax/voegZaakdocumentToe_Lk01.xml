@@ -21,7 +21,7 @@
             <StUF:indicatorOvername>V</StUF:indicatorOvername>
          </ZKN:parameters>
          <ZKN:object StUF:entiteittype="EDC" StUF:sleutelVerzendend="2356402" StUF:sleutelOntvangend="" StUF:sleutelGegevensbeheer="2356402" StUF:verwerkingssoort="T">
-            <ZKN:identificatie>{{ signal.sia_id }}</ZKN:identificatie>
+            <ZKN:identificatie>{{ DOC_UUID }}</ZKN:identificatie>
             <ZKN:dct.omschrijving>Foto</ZKN:dct.omschrijving>
             <ZKN:creatiedatum>20170520</ZKN:creatiedatum>
             <ZKN:ontvangstdatum StUF:noValue="geenWaarde" xsi:nil="true"/>
@@ -37,7 +37,7 @@
             <ZKN:inhoud mime:contentType="{{ DOC_TYPE|lower }}" StUF:bestandsnaam="{{ FILE_NAME|safe }}">{{ DATA }}</ZKN:inhoud>
             <ZKN:isRelevantVoor StUF:entiteittype="EDCZAK" StUF:verwerkingssoort="T">
                <ZKN:gerelateerde StUF:entiteittype="ZAK" StUF:sleutelVerzendend="2356401" StUF:sleutelOntvangend="" StUF:sleutelGegevensbeheer="2356401" StUF:verwerkingssoort="T">
-                  <ZKN:identificatie>{{ ZKN_UUID|safe }}</ZKN:identificatie>
+                  <ZKN:identificatie>{{ signal.sia_id }}</ZKN:identificatie>
                   <ZKN:omschrijving>Onderwerp</ZKN:omschrijving>
                   <ZKN:isVan StUF:entiteittype="ZAKZKT" StUF:verwerkingssoort="T">
                      <ZKN:gerelateerde StUF:entiteittype="ZKT" StUF:verwerkingssoort="T">
