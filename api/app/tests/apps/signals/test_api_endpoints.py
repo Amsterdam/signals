@@ -7,6 +7,8 @@ from rest_framework.test import APITestCase
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
+    STADSDEEL_CENTRUM,
+    STADSDEEL_OOST,
     CategoryAssignment,
     Location,
     MainCategory,
@@ -130,7 +132,7 @@ class TestAPIEnpointsBase(APITestCase):
         )
 
 
-class TestSignalEndpoint(TestAPIEnpointsBase):
+class TestPublicSignalEndpoint(TestAPIEnpointsBase):
     """Test for public endpoint `/signals/signal/`."""
 
     endpoint = '/signals/signal/'
@@ -270,6 +272,51 @@ class TestSignalEndpoint(TestAPIEnpointsBase):
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
+
+
+class TestAuthSignalEndpoint(APITestCase):
+
+    def setUp(self):
+        self.first = factories.SignalFactory.create(location__stadsdeel=STADSDEEL_OOST)
+        self.high_priority = factories.SignalFactory.create(
+            priority__priority=Priority.PRIORITY_HIGH,
+            location__stadsdeel=STADSDEEL_OOST)
+        self.centrum = factories.SignalFactory.create(location__stadsdeel=STADSDEEL_CENTRUM)
+        self.last = factories.SignalFactory.create(location__stadsdeel=STADSDEEL_OOST)
+
+        # Forcing authentication
+        superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
+        self.client.force_authenticate(user=superuser)
+
+    def test_ordering_by_created_at_asc(self):
+        response = self.client.get('/signals/auth/signal/?ordering=created_at')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['results'][0]['signal_id'], str(self.first.signal_id))
+        self.assertEqual(data['results'][3]['signal_id'], str(self.last.signal_id))
+
+    def test_ordering_by_created_at_desc(self):
+        response = self.client.get('/signals/auth/signal/?ordering=-created_at')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['results'][0]['signal_id'], str(self.last.signal_id))
+        self.assertEqual(data['results'][3]['signal_id'], str(self.first.signal_id))
+
+    def test_ordering_by_priority_asc(self):
+        response = self.client.get('/signals/auth/signal/?ordering=priority__priority')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['results'][0]['signal_id'], str(self.high_priority.signal_id))
+
+    def test_ordering_by_location_stadsdeel_asc(self):
+        response = self.client.get('/signals/auth/signal/?ordering=stadsdeel')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['results'][0]['signal_id'], str(self.centrum.signal_id))
 
 
 class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
