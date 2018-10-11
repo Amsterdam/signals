@@ -3,13 +3,21 @@ from unittest import mock
 from django.test import TestCase
 
 from signals.apps.sigmax.pdf import _generate_pdf, _render_html
+from signals.apps.signals import workflow
 from tests.apps.signals import factories
 
 
 class TestPDF(TestCase):
 
-    def test_render_html_without_image(self):
+    def test_render_html(self):
         signal = factories.SignalFactoryWithImage.create()
+        factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
+        factories.StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, text='please hold')
+        status = factories.StatusFactory.create(_signal=signal,
+                                                state=workflow.AFGEHANDELD,
+                                                text='Consider it done')
+        signal.status = status
+        signal.save()
 
         html = _render_html(signal)
 
@@ -22,6 +30,11 @@ class TestPDF(TestCase):
         self.assertIn(signal.location.address_text, html)
         self.assertIn(signal.source, html)
         self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
+
+        for status in signal.statuses.all():
+            self.assertIn(status.state, html)
+            self.assertIn(status.text, html)
+            self.assertIn(status.user, html)
 
     @mock.patch('signals.apps.sigmax.pdf._render_html')
     @mock.patch('signals.apps.sigmax.pdf.weasyprint')

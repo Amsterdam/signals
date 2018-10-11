@@ -7,17 +7,17 @@
     <style>
         @page {
             size: A4;
-            margin: 0;
+            margin: 10px;
         }
     </style>
 </head>
 <body>
 
-<h2>Melding {{ signal.sia_id }} </h2>
+<h1>Melding {{ signal.sia_id }}</h1>
 <table class="table">
     <tr>
         <td>Datum</td>
-        <td>{{ signal.created_at|date:"Y m d" }}</td>
+        <td>{{ signal.created_at|date:"Y-m-d" }}</td>
     </tr>
     <tr>
         <td>Tijdstip</td>
@@ -51,13 +51,34 @@
         <td>Bron</td>
         <td>{{ signal.source }}</td>
     </tr>
-    <tr>
-        <td colspan="2">
-            Foto <br>
-            <img src="{{ image_url }}" width="400" alt="">
-        </td>
-    </tr>
 </table>
+
+<h2>Statusen</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <td>Datum</td>
+            <td>Tijd</td>
+            <td>Status</td>
+            <td>Omschrijving</td>
+            <td>Gebruiker</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for status in signal.statuses.all %}
+            <tr>
+                <td>{{ status.created_at|date:"Y-m-d" }}</td>
+                <td>{{ status.created_at|date:"H:m:s" }}</td>
+                <td>{{ status.get_state_display }}</td>
+                <td>{% if status.text %}{{ status.text }}{% endif %}</td>
+                <td>{% if status.user %}{{ status.user }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Foto</h2>
+<p><img src="{{ image_url }}" width="800" alt=""></p>
 
 </body>
 </html>
