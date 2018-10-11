@@ -129,6 +129,8 @@ class SignalAuthViewSet(DatapuntViewSet):
         'created_at',
         'updated_at',
         'location__stadsdeel',
+        'category_assignment__sub_category__slug',
+        'category_assignment__sub_category__main_category__slug',
         'status__state',
         'priority__priority',
         'location__address_text',
