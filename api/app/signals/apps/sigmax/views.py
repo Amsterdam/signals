@@ -99,9 +99,27 @@ def _handle_actualiseerZaakstatus_Lk01(request):
 
     # update Signal status upon receiving message
     default_text = 'Melding is afgehandeld door THOR.'
+
+    # We strip whitespace
+    if request_data['resultaat'].strip() and request_data['reden'].strip():
+        status_text = '{}: {}'.format(
+            request_data['resultaat'].strip(),
+            request_data['reden'].strip()
+        )
+    elif request_data['resultaat'].strip():  # only resultaat
+        status_text = '{}: Geen reden aangeleverd vanuit THOR'.format(
+            request_data['resultaat'].strip()
+        )
+    elif request_data['reden'].strip():
+        status_text = 'Geen resultaat aangeleverd vanuit THOR: {}'.format(
+            request_data['reden']
+        )
+    else:
+        status_text = default_text
+
     status_data = {
         'state': workflow.AFGEHANDELD_EXTERN,
-        'text': request_data['reden'] or default_text,
+        'text': status_text,
         'extra_properties': {
             'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
             'sigmax_resultaat': request_data['resultaat'],

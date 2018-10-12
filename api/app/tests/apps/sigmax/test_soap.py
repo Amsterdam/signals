@@ -195,7 +195,57 @@ class TestSoapEndpoint(APITestCase):
 
         signal.refresh_from_db()
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
-        self.assertEqual(signal.status.text, 'Het probleem is opgelost')
+        self.assertEqual(
+            signal.status.text,
+            'Op locatie geweest, niets aangetroffen: Het probleem is opgelost'
+        )
+        self.assertEqual(signal.status.extra_properties, {
+            'sigmax_datum_afgehandeld': incoming_context['resultaat_datum'],
+            'sigmax_resultaat': incoming_context['resultaat_omschrijving'],
+            'sigmax_reden': incoming_context['resultaat_toelichting'],
+        })
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+
+    def test_with_signal_for_message_correct_state_no_resultaat_toelichting(self):
+        signal = SignalFactoryValidLocation.create()
+        signal.status.state = workflow.VERZONDEN
+        signal.status.save()
+        signal.refresh_from_db()
+
+        self.assertEqual(Signal.objects.count(), 1)
+
+        incoming_context = {
+            'signal': signal,
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'Op locatie geweest, niets aangetroffen',
+            'resultaat_toelichting': '',  # is translated to 'reden' upon reception
+            'resultaat_datum': '2018101111485276',
+        }
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
+
+        # authenticate
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # call our SOAP endpoint
+        response = self.client.post(
+            SOAP_ENDPOINT,
+            data=incoming_msg,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(str(signal.sia_id), response.content.decode('utf-8', 'strict'))
+        self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
+
+        signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+        self.assertEqual(
+            signal.status.text,
+            'Op locatie geweest, niets aangetroffen: Geen reden aangeleverd vanuit THOR'
+        )
         self.assertEqual(signal.status.extra_properties, {
             'sigmax_datum_afgehandeld': incoming_context['resultaat_datum'],
             'sigmax_resultaat': incoming_context['resultaat_omschrijving'],
