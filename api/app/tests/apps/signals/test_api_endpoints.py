@@ -2,6 +2,8 @@ import json
 import os
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
@@ -392,12 +394,25 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         result = response.json()
         self.assertEqual(self.signal.status.state, result['state'])
 
-    def test_post_status_invalid(self):
+    def test_post_status_invalid_transition(self):
         # Prepare current state.
-        self.signal.status.state = workflow.VERZONDEN
+        self.signal.status.state = workflow.AFWACHTING
         self.signal.status.save()
 
         # Post an unallowed status change from the API.
+        url = '/signals/auth/status/'
+        data = {
+            '_signal': self.signal.id,
+            'state': workflow.GEMELD,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        result = response.json()
+        self.assertIn('state', result.keys())
+
+    def test_post_status_missing_target_api(self):
+        # Post an status change with a missing `target_api` which is required.
         url = '/signals/auth/status/'
         data = {
             '_signal': self.signal.id,
@@ -407,8 +422,29 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(response.status_code, 400)
 
         result = response.json()
-        self.assertIn('state', result)
-        self.assertIn('target_api', result)
+        self.assertIn('target_api', result.keys())
+
+    def test_post_status_push_to_sigmax_permission_denied(self):
+        status_content_type = ContentType.objects.get_for_model(Status)
+        permission_add_status, _ = Permission.objects.get_or_create(
+            codename='add_status',
+            content_type=status_content_type)
+        user = UserFactory.create()
+        user.user_permissions.add(permission_add_status)
+        self.client.force_authenticate(user=user)
+
+        # Post an status change "push to Sigmax" without the correct permissions.
+        url = '/signals/auth/status/'
+        data = {
+            '_signal': self.signal.id,
+            'state': workflow.TE_VERZENDEN,
+            'target_api': Status.TARGET_API_SIGMAX,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+        result = response.json()
+        self.assertIn('state', result.keys())
 
     def test_post_location(self):
         """We only create new location items"""

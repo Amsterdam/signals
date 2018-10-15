@@ -388,6 +388,15 @@ class StatusHALSerializer(AddExtrasMixin, HALSerializer):
         return status
 
     def validate(self, data):
+        is_status_change_to_sigmax = (data['state'] == workflow.TE_VERZENDEN and
+                                      data.get('target_api', None) == Status.TARGET_API_SIGMAX)
+        if is_status_change_to_sigmax:
+            request = self.context.get('request', None)
+            if request and not request.user.has_perm('signals.push_to_sigmax'):
+                raise PermissionDenied({
+                    'state': "You don't have permissions to push to Sigmax/CityControl."
+                })
+
         try:
             status = Status(**data)
             status.clean()
