@@ -89,6 +89,18 @@
     </tr>
 </table>
 
+{% if signal.extra_properties %}
+    <h2>Extra eigenschappen</h2>
+    <table class="table">
+        {% for key, value in signal.extra_properties.items %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
 <h2>Foto</h2>
 <p><img src="{{ image_url }}" width="800" alt=""></p>
 
