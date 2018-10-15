@@ -8,6 +8,7 @@ from xmlunittest import XmlTestMixin
 
 from signals.apps.sigmax.outgoing import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
+    SIGMAX_STADSDEEL_MAPPING,
     _address_matches_sigmax_expectation,
     _generate_creeerZaak_Lk01,
     _generate_omschrijving,
@@ -87,8 +88,25 @@ class TestGenerateOmschrijving(TestCase):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
     def test_generate_omschrijving(self):
+        stadsdeel = self.signal.location.stadsdeel
         correct = 'SIA-{} URGENT {} {}'.format(
-            self.signal.pk, self.signal.location.stadsdeel, self.signal.location.short_address_text)
+            self.signal.pk,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
+            self.signal.location.short_address_text
+        )
+
+        self.assertEqual(_generate_omschrijving(self.signal), correct)
+
+    def test_generate_omschrijving_no_stadsdeel(self):
+        # test that we get SD-- as part of the omschrijving when stadsdeel is missing
+        self.signal.location.stadsdeel = None
+        self.signal.location.save()
+
+        correct = 'SIA-{} URGENT {} {}'.format(
+            self.signal.pk,
+            'SD--',
+            self.signal.location.short_address_text
+        )
 
         self.assertEqual(_generate_omschrijving(self.signal), correct)
 
