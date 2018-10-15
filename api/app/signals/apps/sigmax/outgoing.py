@@ -62,13 +62,16 @@ def _generate_omschrijving(signal):
     """Generate brief descriptive text for list view in CityControl"""
     # Note: we do not mention main or subcategory here (too many characters)
     is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
+
+    # Borough (stadsdeel) codes for Sigmax/CityControl are custom and do not
+    # match the official ones as used by the municipality of Amsterdam; hence:
     stadsdeel = signal.location.stadsdeel
-    stadsdeel = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--')
+    stadsdeel_code_sigmax = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--')
 
     return 'SIA-{} {} {} {}'.format(
         signal.id,
         is_urgent,
-        stadsdeel,
+        stadsdeel_code_sigmax,
         signal.location.short_address_text,
     )
 
