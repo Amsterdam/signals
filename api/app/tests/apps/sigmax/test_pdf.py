@@ -10,8 +10,12 @@ from tests.apps.signals import factories
 class TestPDF(TestCase):
 
     def test_render_html(self):
+        extra_properties_data = {
+            'Extra vraag': 'Extra antwoord'
+        }
         signal = factories.SignalFactoryWithImage.create(reporter__email='foo@bar.com',
-                                                         reporter__phone='0612345678')
+                                                         reporter__phone='0612345678',
+                                                         extra_properties=extra_properties_data)
         factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
         factories.StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, text='please hold')
         status = factories.StatusFactory.create(_signal=signal,
@@ -41,6 +45,11 @@ class TestPDF(TestCase):
             self.assertIn(status.state, html)
             self.assertIn(status.text, html)
             self.assertIn(status.user, html)
+
+        # Extra properties
+        for key, value in extra_properties_data.items():
+            self.assertIn(key, html)
+            self.assertIn(value, html)
 
         # Uploaded photo.
         self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
