@@ -445,6 +445,9 @@ class Status(CreatedUpdatedModel):
     extra_properties = JSONField(null=True, blank=True)
 
     class Meta:
+        permissions = (
+            ('push_to_sigmax', 'Push to Sigmax/CityControl'),
+        )
         verbose_name_plural = 'Statuses'
         get_latest_by = 'datetime'
 
