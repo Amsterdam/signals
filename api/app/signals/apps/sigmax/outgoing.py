@@ -13,7 +13,18 @@ from django.template.loader import render_to_string
 from lxml import etree
 
 from signals.apps.sigmax.pdf import _generate_pdf
-from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.models import (
+    STADSDEEL_CENTRUM,
+    STADSDEEL_NIEUWWEST,
+    STADSDEEL_NOORD,
+    STADSDEEL_OOST,
+    STADSDEEL_WEST,
+    STADSDEEL_WESTPOORT,
+    STADSDEEL_ZUID,
+    STADSDEEL_ZUIDOOST,
+    Priority,
+    Signal
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +39,17 @@ SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
 
 SIGMAX_REQUIRED_ADDRESS_FIELDS = ['woonplaats', 'openbare_ruimte', 'huisnummer']
+# See ticket SIG-743 for the origin of this mapping:
+SIGMAX_STADSDEEL_MAPPING = {
+    STADSDEEL_CENTRUM: 'SDC',
+    STADSDEEL_NOORD: 'SDN',
+    STADSDEEL_NIEUWWEST: 'SDNW',
+    STADSDEEL_OOST: 'SDO',
+    STADSDEEL_WEST: 'SDW',
+    STADSDEEL_ZUID: 'SDZ',
+    STADSDEEL_ZUIDOOST: 'SDZO',
+    STADSDEEL_WESTPOORT: 'SDWP',  # not part of spec, but present in our data model
+}
 
 
 class SigmaxException(Exception):
@@ -40,7 +62,8 @@ def _generate_omschrijving(signal):
     """Generate brief descriptive text for list view in CityControl"""
     # Note: we do not mention main or subcategory here (too many characters)
     is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
-    stadsdeel = signal.location.stadsdeel or '-'
+    stadsdeel = signal.location.stadsdeel
+    stadsdeel = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--')
 
     return 'SIA-{} {} {} {}'.format(
         signal.id,
