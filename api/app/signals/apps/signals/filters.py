@@ -286,5 +286,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
         :returns: ordering fields (list)
         """
         ordering = super().get_ordering(request, queryset, view)
-        field_mappings = self.get_field_mappings(view)
-        return [field_mappings[field] for field in ordering]
+        if ordering:
+            field_mappings = self.get_field_mappings(view)
+            return [field_mappings[field] for field in ordering]
+        return None
