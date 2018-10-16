@@ -283,7 +283,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
         :param request: Request object
         :param queryset: Queryset object
         :param view: View object
-        :returns: ordering fields (list)
+        :returns: ordering fields (list) or None
         """
         ordering = super().get_ordering(request, queryset, view)
         if ordering:
