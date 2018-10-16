@@ -228,7 +228,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
 
     Usage:
 
-        class MyViewSet(ViewSet):
+        class MyViewSet(GenericViewSet):
             filter_backends = (FieldMappingOrderingFilter, ... )
             ordering_fields = (
                 'created_at',
@@ -256,7 +256,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
         # Validating if class is properly configurated.
         if not hasattr(view, 'ordering_field_mappings'):
             msg = (
-                'Cannot use {class_name} on a view which does not have a '
+                'Cannot use `{class_name}` on a view which does not have a '
                 '`ordering_field_mappings` attribute configured.'
             )
             raise ImproperlyConfigured(msg.format(class_name=self.__class__.__name__))
@@ -264,7 +264,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
         mapping_field_names = view.ordering_field_mappings.keys()
         if any(field not in mapping_field_names for field in view.ordering_fields):
             msg = (
-                'Cannot use {class_name} on a view which does not have defined all fields in '
+                'Cannot use `{class_name}` on a view which does not have defined all fields in '
                 '`ordering_fields` in the corresponding `ordering_field_mappings` attribute.'
             )
             raise ImproperlyConfigured(msg.format(class_name=self.__class__.__name__))

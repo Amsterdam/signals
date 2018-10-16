@@ -1,9 +1,14 @@
 import unittest
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.http import urlencode
+from django.test import SimpleTestCase, RequestFactory
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.test import APITestCase
+from rest_framework.viewsets import GenericViewSet
 
+from signals.apps.signals.filters import FieldMappingOrderingFilter
 from signals.apps.signals.models import Priority, Signal
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
@@ -198,3 +203,54 @@ class TestPriorityFilter(APITestCase):
         self.assertEqual(json_response['count'], 2)
         self.assertEqual(json_response['results'][1]['id'], 3)
         self.assertEqual(json_response['results'][0]['id'], 5)
+
+
+class TestFieldMappingOrderingFilter(SimpleTestCase):
+
+    def setUp(self):
+        self.request_factory = RequestFactory()
+
+    def test_missing_attribute_ordering_field_mappings(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, RetrieveModelMixin):
+            queryset = Signal.objects.all()
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+
+        # Creating a fake request to initiate the view.
+        request = self.request_factory.get('/fake_request')
+        view = MyViewSet.as_view({'get': 'retrieve'})
+
+        with self.assertRaises(ImproperlyConfigured) as exp:
+            view(request)
+        self.assertEqual(str(exp.exception),
+                         ('Cannot use `FieldMappingOrderingFilter` on a view which does not have a '
+                          '`ordering_field_mappings` attribute configured.'))
+
+    def test_improperly_configured_ordering_field_mappings(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, RetrieveModelMixin):
+            queryset = Signal.objects.all()
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+            ordering_field_mappings = {
+                'created_at': 'created_at',
+                'xxx_address': 'address',  # mismatch with `ordering_fields`
+            }
+
+        # Creating a fake request to initiate the view.
+        request = self.request_factory.get('/fake_request')
+        view = MyViewSet.as_view({'get': 'retrieve'})
+
+        with self.assertRaises(ImproperlyConfigured) as exp:
+            view(request)
+        self.assertEqual(str(exp.exception),
+                         ('Cannot use `FieldMappingOrderingFilter` on a view which does not have '
+                          'defined all fields in `ordering_fields` in the corresponding '
+                          '`ordering_field_mappings` attribute.'))
