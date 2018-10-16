@@ -12,6 +12,13 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='status',
-            options={'get_latest_by': 'datetime', 'ordering': ('created_at',), 'permissions': (('push_to_sigmax', 'Push to Sigmax/CityControl'),), 'verbose_name_plural': 'Statuses'},
+            options={
+                'get_latest_by': 'datetime',
+                'ordering': ('created_at',),
+                'permissions': (
+                    ('push_to_sigmax', 'Push to Sigmax/CityControl'),
+                ),
+                'verbose_name_plural': 'Statuses'
+            },
         ),
     ]
