@@ -37,6 +37,7 @@ signal_router_v0.register(r'auth/status', views.StatusAuthViewSet, base_name='st
 signal_router_v0.register(r'auth/category', views.CategoryAuthViewSet, base_name='category-auth')
 signal_router_v0.register(r'auth/location', views.LocationAuthViewSet, base_name='location-auth')
 signal_router_v0.register(r'auth/priority', views.PriorityAuthViewSet, base_name='priority-auth')
+signal_router_v0.register(r'auth/note', views.NoteAuthViewSet, base_name='note-auth')
 
 # API Version 1
 signal_router_v1 = SignalRouter(trailing_slash=False)

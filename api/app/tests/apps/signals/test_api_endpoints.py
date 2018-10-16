@@ -39,6 +39,7 @@ class TestAuthAPIEndpoints(APITestCase):
         '/signals/auth/category/',
         '/signals/auth/location/',
         '/signals/auth/priority/',
+        '/signals/auth/note/',
     ]
 
     def setUp(self):
@@ -52,6 +53,9 @@ class TestAuthAPIEndpoints(APITestCase):
         # Forcing authentication
         user = UserFactory.create()  # Normal user without any extra permissions.
         self.client.force_authenticate(user=user)
+
+        # Add one note to the signal
+        self.note = factories.NoteFactory(id=1, _signal=self.signal)
 
     def test_get_lists(self):
         for url in self.endpoints:

@@ -16,6 +16,7 @@ from signals.apps.signals.models import (
     Department,
     Location,
     MainCategory,
+    Note,
     Priority,
     Reporter,
     Signal,
@@ -123,7 +124,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', reporter=None)
 
     phone = fuzzy.FuzzyText(length=10, chars=string.digits)
-    email = 'john%d@example.org' % (int(random.random() * 100))
+    email = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
@@ -152,7 +153,7 @@ class StatusFactory(factory.DjangoModelFactory):
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', status=None)
 
     text = fuzzy.FuzzyText(length=400)
-    user = 'kees%s@amsterdam.nl' % (int(random.random() * 100))
+    user = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     state = GEMELD  # Initial state is always 'm'
     extern = fuzzy.FuzzyChoice((True, False))
 
@@ -214,3 +215,12 @@ class DepartmentFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Department
+
+
+class NoteFactory(factory.DjangoModelFactory):
+    text = fuzzy.FuzzyText(length=100)
+    created_by = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', status=None)
+
+    class Meta:
+        model = Note
