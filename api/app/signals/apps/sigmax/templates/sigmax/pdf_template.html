@@ -76,7 +76,7 @@
         {% for status in signal.statuses.all %}
             <tr>
                 <td>{{ status.created_at|date:"Y-m-d" }}</td>
-                <td>{{ status.created_at|date:"H:m:s" }}</td>
+                <td>{{ status.created_at|date:"H:i:s" }}</td>
                 <td>{{ status.get_state_display }}</td>
                 <td>{% if status.text %}{{ status.text }}{% endif %}</td>
                 <td>{% if status.user %}{{ status.user }}{% endif %}</td>
