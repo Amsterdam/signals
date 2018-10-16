@@ -21,7 +21,15 @@
     </tr>
     <tr>
         <td>Tijdstip</td>
-        <td>{{ signal.created_at|date:"H:m:s" }}</td>
+        <td>{{ signal.created_at|date:"H:i:s" }}</td>
+    </tr>
+    <tr>
+        <td>Datum overlast</td>
+        <td>{{ signal.incident_date_start|date:"Y-m-d" }}</td>
+    </tr>
+    <tr>
+        <td>Tijdstip overlast</td>
+        <td>{{ signal.incident_date_start|date:"H:i:s" }}</td>
     </tr>
     <tr>
         <td>Hoofdrubriek</td>

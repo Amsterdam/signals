@@ -1,6 +1,7 @@
 from unittest import mock
 
 from django.test import TestCase
+from django.utils import timezone
 
 from signals.apps.sigmax.pdf import _generate_pdf, _render_html
 from signals.apps.signals import workflow
@@ -13,9 +14,11 @@ class TestPDF(TestCase):
         extra_properties_data = {
             'Extra vraag': 'Extra antwoord'
         }
-        signal = factories.SignalFactoryWithImage.create(reporter__email='foo@bar.com',
-                                                         reporter__phone='0612345678',
-                                                         extra_properties=extra_properties_data)
+        signal = factories.SignalFactoryWithImage.create(
+            incident_date_start=timezone.now(),
+            extra_properties=extra_properties_data,
+            reporter__email='foo@bar.com',
+            reporter__phone='0612345678')
         factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
         factories.StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, text='please hold')
         status = factories.StatusFactory.create(_signal=signal,
@@ -27,6 +30,12 @@ class TestPDF(TestCase):
         html = _render_html(signal)
 
         # General information about the `Signal` object.
+        current_tz = timezone.get_current_timezone()
+        self.assertIn(signal.sia_id, html)
+        self.assertIn(signal.created_at.astimezone(current_tz).strftime('%Y-%m-%d'), html)
+        self.assertIn(signal.created_at.astimezone(current_tz).strftime('%H:%M:%S'), html)
+        self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%Y-%m-%d'), html)
+        self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%H:%M:%S'), html)
         self.assertIn(signal.sia_id, html)
         self.assertIn(signal.category_assignment.sub_category.main_category.name, html)
         self.assertIn(signal.category_assignment.sub_category.name, html)
