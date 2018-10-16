@@ -450,6 +450,7 @@ class Status(CreatedUpdatedModel):
         )
         verbose_name_plural = 'Statuses'
         get_latest_by = 'datetime'
+        ordering = ('created_at', )
 
     def __str__(self):
         return str(self.text)
