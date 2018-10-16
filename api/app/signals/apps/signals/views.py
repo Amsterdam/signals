@@ -130,7 +130,7 @@ class SignalAuthViewSet(DatapuntViewSet):
         'stadsdeel',
         'sub_category',
         'main_category',
-        'state',
+        'status',
         'priority',
         'address',
     )
