@@ -2,8 +2,8 @@ import unittest
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ImproperlyConfigured
+from django.test import RequestFactory, TestCase
 from django.utils.http import urlencode
-from django.test import TestCase, RequestFactory
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.test import APITestCase

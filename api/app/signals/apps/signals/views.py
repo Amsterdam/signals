@@ -13,9 +13,9 @@ from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.filters import (
+    FieldMappingOrderingFilter,
     LocationFilter,
     SignalFilter,
-    FieldMappingOrderingFilter,
     StatusFilter
 )
 from signals.apps.signals.models import (
