@@ -1,10 +1,17 @@
 import unittest
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ImproperlyConfigured
+from django.test import RequestFactory, TestCase
 from django.utils.http import urlencode
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.test import APITestCase
+from rest_framework.viewsets import GenericViewSet
 
+from signals.apps.signals.filters import FieldMappingOrderingFilter
 from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
 
@@ -198,3 +205,102 @@ class TestPriorityFilter(APITestCase):
         self.assertEqual(json_response['count'], 2)
         self.assertEqual(json_response['results'][1]['id'], 3)
         self.assertEqual(json_response['results'][0]['id'], 5)
+
+
+class TestFieldMappingOrderingFilter(TestCase):
+
+    def setUp(self):
+        self.request_factory = RequestFactory()
+        self.fake_request = self.request_factory.get('/fake_request')
+        self.fake_request_ordering = self.request_factory.get('/fake_request?ordering=created_at')
+
+    def test_with_ordering_querystring(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, ListModelMixin):
+            queryset = Signal.objects.all()
+            pagination_class = LimitOffsetPagination
+            serializer_class = SignalAuthHALSerializer
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+            ordering_field_mappings = {
+                'created_at': 'created_at',
+                'address': 'address',
+            }
+
+        # Creating a fake request to initiate the view.
+        view = MyViewSet.as_view({'get': 'list'})
+        response = view(self.fake_request_ordering)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_without_ordering_querystring(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, ListModelMixin):
+            queryset = Signal.objects.all()
+            pagination_class = LimitOffsetPagination
+            serializer_class = SignalAuthHALSerializer
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+            ordering_field_mappings = {
+                'created_at': 'created_at',
+                'address': 'address',
+            }
+
+        # Creating a fake request (without querystring `ordering`) to initiate the view.
+        view = MyViewSet.as_view({'get': 'list'})
+        response = view(self.fake_request)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_missing_attribute_ordering_field_mappings(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, ListModelMixin):
+            queryset = Signal.objects.all()
+            pagination_class = LimitOffsetPagination
+            serializer_class = SignalAuthHALSerializer
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+
+        # Creating a fake request to initiate the view.
+        view = MyViewSet.as_view({'get': 'list'})
+
+        with self.assertRaises(ImproperlyConfigured) as exp:
+            view(self.fake_request_ordering)
+        self.assertEqual(str(exp.exception),
+                         ('Cannot use `FieldMappingOrderingFilter` on a view which does not have a '
+                          '`ordering_field_mappings` attribute configured.'))
+
+    def test_improperly_configured_attribute_ordering_field_mappings(self):
+        # Creating an inline ViewSet class.
+        class MyViewSet(GenericViewSet, ListModelMixin):
+            queryset = Signal.objects.all()
+            pagination_class = LimitOffsetPagination
+            serializer_class = SignalAuthHALSerializer
+            filter_backends = (FieldMappingOrderingFilter, )
+            ordering_fields = (
+                'created_at',
+                'address',
+            )
+            ordering_field_mappings = {
+                'created_at': 'created_at',
+                'xxx_address': 'address',  # mismatch with `ordering_fields`
+            }
+
+        # Creating a fake request to initiate the view.
+        view = MyViewSet.as_view({'get': 'list'})
+
+        with self.assertRaises(ImproperlyConfigured) as exp:
+            view(self.fake_request_ordering)
+        self.assertEqual(str(exp.exception),
+                         ('Cannot use `FieldMappingOrderingFilter` on a view which does not have '
+                          'defined all fields in `ordering_fields` in the corresponding '
+                          '`ordering_field_mappings` attribute.'))

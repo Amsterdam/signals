@@ -290,6 +290,23 @@ class TestAuthSignalEndpoint(APITestCase):
         superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
 
+    def test_ordering_by_all_fields(self):
+        # Just check if all ordering fields are working as in, do they return a 200 response.
+        ordering_fields = [
+            'id',
+            'created_at',
+            'updated_at',
+            'stadsdeel',
+            'sub_category',
+            'main_category',
+            'status',
+            'priority',
+            'address',
+        ]
+        for field in ordering_fields:
+            response = self.client.get(f'/signals/auth/signal/?ordering={field}')
+            self.assertEqual(response.status_code, 200, f'Ordering by `{field}` did not return 200')
+
     def test_ordering_by_created_at_asc(self):
         response = self.client.get('/signals/auth/signal/?ordering=created_at')
         self.assertEqual(response.status_code, 200)
@@ -307,7 +324,7 @@ class TestAuthSignalEndpoint(APITestCase):
         self.assertEqual(data['results'][3]['signal_id'], str(self.first.signal_id))
 
     def test_ordering_by_priority_asc(self):
-        response = self.client.get('/signals/auth/signal/?ordering=priority__priority')
+        response = self.client.get('/signals/auth/signal/?ordering=priority')
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
