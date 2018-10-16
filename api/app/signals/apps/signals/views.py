@@ -15,7 +15,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 from signals.apps.signals.filters import (
     LocationFilter,
     SignalFilter,
-    SignalOrderingFilter,
+    FieldMappingOrderingFilter,
     StatusFilter
 )
 from signals.apps.signals.models import (
@@ -121,7 +121,7 @@ class SignalAuthViewSet(DatapuntViewSet):
     queryset = Signal.objects.all()
     serializer_detail_class = SignalAuthHALSerializer
     serializer_class = SignalAuthHALSerializer
-    filter_backends = (DjangoFilterBackend, SignalOrderingFilter, )
+    filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filter_class = SignalFilter
     ordering_fields = (
         'id',
