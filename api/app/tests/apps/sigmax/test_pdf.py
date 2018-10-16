@@ -32,9 +32,9 @@ class TestPDF(TestCase):
         # General information about the `Signal` object.
         current_tz = timezone.get_current_timezone()
         self.assertIn(signal.sia_id, html)
-        self.assertIn(signal.created_at.astimezone(current_tz).strftime('%Y-%m-%d'), html)
+        self.assertIn(signal.created_at.astimezone(current_tz).strftime('%d-%m-%Y'), html)
         self.assertIn(signal.created_at.astimezone(current_tz).strftime('%H:%M:%S'), html)
-        self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%Y-%m-%d'), html)
+        self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%d-%m-%Y'), html)
         self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%H:%M:%S'), html)
         self.assertIn(signal.sia_id, html)
         self.assertIn(signal.category_assignment.sub_category.main_category.name, html)
