@@ -229,3 +229,5 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (NotePermission, )
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = ('_signal__id', )
