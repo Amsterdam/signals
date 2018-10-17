@@ -269,13 +269,7 @@ class FieldMappingOrderingFilter(OrderingFilter):
             )
             raise ImproperlyConfigured(msg.format(class_name=self.__class__.__name__))
 
-        # Appending field mappings descending direction.
-        field_mappings = view.ordering_field_mappings
-        field_mappings_desc = {
-            f'-{field}': f'-{mapping}' for field, mapping in field_mappings.items()
-        }
-        field_mappings.update(field_mappings_desc)
-        return field_mappings
+        return view.ordering_field_mappings
 
     def get_ordering(self, request, queryset, view):
         """Get a list with field names which is used for ordering the queryset.
@@ -288,5 +282,13 @@ class FieldMappingOrderingFilter(OrderingFilter):
         ordering = super().get_ordering(request, queryset, view)
         if ordering:
             field_mappings = self.get_field_mappings(view)
-            return [field_mappings[field] for field in ordering]
+
+            def find_field(field):
+                mapped_field = field_mappings[field.lstrip('-')]
+                if field.startswith('-'):
+                    return f'-{mapped_field}'
+                return mapped_field
+
+            return list(map(find_field, ordering))
+
         return None
