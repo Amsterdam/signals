@@ -110,7 +110,11 @@
 {% endif %}
 
 <h2>Foto</h2>
-<p><img src="{{ image_url }}" width="800" alt=""></p>
+{% if image_url %}
+    <p><img src="{{ image_url }}" width="800" alt=""></p>
+{% else %}
+    <p>Er is geen foto beschikbaar omdat de melder in SIA geen foto heeft meegeleverd.</p>
+{% endif %}
 
 </body>
 </html>
