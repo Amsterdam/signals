@@ -348,8 +348,8 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
     def setUp(self):
         super().setUp()
 
-        # Forcing authentication
-        superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
+        # Forcing authentication (Superuser has all permissions by default.)
+        superuser = SuperUserFactory.create(email='superuser@example.com')
         self.client.force_authenticate(user=superuser)
 
     def test_signal_post_not_allowed(self):
@@ -566,6 +566,8 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(self.signal.notes.count(), 1)
         for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
             self.assertIn(field, result)
+
+        self.assertEqual(result['created_by'], 'superuser@example.com')
 
 
 class TestCategoryTermsEndpoints(APITestCase):

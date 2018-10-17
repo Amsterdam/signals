@@ -546,7 +546,7 @@ class MainCategoryHALSerializer(HALSerializer):
 # Note objects field
 #
 
-class NoteHALSerializer(HALSerializer):
+class NoteHALSerializer(AddExtrasMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = NoteHyperlinkedIdentityField
 
@@ -561,6 +561,9 @@ class NoteHALSerializer(HALSerializer):
         )
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         note = Signal.actions.create_note(validated_data, signal)
         return note
