@@ -22,6 +22,7 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
     MainCategory,
+    Note,
     Priority,
     Signal,
     Status,
@@ -30,6 +31,7 @@ from signals.apps.signals.models import (
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
+    NotePermission,
     PriorityPermission,
     StatusPermission
 )
@@ -37,6 +39,7 @@ from signals.apps.signals.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
     MainCategoryHALSerializer,
+    NoteHALSerializer,
     PriorityHALSerializer,
     SignalAuthHALSerializer,
     SignalCreateSerializer,
@@ -217,3 +220,12 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
                                 slug=self.kwargs['sub_slug'])
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    queryset = Note.objects.all()
+    serializer_class = NoteHALSerializer
+    serializer_detail_class = NoteHALSerializer
+    pagination_class = HALPagination
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (NotePermission, )

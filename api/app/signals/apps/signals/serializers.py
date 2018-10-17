@@ -9,6 +9,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.fields import (
     CategoryLinksField,
     MainCategoryHyperlinkedIdentityField,
+    NoteHyperlinkedIdentityField,
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
@@ -22,6 +23,7 @@ from signals.apps.signals.models import (
     Department,
     Location,
     MainCategory,
+    Note,
     Priority,
     Reporter,
     Signal,
@@ -301,8 +303,12 @@ class SignalAuthHALSerializer(HALSerializer):
     category = _NestedCategoryModelSerializer(source='category_assignment', read_only=True)
     priority = _NestedPriorityModelSerializer(read_only=True)
     image = serializers.ImageField(source='image_crop', read_only=True)
+    notes_count = serializers.SerializerMethodField()
 
     serializer_url_field = SignalLinksField
+
+    def get_notes_count(self, obj):
+        return obj.notes.count()
 
     class Meta(object):
         model = Signal
@@ -326,6 +332,7 @@ class SignalAuthHALSerializer(HALSerializer):
             'operational_date',
             'image',
             'extra_properties',
+            'notes_count',
         )
         read_only_fields = (
             'id',
@@ -533,3 +540,27 @@ class MainCategoryHALSerializer(HALSerializer):
             'slug',
             'sub_categories',
         )
+
+
+#
+# Note objects field
+#
+
+class NoteHALSerializer(HALSerializer):
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    serializer_url_field = NoteHyperlinkedIdentityField
+
+    class Meta:
+        model = Note
+        fields = (
+            '_links',
+            'text',
+            'created_at',
+            'created_by',
+            '_signal',
+        )
+
+    def create(self, validated_data):
+        signal = validated_data.pop('_signal')
+        note = Signal.actions.create_note(validated_data, signal)
+        return note

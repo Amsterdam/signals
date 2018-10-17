@@ -12,6 +12,7 @@ from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     CategoryAssignment,
     Location,
+    Note,
     Priority,
     Reporter,
     Signal,
@@ -51,6 +52,10 @@ class TestSignalManager(TransactionTestCase):
         }
         self.priority_data = {
             'priority': Priority.PRIORITY_HIGH,
+        }
+        self.note_data = {
+            'text': 'Dit is een test notitie.',
+            'created_by': 'test@example.com',
         }
 
     @mock.patch('signals.apps.signals.models.create_initial', autospec=True)
@@ -187,6 +192,23 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             priority=priority,
             prev_priority=prev_priority)
+
+    @mock.patch('signals.apps.signals.models.create_note')
+    def test_create_note(self, patched_create_note):
+        signal = factories.SignalFactory.create()
+
+        # add note to signal via internal actions API
+        note = Signal.actions.create_note(self.note_data, signal)
+
+        # check that the note was added to the db
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertEqual(signal.notes.count(), 1)
+
+        # check that the relevant Django signal fired
+        patched_create_note.send.assert_called_once_with(
+            sender=Signal.actions.__class__,
+            signal_obj=signal,
+            note=note)
 
 
 class TestSignalModel(TestCase):

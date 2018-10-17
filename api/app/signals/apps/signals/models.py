@@ -23,6 +23,7 @@ update_category_assignment = DjangoSignal(providing_args=['signal_obj',
                                                           'prev_category_assignment'])
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
+create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 
 class SignalManager(models.Manager):
@@ -178,6 +179,22 @@ class SignalManager(models.Manager):
                                                                prev_priority=prev_priority))
 
         return priority
+
+    def create_note(self, data, signal):
+        """Create a new `Note` object for a given `Signal` object.
+
+        :param data: deserialized data dict
+        :returns: Note object
+        """
+        # Added for completeness of the internal API, and firing of Django
+        # signals upon creation of a Note.
+        with transaction.atomic():
+            note = Note.objects.create(**data, _signal_id=signal.id)
+            transaction.on_commit(lambda: create_note.send(sender=self.__class__,
+                                                           signal_obj=signal,
+                                                           note=note))
+
+        return note
 
 
 class CreatedUpdatedModel(models.Model):
@@ -604,3 +621,16 @@ class Department(models.Model):
     def __str__(self):
         """String representation."""
         return '{code} ({name})'.format(code=self.code, name=self.name)
+
+
+class Note(CreatedUpdatedModel):
+    """Notes field for `Signal` instance."""
+    _signal = models.ForeignKey('signals.Signal',
+                                related_name='notes',
+                                null=False,
+                                on_delete=models.CASCADE)
+    text = models.TextField(max_length=3000)
+    created_by = models.EmailField(null=True, blank=True)  # analoog Priority model
+
+    class Meta:
+        ordering = ('-created_at', )

@@ -118,3 +118,17 @@ class SubCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
         return self.get_queryset().get(
             main_category__slug=view_kwargs['slug'],
             slug=view_kwargs['sub_slug'])
+
+
+class NoteHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(
+                href=self.get_url(value, "note-auth-detail", request, None))
+             ),
+        ])
+
+        return result

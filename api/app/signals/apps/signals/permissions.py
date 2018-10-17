@@ -48,3 +48,15 @@ class PriorityPermission(permissions.BasePermission):
             return True
         else:
             return False
+
+
+class NotePermission(permissions.BasePermission):
+    """Permission check for `Note`."""
+
+    def has_permission(self, request, view):
+        if request.user:
+            if request.method == 'POST' and not request.user.has_perm('signals.add_note'):
+                return False
+            return True
+        else:
+            return False

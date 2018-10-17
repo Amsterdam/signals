@@ -14,6 +14,7 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
     MainCategory,
+    Note,
     Priority,
     Reporter,
     Signal,
@@ -39,6 +40,7 @@ class TestAuthAPIEndpoints(APITestCase):
         '/signals/auth/category/',
         '/signals/auth/location/',
         '/signals/auth/priority/',
+        '/signals/auth/note/',
     ]
 
     def setUp(self):
@@ -52,6 +54,9 @@ class TestAuthAPIEndpoints(APITestCase):
         # Forcing authentication
         user = UserFactory.create()  # Normal user without any extra permissions.
         self.client.force_authenticate(user=user)
+
+        # Add one note to the signal
+        self.note = factories.NoteFactory(id=1, _signal=self.signal)
 
     def test_get_lists(self):
         for url in self.endpoints:
@@ -542,6 +547,25 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.priority.id, result['id'])
         self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+
+    def test_post_note(self):
+        url = '/signals/auth/note/'
+        data = {
+            '_signal': self.signal.id,
+            'text': 'Dit is een test notitie bij een test melding.',
+
+        }
+        self.assertEqual(Note.objects.count(), 0)
+        response = self.client.post(url, data, format='json')
+        result = response.json()
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Note.objects.count(), 1)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.notes.count(), 1)
+        for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
+            self.assertIn(field, result)
 
 
 class TestCategoryTermsEndpoints(APITestCase):
