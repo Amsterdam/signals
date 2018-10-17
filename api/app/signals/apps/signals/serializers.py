@@ -9,7 +9,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.fields import (
     CategoryLinksField,
     MainCategoryHyperlinkedIdentityField,
-    NoteHyperlinkedRelatedField,
+    NoteHyperlinkedIdentityField,
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
@@ -546,17 +546,16 @@ class MainCategoryHALSerializer(HALSerializer):
 # Note objects field
 #
 
-# TODO: assess whether we should go the SelfLinkSerializerMixin route or the
-# NoteHyperlinkedRelatedField route
 class NoteHALSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
-    serializer_url_field = NoteHyperlinkedRelatedField
+    serializer_url_field = NoteHyperlinkedIdentityField
 
     class Meta:
         model = Note
         fields = (
             '_links',
             'text',
+            'created_at',
             'created_by',
             '_signal',
         )

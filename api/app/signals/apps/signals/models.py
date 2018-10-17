@@ -183,7 +183,7 @@ class SignalManager(models.Manager):
     def create_note(self, data, signal):
         """Create a new `Note` object for a given `Signal` object.
 
-        :param  data: deserialized data dict
+        :param data: deserialized data dict
         :returns: Note object
         """
         # Added for completeness of the internal API, and firing of Django

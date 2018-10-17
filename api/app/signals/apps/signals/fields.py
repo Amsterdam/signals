@@ -120,7 +120,7 @@ class SubCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
             slug=view_kwargs['sub_slug'])
 
 
-class NoteHyperlinkedRelatedField(serializers.HyperlinkedIdentityField):
+class NoteHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 
     def to_representation(self, value):
         request = self.context.get('request')

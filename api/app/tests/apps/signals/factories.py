@@ -220,7 +220,7 @@ class DepartmentFactory(factory.DjangoModelFactory):
 class NoteFactory(factory.DjangoModelFactory):
     text = fuzzy.FuzzyText(length=100)
     created_by = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', status=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
 
     class Meta:
         model = Note
