@@ -29,7 +29,16 @@ class TestAPIEndpoints(APITestCase):
     def test_signals_index(self):
         response = self.client.get('/signals/')
 
+        expected_api_version_1 = {
+            '_links': {
+                'self': {
+                    'href': '/signals/v1/',
+                }
+            },
+            'status': 'in development',
+        }
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['v1'], expected_api_version_1)
 
 
 class TestAuthAPIEndpoints(APITestCase):
