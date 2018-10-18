@@ -66,72 +66,27 @@ def send_mail_reporter_status_changed(signal, status):
     """
     signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
     email = get_valid_email(signal)
-    LOG.debug('Valid email: ' + str(email))
-    if email:
-        LOG.debug('Trying to compose message')
-        context = {
-            'signal': signal,
-            'afhandelings_text': get_afhandeling_text(signal.category.sub),
-        }
+    if not signal_is_afgehandeld or not email:
+        return None
 
-        template = loader.get_template('email/signal_created.txt')
-        body = template.render(context)
-        subject = f"Bedankt voor uw melding ({signal.id})"
-        to = signal.reporter.email
+    subject = f'Betreft melding: {signal.id}'
+    message = create_status_change_notification_message(signal, status)
+    to = signal.reporter.email
 
-        LOG.info('Sending message: ' + subject)
-        send_mail(
-            subject,
-            body,
-            settings.NOREPLY,
-            (to,),
-            fail_silently=False,
-        )
+    return send_mail(subject, message, settings.NOREPLY, (to, ))
 
 
-def send_mail_reporter_status_changed(status, previous_status):
-    signal = status.signal
+def create_status_change_notification_message(signal, status):
+    """Create e-mail body message about status change of the given `Signal` object.
 
-    LOG.info('Handling status change of signal')
-    LOG.debug('Signal %s changed to state: %s from %s',
-              str(signal.id),
-              str(signal.status.state),
-              str(previous_status.state) if previous_status else '')
-
-    signal_is_afgehandeld = signal.status.state in (AFGEHANDELD, )
-    previous_signal_is_not_afgehandeld = (previous_status and
-                                          previous_status.state not in (AFGEHANDELD, ))
-    if signal_is_afgehandeld and previous_signal_is_not_afgehandeld:
-
-        LOG.debug('Rendering template')
-        email = get_valid_email(signal)
-        if email:
-            context = {
-                'signal_id': signal.id,
-                'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'geannuleerd',
-                'location': signal.location,
-                'subcategory': signal.category_assignment.sub_category.name,
-                'maincategory': signal.category_assignment.sub_category.main_category.name,
-                'text': signal.text
-            }
-
-            ss = signal.status
-            if ss.text:
-                context['status_text'] = ss.text
-
-            if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
-                context['resultaat_text'] = ss.extra_properties['resultaat_text']
-
-            template = loader.get_template('email/signal_status_changed.txt')
-            body = template.render(context)
-            subject = f"Betreft melding : {signal.id}"
-            to = signal.reporter.email
-
-            LOG.debug('Sending email')
-            send_mail(
-                subject,
-                body,
-                settings.NOREPLY,
-                (to,),
-                fail_silently=False,
-            )
+    :param signal: Signal object
+    :param status: Status object
+    :returns: message (str)
+    """
+    context = {
+        'signal': signal,
+        'status': status,
+    }
+    template = loader.get_template('email/signal_status_changed.txt')
+    message = template.render(context)
+    return message

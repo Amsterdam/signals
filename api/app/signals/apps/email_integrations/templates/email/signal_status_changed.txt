@@ -1,27 +1,25 @@
 Geachte melder,
 
-Uw melding over {{ subcategory }} met registratienummer {{ signal_id }} is afgehandeld.
+Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} is afgehandeld.
 
-{% if resultaat_text or status_text %}
+{% if status.text %}
 De volgende toelichting is daarbij gegeven:
-{{ status_text }}
-
-{{ resultaat_text }}
+{{ status.text }}
 {% endif %}
 
 
 Hieronder staat de samenvatting van het door u ingevulde formulier.
 
 
-Samenvatting melding: {{ signal_id }}
+Samenvatting melding: {{ signal.id }}
 
-Adres: {{ location.address_text }}
+Adres: {{ signal.location.address_text }}
 
-Stadsdeel: {{ location.get_stadsdeel_display }}
+Stadsdeel: {{ signal.location.get_stadsdeel_display }}
 
-Rubriek: {{ maincategory }}
+Rubriek: {{ signal.category_assignment.sub_category.main_category.name }}
 
-Uw omschrijving: {{ text }}
+Uw omschrijving: {{ signal.text }}
 
 Met vriendelijke groet,
 

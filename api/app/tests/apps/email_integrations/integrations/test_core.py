@@ -2,7 +2,8 @@ from django.core import mail
 from django.test import TestCase
 
 from signals.apps.email_integrations.integrations import core
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals import workflow
+from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class TestCore(TestCase):
@@ -40,4 +41,41 @@ class TestCore(TestCase):
         self.assertIn(self.signal.reporter.email, message)
 
     def test_send_mail_reporter_status_changed(self):
-        pass
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.status.save()
+
+        num_of_messages = core.send_mail_reporter_status_changed(self.signal, status)
+
+        self.assertEqual(num_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
+
+    def test_send_mail_reporter_status_changed_no_status_afgehandeld(self):
+        num_of_messages = core.send_mail_reporter_status_changed(self.signal, self.signal.status)
+
+        self.assertEqual(num_of_messages, None)
+
+    def test_send_mail_reporter_status_changed_invalid_email(self):
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal_invalid, state=workflow.AFGEHANDELD)
+        self.signal_invalid.status = status
+        self.signal_invalid.status.save()
+
+        num_of_messages = core.send_mail_reporter_status_changed(self.signal_invalid, status)
+
+        self.assertEqual(num_of_messages, None)
+
+    def test_create_status_change_notification_message(self):
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done.')
+        self.signal.status = status
+        self.signal.status.save()
+
+        message = core.create_status_change_notification_message(self.signal, self.signal.status)
+
+        self.assertIn(str(self.signal.id), message)
+        self.assertIn(self.signal.text, message)
+        self.assertIn(self.signal.status.text, message)
