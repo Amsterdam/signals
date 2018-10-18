@@ -1,7 +1,6 @@
 from django.urls import include, path
 
-from signals.apps.signals import views, routers
-
+from signals.apps.signals import routers, views
 
 # API Version 0
 signal_router_v0 = routers.SignalsRouterVersion0()
