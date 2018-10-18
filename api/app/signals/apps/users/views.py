@@ -28,4 +28,5 @@ class UserMeView(APIView):
                     groups.append(g.name)
             data['groups'] = groups
             data['departments'] = departments
+            data['permissions'] = [p for p in user.get_all_permissions() if p.startswith('signals')]
         return JsonResponse(data)

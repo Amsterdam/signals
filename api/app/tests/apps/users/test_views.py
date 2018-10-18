@@ -19,6 +19,10 @@ class TestUserMeView(APITestCase):
         self.assertEqual(json_data['is_superuser'], True)
         self.assertEqual(json_data['is_staff'], True)
 
+        # check for some known signals.apps.signals permissions
+        self.assertIn('signals.add_signal', json_data['permissions'])
+        self.assertIn('signals.add_status', json_data['permissions'])
+
     def test_get_unauthenticated(self):
         response = self.client.get('/signals/user/auth/me/')
 
