@@ -15,11 +15,15 @@ LOG = logging.getLogger()
 
 
 def get_valid_email(signal):
+    """Get e-mail address from given `Signal` object.
+
+    :param signal: Signal object
+    :returns: e-mail address (str)
+    """
     email_valid = r'[^@]+@[^@]+\.[^@]+'
     if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
         return signal.reporter.email
-    else:
-        return None
+    return None
 
 
 def send_mail_reporter_created(signal):
