@@ -1,8 +1,6 @@
 """
 E-mail integration for 'core' Signal behaviour.
 """
-import re
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
@@ -11,26 +9,13 @@ from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
 from signals.apps.signals import workflow
 
 
-def get_valid_email(signal):
-    """Get e-mail address from given `Signal` object.
-
-    :param signal: Signal object
-    :returns: e-mail address (str) or None
-    """
-    email_valid = r'[^@]+@[^@]+\.[^@]+'
-    if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
-        return signal.reporter.email
-    return None
-
-
 def send_mail_reporter_created(signal):
     """Send a notification e-mail to the reporter about initial create of the given `Signal` object.
 
     :param signal: Signal object
     :returns: number of successfully send messages or None
     """
-    email = get_valid_email(signal)
-    if not email:
+    if not signal.reporter.email:
         return None
 
     subject = f'Bedankt voor uw melding ({signal.id})'
@@ -65,8 +50,7 @@ def send_mail_reporter_status_changed(signal, status):
     :returns: number of successfully send messages or None
     """
     signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
-    email = get_valid_email(signal)
-    if not signal_is_afgehandeld or not email:
+    if not signal_is_afgehandeld or not signal.reporter.email:
         return None
 
     subject = f'Betreft melding: {signal.id}'
