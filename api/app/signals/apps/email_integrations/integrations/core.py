@@ -15,7 +15,7 @@ def get_valid_email(signal):
     """Get e-mail address from given `Signal` object.
 
     :param signal: Signal object
-    :returns: e-mail address (str)
+    :returns: e-mail address (str) or None
     """
     email_valid = r'[^@]+@[^@]+\.[^@]+'
     if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
@@ -62,7 +62,7 @@ def send_mail_reporter_status_changed(signal, status):
 
     :param signal: Signal object
     :param status: Status object
-    :returns: number of successfully send messages
+    :returns: number of successfully send messages or None
     """
     signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
     email = get_valid_email(signal)
