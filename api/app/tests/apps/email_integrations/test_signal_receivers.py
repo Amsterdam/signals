@@ -63,8 +63,8 @@ class TestSignalReceivers(TestCase):
                            prev_status=prev_status)
 
         mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
-            status_pk=new_status.id,
-            prev_status_pk=prev_status.id)
+            signal_pk=signal.id,
+            status_pk=new_status.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)

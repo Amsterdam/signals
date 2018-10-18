@@ -17,10 +17,10 @@ def send_mail_reporter_created(pk):
 
 
 @app.task
-def send_mail_reporter_status_changed(status_pk, prev_status_pk):
+def send_mail_reporter_status_changed(signal_pk, status_pk):
+    signal = Signal.objects.get(pk=signal_pk)
     status = Status.objects.get(pk=status_pk)
-    prev_status = Status.objects.get(pk=prev_status_pk)
-    core.send_mail_reporter_status_changed(status, prev_status)
+    core.send_mail_reporter_status_changed(signal, status)
 
 
 @app.task

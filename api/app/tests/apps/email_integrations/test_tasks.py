@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from signals.apps.email_integrations import tasks
 from signals.apps.signals.models import Signal, Status
-from tests.apps.signals.factories import SignalFactory, StatusFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestTasks(TestCase):
@@ -27,17 +27,17 @@ class TestTasks(TestCase):
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed(self, mocked_core):
         signal = SignalFactory.create()
-        prev_status = signal.status
-        status = StatusFactory.create(_signal=signal)
 
-        tasks.send_mail_reporter_status_changed(status_pk=status.id, prev_status_pk=prev_status.id)
+        tasks.send_mail_reporter_status_changed(signal_pk=signal.id, status_pk=signal.status.id)
 
-        mocked_core.send_mail_reporter_status_changed.assert_called_once_with(status, prev_status)
+        mocked_core.send_mail_reporter_status_changed.assert_called_once_with(signal, signal.status)
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):
+        SignalFactory.create(id=1)
+
         with self.assertRaises(Status.DoesNotExist):
-            tasks.send_mail_reporter_status_changed(status_pk=999, prev_status_pk=888)
+            tasks.send_mail_reporter_status_changed(signal_pk=1, status_pk=999)
 
         mocked_core.send_mail_reporter_status_changed.assert_not_called()
 
