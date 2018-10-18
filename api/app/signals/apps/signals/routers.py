@@ -1,7 +1,8 @@
+from django.urls import reverse
 from rest_framework import routers
 
 
-class SignalsAPIRootView(routers.APIRootView):
+class SignalsAPIRootViewVersion0(routers.APIRootView):
     """
     List Signals and their related information.
 
@@ -20,13 +21,32 @@ class SignalsAPIRootView(routers.APIRootView):
     is /signals/signal where new signals can be POSTed.
     """
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+
+        # Appending the index view with API version 1 information. For now we need to mix this with
+        # the API version 0 index view.
+        response.data['v1'] = {
+            '_links': {
+                'self': {
+                    'href': reverse('api-v1:api-root'),
+                }
+            },
+            'status': 'in development',
+        }
+        return response
+
 
 class SignalsRouterVersion0(routers.DefaultRouter):
-    APIRootView = SignalsAPIRootView
+    APIRootView = SignalsAPIRootViewVersion0
+
+
+class SignalsAPIRootViewVersion1(routers.APIRootView):
+    """Signalen API versie 1 (in development)."""
 
 
 class SignalsRouterVersion1(routers.DefaultRouter):
-    APIRootView = SignalsAPIRootView
+    APIRootView = SignalsAPIRootViewVersion1
     routes = [
         # List route.
         routers.Route(

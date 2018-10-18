@@ -25,7 +25,7 @@ urlpatterns = [
     path('', include(signal_router_v0.urls)),
 
     # API Version 1
-    path('v1/', include(signal_router_v1.urls)),
+    path('v1/', include((signal_router_v1.urls, 'signals'), namespace='api-v1')),
     path('v1/public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
          views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
          name='sub-category-detail'),

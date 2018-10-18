@@ -79,7 +79,7 @@ class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField)
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('self', dict(href=self.get_url(value, 'api-v1:category-detail', request, None))),
         ])
 
         return result

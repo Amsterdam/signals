@@ -577,7 +577,7 @@ class TestCategoryTermsEndpoints(APITestCase):
         # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
         self.assertEqual(MainCategory.objects.count(), 9)
 
-        url = '/signals/v1/public/terms/categories'
+        url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
