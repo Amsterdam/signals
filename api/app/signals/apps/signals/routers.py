@@ -29,7 +29,7 @@ class SignalsAPIRootViewVersion0(routers.APIRootView):
         response.data['v1'] = {
             '_links': {
                 'self': {
-                    'href': reverse('api-v1:api-root'),
+                    'href': reverse('api-root-v1'),
                 }
             },
             'status': 'in development',
@@ -46,6 +46,7 @@ class SignalsAPIRootViewVersion1(routers.APIRootView):
 
 
 class SignalsRouterVersion1(routers.DefaultRouter):
+    root_view_name = 'api-root-v1'
     APIRootView = SignalsAPIRootViewVersion1
     routes = [
         # List route.
