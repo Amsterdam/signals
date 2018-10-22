@@ -1,0 +1,26 @@
+Geachte melder,
+
+Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} is afgehandeld.
+
+{% if status.text %}
+De volgende toelichting is daarbij gegeven:
+{{ status.text }}
+{% endif %}
+
+
+Hieronder staat de samenvatting van het door u ingevulde formulier.
+
+
+Samenvatting melding: {{ signal.id }}
+
+Adres: {{ signal.location.address_text }}
+
+Stadsdeel: {{ signal.location.get_stadsdeel_display }}
+
+Rubriek: {{ signal.category_assignment.sub_category.main_category.name }}
+
+Uw omschrijving: {{ signal.text }}
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam

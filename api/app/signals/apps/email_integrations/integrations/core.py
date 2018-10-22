@@ -1,124 +1,76 @@
 """
 E-mail integration for 'core' Signal behaviour.
 """
-import logging
-import re
-
-import pytz
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
-from django.utils import timezone
 
 from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
-from signals.apps.signals.workflow import AFGEHANDELD
-
-LOG = logging.getLogger()
+from signals.apps.signals import workflow
 
 
-# TODO: fetch PDF and attach to message?
+def send_mail_reporter_created(signal):
+    """Send a notification e-mail to the reporter about initial create of the given `Signal` object.
 
-
-def get_valid_email(signal):
-    email_valid = r'[^@]+@[^@]+\.[^@]+'
-    if signal.reporter and signal.reporter.email and re.match(email_valid, signal.reporter.email):
-        return signal.reporter.email
-    else:
+    :param signal: Signal object
+    :returns: number of successfully send messages or None
+    """
+    if not signal.reporter.email:
         return None
 
+    subject = f'Bedankt voor uw melding ({signal.id})'
+    message = create_initial_create_notification_message(signal)
+    to = signal.reporter.email
 
-def get_incident_date_string(dt):
-    local_dt = timezone.localtime(dt, pytz.timezone('Europe/Amsterdam'))
-    week_days = ('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag',
-                 'Vrijdag', 'Zaterdag', 'Zondag')
-    return week_days[local_dt.weekday()] + local_dt.strftime(" %d-%m-%Y, %H:%M")
-
-
-# TODO: If the image has to be attached to the e-mail, we have to postpone
-#       the e-mail till the image has been uploaded. Then there has to be
-#       some kind of delay after creating the the signal before sending the
-#       e-mail
-def send_mail_reporter(signal):
-    LOG.info('Handling create signal')
-    email = get_valid_email(signal)
-    LOG.debug('Valid email: ' + str(email))
-    if email:
-        LOG.debug('Trying to compose message')
-        context = {
-            'signal_id': signal.id,
-            'text': signal.text,
-            'subcategory': signal.category_assignment.sub_category.name,
-            'afhandelings_text': (
-                ALL_AFHANDELING_TEXT[signal.category_assignment.sub_category.handling]
-            ),
-            'address_text': signal.location.address_text,
-            'incident_date_start': get_incident_date_string(
-                signal.incident_date_start),
-            'text_extra': signal.text_extra,
-            'extra_properties': signal.extra_properties,
-            'email': signal.reporter.email,
-        }
-
-        if signal.reporter.phone:
-            context['phone'] = signal.reporter.phone
-        template = loader.get_template('email/melding_bevestiging.txt')
-        body = template.render(context)
-        subject = f"Bedankt voor uw melding ({signal.id})"
-        to = signal.reporter.email
-
-        LOG.info('Sending message: ' + subject)
-        send_mail(
-            subject,
-            body,
-            settings.NOREPLY,
-            (to,),
-            fail_silently=False,
-        )
+    return send_mail(subject, message, settings.NOREPLY, (to, ))
 
 
-def send_mail_status_change(status, previous_status):
-    signal = status.signal
+def create_initial_create_notification_message(signal):
+    """Create e-mail body message about initial create of the given `Signal` object.
 
-    LOG.info('Handling status change of signal')
-    LOG.debug('Signal %s changed to state: %s from %s',
-              str(signal.id),
-              str(signal.status.state),
-              str(previous_status.state) if previous_status else '')
+    :param signal: Signal object
+    :returns: message (str)
+    """
+    context = {
+        'signal': signal,
+        'afhandelings_text': (
+            ALL_AFHANDELING_TEXT[signal.category_assignment.sub_category.handling]
+        ),
+    }
+    template = loader.get_template('email/signal_created.txt')
+    message = template.render(context)
+    return message
 
-    signal_is_afgehandeld = signal.status.state in (AFGEHANDELD, )
-    previous_signal_is_not_afgehandeld = (previous_status and
-                                          previous_status.state not in (AFGEHANDELD, ))
-    if signal_is_afgehandeld and previous_signal_is_not_afgehandeld:
 
-        LOG.debug('Rendering template')
-        email = get_valid_email(signal)
-        if email:
-            context = {
-                'signal_id': signal.id,
-                'resultaat': 'afgehandeld' if signal.status.state == AFGEHANDELD else 'geannuleerd',
-                'location': signal.location,
-                'subcategory': signal.category_assignment.sub_category.name,
-                'maincategory': signal.category_assignment.sub_category.main_category.name,
-                'text': signal.text
-            }
+def send_mail_reporter_status_changed_afgehandeld(signal, status):
+    """Send a notification e-mail to the reporter about status change of the given `Signal` object.
 
-            ss = signal.status
-            if ss.text:
-                context['status_text'] = ss.text
+    :param signal: Signal object
+    :param status: Status object
+    :returns: number of successfully send messages or None
+    """
+    signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
+    if not signal_is_afgehandeld or not signal.reporter.email:
+        return None
 
-            if ss.extra_properties and 'resultaat_text' in ss.extra_properties:
-                context['resultaat_text'] = ss.extra_properties['resultaat_text']
+    subject = f'Betreft melding: {signal.id}'
+    message = create_status_change_notification_message(signal, status)
+    to = signal.reporter.email
 
-            template = loader.get_template('email/melding_gereed.txt')
-            body = template.render(context)
-            subject = f"Betreft melding : {signal.id}"
-            to = signal.reporter.email
+    return send_mail(subject, message, settings.NOREPLY, (to, ))
 
-            LOG.debug('Sending email')
-            send_mail(
-                subject,
-                body,
-                settings.NOREPLY,
-                (to,),
-                fail_silently=False,
-            )
+
+def create_status_change_notification_message(signal, status):
+    """Create e-mail body message about status change of the given `Signal` object.
+
+    :param signal: Signal object
+    :param status: Status object
+    :returns: message (str)
+    """
+    context = {
+        'signal': signal,
+        'status': status,
+    }
+    template = loader.get_template('email/signal_status_changed_afgehandeld.txt')
+    message = template.render(context)
+    return message

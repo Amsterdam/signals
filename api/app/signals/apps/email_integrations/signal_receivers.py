@@ -12,7 +12,7 @@ from signals.apps.signals.models import (
 
 @receiver(create_initial, dispatch_uid='email_integrations_create_initial')
 def create_initial_handler(sender, signal_obj, **kwargs):
-    tasks.send_mail_reporter.delay(pk=signal_obj.id)
+    tasks.send_mail_reporter_created.delay(pk=signal_obj.id)
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
     tasks.send_mail_flex_horeca.delay(pk=signal_obj.id)
     tasks.send_mail_handhaving_or_oost.delay(pk=signal_obj.id)
@@ -27,7 +27,7 @@ def update_location_handler(sender, signal_obj, location, prev_location, **kwarg
 
 @receiver(update_status, dispatch_uid='email_integrations_update_status')
 def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
-    tasks.send_mail_status_change.delay(status_pk=status.id, prev_status_pk=prev_status.id)
+    tasks.send_mail_reporter_status_changed.delay(signal_pk=signal_obj.id, status_pk=status.id)
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
 
 

@@ -4,42 +4,43 @@ from django.test import TestCase
 
 from signals.apps.email_integrations import tasks
 from signals.apps.signals.models import Signal, Status
-from tests.apps.signals.factories import SignalFactory, StatusFactory
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestTasks(TestCase):
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
-    def test_send_mail_reporter(self, mocked_core):
+    def test_send_mail_reporter_created(self, mocked_core):
         signal = SignalFactory.create()
 
-        tasks.send_mail_reporter(pk=signal.id)
+        tasks.send_mail_reporter_created(pk=signal.id)
 
-        mocked_core.send_mail_reporter.assert_called_once_with(signal)
+        mocked_core.send_mail_reporter_created.assert_called_once_with(signal)
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
-    def test_send_mail_reporter_signal_not_found(self, mocked_core):
+    def test_send_mail_reporter_created_signal_not_found(self, mocked_core):
         with self.assertRaises(Signal.DoesNotExist):
-            tasks.send_mail_reporter(pk=999)
+            tasks.send_mail_reporter_created(pk=999)
 
-        mocked_core.send_mail_reporter.assert_not_called()
+        mocked_core.send_mail_reporter_created.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
-    def test_send_mail_status_change(self, mocked_core):
+    def test_send_mail_reporter_status_changed(self, mocked_core):
         signal = SignalFactory.create()
-        prev_status = signal.status
-        status = StatusFactory.create(_signal=signal)
 
-        tasks.send_mail_status_change(status_pk=status.id, prev_status_pk=prev_status.id)
+        tasks.send_mail_reporter_status_changed(signal_pk=signal.id, status_pk=signal.status.id)
 
-        mocked_core.send_mail_status_change.assert_called_once_with(status, prev_status)
+        mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_called_once_with(
+            signal, signal.status)
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
-    def test_send_mail_status_change_status_not_found(self, mocked_core):
-        with self.assertRaises(Status.DoesNotExist):
-            tasks.send_mail_status_change(status_pk=999, prev_status_pk=888)
+    def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):
+        SignalFactory.create(id=1)
 
-        mocked_core.send_mail_status_change.assert_not_called()
+        with self.assertRaises(Status.DoesNotExist):
+            tasks.send_mail_reporter_status_changed(signal_pk=1, status_pk=999)
+
+        mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.apptimize', autospec=True)
     def test_send_mail_apptimize(self, mocked_apptimize):

@@ -1,0 +1,37 @@
+Bedankt!
+
+Uw melding ({{ signal.id }}):
+
+{{ signal.text }}
+
+Wat doen we met uw melding?
+
+{{ afhandelings_text }}
+
+*** Details van uw melding ***
+
+{% if signal.location.address_text %}
+Hier is het : {{ signal.location.address_text }}
+{% endif %}
+
+Tijdstip : {{ signal.incident_date_start.incident_date_start|date:"DATETIME_FORMAT" }}
+{% if signal.text_extra %}
+
+{{ signal.text_extra }}
+{% endif %}
+{% if signal.extra_properties %}
+
+{% for key, value in signal.extra_properties.items %}
+{{ key }} - {{ value }}
+{% endfor %}
+{% endif %}
+
+Uw e-mailadres : {{ signal.reporter.email  }}
+
+{% if signal.reporter.phone %}
+Uw (mobiele) telefoon : {{ signal.reporter.phone }}
+{% endif %}
+
+******************************
+
+Als u vragen hebt, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.id }}.
