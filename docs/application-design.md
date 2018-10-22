@@ -8,11 +8,11 @@ bars or boats. Internally SIA is used to keep track the follow-up to these issue
 and possibly to message the reporter with their resolution.
 
 ## About this document
-This document describes some of the reasoning behind the current implementation of
-SIA and our goals in developing it further. We furthermore explain the application
-structure, describe the conventions to adhere to in developing SIA, provide an 
-overview of our logging and testing setup, and finally we describe the authentication
-and authorization system.
+This document describes some of the reasoning behind the current implementation
+of the SIA backend application and foals in developing it further. We
+furthermore explain the application structure, describe the conventions to
+adhere to, and provide an  overview of our logging and testing setup. Finally we
+describe the authentication and authorization system.
 
 
 ## Goals and design principles
@@ -58,14 +58,14 @@ Notable components:
   workflow. This model manager is available on the `signals.apps.signal.models.Signal`
   model as the `actions` attribute.
 * To maintain a loose coupling between the various Django apps within SIA we use
-  custom Django signals. These are used to signals that a new issue was created
-  (which may for instance trigger emails) or that the status of a signal changed.
-  See for instance `signals.apps.signals.models.create_initial'.
+  custom Django signals. These are used to signal that a new issue was created
+  (which may for instance trigger emails), that the status of a signal changed
+  etc. See for instance `signals.apps.signals.models.create_initial'.
 * The SIA workflow is modelled as a state machine that is implemented in terms
   of status updates. While the `SignalManager` provided API maintains integrity
   of the data model, and fires of `DjangoSignal`s for the various update events,
   it does not enforce the status update rules. These update rules are checked
-  in at the serializer layer, and defined in `singals.apps.signals.workflow`.
+  at the serializer layer, and defined in `singals.apps.signals.workflow`.
 * User permission checks are implemented using Djang Rest Framework Permission
   classes in the views layer. These DRF Permissions in turn use normal Django
   Permissions.
@@ -74,7 +74,7 @@ Notable components:
 ### External integrations: Sigmax/CityControl
 Sigmax provides a system, CityControl, that is used to assign work to municpal
 functionaries in the streets. CityControl comprises two parts. First there is
-a backoffice application that SIA comminicates with to handoff signals. Second
+a backoffice application that SIA comminicates with to hand off signals. Second
 there are handheld devices which are fed from the backoffice that show the 
 individual assignments and the information sent over from SIA. In the first
 implementation of the integration with CityControl issues that are handed off
@@ -89,7 +89,7 @@ provide to provide a full implementation of StuF in SIA. Furthermore we strive
 to keep knowledge of external systems outside the core SIA application so the
 integration with Sigmax/CityControl is implemented in a separate Django app:
 `signals.apps.sigmax`. The core application cannot have dependencies on this
-Django app.
+Django app, but the other way is fine.
 
 
 ### External integrations: Emails
@@ -102,6 +102,10 @@ own Django app `signals.apps.email_integrations`.
 ###
 ## Implementation details
 ### Automatic tests and QA
+Development of SIA at Datapunt uses the standard Datapunt infrastructure, which
+means every commit that is pushed to Github gets built and tested. 
+
+
 * We use Django style unittests with pytest as the test runner
 * Transaction testcase and fixtures
 * The Django app `signals.apps.health` is used to monitor application health
