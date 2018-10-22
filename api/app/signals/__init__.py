@@ -5,6 +5,6 @@ from signals.utils.version import get_version
 
 __all__ = ['celery_app', ]
 
-VERSION = (0, 4, 1)  # Major, minor, patch
+VERSION = (0, 5, 0)  # Major, minor, patch
 
 __version__ = get_version(VERSION)
