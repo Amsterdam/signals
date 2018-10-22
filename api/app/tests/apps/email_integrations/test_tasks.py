@@ -30,7 +30,8 @@ class TestTasks(TestCase):
 
         tasks.send_mail_reporter_status_changed(signal_pk=signal.id, status_pk=signal.status.id)
 
-        mocked_core.send_mail_reporter_status_changed.assert_called_once_with(signal, signal.status)
+        mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_called_once_with(
+            signal, signal.status)
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):
@@ -39,7 +40,7 @@ class TestTasks(TestCase):
         with self.assertRaises(Status.DoesNotExist):
             tasks.send_mail_reporter_status_changed(signal_pk=1, status_pk=999)
 
-        mocked_core.send_mail_reporter_status_changed.assert_not_called()
+        mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.apptimize', autospec=True)
     def test_send_mail_apptimize(self, mocked_apptimize):

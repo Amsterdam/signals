@@ -42,7 +42,7 @@ def create_initial_create_notification_message(signal):
     return message
 
 
-def send_mail_reporter_status_changed(signal, status):
+def send_mail_reporter_status_changed_afgehandeld(signal, status):
     """Send a notification e-mail to the reporter about status change of the given `Signal` object.
 
     :param signal: Signal object
@@ -71,6 +71,6 @@ def create_status_change_notification_message(signal, status):
         'signal': signal,
         'status': status,
     }
-    template = loader.get_template('email/signal_status_changed.txt')
+    template = loader.get_template('email/signal_status_changed_afgehandeld.txt')
     message = template.render(context)
     return message

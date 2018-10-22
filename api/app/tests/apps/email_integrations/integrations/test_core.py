@@ -32,31 +32,33 @@ class TestCore(TestCase):
         self.assertIn(self.signal.text, message)
         self.assertIn(self.signal.reporter.email, message)
 
-    def test_send_mail_reporter_status_changed(self):
+    def test_send_mail_reporter_status_changed_afgehandeld(self):
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
 
-        num_of_messages = core.send_mail_reporter_status_changed(self.signal, status)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal, status)
 
         self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
 
-    def test_send_mail_reporter_status_changed_no_status_afgehandeld(self):
-        num_of_messages = core.send_mail_reporter_status_changed(self.signal, self.signal.status)
+    def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal,
+                                                                             self.signal.status)
 
         self.assertEqual(num_of_messages, None)
 
-    def test_send_mail_reporter_status_changed_no_email(self):
+    def test_send_mail_reporter_status_changed_afgehandeld_no_email(self):
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal_no_email, state=workflow.AFGEHANDELD)
         self.signal_no_email.status = status
         self.signal_no_email.status.save()
 
-        num_of_messages = core.send_mail_reporter_status_changed(self.signal_no_email, status)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal_no_email,
+                                                                             status)
 
         self.assertEqual(num_of_messages, None)
 
