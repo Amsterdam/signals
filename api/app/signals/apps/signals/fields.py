@@ -107,6 +107,18 @@ class SubCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'sub-category-detail'
     queryset = SubCategory.objects.all()
 
+    def to_internal_value(self, data):
+        request = self.context.get('request', None)
+        origional_version = request.version
+
+        # Tricking DRF to use API version `v1` because our `sub-category-detail` view lives in API
+        # version 1. Afterwards we revert back to the origional API version from the request.
+        request.version = 'v1'
+        value = super().to_internal_value(data)
+        request.version = origional_version
+
+        return value
+
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
             'slug': obj.main_category.slug,
