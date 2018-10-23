@@ -9,10 +9,18 @@ and possibly to message the reporter with their resolution.
 
 ## About this document
 This document describes some of the reasoning behind the current implementation
-of the SIA backend application and foals in developing it further. We
-furthermore explain the application structure, describe the conventions to
-adhere to, and provide an  overview of our logging and testing setup. Finally we
-describe the authentication and authorization system.
+of the SIA backend application and goals in developing it further. We explain
+the application structure, describe the conventions to adhere to, and provide an
+overview of our logging and testing setup. Finally we describe the
+authentication and authorization system.
+
+
+## About Datapunt
+Throughout this document there are references to Datapunt. Datapunt is an small
+organisation within the Amsterdam municipality that is charged with collecting
+and publishing (digitally) certain municipal data sets. To this end Datapunt
+retains a few software development teams. The SIA application is being developed
+by one of the Datapunt teams.
 
 
 ## Goals and design principles
@@ -66,9 +74,6 @@ Notable components:
   of the data model, and fires of `DjangoSignal`s for the various update events,
   it does not enforce the status update rules. These update rules are checked
   at the serializer layer, and defined in `singals.apps.signals.workflow`.
-* User permission checks are implemented using Djang Rest Framework Permission
-  classes in the views layer. These DRF Permissions in turn use normal Django
-  Permissions.
 
 
 ### External integrations: Sigmax/CityControl
@@ -96,26 +101,55 @@ Django app, but the other way is fine.
 A number of municipal partners need integration by email, for instance because
 their employees are not in the office and they need to know when citizens report
 new issues or file complaints. These email integrations are implemented in their
-own Django app `signals.apps.email_integrations`. 
+own Django app `signals.apps.email_integrations`. This app uses the standard
+Django mail functionality.
 
 
-###
+## External integrations: CSV exports
+For backups to the datawarehouse SIA exports a CSV dump of the core datamodel to
+an object store. There they can be picked up by other municipal users with the
+correct credentials. The implentation of this CSV dump functionality is part of
+the core SIA application.
+
+
 ## Implementation details
 ### Automatic tests and QA
 Development of SIA at Datapunt uses the standard Datapunt infrastructure, which
-means every commit that is pushed to Github gets built and tested. 
+means every commit that is pushed to Github gets built and tested. Standard
+Django unittests cover the application code and stylechecks are performed by
+the Flake8 and isort tools. All these tests are run through Tox. 
 
+Fixtures are used in some tests to initialize the database with correct data,
+because SIA's use of transactions in 
 
-* We use Django style unittests with pytest as the test runner
-* Transaction testcase and fixtures
 * The Django app `signals.apps.health` is used to monitor application health
-* 
+
 ### Logging setup
 * Kibana
-### Usage of Django Celery (Task queue)
-* 
-### Authentication and Authorization
-* sits behind OAuth 2
-* uses standard Django users, groups and permissions
-* should not have detailed knowledge of Amsterdam municipal organization structure
 
+
+### Usage of Django Celery (Task queue)
+Some actions that SIA must perform are potentially slow, and these are off-loaded
+to worker processes using the Celery task queue package. The SIA Celery setup 
+uses RabbitMQ as its underlying message queue. In particular sending emails and
+creating tasks in the Sigmax/CityControl system are offloaded via Celery.
+
+### Authentication and Authorization
+The authentication system of SIA hooks into the Datapunt OAuth2 implementation.
+One role in the Datapunt authentiation system (SIG/ALL) provides access to
+the SIA application. The Django application itself keeps track of SIA users
+and performs the authorization. Permission checks are implemented using Django
+Rest Framework's Permission classes that in turn use normal Django permissions.
+This allows user management through the standard Django admin. Users that have
+SIG/ALL but have no corresponding user in the SIA Django application cannot 
+access protected resources.
+
+Muncipal employees that have access to the Amsterdam IT infrastructure gain
+SIG/ALL by default after logging in through a central system. Othe users that
+must have access to the application can be managed by the Datapunt Identity
+Provider. The reason to pull uaser management and authorization into the SIA
+application partially pragmatic; Datapunt does not want to be burdened with
+the task of user management in SIA (at the time of writing there are about
+1000 users). By allowing user management in SIA through the Django Admin 
+we allow a few specially staff members with knowledge of the user base to
+manage users.
