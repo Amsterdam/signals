@@ -3,7 +3,7 @@
 from signals.celery import app as celery_app
 from signals.utils.version import get_version
 
-__all__ = ['celery_app', ]
+__all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 
 # Versioning
 # ==========
@@ -19,7 +19,9 @@ __all__ = ['celery_app', ]
 VERSION = (0, 5, 1)
 
 # API versions (Major, minor, patch)
-API_0_VERSION = (0, 1, 0)
-API_1_VERSION = (1, 0, 0)
+API_VERSIONS = {
+    'v0': (0, 1, 0),
+    'v1': (1, 0, 0),
+}
 
 __version__ = get_version(VERSION)

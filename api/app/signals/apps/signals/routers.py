@@ -36,6 +36,9 @@ class SignalsAPIRootViewVersion0(routers.APIRootView):
         }
         return response
 
+    def get_view_name(self):
+        return 'Signals API Version 0'
+
 
 class SignalsRouterVersion0(routers.DefaultRouter):
     APIRootView = SignalsAPIRootViewVersion0
@@ -43,6 +46,9 @@ class SignalsRouterVersion0(routers.DefaultRouter):
 
 class SignalsAPIRootViewVersion1(routers.APIRootView):
     """Signalen API versie 1 (in development)."""
+
+    def get_view_name(self):
+        return 'Signals API Version 1'
 
 
 class SignalsRouterVersion1(routers.DefaultRouter):
