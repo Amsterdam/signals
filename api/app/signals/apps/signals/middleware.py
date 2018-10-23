@@ -1,5 +1,5 @@
-from signals.utils.version import get_version
 from signals import API_VERSIONS
+from signals.utils.version import get_version
 
 
 class APIVersionHeaderMiddleware:

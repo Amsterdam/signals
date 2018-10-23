@@ -53,6 +53,10 @@ class SignalsAPIRootViewVersion1(routers.APIRootView):
 
 class SignalsRouterVersion1(routers.DefaultRouter):
     APIRootView = SignalsAPIRootViewVersion1
+
+    # Overriding the `routes` attribute from the default DRF `routes`. We do this to control the
+    # usage of trailing slashes for different routes. In DRF you can only add or remove the
+    # trailing slash for all routes...
     routes = [
         # List route.
         routers.Route(

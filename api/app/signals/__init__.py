@@ -8,7 +8,7 @@ __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 # Versioning
 # ==========
 #
-# We've track multiple versions. First we've the application version which increments by every
+# We are tracking multiple versions. First we've the application version which increments by every
 # release. Based on the changes in the new release there is a major, minor or patch version bump.
 #
 # Besides that we've API versioning which are seperated versioning numbers for the given API. The
