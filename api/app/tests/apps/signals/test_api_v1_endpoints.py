@@ -1,7 +1,17 @@
 from rest_framework.test import APITestCase
 
+from signals import API_VERSIONS
 from signals.apps.signals.models import MainCategory
+from signals.utils.version import get_version
 from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
+
+
+class TestAPIRoot(APITestCase):
+
+    def test_http_header_api_version(self):
+        response = self.client.get('/signals/v1/')
+
+        self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v1']))
 
 
 class TestCategoryTermsEndpoints(APITestCase):

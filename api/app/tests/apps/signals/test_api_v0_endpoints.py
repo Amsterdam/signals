@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
+from signals import API_VERSIONS
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -19,12 +20,13 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.utils.version import get_version
 from tests.apps.signals import factories
 from tests.apps.signals.factories import SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
-class TestAPIEndpoints(APITestCase):
+class TestAPIRoot(APITestCase):
 
     def test_signals_index(self):
         response = self.client.get('/signals/')
@@ -39,6 +41,11 @@ class TestAPIEndpoints(APITestCase):
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['v1'], expected_api_version_1)
+
+    def test_http_header_api_version(self):
+        response = self.client.get('/signals/')
+
+        self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v0']))
 
 
 class TestAuthAPIEndpoints(APITestCase):
