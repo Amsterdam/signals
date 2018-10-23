@@ -407,6 +407,9 @@ REST_FRAMEWORK = dict(
         # 'nouser': '5/hour',
         'nouser': '60/hour'
     },
+    DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
+    DEFAULT_VERSION='v0',
+    ALLOWED_VERSIONS=('v0', 'v1', ),
 )
 
 # Swagger settings

@@ -19,13 +19,17 @@ signal_router_v1.register(r'public/terms/categories',
                           views.MainCategoryViewSet,
                           base_name='category')
 
-urlpatterns = [
-    # API Version 0
-    path('', include(signal_router_v0.urls)),
-
-    # API Version 1
-    path('v1/', include(signal_router_v1.urls)),
-    path('v1/public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
+# Appending extra url route for sub category detail endpoint.
+signal_router_v1.urls.append(
+    path('public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
          views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
          name='sub-category-detail'),
+)
+
+urlpatterns = [
+    # API Version 0
+    path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+
+    # API Version 1
+    path('v1/', include((signal_router_v1.urls, 'signals'), namespace='v1')),
 ]
