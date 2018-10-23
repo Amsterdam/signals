@@ -5,6 +5,21 @@ from signals.utils.version import get_version
 
 __all__ = ['celery_app', ]
 
-VERSION = (0, 5, 1)  # Major, minor, patch
+# Versioning
+# ==========
+#
+# We've track multiple versions. First we've the application version which increments by every
+# release. Based on the changes in the new release there is a major, minor or patch version bump.
+#
+# Besides that we've API versioning which are seperated versioning numbers for the given API. The
+# major versioning number of the API is fixed related to the given API. e.g. API Version 1 with url
+# `/signals/v1/...` will always have major API version number `1`.
+
+# Application version (Major, minor, patch)
+VERSION = (0, 5, 1)
+
+# API versions (Major, minor, patch)
+API_0_VERSION = (0, 1, 0)
+API_1_VERSION = (1, 0, 0)
 
 __version__ = get_version(VERSION)
