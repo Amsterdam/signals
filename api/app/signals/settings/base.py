@@ -85,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
+    'signals.apps.signals.middleware.APIVersionHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
