@@ -34,9 +34,10 @@ class TestAPIRoot(APITestCase):
         expected_api_version_1 = {
             '_links': {
                 'self': {
-                    'href': '/signals/v1/',
+                    'href': 'http://testserver/signals/v1/',
                 }
             },
+            'version': get_version(API_VERSIONS['v1']),
             'status': 'in development',
         }
         self.assertEqual(response.status_code, 200)

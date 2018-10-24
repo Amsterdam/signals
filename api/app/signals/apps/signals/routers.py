@@ -1,6 +1,9 @@
 from django.urls import reverse
 from rest_framework import routers
 
+from signals import API_VERSIONS
+from signals.utils.version import get_version
+
 
 class SignalsAPIRootViewVersion0(routers.APIRootView):
     """
@@ -29,9 +32,10 @@ class SignalsAPIRootViewVersion0(routers.APIRootView):
         response.data['v1'] = {
             '_links': {
                 'self': {
-                    'href': reverse('v1:api-root'),
+                    'href': request._request.build_absolute_uri(reverse('v1:api-root')),
                 }
             },
+            'version': get_version(API_VERSIONS['v1']),
             'status': 'in development',
         }
         return response
