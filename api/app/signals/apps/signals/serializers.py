@@ -523,6 +523,7 @@ class SubCategoryHALSerializer(HALSerializer):
             'slug',
             'handling',
             'departments',
+            'is_active',
         )
 
 
