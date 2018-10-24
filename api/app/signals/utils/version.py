@@ -1,7 +1,9 @@
 def get_version(version: tuple = None) -> str:
     """Return version string (x.y[.z]) from given version tuple.
 
-    :param version: version tuple
+    Note, if no `version` tuple is given we return the application version number.
+
+    :param version: version tuple or None
     :returns: version string
     """
     if version is None:

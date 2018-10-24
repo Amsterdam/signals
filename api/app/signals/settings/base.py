@@ -2,6 +2,7 @@ import os
 
 from celery.schedules import crontab
 
+from signals import API_VERSIONS
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
@@ -49,6 +50,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.gis',
 
+    # Signals project
+    'signals.apps.email_integrations',
+    'signals.apps.health',
+    'signals.apps.signals',
+    'signals.apps.users',
+    'signals.apps.sigmax',
+
     # Third party
     'corsheaders',
     'datapunt_api',
@@ -64,13 +72,6 @@ INSTALLED_APPS = [
     'rest_framework_gis',
     # 'rest_framework_swagger',
     'storages',
-
-    # Signals project
-    'signals.apps.email_integrations',
-    'signals.apps.health',
-    'signals.apps.signals',
-    'signals.apps.users',
-    'signals.apps.sigmax',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
+    'signals.apps.signals.middleware.APIVersionHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
@@ -407,6 +409,9 @@ REST_FRAMEWORK = dict(
         # 'nouser': '5/hour',
         'nouser': '60/hour'
     },
+    DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
+    DEFAULT_VERSION='v0',
+    ALLOWED_VERSIONS=API_VERSIONS.keys(),
 )
 
 # Swagger settings
