@@ -1,4 +1,4 @@
-from unittest import mock, skip
+from unittest import mock
 
 from django.db import Error
 from django.test import TestCase
@@ -25,7 +25,6 @@ class TestHealthEndpoints(TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, b'Database connectivity failed')
 
-    @skip('skipping')
     def test_status_data_success(self):
         # We need two Signal objects.
         SignalFactory.create()
@@ -36,7 +35,6 @@ class TestHealthEndpoints(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'Data OK 2 Signal')
 
-    @skip('skipping')
     def test_status_data_failed(self):
         response = self.client.get('/status/data')
 

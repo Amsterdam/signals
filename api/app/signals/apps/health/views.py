@@ -23,11 +23,6 @@ def health(request):
 
 
 def check_data(request):
-    from datetime import datetime
-    now = datetime.now().time()
-    if now.minute % 2 == 0:
-        return HttpResponse('Test even minuut', content_type='text/plain', status=500)
-
     try:
         health_check_model = apps.get_model(settings.HEALTH_MODEL)
     except LookupError:
