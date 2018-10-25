@@ -23,7 +23,7 @@ class SignalsUserAdmin(UserAdmin):
             'Actief',
         ]
 
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         filename = 'gebruikers-rapport-sia-{}.csv'.format(now.strftime('%Y%m%d_%H%M'))
 
         response = HttpResponse(content_type='text/csv')
