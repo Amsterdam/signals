@@ -90,9 +90,9 @@ Because CityControl communicates to external systems using a SOAP standard calle
 StUF and cannot integrate with REST APIs, we provide a minimal stand-in for a
 SOAP API to SIA. This stand-in is implemented on top of DRF and supports only
 predefined messages that are used by CityControl. There is no intention to
-provide to provide a full implementation of StuF in SIA. Furthermore we strive
-to keep knowledge of external systems outside the core SIA application so the
-integration with Sigmax/CityControl is implemented in a separate Django app:
+provide a full implementation of StuF in SIA. Furthermore we strive to keep 
+knowledge of external systems outside the core SIA application so the integration 
+with Sigmax/CityControl is implemented in a separate Django app: 
 `signals.apps.sigmax`. The core application cannot have dependencies on this
 Django app, but the other way is fine.
 
@@ -108,8 +108,11 @@ Django mail functionality.
 ## External integrations: CSV exports
 For backups to the datawarehouse SIA exports a CSV dump of the core datamodel to
 an object store. There they can be picked up by other municipal users with the
-correct credentials. The implentation of this CSV dump functionality is part of
+correct credentials. The implementation of this CSV dump functionality is part of
 the core SIA application.
+
+## Health
+The Django app `signals.apps.health` is used to monitor application health.
 
 
 ## Implementation details
@@ -117,22 +120,22 @@ the core SIA application.
 Development of SIA at Datapunt uses the standard Datapunt infrastructure, which
 means every commit that is pushed to Github gets built and tested. Standard
 Django unittests cover the application code and stylechecks are performed by
-the Flake8 and isort tools. All these tests are run through Tox. 
+the Flake8 and isort tools. All these tests are run through Tox
+(https://tox.readthedocs.io/). 
 
-Fixtures are used in some tests to initialize the database with correct data,
-because SIA's use of transactions in 
-
-* The Django app `signals.apps.health` is used to monitor application health
+Django fixtures are used in some tests to initialize the database with correct 
+data, because the test suite uses Django's `TransactionTestCase` in some places
+which will flush all database tables after each test run.   
 
 ### Logging setup
+* Sentry
 * Kibana
-
 
 ### Usage of Django Celery (Task queue)
 Some actions that SIA must perform are potentially slow, and these are off-loaded
 to worker processes using the Celery task queue package. The SIA Celery setup 
-uses RabbitMQ as its underlying message queue. In particular sending emails and
-creating tasks in the Sigmax/CityControl system are offloaded via Celery.
+uses RabbitMQ as its underlying message broker. In particular sending emails and
+creating tasks in the Sigmax/CityControl system are off-loaded via Celery.
 
 ### Authentication and Authorization
 The authentication system of SIA hooks into the Datapunt OAuth2 implementation.
@@ -140,14 +143,14 @@ One role in the Datapunt authentiation system (SIG/ALL) provides access to
 the SIA application. The Django application itself keeps track of SIA users
 and performs the authorization. Permission checks are implemented using Django
 Rest Framework's Permission classes that in turn use normal Django permissions.
-This allows user management through the standard Django admin. Users that have
+This allows user management through the standard Django Admin. Users that have
 SIG/ALL but have no corresponding user in the SIA Django application cannot 
 access protected resources.
 
 Muncipal employees that have access to the Amsterdam IT infrastructure gain
-SIG/ALL by default after logging in through a central system. Othe users that
+SIG/ALL by default after logging in through a central system. Other users that
 must have access to the application can be managed by the Datapunt Identity
-Provider. The reason to pull uaser management and authorization into the SIA
+Provider. The reason to pull user management and authorization into the SIA
 application partially pragmatic; Datapunt does not want to be burdened with
 the task of user management in SIA (at the time of writing there are about
 1000 users). By allowing user management in SIA through the Django Admin 
