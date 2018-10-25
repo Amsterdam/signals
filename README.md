@@ -7,7 +7,6 @@ up on by the appropriate municipal services.
 The code for the associated web front-end is available from:
 - https://github.com/Amsterdam/signals-frontend
 
-
 SIA will replace MORA and is based on a proof of concept (https://github.com/Amsterdam/sia)
 which ran on https://vaarwatermeldingen.amsterdam.nl/
 
@@ -17,6 +16,11 @@ This project is setup such that it can be built and run using Docker with minima
 effort. The root directory therefore contains some Docker prerequisites and documentation.
 The actual Django application is present in the `/api/app` directory. The Django project
 structure is documented in `/api/README.md`.
+
+
+## Documentation
+- [Application design](docs/application-design.md) 
+- [API design](docs/api-design.md) 
 
 
 ## Running using Docker for local development
@@ -220,21 +224,3 @@ And users that are superuser can do everything.
 Additionally  there groups defined for departments. They start with 'dep_'
 It is intended that users from a specific department should only see tickets 
 that belong to a specific department (in the category). But this is not yet implemented.
-
-test
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
