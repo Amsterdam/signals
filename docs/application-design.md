@@ -68,7 +68,7 @@ Notable components:
 * To maintain a loose coupling between the various Django apps within SIA we use
   custom Django signals. These are used to signal that a new issue was created
   (which may for instance trigger emails), that the status of a signal changed
-  etc. See for instance `signals.apps.signals.models.create_initial'.
+  etc. See for instance `signals.apps.signals.models.create_initial`.
 * The SIA workflow is modelled as a state machine that is implemented in terms
   of status updates. While the `SignalManager` provided API maintains integrity
   of the data model, and fires of `DjangoSignal`s for the various update events,
