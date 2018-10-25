@@ -52,3 +52,4 @@ class TestCategoryTermsEndpoints(APITestCase):
 
         data = response.json()
         self.assertEqual(data['name'], 'Grofvuil')
+        self.assertIn('is_active', data)

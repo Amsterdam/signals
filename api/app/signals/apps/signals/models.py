@@ -594,6 +594,7 @@ class SubCategory(models.Model):
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
     departments = models.ManyToManyField('signals.Department')
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('name', )
