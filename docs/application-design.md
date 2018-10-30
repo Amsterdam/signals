@@ -38,7 +38,7 @@ by one of the Datapunt teams.
   integrity of history of each signal. The general goal is to have insight in the
   actions taken to resolve an issue, and who in our origanisation took those 
   actions. By implication status updates should be done by appending new statusses
-  and not by editing exisiting ones.
+  and not by editing existing ones.
 
 * *SIA is a REST application* Like the other municipality of Amsterdam developed
   systems SIA uses a REST API. External integrations happen, preferentially,
