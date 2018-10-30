@@ -16,8 +16,8 @@ authentication and authorization system.
 
 
 ## About Datapunt
-Throughout this document there are references to Datapunt. Datapunt is an small
-organisation within the Amsterdam municipality that is charged with collecting
+Throughout this document there are references to Datapunt. Datapunt is a department
+within the Amsterdam municipality that is charged with collecting
 and publishing (digitally) certain municipal data sets. To this end Datapunt
 retains a few software development teams. The SIA application is being developed
 by one of the Datapunt teams.
