@@ -391,6 +391,7 @@ class Location(CreatedUpdatedModel):
     buurt_code = models.CharField(null=True, max_length=4)
     address = JSONField(null=True)
     address_text = models.CharField(null=True, max_length=256, editable=False)
+    created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = JSONField(null=True)
 
@@ -430,6 +431,7 @@ class CategoryAssignment(CreatedUpdatedModel):
     sub_category = models.ForeignKey('signals.SubCategory',
                                      on_delete=models.CASCADE,
                                      related_name='category_assignments')
+    created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = JSONField(null=True)
 
