@@ -342,7 +342,7 @@ class SignalAuthHALSerializer(HALSerializer):
         )
 
 
-class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
+class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
@@ -354,10 +354,13 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
             'buurt_code',
             'address',
             'geometrie',
+            'created_by',
             'extra_properties',
         )
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+
         signal = validated_data.pop('_signal')
         location = Signal.actions.update_location(validated_data, signal)
         return location
@@ -444,6 +447,7 @@ class CategoryHALSerializer(HALSerializer):
             'main',
             'main_slug',
             'department',
+            'created_by',
         )
 
     def get_department(self, obj):
