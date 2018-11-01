@@ -54,10 +54,11 @@ def send_mail_reporter_status_changed_afgehandeld(signal, status):
         return None
 
     subject = f'Betreft melding: {signal.id}'
-    message = create_status_change_notification_message(signal, status)
+    txt_message = create_status_change_notification_message(signal, status)
+    html_message = create_status_change_notification_html_message(signal, status)
     to = signal.reporter.email
 
-    return send_mail(subject, message, settings.NOREPLY, (to, ))
+    return send_mail(subject, txt_message, settings.NOREPLY, (to, ), html_message=html_message)
 
 
 def create_status_change_notification_message(signal, status):
@@ -72,5 +73,21 @@ def create_status_change_notification_message(signal, status):
         'status': status,
     }
     template = loader.get_template('email/signal_status_changed_afgehandeld.txt')
+    message = template.render(context)
+    return message
+
+
+def create_status_change_notification_html_message(signal, status):
+    """Create e-mail body message about status change of the given `Signal` object.
+
+    :param signal: Signal object
+    :param status: Status object
+    :returns: message (str)
+    """
+    context = {
+        'signal': signal,
+        'status': status,
+    }
+    template = loader.get_template('email/signal_status_changed_afgehandeld.html')
     message = template.render(context)
     return message
