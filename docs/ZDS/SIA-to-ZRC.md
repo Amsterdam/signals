@@ -26,9 +26,9 @@
 [ZDS Changelog](https://github.com/VNG-Realisatie/gemma-zaakregistratiecomponent/blob/develop/CHANGELOG.rst)
 
 # Mapping
-Hieronder komt de eerste opzet die gemaakt is voor het overzetten van de data van SIA naar
-het zaaksysteem (omvattend voor het ZRC, DRC en ZTC)
-Alles zal gebaseerd worden op de create calls die gedaan moeten worden.
+In deze sectie wordt beschreven hoe informatie uit SIA in de het zaaksysteem (bestaand uit de
+eerder genoemde componenten ZRC, DRC en ZTC). Alles zal gebaseerd worden op de create calls die
+gedaan moeten worden.
 
 ## ZRC
 Hierin zal de grootste verandering plaats vinden. Aangezien elke melding een zaak is.
@@ -50,8 +50,8 @@ Het zal gesplitst worden per model in het ZRC.
 | zaakgeometrie                 |                       | -                     |           |
 | kenmerken                     |                       | -                     |           |
 
-Om de status te koppelen moeten we een status aanmaken. Voor elke status update moet dit gebeuren.
-Hierdoor krijg je een geschiedenis van statussen die afgelopen wordt.
+Om de status te koppelen moeten we een status aanmaken bij elke nieuwe status in SIA. Aangezien
+SIA de geschiedenis van een melding bijhoudt als een reeks status updates.
 
 | Statussen             | SIA           | Beperkingen               |           |
 |-----------------------|---------------|---------------------------|-----------|
@@ -88,8 +88,8 @@ De Foto die wordt geüpload zal verplaatst moeten worden van de SIA applicatie n
 | beschrijving                |                       | <= 1000 characters    |           |
 | informatieobjecttype        |                       | [1..200] characters   | required  |
 
-Er moet denk ik ook iets gebeuren op het objectinformatieobject. Alleen is mij niet meteen
-duidelijk wat er zou moeten gebeuren en waar het voor dient
+Vermoedelijk moet er ook iets gebeuren op het objectinformatieobject. Welke wijzigingen precies
+nodig zijn moet nog worden uitgewerkt.
 
 | objectinformatieobject | SIA                   | Beperkingen           |           |
 |------------------------|-----------------------|-----------------------|-----------|
@@ -101,12 +101,14 @@ duidelijk wat er zou moeten gebeuren en waar het voor dient
 | registratiedatum       |                       | -                     | required  |
 
 # Voorgestelde veranderingen
-Om de applicatie nog te laten werken zal er data uit het ZRC, DRC en ZTC gehaald moeten worden.
-Hieronder komt een eerste opzet over waar en hoe we dit zouden kunnen doen.
+Als het ZRC component in de toekomst de bron van waarheid wordt voor SIA, moet er bepaalde melding
+informatie bij de SIA melding gezocht kunnen worden. Hieronder komt een eerste opzet over waar en
+hoe we dit zouden kunnen doen.
 
 ## Wijzigingen in SIA
 Als eerste zullen er wijzigingen in SIA moeten plaats vinden op het model.
-We moeten weten welke zaak gekoppeld is aan het signaal. Hiervoor zullen er extra velden nodig zijn op het datamodel.
+We moeten weten welke zaak gekoppeld is aan het signaal. Hiervoor zullen er extra velden nodig zijn
+op het datamodel.
 Zonder deze wijziging zullen wij niet in staat zijn de benodigde gegevens op te kunnen halen om de backoffice nog te laten werken via de frontend.
 
 ```python
@@ -137,7 +139,7 @@ ZTC_ZAAKTYPE_UUID = '' # Deze waarde kan niet opgevraagd worden uit de api.
 Met deze settings is het mogelijk om in het ZTC [statustype_list](https://ref.tst.vng.cloud/ztc/api/v1/schema/#operation/statustype_list) aan te roepen. Deze zal een overview van alle statussen terug geven die we nodig zullen hebben.
 
 ## Ophalen van de Zaak gegevens
-Doordat we het zaak_uuid hebben opgeslagen, is het makkelijk om daaruit de zaak_url te herleiden. Hierdoor is het mogelijk om snel en makkelijk
+Omdat we het zaak_uuid hebben opgeslagen, is het makkelijk om daaruit de zaak_url te herleiden. Hierdoor is het mogelijk om snel en makkelijk
 
 ## Updaten van de Zaak gegevens
 Het updaten van een zaak kan het beste gebeuren via de patch zaak_partial_update. Met de patch zaak_partial_update kan je delen van de zaak updaten. Hierbij hoef je dan dus niet alles opnieuw op te halen en op te slaan.
