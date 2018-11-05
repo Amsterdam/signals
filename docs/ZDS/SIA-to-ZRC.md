@@ -28,11 +28,11 @@
 # Mapping
 Hieronder komt de eerste opzet die gemaakt is voor het overzetten van de data van SIA naar
 het zaaksysteem (omvattend voor het ZRC, DRC en ZTC)
-Alles zal gebasseerd worden op de create calls die gedaan moeten worden.
+Alles zal gebaseerd worden op de create calls die gedaan moeten worden.
 
 ## ZRC
 Hierin zal de grootste verandering plaats vinden. Aangezien elke melding een zaak is.
-Het zal gesplitst wordem per model in het ZRC.
+Het zal gesplitst worden per model in het ZRC.
 
 | Zaak                          | SIA                   | Beperkingen           |           |
 |-------------------------------|-----------------------|-----------------------|-----------|
@@ -51,7 +51,7 @@ Het zal gesplitst wordem per model in het ZRC.
 | kenmerken                     |                       | -                     |           |
 
 Om de status te koppelen moeten we een status aanmaken. Voor elke status update moet dit gebeuren.
-Hierdoor krijg je een trail van statussen die afgelopen wordt.
+Hierdoor krijg je een geschiedenis van statussen die afgelopen wordt.
 
 | Statussen             | SIA           | Beperkingen               |           |
 |-----------------------|---------------|---------------------------|-----------|
@@ -71,7 +71,7 @@ Dit is een koppeling tussen een zaak een signaal (waar extra informatie te vinde
 
 
 ## DRC
-De Foto die wordt geupload zal verplaatst moeten worden van de SIA applicatie naar het DRC.
+De Foto die wordt geüpload zal verplaatst moeten worden van de SIA applicatie naar het DRC.
 
 | Enkelvoudiginformatieobject | SIA                   | Beperkingen           |           |
 |-----------------------------|-----------------------|-----------------------|-----------|
@@ -102,7 +102,7 @@ duidelijk wat er zou moeten gebeuren en waar het voor dient
 
 # Voorgestelde veranderingen
 Om de applicatie nog te laten werken zal er data uit het ZRC, DRC en ZTC gehaald moeten worden.
-Hieronder komt een eeste opzet over waar en hoe we dit zouden kunnen doen.
+Hieronder komt een eerste opzet over waar en hoe we dit zouden kunnen doen.
 
 ## Wijzigingen in SIA
 Als eerste zullen er wijzigingen in SIA moeten plaats vinden op het model.
@@ -130,8 +130,8 @@ Om te kunnen bepalen welke statussen mogelijk zijn moet er in het ZTC een lijst 
 Hiervoor moeten er een aantal settings worden toegevoegd.
 
 ```python
-ZTC_CATALOGUS_UUID = '' # Deze waarde kan niet opgevraagt worden uit de api.
-ZTC_ZAAKTYPE_UUID = '' # Deze waarde kan niet opgevraagt worden uit de api.
+ZTC_CATALOGUS_UUID = '' # Deze waarde kan niet opgevraagd worden uit de api.
+ZTC_ZAAKTYPE_UUID = '' # Deze waarde kan niet opgevraagd worden uit de api.
 ```
 
 Met deze settings is het mogelijk om in het ZTC [statustype_list](https://ref.tst.vng.cloud/ztc/api/v1/schema/#operation/statustype_list) aan te roepen. Deze zal een overview van alle statussen terug geven die we nodig zullen hebben.
@@ -146,10 +146,8 @@ Het updaten van een zaak kan het beste gebeuren via de patch zaak_partial_update
 Om de documenten op te halen moet er gebruik worden gemaakt van de objectinformatieobject_list.
 Hier is het mogelijk om een filter toe te passen door gebruik van een query parameter, object, die verwijst naar een zaak.
 
-Hierna zal er mogelijk ook een request moeten komen om de data van het enkelvoudiginformatieobject op te vrragen
+Hierna zal er mogelijk ook een request moeten komen om de data van het enkelvoudiginformatieobject op te vragen
 
 # Authenticatie op de ZRC, DRC en ZTC endpoints
-Momenteel mist de authenticatie nog. We willen hier gaan pushen op de manier die nu al bij amsterdam in productie staat.
+Momenteel mist de authenticatie nog. We willen hier gaan pushen op de manier die nu al bij Amsterdam in productie staat.
 Dit is oauth met gebruik van JWT.
-
-TODO: Uitbreiding van dit stuk.

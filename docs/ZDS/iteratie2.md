@@ -10,13 +10,13 @@ from signals.apps.zds import zds_client
 zds_client.zrc.retrive('zaak', zaak_url)
 ```
 
-Returned fields:
+Beschikbare velden:
 
 | Naam                          | Type                                                                                  | Uitleg                                                                                                                                                |
 |-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
 | url                           | string <uri> (Url)                                                                    |                                                                                                                                                       |
 | identificatie                 | string (Identificatie)                                                                | De unieke identificatie van de ZAAK binnen de organisatie die verantwoordelijk is voor de behandeling van de ZAAK.                                    |
-| bronorganisatie               | string (Bronorganisatie)                                                              | Het RSIN van de Niet-natuurlijk persoon zijnde de organisatie die de zaak heeft gecreeerd.                                                            |
+| bronorganisatie               | string (Bronorganisatie)                                                              | Het RSIN van de Niet-natuurlijk persoon zijnde de organisatie die de zaak heeft gecreëerd.                                                            |
 | omschrijving                  | string (Omschrijving)                                                                 | Een korte omschrijving van de zaak.                                                                                                                   |
 | zaaktype                      | string <uri> (Zaaktype)                                                               | URL naar het zaaktype in de CATALOGUS waar deze voorkomt                                                                                              |
 | registratiedatum              | string <date> (Registratiedatum)                                                      | De datum waarop de zaakbehandelende organisatie de ZAAK heeft geregistreerd. Indien deze niet opgegeven wordt, wordt de datum van vandaag gebruikt.   |
@@ -40,7 +40,7 @@ from signals.apps.zds import zds_client
 zds_client.zrc.list('zaakinformatieobject')
 ```
 
-Returned fields:
+Verplichte velden:
 
 | Naam             | Type                            | Uitleg                                                                                                    |
 |------------------|---------------------------------|-----------------------------------------------------------------------------------------------------------|
@@ -59,7 +59,7 @@ from signals.apps.zds import zds_client
 zds_client.zrc.list('status')
 ```
 
-Returned fields:
+Beschikbare velden:
 
 | Naam              | Type                                      | Uitleg                                                                                |
 |-------------------|-------------------------------------------|---------------------------------------------------------------------------------------|

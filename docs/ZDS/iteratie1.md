@@ -9,7 +9,7 @@ zds_client.zrc.create('zaak', zaak_data)
 
 Hieronder vind je wat er in de zaak_data meegegeven moet worden.
 
-Required fields:
+Verplichte velden:
 
 | ZRC                           | SIA                   | Beperkingen           |
 |-------------------------------|-----------------------|-----------------------|
@@ -20,7 +20,7 @@ Required fields:
 
 * NNP is een Niet-natuurlijk persoon.
 
-Optional fields:
+Optionele velden:
 
 | ZRC                           | SIA                   | Beperkingen           |
 |-------------------------------|-----------------------|-----------------------|
@@ -45,7 +45,7 @@ zds_client.zrc.create('zaakobject', zaakobject_data)
 
 Hieronder vind je wat er in de zaakobject_data meegegeven moet worden.
 
-Required fields:
+Verplichte velden:
 
 | ZRC                   | SIA                     | Beperkingen               |
 |-----------------------|-------------------------|---------------------------|
@@ -53,7 +53,7 @@ Required fields:
 | object                | (link naar de signal)   | [ 1 .. 200 ] characters   |
 | type                  | "MeldingOpenbareRuimte" | ENUM                      |
 
-Optional fields:
+Optionele velden:
 
 | ZRC                   | SIA                   | Beperkingen               |
 |-----------------------|-----------------------|---------------------------|
@@ -71,7 +71,7 @@ zds_client.zrc.create('status', status_data)
 
 Hieronder vind je wat er in de status_data meegegeven moet worden.
 
-Required fields:
+Verplichte velden:
 
 | Statussen             | SIA                 | Beperkingen               |
 |-----------------------|---------------------|---------------------------|
@@ -79,7 +79,7 @@ Required fields:
 | statusType            | state               | [ 1 .. 200 ] characters   |
 | datumStatusGezet      | created_at          | -                         |
 
-Optional fields:
+Optionele velden:
 
 | Statussen             | SIA                 | Beperkingen               |
 |-----------------------|---------------------|---------------------------|
@@ -97,7 +97,7 @@ zds_client.drc.create("enkelvoudiginformatieobject", enkelvoudiginformatieobject
 
 Hieronder vind je wat er in de enkelvoudiginformatieobject_data meegegeven moet worden.
 
-Required fields:
+Verplichte velden:
 
 | DRC                         | SIA                   | Beperkingen           |
 |-----------------------------|-----------------------|-----------------------|
@@ -109,7 +109,7 @@ Required fields:
 
 * opslaan in de settings
 
-Optional fields:
+Optionele velden:
 
 | DRC                         | SIA                   | Beperkingen           |
 |-----------------------------|-----------------------|-----------------------|
@@ -133,7 +133,7 @@ zds_client.drc.create("objectinformatieobject", objectinformatieobject_data)
 
 Hieronder vind je wat er in de objectinformatieobject_data meegegeven moet worden.
 
-Required fields:
+Verplichte velden:
 
 | DRC                    | SIA                              | Beperkingen           |
 |------------------------|----------------------------------|-----------------------|
@@ -142,7 +142,7 @@ Required fields:
 | objectType             | "zaak"                           | ENUM                  |
 | registratiedatum       | timezone.now                     | -                     |
 
-Optional fields:
+Optionele velden:
 
 | DRC                    | SIA                   | Beperkingen           |
 |------------------------|-----------------------|-----------------------|
