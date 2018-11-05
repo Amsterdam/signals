@@ -336,6 +336,8 @@ class SignalAuthHALSerializer(HALSerializer):
             'image',
             'extra_properties',
             'notes_count',
+            'zaak_url',
+            'zaak_identificatie',
         )
         read_only_fields = (
             'id',

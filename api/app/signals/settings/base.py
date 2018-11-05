@@ -3,16 +3,13 @@ import os
 from celery.schedules import crontab
 
 from signals import API_VERSIONS
-from signals.settings.settings_databases import (
-    OVERRIDE_HOST_ENV_VAR,
-    OVERRIDE_PORT_ENV_VAR,
-    LocationKey,
-    get_database_key,
-    get_docker_host,
-    in_docker
-)
+from signals.settings.settings_databases import (OVERRIDE_HOST_ENV_VAR,
+                                                 OVERRIDE_PORT_ENV_VAR,
+                                                 LocationKey, get_database_key,
+                                                 get_docker_host, in_docker)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
 
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -56,6 +53,7 @@ INSTALLED_APPS = [
     'signals.apps.signals',
     'signals.apps.users',
     'signals.apps.sigmax',
+    'signals.apps.zds',
 
     # Third party
     'corsheaders',
@@ -443,3 +441,40 @@ SWAGGER_SETTINGS = {
 # Sigmax settings
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
+
+
+# Zaken settings
+
+# ZRC settings
+ZRC_HOST = 'localhost'  # should be a staging domain.
+ZRC_PORT = '8003'
+ZRC_SCHEME = 'http'
+ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
+ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
+
+# DRC settings
+DRC_HOST = 'localhost'  # should be a staging domain.
+DRC_PORT = '8001'
+DRC_SCHEME = 'http'
+DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
+
+
+# ZTC settings
+ZTC_HOST = 'localhost'  # should be a staging domain.
+ZTC_PORT = '8004'
+ZTC_SCHEME = 'http'
+ZTC_URL = "{}://{}:{}".format(ZTC_SCHEME, ZTC_HOST, ZTC_PORT)
+
+ZTC_CATALOGUS_ID = '7d7d3ac9-a08b-427a-b4e1-1dc406790285'
+ZTC_ZAAKTYPE_ID = '80d93a21-bd7d-4cc6-8c54-97e1cdd0ddfd'
+ZTC_INFORMATIEOBJECTTYPE_ID = 'cde28728-5519-4077-b529-1b4f09f41bf9'
+
+ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
+    ztc_url=ZTC_URL, catalogus_id=ZTC_CATALOGUS_ID
+)
+ZTC_ZAAKTYPE_URL = '{catalogus_url}/zaaktypen/{zaaktype_id}'.format(
+    catalogus_url=ZTC_CATALOGUS_URL, zaaktype_id=ZTC_ZAAKTYPE_ID,
+)
+ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informatietype_id}'.format(
+    catalogus_url=ZTC_CATALOGUS_URL, informatietype_id=ZTC_INFORMATIEOBJECTTYPE_ID,
+)
