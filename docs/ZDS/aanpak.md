@@ -1,10 +1,10 @@
 # Aanpak
-Hieronder wordt de aanpak beschreven. Het wordt opgedeeld in iteraties. Hierdoor wordt het
-overzichtelijker in wat er zou moeten gebeuren. Ook door de opleveringen wat kleiner te maken is
-ervoor gekozen om als eerste een synchronisatie stap te bouwen en dit daarna uit te breiden tot een
+Hieronder wordt de aanpak beschreven. Deze wordt opgedeeld in iteraties. Hierdoor wordt het
+overzichtelijker in wat er zou moeten gebeuren. Om de opleveringen wat kleiner te maken is
+ervoor gekozen om als eerste een synchronisatie stap te bouwen en die daarna uit te breiden tot een
 complete koppeling.
 
-## Doel.
+## Doel
 Het doel van dit project is het omzetten van de kern van het signalen systeem naar het ZRC en het
 DRC waarbij ook gebruik wordt gemaakt van het ZTC voor het bijhouden van de mogelijke statussen.
 Deze 3 componenten worden samengevoegd onder het ZDS, om zo te voorkomen dat alle componenten los
@@ -24,8 +24,8 @@ Voor iteratie 1 wordt ZDS gezien als een externe koppeling.
 
 Dit heeft als voordeel dat de create endpoints volledig in gebruik genomen zullen worden. Zonder
 dat er grote wijzigingen in het bestaande SIA platform nodig zijn. Er zal hier vooral in een losse
-app gewerkt worden, ZDS. Deze zal vervolgens alles bevatten om de benodigde calls te kunnen maken.
-Los van deze app mag niets gebruik maken van de ZDS Client.
+Django app gewerkt worden, ZDS. Deze zal vervolgens alles bevatten om de benodigde calls te kunnen maken.
+Los van deze Django app mag niets gebruik maken van de ZDS Client.
 
 ### Opzetten staging env bij Amsterdam.
 Dit heeft de hoogste prioriteit. Dit zorgt voor een goede en makkelijke manier om te beginnen met
@@ -61,7 +61,7 @@ onderdeel in de doelen van VNG. Door deze wijziging kunnen er ook al velden uit 
 verwijderd kunnen worden.
 
 **Hier worden de volgende onderdelen aangesproken**:
-- Create api endpoints (zie Iteratie #1)
+- Create API endpoints (zie Iteratie #1)
 - ZRC [zaak_read](https://ref.tst.vng.cloud/zrc/api/v1/schema/#operation/zaak_read)
   - Het uitlezen van de zaak. Dit gebeurd via de zaak_url die opgeslagen op een signaal
 - ZRC [zaakinformatieobject_list](https://ref.tst.vng.cloud/zrc/api/v1/schema/#operation/zaakinformatieobject_list)
