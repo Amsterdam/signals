@@ -473,6 +473,9 @@ class CategoryHALSerializer(HALSerializer):
         return internal_data
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         category = Signal.actions.update_category_assignment(validated_data, signal)
         return category
