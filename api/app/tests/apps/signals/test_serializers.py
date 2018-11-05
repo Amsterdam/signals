@@ -9,7 +9,11 @@ from rest_framework import serializers
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import Location
-from signals.apps.signals.serializers import LocationHALSerializer, NearAmsterdamValidatorMixin
+from signals.apps.signals.serializers import (
+    CategoryHALSerializer,
+    LocationHALSerializer,
+    NearAmsterdamValidatorMixin,
+)
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import UserFactory
 
@@ -118,3 +122,18 @@ class TestLocationSerializerNew(TestCase):
 
         self.assertIsInstance(location, Location)
         self.assertEqual(location.created_by, self.user.username)
+
+
+class TestCategoryAssignmentSerializer(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.user = UserFactory.create()
+
+        self.category_assignment = self.signal.category_assignment
+        self.category_assignment.created_by = self.user.username
+        self.category_assignment.save()
+    
+    def test_user_is_serialized(self):
+        serializer = CategoryHALSerializer(instance=self.category_assignment)
+        self.assertIn('created_by', serializer.data)
+        self.assertEqual(serializer.data['created_by'], self.user.username)
