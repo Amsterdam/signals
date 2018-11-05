@@ -3,10 +3,14 @@ import os
 from celery.schedules import crontab
 
 from signals import API_VERSIONS
-from signals.settings.settings_databases import (OVERRIDE_HOST_ENV_VAR,
-                                                 OVERRIDE_PORT_ENV_VAR,
-                                                 LocationKey, get_database_key,
-                                                 get_docker_host, in_docker)
+from signals.settings.settings_databases import (
+    OVERRIDE_HOST_ENV_VAR,
+    OVERRIDE_PORT_ENV_VAR,
+    LocationKey,
+    get_database_key,
+    get_docker_host,
+    in_docker
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
