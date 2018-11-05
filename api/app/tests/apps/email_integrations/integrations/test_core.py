@@ -73,3 +73,31 @@ class TestCore(TestCase):
         self.assertIn(str(self.signal.id), message)
         self.assertIn(self.signal.text, message)
         self.assertIn(self.signal.status.text, message)
+
+    def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
+        mail.outbox = []
+
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.status.save()
+
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal, status)
+
+        self.assertEqual(num_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+        message = mail.outbox[0]
+
+        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(message.to, ['foo@bar.com', ])
+
+        txt_message = core.create_status_change_notification_message(signal=self.signal,
+                                                                     status=status)
+        self.assertEqual(message.body, txt_message)
+
+        content, mime_type = message.alternatives[0]
+        html_message = core.create_status_change_notification_html_message(signal=self.signal,
+                                                                           status=status)
+        self.assertEqual(mime_type, 'text/html')
+        self.assertEqual(content, html_message)
