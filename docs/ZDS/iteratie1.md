@@ -1,4 +1,22 @@
-# Create Zaak -> create_case
+# Eerste iteratie: koppeling SIA en ZDS
+In de eerste fase van de SIA-ZDS integratie zal er alleen een koppeling tot stand
+gebracht worden tussen de twee systemen. In deze fase is het SIA systeem leidend
+en volgt het ZDS systeem. Aan SIA wordt een extra Django app toegevoegd die zich
+bezig houdt met de communicatie met het ZDS systeem. Alle kennis over het ZDS zal
+binnen SIA in de eerder genoemde Django app worden verpakt. Om de koppeling te
+testen moet het ZDS op de Amsterdamse infrastructuur draaien. Het blijft mogelijk
+om SIA te gebruiken zonder de ZDS koppeling.
+
+Op te leveren:
+* een werkende en beveiligde installatie van het ZDS systeem op de Amstedamse
+  infrastructuur
+* een Django app binnnen SIA die communiceert met het ZDS systeem
+
+Buiten scope:
+* elke afhankelijkheid van SIA op het ZDS
+
+
+## Create Zaak -> create_case
 
 ```python
 from signals.apps.zds import zds_client
@@ -34,7 +52,7 @@ Optionele velden:
 | zaakgeometrie                 | coordinaten           | -                     |
 | kenmerken                     |                       | -                     |
 
-# Create zaakobject -> connect_signal_to_case
+## Create zaakobject -> connect_signal_to_case
 
 ```python
 from signals.apps.zds import zds_client
@@ -60,7 +78,7 @@ Optionele velden:
 | relatieomschrijving   |                       | <= 80 characters          |
 
 
-# Create status -> add_status_to_case
+## Create status -> add_status_to_case
 
 ```python
 from signals.apps.zds import zds_client
@@ -86,7 +104,7 @@ Optionele velden:
 | statustoelichting     | text                | <= 1000 characters        |
 
 
-# Create enkelvoudiginformatieobject -> create_document
+## Create enkelvoudiginformatieobject -> create_document
 
 ```python
 from signals.apps.zds import zds_client
@@ -122,7 +140,7 @@ Optionele velden:
 | beschrijving                |                       | <= 1000 characters    |
 
 
-# Create objectinformatieobject -> add_document_to_case
+## Create objectinformatieobject -> add_document_to_case
 
 ```python
 from signals.apps.zds import zds_client
