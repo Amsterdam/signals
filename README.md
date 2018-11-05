@@ -21,7 +21,7 @@ structure is documented in `/api/README.md`.
 ## Documentation
 - [Application design](docs/application-design.md) 
 - [API design](docs/api-design.md) 
-- [Future integration with VNG ZDS 2.0](docs/ZDS/SIA-to-ZRC.md) **currently subject to internal review**
+- [Future integration with VNG ZDS 2.0](docs/ZDS/SIA-to-ZRC.md) **(subject to internal review)**
 
 
 ## Running using Docker for local development

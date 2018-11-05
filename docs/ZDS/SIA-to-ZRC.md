@@ -1,4 +1,4 @@
-# Table of contents:
+# Inhoudsopgave:
 - [Documentatie](#documentatie)
 - [Mapping](#mapping)
     - [ZRC](#zrc)
