@@ -1,4 +1,7 @@
-# Read zaak
+# Iteratie 2: lezen zaak uit het ZDS
+**document status: voorstel, nog niet vastgesteld**
+
+## Read zaak
 
 Vanaf dit punt gaat de data uit het zds gebruikt worden. Hiermee wordt de eerste stap tot complete
 integratie gezet.
@@ -31,7 +34,7 @@ Beschikbare velden:
 | kenmerken                     | Array of object                                                                       | Lijst van kenmerken                                                                                                                                   |
 
 
-# List zaakinformatieobject
+## List zaakinformatieobject
 
 ```python
 from signals.apps.zds import zds_client
@@ -47,7 +50,7 @@ Verplichte velden:
 | informatieobject | string <uri> (Informatieobject) | URL-referentie naar het informatieobject in het DRC, waar ook de relatieinformatie opgevraagd kan worden. |
 
 
-# List status
+## List status
 
 Let op. Filtering toegevoegd in versie 0.6.0
 
