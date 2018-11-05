@@ -360,6 +360,7 @@ class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSeri
 
     def create(self, validated_data):
         validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
 
         signal = validated_data.pop('_signal')
         location = Signal.actions.update_location(validated_data, signal)

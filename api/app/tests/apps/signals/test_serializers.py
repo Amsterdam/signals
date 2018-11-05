@@ -1,5 +1,6 @@
 import json
 import os
+from unittest.mock import Mock
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -7,12 +8,9 @@ from django.test import TestCase
 from rest_framework import serializers
 from rest_framework.test import APITestCase
 
-from signals.apps.signals.serializers import (
-    LocationHALSerializer,
-    NearAmsterdamValidatorMixin,
-)
+from signals.apps.signals.models import Location
+from signals.apps.signals.serializers import LocationHALSerializer, NearAmsterdamValidatorMixin
 from tests.apps.signals.factories import SignalFactory
-from tests.apps.signals.valid_locations import STADHUIS
 from tests.apps.users.factories import UserFactory
 
 IN_AMSTERDAM = (4.898466, 52.361585)
@@ -31,6 +29,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
 
         with self.assertRaises(serializers.ValidationError):
             v.validate_geometrie(wrong)
+
 
 # TODO: move to endpoint tests (which these are)
 class TestLocationSerializer(APITestCase):
@@ -69,6 +68,12 @@ class TestLocationSerializer(APITestCase):
 
 
 class TestLocationSerializerNew(TestCase):
+    """
+    Test that the user is serialized and deserialized.
+
+    Note: user is added to created_by field as created_by.
+    """
+
     def setUp(self):
         self.signal = SignalFactory.create()
         self.user = UserFactory.create()
@@ -78,7 +83,38 @@ class TestLocationSerializerNew(TestCase):
         self.location.save()
 
     def test_user_is_serialized(self):
-        # Note deserialization is tested via API test cases
         serializer = LocationHALSerializer(instance=self.location)
         self.assertIn('created_by', serializer.data)
         self.assertEqual(serializer.data['created_by'], self.user.username)
+
+    def test_user_is_deserialized(self):
+        _signal_id = self.signal.id
+
+        request = Mock()
+        request.user = self.user
+
+        data = {
+            '_signal': _signal_id,
+            'stadsdeel': 'A',
+            'buurt_code': 'A04i',
+            'address': {
+                'openbare_ruimte': 'Amstel',
+                'huisnummer': 1,
+                'huisletter': '',
+                'huisnummer_toevoeging': '',
+                'postcode': '1011PN',
+                'woonplaats': 'Amsterdam',
+            },
+            'geometrie': {
+                'type': 'Point',
+                'coordinates': [4.90022563, 52.36768424]
+            }
+        }
+
+        serializer = LocationHALSerializer(
+            data=data, context={'request': request})
+        serializer.is_valid()
+        location = serializer.save()
+
+        self.assertIsInstance(location, Location)
+        self.assertEqual(location.created_by, self.user.username)
