@@ -243,7 +243,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         image = self.initial_data.get('image', False)
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
-                raise ValidationError("Maximum photo size is 3Mb.")
+                raise ValidationError("Maximum photo size is 8Mb.")
 
         return data
 
