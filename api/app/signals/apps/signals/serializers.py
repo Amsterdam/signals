@@ -417,7 +417,7 @@ class StatusHALSerializer(AddExtrasMixin, HALSerializer):
         return data
 
 
-class CategoryHALSerializer(HALSerializer):
+class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
     serializer_url_field = CategoryLinksField
     _display = DisplayField()
 

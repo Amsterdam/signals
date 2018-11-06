@@ -124,7 +124,7 @@ class TestLocationSerializerNew(TestCase):
         self.assertEqual(location.created_by, self.user.username)
 
 
-class TestCategoryAssignmentSerializer(TestCase):
+class TestCategoryHALSerializer(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
         self.user = UserFactory.create()
