@@ -356,6 +356,7 @@ class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSeri
             'geometrie',
             'created_by',
             'extra_properties',
+            'created_at',
         )
 
     def create(self, validated_data):
@@ -449,6 +450,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
             'main_slug',
             'department',
             'created_by',
+            'created_at',
         )
 
     def get_department(self, obj):
@@ -481,7 +483,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
         return category
 
 
-class PriorityHALSerializer(HALSerializer):
+class PriorityHALSerializer(AddExtrasMixin, HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = PriorityLinksField
@@ -494,9 +496,14 @@ class PriorityHALSerializer(HALSerializer):
             'id',
             '_signal',
             'priority',
+            'created_at',
+            'created_by',
         )
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         priority = Signal.actions.update_priority(validated_data, signal)
         return priority

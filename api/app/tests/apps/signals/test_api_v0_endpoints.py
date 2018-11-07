@@ -415,6 +415,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(self.signal.status.text, result['text'])
         self.assertEqual(self.signal.status.user, result['user'])
         self.assertEqual(self.signal.status.state, result['state'])
+        self.assertEqual(self.signal.status.user, self.user.username)
 
     def test_post_status_minimal_fiels(self):
         # Asserting initial state.
@@ -432,6 +433,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         result = response.json()
         self.assertEqual(self.signal.status.state, result['state'])
+        self.assertEqual(self.signal.status.user, self.user.username)
 
     def test_post_status_invalid_transition(self):
         # Prepare current state.
@@ -493,9 +495,11 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         response = self.client.post(url, postjson, format='json')
         result = response.json()
         self.assertEqual(response.status_code, 201)
+
         self.signal.refresh_from_db()
         # check that current location of signal is now this one
         self.assertEqual(self.signal.location.id, result['id'])
+        self.assertEqual(self.signal.location.created_by, self.user.username)
 
     def test_post_category(self):
         sub_category_name = 'Overlast op het water - snel varen'
@@ -520,10 +524,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.category_assignment.sub_category, sub_category)
-
-        # check that the username of the user who created a category assignment is saved
         self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
-
 
     def test_post_category_backwards_compatibility_style(self):
         """
@@ -553,6 +554,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+        self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
 
     def test_post_priority(self):
         url = '/signals/auth/priority/'
@@ -568,6 +570,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.priority.id, result['id'])
         self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+        self.assertEqual(self.signal.priority.created_by, self.user.username)
 
     def test_post_note(self):
         url = '/signals/auth/note/'
@@ -588,4 +591,106 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
             self.assertIn(field, result)
 
-        self.assertEqual(result['created_by'], 'superuser@example.com')
+
+        note = Note.objects.get(_signal=self.signal)
+        self.assertEqual(note.created_by, self.user.username)
+
+
+class TestUserLogging(TestAPIEnpointsBase):
+    """Check that the API returns who did what and when."""
+    def setUp(self):
+        super().setUp()
+
+        # Forcing authentication (Superuser has all permissions by default.)
+        superuser = SuperUserFactory.create(email='superuser@example.com')
+        self.user = superuser
+        self.client.force_authenticate(user=superuser)
+
+        # We want the following fields present in relevant authenticated endpoints.
+        self.required_fields = ['created_at', 'created_by', '_signal']
+
+    def test_category_assignment_is_logged(self):
+        self.signal.category_assignment.created_by = 'veelmelder@example.com'
+        self.signal.category_assignment.save()
+
+        pk = self.signal.category_assignment.pk
+        response = self.client.get('/signals/auth/category/{}/'.format(pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(CategoryAssignment.objects.count(), 1)
+
+        result = response.json()
+        for field in self.required_fields:
+            self.assertIn(field, result)
+            self.assertNotEqual(result[field], None)
+
+        self.assertEqual(self.signal.category_assignment.created_by, result['created_by'])
+
+    def test_location_is_logged(self):
+        self.signal.location.created_by = 'veelmelder@example.com'
+        self.signal.location.save()
+
+        pk = self.signal.location.pk
+        response = self.client.get('/signals/auth/location/{}/'.format(pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Location.objects.count(), 1)
+
+        result = response.json()
+        for field in self.required_fields:
+            self.assertIn(field, result)
+            self.assertNotEqual(result[field], None)
+
+        self.assertEqual(self.signal.location.created_by, result['created_by'])
+
+    def test_priority_is_logged(self):
+        self.signal.priority.created_by = 'veelmelder@example.com'
+        self.signal.priority.save()
+
+        pk = self.signal.priority.pk
+        response = self.client.get('/signals/auth/priority/{}/'.format(pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Priority.objects.count(), 1)
+
+        result = response.json()
+        for field in self.required_fields:
+            self.assertIn(field, result)
+            self.assertNotEqual(result[field], None)
+
+        self.assertEqual(self.signal.priority.created_by, result['created_by'])
+
+    def test_status_is_logged(self):
+        # Note: for backwards compatibility we did not rename `user` to `created_by`.
+        self.signal.status.user = 'veelmelder@example.com'
+        self.signal.status.save()
+
+        pk = self.signal.status.pk
+        response = self.client.get('/signals/auth/status/{}/'.format(pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Status.objects.count(), 1)
+
+        result = response.json()
+        for field in ['created_at', 'user', '_signal']:
+            self.assertIn(field, result)
+            self.assertNotEqual(result[field], None)
+
+        self.assertEqual(self.signal.status.user, result['user'])
+
+    def test_note_is_logged(self):
+        note = Note.objects.create(
+            _signal=self.signal,
+            text='Notitie tekst',
+            created_by='veelmelder@example.com',
+        )
+        note.save()
+        note.refresh_from_db()
+
+        pk = note.pk
+        response = self.client.get('/signals/auth/note/{}/'.format(pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Note.objects.count(), 1)
+
+        result = response.json()
+        for field in self.required_fields:
+            self.assertIn(field, result)
+            self.assertNotEqual(result[field], None)
+
+        self.assertEqual(note.created_by, result['created_by'])
