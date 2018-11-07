@@ -1,6 +1,6 @@
 import json
 import os
-from unittest.mock import Mock
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -94,7 +94,7 @@ class TestLocationSerializerNew(TestCase):
     def test_user_is_deserialized(self):
         _signal_id = self.signal.id
 
-        request = Mock()
+        request = mock.Mock()
         request.user = self.user
 
         data = {
@@ -132,8 +132,18 @@ class TestCategoryHALSerializer(TestCase):
         self.category_assignment = self.signal.category_assignment
         self.category_assignment.created_by = self.user.username
         self.category_assignment.save()
-    
+
     def test_user_is_serialized(self):
-        serializer = CategoryHALSerializer(instance=self.category_assignment)
+        from signals.apps.signals.fields import CategoryLinksField
+
+        class PatchedCategoryLinksField(CategoryLinksField):
+            def to_representation(self, value):
+                return {'self': {'href': '/link/to/nowhere'}}
+
+        class PatchedSerializer(CategoryHALSerializer):
+            serializer_url_field = PatchedCategoryLinksField
+
+        serializer = PatchedSerializer(
+            instance=self.category_assignment)
         self.assertIn('created_by', serializer.data)
         self.assertEqual(serializer.data['created_by'], self.user.username)

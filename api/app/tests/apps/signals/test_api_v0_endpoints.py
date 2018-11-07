@@ -366,6 +366,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         # Forcing authentication (Superuser has all permissions by default.)
         superuser = SuperUserFactory.create(email='superuser@example.com')
+        self.user = superuser
         self.client.force_authenticate(user=superuser)
 
     def test_signal_post_not_allowed(self):
@@ -519,6 +520,10 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.category_assignment.sub_category, sub_category)
+
+        # check that the username of the user who created a category assignment is saved
+        self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
+
 
     def test_post_category_backwards_compatibility_style(self):
         """
