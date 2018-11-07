@@ -1,53 +1,67 @@
+import base64
 import logging
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.urls import reverse
 
-from signals.apps.signals.models import Signal
 from signals.apps.signals.workflow import ZTC_STATUSSES
 from signals.apps.zds import zds_client
+from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
+
+from .models import ZaakSignal
 
 logger = logging.getLogger(__name__)
 
 
-#
-# Iteration 1
-#
 def create_case(signal):
     """
     This will create a case in the ZRC.
 
     :return: Signal object
     """
+    # If the signal already has a case connected.
+    # It is not needed to create a case.
+    try:
+        signal.zaak
+        return signal
+    except ObjectDoesNotExist:
+        pass
+
     data = {
-        'bronorganisatie': 120177080,  # Deze moet opgevraagd worden wat dit zou moeten zijn voor de gemeente amsterdam
+        # Deze moet opgevraagd worden wat dit zou moeten zijn voor de
+        # gemeente amsterdam
+        'bronorganisatie': 120177080,
         'zaaktype': settings.ZTC_ZAAKTYPE_URL,
-        'verantwoordelijkeOrganisatie': 'http://maykinmedia.nl/',  # nog geen idee waar deze vandaar komt. Lijk mij het ZTC te zijn...
+        # nog geen idee waar deze vandaar komt. Lijk mij het ZTC te zijn...
+        'verantwoordelijkeOrganisatie': 'http://maykinmedia.nl/',
         'startdatum': signal.incident_date_start.strftime('%Y-%m-%d'),
     }
 
     try:
         response = zds_client.zrc.create('zaak', data)
-        signal = Signal.actions.add_case(response, signal)
+        ZaakSignal.actions.create_zaak_signal(response.get('url'), signal)
     except Exception as exception:
         logger.exception(exception)
+        raise CaseNotCreatedException
 
     return signal
 
 
 def connect_signal_to_case(signal):
     """
-    This will create a connection between the case and the signal. Now from the ZRC you wull know
-    which signal has more detailed information.
+    This will create a connection between the case and the signal.
+    Now from the ZRC you wull know which signal has more detailed information.
 
     :return: Signal object
     """
     data = {
-        'zaak': signal.zaak_url,
-        'object': signal.get_absolute_url(),
+        'zaak': signal.zaak.zrc_link,
+        'object': settings.HOST_URL + reverse('v0:signal-auth-detail', kwargs={'pk': signal.id}),
         'type': settings.ZRC_ZAAKOBJECT_TYPE
     }
-    response = zds_client.zrc.create('zaakobject', data)
+    zds_client.zrc.create('zaakobject', data)
     # TODO: Handle error cases.
     return signal
 
@@ -60,12 +74,12 @@ def add_status_to_case(signal):
     :return: Signal object
     """
     data = {
-        'zaak': signal.zaak_url,
+        'zaak': signal.zaak.zrc_link,
         'statusType': ZTC_STATUSSES.get(signal.status.state),
         'datumStatusGezet': signal.status.created_at.isoformat(),
     }
 
-    response = zds_client.zrc.create('status', data)
+    zds_client.zrc.create('status', data)
     # TODO: Handle error cases.
     return signal
 
@@ -78,18 +92,19 @@ def create_document(signal):
     """
     data = {
         'creatiedatum': timezone.now().strftime('%Y-%m-%d'),
-        'titel': signal.image.file,
+        'titel': signal.image.name,
         'auteur': 'SIA Amsterdam',
         'taal': 'dut',
         'informatieobjecttype': settings.ZTC_INFORMATIEOBJECTTYPE_URL,
-        'inhoud': signal.image.file.read(),
+        'inhoud': base64.b64encode(signal.image.file.read()),
     }
 
     try:
         response = zds_client.drc.create("enkelvoudiginformatieobject", data)
-        signal = Signal.actions.add_document(response)
+        ZaakSignal.actions.add_document(response.get('url'), signal.zaak)
     except Exception as exception:
         logger.exception(exception)
+        raise DocumentNotCreatedException()
 
     return signal
 
@@ -101,13 +116,13 @@ def add_document_to_case(signal):
     :return: Signal object
     """
     data = {
-        'informatieobject': signal.document_url,
-        'object': signal.zaak_url,
+        'informatieobject': signal.zaak.document_url,
+        'object': signal.zaak.zrc_link,
         'objectType': 'zaak',
         'registratiedatum': timezone.now().isoformat(),
     }
 
-    response = zds_client.drc.create('objectinformatieobject', data)
+    zds_client.drc.create('objectinformatieobject', data)
     # TODO: Handle error cases.
     return signal
 
@@ -121,7 +136,7 @@ def get_case(signal):
 
     :return: response
     """
-    response = zds_client.zrc.retrieve('zaak', url=signal.zaak_url)
+    response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
     return response
 
 

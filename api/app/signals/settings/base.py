@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'signals.apps.signals',
     'signals.apps.users',
     'signals.apps.sigmax',
-    'signals.apps.zds',
 
     # Third party
     'corsheaders',
@@ -447,7 +446,9 @@ SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 
 
+#
 # Zaken settings
+#
 
 # ZRC settings
 ZRC_HOST = 'localhost'  # should be a staging domain.
@@ -482,3 +483,5 @@ ZTC_ZAAKTYPE_URL = '{catalogus_url}/zaaktypen/{zaaktype_id}'.format(
 ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informatietype_id}'.format(
     catalogus_url=ZTC_CATALOGUS_URL, informatietype_id=ZTC_INFORMATIEOBJECTTYPE_ID,
 )
+
+HOST_URL = 'http://localhost:8000'

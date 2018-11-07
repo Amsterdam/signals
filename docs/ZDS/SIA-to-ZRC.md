@@ -117,15 +117,8 @@ from django.db import models
 
 class Signal(models.Model):
     # All fields that are now available.
-    zaak_uuid = models.UUIDField()
-
-    @property
-    def zaak_url(self):
-        url = "" # Hierin zal zich de url bevinden naar de zaak.
-        return url.format(self.zaak_uuid)
+    zaak_url = models.URLField()
 ```
-
-Door deze 2 velden toe te voegen kan er op een makkelijke manier gekoppeld worden met
 
 ## Status lijst
 Om te kunnen bepalen welke statussen mogelijk zijn moet er in het ZTC een lijst met statussen opgehaald kunnen worden.

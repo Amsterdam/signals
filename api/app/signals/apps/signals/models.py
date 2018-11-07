@@ -87,12 +87,6 @@ class Signal(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)
 
-    # Zaak specifieke velden
-    zaak_uuid = models.UUIDField(blank=True, null=True)
-    zaak_url = models.URLField(blank=True, null=True)
-    zaak_identificatie = models.UUIDField(blank=True, null=True)
-    document_url = models.URLField(blank=True, null=True)
-
     objects = models.Manager()
     actions = SignalManager()
 

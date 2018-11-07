@@ -1,0 +1,136 @@
+URL                                                                          | Module                                                  | Name                                                   | Decorator
+-----------------------------------------------------------------------------+---------------------------------------------------------+--------------------------------------------------------+-
+/__debug__/render_panel/                                                     | debug_toolbar.views.render_panel                        | djdt:render_panel                                      | 
+/__debug__/sql_explain/                                                      | debug_toolbar.panels.sql.views.sql_explain              | djdt:sql_explain                                       | 
+/__debug__/sql_profile/                                                      | debug_toolbar.panels.sql.views.sql_profile              | djdt:sql_profile                                       | 
+/__debug__/sql_select/                                                       | debug_toolbar.panels.sql.views.sql_select               | djdt:sql_select                                        | 
+/__debug__/template_source/                                                  | debug_toolbar.panels.templates.views.template_source    | djdt:template_source                                   | 
+/signals/                                                                    | signals.apps.signals.routers.SignalsAPIRootViewVersion0 | v0:api-root                                            | 
+/signals/\.<format>/                                                         | signals.apps.signals.routers.SignalsAPIRootViewVersion0 | v0:api-root                                            | 
+/signals/admin/                                                              | django.contrib.admin.sites.index                        | admin:index                                            | 
+/signals/admin/<app_label>/                                                  | django.contrib.admin.sites.app_index                    | admin:app_list                                         | 
+/signals/admin/auth/group/                                                   | django.contrib.admin.options.changelist_view            | admin:auth_group_changelist                            | 
+/signals/admin/auth/group/<path:object_id>/                                  | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/auth/group/<path:object_id>/change/                           | django.contrib.admin.options.change_view                | admin:auth_group_change                                | 
+/signals/admin/auth/group/<path:object_id>/delete/                           | django.contrib.admin.options.delete_view                | admin:auth_group_delete                                | 
+/signals/admin/auth/group/<path:object_id>/history/                          | django.contrib.admin.options.history_view               | admin:auth_group_history                               | 
+/signals/admin/auth/group/add/                                               | django.contrib.admin.options.add_view                   | admin:auth_group_add                                   | 
+/signals/admin/auth/group/autocomplete/                                      | django.contrib.admin.options.autocomplete_view          | admin:auth_group_autocomplete                          | 
+/signals/admin/auth/user/                                                    | django.contrib.admin.options.changelist_view            | admin:auth_user_changelist                             | 
+/signals/admin/auth/user/<id>/password/                                      | django.contrib.auth.admin.user_change_password          | admin:auth_user_password_change                        | 
+/signals/admin/auth/user/<path:object_id>/                                   | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/auth/user/<path:object_id>/change/                            | django.contrib.admin.options.change_view                | admin:auth_user_change                                 | 
+/signals/admin/auth/user/<path:object_id>/delete/                            | django.contrib.admin.options.delete_view                | admin:auth_user_delete                                 | 
+/signals/admin/auth/user/<path:object_id>/history/                           | django.contrib.admin.options.history_view               | admin:auth_user_history                                | 
+/signals/admin/auth/user/add/                                                | django.contrib.auth.admin.add_view                      | admin:auth_user_add                                    | 
+/signals/admin/auth/user/autocomplete/                                       | django.contrib.admin.options.autocomplete_view          | admin:auth_user_autocomplete                           | 
+/signals/admin/django_celery_beat/crontabschedule/                           | django.contrib.admin.options.changelist_view            | admin:django_celery_beat_crontabschedule_changelist    | 
+/signals/admin/django_celery_beat/crontabschedule/<path:object_id>/          | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/django_celery_beat/crontabschedule/<path:object_id>/change/   | django.contrib.admin.options.change_view                | admin:django_celery_beat_crontabschedule_change        | 
+/signals/admin/django_celery_beat/crontabschedule/<path:object_id>/delete/   | django.contrib.admin.options.delete_view                | admin:django_celery_beat_crontabschedule_delete        | 
+/signals/admin/django_celery_beat/crontabschedule/<path:object_id>/history/  | django.contrib.admin.options.history_view               | admin:django_celery_beat_crontabschedule_history       | 
+/signals/admin/django_celery_beat/crontabschedule/add/                       | django.contrib.admin.options.add_view                   | admin:django_celery_beat_crontabschedule_add           | 
+/signals/admin/django_celery_beat/crontabschedule/autocomplete/              | django.contrib.admin.options.autocomplete_view          | admin:django_celery_beat_crontabschedule_autocomplete  | 
+/signals/admin/django_celery_beat/intervalschedule/                          | django.contrib.admin.options.changelist_view            | admin:django_celery_beat_intervalschedule_changelist   | 
+/signals/admin/django_celery_beat/intervalschedule/<path:object_id>/         | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/django_celery_beat/intervalschedule/<path:object_id>/change/  | django.contrib.admin.options.change_view                | admin:django_celery_beat_intervalschedule_change       | 
+/signals/admin/django_celery_beat/intervalschedule/<path:object_id>/delete/  | django.contrib.admin.options.delete_view                | admin:django_celery_beat_intervalschedule_delete       | 
+/signals/admin/django_celery_beat/intervalschedule/<path:object_id>/history/ | django.contrib.admin.options.history_view               | admin:django_celery_beat_intervalschedule_history      | 
+/signals/admin/django_celery_beat/intervalschedule/add/                      | django.contrib.admin.options.add_view                   | admin:django_celery_beat_intervalschedule_add          | 
+/signals/admin/django_celery_beat/intervalschedule/autocomplete/             | django.contrib.admin.options.autocomplete_view          | admin:django_celery_beat_intervalschedule_autocomplete | 
+/signals/admin/django_celery_beat/periodictask/                              | django_celery_beat.admin.changelist_view                | admin:django_celery_beat_periodictask_changelist       | 
+/signals/admin/django_celery_beat/periodictask/<path:object_id>/             | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/django_celery_beat/periodictask/<path:object_id>/change/      | django.contrib.admin.options.change_view                | admin:django_celery_beat_periodictask_change           | 
+/signals/admin/django_celery_beat/periodictask/<path:object_id>/delete/      | django.contrib.admin.options.delete_view                | admin:django_celery_beat_periodictask_delete           | 
+/signals/admin/django_celery_beat/periodictask/<path:object_id>/history/     | django.contrib.admin.options.history_view               | admin:django_celery_beat_periodictask_history          | 
+/signals/admin/django_celery_beat/periodictask/add/                          | django.contrib.admin.options.add_view                   | admin:django_celery_beat_periodictask_add              | 
+/signals/admin/django_celery_beat/periodictask/autocomplete/                 | django.contrib.admin.options.autocomplete_view          | admin:django_celery_beat_periodictask_autocomplete     | 
+/signals/admin/django_celery_beat/solarschedule/                             | django.contrib.admin.options.changelist_view            | admin:django_celery_beat_solarschedule_changelist      | 
+/signals/admin/django_celery_beat/solarschedule/<path:object_id>/            | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/django_celery_beat/solarschedule/<path:object_id>/change/     | django.contrib.admin.options.change_view                | admin:django_celery_beat_solarschedule_change          | 
+/signals/admin/django_celery_beat/solarschedule/<path:object_id>/delete/     | django.contrib.admin.options.delete_view                | admin:django_celery_beat_solarschedule_delete          | 
+/signals/admin/django_celery_beat/solarschedule/<path:object_id>/history/    | django.contrib.admin.options.history_view               | admin:django_celery_beat_solarschedule_history         | 
+/signals/admin/django_celery_beat/solarschedule/add/                         | django.contrib.admin.options.add_view                   | admin:django_celery_beat_solarschedule_add             | 
+/signals/admin/django_celery_beat/solarschedule/autocomplete/                | django.contrib.admin.options.autocomplete_view          | admin:django_celery_beat_solarschedule_autocomplete    | 
+/signals/admin/django_celery_results/taskresult/                             | django.contrib.admin.options.changelist_view            | admin:django_celery_results_taskresult_changelist      | 
+/signals/admin/django_celery_results/taskresult/<path:object_id>/            | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/django_celery_results/taskresult/<path:object_id>/change/     | django.contrib.admin.options.change_view                | admin:django_celery_results_taskresult_change          | 
+/signals/admin/django_celery_results/taskresult/<path:object_id>/delete/     | django.contrib.admin.options.delete_view                | admin:django_celery_results_taskresult_delete          | 
+/signals/admin/django_celery_results/taskresult/<path:object_id>/history/    | django.contrib.admin.options.history_view               | admin:django_celery_results_taskresult_history         | 
+/signals/admin/django_celery_results/taskresult/add/                         | django.contrib.admin.options.add_view                   | admin:django_celery_results_taskresult_add             | 
+/signals/admin/django_celery_results/taskresult/autocomplete/                | django.contrib.admin.options.autocomplete_view          | admin:django_celery_results_taskresult_autocomplete    | 
+/signals/admin/jsi18n/                                                       | django.contrib.admin.sites.i18n_javascript              | admin:jsi18n                                           | 
+/signals/admin/login/                                                        | django.contrib.admin.sites.login                        | admin:login                                            | 
+/signals/admin/logout/                                                       | django.contrib.admin.sites.logout                       | admin:logout                                           | 
+/signals/admin/password_change/                                              | django.contrib.admin.sites.password_change              | admin:password_change                                  | 
+/signals/admin/password_change/done/                                         | django.contrib.admin.sites.password_change_done         | admin:password_change_done                             | 
+/signals/admin/r/<int:content_type_id>/<path:object_id>/                     | django.contrib.contenttypes.views.shortcut              | admin:view_on_site                                     | 
+/signals/admin/sites/site/                                                   | django.contrib.admin.options.changelist_view            | admin:sites_site_changelist                            | 
+/signals/admin/sites/site/<path:object_id>/                                  | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/sites/site/<path:object_id>/change/                           | django.contrib.admin.options.change_view                | admin:sites_site_change                                | 
+/signals/admin/sites/site/<path:object_id>/delete/                           | django.contrib.admin.options.delete_view                | admin:sites_site_delete                                | 
+/signals/admin/sites/site/<path:object_id>/history/                          | django.contrib.admin.options.history_view               | admin:sites_site_history                               | 
+/signals/admin/sites/site/add/                                               | django.contrib.admin.options.add_view                   | admin:sites_site_add                                   | 
+/signals/admin/sites/site/autocomplete/                                      | django.contrib.admin.options.autocomplete_view          | admin:sites_site_autocomplete                          | 
+/signals/admin/zds/zaakdocument/                                             | django.contrib.admin.options.changelist_view            | admin:zds_zaakdocument_changelist                      | 
+/signals/admin/zds/zaakdocument/<path:object_id>/                            | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/zds/zaakdocument/<path:object_id>/change/                     | django.contrib.admin.options.change_view                | admin:zds_zaakdocument_change                          | 
+/signals/admin/zds/zaakdocument/<path:object_id>/delete/                     | django.contrib.admin.options.delete_view                | admin:zds_zaakdocument_delete                          | 
+/signals/admin/zds/zaakdocument/<path:object_id>/history/                    | django.contrib.admin.options.history_view               | admin:zds_zaakdocument_history                         | 
+/signals/admin/zds/zaakdocument/add/                                         | django.contrib.admin.options.add_view                   | admin:zds_zaakdocument_add                             | 
+/signals/admin/zds/zaakdocument/autocomplete/                                | django.contrib.admin.options.autocomplete_view          | admin:zds_zaakdocument_autocomplete                    | 
+/signals/admin/zds/zaaksignal/                                               | django.contrib.admin.options.changelist_view            | admin:zds_zaaksignal_changelist                        | 
+/signals/admin/zds/zaaksignal/<path:object_id>/                              | django.views.generic.base.RedirectView                  |                                                        | 
+/signals/admin/zds/zaaksignal/<path:object_id>/change/                       | django.contrib.admin.options.change_view                | admin:zds_zaaksignal_change                            | 
+/signals/admin/zds/zaaksignal/<path:object_id>/delete/                       | django.contrib.admin.options.delete_view                | admin:zds_zaaksignal_delete                            | 
+/signals/admin/zds/zaaksignal/<path:object_id>/history/                      | django.contrib.admin.options.history_view               | admin:zds_zaaksignal_history                           | 
+/signals/admin/zds/zaaksignal/add/                                           | django.contrib.admin.options.add_view                   | admin:zds_zaaksignal_add                               | 
+/signals/admin/zds/zaaksignal/autocomplete/                                  | django.contrib.admin.options.autocomplete_view          | admin:zds_zaaksignal_autocomplete                      | 
+/signals/auth/category/                                                      | signals.apps.signals.views.CategoryAuthViewSet          | v0:category-auth-list                                  | 
+/signals/auth/category/<pk>/                                                 | signals.apps.signals.views.CategoryAuthViewSet          | v0:category-auth-detail                                | 
+/signals/auth/category/<pk>\.<format>/                                       | signals.apps.signals.views.CategoryAuthViewSet          | v0:category-auth-detail                                | 
+/signals/auth/category\.<format>/                                            | signals.apps.signals.views.CategoryAuthViewSet          | v0:category-auth-list                                  | 
+/signals/auth/location/                                                      | signals.apps.signals.views.LocationAuthViewSet          | v0:location-auth-list                                  | 
+/signals/auth/location/<pk>/                                                 | signals.apps.signals.views.LocationAuthViewSet          | v0:location-auth-detail                                | 
+/signals/auth/location/<pk>\.<format>/                                       | signals.apps.signals.views.LocationAuthViewSet          | v0:location-auth-detail                                | 
+/signals/auth/location\.<format>/                                            | signals.apps.signals.views.LocationAuthViewSet          | v0:location-auth-list                                  | 
+/signals/auth/me/                                                            | signals.apps.users.views.UserMeView                     |                                                        | 
+/signals/auth/note/                                                          | signals.apps.signals.views.NoteAuthViewSet              | v0:note-auth-list                                      | 
+/signals/auth/note/<pk>/                                                     | signals.apps.signals.views.NoteAuthViewSet              | v0:note-auth-detail                                    | 
+/signals/auth/note/<pk>\.<format>/                                           | signals.apps.signals.views.NoteAuthViewSet              | v0:note-auth-detail                                    | 
+/signals/auth/note\.<format>/                                                | signals.apps.signals.views.NoteAuthViewSet              | v0:note-auth-list                                      | 
+/signals/auth/priority/                                                      | signals.apps.signals.views.PriorityAuthViewSet          | v0:priority-auth-list                                  | 
+/signals/auth/priority/<pk>/                                                 | signals.apps.signals.views.PriorityAuthViewSet          | v0:priority-auth-detail                                | 
+/signals/auth/priority/<pk>\.<format>/                                       | signals.apps.signals.views.PriorityAuthViewSet          | v0:priority-auth-detail                                | 
+/signals/auth/priority\.<format>/                                            | signals.apps.signals.views.PriorityAuthViewSet          | v0:priority-auth-list                                  | 
+/signals/auth/signal/                                                        | signals.apps.signals.views.SignalAuthViewSet            | v0:signal-auth-list                                    | 
+/signals/auth/signal/<pk>/                                                   | signals.apps.signals.views.SignalAuthViewSet            | v0:signal-auth-detail                                  | 
+/signals/auth/signal/<pk>\.<format>/                                         | signals.apps.signals.views.SignalAuthViewSet            | v0:signal-auth-detail                                  | 
+/signals/auth/signal\.<format>/                                              | signals.apps.signals.views.SignalAuthViewSet            | v0:signal-auth-list                                    | 
+/signals/auth/status/                                                        | signals.apps.signals.views.StatusAuthViewSet            | v0:status-auth-list                                    | 
+/signals/auth/status/<pk>/                                                   | signals.apps.signals.views.StatusAuthViewSet            | v0:status-auth-detail                                  | 
+/signals/auth/status/<pk>\.<format>/                                         | signals.apps.signals.views.StatusAuthViewSet            | v0:status-auth-detail                                  | 
+/signals/auth/status\.<format>/                                              | signals.apps.signals.views.StatusAuthViewSet            | v0:status-auth-list                                    | 
+/signals/redoc/                                                              | drf_yasg.views.SchemaView                               | schema-redoc                                           | 
+/signals/sigmax/soap                                                         | signals.apps.sigmax.views.CityControlReceiver           |                                                        | 
+/signals/signal/                                                             | signals.apps.signals.views.SignalViewSet                | v0:signal-list                                         | 
+/signals/signal/<signal_id>/                                                 | signals.apps.signals.views.SignalViewSet                | v0:signal-detail                                       | 
+/signals/signal/<signal_id>\.<format>/                                       | signals.apps.signals.views.SignalViewSet                | v0:signal-detail                                       | 
+/signals/signal/image/                                                       | signals.apps.signals.views.SignalImageUpdateView        | v0:signal-img-list                                     | 
+/signals/signal/image/<pk>/                                                  | signals.apps.signals.views.SignalImageUpdateView        | v0:signal-img-detail                                   | 
+/signals/signal/image/<pk>\.<format>/                                        | signals.apps.signals.views.SignalImageUpdateView        | v0:signal-img-detail                                   | 
+/signals/signal/image\.<format>/                                             | signals.apps.signals.views.SignalImageUpdateView        | v0:signal-img-list                                     | 
+/signals/signal\.<format>/                                                   | signals.apps.signals.views.SignalViewSet                | v0:signal-list                                         | 
+/signals/swagger/                                                            | drf_yasg.views.SchemaView                               | schema-swagger-ui                                      | 
+/signals/swagger<format>                                                     | drf_yasg.views.SchemaView                               | schema-json                                            | 
+/signals/user/auth/me/                                                       | signals.apps.users.views.UserMeView                     |                                                        | 
+/signals/v1/                                                                 | signals.apps.signals.routers.SignalsAPIRootViewVersion1 | v1:api-root                                            | 
+/signals/v1/\.<format>/                                                      | signals.apps.signals.routers.SignalsAPIRootViewVersion1 | v1:api-root                                            | 
+/signals/v1/public/terms/categories/                                         | signals.apps.signals.views.MainCategoryViewSet          | v1:category-list                                       | 
+/signals/v1/public/terms/categories/<slug>                                   | signals.apps.signals.views.MainCategoryViewSet          | v1:category-detail                                     | 
+/signals/v1/public/terms/categories/<slug>\.<format>/                        | signals.apps.signals.views.MainCategoryViewSet          | v1:category-detail                                     | 
+/signals/v1/public/terms/categories/<str:slug>/sub_categories/<str:sub_slug> | signals.apps.signals.views.SubCategoryViewSet           | v1:sub-category-detail                                 | 
+/signals/v1/public/terms/categories\.<format>/                               | signals.apps.signals.views.MainCategoryViewSet          | v1:category-list                                       | 
+/signals\/media\/<path>                                                      | django.views.static.serve                               |                                                        | 
+/status/data                                                                 | signals.apps.health.views.check_data                    |                                                        | 
+/status/health                                                               | signals.apps.health.views.health                        |                                                        | 

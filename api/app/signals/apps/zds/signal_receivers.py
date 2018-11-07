@@ -1,7 +1,9 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import receiver
 
 from signals.apps.signals.models import create_initial, update_status
 from signals.apps.zds import tasks
+from signals.apps.zds.exceptions import CaseNotCreatedException
 
 
 @receiver(create_initial, dispatch_uid='zds_create_case')
@@ -14,17 +16,23 @@ def create_case_handler(sender, signal_obj, **kwargs):
     - create_case
     - connect_signal_to_case
     - add_status_to_case
-    - add_photo_to_case if there is a photo.
+    - add_document_to_case if there is a photo.
     """
-    signal = tasks.create_case(signal_obj)
-    tasks.connect_signal_to_case(signal)
-    tasks.add_status_to_case(signal)
+    try:
+        tasks.create_case(signal_obj)
+        tasks.connect_signal_to_case(signal_obj)
+        tasks.add_status_to_case(signal_obj)
 
-    if signal.image:
-        tasks.create_document(image)
-        tasks.add_photo_to_case(signal)
+        if signal_obj.image:
+            tasks.create_document(signal_obj.image)
+            tasks.add_document_to_case(signal_obj)
+    except CaseNotCreatedException:
+        pass
 
 
 @receiver(update_status, dispatch_uid='zds_update_status')
 def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
-    tasks.add_status_to_case(signal_obj)
+    try:
+        tasks.add_status_to_case(signal_obj)
+    except ObjectDoesNotExist:
+        pass
