@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.db import Error
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from tests.apps.signals.factories import SignalFactory
 
@@ -37,6 +37,26 @@ class TestHealthEndpoints(TestCase):
 
     def test_status_data_failed(self):
         response = self.client.get('/status/data')
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.content, b'Too few items in the database')
+
+    def test_status_data_categories_success(self):
+        response = self.client.get('/status/data/categories')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'Data OK SubCategory, MainCategory')
+
+    @override_settings(HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT=99999)
+    def test_status_data_sub_categories_failed(self):
+        response = self.client.get('/status/data/categories')
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.content, b'Too few items in the database')
+
+    @override_settings(HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT=99999)
+    def test_status_data_main_categories_failed(self):
+        response = self.client.get('/status/data/categories')
 
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, b'Too few items in the database')
