@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from signals.apps.zds.models import ZaakDocument, ZaakSignal
 from tests.apps.signals.factories import SignalFactory
-from tests.apps.zds.factories import ZaakSignalFactory, ZaakDocumentFactory
+from tests.apps.zds.factories import ZaakDocumentFactory, ZaakSignalFactory
 
 
 class TestZaakSignalManager(TestCase):

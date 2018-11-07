@@ -1,20 +1,18 @@
-from unittest import mock
 from unittest import expectedFailure
 
 from django.test import TestCase, override_settings
-
 from zds_client.client import ClientError
 
+from signals.apps.zds.exceptions import CaseNotCreatedException
+from signals.apps.zds.tasks import (
+    add_document_to_case,
+    add_status_to_case,
+    connect_signal_to_case,
+    create_case,
+    create_document
+)
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.factories import ZaakSignalFactory
-from signals.apps.zds.tasks import (
-    create_case,
-    connect_signal_to_case,
-    add_status_to_case,
-    create_document,
-    add_document_to_case,
-)
-from signals.apps.zds.exceptions import CaseNotCreatedException
 
 
 class TestTasks(TestCase):
@@ -28,7 +26,7 @@ class TestTasks(TestCase):
 
     def test_create_case_with_case(self):
         zaak_signal = ZaakSignalFactory()
-        signal = create_case(zaak_signal.signal)
+        create_case(zaak_signal.signal)
 
     @override_settings(ZTC_ZAAKTYPE_URL='no_url')
     def test_create_case_with_error(self):
@@ -59,7 +57,7 @@ class TestTasks(TestCase):
 
     @expectedFailure
     def test_create_document(self):
-        # There is a bug in DRC. Also waiting on staging
+        # Waiting on staging before this can be completed.
         signal = SignalFactoryWithImage()
         create_document(signal)
 
@@ -71,9 +69,14 @@ class TestTasks(TestCase):
 
     @expectedFailure
     def test_add_document_to_case(self):
-        # There is a bug in DRC. Also waiting on staging
+        # Waiting on staging before this can be completed.
         signal = SignalFactoryWithImage()
         create_document(signal)
+        add_document_to_case(signal)
 
+    @expectedFailure
     def test_add_document_to_case_with_error(self):
-        pass
+        # Waiting on staging before this can be completed.
+        signal = SignalFactoryWithImage()
+        create_document(signal)
+        add_document_to_case(signal)

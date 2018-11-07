@@ -3,8 +3,8 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
 from django.urls import reverse
+from django.utils import timezone
 
 from signals.apps.signals.workflow import ZTC_STATUSSES
 from signals.apps.zds import zds_client
