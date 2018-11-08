@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.core import mail
 from django.test import TestCase
 
@@ -10,6 +12,7 @@ class TestCore(TestCase):
 
     def setUp(self):
         self.signal = SignalFactory.create(reporter__email='foo@bar.com')
+        self.signal.incident_date_start = datetime(2018, 10, 10, 12, 0, 0)
         self.signal_no_email = SignalFactory.create(reporter__email='')
 
     def test_send_mail_reporter_created(self):
@@ -19,6 +22,8 @@ class TestCore(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
+
+        self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
 
     def test_send_mail_reporter_created_no_email(self):
         num_of_messages = core.send_mail_reporter_created(self.signal_no_email)
