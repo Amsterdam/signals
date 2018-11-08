@@ -12,7 +12,7 @@ from signals.apps.signals.models import Location
 from signals.apps.signals.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
-    NearAmsterdamValidatorMixin,
+    NearAmsterdamValidatorMixin
 )
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import UserFactory

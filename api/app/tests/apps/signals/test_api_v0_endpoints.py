@@ -591,7 +591,6 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
             self.assertIn(field, result)
 
-
         note = Note.objects.get(_signal=self.signal)
         self.assertEqual(note.created_by, self.user.username)
 
