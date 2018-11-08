@@ -14,7 +14,7 @@ Wat doen we met uw melding?
 Hier is het : {{ signal.location.address_text }}
 {% endif %}
 
-Tijdstip : {{ signal.incident_date_start.incident_date_start|date:"DATETIME_FORMAT" }}
+Tijdstip : {{ signal.incident_date_start.incident_date_start|date:"l d-m-Y, H:i" }}
 {% if signal.text_extra %}
 
 {{ signal.text_extra }}
