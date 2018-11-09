@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Melding {{ signal.sia_id }} </title>
+    <style type="text/css">
+        * {
+            font-family: Avenir Next LT W01 Demi,arial,sans-serif;
+            font-weight: normal;
+        }
+
+        .divider {
+            border-bottom: 1px #ec0000 solid;
+            width: 100%;
+            height: 1px;
+        }
+
+        .header {
+            width: 100%;
+            top: 0;
+            margin: 0;
+            font-size: 0.8em;
+        }
+
+        .header p {
+            text-align: right;
+            color: #5B6270;
+        }
+
+        .header p span{
+            color: #5B6270;
+        }
+
+        .results {
+            border-collapse: collapse;
+        }
+
+        .results td {
+            vertical-align: top;
+            padding: 6px 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        h1 {
+            color: #ec0000;
+        }
+
+        table {
+            max-width: 100%;
+        }
+
+        @page {
+            size: A4;
+            margin: 1.27cm;
+        }
+    </style>
+</head>
+<body>
+    <div id="header_content">
+        <table class="header" width="100%">
+            <tr>
+                <td width="40%">
+                  <p style="text-align: left;">
+                    <span>Geprint door {% if not view.request.user.is_anonymous %}{{ view.request.user.username }}{% else %}John Doe{% endif %}</span>
+                  </p>
+                </td>
+                <td width="60%">
+                    <p>
+                        <span>{% now "l, j F Y" %}</span>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="divider">&nbsp;</div>
+    <h1>{{ signal.sia_id }}</h1>
+    <div style="width: 680px; height: 250px; background-color: lightgray; margin-bottom: 25px; ">
+        <img src="https://map.data.amsterdam.nl/dist/images/svg/marker.svg" alt="marker" tabindex="0" style="position: absolute; left: 320px; top: 220px; width: 40px; height: 40px;">
+        <img src="https://map.data.amsterdam.nl/maps/topografie?request=GetMap&format=image%2Fpng&version=1.1.1&layers=basiskaart&srs=EPSG%3A28992&width=680&height=250&bbox={{ bbox }}" />
+    </div>
+
+    <div class="divider">&nbsp;</div>
+    <h2>Melding</h2>
+    <table class="results" style="page-break-after: always; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        <tr>
+            <td>Stadsdeel</td>
+            <td>: {{ signal.location.get_stadsdeel_display }}</td>
+        </tr>
+        <tr>
+            <td>Adres</td>
+            <td>: {{ signal.location.address_text }}</td>
+        </tr>
+        <tr>
+            <td style="width: 200px;">Datum</td>
+            <td>: {{ signal.created_at|date:"d-m-Y" }}</td>
+        </tr>
+        <tr>
+            <td>Tijdstip</td>
+            <td>: {{ signal.created_at|date:"H:i:s" }}</td>
+        </tr>
+        <tr>
+            <td>Datum overlast</td>
+            <td>: {{ signal.incident_date_start|date:"d-m-Y" }}</td>
+        </tr>
+        <tr>
+            <td>Tijdstip overlast</td>
+            <td>: {{ signal.incident_date_start|date:"H:i:s" }}</td>
+        </tr>
+        <tr>
+            <td>Hoofdrubriek</td>
+            <td>: {{ signal.category_assignment.sub_category.main_category.name }}</td>
+        </tr>
+        <tr>
+            <td>Subrubriek</td>
+            <td>: {{ signal.category_assignment.sub_category.name }}</td>
+        </tr>
+        <tr>
+            <td>Urgentie</td>
+            <td>: {{ signal.priority.get_priority_display }}</td>
+        </tr>
+        <tr>
+            <td>Toelichting</td>
+            <td>: {{ signal.text }}</td>
+        </tr>
+        <tr>
+            <td>Bron</td>
+            <td>: {{ signal.source }}</td>
+        </tr>
+    </table>
+
+    <div class="divider">&nbsp;</div>
+    <h2>Melder</h2>
+    <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        <tr>
+            <td style="width: 200px;">E-mail</td>
+            <td>: {{ signal.reporter.email }}</td>
+        </tr>
+        <tr>
+            <td>Telefoonnummer</td>
+            <td>: {{ signal.reporter.phone }}</td>
+        </tr>
+    </table>
+
+    <!-- TODO: Replace the "Statussen" section by the new history that Thijs is currently working on -->
+    <div class="divider">&nbsp;</div>
+    <h2>Statussen</h2>
+    <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        <thead>
+            <tr>
+                <td>Datum</td>
+                <td>Tijd</td>
+                <td>Status</td>
+                <td>Omschrijving</td>
+                <td>Gebruiker</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status in signal.statuses.all %}
+                <tr>
+                    <td>{{ status.created_at|date:"d-m-Y" }}</td>
+                    <td>{{ status.created_at|date:"H:i:s" }}</td>
+                    <td>{{ status.get_state_display }}</td>
+                    <td>{% if status.text %}{{ status.text }}{% endif %}</td>
+                    <td>{% if status.user %}{{ status.user }}{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- end todo -->
+
+    {% if signal.extra_properties %}
+        <div class="divider">&nbsp;</div>
+        <h2>Extra eigenschappen</h2>
+        <table class="table">
+            {% for key, value in signal.extra_properties.items %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <div class="divider">&nbsp;</div>
+    <h2>Foto</h2>
+    {% if image_url %}
+        <p><img src="{{ image_url }}" width="800" alt=""></p>
+    {% else %}
+        <p>Er is geen foto beschikbaar omdat de melder in SIA geen foto heeft meegeleverd.</p>
+    {% endif %}
+
+</body>
+</html>

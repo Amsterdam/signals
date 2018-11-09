@@ -4,6 +4,8 @@ import re
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
+from django.utils import timezone
+from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -30,6 +32,7 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
+from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
@@ -255,3 +258,24 @@ class PrivateSignalViewSet(DatapuntViewSet):
         serializer = HistoryHalSerializer(history_entries, many=True)
 
         return Response(serializer.data)
+
+
+class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
+    object = None
+    pk_url_kwarg = 'signal_id'
+    queryset = Signal.objects.all()
+
+    template_name = 'signals/pdf/print_signal.html'
+    extra_context = {'now': timezone.datetime.now(), }
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        self.pdf_filename = 'SIA-{}.pdf'.format(self.object.pk)
+        rd_coordinates = self.object.location.get_rd_coordinates()
+        bbox = '{},{},{},{}'.format(
+            rd_coordinates.x - 340.00,
+            rd_coordinates.y - 125.00,
+            rd_coordinates.x + 340.00,
+            rd_coordinates.y + 125.00,
+        )
+        return super(GeneratePdfView, self).get_context_data(bbox=bbox)

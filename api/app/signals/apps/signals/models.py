@@ -1,7 +1,9 @@
+import copy
 import uuid
 
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
@@ -406,6 +408,16 @@ class Location(CreatedUpdatedModel):
         # Set address_text
         self.set_address_text()
         super().save(*args, **kwargs)  # Call the "real" save() method.
+
+    def get_rd_coordinates(self):
+        to_transform = copy.deepcopy(self.geometrie)
+        to_transform.transform(
+            CoordTransform(
+                SpatialReference(4326),  # WGS84
+                SpatialReference(28992)  # RD
+            )
+        )
+        return to_transform
 
 
 class Reporter(CreatedUpdatedModel):
