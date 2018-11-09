@@ -18,6 +18,9 @@ signal_router_v1 = routers.SignalsRouterVersion1()
 signal_router_v1.register(r'public/terms/categories',
                           views.MainCategoryViewSet,
                           base_name='category')
+signal_router_v1.register(r'private/history',
+                          views.HistoryAuthViewSet,
+                          base_name='history')
 
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(
