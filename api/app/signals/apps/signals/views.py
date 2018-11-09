@@ -20,6 +20,7 @@ from signals.apps.signals.filters import (
 )
 from signals.apps.signals.models import (
     CategoryAssignment,
+    History,
     Location,
     MainCategory,
     Note,
@@ -37,6 +38,7 @@ from signals.apps.signals.permissions import (
 )
 from signals.apps.signals.serializers import (
     CategoryHALSerializer,
+    HistoryHalSerializer,
     LocationHALSerializer,
     MainCategoryHALSerializer,
     NoteHALSerializer,
@@ -229,5 +231,15 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (NotePermission, )
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = ('_signal__id', )
+
+
+class HistoryAuthViewSet(DatapuntViewSet):
+    queryset = History.objects.all()
+    serializer_class = HistoryHalSerializer
+    serializer_detail_class = HistoryHalSerializer
+    pagination_class = HALPagination
+    authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ('_signal__id', )

@@ -21,6 +21,7 @@ from signals.apps.signals.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
+    History,
     Location,
     MainCategory,
     Note,
@@ -583,3 +584,25 @@ class NoteHALSerializer(AddExtrasMixin, HALSerializer):
         signal = validated_data.pop('_signal')
         note = Signal.actions.create_note(validated_data, signal)
         return note
+
+
+class HistoryHalSerializer(HALSerializer):
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    action = serializers.SerializerMethodField()
+
+    def get_action(self, obj):
+        # Place holder, needs to use obj.extra to create strings base on the
+        # obj.what field.
+        return obj.what
+
+    class Meta:
+        model = History
+        fields = (
+            '_links',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_signal',
+        )
