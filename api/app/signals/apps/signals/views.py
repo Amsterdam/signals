@@ -4,6 +4,7 @@ import re
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -260,7 +261,7 @@ class PrivateSignalViewSet(DatapuntViewSet):
         return Response(serializer.data)
 
 
-class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
+class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
     object = None
     pk_url_kwarg = 'signal_id'
     queryset = Signal.objects.all()
