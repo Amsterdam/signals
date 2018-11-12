@@ -50,7 +50,7 @@ gebruikt worden. Een status van het tweede type noemen we in het vervolg een
 * van **VERZENDEN_MISLUKT** naar **GEMELD** of **TE_VERZENDEN**
 * van **AFGEHANDELD_EXTERN** naar **AFGEHANDELD** of **GEANNULEERD**
 
-
+![Toegestane workflow binnen SIA](./sia-workflow.png "SIA workflow diagram")
 ## Implementatie
 De data structuur (een Python dictionary) met toegelaten status overgangen is te
 vinden in het volgende bron bestand: `/api/app/signals/apps/signals/workflow.py`.
