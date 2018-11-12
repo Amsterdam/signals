@@ -613,6 +613,7 @@ class HistoryHalSerializer(HALSerializer):
     class Meta:
         model = History
         fields = (
+            'identifier',
             'when',
             'what',
             'action',
