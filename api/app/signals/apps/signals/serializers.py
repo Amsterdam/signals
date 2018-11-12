@@ -342,7 +342,7 @@ class SignalAuthHALSerializer(HALSerializer):
         )
 
 
-class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
+class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:
@@ -354,10 +354,15 @@ class LocationHALSerializer(NearAmsterdamValidatorMixin, HALSerializer):
             'buurt_code',
             'address',
             'geometrie',
+            'created_by',
             'extra_properties',
+            'created_at',
         )
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         location = Signal.actions.update_location(validated_data, signal)
         return location
@@ -413,7 +418,7 @@ class StatusHALSerializer(AddExtrasMixin, HALSerializer):
         return data
 
 
-class CategoryHALSerializer(HALSerializer):
+class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
     serializer_url_field = CategoryLinksField
     _display = DisplayField()
 
@@ -444,6 +449,8 @@ class CategoryHALSerializer(HALSerializer):
             'main',
             'main_slug',
             'department',
+            'created_by',
+            'created_at',
         )
 
     def get_department(self, obj):
@@ -468,12 +475,15 @@ class CategoryHALSerializer(HALSerializer):
         return internal_data
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         category = Signal.actions.update_category_assignment(validated_data, signal)
         return category
 
 
-class PriorityHALSerializer(HALSerializer):
+class PriorityHALSerializer(AddExtrasMixin, HALSerializer):
     _display = DisplayField()
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     serializer_url_field = PriorityLinksField
@@ -486,9 +496,14 @@ class PriorityHALSerializer(HALSerializer):
             'id',
             '_signal',
             'priority',
+            'created_at',
+            'created_by',
         )
 
     def create(self, validated_data):
+        validated_data = self.add_user(validated_data)
+        validated_data['created_by'] = validated_data.pop('user')
+
         signal = validated_data.pop('_signal')
         priority = Signal.actions.update_priority(validated_data, signal)
         return priority

@@ -124,7 +124,15 @@ class SubCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
             'slug': obj.main_category.slug,
             'sub_slug': obj.slug,
         }
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+        # Tricking DRF to use API version `v1` because our `sub-category-detail` view lives in API
+        # version 1. Afterwards we revert back to the origional API version from the request.
+        original_version = request.version
+        request.version = 'v1'
+        url = reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+        request.version = original_version
+
+        return url
 
     def get_object(self, view_name, view_args, view_kwargs):
         return self.get_queryset().get(

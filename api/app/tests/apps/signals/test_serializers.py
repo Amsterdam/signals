@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -7,7 +8,14 @@ from django.test import TestCase
 from rest_framework import serializers
 from rest_framework.test import APITestCase
 
-from signals.apps.signals.serializers import NearAmsterdamValidatorMixin
+from signals.apps.signals.models import Location
+from signals.apps.signals.serializers import (
+    CategoryHALSerializer,
+    LocationHALSerializer,
+    NearAmsterdamValidatorMixin
+)
+from tests.apps.signals.factories import SignalFactory
+from tests.apps.users.factories import UserFactory
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 OUTSIDE_AMSTERDAM = tuple(reversed(IN_AMSTERDAM))
@@ -27,6 +35,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
             v.validate_geometrie(wrong)
 
 
+# TODO: move to endpoint tests (which these are)
 class TestLocationSerializer(APITestCase):
     fixtures = ['categories.json', ]
 
@@ -60,3 +69,81 @@ class TestLocationSerializer(APITestCase):
 
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, 201)
+
+
+class TestLocationSerializerNew(TestCase):
+    """
+    Test that the user is serialized and deserialized.
+
+    Note: user is added to created_by field as created_by.
+    """
+
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.user = UserFactory.create()
+
+        self.location = self.signal.location
+        self.location.created_by = self.user.username
+        self.location.save()
+
+    def test_user_is_serialized(self):
+        serializer = LocationHALSerializer(instance=self.location)
+        self.assertIn('created_by', serializer.data)
+        self.assertEqual(serializer.data['created_by'], self.user.username)
+
+    def test_user_is_deserialized(self):
+        _signal_id = self.signal.id
+
+        request = mock.Mock()
+        request.user = self.user
+
+        data = {
+            '_signal': _signal_id,
+            'stadsdeel': 'A',
+            'buurt_code': 'A04i',
+            'address': {
+                'openbare_ruimte': 'Amstel',
+                'huisnummer': 1,
+                'huisletter': '',
+                'huisnummer_toevoeging': '',
+                'postcode': '1011PN',
+                'woonplaats': 'Amsterdam',
+            },
+            'geometrie': {
+                'type': 'Point',
+                'coordinates': [4.90022563, 52.36768424]
+            }
+        }
+
+        serializer = LocationHALSerializer(
+            data=data, context={'request': request})
+        serializer.is_valid()
+        location = serializer.save()
+
+        self.assertIsInstance(location, Location)
+        self.assertEqual(location.created_by, self.user.username)
+
+
+class TestCategoryHALSerializer(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.user = UserFactory.create()
+
+        self.category_assignment = self.signal.category_assignment
+        self.category_assignment.created_by = self.user.username
+        self.category_assignment.save()
+
+    def test_user_is_serialized(self):
+        from signals.apps.signals.fields import CategoryLinksField
+
+        class PatchedCategoryLinksField(CategoryLinksField):
+            def to_representation(self, value):
+                return {'self': {'href': '/link/to/nowhere'}}
+
+        class PatchedSerializer(CategoryHALSerializer):
+            serializer_url_field = PatchedCategoryLinksField
+
+        serializer = PatchedSerializer(
+            instance=self.category_assignment)
+        self.assertIn('created_by', serializer.data)
+        self.assertEqual(serializer.data['created_by'], self.user.username)
