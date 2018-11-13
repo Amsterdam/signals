@@ -152,3 +152,16 @@ class NoteHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         ])
 
         return result
+
+
+class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
+            ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
+        ])
+
+        return result

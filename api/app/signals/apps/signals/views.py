@@ -6,6 +6,7 @@ from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -43,6 +44,7 @@ from signals.apps.signals.serializers import (
     MainCategoryHALSerializer,
     NoteHALSerializer,
     PriorityHALSerializer,
+    PrivateSignalSerializer,
     SignalAuthHALSerializer,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
@@ -203,6 +205,29 @@ class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     filter_fields = ['priority', ]
 
 
+class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
+    queryset = Note.objects.all()
+    serializer_class = NoteHALSerializer
+    serializer_detail_class = NoteHALSerializer
+    pagination_class = HALPagination
+    authentication_classes = (JWTAuthBackend, )
+    permission_classes = (NotePermission, )
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = ('_signal__id', )
+
+
+class HistoryAuthViewSet(DatapuntViewSet):
+    queryset = History.objects.all()
+    serializer_class = HistoryHalSerializer
+    serializer_detail_class = HistoryHalSerializer
+    pagination_class = HALPagination
+    authentication_classes = (JWTAuthBackend, )
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = ('_signal__id', )
+
+
+# -- Views that are used exclusively by the V1 API --
+
 class MainCategoryViewSet(DatapuntViewSet):
     queryset = MainCategory.objects.all()
     serializer_detail_class = MainCategoryHALSerializer
@@ -224,22 +249,18 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
-    queryset = Note.objects.all()
-    serializer_class = NoteHALSerializer
-    serializer_detail_class = NoteHALSerializer
-    pagination_class = HALPagination
-    authentication_classes = (JWTAuthBackend, )
-    permission_classes = (NotePermission, )
-    filter_backends = (DjangoFilterBackend, )
-    filter_fields = ('_signal__id', )
-
-
-class HistoryAuthViewSet(DatapuntViewSet):
-    queryset = History.objects.all()
-    serializer_class = HistoryHalSerializer
-    serializer_detail_class = HistoryHalSerializer
+class PrivateSignalViewSet(DatapuntViewSet):
+    """Viewset for `Signal` objects in V1 private API"""
+    queryset = Signal.objects.all()
+    serializer_class = PrivateSignalSerializer
+    serializer_detail_class = PrivateSignalSerializer
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )
-    filter_fields = ('_signal__id', )
+
+    @action(detail=True)  # default GET gets routed here
+    def history(self, request, pk=None):
+        history_entries = History.objects.filter(_signal__id=pk)
+        serializer = HistoryHalSerializer(history_entries, many=True)
+
+        return Response(serializer.data)

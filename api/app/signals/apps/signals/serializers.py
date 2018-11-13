@@ -11,6 +11,7 @@ from signals.apps.signals.fields import (
     MainCategoryHyperlinkedIdentityField,
     NoteHyperlinkedIdentityField,
     PriorityLinksField,
+    PrivateSignalLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField,
@@ -620,4 +621,19 @@ class HistoryHalSerializer(HALSerializer):
             'description',
             'who',
             '_signal',
+        )
+
+
+# -- Serializsers that are used exclusively by the V1 API --
+
+class PrivateSignalSerializer(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+    _display = DisplayField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'id',
         )
