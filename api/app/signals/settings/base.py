@@ -449,25 +449,25 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 #
 # Zaken settings
 #
+ZDS_TESTING_MOCK = True
 
 # ZRC settings
-ZRC_HOST = 'localhost'  # should be a staging domain.
-ZRC_PORT = '8003'
-ZRC_SCHEME = 'http'
+ZRC_HOST = 'acc.zrc.data.amsterdam.nl'  # should be a staging domain.
+ZRC_PORT = '443'
+ZRC_SCHEME = 'https'
 ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
 ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
 
 # DRC settings
-DRC_HOST = 'localhost'  # should be a staging domain.
-DRC_PORT = '8001'
-DRC_SCHEME = 'http'
+DRC_HOST = 'acc.drc.data.amsterdam.nl'  # should be a staging domain.
+DRC_PORT = '443'
+DRC_SCHEME = 'https'
 DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
 
-
 # ZTC settings
-ZTC_HOST = 'localhost'  # should be a staging domain.
-ZTC_PORT = '8004'
-ZTC_SCHEME = 'http'
+ZTC_HOST = 'acc.ztc.data.amsterdam.nl'  # should be a staging domain.
+ZTC_PORT = '443'
+ZTC_SCHEME = 'https'
 ZTC_URL = "{}://{}:{}".format(ZTC_SCHEME, ZTC_HOST, ZTC_PORT)
 
 ZTC_CATALOGUS_ID = '7d7d3ac9-a08b-427a-b4e1-1dc406790285'

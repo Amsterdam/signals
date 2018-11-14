@@ -3,7 +3,7 @@ from unittest import mock
 from django.test import TestCase
 
 from signals.apps.signals.models import create_initial, update_status
-from tests.apps.signals.factories import SignalFactory, StatusFactory
+from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage, StatusFactory
 
 
 class TestSignalReceivers(TestCase):
@@ -20,6 +20,23 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.create_case.assert_called_once_with(signal=signal)
         mocked_tasks.connect_signal_to_case.assert_called_once_with(signal=signal)
         mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.create_document.assert_not_called()
+        mocked_tasks.add_document_to_case.assert_not_called()
+
+    @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
+    def test_signal_creation_handler_with_image(self, mocked_tasks):
+        signal = SignalFactoryWithImage.create()
+
+        create_initial.send(
+            sender=self.__class__,
+            signal_obj=signal,
+        )
+
+        mocked_tasks.create_case.assert_called_once_with(signal=signal)
+        mocked_tasks.connect_signal_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.create_document.assert_called_once_with(signal)
+        mocked_tasks.add_document_to_case.assert_called_once_with(signal=signal)
 
     @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     def test_status_update_handler(self, mocked_tasks):

@@ -5,10 +5,18 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
+from requests.exceptions import ConnectionError
+from zds_client import ClientError
 
 from signals.apps.signals.workflow import ZTC_STATUSSES
 from signals.apps.zds import zds_client
-from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
+from signals.apps.zds.exceptions import (
+    CaseConnectionException,
+    CaseNotCreatedException,
+    DocumentConnectionException,
+    DocumentNotCreatedException,
+    StatusNotCreatedException
+)
 
 from .models import ZaakSignal
 
@@ -42,11 +50,10 @@ def create_case(signal):
     try:
         response = zds_client.zrc.create('zaak', data)
         ZaakSignal.actions.create_zaak_signal(response.get('url'), signal)
-    except Exception as exception:
-        logger.exception(exception)
-        raise CaseNotCreatedException
-
-    return signal
+        return signal
+    except (ClientError, ConnectionError) as error:
+        logger.exception(error)
+        raise CaseNotCreatedException()
 
 
 def connect_signal_to_case(signal):
@@ -61,9 +68,13 @@ def connect_signal_to_case(signal):
         'object': settings.HOST_URL + reverse('v0:signal-auth-detail', kwargs={'pk': signal.id}),
         'type': settings.ZRC_ZAAKOBJECT_TYPE
     }
-    zds_client.zrc.create('zaakobject', data)
-    # TODO: Handle error cases.
-    return signal
+
+    try:
+        zds_client.zrc.create('zaakobject', data)
+        return signal
+    except (ClientError, ConnectionError) as error:
+        logger.exception(error)
+        raise CaseConnectionException()
 
 
 def add_status_to_case(signal):
@@ -79,9 +90,12 @@ def add_status_to_case(signal):
         'datumStatusGezet': signal.status.created_at.isoformat(),
     }
 
-    zds_client.zrc.create('status', data)
-    # TODO: Handle error cases.
-    return signal
+    try:
+        zds_client.zrc.create('status', data)
+        return signal
+    except (ClientError, ConnectionError) as error:
+        logger.exception(error)
+        raise StatusNotCreatedException()
 
 
 def create_document(signal):
@@ -102,11 +116,10 @@ def create_document(signal):
     try:
         response = zds_client.drc.create("enkelvoudiginformatieobject", data)
         ZaakSignal.actions.add_document(response.get('url'), signal.zaak)
-    except Exception as exception:
-        logger.exception(exception)
+        return signal
+    except (ClientError, ConnectionError) as error:
+        logger.exception(error)
         raise DocumentNotCreatedException()
-
-    return signal
 
 
 def add_document_to_case(signal):
@@ -122,55 +135,58 @@ def add_document_to_case(signal):
         'registratiedatum': timezone.now().isoformat(),
     }
 
-    zds_client.drc.create('objectinformatieobject', data)
-    # TODO: Handle error cases.
-    return signal
+    try:
+        zds_client.drc.create('objectinformatieobject', data)
+        return signal
+    except (ClientError, ConnectionError) as error:
+        logger.exception(error)
+        raise DocumentConnectionException()
 
 
 #
 # Iteration 2
 #
-def get_case(signal):
-    """
-    This will get the case with all needed data.
+# def get_case(signal):
+#     """
+#     This will get the case with all needed data.
 
-    :return: response
-    """
-    response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
-    return response
-
-
-def get_documents_from_case(signal):
-    """
-    This will fetch all documents connected to the case
-
-    :return: response
-    """
-    raise NotImplementedError()
+#     :return: response
+#     """
+#     response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
+#     return response
 
 
-def get_status_history(signal):
-    """
-    This will fetch all statusses that are connected to the
+# def get_documents_from_case(signal):
+#     """
+#     This will fetch all documents connected to the case
 
-    :return: response
-    """
-    raise NotImplementedError()
+#     :return: response
+#     """
+#     raise NotImplementedError()
+
+
+# def get_status_history(signal):
+#     """
+#     This will fetch all statusses that are connected to the
+
+#     :return: response
+#     """
+#     raise NotImplementedError()
 
 
 #
 # Iteration 3
 #
-def get_all_statusses():
-    """
-    This will fetch all statusses that exists in the ZTC.
+# def get_all_statusses():
+#     """
+#     This will fetch all statusses that exists in the ZTC.
 
-    :return: response
-    """
-    path_kwargs = {
-        'catalogus_uuid': settings.ZTC_CATALOGUS,
-        'zaaktype_uuid': settings.ZTC_ZAAKTYPE
-    }
+#     :return: response
+#     """
+#     path_kwargs = {
+#         'catalogus_uuid': settings.ZTC_CATALOGUS,
+#         'zaaktype_uuid': settings.ZTC_ZAAKTYPE
+#     }
 
-    response = zds_client.ztc.list('statustype', **path_kwargs)
-    return response
+#     response = zds_client.ztc.list('statustype', **path_kwargs)
+#     return response

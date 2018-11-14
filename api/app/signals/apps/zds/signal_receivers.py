@@ -3,7 +3,7 @@ from django.dispatch import receiver
 
 from signals.apps.signals.models import create_initial, update_status
 from signals.apps.zds import tasks
-from signals.apps.zds.exceptions import CaseNotCreatedException
+from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
 
 
 @receiver(create_initial, dispatch_uid='zds_create_case')
@@ -24,8 +24,12 @@ def create_case_handler(sender, signal_obj, **kwargs):
         tasks.add_status_to_case(signal_obj)
 
         if signal_obj.image:
-            tasks.create_document(signal_obj.image)
-            tasks.add_document_to_case(signal_obj)
+            try:
+                tasks.create_document(signal_obj)
+                tasks.add_document_to_case(signal_obj)
+            except DocumentNotCreatedException:
+                pass
+
     except CaseNotCreatedException:
         pass
 
