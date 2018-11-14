@@ -11,6 +11,8 @@ from signals.apps.signals.fields import (
     MainCategoryHyperlinkedIdentityField,
     NoteHyperlinkedIdentityField,
     PriorityLinksField,
+    PrivateSignalLinksField,
+    PrivateSignalLinksFieldWithArchives,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField,
@@ -21,6 +23,7 @@ from signals.apps.signals.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
+    History,
     Location,
     MainCategory,
     Note,
@@ -31,6 +34,7 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -583,3 +587,74 @@ class NoteHALSerializer(AddExtrasMixin, HALSerializer):
         signal = validated_data.pop('_signal')
         note = Signal.actions.create_note(validated_data, signal)
         return note
+
+
+class HistoryHalSerializer(HALSerializer):
+    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
+    action = serializers.SerializerMethodField()
+    who = serializers.SerializerMethodField()
+
+    def get_action(self, obj):
+        """Generate text for the action field that can serve as title in UI."""
+
+        # At the database level, the Django display fields for the choices in
+        # various models are not available. Hence the need for a Python function
+        # to generate the correct text (again cannot be done in database view).
+        if obj.what == 'UPDATE_STATUS':
+            return 'Update status naar: {}'.format(
+                dict(STATUS_CHOICES).get(obj.extra, 'Onbekend'))
+        elif obj.what == 'UPDATE_PRIORITY':
+            return 'Prioriteit update naar: {}'.format(
+                dict(Priority.PRIORITY_CHOICES).get(obj.extra, 'Onbekend'))
+        elif obj.what == 'UPDATE_CATEGORY_ASSIGNMENT':
+            return 'Categorie gewijzigd naar: {}'.format(obj.extra)
+        elif obj.what == 'CREATE_NOTE' or obj.what == 'UPDATE_LOCATION':
+            return obj.extra
+        else:
+            return 'Actie onbekend.'  # Must not happen!
+
+    def get_who(self, obj):
+        """Generate string to show in UI, missing users are set to default."""
+        if obj.who is None:
+            return 'SIA systeem'
+        return obj.who
+
+    class Meta:
+        model = History
+        fields = (
+            'identifier',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_signal',
+        )
+
+
+# -- Serializsers that are used exclusively by the V1 API --
+
+class PrivateSignalSerializerDetail(HALSerializer):
+    serializer_url_field = PrivateSignalLinksFieldWithArchives
+    _display = DisplayField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'id',
+        )
+
+
+class PrivateSignalSerializerList(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+    _display = DisplayField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'id',
+        )

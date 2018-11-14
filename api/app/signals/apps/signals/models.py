@@ -637,3 +637,27 @@ class Note(CreatedUpdatedModel):
 
     class Meta:
         ordering = ('-created_at', )
+
+
+class History(models.Model):
+    identifier = models.CharField(primary_key=True, max_length=255)
+    _signal = models.ForeignKey('signals.Signal',
+                                related_name='history',
+                                null=False,
+                                on_delete=models.CASCADE)
+    when = models.DateTimeField(null=True)
+    what = models.CharField(max_length=255)
+    who = models.CharField(max_length=255, null=True)  # old entries in database may have no user
+    extra = models.CharField(max_length=255, null=True)  # not relevant for every logged model.
+    description = models.TextField(max_length=3000)
+
+    # No changes to this database view please!
+    def save(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError
+
+    class Meta:
+        managed = False
+        db_table = 'signals_history_view'
