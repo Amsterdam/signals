@@ -44,7 +44,8 @@ from signals.apps.signals.serializers import (
     MainCategoryHALSerializer,
     NoteHALSerializer,
     PriorityHALSerializer,
-    PrivateSignalSerializer,
+    PrivateSignalSerializerList,
+    PrivateSignalSerializerDetail,
     SignalAuthHALSerializer,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
@@ -216,16 +217,6 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     filter_fields = ('_signal__id', )
 
 
-class HistoryAuthViewSet(DatapuntViewSet):
-    queryset = History.objects.all()
-    serializer_class = HistoryHalSerializer
-    serializer_detail_class = HistoryHalSerializer
-    pagination_class = HALPagination
-    authentication_classes = (JWTAuthBackend, )
-    filter_backends = (DjangoFilterBackend, )
-    filter_fields = ('_signal__id', )
-
-
 # -- Views that are used exclusively by the V1 API --
 
 class MainCategoryViewSet(DatapuntViewSet):
@@ -252,8 +243,8 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 class PrivateSignalViewSet(DatapuntViewSet):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
-    serializer_class = PrivateSignalSerializer
-    serializer_detail_class = PrivateSignalSerializer
+    serializer_class = PrivateSignalSerializerList
+    serializer_detail_class = PrivateSignalSerializerDetail
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )

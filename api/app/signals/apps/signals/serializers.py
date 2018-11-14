@@ -12,6 +12,7 @@ from signals.apps.signals.fields import (
     NoteHyperlinkedIdentityField,
     PriorityLinksField,
     PrivateSignalLinksField,
+    PrivateSignalLinksFieldWithArchives,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
     StatusLinksField,
@@ -591,6 +592,7 @@ class NoteHALSerializer(AddExtrasMixin, HALSerializer):
 class HistoryHalSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     action = serializers.SerializerMethodField()
+    who = serializers.SerializerMethodField()
 
     def get_action(self, obj):
         """Generate text for the action field that can serve as title in UI."""
@@ -611,6 +613,11 @@ class HistoryHalSerializer(HALSerializer):
         else:
             return 'Actie onbekend.'  # Must not happen!
 
+    def get_who(self, obj):
+        if obj.who == None:
+            return 'SIA'
+        return obj.who
+
     class Meta:
         model = History
         fields = (
@@ -626,7 +633,19 @@ class HistoryHalSerializer(HALSerializer):
 
 # -- Serializsers that are used exclusively by the V1 API --
 
-class PrivateSignalSerializer(HALSerializer):
+class PrivateSignalSerializerDetail(HALSerializer):
+    serializer_url_field = PrivateSignalLinksFieldWithArchives
+    _display = DisplayField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'id',
+        )
+
+class PrivateSignalSerializerList(HALSerializer):
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
 

@@ -1,9 +1,15 @@
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
-from signals.apps.signals.models import MainCategory
+from signals.apps.signals.models import MainCategory, Signal
 from signals.utils.version import get_version
-from tests.apps.signals.factories import MainCategoryFactory, SubCategoryFactory
+from tests.apps.signals.factories import (
+    MainCategoryFactory,
+    NoteFactory,
+    SignalFactory,
+    SubCategoryFactory,
+)
+from tests.apps.users.factories import UserFactory
 
 
 class TestAPIRoot(APITestCase):
@@ -53,3 +59,82 @@ class TestCategoryTermsEndpoints(APITestCase):
         data = response.json()
         self.assertEqual(data['name'], 'Grofvuil')
         self.assertIn('is_active', data)
+
+
+# TODO: Refacotor, we will probably only have 1 endpoint (with sub resources).
+
+class TestPrivateEndpoints(APITestCase):
+    """Test whether the endpoints in V1 API """
+    endpoints = [
+        '/signals/v1/private/signals/',
+    ]
+
+    def setUp(self):
+        self.signal = SignalFactory(
+            id=1,
+            location__id=1,
+            status__id=1,
+            category_assignment__id=1,
+            reporter__id=1,
+            priority__id=1
+        )
+
+        # Forcing authentication
+        user = UserFactory.create()  # Normal user without any extra permissions.
+        self.client.force_authenticate(user=user)
+
+        # Add one note to the signal
+        self.note = NoteFactory(id=1, _signal=self.signal)
+
+    def test_basics(self):
+        self.assertEqual(Signal.objects.count(), 1)
+        s = Signal.objects.get(pk=1)
+        self.assertIsInstance(s, Signal)
+
+    def test_get_lists(self):
+        for url in self.endpoints:
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'application/json',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
+
+    def test_get_lists_html(self):
+        for url in self.endpoints:
+            response = self.client.get('{}?format=api'.format(url))
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(response['Content-Type'],
+                             'text/html; charset=utf-8',
+                             'Wrong Content-Type for {}'.format(url))
+            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
+
+    def test_get_detail(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+
+    def test_delete_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.delete(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+    def test_put_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.put(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+    def test_patch_not_allowed(self):
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.patch(url)
+
+            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
