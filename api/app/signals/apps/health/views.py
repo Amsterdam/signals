@@ -8,6 +8,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import Error, connection
 from django.http import HttpResponse
 
+from signals.apps.signals.models import MainCategory, SubCategory
+
 logger = logging.getLogger(__name__)
 
 
@@ -134,34 +136,38 @@ def check_categories(request):
     :return HttpResponse:
     """
 
-    health_check_model_sub = _get_model(settings.HEALTH_MODEL_SUB_CATEGORY)
-    health_check_model_main = _get_model(settings.HEALTH_MODEL_MAIN_CATEGORY)
+    models = {
+        'signals.subcategory': SubCategory,
+        'signals.maincategory': MainCategory,
+    }
 
     try:
-        _count_categories(health_check_model_sub,
+        _count_categories(SubCategory,
                           minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
 
-        _count_categories(health_check_model_main,
+        _count_categories(MainCategory,
                           minimum_count=settings.HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT)
 
-        fixture_file = '{}/categories.json'.format(
-            os.path.join(os.path.dirname(os.path.dirname(settings.BASE_DIR)),
-                         'app/signals/apps/signals/fixtures/')
+        fixture_file = os.path.join(
+            os.path.dirname(os.path.dirname(settings.BASE_DIR)),
+            'app/signals/apps/signals/fixtures/categories.json'
         )
+
         with open(fixture_file) as f:
             fixture_data = json.load(f)
 
         for fixture in fixture_data:
             data_to_check = _prepare_data_to_check(data_to_check=fixture)
+            model_str = fixture['model']
+            model = models[model_str]
 
-            if fixture['model'] == settings.HEALTH_MODEL_SUB_CATEGORY.lower():
-                _check_fixture_exists_in_db(health_check_model_sub, data_to_check=data_to_check)
+            if model_str in models:
+                _check_fixture_exists_in_db(model, data_to_check)
 
-            if fixture['model'] == settings.HEALTH_MODEL_MAIN_CATEGORY.lower():
-                _check_fixture_exists_in_db(health_check_model_main, data_to_check=data_to_check)
     except Exception as e:
         return HttpResponse(e, content_type='text/plain', status=500)
 
-    return HttpResponse('Data OK {}, {}'.format(health_check_model_sub.__name__,
-                                                health_check_model_main.__name__),
-                        content_type='text/plain', status=200)
+    return HttpResponse(
+        'Data OK {}, {}'.format(SubCategory.__name__, MainCategory.__name__),
+        content_type='text/plain', status=200
+    )
