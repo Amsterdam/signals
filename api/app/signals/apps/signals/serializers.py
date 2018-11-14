@@ -615,7 +615,7 @@ class HistoryHalSerializer(HALSerializer):
 
     def get_who(self, obj):
         """Generate string to show in UI, missing users are set to default."""
-        if obj.who == None:
+        if obj.who is None:
             return 'SIA systeem'
         return obj.who
 
@@ -645,6 +645,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
             '_display',
             'id',
         )
+
 
 class PrivateSignalSerializerList(HALSerializer):
     serializer_url_field = PrivateSignalLinksField

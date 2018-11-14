@@ -1,15 +1,16 @@
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
-from signals.apps.signals.models import MainCategory, Signal
+from signals.apps.signals import workflow
+from signals.apps.signals.models import History, MainCategory, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
     MainCategoryFactory,
     NoteFactory,
     SignalFactory,
-    SubCategoryFactory,
+    SubCategoryFactory
 )
-from tests.apps.users.factories import UserFactory
+from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
 class TestAPIRoot(APITestCase):
@@ -138,3 +139,65 @@ class TestPrivateEndpoints(APITestCase):
             response = self.client.patch(url)
 
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
+
+
+class TestHistoryAction(APITestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.superuser = SuperUserFactory(username='superuser@example.com')
+        self.user = UserFactory(username='user@example.com')
+
+    def test_history_action_present(self):
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 401)
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+
+    def test_history_endpoint_rendering(self):
+        history_entries = History.objects.filter(_signal__id=self.signal.pk)
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+
+        result = response.json()
+        self.assertEqual(len(result), history_entries.count())
+
+    def test_history_entry_contents(self):
+        keys = ['identifier', 'when', 'what', 'action', 'description', 'who', '_signal']
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+
+        for entry in response.json():
+            for k in keys:
+                self.assertIn(k, entry)
+
+    def test_update_shows_up(self):
+        # Get a baseline for the Signal history
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        n_entries = len(response.json())
+        self.assertEqual(response.status_code, 200)
+
+        # Update the Signal status, and ...
+        status = Signal.actions.update_status(
+            {
+                'text': 'DIT IS EEN TEST',
+                'state': workflow.AFGEHANDELD,
+                'user': self.user,
+            },
+            self.signal
+        )
+
+        # ... check that the new status shows up as most recent entry in history.
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), n_entries + 1)
+
+        new_entry = response.json()[0]  # most recent status should be first
+        self.assertEqual(new_entry['who'], self.user.username)
+        self.assertEqual(new_entry['description'], status.text)
