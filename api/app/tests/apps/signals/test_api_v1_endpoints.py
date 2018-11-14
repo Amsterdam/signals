@@ -62,8 +62,6 @@ class TestCategoryTermsEndpoints(APITestCase):
         self.assertIn('is_active', data)
 
 
-# TODO: Refacotor, we will probably only have 1 endpoint (with sub resources).
-
 class TestPrivateEndpoints(APITestCase):
     """Test whether the endpoints in V1 API """
     endpoints = [
