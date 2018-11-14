@@ -614,8 +614,9 @@ class HistoryHalSerializer(HALSerializer):
             return 'Actie onbekend.'  # Must not happen!
 
     def get_who(self, obj):
+        """Generate string to show in UI, missing users are set to default."""
         if obj.who == None:
-            return 'SIA'
+            return 'SIA systeem'
         return obj.who
 
     class Meta:
