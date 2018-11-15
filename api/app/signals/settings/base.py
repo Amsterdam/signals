@@ -177,6 +177,11 @@ DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
+HEALTH_MODEL_SUB_CATEGORY = 'signals.SubCategory'
+HEALTH_MODEL_MAIN_CATEGORY = 'signals.MainCategory'
+HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT = 76
+HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT = 9
+
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
 # This is a test public/private key def and added for testing .
 JWKS_TEST_KEY = """
