@@ -157,11 +157,10 @@ def check_categories(request):
             fixture_data = json.load(f)
 
         for fixture in fixture_data:
-            data_to_check = _prepare_data_to_check(data_to_check=fixture)
             model_str = fixture['model']
-            model = models[model_str]
-
             if model_str in models:
+                model = models[model_str]
+                data_to_check = _prepare_data_to_check(data_to_check=fixture)
                 _check_fixture_exists_in_db(model, data_to_check)
 
     except Exception as e:
