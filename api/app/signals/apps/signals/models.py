@@ -1,7 +1,9 @@
+import copy
 import uuid
 
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
@@ -13,8 +15,9 @@ from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
-
 # Declaring custom Django signals for our `SignalManager`.
+from signals.apps.signals.workflow import STATUS_CHOICES
+
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
@@ -407,6 +410,16 @@ class Location(CreatedUpdatedModel):
         self.set_address_text()
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
+    def get_rd_coordinates(self):
+        to_transform = copy.deepcopy(self.geometrie)
+        to_transform.transform(
+            CoordTransform(
+                SpatialReference(4326),  # WGS84
+                SpatialReference(28992)  # RD
+            )
+        )
+        return to_transform
+
 
 class Reporter(CreatedUpdatedModel):
     """Privacy sensitive information on reporter."""
@@ -657,6 +670,21 @@ class History(models.Model):
 
     def delete(self, *args, **kwargs):
         raise NotImplementedError
+
+    @property
+    def action(self):
+        """Generate text for the action field that can serve as title in UI."""
+        if self.what == 'UPDATE_STATUS':
+            return 'Update status naar: {}'.format(
+                dict(STATUS_CHOICES).get(self.extra, 'Onbekend'))
+        elif self.what == 'UPDATE_PRIORITY':
+            return 'Prioriteit update naar: {}'.format(
+                dict(Priority.PRIORITY_CHOICES).get(self.extra, 'Onbekend'))
+        elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
+            return 'Categorie gewijzigd naar: {}'.format(self.extra)
+        elif self.what == 'CREATE_NOTE' or self.what == 'UPDATE_LOCATION':
+            return self.extra
+        return 'Actie onbekend.'
 
     class Meta:
         managed = False

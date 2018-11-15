@@ -29,6 +29,12 @@ signal_router_v1.urls.append(
          name='sub-category-detail'),
 )
 
+signal_router_v1.urls.append(
+    path('pdf/SIA-<int:signal_id>.pdf',
+         views.GeneratePdfView.as_view(),
+         name='signal-pdf-download'),
+)
+
 urlpatterns = [
     # API Version 0
     path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),

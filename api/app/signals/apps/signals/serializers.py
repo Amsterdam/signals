@@ -34,7 +34,6 @@ from signals.apps.signals.models import (
     SubCategory
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
-from signals.apps.signals.workflow import STATUS_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -591,27 +590,7 @@ class NoteHALSerializer(AddExtrasMixin, HALSerializer):
 
 class HistoryHalSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
-    action = serializers.SerializerMethodField()
     who = serializers.SerializerMethodField()
-
-    def get_action(self, obj):
-        """Generate text for the action field that can serve as title in UI."""
-
-        # At the database level, the Django display fields for the choices in
-        # various models are not available. Hence the need for a Python function
-        # to generate the correct text (again cannot be done in database view).
-        if obj.what == 'UPDATE_STATUS':
-            return 'Update status naar: {}'.format(
-                dict(STATUS_CHOICES).get(obj.extra, 'Onbekend'))
-        elif obj.what == 'UPDATE_PRIORITY':
-            return 'Prioriteit update naar: {}'.format(
-                dict(Priority.PRIORITY_CHOICES).get(obj.extra, 'Onbekend'))
-        elif obj.what == 'UPDATE_CATEGORY_ASSIGNMENT':
-            return 'Categorie gewijzigd naar: {}'.format(obj.extra)
-        elif obj.what == 'CREATE_NOTE' or obj.what == 'UPDATE_LOCATION':
-            return obj.extra
-        else:
-            return 'Actie onbekend.'  # Must not happen!
 
     def get_who(self, obj):
         """Generate string to show in UI, missing users are set to default."""
