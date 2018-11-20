@@ -7,7 +7,7 @@ from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCrea
 
 
 @receiver(create_initial, dispatch_uid='zds_create_case')
-def create_case_handler(sender, signal_obj, **kwargs):
+def create_initial_handler(sender, signal_obj, **kwargs):
     """
     Simply creating a case is not enough. We also need to connect the signal
     to the case.

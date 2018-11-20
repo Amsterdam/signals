@@ -67,7 +67,7 @@ class ZDSMockMixin(object):
     # ZRC ##########################################################################################
     @property
     def zrc_openapi(self):
-        with open(os.path.join(self.files_path, 'zrc.yaml')) as file:
+        with open(os.path.join(self.files_path, 'zrc.json')) as file:
             return file.read()
 
     @property
@@ -88,7 +88,7 @@ class ZDSMockMixin(object):
     # DRC ##########################################################################################
     @property
     def drc_openapi(self):
-        with open(os.path.join(self.files_path, 'drc.yaml')) as file:
+        with open(os.path.join(self.files_path, 'drc.json')) as file:
             return file.read()
 
     @property

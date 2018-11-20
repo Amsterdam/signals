@@ -20,8 +20,9 @@ from tests.apps.signals.factories import (
 
 class TestSignalReceivers(TestCase):
 
+    @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
-    def test_create_initial_handler(self, mocked_tasks):
+    def test_create_initial_handler(self, mocked_tasks, zds_tasks):
         signal = SignalFactory.create()
         create_initial.send(sender=self.__class__, signal_obj=signal)
 
