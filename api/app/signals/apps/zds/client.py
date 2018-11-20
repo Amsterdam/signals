@@ -2,7 +2,7 @@ from django.conf import settings
 from zds_client import Client
 
 
-class ZDSClient(object):
+class ZDSClient:
     def __init__(self):
         Client.load_config(settings.ROOT_DIR, **{
             'zrc': {
