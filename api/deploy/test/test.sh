@@ -6,8 +6,10 @@ set -x
 
 DIR="$(dirname $0)"
 
+COMMIT_HASH=$(git rev-parse HEAD)
+
 dc() {
-	docker-compose -p signaltest -f ${DIR}/docker-compose.yml $*
+	docker-compose -p ${COMMIT_HASH}_signaltest -f ${DIR}/docker-compose.yml $*
 }
 
 
