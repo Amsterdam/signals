@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 
 from signals.apps.sigmax import tasks
-from signals.apps.signals.models import update_status
+from signals.apps.signals.managers import update_status
 
 
 @receiver(update_status, dispatch_uid='sigmax_update_status')
