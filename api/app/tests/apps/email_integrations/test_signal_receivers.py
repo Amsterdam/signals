@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from signals.apps.signals.models import (
+from signals.apps.signals.managers import (
     create_initial,
     update_category_assignment,
     update_location,

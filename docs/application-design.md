@@ -61,14 +61,14 @@ Notable components:
 * The core Django models representing signals and statusses (or other signal
   properties that have a history that must be tracked) have strong dependencies
   and rules for the order in which things are updated. The custom model manager
-  `signals.apps.signals.models.SignalManager` contains an implementation of the
+  `signals.apps.signals.managers.SignalManager` contains an implementation of the
   update rules, and should be used to update signals as part of the normal 
   workflow. This model manager is available on the `signals.apps.signal.models.Signal`
   model as the `actions` attribute.
 * To maintain a loose coupling between the various Django apps within SIA we use
   custom Django signals. These are used to signal that a new issue was created
   (which may for instance trigger emails), that the status of a signal changed
-  etc. See for instance `signals.apps.signals.models.create_initial`.
+  etc. See for instance `signals.apps.signals.managers.create_initial`.
 * The SIA workflow is modelled as a state machine that is implemented in terms
   of status updates. While the `SignalManager` provided API maintains integrity
   of the data model, and fires of `DjangoSignal`s for the various update events,

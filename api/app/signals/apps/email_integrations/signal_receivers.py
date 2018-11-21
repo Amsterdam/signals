@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 
 from signals.apps.email_integrations import tasks
-from signals.apps.signals.models import (
+from signals.apps.signals.managers import (
     create_initial,
     update_category_assignment,
     update_location,
