@@ -107,7 +107,7 @@ melding. In dat logboek is te vinden wie wat heeft gedaan en wanneer.
     categorie, locatie, prioriteit en notitie.
       
 `/signals/v1/private/signals/<signal id>/history`
-    - GET: Volle geschiedenis van de melding.
+- GET: Volle geschiedenis van de melding.
 
 `/signals/v1/private/signals/<signal id>/image`
 - GET: Opvragen foto bij een melding (als deze er is).
