@@ -59,35 +59,35 @@ te vragen.
 *Wat volgt veronderstelt kennis van REST APIs:*
 
 `/signals/`
-    - GET: Lijst van links naar de API versies.
+- GET: Lijst van links naar de API versies.
 
 `/signals/v1/`
-    - GET: Lijst van links API pagina's binnen V1 API (publiek en niet publiek).
+- GET: Lijst van links API pagina's binnen V1 API (publiek en niet publiek).
 
 `/signals/v1/public/signals/`
-    - GET: Wordt niet ondersteund.
-    - POST: Aanmaken nieuwe melding (anoniem).
+- GET: Wordt niet ondersteund.
+- POST: Aanmaken nieuwe melding (anoniem).
 
 `/signals/v1/public/signals/<signal public id>`
-    - GET: Melding gegevens (alleen de publieke) met een samenvatting van de
-      updates daarop.
+- GET: Melding gegevens (alleen de publieke) met een samenvatting van de
+    updates daarop.
 
 `/signals/v1/public/signals/<signal public id>/image`
-    - GET: Opvragen foto bij een melding (als deze er is).
-    - POST: Aanmaken foto bij melding.
+- GET: Opvragen foto bij een melding (als deze er is).
+- POST: Aanmaken foto bij melding.
 
 `/signals/v1/public/terms/categories/`
-    - GET: Lijst van hoofd categorieën met de onderliggende sub categorieën
+- GET: Lijst van hoofd categorieën met de onderliggende sub categorieën
 
 `/signals/v1/public/terms/categories/<main category slug>`
-    - GET: Detail pagina voor hoofdcategorie bestaande uit een lijst van sub
-      categorieën bij die hoofd categorie.
+- GET: Detail pagina voor hoofdcategorie bestaande uit een lijst van sub
+    categorieën bij die hoofd categorie.
 
 `/signals/v1/public/terms/categories/<main category slug>/sub_categories/<sub category slug>`
-    - GET: Detail pagina voor een sub categorie.
+- GET: Detail pagina voor een sub categorie.
 
 `https://api.data.amsterdam.nl/signals/redoc/`
-    - GET: Gegenereerde API documentatie in Swagger formaat.
+- GET: Gegenereerde API documentatie in Swagger formaat.
 
 ### Publiek en Geauthenticeerd
 De publiek en geauthenticeerde API is bedoelt voor koppelingen met externe 
@@ -98,20 +98,20 @@ werk te doen. Verder houdt de backoffice applicatie een logboek bij voor iedere
 melding. In dat logboek is te vinden wie wat heeft gedaan en wanneer.
 
 `/signals/v1/private/signals/`
-    - GET: Lijst meldingen.
-    - POST: Aanmaken nieuwe melding (met bekende user).
+- GET: Lijst meldingen.
+- POST: Aanmaken nieuwe melding (met bekende user).
 
 `/signals/v1/private/signals/<signal id>`
-    - GET: De melding en alle informatie die erbij hoort.
-    - PUT / PATCH: Update op de melding. Accepteert ook veranderingen in status,
-      categorie, locatie, prioriteit en notitie.
+- GET: De melding en alle informatie die erbij hoort.
+- PUT / PATCH: Update op de melding. Accepteert ook veranderingen in status,
+    categorie, locatie, prioriteit en notitie.
       
 `/signals/v1/private/signals/<signal id>/history`
     - GET: Volle geschiedenis van de melding.
 
 `/signals/v1/private/signals/<signal id>/image`
-    - GET: Opvragen foto bij een melding (als deze er is).
-    - POST: Aanmaken foto bij melding, geen updates.
+- GET: Opvragen foto bij een melding (als deze er is).
+- POST: Aanmaken foto bij melding, geen updates.
 
 
 ## Mogelijke analysten API
