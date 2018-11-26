@@ -94,6 +94,7 @@ class SignalFilter(FilterSet):
                                           lookup_expr='date__lte')
 
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
+    # TODO: these filter (category__main, category__sub) should be removed
     category__main = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
         to_field_name='name',
@@ -102,6 +103,18 @@ class SignalFilter(FilterSet):
         queryset=SubCategory.objects.all(),
         to_field_name='name',
         field_name='category_assignment__sub_category__name')
+    # category__main and category__sub filters will be slug_main and slug_sub
+    main_slug = filters.ModelMultipleChoiceFilter(
+        queryset=MainCategory.objects.all(),
+        to_field_name='slug',
+        field_name='category_assignment__sub_category__main_category__slug',
+    )
+    sub_slug = filters.ModelMultipleChoiceFilter(
+        queryset=SubCategory.objects.all(),
+        to_field_name='slug',
+        field_name='category_assignment__sub_category__slug',
+    )
+
     priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)
 
     class Meta(object):
@@ -112,6 +125,8 @@ class SignalFilter(FilterSet):
             'status__state',
             'category__main',
             'category__sub',
+            'main_slug',
+            'sub_slug',
             'location__buurt_code',
             'location__stadsdeel',
             'location__address_text',

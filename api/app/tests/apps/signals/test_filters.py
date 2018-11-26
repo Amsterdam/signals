@@ -10,7 +10,7 @@ from rest_framework.test import APITestCase
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.filters import FieldMappingOrderingFilter
-from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.models import MainCategory, Priority, Signal, SubCategory
 from signals.apps.signals.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
@@ -304,3 +304,103 @@ class TestFieldMappingOrderingFilter(TestCase):
                          ('Cannot use `FieldMappingOrderingFilter` on a view which does not have '
                           'defined all fields in `ordering_fields` in the corresponding '
                           '`ordering_field_mappings` attribute.'))
+
+
+class TestSubSlugFilter(APITestCase):
+    def setUp(self):
+        # Assumes initial data in form of categories is present. (Possibly generalize this test
+        # by not assuming a set category).
+        self.sub_cat_1 = SubCategory.objects.get(slug='asbest-accu')
+        self.sub_cat_2 = SubCategory.objects.get(slug='oever-kade-steiger')
+
+        self.s1 = SignalFactory.create(category_assignment__sub_category=self.sub_cat_1)
+        self.s2 = SignalFactory.create(category_assignment__sub_category=self.sub_cat_2)
+
+        # We are testing the authenticated part of the API, hence:
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+    def test_filter_on_sub_slug(self):
+        payload = {'sub_slug': self.sub_cat_1.slug}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response = response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+        self.assertEqual(json_response['count'], 1)
+        self.assertEqual(
+            json_response['results'][0]['category']['sub_slug'],
+            self.s1.category_assignment.sub_category.slug
+        )
+
+    def test_backwards_compatibility(self):
+        # Note: only relevant as long as we keep the category__sub filter.
+        payload = {'sub_slug': self.sub_cat_1.slug}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response_new = response.json()
+
+        payload = {'category__sub': self.sub_cat_1.name}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response_old = response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+        self.assertEqual(json_response_new['count'], 1)
+        self.assertEqual(json_response_old['count'], 1)
+
+        self.assertEqual(
+            json_response_new['results'][0]['id'],
+            json_response_old['results'][0]['id']
+        )
+
+
+class TestMainSlugFilter(APITestCase):
+    def setUp(self):
+        # Assumes initial data in form of categories is present. (Possibly generalize this test
+        # by not assuming a set category).
+        self.main_cat_1 = MainCategory.objects.get(slug='afval')
+        self.main_cat_2 = MainCategory.objects.get(slug='openbaar-groen-en-water')
+
+        self.s1 = SignalFactory.create(
+            category_assignment__sub_category__main_category=self.main_cat_1)
+        self.s2 = SignalFactory.create(
+            category_assignment__sub_category__main_category=self.main_cat_2)
+
+        # We are testing the authenticated part of the API, hence:
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+    def test_filter_on_main_slug(self):
+        payload = {'main_slug': self.main_cat_1.slug}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response = response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+        self.assertEqual(json_response['count'], 1)
+        self.assertEqual(
+            json_response['results'][0]['category']['main_slug'],
+            self.s1.category_assignment.sub_category.main_category.slug
+        )
+
+    def test_backwards_compatibility(self):
+        # Note: only relevant as long as we keep the category__main filter.
+        payload = {'main_slug': self.main_cat_1.slug}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response_new = response.json()
+
+        payload = {'category__main': self.main_cat_1.name}
+        url = f'{SIGNAL_ENDPOINT}?{urlencode(payload)}'
+        response = self.client.get(url)
+        json_response_old = response.json()
+
+        self.assertEqual(Signal.objects.count(), 2)
+        self.assertEqual(json_response_new['count'], 1)
+        self.assertEqual(json_response_old['count'], 1)
+
+        self.assertEqual(
+            json_response_new['results'][0]['id'],
+            json_response_old['results'][0]['id']
+        )
