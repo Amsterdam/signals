@@ -16,6 +16,7 @@ class TestResolveCategories(APITestCase):
         main_category, sub_category = resolve_categories(path=path)
 
         self.assertEqual(self.main_category.pk, main_category.pk)
+        self.assertEqual(sub_category, None)
 
     def test_sub_category(self):
         path = reverse('v1:sub-category-detail', kwargs={
