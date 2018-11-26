@@ -103,14 +103,14 @@ class SignalFilter(FilterSet):
         queryset=SubCategory.objects.all(),
         to_field_name='name',
         field_name='category_assignment__sub_category__name')
-    # category__main and category__sub filters will be slug_main and slug_sub
+    # category__main and category__sub filters will be replaced with main_slug and sub_slug
     main_slug = filters.ModelMultipleChoiceFilter(
-        queryset=MainCategory.objects.all(),
+        queryset=MainCategory.objects.all().select_related(),
         to_field_name='slug',
         field_name='category_assignment__sub_category__main_category__slug',
     )
     sub_slug = filters.ModelMultipleChoiceFilter(
-        queryset=SubCategory.objects.all(),
+        queryset=SubCategory.objects.all().select_related(),
         to_field_name='slug',
         field_name='category_assignment__sub_category__slug',
     )
