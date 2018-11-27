@@ -4,7 +4,6 @@ import requests_mock
 from django.core.management import call_command
 from django.test import TestCase
 
-from signals.apps.zds.exceptions import CaseNotCreatedException
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.mixins import ZDSMockMixin
 
@@ -55,7 +54,7 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'zrc_openapi')
         self.post_error_mock(mock, 'zrc_zaak_create')
 
-        signal = SignalFactoryWithImage()
+        SignalFactoryWithImage()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')
