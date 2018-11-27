@@ -80,7 +80,7 @@ class TestSignalManager(TransactionTestCase):
         patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
                                                             signal_obj=signal)
 
-    @mock.patch('signals.apps.signals.models.create_initial', autospec=True)
+    @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
     def test_create_initial_with_priority_data(self, patched_create_initial):
         signal = Signal.actions.create_initial(
             self.signal_data,

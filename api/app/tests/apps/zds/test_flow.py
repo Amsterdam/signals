@@ -1,7 +1,7 @@
 import requests_mock
 from django.test import TestCase
 
-from signals.apps.signals.models import create_initial
+from signals.apps.signals.managers import create_initial
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.mixins import ZDSMockMixin
 

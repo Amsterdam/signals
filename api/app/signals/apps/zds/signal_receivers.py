@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import receiver
 
-from signals.apps.signals.models import create_initial, update_status
+from signals.apps.signals.managers import create_initial, update_status
 from signals.apps.zds import tasks
 from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
 
