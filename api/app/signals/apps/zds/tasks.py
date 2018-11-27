@@ -8,7 +8,6 @@ from django.utils import timezone
 from requests.exceptions import ConnectionError
 from zds_client import ClientError
 
-from signals.apps.signals.workflow import ZTC_STATUSSES
 from signals.apps.zds import zds_client
 from signals.apps.zds.exceptions import (
     CaseConnectionException,
@@ -17,6 +16,7 @@ from signals.apps.zds.exceptions import (
     DocumentNotCreatedException,
     StatusNotCreatedException
 )
+from signals.apps.zds.workflow import ZTC_STATUSSES
 
 from .models import ZaakSignal
 

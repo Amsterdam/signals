@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 from zds_client import ClientError
 
 from signals.apps.signals.models import Signal
-from signals.apps.signals.workflow import ZTC_STATUSSES
 from signals.apps.zds import zds_client
 from signals.apps.zds.exceptions import StatusNotCreatedException
 from signals.apps.zds.tasks import (
@@ -13,6 +12,7 @@ from signals.apps.zds.tasks import (
     create_case,
     create_document
 )
+from signals.apps.zds.workflow import ZTC_STATUSSES
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,9 @@ class Command(BaseCommand):
         try:
             create_case(signal)
             connect_signal_to_case(signal)
-            create_document(signal)
-            add_document_to_case(signal)
+            if signal.image:
+                create_document(signal)
+                add_document_to_case(signal)
 
             for status in signal.statuses.order_by('created_at'):
                 # This is done custom so we can add all statusses
@@ -40,10 +41,7 @@ class Command(BaseCommand):
                     'datumStatusGezet': status.created_at.isoformat(),
                 }
 
-                try:
-                    zds_client.zrc.create('status', data)
-                except (ClientError, ConnectionError) as error:
-                    logger.exception(error)
-                    raise StatusNotCreatedException()
+                zds_client.zrc.create('status', data)
         except Exception as e:
             logger.exception(e)
+            self.stderr.write(repr(e))
