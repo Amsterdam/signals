@@ -1,36 +1,25 @@
 from io import StringIO
+
 import requests_mock
 from django.core.management import call_command
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
-from signals.apps.zds.exceptions import (
-    CaseConnectionException,
-    CaseNotCreatedException,
-    DocumentConnectionException,
-    DocumentNotCreatedException,
-    StatusNotCreatedException
-)
-from signals.apps.zds.tasks import (
-    add_document_to_case,
-    add_status_to_case,
-    connect_signal_to_case,
-    create_case,
-    create_document
-)
+from signals.apps.zds.exceptions import CaseNotCreatedException
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
-from tests.apps.zds.factories import ZaakSignalFactory
 from tests.apps.zds.mixins import ZDSMockMixin
 
 
 class TestCommand(ZDSMockMixin, TestCase):
     def call_management_command(self):
         self.out = StringIO()
-        call_command('add_signals_to_case', stdout=self.out)
+        self.err = StringIO()
+        call_command('add_signals_to_case', stdout=self.out, stderr=self.err)
 
     @requests_mock.Mocker()
     def test_no_signals(self, mock):
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
+        self.assertEqual(self.err.getvalue(), '')
 
     @requests_mock.Mocker()
     def test_with_signal_no_image(self, mock):
@@ -42,6 +31,7 @@ class TestCommand(ZDSMockMixin, TestCase):
         signal = SignalFactory()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
+        self.assertEqual(self.err.getvalue(), '')
         self.assertIsNotNone(signal.zaak)
 
     @requests_mock.Mocker()
@@ -57,6 +47,7 @@ class TestCommand(ZDSMockMixin, TestCase):
         signal = SignalFactoryWithImage()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
+        self.assertEqual(self.err.getvalue(), '')
         self.assertIsNotNone(signal.zaak)
 
     @requests_mock.Mocker()
@@ -66,5 +57,5 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
         self.call_management_command()
-        self.assertNotEqual(self.out.getvalue(), '')
-        self.assertIsNotNone(signal.zaak)
+        self.assertEqual(self.out.getvalue(), '')
+        self.assertNotEqual(self.err.getvalue(), '')

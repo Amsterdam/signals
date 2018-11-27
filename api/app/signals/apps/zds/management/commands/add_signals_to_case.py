@@ -1,11 +1,9 @@
 import logging
 
 from django.core.management.base import BaseCommand
-from zds_client import ClientError
 
 from signals.apps.signals.models import Signal
 from signals.apps.zds import zds_client
-from signals.apps.zds.exceptions import StatusNotCreatedException
 from signals.apps.zds.tasks import (
     add_document_to_case,
     connect_signal_to_case,

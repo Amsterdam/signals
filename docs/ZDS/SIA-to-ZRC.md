@@ -106,19 +106,23 @@ informatie bij de SIA melding gezocht kunnen worden. Hieronder komt een eerste o
 hoe we dit zouden kunnen doen.
 
 ## Wijzigingen in SIA
-Als eerste zullen er wijzigingen in SIA moeten plaats vinden op het model.
-We moeten weten welke zaak gekoppeld is aan het signaal. Hiervoor zullen er extra velden nodig zijn
-op het datamodel.
+Als eerste zullen er wijzigingen in SIA moeten plaats vinden.
+We moeten weten welke zaak gekoppeld is aan het signaal.
 Zonder deze wijziging zullen wij niet in staat zijn de benodigde gegevens op te kunnen halen om de backoffice nog te laten werken via de frontend.
+
+Er zal een nieuwe app gemaakt worden, genaamd zds. Hierin zal een model komen die de koppeling maakt
+tussen een zaak en een signal.
 
 ```python
 from django.db import models
 
 
-class Signal(models.Model):
-    # All fields that are now available.
-    zaak_url = models.URLField()
+class ZaakSignal(models.Model):
+    signal = models.OneToOneField('signals.Signal', related_name='zaak', on_delete=models.CASCADE)
+    zrc_link = models.URLField()
 ```
+
+Er is maar 1 koppeling mogelijk tussen een zaak en een singal.
 
 ## Status lijst
 Om te kunnen bepalen welke statussen mogelijk zijn moet er in het ZTC een lijst met statussen opgehaald kunnen worden.
@@ -143,6 +147,18 @@ Hier is het mogelijk om een filter toe te passen door gebruik van een query para
 
 Hierna zal er mogelijk ook een request moeten komen om de data van het enkelvoudiginformatieobject op te vragen
 
+Hiervoor zullen we een model aanmaken die de koppeling tussen een zaak en een document bijhoud.
+
+```python
+from django.db import models
+
+
+class ZaakDocument(models.Model):
+    zaak_signal = models.ForeignKey('zds.ZaakSignal', related_name='documenten', on_delete=models.CASCADE)
+    drc_link = models.URLField()
+```
+
+Ter voorbereiding op het ondersteunen van meerdere documenten zal het hier al mogelijk zijn om meerdere documenten te koppelen aan een zaak.
+
 # Authenticatie op de ZRC, DRC en ZTC endpoints
-Momenteel mist de authenticatie nog. We willen hier gaan pushen op de manier die nu al bij Amsterdam in productie staat.
-Dit is oauth met gebruik van JWT.
+Sinds versie 0.7.0 zit er documentatie in op de endpoints. Dit moet samen met een update van de client geimplementeerd gaan worden.
