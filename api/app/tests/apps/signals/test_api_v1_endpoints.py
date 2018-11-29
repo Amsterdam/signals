@@ -26,14 +26,14 @@ class TestCategoryTermsEndpoints(APITestCase):
 
     def test_category_list(self):
         # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
-        self.assertEqual(MainCategory.objects.count(), 10)
+        self.assertEqual(MainCategory.objects.count(), 9)
 
         url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(len(data['results']), 10)
+        self.assertEqual(len(data['results']), 9)
 
     def test_category_detail(self):
         # Asserting that we've 13 sub categories for our main category "Afval".
