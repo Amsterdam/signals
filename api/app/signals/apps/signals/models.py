@@ -258,16 +258,40 @@ class CategoryAssignment(CreatedUpdatedModel):
     _signal = models.ForeignKey('signals.Signal',
                                 on_delete=models.CASCADE,
                                 related_name='category_assignments')
+    main_category = models.ForeignKey('signals.MainCategory',
+                                      on_delete=models.CASCADE,
+                                      related_name='category_assignments',
+                                      null=True,
+                                      blank=True)
     sub_category = models.ForeignKey('signals.SubCategory',
                                      on_delete=models.CASCADE,
-                                     related_name='category_assignments')
+                                     related_name='category_assignments',
+                                     null=True,
+                                     blank=True)
     created_by = models.EmailField(null=True, blank=True)
 
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True, blank=True)
 
     def __str__(self):
         """String representation."""
         return '{sub} - {signal}'.format(sub=self.sub_category, signal=self._signal)
+
+    def clean(self):
+        super(CategoryAssignment, self).clean()
+        if self.main_category is None and self.sub_category is None:
+            raise ValidationError('At least a main or sub category is required')
+
+        if self.main_category and self.sub_category:
+            if self.main_category_id is not self.sub_category.main_category_id:
+                raise ValidationError('The sub category does not belong to the main category')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+
+        if self.main_category is None and self.sub_category:
+            self.main_category = self.sub_category.main_category
+
+        super(CategoryAssignment, self).save(*args, **kwargs)
 
 
 class Status(CreatedUpdatedModel):
