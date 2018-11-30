@@ -15,6 +15,7 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
     Location,
+    MainCategory,
     Note,
     Priority,
     Reporter,
@@ -30,9 +31,13 @@ from signals.apps.signals.v0.fields import (
     StatusLinksField
 )
 from signals.apps.signals.v1.fields import (
+    MainCategoryHyperlinkedIdentityField,
+    MainCategoryHyperlinkedRelatedField,
     NoteHyperlinkedIdentityField,
+SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
+from signals.apps.signals.utils import resolve_categories
 
 logger = logging.getLogger(__name__)
 
@@ -122,12 +127,15 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
+    main_category = MainCategoryHyperlinkedRelatedField(write_only=True, required=False)
     sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
 
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+    main = serializers.CharField(source='main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='main_category.slug', read_only=True)
+
+    slug = serializers.CharField(read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(source='sub_category.departments',
@@ -140,28 +148,36 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_slug',
             'main',
             'main_slug',
+            'slug',
+            'main_category',
             'sub_category',
             'department',
         )
 
     def get_department(self, obj):
-        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+        if obj.sub_category:
+            return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
 
-        # Backwards compatibility fix to let this endpoint work with `sub` as key.
-        is_main_name_posted = 'main' in data
-        is_sub_name_posted = 'sub' in data
-        is_sub_category_not_posted = 'sub_category' not in data
-        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
-            try:
-                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
-                                                       name__iexact=data['sub'])
-            except SubCategory.DoesNotExist:
-                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
-            else:
-                internal_data['sub_category'] = sub_category
+        if 'slug' in data:
+            main_category, sub_category = resolve_categories(data['slug'])
+            internal_data['main_category'] = main_category
+            internal_data['sub_category'] = sub_category
+        else:
+            # Backwards compatibility fix to let this endpoint work with `sub` as key.
+            is_main_name_posted = 'main' in data
+            is_sub_name_posted = 'sub' in data
+            is_sub_category_not_posted = 'sub_category' not in data
+            if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+                try:
+                    sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
+                                                           name__iexact=data['sub'])
+                except SubCategory.DoesNotExist:
+                    internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
+                else:
+                    internal_data['sub_category'] = sub_category
 
         return internal_data
 
@@ -427,16 +443,18 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
+    main_category = MainCategoryHyperlinkedRelatedField(write_only=True, required=False)
     sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
 
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+    main = serializers.CharField(source='main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='main_category.slug', read_only=True)
+
+    slug = serializers.CharField(read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
-    department = serializers.SerializerMethodField(source='sub_category.departments',
-                                                   read_only=True)
+    department = serializers.SerializerMethodField(read_only=True)
 
     class Meta(object):
         model = CategoryAssignment
@@ -444,34 +462,42 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
             '_links',
             '_display',
             '_signal',
+            'main_category',
             'sub_category',
             'sub',
             'sub_slug',
             'main',
             'main_slug',
+            'slug',
             'department',
             'created_by',
             'created_at',
         )
 
     def get_department(self, obj):
-        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+        if obj.sub_category:
+            return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
 
-        # Backwards compatibility fix to let this endpoint work with `sub` as key.
-        is_main_name_posted = 'main' in data
-        is_sub_name_posted = 'sub' in data
-        is_sub_category_not_posted = 'sub_category' not in data
-        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
-            try:
-                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
-                                                       name__iexact=data['sub'])
-            except SubCategory.DoesNotExist:
-                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
-            else:
-                internal_data['sub_category'] = sub_category
+        if 'slug' in data:
+            main_category, sub_category = resolve_categories(data['slug'])
+            internal_data['main_category'] = main_category
+            internal_data['sub_category'] = sub_category
+        else:
+            # Backwards compatibility fix to let this endpoint work with `sub` as key.
+            is_main_name_posted = 'main' in data
+            is_sub_name_posted = 'sub' in data
+            is_sub_category_not_posted = 'sub_category' not in data
+            if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+                try:
+                    sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
+                                                           name__iexact=data['sub'])
+                except SubCategory.DoesNotExist:
+                    internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
+                else:
+                    internal_data['sub_category'] = sub_category
 
         return internal_data
 
@@ -522,6 +548,40 @@ class _NestedDepartmentSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'is_intern',
+        )
+
+
+class SubCategoryHALSerializer(HALSerializer):
+    serializer_url_field = SubCategoryHyperlinkedIdentityField
+    _display = DisplayField()
+    departments = _NestedDepartmentSerializer(many=True)
+
+    class Meta:
+        model = SubCategory
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'slug',
+            'handling',
+            'departments',
+            'is_active',
+        )
+
+
+class MainCategoryHALSerializer(HALSerializer):
+    serializer_url_field = MainCategoryHyperlinkedIdentityField
+    _display = DisplayField()
+    sub_categories = SubCategoryHALSerializer(many=True)
+
+    class Meta:
+        model = MainCategory
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'slug',
+            'sub_categories',
         )
 
 

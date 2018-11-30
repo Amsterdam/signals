@@ -26,8 +26,11 @@ def send_mail(signal: Signal) -> int:
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
-                'subrubriek': signal.category_assignment.sub_category.name,
+                'hoofdrubriek': signal.category_assignment.main_category.name,
+                'subrubriek': (
+                    signal.category_assignment.sub_category.name
+                    if signal.category_assignment.sub_category else None
+                ),
             },
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)

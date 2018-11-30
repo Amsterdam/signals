@@ -14,11 +14,13 @@ from signals.apps.signals.models import (
     STADSDEEL_OOST,
     CategoryAssignment,
     Location,
+    MainCategory,
     Note,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    SubCategory
 )
 from signals.utils.version import get_version
 from tests.apps.signals import factories
@@ -295,6 +297,53 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
         self.assertEqual(response.status_code, 403)
+
+    def test_post_signal_with_json_main_category(self):
+        postjson = self._get_fixture('post_signal')
+        postjson['category'] = {
+            'slug': '/signals/v1/public/terms/categories/afval',
+        }
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        id = response.data['id']
+        signal_from_database = Signal.objects.get(id=id)
+        main_category_from_database = MainCategory.objects.get(slug='afval')
+
+        self.assertIsNotNone(signal_from_database.category_assignment.main_category)
+        self.assertIsNone(signal_from_database.category_assignment.sub_category)
+
+        self.assertEqual(
+            signal_from_database.category_assignment.main_category_id,
+            main_category_from_database.id
+        )
+
+    def test_post_signal_with_json_sub_category(self):
+        postjson = self._get_fixture('post_signal')
+        postjson['category'] = {
+            'slug': '/signals/v1/public/terms/categories/afval/sub_categories/veeg-zwerfvuil',
+        }
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        id = response.data['id']
+        signal_from_database = Signal.objects.get(id=id)
+        sub_category_from_database = SubCategory.objects.get(slug='veeg-zwerfvuil')
+
+        self.assertIsNotNone(signal_from_database.category_assignment.main_category)
+        self.assertIsNotNone(signal_from_database.category_assignment.sub_category)
+
+        self.assertEqual(
+            signal_from_database.category_assignment.sub_category_id,
+            sub_category_from_database.id
+        )
+
+        self.assertEqual(
+            signal_from_database.category_assignment.main_category_id,
+            signal_from_database.category_assignment.sub_category.main_category_id
+        )
 
 
 class TestAuthSignalEndpoint(APITestCase):

@@ -362,3 +362,43 @@ class GetAddressTextTest(TestCase):
 
         correct = 'Sesamstraat 1A-achter 9999ZZ Amsterdam'
         self.assertEqual(get_address_text(self.location, short=False), correct)
+
+
+class TestCategoryAssignmentModel(TestCase):
+    def setUp(self):
+        self.signal = factories.SignalFactoryValidLocation.create()
+
+        self.main_category = factories.MainCategoryFactory.create()
+        self.sub_category = factories.SubCategoryFactory.create()
+
+    def test_category_assignment_no_categories(self):
+        with self.assertRaises(ValidationError):
+            CategoryAssignment.objects.create(
+                _signal=self.signal
+            )
+
+    def test_category_assignment_main_category_sub_category_do_not_match(self):
+        with self.assertRaises(ValidationError):
+            CategoryAssignment.objects.create(
+                _signal=self.signal,
+                main_category=self.main_category,
+                sub_category=self.sub_category,
+            )
+
+    def test_category_assignment_only_main_category(self):
+        ca = CategoryAssignment.objects.create(
+            _signal=self.signal,
+            main_category=self.main_category,
+        )
+
+        self.assertEqual(ca.main_category_id, self.main_category.id)
+        self.assertIsNone(ca.sub_category)
+
+    def test_category_assignment_only_sub_category(self):
+        ca = CategoryAssignment.objects.create(
+            _signal=self.signal,
+            sub_category=self.sub_category,
+        )
+
+        self.assertEqual(ca.main_category_id, self.sub_category.main_category.id)
+        self.assertEqual(ca.sub_category_id, self.sub_category.id)

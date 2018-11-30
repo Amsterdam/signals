@@ -6,7 +6,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from signals.apps.signals.models import SubCategory
+from signals.apps.signals.models import MainCategory, SubCategory
 
 
 class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
@@ -19,6 +19,11 @@ class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField)
         ])
 
         return result
+
+
+class MainCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
+    view_name = 'category-detail'
+    queryset = MainCategory.objects.all()
 
 
 class SubCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):

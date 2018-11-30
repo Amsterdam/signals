@@ -1,9 +1,9 @@
 from django.urls import resolve
 
-from signals.apps.signals.views import MainCategoryViewSet, SubCategoryViewSet
-
 
 def resolve_categories(path):
+    from signals.apps.signals.views import MainCategoryViewSet, SubCategoryViewSet
+
     view, args, kwargs = resolve(path)
     if id(view.cls) == id(SubCategoryViewSet):
         sub_category = view.cls.queryset.get(slug=kwargs['sub_slug'],
