@@ -301,7 +301,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
     def test_post_signal_with_json_main_category(self):
         postjson = self._get_fixture('post_signal')
         postjson['category'] = {
-            'slug': '/signals/v1/public/terms/categories/afval',
+            'uri': '/signals/v1/public/terms/categories/afval',
         }
 
         response = self.client.post(self.endpoint, postjson, format='json')
@@ -322,7 +322,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
     def test_post_signal_with_json_sub_category(self):
         postjson = self._get_fixture('post_signal')
         postjson['category'] = {
-            'slug': '/signals/v1/public/terms/categories/afval/sub_categories/veeg-zwerfvuil',
+            'uri': '/signals/v1/public/terms/categories/afval/sub_categories/veeg-zwerfvuil',
         }
 
         response = self.client.post(self.endpoint, postjson, format='json')

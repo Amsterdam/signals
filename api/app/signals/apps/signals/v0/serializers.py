@@ -135,7 +135,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main = serializers.CharField(source='main_category.name', read_only=True)
     main_slug = serializers.CharField(source='main_category.slug', read_only=True)
 
-    slug = serializers.CharField(read_only=True)
+    uri = serializers.URLField(read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(source='sub_category.departments',
@@ -148,7 +148,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_slug',
             'main',
             'main_slug',
-            'slug',
+            'uri',
             'main_category',
             'sub_category',
             'department',
@@ -161,8 +161,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
 
-        if 'slug' in data:
-            main_category, sub_category = resolve_categories(data['slug'])
+        if 'uri' in data:
+            main_category, sub_category = resolve_categories(data['uri'])
             internal_data['main_category'] = main_category
             internal_data['sub_category'] = sub_category
         else:
@@ -451,7 +451,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
     main = serializers.CharField(source='main_category.name', read_only=True)
     main_slug = serializers.CharField(source='main_category.slug', read_only=True)
 
-    slug = serializers.CharField(read_only=True)
+    uri = serializers.URLField(read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(read_only=True)
@@ -468,7 +468,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
             'sub_slug',
             'main',
             'main_slug',
-            'slug',
+            'uri',
             'department',
             'created_by',
             'created_at',
@@ -481,8 +481,8 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
 
-        if 'slug' in data:
-            main_category, sub_category = resolve_categories(data['slug'])
+        if 'uri' in data:
+            main_category, sub_category = resolve_categories(data['uri'])
             internal_data['main_category'] = main_category
             internal_data['sub_category'] = sub_category
         else:
