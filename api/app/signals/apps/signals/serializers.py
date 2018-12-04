@@ -74,8 +74,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
             raise PermissionDenied("Melding is reeds van foto voorzien.")
 
         if image:
-            setattr(instance, 'image', image)
-            instance.save()
+            Signal.actions.add_image(image, instance)
 
         return instance
 

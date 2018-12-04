@@ -27,7 +27,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_zaak_create')
 
         signal = SignalFactory()
-        signal = create_case(signal)
+        create_case(signal)
         self.assertTrue(hasattr(signal, 'zaak'))
 
     @requests_mock.Mocker()

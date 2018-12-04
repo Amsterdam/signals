@@ -494,7 +494,7 @@ ZTC_URL = "{}://{}/ztc".format(ZTC_SCHEME, ZTC_HOST)
 
 ZTC_CATALOGUS_ID = '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18'
 ZTC_ZAAKTYPE_ID = 'c2f952ca-298e-488c-b1be-a87f11bd5fa2'
-ZTC_INFORMATIEOBJECTTYPE_ID = 'cde28728-5519-4077-b529-1b4f09f41bf9'
+ZTC_INFORMATIEOBJECTTYPE_ID = '5ab00303-1b58-4668-b054-595c0635596c'
 
 ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
     ztc_url=ZTC_URL, catalogus_id=ZTC_CATALOGUS_ID
@@ -505,5 +505,7 @@ ZTC_ZAAKTYPE_URL = '{catalogus_url}/zaaktypen/{zaaktype_id}'.format(
 ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informatietype_id}'.format(
     catalogus_url=ZTC_CATALOGUS_URL, informatietype_id=ZTC_INFORMATIEOBJECTTYPE_ID,
 )
+
+RSIN_NUMBER = '002564440'
 
 HOST_URL = 'http://localhost:8000'

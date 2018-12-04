@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import receiver
 
-from signals.apps.signals.managers import create_initial, update_status
+from signals.apps.signals.managers import create_initial, update_status, add_image
 from signals.apps.zds import tasks
 from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
 
@@ -39,4 +39,13 @@ def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
     try:
         tasks.add_status_to_case(signal_obj)
     except ObjectDoesNotExist:
+        pass
+
+
+@receiver(add_image, dispatch_uid='zds_add_image')
+def add_image_handler(sender, signal_obj, **kwargs):
+    try:
+        tasks.create_document(signal_obj)
+        tasks.add_document_to_case(signal_obj)
+    except DocumentNotCreatedException:
         pass

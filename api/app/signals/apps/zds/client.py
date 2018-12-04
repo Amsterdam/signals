@@ -30,17 +30,14 @@ class ZDSClient:
 
     @property
     def ztc(self):
-        print('getting ztc')
         return self.get_client('ztc')
 
     @property
     def zrc(self):
-        print('getting zrc')
         return self.get_client('zrc')
 
     @property
     def drc(self):
-        print('getting drc')
         return self.get_client('drc')
 
 
