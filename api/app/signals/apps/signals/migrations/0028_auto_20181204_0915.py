@@ -13,6 +13,24 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='status',
             name='state',
-            field=models.CharField(blank=True, choices=[('m', 'Gemeld'), ('i', 'In afwachting van behandeling'), ('b', 'In behandeling'), ('h', 'On hold'), ('ready to send', 'Te verzenden naar extern systeem'), ('o', 'Afgehandeld'), ('a', 'Geannuleerd'), ('reopened', 'Heropend'), ('sent', 'Verzonden naar extern systeem'), ('send failed', 'Verzending naar extern systeem mislukt'), ('done external', 'Melding is afgehandeld in extern systeem')], default='m', help_text='Melding status', max_length=20),
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ('m', 'Gemeld'),
+                    ('i', 'In afwachting van behandeling'),
+                    ('b', 'In behandeling'),
+                    ('h', 'On hold'),
+                    ('ready to send', 'Te verzenden naar extern systeem'),
+                    ('o', 'Afgehandeld'),
+                    ('a', 'Geannuleerd'),
+                    ('reopened', 'Heropend'),
+                    ('sent', 'Verzonden naar extern systeem'),
+                    ('send failed', 'Verzending naar extern systeem mislukt'),
+                    ('done external', 'Melding is afgehandeld in extern systeem')
+                ],
+                default='m',
+                help_text='Melding status',
+                max_length=20
+            ),
         ),
     ]

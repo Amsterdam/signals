@@ -15,9 +15,9 @@ to produce the sequence number. We have to count how many times a `Signal` was
 sent to CityControl previously (and keep that logic out of the core SIA
 application).
 """
-from signals.apps.signals.models import Signal
-
 from django.db import models
+
+from signals.apps.signals.models import Signal
 
 
 class CityControlRoundtrip(models.Model):

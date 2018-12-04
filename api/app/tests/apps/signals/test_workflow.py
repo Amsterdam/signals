@@ -9,8 +9,8 @@ from unittest import mock
 from django.core.exceptions import ValidationError
 from django.test import TransactionTestCase
 
-from signals.apps.signals.models import Signal, Status
 from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal, Status
 from tests.apps.signals import factories
 
 HAPPY_REOPEN_SCENARIO = [
@@ -33,6 +33,7 @@ UNHAPPY_REOPEN_SCENARIO = [
     workflow.BEHANDELING,
 ]
 
+
 class TestReopen(TransactionTestCase):
     def setUp(self):
         # We start at LEEG
@@ -45,7 +46,7 @@ class TestReopen(TransactionTestCase):
         # The workflow we want to check
         for new_state in HAPPY_REOPEN_SCENARIO:
             new_status_data = {'state': new_state, 'text': 'Dit is een test.'}
-            _ = Signal.actions.update_status(new_status_data, self.signal)
+            Signal.actions.update_status(new_status_data, self.signal)
 
         self.assertEqual(self.signal.status.state, HAPPY_REOPEN_SCENARIO[-1])
         self.assertEqual(patched_udate_status_signal.send.call_count, 8)
@@ -58,8 +59,8 @@ class TestReopen(TransactionTestCase):
         with self.assertRaises(ValidationError):
             for new_state in UNHAPPY_REOPEN_SCENARIO:
                 new_status_data = {'state': new_state, 'text': 'Dit is een test.'}
-                _ = Signal.actions.update_status(new_status_data, self.signal)
+                Signal.actions.update_status(new_status_data, self.signal)
 
         self.assertEqual(self.signal.status.state, workflow.BEHANDELING)
         self.assertEqual(patched_udate_status_signal.send.call_count, 4)
-        self.assertEqual(Status.objects.filter(state=workflow.HEROPEND).count(), 0)      
+        self.assertEqual(Status.objects.filter(state=workflow.HEROPEND).count(), 0)
