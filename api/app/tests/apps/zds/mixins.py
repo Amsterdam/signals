@@ -19,18 +19,14 @@ class ZDSMockMixin(object):
         self.files_path = os.path.join(self.dir_path, 'files')
 
         self.urls = {
-            'zrc_openapi': '{}/api/v1/schema/openapi.yaml'.format(settings.ZRC_URL),
-            'zrc_zaak_create': '{}/api/v1/zaken'.format(settings.ZRC_URL),
-            'zrc_zaakobject_create': '{}/api/v1/zaakobjecten'.format(settings.ZRC_URL),
-            'zrc_status_create': '{}/api/v1/statussen'.format(settings.ZRC_URL),
-            'drc_openapi': '{}/api/v1/schema/openapi.yaml'.format(settings.DRC_URL),
-            'drc_enkelvoudiginformatieobject_create': (
-                '{}/api/v1/enkelvoudiginformatieobjecten'.format(settings.DRC_URL)
-            ),
-            'drc_objectinformatieobject_create': (
-                '{}/api/v1/objectinformatieobjecten'.format(settings.DRC_URL)
-            ),
-            'ztc_openapi': '{}/api/v1/schema/openapi.yaml'.format(settings.ZTC_URL),
+            'zrc_openapi': '/zrc/api/v1/schema/openapi.yaml?v=3',
+            'zrc_zaak_create': '/zrc/api/v1/zaken',
+            'zrc_zaakobject_create': '/zrc/api/v1/zaakobjecten',
+            'zrc_status_create': '/zrc/api/v1/statussen',
+            'drc_openapi': '/drc/api/v1/schema/openapi.yaml?v=3',
+            'drc_enkelvoudiginformatieobject_create': '/drc/api/v1/enkelvoudiginformatieobjecten',
+            'drc_objectinformatieobject_create': '/drc/api/v1/objectinformatieobjecten',
+            'ztc_openapi': '/ztc/api/v1/schema/openapi.yaml?v=3',
         }
 
     def get_mock(self, mock, name, status=200):
@@ -67,7 +63,7 @@ class ZDSMockMixin(object):
     # ZRC ##########################################################################################
     @property
     def zrc_openapi(self):
-        with open(os.path.join(self.files_path, 'zrc.json')) as file:
+        with open(os.path.join(self.files_path, 'zrc.yml')) as file:
             return file.read()
 
     @property
@@ -88,7 +84,7 @@ class ZDSMockMixin(object):
     # DRC ##########################################################################################
     @property
     def drc_openapi(self):
-        with open(os.path.join(self.files_path, 'drc.json')) as file:
+        with open(os.path.join(self.files_path, 'drc.yml')) as file:
             return file.read()
 
     @property

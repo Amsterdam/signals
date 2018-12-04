@@ -452,26 +452,48 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 ZDS_TESTING_MOCK = True
 
 # ZRC settings
-ZRC_HOST = 'acc.zrc.data.amsterdam.nl'  # should be a staging domain.
+ZRC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
 ZRC_PORT = '443'
 ZRC_SCHEME = 'https'
+ZRC_AUTH = {
+    'client_id': os.getenv('ZRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
+    'secret': os.getenv('ZRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
+    'scopes': [
+        'zds.scopes.zaken.aanmaken',
+        'zds.scopes.statussen.toevoegen',
+        'zds.scopes.zaken.lezen',
+        'zds.scopes.zaaktypes.lezen',
+    ]
+}
 ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
 ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
 
 # DRC settings
-DRC_HOST = 'acc.drc.data.amsterdam.nl'  # should be a staging domain.
+DRC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
 DRC_PORT = '443'
 DRC_SCHEME = 'https'
+DRC_AUTH = {
+    'client_id': os.getenv('DRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
+    'secret': os.getenv('DRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
+    'scopes': []
+}
 DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
 
 # ZTC settings
-ZTC_HOST = 'acc.ztc.data.amsterdam.nl'  # should be a staging domain.
+ZTC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
 ZTC_PORT = '443'
 ZTC_SCHEME = 'https'
-ZTC_URL = "{}://{}:{}".format(ZTC_SCHEME, ZTC_HOST, ZTC_PORT)
+ZTC_AUTH = {
+    'client_id': os.getenv('ZTC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
+    'secret': os.getenv('ZTC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
+    'scopes': [
+        'zds.scopes.zaaktypes.lezen',
+    ]
+}
+ZTC_URL = "{}://{}/ztc".format(ZTC_SCHEME, ZTC_HOST)
 
-ZTC_CATALOGUS_ID = '7d7d3ac9-a08b-427a-b4e1-1dc406790285'
-ZTC_ZAAKTYPE_ID = '80d93a21-bd7d-4cc6-8c54-97e1cdd0ddfd'
+ZTC_CATALOGUS_ID = '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18'
+ZTC_ZAAKTYPE_ID = 'c2f952ca-298e-488c-b1be-a87f11bd5fa2'
 ZTC_INFORMATIEOBJECTTYPE_ID = 'cde28728-5519-4077-b529-1b4f09f41bf9'
 
 ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
