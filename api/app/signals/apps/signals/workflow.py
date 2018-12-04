@@ -11,6 +11,8 @@ ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
 
+HEROPEND = 'reopened'
+
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
 VERZONDEN = 'sent'
@@ -27,6 +29,7 @@ STATUS_CHOICES_API = (
     (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
+    (HEROPEND, 'Heropend'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -95,6 +98,21 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
     ],
-    AFGEHANDELD: [],
-    GEANNULEERD: [],
+    AFGEHANDELD: [
+        HEROPEND,
+    ],
+    GEANNULEERD: [
+        HEROPEND,
+    ],
+    # TODO: Check assumption that HEROPEND has equivalent role to GEMELD. Note
+    # that this leads to many new transitions in the workflow state machine.
+    HEROPEND: [
+        GEMELD,
+        AFWACHTING,
+        BEHANDELING,
+        ON_HOLD,
+        AFGEHANDELD,
+        GEANNULEERD,
+        TE_VERZENDEN,
+    ],
 }
