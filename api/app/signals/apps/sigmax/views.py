@@ -38,14 +38,14 @@ def _parse_actualiseerZaakstatus_Lk01(xml):
         return out
 
     # TODO: handle missing data / nice error reporting
-    sia_id = xpath('//zaak:object/zaak:identificatie')
+    zaak_id = xpath('//zaak:object/zaak:identificatie')
     resultaat_omschrijving = xpath('//zaak:object/zaak:resultaat/zaak:omschrijving')
     datum_status_gezet = xpath('//zaak:object/zaak:heeft/zaak:datumStatusGezet')
     einddatum = xpath('//zaak:object/zaak:einddatum')
     reden = xpath('//zaak:object/zaak:resultaat/zaak:toelichting')
 
     return {
-        'sia_id': sia_id.strip(),
+        'zaak_id': zaak_id.strip(),
         'datum_afgehandeld': datum_status_gezet or einddatum,
         'resultaat': resultaat_omschrijving,
         'reden': reden,
@@ -67,11 +67,19 @@ def _handle_unknown_soap_action(request):
         status=500)
 
 
-def _parse_sia_id(sia_id):
-    """Extract `id` from `Signal.sia_id` type strings."""
-    if sia_id.startswith('SIA-'):
-        return int(sia_id[4:])
-    raise ValueError("Incorrect value for sia_id: '{}'".format(sia_id))
+def _parse_zaak_identificatie(zaak_id):
+    """Extract `Signal` identifier in SIA from CityControl identifier string."""
+    # Both old and new style "zaak identificatie" strings coming from
+    # CityControl are supported. So SIA-123 and SIA-123.01 styles are supported
+    # and both should produce the integer: 123
+    if zaak_id.startswith('SIA-'):
+        chunks = zaak_id[4:].split('.')
+        n_chunks = len(chunks)
+
+        if n_chunks in [1, 2]:
+            return int(chunks[0])
+
+    raise ValueError("Incorrect value for sia_id: '{}'".format(zaak_id))
 
 
 def _handle_actualiseerZaakstatus_Lk01(request):
@@ -81,14 +89,14 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     # TODO: Check that the incoming message matches our expectations, else Fo03
 
     request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
-    sia_id = request_data['sia_id']
+    zaak_id = request_data['zaak_id']  # zaak identifier in CityControl
 
     # Retrieve the relevant Signal, error out if it cannot be found
     try:
-        _id = _parse_sia_id(sia_id)  # raise ValueError or AttributeError
+        _id = _parse_zaak_identificatie(zaak_id)  # raise ValueError or AttributeError
         signal = Signal.objects.get(pk=_id)
     except (Signal.DoesNotExist, ValueError, AttributeError):
-        error_msg = f'Melding met sia_id {sia_id} niet gevonden.'
+        error_msg = f'Melding met sia_id {zaak_id} niet gevonden.'
         logger.warning(error_msg, exc_info=True)
         return render(
             request,
@@ -130,7 +138,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     try:
         Signal.actions.update_status(data=status_data, signal=signal)
     except ValidationError:
-        error_msg = f'Melding met sia_id {sia_id} was niet in verzonden staat'
+        error_msg = f'Melding met zaak identificatie {zaak_id} was niet in verzonden staat in SIA.'
         logger.warning(error_msg, exc_info=True)
         return render(
             request,
