@@ -46,6 +46,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
     def test_propagate_signal_properties_to_message_full_address(self):
         msg = outgoing._generate_creeerZaak_Lk01(self.signal)
         current_tz = timezone.get_current_timezone()
+        sequence_number = outgoing._generate_sequence_number(self.signal)
 
         # first test that we have obtained valid XML
         try:
@@ -58,11 +59,11 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         need_to_find = dict([
             (
                 '{http://www.egem.nl/StUF/StUF0301}referentienummer',
-                self.signal.sia_id
+                f'{self.signal.sia_id}.{sequence_number}'
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}identificatie',
-                self.signal.sia_id
+                f'{self.signal.sia_id}.{sequence_number}'
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',

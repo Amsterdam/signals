@@ -1,22 +1,46 @@
 import copy
 from datetime import timedelta
+from unittest import mock
 
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from django.utils import timezone
 from xmlunittest import XmlTestMixin
 
+from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.outgoing import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
     SIGMAX_STADSDEEL_MAPPING,
+    SigmaxException,
     _address_matches_sigmax_expectation,
     _generate_creeerZaak_Lk01,
     _generate_omschrijving,
-    _generate_voegZaakdocumentToe_Lk01
+    _generate_sequence_number,
+    _generate_voegZaakdocumentToe_Lk01,
+    handle
 )
 from signals.apps.signals.models import Priority
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.apps.signals.valid_locations import STADHUIS
+
+
+class TestHandle(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+
+    @mock.patch('signals.apps.sigmax.outgoing.MAX_ROUND_TRIPS', 2)
+    @mock.patch('signals.apps.sigmax.outgoing.send_creeerZaak_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    def test_too_many(self,
+                      patched_send_voegZaakdocumentToe_Lk01,
+                      patched_send_creeerZaak_Lk01,):
+        CityControlRoundtrip.objects.create(_signal=self.signal)
+        CityControlRoundtrip.objects.create(_signal=self.signal)
+        CityControlRoundtrip.objects.create(_signal=self.signal)
+
+        with self.assertRaises(SigmaxException):
+            handle(self.signal)
+        patched_send_voegZaakdocumentToe_Lk01.assert_not_called()
 
 
 class TestOutgoing(TestCase, XmlTestMixin):
@@ -27,10 +51,11 @@ class TestOutgoing(TestCase, XmlTestMixin):
         signal = SignalFactory.create(incident_date_end=None, location__geometrie=location)
 
         xml_message = _generate_creeerZaak_Lk01(signal)
+        sequence_number = _generate_sequence_number(signal)
 
         self.assertXmlDocument(xml_message)
         self.assertIn(
-            '<StUF:referentienummer>{}</StUF:referentienummer>'.format(signal.sia_id),
+            f'<StUF:referentienummer>{signal.sia_id}.{sequence_number}</StUF:referentienummer>',
             xml_message)
         self.assertIn(
             '<StUF:tijdstipBericht>{}</StUF:tijdstipBericht>'.format(
@@ -69,10 +94,11 @@ class TestOutgoing(TestCase, XmlTestMixin):
     def test_generate_voegZaakdocumentToe_Lk01(self):
         signal = SignalFactoryValidLocation.create()
         xml_message = _generate_voegZaakdocumentToe_Lk01(signal)
+        sequence_number = _generate_sequence_number(signal)
         self.assertXmlDocument(xml_message)
 
         self.assertIn(
-            f'<ZKN:identificatie>{signal.sia_id}</ZKN:identificatie>',
+            f'<ZKN:identificatie>{signal.sia_id}.{sequence_number}</ZKN:identificatie>',
             xml_message
         )
 
@@ -165,3 +191,21 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
         # simulate empty address field
         self.assertEqual(False, _address_matches_sigmax_expectation(None))
         self.assertEqual(False, _address_matches_sigmax_expectation({}))
+
+
+class TestGenerateSequenceNumber(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+
+    def test_initial_sequence_number(self):
+        self.assertEqual(CityControlRoundtrip.objects.count(), 0)
+        self.assertEqual(_generate_sequence_number(self.signal), '01')
+
+    def test_fourth_sequence_number(self):
+        self.assertEqual(CityControlRoundtrip.objects.count(), 0)
+        CityControlRoundtrip.objects.bulk_create([
+            CityControlRoundtrip(_signal=self.signal),
+            CityControlRoundtrip(_signal=self.signal),
+            CityControlRoundtrip(_signal=self.signal),
+        ])
+        self.assertEqual(_generate_sequence_number(self.signal), '04')
