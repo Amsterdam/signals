@@ -1,5 +1,6 @@
 import requests_mock
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from signals.apps.zds.exceptions import (
     CaseConnectionException,
@@ -27,6 +28,15 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_zaak_create')
 
         signal = SignalFactory()
+        create_case(signal)
+        self.assertTrue(hasattr(signal, 'zaak'))
+
+    @requests_mock.Mocker()
+    def test_create_case_with_expire_date(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.post_mock(mock, 'zrc_zaak_create')
+
+        signal = SignalFactory(expire_date=timezone.now())
         create_case(signal)
         self.assertTrue(hasattr(signal, 'zaak'))
 
@@ -72,6 +82,14 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_status_create')
 
         zaak_signal = ZaakSignalFactory()
+        add_status_to_case(zaak_signal.signal)
+
+    @requests_mock.Mocker()
+    def test_add_status_to_case_with_no_text(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.post_mock(mock, 'zrc_status_create')
+
+        zaak_signal = ZaakSignalFactory(signal__status__text='')
         add_status_to_case(zaak_signal.signal)
 
     @requests_mock.Mocker()
