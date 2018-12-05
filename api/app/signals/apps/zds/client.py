@@ -26,6 +26,7 @@ class ZDSClient:
         })
 
     def get_client(self, client_type):
+        # TODO: This needs to contain the correct base_path for the staging environment Amsterdam.
         return Client(client_type, base_path='/{}/api/v1/'.format(client_type))
 
     @property

@@ -13,7 +13,6 @@ from signals.settings.settings_databases import (
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
 
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -452,7 +451,8 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 ZDS_TESTING_MOCK = True
 
 # ZRC settings
-ZRC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
+# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
+ZRC_HOST = 'ref.tst.vng.cloud'
 ZRC_PORT = '443'
 ZRC_SCHEME = 'https'
 ZRC_AUTH = {
@@ -469,6 +469,7 @@ ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
 ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
 
 # DRC settings
+# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 DRC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
 DRC_PORT = '443'
 DRC_SCHEME = 'https'
@@ -480,6 +481,7 @@ DRC_AUTH = {
 DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
 
 # ZTC settings
+# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 ZTC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
 ZTC_PORT = '443'
 ZTC_SCHEME = 'https'
@@ -491,6 +493,8 @@ ZTC_AUTH = {
     ]
 }
 ZTC_URL = "{}://{}/ztc".format(ZTC_SCHEME, ZTC_HOST)
+
+HOST_URL = 'https://acc.meldingen.amsterdam.nl'
 
 ZTC_CATALOGUS_ID = '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18'
 ZTC_ZAAKTYPE_ID = 'c2f952ca-298e-488c-b1be-a87f11bd5fa2'
@@ -507,5 +511,3 @@ ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informati
 )
 
 RSIN_NUMBER = '002564440'
-
-HOST_URL = 'http://localhost:8000'

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "My shiny new management command."
+    help = "Populate the ZDS components with the old signals that were already in the system."
 
     def handle(self, *args, **options):
         signals = Signal.objects.filter(zaak__isnull=True)
