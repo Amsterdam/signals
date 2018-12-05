@@ -42,13 +42,13 @@ Optionele velden:
 
 | ZRC                           | SIA                   | Beperkingen           |
 |-------------------------------|-----------------------|-----------------------|
-| identificatie                 |                       | <= 40 characters      |
+| identificatie                 | signal_id             | <= 40 characters      |
 | omschrijving                  |                       | <= 80 characters      |
 | registratiedatum              | created_at            | -                     |
 | einddatum                     | incident_date_end     | -                     |
 | einddatumGepland              | operational_date      | -                     |
 | uiterlijkeEinddatumAfdoening  | expire_date           | -                     |
-| toelichting                   |                       | <= 1000 characters    |
+| toelichting                   | text                  | <= 1000 characters    |
 | zaakgeometrie                 | coordinaten           | -                     |
 | kenmerken                     |                       | -                     |
 

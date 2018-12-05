@@ -36,14 +36,17 @@ def create_case(signal):
         pass
 
     data = {
-        # Deze moet opgevraagd worden wat dit zou moeten zijn voor de
-        # gemeente amsterdam
         'bronorganisatie': settings.RSIN_NUMBER,
         'zaaktype': settings.ZTC_ZAAKTYPE_URL,
-        # nog geen idee waar deze vandaar komt. Lijk mij het ZTC te zijn...
         'verantwoordelijkeOrganisatie': settings.RSIN_NUMBER,
         'startdatum': signal.incident_date_start.strftime('%Y-%m-%d'),
+        'identificatie': str(signal.signal_id),
+        'registratie_datum': signal.created_at.strftime('%Y-%m-%d'),
+        'toelichting': signal.text[:1000],
     }
+
+    if signal.expire_date:
+        data['uiterlijkeEinddatumAfdoening'] = signal.expire_date.strftime('%Y-%m-%d')
 
     try:
         response = zds_client.zrc.create('zaak', data)
@@ -81,6 +84,9 @@ def add_status_to_case(signal):
         'statusType': ZTC_STATUSSES.get(signal.status.state),
         'datumStatusGezet': signal.status.created_at.isoformat(),
     }
+
+    if signal.status.text:
+        data['statustoelichting'] = signal.status.text
 
     try:
         zds_client.zrc.create('status', data)

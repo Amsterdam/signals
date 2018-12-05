@@ -29,8 +29,8 @@ class JWTAuthBackend:
         # or external user with access to the `signals` application, we retrieve the Django user.
         user = cache.get(user_email)
 
-        if user == USER_DOES_NOT_EXIST:
-            raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_email))
+        # if user == USER_DOES_NOT_EXIST:
+        #     raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_email))
 
         # We hit the database max once per 5 minutes, and then cache the results.
         if user is None:  # i.e. cache miss
