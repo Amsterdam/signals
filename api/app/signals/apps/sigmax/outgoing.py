@@ -52,7 +52,7 @@ SIGMAX_STADSDEEL_MAPPING = {
     STADSDEEL_WESTPOORT: 'SDWP',  # not part of spec, but present in our data model
 }
 
-MAX_ROUND_TRIPS = 100
+MAX_ROUND_TRIPS = 99
 
 
 class SigmaxException(Exception):
