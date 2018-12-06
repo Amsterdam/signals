@@ -229,17 +229,14 @@ class TestGenerateSequenceNumber(TestCase):
         self.assertEqual(_generate_sequence_number(self.signal), '04')
 
 
-class TestGenerateCreeerZaakLk01Message(TestCase):
+class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
     def setUp(self):
         self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
         msg = outgoing._generate_creeerZaak_Lk01(self.signal)
-        try:
-            etree.fromstring(msg)
-        except Exception:
-            self.fail('Cannot parse STUF message as XML')
+        self.assertXmlDocument(msg)
 
     def test_escaping(self):
         poison: Signal = self.signal
@@ -253,10 +250,8 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         sequence_number = outgoing._generate_sequence_number(self.signal)
 
         # first test that we have obtained valid XML
-        try:
-            root = etree.fromstring(msg)
-        except Exception:
-            self.fail('Cannot parse STUF message as XML')
+        root = etree.fromstring(msg)
+        self.assertXmlDocument(msg)
 
         # Check whether our properties made it over
         # (crudely, maybe use XPATH here)
@@ -317,16 +312,10 @@ class TestGenerateCreeerZaakLk01Message(TestCase):
         self.signal.save()
 
         msg = outgoing._generate_creeerZaak_Lk01(self.signal)
-
-        # first test that we have obtained valid XML
-        try:
-            tree = etree.fromstring(msg)
-        except Exception:
-            self.fail('Cannot parse STUF message as XML')
+        root = self.assertXmlDocument(msg)
 
         namespaces = {'zaak': 'http://www.egem.nl/StUF/sector/zkn/0310'}
-
-        found = tree.xpath('//zaak:object//zaak:heeftBetrekkingOp', namespaces=namespaces)
+        found = root.xpath('//zaak:object//zaak:heeftBetrekkingOp', namespaces=namespaces)
         self.assertEqual(found, [])
 
 
