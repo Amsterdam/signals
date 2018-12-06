@@ -10,7 +10,7 @@ from rest_framework.test import APITestCase
 from signals.apps.sigmax.views import (
     ACTUALISEER_ZAAK_STATUS_SOAPACTION,
     _parse_actualiseerZaakstatus_Lk01,
-    _parse_sia_id
+    _parse_zaak_identificatie
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -268,35 +268,37 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
             'signal': signal,
             'resultaat_toelichting': 'Het probleem is opgelost',
             'resultaat_datum': '2018101111485276',
+            'sequence_number': 20,
         }
         test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', test_context)
         msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
 
         # test uses knowledge of test XML message content
-        self.assertEqual(msg_content['sia_id'], str(signal.sia_id))
+        self.assertEqual(msg_content['zaak_id'], str(signal.sia_id) + '.20')  # TODO clean-up
         self.assertEqual(msg_content['datum_afgehandeld'], test_context['resultaat_datum'])
         self.assertEqual(msg_content['resultaat'], 'Er is gehandhaafd')
         self.assertEqual(msg_content['reden'], test_context['resultaat_toelichting'])
 
 
-class TestParseSiaId(TestCase):
-    def test_correct_sia_id(self):
-        self.assertEqual(_parse_sia_id('SIA-987'), 987)
+class TestParseZaakIdentificatie(TestCase):
+    def test_correct_zaak_identificatie(self):
+        self.assertEqual(_parse_zaak_identificatie('SIA-987'), 987)  # old
+        self.assertEqual(_parse_zaak_identificatie('SIA-987.01'), 987)  # new
 
-    def test_wrong_sia_id(self):
+    def test_wrong_zaak_identificatie(self):
         with self.assertRaises(ValueError):
-            _parse_sia_id('NOT A SIA ID')
-
-        with self.assertRaises(ValueError):
-            _parse_sia_id('SIA-NOTNUMBER')
-
-    def test_empty_sia_id(self):
-        with self.assertRaises(ValueError):
-            _parse_sia_id('')
+            _parse_zaak_identificatie('NOT A SIA ID')
 
         with self.assertRaises(ValueError):
-            _parse_sia_id('SIA-')
+            _parse_zaak_identificatie('SIA-NOTNUMBER')
+
+    def test_empty_zaak_identificatie(self):
+        with self.assertRaises(ValueError):
+            _parse_zaak_identificatie('')
+
+        with self.assertRaises(ValueError):
+            _parse_zaak_identificatie('SIA-')
 
     def test_incorrect_type(self):
         with self.assertRaises(AttributeError):
-            _parse_sia_id(None)
+            _parse_zaak_identificatie(None)

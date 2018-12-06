@@ -12,6 +12,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from lxml import etree
 
+from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.pdf import _generate_pdf
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -51,6 +52,8 @@ SIGMAX_STADSDEEL_MAPPING = {
     STADSDEEL_WESTPOORT: 'SDWP',  # not part of spec, but present in our data model
 }
 
+MAX_ROUND_TRIPS = 99
+
 
 class SigmaxException(Exception):
     pass
@@ -74,6 +77,12 @@ def _generate_omschrijving(signal):
         stadsdeel_code_sigmax,
         signal.location.short_address_text,
     )
+
+
+def _generate_sequence_number(signal):
+    """Generate a sequence number for external identifier in CityControl."""
+    roundtrip_count = CityControlRoundtrip.objects.filter(_signal=signal).count()
+    return '{0:02d}'.format(roundtrip_count + 1)  # start counting at one
 
 
 def _address_matches_sigmax_expectation(address_dict):
@@ -123,11 +132,13 @@ def _generate_creeerZaak_Lk01(signal):
     }
     incident_date_end = (
         signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))
+    sequence_number = _generate_sequence_number(signal)
 
     return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
         'address_matches_sigmax_expectation':
             _address_matches_sigmax_expectation(signal.location.address),
         'signal': signal,
+        'sequence_number': sequence_number,
         'incident_date_end': signal.incident_date_end or incident_date_end,
         'x': str(signal.location.geometrie.x),
         'y': str(signal.location.geometrie.y),
@@ -141,9 +152,11 @@ def _generate_voegZaakdocumentToe_Lk01(signal):
     """
     # TODO: generalize, so that either PDF or JPG can be sent.
     encoded_pdf = _generate_pdf(signal)
+    sequence_number = _generate_sequence_number(signal)
 
     return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={
         'signal': signal,
+        'sequence_number': sequence_number,
         'DOC_UUID': str(uuid.uuid4()),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
@@ -237,6 +250,19 @@ def handle(signal: Signal) -> None:
     """
     Create a case (zaak) in Sigmax/CityControl, attach extra info in PDF
     """
+    # Refuse to send a `Signal` to CityControl if we have done so too many times
+    # already.
+    roundtrip_count = CityControlRoundtrip.objects.filter(_signal=signal).count()
+    if not roundtrip_count < MAX_ROUND_TRIPS:
+        raise SigmaxException(
+            'Signal SIA-{} was sent to SigmaxCityControl too often.'.format(signal.sia_id))
+
     # Note: functions below may raise, exceptions are handled at Celery level.
-    send_creeerZaak_Lk01(signal)
+    r1 = send_creeerZaak_Lk01(signal)
     send_voegZaakdocumentToe_Lk01(signal)
+
+    # We have to increment the sequence number in the CityControl external
+    # identifier (e.g. the 01 in SIA-123.01). To do so we keep track of the
+    # number of times an issue is sent to CityControl.
+    if r1.status_code == 200:
+        CityControlRoundtrip.objects.create(_signal=signal)

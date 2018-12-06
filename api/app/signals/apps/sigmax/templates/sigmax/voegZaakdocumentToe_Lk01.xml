@@ -37,7 +37,7 @@
             <ZKN:inhoud mime:contentType="{{ DOC_TYPE|lower }}" StUF:bestandsnaam="{{ FILE_NAME|safe }}">{{ DATA }}</ZKN:inhoud>
             <ZKN:isRelevantVoor StUF:entiteittype="EDCZAK" StUF:verwerkingssoort="T">
                <ZKN:gerelateerde StUF:entiteittype="ZAK" StUF:sleutelVerzendend="2356401" StUF:sleutelOntvangend="" StUF:sleutelGegevensbeheer="2356401" StUF:verwerkingssoort="T">
-                  <ZKN:identificatie>{{ signal.sia_id }}</ZKN:identificatie>
+                  <ZKN:identificatie>{{ signal.sia_id }}.{{ sequence_number }}</ZKN:identificatie>
                   <ZKN:omschrijving>Onderwerp</ZKN:omschrijving>
                   <ZKN:isVan StUF:entiteittype="ZAKZKT" StUF:verwerkingssoort="T">
                      <ZKN:gerelateerde StUF:entiteittype="ZKT" StUF:verwerkingssoort="T">
