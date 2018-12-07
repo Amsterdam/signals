@@ -9,7 +9,8 @@ from rest_framework import serializers
 from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import Location
-from signals.apps.signals.serializers import (
+from signals.apps.signals.v0.fields import CategoryLinksField
+from signals.apps.signals.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
     NearAmsterdamValidatorMixin
@@ -134,8 +135,6 @@ class TestCategoryHALSerializer(TestCase):
         self.category_assignment.save()
 
     def test_user_is_serialized(self):
-        from signals.apps.signals.fields import CategoryLinksField
-
         class PatchedCategoryLinksField(CategoryLinksField):
             def to_representation(self, value):
                 return {'self': {'href': '/link/to/nowhere'}}

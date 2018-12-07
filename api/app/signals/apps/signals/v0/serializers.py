@@ -1,3 +1,6 @@
+"""
+Serializsers that are used exclusively by the V0 API
+"""
 import logging
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -6,13 +9,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
-from signals.apps.signals.fields import (
-    CategoryLinksField,
-    PriorityLinksField,
-    SignalLinksField,
-    SignalUnauthenticatedLinksField,
-    StatusLinksField
-)
 from signals.apps.signals.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
@@ -24,6 +20,13 @@ from signals.apps.signals.models import (
     Signal,
     Status,
     SubCategory
+)
+from signals.apps.signals.v0.fields import (
+    CategoryLinksField,
+    PriorityLinksField,
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField
 )
 from signals.apps.signals.v1.fields import (
     NoteHyperlinkedIdentityField,

@@ -11,7 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.filters import FieldMappingOrderingFilter
 from signals.apps.signals.models import MainCategory, Priority, Signal, SubCategory
-from signals.apps.signals.serializers import SignalAuthHALSerializer
+from signals.apps.signals.v0.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
 

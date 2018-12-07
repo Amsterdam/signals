@@ -29,7 +29,7 @@ from signals.apps.signals.permissions import (
     PriorityPermission,
     StatusPermission
 )
-from signals.apps.signals.serializers import (
+from signals.apps.signals.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
     NoteHALSerializer,
