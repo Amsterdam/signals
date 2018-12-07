@@ -8,7 +8,6 @@ import re
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
@@ -22,14 +21,7 @@ from signals.apps.signals.filters import (
     SignalFilter,
     StatusFilter
 )
-from signals.apps.signals.models import (
-    CategoryAssignment,
-    Location,
-    Note,
-    Priority,
-    Signal,
-    Status,
-)
+from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
 from signals.apps.signals.permissions import (
     CategoryPermission,
     LocationPermission,
@@ -46,10 +38,7 @@ from signals.apps.signals.serializers import (
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
-    StatusHALSerializer,
-)
-from signals.apps.signals.v1.serializers import (
-    HistoryHalSerializer,
+    StatusHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle

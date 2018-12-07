@@ -5,7 +5,7 @@ from signals.apps.signals.v1.views import (
     GeneratePdfView,
     MainCategoryViewSet,
     PrivateSignalViewSet,
-    SubCategoryViewSet,
+    SubCategoryViewSet
 )
 
 # API Version 0

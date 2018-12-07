@@ -11,11 +11,7 @@ from signals.apps.signals.fields import (
     PriorityLinksField,
     SignalLinksField,
     SignalUnauthenticatedLinksField,
-    StatusLinksField,
-)
-from signals.apps.signals.v1.fields import (
-    NoteHyperlinkedIdentityField,
-    SubCategoryHyperlinkedRelatedField,
+    StatusLinksField
 )
 from signals.apps.signals.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
@@ -28,6 +24,10 @@ from signals.apps.signals.models import (
     Signal,
     Status,
     SubCategory
+)
+from signals.apps.signals.v1.fields import (
+    NoteHyperlinkedIdentityField,
+    SubCategoryHyperlinkedRelatedField
 )
 from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 
@@ -520,6 +520,7 @@ class _NestedDepartmentSerializer(serializers.ModelSerializer):
             'name',
             'is_intern',
         )
+
 
 #
 # Note objects field

@@ -5,9 +5,6 @@ Signals API V0 (legacy) custom serializer fields.
 from collections import OrderedDict
 
 from rest_framework import serializers
-from rest_framework.reverse import reverse
-
-from signals.apps.signals.models import SubCategory
 
 
 class SignalLinksField(serializers.HyperlinkedIdentityField):

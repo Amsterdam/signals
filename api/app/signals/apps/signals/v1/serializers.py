@@ -4,19 +4,15 @@ Serializsers that are used exclusively by the V1 API
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
-from signals.apps.signals.models import (
-    History,
-    MainCategory,
-    Signal,
-    SubCategory,
-)
+from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.serializers import _NestedDepartmentSerializer
 from signals.apps.signals.v1.fields import (
     MainCategoryHyperlinkedIdentityField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
-    SubCategoryHyperlinkedIdentityField,
+    SubCategoryHyperlinkedIdentityField
 )
-from signals.apps.signals.serializers import _NestedDepartmentSerializer
+
 
 class PrivateSignalSerializerDetail(HALSerializer):
     serializer_url_field = PrivateSignalLinksFieldWithArchives

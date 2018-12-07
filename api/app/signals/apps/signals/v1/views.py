@@ -1,35 +1,28 @@
 """
 Views that are used exclusively by the V1 API
 """
+from datapunt_api.pagination import HALPagination
+from datapunt_api.rest import DatapuntViewSet
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.detail import SingleObjectMixin
 
+from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
-from datapunt_api.rest import DatapuntViewSet
-from datapunt_api.pagination import HALPagination
-
-from signals.apps.signals.models import (
-    History,
-    MainCategory,
-    Signal,
-    SubCategory
-)
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    SubCategoryHALSerializer,
+    SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 
-# -- Views that are used exclusively by the V1 API --
 
 class MainCategoryViewSet(DatapuntViewSet):
     queryset = MainCategory.objects.all()
