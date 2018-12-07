@@ -4,13 +4,17 @@ Views that are used exclusively by the V1 API
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
+from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
@@ -21,6 +25,7 @@ from signals.apps.signals.v1.serializers import (
     PrivateSignalSerializerList,
     SubCategoryHALSerializer
 )
+from signals.apps.signals.v0.serializers import SignalUpdateImageSerializer
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -60,6 +65,30 @@ class PrivateSignalViewSet(DatapuntViewSet):
         serializer = HistoryHalSerializer(history_entries, many=True)
 
         return Response(serializer.data)
+
+    # https://stackoverflow.com/questions/45564130/django-rest-framework-image-upload
+    # note starting DRF 3.8, @detail_route and @list_route are replaced with action
+
+    @action(detail=True, methods=['POST'])
+    def upload_image(self, request, pk=None):
+        signal = Signal.objects.get(pk=pk)
+
+        if signal.image:
+            raise PermissionDenied("Melding is reeds van foto voorzien.")
+
+        # Check upload is present and not too big image wise:
+        image = request.data.get('image', None)
+        if image:
+            if image.size > 8388608:  # 8MB = 8*1024*1024
+                raise ValidationError("Foto mag maximaal 8Mb groot zijn.")
+        else:
+            raise ValidationError("Foto is een verplicht veld.")
+
+        signal.image = image
+        signal.save()
+
+        # TODO: Check what to do about the headers (see V0 API)
+        return Response({}, status=HTTP_202_ACCEPTED)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
