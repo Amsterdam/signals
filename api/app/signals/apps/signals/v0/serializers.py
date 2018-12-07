@@ -46,7 +46,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'signal_id',
-            'image'
+            'image',
         )
 
     def create(self, validated_data):

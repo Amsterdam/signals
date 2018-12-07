@@ -17,6 +17,7 @@ from signals.apps.signals.v1.fields import (
 class PrivateSignalSerializerDetail(HALSerializer):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
+    image = serializers.ImageField(read_only=True)
 
     class Meta:
         model = Signal
@@ -24,6 +25,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
             '_links',
             '_display',
             'id',
+            'image',
         )
 
 
