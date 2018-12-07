@@ -1,6 +1,12 @@
 from django.urls import include, path
 
 from signals.apps.signals import routers, views
+from signals.apps.signals.v1.views import (
+    GeneratePdfView,
+    MainCategoryViewSet,
+    PrivateSignalViewSet,
+    SubCategoryViewSet,
+)
 
 # API Version 0
 signal_router_v0 = routers.SignalsRouterVersion0()
@@ -16,22 +22,22 @@ signal_router_v0.register(r'auth/note', views.NoteAuthViewSet, base_name='note-a
 # API Version 1
 signal_router_v1 = routers.SignalsRouterVersion1()
 signal_router_v1.register(r'public/terms/categories',
-                          views.MainCategoryViewSet,
+                          MainCategoryViewSet,
                           base_name='category')
 signal_router_v1.register(r'private/signals',
-                          views.PrivateSignalViewSet,
+                          PrivateSignalViewSet,
                           base_name='private-signals')
 
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(
     path('public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-         views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
+         SubCategoryViewSet.as_view({'get': 'retrieve'}),
          name='sub-category-detail'),
 )
 
 signal_router_v1.urls.append(
     path('pdf/SIA-<int:signal_id>.pdf',
-         views.GeneratePdfView.as_view(),
+         GeneratePdfView.as_view(),
          name='signal-pdf-download'),
 )
 
