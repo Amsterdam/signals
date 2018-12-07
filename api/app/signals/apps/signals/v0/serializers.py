@@ -9,7 +9,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
-from signals.apps.signals.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.mixins import AddExtrasMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,

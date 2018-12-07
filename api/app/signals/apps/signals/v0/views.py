@@ -15,20 +15,20 @@ from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.filters import (
+from signals.apps.signals.api_generics.filters import (
     FieldMappingOrderingFilter,
     LocationFilter,
     SignalFilter,
     StatusFilter
 )
-from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
-from signals.apps.signals.permissions import (
+from signals.apps.signals.api_generics.permissions import (
     CategoryPermission,
     LocationPermission,
     NotePermission,
     PriorityPermission,
     StatusPermission
 )
+from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
 from signals.apps.signals.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
