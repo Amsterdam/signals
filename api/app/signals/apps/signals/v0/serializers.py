@@ -10,6 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
@@ -32,7 +33,6 @@ from signals.apps.signals.v1.fields import (
     NoteHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
-from signals.apps.signals.validators import NearAmsterdamValidatorMixin
 
 logger = logging.getLogger(__name__)
 
