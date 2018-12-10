@@ -107,7 +107,6 @@ ALLOWED_STATUS_CHANGES = {
     # TODO: Check assumption that HEROPEND has equivalent role to GEMELD. Note
     # that this leads to many new transitions in the workflow state machine.
     HEROPEND: [
-        GEMELD,
         AFWACHTING,
         BEHANDELING,
         ON_HOLD,
