@@ -1,4 +1,3 @@
-
 from django.urls import NoReverseMatch
 from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory, APITestCase
@@ -11,10 +10,10 @@ from signals.apps.signals.models import MainCategory
 class TestMainCategoryHyperlinkedRelatedField(APITestCase):
 
     def test_category_detail_reverse(self):
-        # We have namespaced URLs 
+        # We have namespaced URLs
         with self.assertRaises(NoReverseMatch):
             reverse('category-detail')
-        
+
         self.assertEqual(
             reverse('v1:category-detail', kwargs={'slug': 'afval'}),
             '/signals/v1/public/terms/categories/afval'
@@ -28,7 +27,7 @@ class TestMainCategoryHyperlinkedRelatedField(APITestCase):
         request.version = 'v0'
         request.versioning_scheme = NamespaceVersioning()
 
-        # See whether MainCategoryHyperlinkedRelatedField returns the correct URL 
+        # See whether MainCategoryHyperlinkedRelatedField returns the correct URL
         field = MainCategoryHyperlinkedRelatedField()
 
         url = field.get_url(
