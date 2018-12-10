@@ -25,6 +25,33 @@ class MainCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'category-detail'
     queryset = MainCategory.objects.all()
 
+    def to_internal_value(self, data):
+        request = self.context.get('request', None)
+        origional_version = request.version
+
+        # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
+        # version 1. Afterwards we revert back to the origional API version from the request.
+        request.version = 'v1'
+        value = super().to_internal_value(data)
+        request.version = origional_version
+
+        return value
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {'slug': obj.slug}
+
+        # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
+        # version 1. Afterwards we revert back to the origional API version from the request.
+        original_version = request.version
+        request.version = 'v1'
+        url = reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+        request.version = original_version
+
+        return url
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        return self.get_queryset().get(slug=view_kwargs['slug'])
+
 
 class SubCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 
