@@ -12,6 +12,7 @@ dc() {
 	docker-compose -p ${COMMIT_HASH}_signaltest -f ${DIR}/docker-compose.yml $*
 }
 
+trap 'dc stop; dc rm --force; dc down' EXIT
 
 dc stop
 dc rm --force
