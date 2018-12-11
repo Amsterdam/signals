@@ -31,9 +31,11 @@ def create_case(signal):
     # It is not needed to create a case.
     try:
         signal.case
-        return
+        case_signal = signal.case
+        if case_signal.zrc_link:
+            return
     except ObjectDoesNotExist:
-        pass
+        case_signal = CaseSignal.actions.create_case_signal(signal)
 
     data = {
         'bronorganisatie': settings.RSIN_NUMBER,
@@ -56,7 +58,7 @@ def create_case(signal):
 
     try:
         response = zds_client.zrc.create('zaak', data)
-        CaseSignal.actions.create_case_signal(response.get('url'), signal)
+        CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise CaseNotCreatedException()
@@ -67,6 +69,9 @@ def connect_signal_to_case(signal):
     This will create a connection between the case and the signal.
     Now from the ZRC you wull know which signal has more detailed information.
     """
+    if signal.case.connected_in_external_system:
+        return
+
     data = {
         'zaak': signal.case.zrc_link,
         'object': settings.HOST_URL + reverse('v0:signal-auth-detail', kwargs={'pk': signal.id}),
@@ -75,6 +80,7 @@ def connect_signal_to_case(signal):
 
     try:
         zds_client.zrc.create('zaakobject', data)
+        CaseSignal.actions.connected_in_external_system(signal.case)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise CaseConnectionException()
@@ -85,6 +91,8 @@ def add_status_to_case(signal):
     This will create a new status for an existing case. If the case already has a status.
     A new status will be created. Always the latest created status will be the active one.
     """
+    case_status = CaseSignal.actions.add_status(signal.case)
+
     data = {
         'zaak': signal.case.zrc_link,
         'statusType': ZTC_STATUSSES.get(signal.status.state),
@@ -96,7 +104,7 @@ def add_status_to_case(signal):
 
     try:
         response = zds_client.zrc.create('status', data)
-        CaseSignal.actions.add_status(response.get('url'), signal.case)
+        CaseSignal.actions.add_zrc_link(response.get('url'), case_status)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise StatusNotCreatedException()
@@ -106,6 +114,8 @@ def create_document(signal):
     """
     This will create a document in the DRC. This will be base of the photo upload.
     """
+    case_document = CaseSignal.actions.add_document(signal.case)
+
     with open(signal.image.path, 'br') as tmp_file:
         image_data = tmp_file.read()
 
@@ -120,16 +130,19 @@ def create_document(signal):
 
     try:
         response = zds_client.drc.create("enkelvoudiginformatieobject", data)
-        CaseSignal.actions.add_document(response.get('url'), signal.case)
+        CaseSignal.actions.add_drc_link(response.get('url'), case_document)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise DocumentNotCreatedException()
 
 
-def add_document_to_case(signal):
+def add_document_to_case(signal, document):
     """
     This will connect the document to the case.
     """
+    if document.connected_in_external_system:
+        return
+
     data = {
         'informatieobject': signal.case.document_url,
         'object': signal.case.zrc_link,
@@ -139,6 +152,7 @@ def add_document_to_case(signal):
 
     try:
         zds_client.drc.create('objectinformatieobject', data)
+        CaseSignal.actions.connected_in_external_system(signal.case)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise DocumentConnectionException()
