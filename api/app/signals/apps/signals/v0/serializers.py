@@ -1,3 +1,6 @@
+"""
+Serializsers that are used exclusively by the V0 API
+"""
 import logging
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -6,26 +9,12 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
-from signals.apps.signals.fields import (
-    CategoryLinksField,
-    MainCategoryHyperlinkedIdentityField,
-    NoteHyperlinkedIdentityField,
-    PriorityLinksField,
-    PrivateSignalLinksField,
-    PrivateSignalLinksFieldWithArchives,
-    SignalLinksField,
-    SignalUnauthenticatedLinksField,
-    StatusLinksField,
-    SubCategoryHyperlinkedIdentityField,
-    SubCategoryHyperlinkedRelatedField
-)
-from signals.apps.signals.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
-    History,
     Location,
-    MainCategory,
     Note,
     Priority,
     Reporter,
@@ -33,7 +22,17 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
-from signals.apps.signals.validators import NearAmsterdamValidatorMixin
+from signals.apps.signals.v0.fields import (
+    CategoryLinksField,
+    PriorityLinksField,
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField
+)
+from signals.apps.signals.v1.fields import (
+    NoteHyperlinkedIdentityField,
+    SubCategoryHyperlinkedRelatedField
+)
 
 logger = logging.getLogger(__name__)
 
@@ -526,40 +525,6 @@ class _NestedDepartmentSerializer(serializers.ModelSerializer):
         )
 
 
-class SubCategoryHALSerializer(HALSerializer):
-    serializer_url_field = SubCategoryHyperlinkedIdentityField
-    _display = DisplayField()
-    departments = _NestedDepartmentSerializer(many=True)
-
-    class Meta:
-        model = SubCategory
-        fields = (
-            '_links',
-            '_display',
-            'name',
-            'slug',
-            'handling',
-            'departments',
-            'is_active',
-        )
-
-
-class MainCategoryHALSerializer(HALSerializer):
-    serializer_url_field = MainCategoryHyperlinkedIdentityField
-    _display = DisplayField()
-    sub_categories = SubCategoryHALSerializer(many=True)
-
-    class Meta:
-        model = MainCategory
-        fields = (
-            '_links',
-            '_display',
-            'name',
-            'slug',
-            'sub_categories',
-        )
-
-
 #
 # Note objects field
 #
@@ -585,54 +550,3 @@ class NoteHALSerializer(AddExtrasMixin, HALSerializer):
         signal = validated_data.pop('_signal')
         note = Signal.actions.create_note(validated_data, signal)
         return note
-
-
-class HistoryHalSerializer(HALSerializer):
-    _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
-    who = serializers.SerializerMethodField()
-
-    def get_who(self, obj):
-        """Generate string to show in UI, missing users are set to default."""
-        if obj.who is None:
-            return 'SIA systeem'
-        return obj.who
-
-    class Meta:
-        model = History
-        fields = (
-            'identifier',
-            'when',
-            'what',
-            'action',
-            'description',
-            'who',
-            '_signal',
-        )
-
-
-# -- Serializsers that are used exclusively by the V1 API --
-
-class PrivateSignalSerializerDetail(HALSerializer):
-    serializer_url_field = PrivateSignalLinksFieldWithArchives
-    _display = DisplayField()
-
-    class Meta:
-        model = Signal
-        fields = (
-            '_links',
-            '_display',
-            'id',
-        )
-
-
-class PrivateSignalSerializerList(HALSerializer):
-    serializer_url_field = PrivateSignalLinksField
-    _display = DisplayField()
-
-    class Meta:
-        model = Signal
-        fields = (
-            '_links',
-            '_display',
-            'id',
-        )
