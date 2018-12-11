@@ -13,7 +13,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
@@ -25,7 +24,6 @@ from signals.apps.signals.v1.serializers import (
     PrivateSignalSerializerList,
     SubCategoryHALSerializer
 )
-from signals.apps.signals.v0.serializers import SignalUpdateImageSerializer
 from signals.auth.backend import JWTAuthBackend
 
 
