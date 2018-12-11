@@ -21,9 +21,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         signals = Signal.objects.filter(case__isnull=True)
         for signal in signals:
-            self.create_case(signal)
+            self.local_create_case(signal)
 
-    def create_case(self, signal):
+    def local_create_case(self, signal):
         try:
             create_case(signal)
             connect_signal_to_case(signal)
