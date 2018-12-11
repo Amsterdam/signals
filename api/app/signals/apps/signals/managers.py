@@ -4,6 +4,7 @@ from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
+add_image = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category_assignment = DjangoSignal(providing_args=['signal_obj',
@@ -61,6 +62,15 @@ class SignalManager(models.Manager):
                                                               signal_obj=signal))
 
         return signal
+
+    def add_image(self, image, signal):
+        with transaction.atomic():
+            signal.image = image
+            signal.save()
+
+            add_image.send(sender=self.__class__, signal_obj=signal)
+
+        return image
 
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.

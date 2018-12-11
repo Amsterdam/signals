@@ -1,0 +1,15 @@
+{
+    "type": "string",
+    "code": "string",
+    "title": "string",
+    "status": 0,
+    "detail": "string",
+    "instance": "string",
+    "invalid-params": [
+        {
+            "name": "string",
+            "code": "string",
+            "reason": "string"
+        }
+    ]
+}
