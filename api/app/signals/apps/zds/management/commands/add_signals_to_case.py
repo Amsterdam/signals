@@ -19,7 +19,7 @@ class Command(BaseCommand):
     help = "Populate the ZDS components with the old signals that were already in the system."
 
     def handle(self, *args, **options):
-        signals = Signal.objects.filter(zaak__isnull=True)
+        signals = Signal.objects.filter(case__isnull=True)
         for signal in signals:
             self.create_case(signal)
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
             for status in signal.statuses.order_by('created_at'):
                 # This is done custom so we can add all statusses
                 data = {
-                    'zaak': signal.zaak.zrc_link,
+                    'zaak': signal.case.zrc_link,
                     'statusType': ZTC_STATUSSES.get(status.state),
                     'datumStatusGezet': status.created_at.isoformat(),
                 }

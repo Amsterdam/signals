@@ -56,7 +56,7 @@ class TestFlows(ZDSMockMixin, TestCase):
         )
 
     @requests_mock.Mocker()
-    def test_flow_zaak_not_created(self, mock):
+    def test_flow_case_not_created(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.post_error_mock(mock, 'zrc_zaak_create')
 

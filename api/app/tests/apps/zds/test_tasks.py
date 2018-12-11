@@ -17,7 +17,7 @@ from signals.apps.zds.tasks import (
     create_document
 )
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
-from tests.apps.zds.factories import ZaakSignalFactory
+from tests.apps.zds.factories import CaseSignalFactory
 from tests.apps.zds.mixins import ZDSMockMixin
 
 
@@ -29,7 +29,7 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         signal = SignalFactory()
         create_case(signal)
-        self.assertTrue(hasattr(signal, 'zaak'))
+        self.assertTrue(hasattr(signal, 'case'))
 
     @requests_mock.Mocker()
     def test_create_case_with_expire_date(self, mock):
@@ -38,12 +38,12 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         signal = SignalFactory(expire_date=timezone.now())
         create_case(signal)
-        self.assertTrue(hasattr(signal, 'zaak'))
+        self.assertTrue(hasattr(signal, 'case'))
 
     @requests_mock.Mocker()
     def test_create_case_with_case(self, mock):
-        zaak_signal = ZaakSignalFactory()
-        create_case(zaak_signal.signal)
+        case_signal = CaseSignalFactory()
+        create_case(case_signal.signal)
 
     @requests_mock.Mocker()
     def test_create_case_with_error(self, mock):
@@ -71,36 +71,36 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'zrc_openapi')
         self.post_error_mock(mock, 'zrc_zaakobject_create')
 
-        zaak_signal = ZaakSignalFactory()
+        case_signal = CaseSignalFactory()
 
         with self.assertRaises(CaseConnectionException):
-            connect_signal_to_case(zaak_signal.signal)
+            connect_signal_to_case(case_signal.signal)
 
     @requests_mock.Mocker()
     def test_add_status_to_case(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.post_mock(mock, 'zrc_status_create')
 
-        zaak_signal = ZaakSignalFactory()
-        add_status_to_case(zaak_signal.signal)
+        case_signal = CaseSignalFactory()
+        add_status_to_case(case_signal.signal)
 
     @requests_mock.Mocker()
     def test_add_status_to_case_with_no_text(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.post_mock(mock, 'zrc_status_create')
 
-        zaak_signal = ZaakSignalFactory(signal__status__text='')
-        add_status_to_case(zaak_signal.signal)
+        case_signal = CaseSignalFactory(signal__status__text='')
+        add_status_to_case(case_signal.signal)
 
     @requests_mock.Mocker()
     def test_add_status_to_case_with_error(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.post_error_mock(mock, 'zrc_status_create')
 
-        zaak_signal = ZaakSignalFactory()
+        case_signal = CaseSignalFactory()
 
         with self.assertRaises(StatusNotCreatedException):
-            add_status_to_case(zaak_signal.signal)
+            add_status_to_case(case_signal.signal)
 
     @requests_mock.Mocker()
     def test_create_document(self, mock):
@@ -108,7 +108,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
 
         signal = SignalFactoryWithImage()
-        ZaakSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         create_document(signal)
 
     @requests_mock.Mocker()
@@ -124,7 +124,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_error_mock(mock, 'drc_enkelvoudiginformatieobject_create')
 
         signal = SignalFactoryWithImage()
-        ZaakSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
 
         with self.assertRaises(DocumentNotCreatedException):
             create_document(signal)
@@ -136,7 +136,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_objectinformatieobject_create')
 
         signal = SignalFactoryWithImage()
-        ZaakSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         create_document(signal)
         add_document_to_case(signal)
 
@@ -147,7 +147,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_error_mock(mock, 'drc_objectinformatieobject_create')
 
         signal = SignalFactoryWithImage()
-        ZaakSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         create_document(signal)
 
         with self.assertRaises(DocumentConnectionException):

@@ -31,7 +31,7 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertEqual(self.err.getvalue(), '')
-        self.assertIsNotNone(signal.zaak)
+        self.assertIsNotNone(signal.case)
 
     @requests_mock.Mocker()
     def test_with_signal_with_image(self, mock):
@@ -47,7 +47,7 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertEqual(self.err.getvalue(), '')
-        self.assertIsNotNone(signal.zaak)
+        self.assertIsNotNone(signal.case)
 
     @requests_mock.Mocker()
     def test_with_signal_error(self, mock):

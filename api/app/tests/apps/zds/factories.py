@@ -3,19 +3,19 @@ import factory
 from tests.apps.signals.factories import SignalFactory
 
 
-class ZaakSignalFactory(factory.DjangoModelFactory):
+class CaseSignalFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = "zds.ZaakSignal"
+        model = "zds.CaseSignal"
 
     signal = factory.SubFactory(SignalFactory)
     zrc_link = 'http://amsterdam.nl/'
 
 
-class ZaakDocumentFactory(factory.DjangoModelFactory):
+class CaseDocumentFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = "zds.ZaakDocument"
+        model = "zds.CaseDocument"
 
-    zaak_signal = factory.SubFactory(ZaakSignalFactory)
+    case_signal = factory.SubFactory(CaseSignalFactory)
     drc_link = 'http://amsterdam.nl/'

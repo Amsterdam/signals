@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from signals.apps.signals.managers import add_image, create_initial, update_status
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage, StatusFactory
-from tests.apps.zds.factories import ZaakSignalFactory
+from tests.apps.zds.factories import CaseSignalFactory
 
 
 class TestSignalReceivers(TestCase):
@@ -75,7 +75,7 @@ class TestSignalReceivers(TestCase):
     @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     def test_add_image_handler(self, mocked_tasks):
         signal = SignalFactoryWithImage.create()
-        ZaakSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
 
         add_image.send(
             sender=self.__class__,

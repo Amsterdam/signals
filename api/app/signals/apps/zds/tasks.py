@@ -18,7 +18,7 @@ from signals.apps.zds.exceptions import (
 )
 from signals.apps.zds.workflow import ZTC_STATUSSES
 
-from .models import ZaakSignal
+from .models import CaseSignal
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def create_case(signal):
     # If the signal already has a case connected.
     # It is not needed to create a case.
     try:
-        signal.zaak
+        signal.case
         return
     except ObjectDoesNotExist:
         pass
@@ -47,8 +47,8 @@ def create_case(signal):
         'toelichting': signal.text[:1000],
         'zaakgeometrie': {
             "type": "Point",
-            "coordinates": list(signal.location.point.coords),
-        },
+            "coordinates": list(signal.location.geometrie.coords),
+        }
     }
 
     if signal.expire_date:
@@ -56,7 +56,7 @@ def create_case(signal):
 
     try:
         response = zds_client.zrc.create('zaak', data)
-        ZaakSignal.actions.create_zaak_signal(response.get('url'), signal)
+        CaseSignal.actions.create_case_signal(response.get('url'), signal)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise CaseNotCreatedException()
@@ -68,7 +68,7 @@ def connect_signal_to_case(signal):
     Now from the ZRC you wull know which signal has more detailed information.
     """
     data = {
-        'zaak': signal.zaak.zrc_link,
+        'zaak': signal.case.zrc_link,
         'object': settings.HOST_URL + reverse('v0:signal-auth-detail', kwargs={'pk': signal.id}),
         'type': settings.ZRC_ZAAKOBJECT_TYPE
     }
@@ -86,7 +86,7 @@ def add_status_to_case(signal):
     A new status will be created. Always the latest created status will be the active one.
     """
     data = {
-        'zaak': signal.zaak.zrc_link,
+        'zaak': signal.case.zrc_link,
         'statusType': ZTC_STATUSSES.get(signal.status.state),
         'datumStatusGezet': signal.status.created_at.isoformat(),
     }
@@ -95,7 +95,8 @@ def add_status_to_case(signal):
         data['statustoelichting'] = signal.status.text
 
     try:
-        zds_client.zrc.create('status', data)
+        response = zds_client.zrc.create('status', data)
+        CaseSignal.actions.add_status(response.get('url'), signal.case)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise StatusNotCreatedException()
@@ -119,7 +120,7 @@ def create_document(signal):
 
     try:
         response = zds_client.drc.create("enkelvoudiginformatieobject", data)
-        ZaakSignal.actions.add_document(response.get('url'), signal.zaak)
+        CaseSignal.actions.add_document(response.get('url'), signal.case)
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise DocumentNotCreatedException()
@@ -130,8 +131,8 @@ def add_document_to_case(signal):
     This will connect the document to the case.
     """
     data = {
-        'informatieobject': signal.zaak.document_url,
-        'object': signal.zaak.zrc_link,
+        'informatieobject': signal.case.document_url,
+        'object': signal.case.zrc_link,
         'objectType': 'zaak',
         'registratiedatum': timezone.now().isoformat(),
     }
@@ -152,7 +153,7 @@ def add_document_to_case(signal):
 
 #     :return: response
 #     """
-#     response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
+#     response = zds_client.zrc.retrieve('zaak', url=signa.case.zrc_link)
 #     return response
 
 

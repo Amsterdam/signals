@@ -1,29 +1,41 @@
 from django.db import models, transaction
 
 
-class ZaakSignalManager(models.Manager):
+class CaseSignalManager(models.Manager):
 
-    def create_zaak_signal(self, url, signal):
+    def create_case_signal(self, url, signal):
         """
         Create a connection between a case and a signal.
         """
-        from .models import ZaakSignal
+        from .models import CaseSignal
 
         with transaction.atomic():
-            zaak_signal = ZaakSignal(zrc_link=url, signal=signal)
-            zaak_signal.save()
+            case_signal = CaseSignal(zrc_link=url, signal=signal)
+            case_signal.save()
 
-        return zaak_signal
+        return case_signal
 
-    def add_document(self, url, zaak_signal):
+    def add_status(self, url, case_signal):
+        """
+        Adds a status to a case.
+        """
+        from .models import CaseStatus
+
+        with transaction.atomic():
+            case_status = CaseStatus(zrc_link=url, case_signal=case_signal)
+            case_status.save()
+
+        return case_status
+
+    def add_document(self, url, case_signal):
         """
         Adds a link between the case and the document. Zo that it is also known in the signals app.
         """
-        from .models import ZaakDocument
+        from .models import CaseDocument
 
         with transaction.atomic():
-            zaak_document = ZaakDocument(drc_link=url, zaak_signal=zaak_signal)
-            zaak_document.save()
+            case_document = CaseDocument(drc_link=url, case_signal=case_signal)
+            case_document.save()
 
-        return zaak_document
+        return case_document
 

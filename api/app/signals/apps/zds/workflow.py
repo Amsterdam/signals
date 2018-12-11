@@ -7,6 +7,7 @@ from signals.apps.signals.workflow import (
     BEHANDELING,
     GEANNULEERD,
     GEMELD,
+    HEROPEND,
     LEEG,
     ON_HOLD,
     TE_VERZENDEN,
@@ -18,6 +19,7 @@ from signals.apps.signals.workflow import (
 # This needs to be filled with links to the ZTC status.
 BASE_URL = '{}/statustypen/'.format(settings.ZTC_ZAAKTYPE_URL)
 
+# TODO: Change the code so this will be fetched via the ztc instead of being hard coded.
 ZTC_STATUSSES = {
     LEEG: BASE_URL + 'b59f487b-74c3-45f3-9130-24b2040bb1f6',
     GEMELD: BASE_URL + '70ae2e9d-73a2-4f3d-849e-e0a29ef3064e',
@@ -30,4 +32,5 @@ ZTC_STATUSSES = {
     VERZONDEN: BASE_URL + 'ebbb1503-9c9a-4693-b4cf-2e0ad1db9255',
     VERZENDEN_MISLUKT: BASE_URL + '0a055aa3-add5-4138-bb58-afd852dc52c8',
     AFGEHANDELD_EXTERN: BASE_URL + 'c31a9df5-cb30-43f8-ab19-8052c27fe6c9',
+    HEROPEND: BASE_URL + '70ae2e9d-73a2-4f3d-849e-e0a29ef3064e',
 }
