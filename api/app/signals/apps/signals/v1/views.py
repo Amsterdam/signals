@@ -68,7 +68,7 @@ class PrivateSignalViewSet(DatapuntViewSet):
     # note starting DRF 3.8, @detail_route and @list_route are replaced with action
 
     @action(detail=True, methods=['POST'])
-    def upload_image(self, request, pk=None):
+    def image(self, request, pk=None):
         signal = Signal.objects.get(pk=pk)
 
         if signal.image:

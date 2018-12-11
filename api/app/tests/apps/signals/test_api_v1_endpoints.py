@@ -215,7 +215,7 @@ class TestImageUpload(APITestCase):
 
     def test_authenticated_upload(self):
         # images are attached to pre-existing Signals
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/upload_image'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/image'
         image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
 
         self.client.force_authenticate(user=self.superuser)
