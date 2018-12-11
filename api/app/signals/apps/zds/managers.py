@@ -38,4 +38,3 @@ class CaseSignalManager(models.Manager):
             case_document.save()
 
         return case_document
-

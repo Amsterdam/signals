@@ -1,6 +1,7 @@
 from django.db import models
 
 from signals.apps.signals.models import CreatedUpdatedModel
+
 from .managers import CaseSignalManager
 
 

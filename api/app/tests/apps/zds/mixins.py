@@ -1,7 +1,5 @@
 import os
 
-from django.conf import settings
-
 
 class ZDSMockMixin(object):
     """This will help with writing mocks for the ZDS compoments.
