@@ -14,7 +14,10 @@ from signals.apps.zds.tasks import (
     add_status_to_case,
     connect_signal_to_case,
     create_case,
-    create_document
+    create_document,
+    get_case,
+    get_documents_from_case,
+    get_status_history
 )
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.factories import CaseSignalFactory
@@ -152,3 +155,71 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         with self.assertRaises(DocumentConnectionException):
             add_document_to_case(signal)
+
+    @requests_mock.Mocker()
+    def test_get_case(self, mock):
+        zaak_signal = CaseSignalFactory()
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_zaak_read', url=zaak_signal.zrc_link)
+
+        response = get_case(zaak_signal.signal)
+        self.assertEqual(response, {
+            'url': 'http://example.com',
+            'identificatie': 'string',
+            'bronorganisatie': 'string',
+            'omschrijving': 'string',
+            'zaaktype': 'http://example.com',
+            'registratiedatum': '2018-11-14',
+            'verantwoordelijkeOrganisatie': 'http://example.com',
+            'startdatum': '2018-11-14',
+            'einddatum': '2018-11-14',
+            'einddatumGepland': '2018-11-14',
+            'uiterlijkeEinddatumAfdoening': '2018-11-14',
+            'toelichting': 'string',
+            'zaakgeometrie': {
+                'type': 'Point',
+                'coordinates': [0, 0]
+            },
+            'status': 'http://example.com',
+            'kenmerken': [{
+                'kenmerk': 'string',
+                'bron': 'string'
+            }]
+        })
+
+    @requests_mock.Mocker()
+    def test_get_documents_from_case(self, mock):
+        zaak_signal = CaseSignalFactory()
+        self.get_mock(mock, 'drc_openapi')
+        self.get_mock(mock, 'drc_objectinformatieobject_list')
+
+        response = get_documents_from_case(zaak_signal.signal)
+        self.assertEqual(response, [
+            {
+                "url": "http://example.com",
+                "informatieobject": "http://example.com",
+                "object": "http://example.com",
+                "objectType": "besluit",
+                "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
+                "titel": "string",
+                "beschrijving": "string",
+                "registratiedatum": "2018-11-20T10:32:25Z"
+            }
+        ])
+
+    @requests_mock.Mocker()
+    def test_get_status_history(self, mock):
+        zaak_signal = CaseSignalFactory()
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_status_list')
+
+        response = get_status_history(zaak_signal.signal)
+        self.assertEqual(response, [
+            {
+                "url": "http://example.com",
+                "zaak": "http://example.com",
+                "statusType": "http://example.com",
+                "datumStatusGezet": "2018-11-20T10:34:43Z",
+                "statustoelichting": "string"
+            }
+        ])

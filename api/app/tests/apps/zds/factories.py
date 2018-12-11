@@ -1,4 +1,7 @@
+from uuid import uuid4
+
 import factory
+from django.conf import settings
 
 from tests.apps.signals.factories import SignalFactory
 
@@ -9,7 +12,8 @@ class CaseSignalFactory(factory.DjangoModelFactory):
         model = "zds.CaseSignal"
 
     signal = factory.SubFactory(SignalFactory)
-    zrc_link = 'http://amsterdam.nl/'
+    zrc_link = factory.lazy_attribute(lambda obj: '{}/api/v1/zaken/{}'.format(
+        settings.ZRC_URL, uuid4()))
 
 
 class CaseDocumentFactory(factory.DjangoModelFactory):

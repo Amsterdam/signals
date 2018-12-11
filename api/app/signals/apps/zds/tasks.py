@@ -161,47 +161,51 @@ def add_document_to_case(signal, document):
 #
 # Iteration 2
 #
-# def get_case(signal):
-#     """
-#     This will get the case with all needed data.
+def get_case(signal):
+    """
+    This will get the case with all needed data.
 
-#     :return: response
-#     """
-#     response = zds_client.zrc.retrieve('zaak', url=signa.case.zrc_link)
-#     return response
-
-
-# def get_documents_from_case(signal):
-#     """
-#     This will fetch all documents connected to the case
-
-#     :return: response
-#     """
-#     raise NotImplementedError()
+    :return: response
+    """
+    response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
+    return response
 
 
-# def get_status_history(signal):
-#     """
-#     This will fetch all statusses that are connected to the
+def get_documents_from_case(signal):
+    """
+    This will fetch all documents connected to the case
 
-#     :return: response
-#     """
-#     raise NotImplementedError()
+    :return: response
+    """
+    response = zds_client.drc.list('objectinformatieobject', params={
+        'object': signal.zaak.zrc_link})
+    return response
+
+
+def get_status_history(signal):
+    """
+    This will fetch all statusses that are connected to the
+
+    :return: response
+    """
+    response = zds_client.zrc.list('status', params={
+        'zaak': signal.zaak.zrc_link})
+    return response
 
 
 #
 # Iteration 3
 #
-# def get_all_statusses():
-#     """
-#     This will fetch all statusses that exists in the ZTC.
+def get_all_statusses():
+    """
+    This will fetch all statusses that exists in the ZTC.
 
-#     :return: response
-#     """
-#     path_kwargs = {
-#         'catalogus_uuid': settings.ZTC_CATALOGUS,
-#         'zaaktype_uuid': settings.ZTC_ZAAKTYPE
-#     }
+    :return: response
+    """
+    path_kwargs = {
+        'catalogus_uuid': settings.ZTC_CATALOGUS,
+        'zaaktype_uuid': settings.ZTC_ZAAKTYPE
+    }
 
-#     response = zds_client.ztc.list('statustype', **path_kwargs)
-#     return response
+    response = zds_client.ztc.list('statustype', **path_kwargs)
+    return response

@@ -1,0 +1,9 @@
+[
+    {
+        "url": "http://example.com",
+        "zaak": "http://example.com",
+        "statusType": "http://example.com",
+        "datumStatusGezet": "2018-11-20T10:34:43Z",
+        "statustoelichting": "string"
+    }
+]
