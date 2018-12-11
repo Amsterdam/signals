@@ -1,23 +1,7 @@
 from django.db import models
 
 from signals.apps.signals.models import CreatedUpdatedModel
-
-
-class ZaakSignalManager(models.Manager):
-
-    def create_zaak_signal(self, url, signal):
-        """
-        Create a connection between a case and a signal.
-        """
-        zaak_signal = ZaakSignal(zrc_link=url, signal=signal)
-        zaak_signal.save()
-
-    def add_document(self, url, zaak_signal):
-        """
-        Adds a link between the case and the document. Zo that it is also known in the signals app.
-        """
-        zaak_document = ZaakDocument(drc_link=url, zaak_signal=zaak_signal)
-        zaak_document.save()
+from .managers import ZaakSignalManager
 
 
 class ZaakSignal(CreatedUpdatedModel):

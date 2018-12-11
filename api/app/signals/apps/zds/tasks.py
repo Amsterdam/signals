@@ -42,7 +42,13 @@ def create_case(signal):
         'startdatum': signal.incident_date_start.strftime('%Y-%m-%d'),
         'identificatie': str(signal.signal_id),
         'registratie_datum': signal.created_at.strftime('%Y-%m-%d'),
+        # This is a hard limit in the ZRC.
+        # It will give back an error if it is more that a 1000 characters
         'toelichting': signal.text[:1000],
+        'zaakgeometrie': {
+            "type": "Point",
+            "coordinates": list(signal.location.point.coords),
+        },
     }
 
     if signal.expire_date:

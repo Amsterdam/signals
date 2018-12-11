@@ -64,10 +64,13 @@ class SignalManager(models.Manager):
         return signal
 
     def add_image(self, image, signal):
-        signal.image = image
-        signal.save()
+        with transaction.atomic():
+            signal.image = image
+            signal.save()
 
-        add_image.send(sender=self.__class__, signal_obj=signal)
+            add_image.send(sender=self.__class__, signal_obj=signal)
+
+        return image
 
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.

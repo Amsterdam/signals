@@ -179,4 +179,3 @@ Global/NetBeans.gitignore
 # ignore visual studio code settings
 .vscode/
 .env/
-node_modules/

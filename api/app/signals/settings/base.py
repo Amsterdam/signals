@@ -448,8 +448,6 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 #
 # Zaken settings
 #
-ZDS_TESTING_MOCK = True
-
 # ZRC settings
 # TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 ZRC_HOST = 'ref.tst.vng.cloud'

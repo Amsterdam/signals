@@ -34,31 +34,23 @@ class ZDSMockMixin(object):
         This will fetch the needed url and text response by name or
         set this request to a real_http request
         """
-        if settings.ZDS_TESTING_MOCK:
-            return mock.get(self.urls[name], text=getattr(self, name), status_code=status)
-        return mock.get(self.urls[name], real_http=True)
+        return mock.get(self.urls[name], text=getattr(self, name), status_code=status)
 
     def post_mock(self, mock, name, status=201):
         """This is a mock for a POST request.
         This will fetch the needed url and text response by name or
         set this request to a real_http request
         """
-        if settings.ZDS_TESTING_MOCK:
-            return mock.post(self.urls[name], text=getattr(self, name), status_code=status)
-        return mock.post(self.urls[name], real_http=True)
+        return mock.post(self.urls[name], text=getattr(self, name), status_code=status)
 
     def post_error_mock(self, mock, name, status=400):
         """This is a mock for a POST error request.
         This will fetch the needed url by name and gets the text via the status that is provided or
         set this request to a real_http request
         """
-        if settings.ZDS_TESTING_MOCK:
-            return mock.post(
-                self.urls[name],
-                text=getattr(self, 'error_{}'.format(status)),
-                status_code=status
-            )
-        return mock.post(self.urls[name], real_http=True)
+        return mock.post(
+            self.urls[name], text=getattr(self, 'error_{}'.format(status)), status_code=status
+        )
 
     # ZRC ##########################################################################################
     @property

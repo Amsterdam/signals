@@ -10,7 +10,7 @@ from tests.apps.zds.factories import ZaakSignalFactory
 class TestSignalReceivers(TestCase):
 
     @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
-    def test_signal_creation_handler(self, mocked_tasks):
+    def test_create_initial_handler(self, mocked_tasks):
         signal = SignalFactory.create()
 
         create_initial.send(
@@ -25,7 +25,7 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.add_document_to_case.assert_not_called()
 
     @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
-    def test_signal_creation_handler_with_image(self, mocked_tasks):
+    def test_create_initial_handler_with_image(self, mocked_tasks):
         signal = SignalFactoryWithImage.create()
 
         create_initial.send(
