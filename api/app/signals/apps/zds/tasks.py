@@ -208,9 +208,21 @@ def get_all_statusses():
     :return: response
     """
     path_kwargs = {
-        'catalogus_uuid': settings.ZTC_CATALOGUS,
-        'zaaktype_uuid': settings.ZTC_ZAAKTYPE
+        'catalogus_uuid': settings.ZTC_CATALOGUS_ID,
+        'zaaktype_uuid': settings.ZTC_ZAAKTYPE_ID
     }
 
     response = zds_client.ztc.list('statustype', **path_kwargs)
     return response
+
+
+def get_status(status_name):
+    """
+    This will now be a local filter. This should ideally be done via the api.
+    """
+    statusses = get_all_statusses()
+    for status in statusses:
+        if status.get('omschrijving', '') == status_name:
+            return status
+
+    return None
