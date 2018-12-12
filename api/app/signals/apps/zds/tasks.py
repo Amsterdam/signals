@@ -59,6 +59,7 @@ def create_case(signal):
     try:
         response = zds_client.zrc.create('zaak', data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
+        return case_signal
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise CaseNotCreatedException()
@@ -81,6 +82,7 @@ def connect_signal_to_case(signal):
     try:
         zds_client.zrc.create('zaakobject', data)
         CaseSignal.actions.connected_in_external_system(signal.case)
+        return signal.case
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise CaseConnectionException()
@@ -105,6 +107,7 @@ def add_status_to_case(signal):
     try:
         response = zds_client.zrc.create('status', data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_status)
+        return case_status
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise StatusNotCreatedException()
@@ -131,16 +134,17 @@ def create_document(signal):
     try:
         response = zds_client.drc.create("enkelvoudiginformatieobject", data)
         CaseSignal.actions.add_drc_link(response.get('url'), case_document)
+        return case_document
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise DocumentNotCreatedException()
 
 
-def add_document_to_case(signal, document):
+def add_document_to_case(signal, case_document):
     """
     This will connect the document to the case.
     """
-    if document.connected_in_external_system:
+    if case_document.connected_in_external_system:
         return
 
     data = {
@@ -152,7 +156,8 @@ def add_document_to_case(signal, document):
 
     try:
         zds_client.drc.create('objectinformatieobject', data)
-        CaseSignal.actions.connected_in_external_system(signal.case)
+        CaseSignal.actions.connected_in_external_system(case_document)
+        return case_document
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
         raise DocumentConnectionException()
@@ -167,7 +172,7 @@ def get_case(signal):
 
     :return: response
     """
-    response = zds_client.zrc.retrieve('zaak', url=signal.zaak.zrc_link)
+    response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
     return response
 
 
@@ -178,7 +183,7 @@ def get_documents_from_case(signal):
     :return: response
     """
     response = zds_client.drc.list('objectinformatieobject', params={
-        'object': signal.zaak.zrc_link})
+        'object': signal.case.zrc_link})
     return response
 
 
@@ -189,7 +194,7 @@ def get_status_history(signal):
     :return: response
     """
     response = zds_client.zrc.list('status', params={
-        'zaak': signal.zaak.zrc_link})
+        'zaak': signal.case.zrc_link})
     return response
 
 

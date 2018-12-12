@@ -28,8 +28,8 @@ class Command(BaseCommand):
             create_case(signal)
             connect_signal_to_case(signal)
             if signal.image:
-                create_document(signal)
-                add_document_to_case(signal)
+                case_document = create_document(signal)
+                add_document_to_case(signal, case_document)
 
             for status in signal.statuses.order_by('created_at'):
                 # This is done custom so we can add all statusses

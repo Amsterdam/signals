@@ -37,7 +37,7 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.connect_signal_to_case.assert_called_once_with(signal=signal)
         mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
         mocked_tasks.create_document.assert_called_once_with(signal)
-        mocked_tasks.add_document_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_document_to_case.assert_called_once()
 
     @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     def test_status_update_handler(self, mocked_tasks):
@@ -83,7 +83,7 @@ class TestSignalReceivers(TestCase):
         )
 
         mocked_tasks.create_document.assert_called_once_with(signal)
-        mocked_tasks.add_document_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_document_to_case.assert_called_once()
 
     def test_add_image_handler_no_case(self):
         signal = SignalFactoryWithImage.create()

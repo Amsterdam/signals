@@ -1,4 +1,5 @@
 import requests_mock
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -118,7 +119,7 @@ class TestTasks(ZDSMockMixin, TestCase):
     def test_create_document_with_error(self, mock):
         signal = SignalFactory()
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ObjectDoesNotExist):
             create_document(signal)
 
     @requests_mock.Mocker()
@@ -140,8 +141,8 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
         CaseSignalFactory(signal=signal)
-        create_document(signal)
-        add_document_to_case(signal)
+        case_document = create_document(signal)
+        add_document_to_case(signal, case_document)
 
     @requests_mock.Mocker()
     def test_add_document_to_case_with_error(self, mock):
@@ -151,10 +152,10 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
         CaseSignalFactory(signal=signal)
-        create_document(signal)
+        case_document = create_document(signal)
 
         with self.assertRaises(DocumentConnectionException):
-            add_document_to_case(signal)
+            add_document_to_case(signal, case_document)
 
     @requests_mock.Mocker()
     def test_get_case(self, mock):

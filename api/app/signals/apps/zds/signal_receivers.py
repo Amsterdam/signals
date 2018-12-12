@@ -25,8 +25,8 @@ def create_initial_handler(sender, signal_obj, **kwargs):
 
         if signal_obj.image:
             try:
-                tasks.create_document(signal_obj)
-                tasks.add_document_to_case(signal_obj)
+                case_document = tasks.create_document(signal_obj)
+                tasks.add_document_to_case(signal_obj, case_document)
             except DocumentNotCreatedException:
                 pass
 
@@ -45,7 +45,7 @@ def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
 @receiver(add_image, dispatch_uid='zds_add_image')
 def add_image_handler(sender, signal_obj, **kwargs):
     try:
-        tasks.create_document(signal_obj)
-        tasks.add_document_to_case(signal_obj)
+        case_document = tasks.create_document(signal_obj)
+        tasks.add_document_to_case(signal_obj, case_document)
     except (DocumentNotCreatedException, ObjectDoesNotExist):
         pass

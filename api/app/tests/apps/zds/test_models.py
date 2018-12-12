@@ -10,13 +10,13 @@ class TestCaseSignalManager(TestCase):
     def test_create_case_signal(self):
         self.assertEqual(CaseSignal.objects.count(), 0)
         signal = SignalFactory()
-        CaseSignal.actions.create_case_signal('http://amsterdam.nl/', signal)
+        CaseSignal.actions.create_case_signal(signal)
         self.assertEqual(CaseSignal.objects.count(), 1)
 
     def test_add_document(self):
         self.assertEqual(CaseDocument.objects.count(), 0)
         case_signal = CaseSignalFactory()
-        CaseSignal.actions.add_document('http://amsterdam.nl/', case_signal)
+        CaseSignal.actions.add_document(case_signal)
 
 
 class TestCaseSignal(TestCase):
