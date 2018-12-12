@@ -172,8 +172,10 @@ def get_case(signal):
 
     :return: response
     """
-    response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
-    return response
+    if hasattr(signal, 'case'):
+        response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
+        return response
+    return
 
 
 def get_documents_from_case(signal):
@@ -193,9 +195,12 @@ def get_status_history(signal):
 
     :return: response
     """
-    response = zds_client.zrc.list('status', params={
-        'zaak': signal.case.zrc_link})
-    return response
+    try:
+        response = zds_client.zrc.list('status', params={
+            'zaak': signal.zaak.zrc_link})
+        return response
+    except ObjectDoesNotExist:
+        return []
 
 
 #
