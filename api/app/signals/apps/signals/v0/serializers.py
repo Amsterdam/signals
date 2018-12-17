@@ -23,6 +23,7 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
+from signals.apps.signals.utils import resolve_categories
 from signals.apps.signals.v0.fields import (
     CategoryLinksField,
     PriorityLinksField,
@@ -34,10 +35,9 @@ from signals.apps.signals.v1.fields import (
     MainCategoryHyperlinkedIdentityField,
     MainCategoryHyperlinkedRelatedField,
     NoteHyperlinkedIdentityField,
-SubCategoryHyperlinkedIdentityField,
+    SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
-from signals.apps.signals.utils import resolve_categories
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from django.urls import resolve
 
 
 def resolve_categories(path):
-    from signals.apps.signals.views import MainCategoryViewSet, SubCategoryViewSet
+    from signals.apps.signals.v1.views import MainCategoryViewSet, SubCategoryViewSet
 
     view, args, kwargs = resolve(path)
     if id(view.cls) == id(SubCategoryViewSet):

@@ -3,8 +3,8 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.versioning import NamespaceVersioning
 
-from signals.apps.signals.fields import MainCategoryHyperlinkedRelatedField
 from signals.apps.signals.models import MainCategory
+from signals.apps.signals.v1.fields import MainCategoryHyperlinkedRelatedField
 
 
 class TestMainCategoryHyperlinkedRelatedField(APITestCase):
