@@ -31,7 +31,7 @@ def push_to_sigmax(pk):
 
     if is_signal_applicable(signal):
         try:
-            outgoing.handle(signal)
+            success_message = outgoing.handle(signal)
         except outgoing.SigmaxException:
             Signal.actions.update_status({
                 'state': workflow.VERZENDEN_MISLUKT,
@@ -41,5 +41,5 @@ def push_to_sigmax(pk):
         else:
             Signal.actions.update_status({
                 'state': workflow.VERZONDEN,
-                'text': 'Verzending van melding naar THOR is gelukt.',
+                'text': success_message,
             }, signal=signal)

@@ -60,6 +60,17 @@ class TestHandle(TestCase):
             handle(self.signal)
         patched_send_voegZaakdocumentToe_Lk01.assert_not_called()
 
+    @mock.patch('signals.apps.sigmax.outgoing.send_creeerZaak_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    def test_success_message(self,
+                             patched_send_voegZaakdocumentToe_Lk01,
+                             patched_send_creeerZaak_Lk01):
+        success_message = handle(self.signal)
+        self.assertIn(
+            '{}.01'.format(self.signal.sia_id),
+            success_message
+        )
+
 
 class TestOutgoing(TestCase, XmlTestMixin):
 
@@ -109,6 +120,20 @@ class TestOutgoing(TestCase, XmlTestMixin):
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
 
+    def test_generate_creeerZaak_Lk01_priority_normal(self):
+        current_tz = timezone.get_current_timezone()
+        signal = SignalFactory.create(incident_date_end=None,
+                                      priority__priority=Priority.PRIORITY_NORMAL)
+
+        xml_message = _generate_creeerZaak_Lk01(signal)
+
+        self.assertXmlDocument(xml_message)
+        incident_date_end = signal.created_at + timedelta(days=3)
+        self.assertIn(
+            '<ZKN:einddatumGepland>{}</ZKN:einddatumGepland>'.format(
+                incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
+            xml_message)
+
     def test_generate_voegZaakdocumentToe_Lk01(self):
         signal = SignalFactoryValidLocation.create()
         xml_message = _generate_voegZaakdocumentToe_Lk01(signal)
@@ -131,28 +156,34 @@ class TestGenerateOmschrijving(TestCase):
     def setUp(self):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
-    def test_generate_omschrijving(self):
+    @mock.patch(
+        'signals.apps.sigmax.outgoing._generate_sequence_number', autospec=True, return_value='02')
+    def test_generate_omschrijving_urgent(self, patched):
         stadsdeel = self.signal.location.stadsdeel
-        correct = 'SIA-{} URGENT {} {}'.format(
+
+        correct = 'SIA-{}.02 URGENT {} {}'.format(
             self.signal.pk,
             SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
             self.signal.location.short_address_text
         )
 
         self.assertEqual(_generate_omschrijving(self.signal), correct)
+        patched.assert_called_once_with(self.signal)
 
-    def test_generate_omschrijving_no_stadsdeel(self):
+    @mock.patch(
+        'signals.apps.sigmax.outgoing._generate_sequence_number', autospec=True, return_value='04')
+    def test_generate_omschrijving_no_stadsdeel_urgent(self, patched):
         # test that we get SD-- as part of the omschrijving when stadsdeel is missing
         self.signal.location.stadsdeel = None
         self.signal.location.save()
 
-        correct = 'SIA-{} URGENT {} {}'.format(
+        correct = 'SIA-{}.04 URGENT SD-- {}'.format(
             self.signal.pk,
-            'SD--',
             self.signal.location.short_address_text
         )
 
         self.assertEqual(_generate_omschrijving(self.signal), correct)
+        patched.assert_called_once_with(self.signal)
 
 
 class TestAddressMatchesSigmaxExpectation(TestCase):

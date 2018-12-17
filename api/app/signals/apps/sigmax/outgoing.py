@@ -63,6 +63,9 @@ class SigmaxException(Exception):
 
 def _generate_omschrijving(signal):
     """Generate brief descriptive text for list view in CityControl"""
+    # We need sequence number to show in CityControl list view
+    sequence_number = _generate_sequence_number(signal)
+
     # Note: we do not mention main or subcategory here (too many characters)
     is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
 
@@ -71,8 +74,9 @@ def _generate_omschrijving(signal):
     stadsdeel = signal.location.stadsdeel
     stadsdeel_code_sigmax = SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--')
 
-    return 'SIA-{} {} {} {}'.format(
+    return 'SIA-{}.{} {} {} {}'.format(
         signal.id,
+        sequence_number,
         is_urgent,
         stadsdeel_code_sigmax,
         signal.location.short_address_text,
@@ -264,5 +268,12 @@ def handle(signal: Signal) -> None:
     # We have to increment the sequence number in the CityControl external
     # identifier (e.g. the 01 in SIA-123.01). To do so we keep track of the
     # number of times an issue is sent to CityControl.
+    sequence_number = _generate_sequence_number(signal)  # before roundtrips are incremented
     if r1.status_code == 200:
         CityControlRoundtrip.objects.create(_signal=signal)
+
+    # Make sure to generate a success message for user-visible log.
+    return 'Verzending van melding naar THOR is gelukt onder nummer {}.{}.'.format(
+        signal.sia_id,
+        sequence_number,
+    )
