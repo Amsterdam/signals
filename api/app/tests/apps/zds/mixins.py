@@ -28,6 +28,10 @@ class ZDSMockMixin(object):
             'drc_objectinformatieobject_create': '/drc/api/v1/objectinformatieobjecten',
             'drc_objectinformatieobject_list': '/drc/api/v1/objectinformatieobjecten',
             'ztc_openapi': '/ztc/api/v1/schema/openapi.yaml?v=3',
+            'ztc_statustypen_list': (
+                '/ztc/api/v1/catalogussen/8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/' +
+                'c2f952ca-298e-488c-b1be-a87f11bd5fa2/statustypen'
+            ),
         }
 
     def get_mock(self, mock, name, status=200, url=None):
@@ -110,6 +114,15 @@ class ZDSMockMixin(object):
             return file.read()
 
     # ZTC ##########################################################################################
+    @property
+    def ztc_openapi(self):
+        with open(os.path.join(self.files_path, 'ztc.yml')) as file:
+            return file.read()
+
+    @property
+    def ztc_statustypen_list(self):
+        with open(os.path.join(self.files_path, 'ztc_statustypen_list.json')) as file:
+            return file.read()
 
     # ERRORS #######################################################################################
     @property

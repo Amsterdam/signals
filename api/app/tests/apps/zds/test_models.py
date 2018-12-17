@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from signals.apps.zds.models import CaseDocument, CaseSignal
 from tests.apps.signals.factories import SignalFactory
-from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory
+from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
 
 
 class TestCaseSignalManager(TestCase):
@@ -39,6 +39,13 @@ class TestCaseSignal(TestCase):
         CaseDocumentFactory(case_signal=case_signal)
         case_document = CaseDocumentFactory(case_signal=case_signal)
         self.assertEqual(case_signal.document_url, case_document.drc_link)
+
+
+class TestCaseStatus(TestCase):
+
+    def test_str(self):
+        case_status = CaseStatusFactory()
+        self.assertEqual(case_status.__str__(), case_status.zrc_link)
 
 
 class TestCaseDocument(TestCase):

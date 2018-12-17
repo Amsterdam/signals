@@ -16,16 +16,69 @@ from signals.apps.zds.tasks import (
     connect_signal_to_case,
     create_case,
     create_document,
+    get_all_statusses,
     get_case,
     get_documents_from_case,
+    get_status,
     get_status_history
 )
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
-from tests.apps.zds.factories import CaseSignalFactory
+from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
 from tests.apps.zds.mixins import ZDSMockMixin
 
 
 class TestTasks(ZDSMockMixin, TestCase):
+    @requests_mock.Mocker()
+    def test_get_all_statusses(self, mock):
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
+
+        statusses = get_all_statusses()
+        self.assertEqual(statusses, [
+            {
+                "url": "http://example.com",
+                "omschrijving": "Gemeld",
+                "omschrijvingGeneriek": "string",
+                "statustekst": "string",
+                "isVan": "http://example.com",
+                "volgnummer": 1,
+                "isEindstatus": True
+            },
+            {
+                "url": "http://example.com",
+                "omschrijving": "Done",
+                "omschrijvingGeneriek": "string",
+                "statustekst": "string",
+                "isVan": "http://example.com",
+                "volgnummer": 1,
+                "isEindstatus": True
+            }
+        ])
+
+    @requests_mock.Mocker()
+    def test_get_status(self, mock):
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
+
+        status = get_status('Gemeld')
+        self.assertEqual(status, {
+            'isEindstatus': True,
+            'isVan': 'http://example.com',
+            'omschrijving': 'Gemeld',
+            'omschrijvingGeneriek': 'string',
+            'statustekst': 'string',
+            'url': 'http://example.com',
+            'volgnummer': 1
+        })
+
+    @requests_mock.Mocker()
+    def test_get_status_no_match(self, mock):
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
+
+        status = get_status('Not_matching_any_status')
+        self.assertEqual(status, {})
+
     @requests_mock.Mocker()
     def test_create_case_no_case(self, mock):
         self.get_mock(mock, 'zrc_openapi')
@@ -50,6 +103,14 @@ class TestTasks(ZDSMockMixin, TestCase):
         create_case(case_signal.signal)
 
     @requests_mock.Mocker()
+    def test_create_case_with_case_no_zrc_link(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.post_mock(mock, 'zrc_zaak_create')
+
+        case_signal = CaseSignalFactory(zrc_link=None)
+        create_case(case_signal.signal)
+
+    @requests_mock.Mocker()
     def test_create_case_with_error(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.post_error_mock(mock, 'zrc_zaak_create')
@@ -69,6 +130,15 @@ class TestTasks(ZDSMockMixin, TestCase):
         create_case(signal)
         connect_signal_to_case(signal)
 
+    @requests_mock.Mocker()
+    def test_connect_signal_to_case_already_done(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.post_error_mock(mock, 'zrc_zaakobject_create')
+
+        case_signal = CaseSignalFactory(connected_in_external_system=True)
+
+        connect_signal_to_case(case_signal.signal)
+
     @override_settings(ZRC_ZAAKOBJECT_TYPE='random')
     @requests_mock.Mocker()
     def test_connect_signal_to_case_error(self, mock):
@@ -83,14 +153,29 @@ class TestTasks(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_add_status_to_case(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_status_create')
 
         case_signal = CaseSignalFactory()
         add_status_to_case(case_signal.signal)
 
     @requests_mock.Mocker()
+    def test_add_status_to_case_status_already_exists(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
+        self.post_mock(mock, 'zrc_status_create')
+
+        case_signal = CaseSignalFactory()
+        CaseStatusFactory(case_signal=case_signal)
+        add_status_to_case(case_signal.signal)
+
+    @requests_mock.Mocker()
     def test_add_status_to_case_with_no_text(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_status_create')
 
         case_signal = CaseSignalFactory(signal__status__text='')
@@ -99,6 +184,8 @@ class TestTasks(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_add_status_to_case_with_error(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_error_mock(mock, 'zrc_status_create')
 
         case_signal = CaseSignalFactory()
@@ -113,6 +200,16 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
         CaseSignalFactory(signal=signal)
+        create_document(signal)
+
+    @requests_mock.Mocker()
+    def test_create_document_already_exists(self, mock):
+        self.get_mock(mock, 'drc_openapi')
+        self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
+
+        signal = SignalFactoryWithImage()
+        case_signal = CaseSignalFactory(signal=signal)
+        CaseDocumentFactory(case_signal=case_signal)
         create_document(signal)
 
     @requests_mock.Mocker()
@@ -142,6 +239,18 @@ class TestTasks(ZDSMockMixin, TestCase):
         signal = SignalFactoryWithImage()
         CaseSignalFactory(signal=signal)
         case_document = create_document(signal)
+        add_document_to_case(signal, case_document)
+
+    @requests_mock.Mocker()
+    def test_add_document_to_case_already_connected(self, mock):
+        self.get_mock(mock, 'drc_openapi')
+        self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
+        self.post_mock(mock, 'drc_objectinformatieobject_create')
+
+        signal = SignalFactoryWithImage()
+        CaseSignalFactory(signal=signal)
+        case_document = create_document(signal)
+        case_document.connected_in_external_system = True
         add_document_to_case(signal, case_document)
 
     @requests_mock.Mocker()
@@ -189,6 +298,13 @@ class TestTasks(ZDSMockMixin, TestCase):
         })
 
     @requests_mock.Mocker()
+    def test_get_case_no_case_connected(self, mock):
+        signal = SignalFactory()
+
+        response = get_case(signal)
+        self.assertIsNone(response)
+
+    @requests_mock.Mocker()
     def test_get_documents_from_case(self, mock):
         zaak_signal = CaseSignalFactory()
         self.get_mock(mock, 'drc_openapi')
@@ -224,3 +340,10 @@ class TestTasks(ZDSMockMixin, TestCase):
                 "statustoelichting": "string"
             }
         ])
+
+    @requests_mock.Mocker()
+    def test_get_status_history_no_case(self, mock):
+        signal = SignalFactory()
+
+        response = get_status_history(signal)
+        self.assertEqual(response, [])

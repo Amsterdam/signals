@@ -16,6 +16,15 @@ class CaseSignalFactory(factory.DjangoModelFactory):
         settings.ZRC_URL, uuid4()))
 
 
+class CaseStatusFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = "zds.CaseStatus"
+
+    case_signal = factory.SubFactory(CaseSignalFactory)
+    zrc_link = 'http://amsterdam.nl/'
+
+
 class CaseDocumentFactory(factory.DjangoModelFactory):
 
     class Meta:

@@ -16,11 +16,37 @@ from signals.apps.zds.exceptions import (
     DocumentNotCreatedException,
     StatusNotCreatedException
 )
-from signals.apps.zds.workflow import ZTC_STATUSSES
 
 from .models import CaseSignal
 
 logger = logging.getLogger(__name__)
+
+
+def get_all_statusses():
+    """
+    This will fetch all statusses that exists in the ZTC.
+
+    :return: response
+    """
+    path_kwargs = {
+        'catalogus_uuid': settings.ZTC_CATALOGUS_ID,
+        'zaaktype_uuid': settings.ZTC_ZAAKTYPE_ID
+    }
+
+    response = zds_client.ztc.list('statustype', **path_kwargs)
+    return response
+
+
+def get_status(status_name):
+    """
+    This will now be a local filter. This should ideally be done via the api.
+    """
+    statusses = get_all_statusses()
+    for status in statusses:
+        if status.get('omschrijving', '') == status_name:
+            print(status)
+            return status
+    return {}
 
 
 def create_case(signal):
@@ -30,10 +56,9 @@ def create_case(signal):
     # If the signal already has a case connected.
     # It is not needed to create a case.
     try:
-        signal.case
         case_signal = signal.case
         if case_signal.zrc_link:
-            return
+            return case_signal
     except ObjectDoesNotExist:
         case_signal = CaseSignal.actions.create_case_signal(signal)
 
@@ -61,6 +86,7 @@ def create_case(signal):
         CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
         return case_signal
     except (ClientError, ConnectionError) as error:
+        print('appelflap')
         logger.exception(error)
         raise CaseNotCreatedException()
 
@@ -71,7 +97,7 @@ def connect_signal_to_case(signal):
     Now from the ZRC you wull know which signal has more detailed information.
     """
     if signal.case.connected_in_external_system:
-        return
+        return signal.case
 
     data = {
         'zaak': signal.case.zrc_link,
@@ -88,21 +114,26 @@ def connect_signal_to_case(signal):
         raise CaseConnectionException()
 
 
-def add_status_to_case(signal):
+def add_status_to_case(signal, status):
     """
     This will create a new status for an existing case. If the case already has a status.
     A new status will be created. Always the latest created status will be the active one.
     """
-    case_status = CaseSignal.actions.add_status(signal.case)
+    try:
+        case_status = status.case_status
+        if case_status.zrc_link:
+            return case_status
+    except ObjectDoesNotExist:
+        case_status = CaseSignal.actions.add_status(signal.case, status)
 
     data = {
         'zaak': signal.case.zrc_link,
-        'statusType': ZTC_STATUSSES.get(signal.status.state),
-        'datumStatusGezet': signal.status.created_at.isoformat(),
+        'statusType': get_status(status.get_state_display()).get('url'),
+        'datumStatusGezet': status.created_at.isoformat(),
     }
 
-    if signal.status.text:
-        data['statustoelichting'] = signal.status.text
+    if status.text:
+        data['statustoelichting'] = status.text
 
     try:
         response = zds_client.zrc.create('status', data)
@@ -117,6 +148,12 @@ def create_document(signal):
     """
     This will create a document in the DRC. This will be base of the photo upload.
     """
+    if (
+        signal.case.documents.count() == 1
+        and signal.case.documents.order_by('created_at').first().drc_link is not None
+    ):
+        return signal.case.documents.first()
+
     case_document = CaseSignal.actions.add_document(signal.case)
 
     with open(signal.image.path, 'br') as tmp_file:
@@ -145,7 +182,7 @@ def add_document_to_case(signal, case_document):
     This will connect the document to the case.
     """
     if case_document.connected_in_external_system:
-        return
+        return case_document
 
     data = {
         'informatieobject': signal.case.document_url,
@@ -163,9 +200,6 @@ def add_document_to_case(signal, case_document):
         raise DocumentConnectionException()
 
 
-#
-# Iteration 2
-#
 def get_case(signal):
     """
     This will get the case with all needed data.
@@ -175,7 +209,7 @@ def get_case(signal):
     if hasattr(signal, 'case'):
         response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
         return response
-    return
+    return None
 
 
 def get_documents_from_case(signal):
@@ -197,37 +231,7 @@ def get_status_history(signal):
     """
     try:
         response = zds_client.zrc.list('status', params={
-            'zaak': signal.zaak.zrc_link})
+            'zaak': signal.case.zrc_link})
         return response
     except ObjectDoesNotExist:
         return []
-
-
-#
-# Iteration 3
-#
-def get_all_statusses():
-    """
-    This will fetch all statusses that exists in the ZTC.
-
-    :return: response
-    """
-    path_kwargs = {
-        'catalogus_uuid': settings.ZTC_CATALOGUS_ID,
-        'zaaktype_uuid': settings.ZTC_ZAAKTYPE_ID
-    }
-
-    response = zds_client.ztc.list('statustype', **path_kwargs)
-    return response
-
-
-def get_status(status_name):
-    """
-    This will now be a local filter. This should ideally be done via the api.
-    """
-    statusses = get_all_statusses()
-    for status in statusses:
-        if status.get('omschrijving', '') == status_name:
-            return status
-
-    return None

@@ -11,6 +11,8 @@ class TestFlows(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_complete_flow_with_image(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_mock(mock, 'zrc_status_create')
@@ -28,6 +30,8 @@ class TestFlows(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_complete_flow_without_image(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_mock(mock, 'zrc_status_create')
@@ -42,6 +46,8 @@ class TestFlows(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_flow_document_not_created(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_mock(mock, 'zrc_status_create')
@@ -58,6 +64,8 @@ class TestFlows(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_flow_case_not_created(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_error_mock(mock, 'zrc_zaak_create')
 
         signal = SignalFactoryWithImage()
@@ -66,3 +74,7 @@ class TestFlows(ZDSMockMixin, TestCase):
             sender=self.__class__,
             signal_obj=signal,
         )
+
+
+class TestFlowRecoveries(TestCase):
+    pass

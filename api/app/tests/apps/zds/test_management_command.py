@@ -23,6 +23,8 @@ class TestCommand(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_with_signal_no_image(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_mock(mock, 'zrc_status_create')
@@ -36,6 +38,8 @@ class TestCommand(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_with_signal_with_image(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.get_mock(mock, 'drc_openapi')
@@ -52,6 +56,8 @@ class TestCommand(ZDSMockMixin, TestCase):
     @requests_mock.Mocker()
     def test_with_signal_error(self, mock):
         self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
         self.post_error_mock(mock, 'zrc_zaak_create')
 
         SignalFactoryWithImage()

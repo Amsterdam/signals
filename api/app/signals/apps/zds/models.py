@@ -10,6 +10,7 @@ class CaseSignal(CreatedUpdatedModel):
         'signals.Signal', related_name='case', on_delete=models.CASCADE)
     zrc_link = models.URLField(null=True, blank=True)
     connected_in_external_system = models.BooleanField(default=False, blank=True)
+    sync_completed = models.BooleanField(default=False, blank=True)
 
     objects = models.Manager()
     actions = CaseSignalManager()
@@ -30,13 +31,15 @@ class CaseSignal(CreatedUpdatedModel):
 class CaseStatus(CreatedUpdatedModel):
     case_signal = models.ForeignKey(
         'zds.CaseSignal', related_name='statusses', on_delete=models.CASCADE)
+    status = models.OneToOneField(
+        'signals.Status', related_name='case_status', on_delete=models.CASCADE, null=True)
     zrc_link = models.URLField(null=True, blank=True)
 
     class Meta:
         ordering = ('created_at', )
 
     def __str__(self):
-        return self.drc_link
+        return self.zrc_link
 
 
 class CaseDocument(CreatedUpdatedModel):

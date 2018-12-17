@@ -15,14 +15,14 @@ class CaseSignalManager(models.Manager):
 
         return case_signal
 
-    def add_status(self, case_signal):
+    def add_status(self, case_signal, status):
         """
         Adds a status to a case.
         """
         from .models import CaseStatus
 
         with transaction.atomic():
-            case_status = CaseStatus(case_signal=case_signal)
+            case_status = CaseStatus(case_signal=case_signal, status=status)
             case_status.save()
 
         return case_status
