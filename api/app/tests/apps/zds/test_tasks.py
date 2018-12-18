@@ -158,7 +158,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_status_create')
 
         case_signal = CaseSignalFactory()
-        add_status_to_case(case_signal.signal)
+        add_status_to_case(case_signal.signal, case_signal.signal.status)
 
     @requests_mock.Mocker()
     def test_add_status_to_case_status_already_exists(self, mock):
@@ -169,7 +169,7 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         case_signal = CaseSignalFactory()
         CaseStatusFactory(case_signal=case_signal)
-        add_status_to_case(case_signal.signal)
+        add_status_to_case(case_signal.signal, case_signal.signal.status)
 
     @requests_mock.Mocker()
     def test_add_status_to_case_with_no_text(self, mock):
@@ -179,7 +179,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_status_create')
 
         case_signal = CaseSignalFactory(signal__status__text='')
-        add_status_to_case(case_signal.signal)
+        add_status_to_case(case_signal.signal, case_signal.signal.status)
 
     @requests_mock.Mocker()
     def test_add_status_to_case_with_error(self, mock):
@@ -191,7 +191,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         case_signal = CaseSignalFactory()
 
         with self.assertRaises(StatusNotCreatedException):
-            add_status_to_case(case_signal.signal)
+            add_status_to_case(case_signal.signal, case_signal.signal.status)
 
     @requests_mock.Mocker()
     def test_create_document(self, mock):

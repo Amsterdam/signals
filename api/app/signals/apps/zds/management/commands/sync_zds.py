@@ -1,6 +1,8 @@
 import logging
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from signals.apps.signals.models import Signal
 from signals.apps.zds import zds_client
@@ -27,11 +29,15 @@ class Command(BaseCommand):
     help = "Sync the signals with the ZDS components"
 
     def handle(self, *args, **options):
+        ten_minutes_ago = timezone.now() - timedelta(seconds=600)
         signals_id1 = list(Signal.objects.filter(case__isnull=True).values_list('pk', flat=True))
-        signals_id2 = list(Signal.objects.filter(case__isnull=False).filter(case__sync_completed=False).values_list('pk', flat=True))
+        signals_id2 = list(Signal.objects.filter(case__isnull=False).filter(
+            case__sync_completed=False).values_list('pk', flat=True))
         signal_ids = signals_id1 + signals_id2
-        signals = Signal.objects.filter(pk__in=signal_ids)
+        print(signal_ids)
+        signals = Signal.objects.filter(pk__in=signal_ids, created_at__lte=ten_minutes_ago)
         for signal in signals:
+            print(signal)
             self.sync_case(signal)
 
     def sync_case(self, signal):
@@ -62,9 +68,10 @@ class Command(BaseCommand):
                 except StatusNotCreatedException as status_exception:
                     logger.exception(status_exception)
                     self.stderr.write(repr(status_exception))
-            except CaseConnectionException as case_exception:  #
-                logger.exception(case_exception)  #
-                self.stderr.write(repr(case_exception))  #
-        except CaseNotCreatedException as case_exception:  #
-            logger.exception(case_exception)  #
-            self.stderr.write(repr(case_exception))  #
+            except CaseConnectionException as case_exception:
+                logger.exception(case_exception)
+                self.stderr.write(repr(case_exception))
+        except CaseNotCreatedException as case_exception:
+            print('exception_to_soon')
+            logger.exception(case_exception)
+            self.stderr.write(repr(case_exception))

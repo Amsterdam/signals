@@ -20,7 +20,7 @@ class TestSignalReceivers(TestCase):
 
         mocked_tasks.create_case.assert_called_once_with(signal=signal)
         mocked_tasks.connect_signal_to_case.assert_called_once_with(signal=signal)
-        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal, status=signal.status)
         mocked_tasks.create_document.assert_not_called()
         mocked_tasks.add_document_to_case.assert_not_called()
 
@@ -35,7 +35,7 @@ class TestSignalReceivers(TestCase):
 
         mocked_tasks.create_case.assert_called_once_with(signal=signal)
         mocked_tasks.connect_signal_to_case.assert_called_once_with(signal=signal)
-        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal, status=signal.status)
         mocked_tasks.create_document.assert_called_once_with(signal)
         mocked_tasks.add_document_to_case.assert_called_once()
 
@@ -55,7 +55,7 @@ class TestSignalReceivers(TestCase):
             prev_status=prev_status,
         )
 
-        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal)
+        mocked_tasks.add_status_to_case.assert_called_once_with(signal=signal, status=signal.status)
 
     def test_status_update_handler_object_does_not_exist(self):
         signal = SignalFactory.create()

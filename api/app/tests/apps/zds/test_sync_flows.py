@@ -4,6 +4,8 @@ import requests_mock
 from django.core.management import call_command
 from django.test import TestCase
 
+from freezegun import freeze_time
+
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.mixins import ZDSMockMixin
 
@@ -28,7 +30,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_objectinformatieobject_create')
         self.post_mock(mock, 'zrc_status_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertEqual(self.err.getvalue(), '')
@@ -39,7 +42,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'drc_openapi')
         self.post_mock(mock, 'drc_objectinformatieobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal, connected_in_external_system=True)
         CaseStatusFactory(case_signal=case_signal, status=signal.status)
         CaseDocumentFactory(case_signal=case_signal)
@@ -53,7 +57,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
         self.post_mock(mock, 'drc_objectinformatieobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal, connected_in_external_system=True)
         CaseStatusFactory(case_signal=case_signal, status=signal.status)
         self.call_management_command()
@@ -67,7 +72,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'zrc_openapi')
         self.post_mock(mock, 'zrc_status_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal, connected_in_external_system=True)
         CaseDocumentFactory(case_signal=case_signal, connected_in_external_system=True)
         self.call_management_command()
@@ -79,7 +85,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'zrc_openapi')
         self.post_mock(mock, 'zrc_zaakobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal, connected_in_external_system=False)
         CaseStatusFactory(case_signal=case_signal, status=signal.status)
         CaseDocumentFactory(case_signal=case_signal, connected_in_external_system=True)
@@ -99,7 +106,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
         self.post_mock(mock, 'drc_objectinformatieobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
@@ -114,7 +122,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_mock(mock, 'zrc_status_create')
 
-        signal = SignalFactory()
+        with freeze_time("2018-01-14"):
+            SignalFactory()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertEqual(self.err.getvalue(), '')
@@ -131,7 +140,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'drc_enkelvoudiginformatieobject_create')
         self.post_error_mock(mock, 'drc_objectinformatieobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
@@ -148,7 +158,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'drc_openapi')
         self.post_error_mock(mock, 'drc_enkelvoudiginformatieobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
@@ -163,7 +174,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_zaakobject_create')
         self.post_error_mock(mock, 'zrc_status_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
@@ -177,7 +189,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.post_mock(mock, 'zrc_zaak_create')
         self.post_error_mock(mock, 'zrc_zaakobject_create')
 
-        signal = SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            signal = SignalFactoryWithImage()
         case_signal = CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
@@ -190,7 +203,8 @@ class TestCommand(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'ztc_statustypen_list')
         self.post_error_mock(mock, 'zrc_zaak_create')
 
-        SignalFactoryWithImage()
+        with freeze_time("2018-01-14"):
+            SignalFactoryWithImage()
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')

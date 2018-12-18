@@ -21,7 +21,7 @@ def create_initial_handler(sender, signal_obj, **kwargs):
     try:
         tasks.create_case(signal_obj)
         tasks.connect_signal_to_case(signal_obj)
-        tasks.add_status_to_case(signal_obj)
+        tasks.add_status_to_case(signal_obj, signal_obj.status)
 
         if signal_obj.image:
             try:
@@ -37,7 +37,7 @@ def create_initial_handler(sender, signal_obj, **kwargs):
 @receiver(update_status, dispatch_uid='zds_update_status')
 def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
     try:
-        tasks.add_status_to_case(signal_obj)
+        tasks.add_status_to_case(signal_obj, status)
     except ObjectDoesNotExist:
         pass
 

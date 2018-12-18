@@ -12,7 +12,7 @@ class TestCommand(ZDSMockMixin, TestCase):
     def call_management_command(self):
         self.out = StringIO()
         self.err = StringIO()
-        call_command('add_signals_to_case', stdout=self.out, stderr=self.err)
+        call_command('sync_zds', stdout=self.out, stderr=self.err)
 
     @requests_mock.Mocker()
     def test_no_signals(self, mock):
