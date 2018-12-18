@@ -44,7 +44,6 @@ def get_status(status_name):
     statusses = get_all_statusses()
     for status in statusses:
         if status.get('omschrijving', '') == status_name:
-            print(status)
             return status
     return {}
 
@@ -86,7 +85,6 @@ def create_case(signal):
         CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
         return case_signal
     except (ClientError, ConnectionError) as error:
-        print('appelflap')
         logger.exception(error)
         raise CaseNotCreatedException()
 

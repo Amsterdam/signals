@@ -3,7 +3,6 @@ from io import StringIO
 import requests_mock
 from django.core.management import call_command
 from django.test import TestCase
-
 from freezegun import freeze_time
 
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
@@ -108,7 +107,7 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         with freeze_time("2018-01-14"):
             signal = SignalFactoryWithImage()
-        case_signal = CaseSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertEqual(self.err.getvalue(), '')
@@ -142,7 +141,7 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         with freeze_time("2018-01-14"):
             signal = SignalFactoryWithImage()
-        case_signal = CaseSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')
@@ -160,7 +159,7 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         with freeze_time("2018-01-14"):
             signal = SignalFactoryWithImage()
-        case_signal = CaseSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')
@@ -176,7 +175,7 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         with freeze_time("2018-01-14"):
             signal = SignalFactoryWithImage()
-        case_signal = CaseSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')
@@ -191,7 +190,7 @@ class TestCommand(ZDSMockMixin, TestCase):
 
         with freeze_time("2018-01-14"):
             signal = SignalFactoryWithImage()
-        case_signal = CaseSignalFactory(signal=signal)
+        CaseSignalFactory(signal=signal)
         self.call_management_command()
         self.assertEqual(self.out.getvalue(), '')
         self.assertNotEqual(self.err.getvalue(), '')
