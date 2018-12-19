@@ -98,7 +98,7 @@ class SignalFilter(FilterSet):
     category__main = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
         to_field_name='name',
-        field_name='category_assignment__sub_category__main_category__name')
+        field_name='category_assignment__main_category__name')
     category__sub = filters.ModelMultipleChoiceFilter(
         queryset=SubCategory.objects.all(),
         to_field_name='name',
@@ -107,7 +107,7 @@ class SignalFilter(FilterSet):
     main_slug = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all().select_related(),
         to_field_name='slug',
-        field_name='category_assignment__sub_category__main_category__slug',
+        field_name='category_assignment__main_category__slug',
     )
     sub_slug = filters.ModelMultipleChoiceFilter(
         queryset=SubCategory.objects.all().select_related(),
