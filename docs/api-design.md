@@ -1,129 +1,131 @@
-# API ontwerp voor SIA (voorstel versie: 1)
+# Signalen Informatie Voorziening API V1
+**Ter goedkeuring / commentaar is welkom**
 
-Context:
-    Het doorvoeren van API versionering vereist een aanpassing van de URL
-    namespace van SIA. Hieronder staat een gestroomlijnde REST API voor
-    integratie met externe systemen. Een doel wat in dit ontwerp is nagestreeft
-    is om minder interne details zichtbaar te maken voor externe partijen.
+De Signalen Informatie Voorziening (SIA) is na een kort ontwikkel proces live
+gegaan in de zomer van 2018. De SIA applicatie bestaat uit twee delen, een 
+frontend applicatie die door burgers en afhandelaars gebruikt wordt, en een
+backend applicatie die de data en workflows in SIA beheert.
 
-    Huidig ontwerp gebruikt engelse termen in de URL namespace, maar dat
-    kunnen we ook omzetten naar Nederlandse terminologie (zoals aanbevolen
-    in het DSO API document).
-
-Problemen huidige API:
-    - Geen afspraken over aanpassingen in de API.
-    - Database IDs zijn exposed.
-    - geauthenticeerde endpoints exposen veel extra velden die eigelijk voor
-      intern gebruik zijn
-    - API spiegelt database tabellen
-
-## Voorstel:
-
-Onze API draait op:
-    - ACC: https://acc.api.data.amsterdam.nl/signals/
-    - PROD: https://api.data.amsterdam.nl/signals/
+Dit document beschrijft alleen een deel van de backend applicatie, namelijk de
+zogenaamde Application Programming Interface (API) die SIA aanbiedt. De API
+vormt een technisch koppelvlak tussen de SIA backend en externe systemen en SIA
+frontend. Bij de specificatie van een API zijn de afspraken over verdere
+ontwikkeling van die API belangrijk en daarvoor is API versionering een
+vereiste. In de sectie "Het voorgestelde API ontwerp" hieronder staat een
+gestroomlijnde API voor integratie met externe systemen. Een doel wat in dit
+ontwerp is nagestreeft is om minder interne details zichtbaar te maken voor
+externe partijen.
 
 
-### Publieke API (ongeauthenticeerd)
+## Uitgangspunten
+### Semantic Versioning in de SIA backend
+De [Semantic versioning][semver] standaard beschrijft de betekenis van een
+versie nummers. SIA volgt deze standaard voor de APIs en voor de gehele backend
+applicatie.
 
-#### Identifier
+De huidige versie van de SIA backend applicatie heeft 3 versie nummers:
 
-- `identifier` == `uuid`
-- Geen database ID's exposen in API
-- Mogelijk nieuwe identifiers -> https://github.com/skorokithakis/shortuuid 
-    - [Pak liever iets anders. Base57... kom op zeg. —PvB]
-        - max_lenght=22
-            - Is mooier dan uuid?? korte urls?
-? Waar moeten onze identifier aan voldoen?
-    - Moet deze human-readable zijn? 
-        - "Door te geven zijn via de telefoon..."   
-        - e.g. "48510SXQ" (5 cijfers, 3 letters) ... ?
-            - afstemmen met business (PO)
-    - Moet niet te raden zijn
-    - Moet niet oplopend zijn
+1. De gehele applicatie (omvattend de oude API, de nieuwe API en data handling)
+   krijgt een versie nummer. Deze zijn gedocumenteerd op de Github [releases
+   pagina][signals-releases] van het `signals` project op Github. In de
+   communicatie vaak afgekort als bijvoorbeeld BE 0.6.2 (backend release 0.6.2).
+2. De originele API heeft een versie nummer dat niet gecommuniceerd wordt via de
+   API, maar intern wel wordt bijgehouden. Deze zijn als volgt: 0.x.y
+3. De versie nummers en status van de V1 API zijn beschikbaar via de publieke
+   API op https://api.data.amsterdam.nl/signals/releases en zijn als volgt:
+   1.x.y
 
-
-#### Endpoints
-
-`/`
-- GET 
-    - lijst beschikbare versies
-        - `expiration_date` (initieel None) 
-        - `status` (stable, beta, etc.)
-
-`/v1/`
-- GET
-    - lijst beschikbare endpoints
-    ? Hoeveel niveau's diep? (alleen /public /private tonen)
-    ? HAL structuur of DRF router structuur 
-
-`/v1/public/`
-- GET
-    - lijst beschikbare endpoints
-
-`/v1/public/signals/`
-- POST
-    - kan een signal aanmaken, location, reporter, etc. moeten meegestuurd
-      worden.
-    - geen image upload (images/files kunnen niet verstuurd worden via JSON)
-        - Daarom apart endpoint voor image upload
-
-`/v1/public/signals/<identifier>`
-- GET
-    - Geeft de status van het signal terug. Verder geen gevoelig data
-        - Dit is dus een hele minimale representatie van het object 
-        - Op dit moment wordt dit gebruikt door Verbeter de buurt
-            - Moet dit niet naar de `private` endpoints..?
-    - "De API is niet orthogonaal. GET signals/id levert het signal inclusief image terwijl de POST in twee stappen verloopt. Als je het mooier wilt maken zou ik willen voorstellen GET signals/id/image toevoegen. (~estetisch)"
-
-`/v1/public/signals/<identifier>/image`
-- POST
-    - upload image, dit is de enige manier om een image aan een signaal toe te voegen
-
-`/v1/public/terms/categories/`
-- GET
-    - lijst van alle categorien (hoofd en sub)
+Notabene: als het PATCH getal in een versie nummer 0 is wordt het weggelaten,
+versie nummer 1.1 is bijvoorbeeld de afkorting van 1.1.0.
 
 
-### Privé API (geauthenticeerd)
-`/v1/private/signals/`
-- GET
-    - lijst weergave van alle signalen
-        - incl. filters via querystring
-- POST
-    - kan een signal aanmaken, location, reporter, etc. moeten meegestuurd worden.
-    - geen image upload (images/files kunnen niet verstuurd worden via JSON)
-        - Daarom apart endpoint voor image upload
-    - kan meer dan het `public` POST endpoint, want je bent ingelogd
-        - e.g. `priority`, `source` zetten
-
-`/v1/private/signals/<identifier>`
-- GET
-    - het volledige signaal (inc. gevoelige info als plaats)
-    - HAL urls naar sub resources
-        ? Hoe moet dit precies? 
-        - Ook als sub resources alleen maar PUT ondersteunen?
-        - https://stackoverflow.com/questions/47941703/how-to-handle-nested-resources-with-json-hal
-- PUT
-    - partial update voor `status`, `category`, `location`, `priority`
-        - Dus geen updates op directe `Signal` velden
-
-`/v1/private/signals/<identifier>/image`
-- POST
-    - upload image, dit is de enige manier om een image aan een signaal toe te voegen
-
-`/v1/private/signals/<identifier>/updates/`
-- GET
-    - lijst van updates voor een gegeven signaal (of het nu status, locatie,
-      of categorie betreft) kan gebruikt worden in frontend
+### Versioning in de REST interface van SIA
+SIA biedt een API aan volgens de REspresentational State Transfer (REST)
+techniek, daarin wijkt SIA niet af van andere door Datapunt Amsterdam
+ontwikkelde services. In REST APIs is het gebruikelijk het MAJOR versie nummer
+van de API in de paden van de API zichtbaar te maken, bijvoorbeeld:
+`/signals/v1/private/signals`.
 
 
-## Vraag / opmerkingen:
+## Het voorgestelde API ontwerp
+### Publiek en ongeauthenticeerd
+Burgers kunnen anoniem een melding doen, dit gebeurt via de publieke en
+ongeauthenticeerde API --- ook als de melding gedaan wordt via [meldingen]. Dit
+deel van de SIA API biedt een mogelijkheid om een melding aan te maken, er een
+foto bij te voegen en de status van de melding te volgen. De publieke en
+ongeauthenticeerde API biedt niet de mogelijkheid alle data bij een melding op
+te vragen.
 
-- Ik zou de namespace niet opdelen in een `/private/` en `/public/` deel.
-    - Ok, wat zou het dan moeten worden? Willen we wel een duidelijk splitsing tussen auth en unauth endpoints?
-    - We (wij als Datapunt) willen geen endpoints die verschillend gedrag vertonen bij wel of niet ingelogd zijn??
-- Uitzoeken: HAL (`_embedded`) (links naar sub resources)  
-- Na denken over: Doe iets POE-achtigs (Post Once Exactly). —PvB
-    - Lijkt nog geen standaard voor te zijn?
-        - ID's vanuit de client meesturen? Vraagt ook om FE aanpassingen
+*Wat volgt veronderstelt kennis van REST APIs:*
+
+`/signals/`
+- GET: Lijst van links naar de API versies.
+
+`/signals/v1/`
+- GET: Lijst van links API pagina's binnen V1 API (publiek en niet publiek).
+
+`/signals/v1/public/signals/`
+- GET: Wordt niet ondersteund.
+- POST: Aanmaken nieuwe melding (anoniem).
+
+`/signals/v1/public/signals/<signal public id>`
+- GET: Melding gegevens (alleen de publieke) met een samenvatting van de
+    updates daarop.
+
+`/signals/v1/public/signals/<signal public id>/image`
+- GET: Opvragen foto bij een melding (als deze er is).
+- POST: Aanmaken foto bij melding.
+
+`/signals/v1/public/terms/categories/`
+- GET: Lijst van hoofd categorieën met de onderliggende sub categorieën
+
+`/signals/v1/public/terms/categories/<main category slug>`
+- GET: Detail pagina voor hoofdcategorie bestaande uit een lijst van sub
+    categorieën bij die hoofd categorie.
+
+`/signals/v1/public/terms/categories/<main category slug>/sub_categories/<sub category slug>`
+- GET: Detail pagina voor een sub categorie.
+
+`https://api.data.amsterdam.nl/signals/redoc/`
+- GET: Gegenereerde API documentatie in Swagger formaat.
+
+### Publiek en Geauthenticeerd
+De publiek en geauthenticeerde API is bedoelt voor koppelingen met externe 
+partijen, handelingen binnen SIA die speciale rechten vereisen en toegang tot
+gevoelige data. De [meldingen] backoffice applicatie gebruikt deze API aangezien
+behandelaars potentieel gevoelige data en speciale rechten nodig hebben om hun
+werk te doen. Verder houdt de backoffice applicatie een logboek bij voor iedere
+melding. In dat logboek is te vinden wie wat heeft gedaan en wanneer.
+
+`/signals/v1/private/signals/`
+- GET: Lijst meldingen.
+- POST: Aanmaken nieuwe melding (met bekende user).
+
+`/signals/v1/private/signals/<signal id>`
+- GET: De melding en alle informatie die erbij hoort.
+- PUT / PATCH: Update op de melding. Accepteert ook veranderingen in status,
+    categorie, locatie, prioriteit en notitie.
+      
+`/signals/v1/private/signals/<signal id>/history`
+- GET: Volle geschiedenis van de melding.
+
+`/signals/v1/private/signals/<signal id>/image`
+- GET: Opvragen foto bij een melding (als deze er is).
+- POST: Aanmaken foto bij melding, geen updates.
+
+
+## Mogelijke analysten API
+Een derde groep gebruikers van SIA zijn analysten en diegenen die aan rapportages
+over de afhandeling van meldingen werken. Deze groep gebruikt nu dezelfde API
+endpoints als de frontend en zij hebben dezelfde toegang tot het systeem terwijl
+ze niet de zelfde behoeften hebben. De SIA backend zou een aantal speciale,
+alleen lezen, endpoints kunnen aanbieden die toegespitst zijn op de behoeftes
+van analysten. Aangezien de SIA backend applicatie de meldingen data beheert en
+toegang heeft tot de achterliggende database kunnen eventueel speciale queries
+geschreven worden die de data samenvatten (of filteren). De resultaten van zo'n
+query kunnen dan via de REST API worden aangeboden.
+
+
+[meldingen]: https://meldingen.amsterdam.nl
+[semver]: https://semver.org/
+[signals-releases]: https://github.com/Amsterdam/signals/releases

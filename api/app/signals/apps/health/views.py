@@ -1,10 +1,14 @@
+import json
 import logging
+import os
 
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import Error, connection
 from django.http import HttpResponse
+
+from signals.apps.signals.models import MainCategory, SubCategory
 
 logger = logging.getLogger(__name__)
 
@@ -40,3 +44,129 @@ def check_data(request):
         'Data OK {count} {model}'.format(count=count, model=health_check_model.__name__),
         content_type='text/plain',
         status=200)
+
+
+def _get_model(health_model):
+    """
+    Will return the health_model if it exists
+
+    :param health_model:
+    :return:
+    """
+    try:
+        health_check_model = apps.get_model(health_model)
+    except LookupError:
+        raise ImproperlyConfigured(
+            "{} doesn't resolve to useable model".format(health_model)
+        )
+    return health_check_model
+
+
+def _count_categories(health_model, minimum_count=1):
+    """
+    Simple count to check if there are at least 'minimum_count' of objects in the table
+
+    :param health_model:
+    :param minimum_count:
+    :return:
+    """
+    if health_model.objects.count() < minimum_count:
+        error_msg = 'Too few items in the database'
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+
+def _check_fixture_exists_in_db(health_model, data_to_check):
+    """
+    Will check if the data_to_check exists in the database using the health_model
+
+    :param health_model:
+    :param data_to_check:
+    :return:
+    """
+    try:
+        health_model.objects.get(**data_to_check)
+    except health_model.DoesNotExist:
+        error_msg = '{} data does not match fixture data'.format(health_model.__class__)
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+
+def _prepare_data_to_check(data_to_check):
+    """
+    Prepare the data from the fixture so that we can check if it exists in the database
+
+    :param data_to_check:
+    :return prepared_data_to_check:
+    """
+    prepared_data_to_check = data_to_check['fields'].copy()
+    for key in data_to_check['fields'].keys():
+        if isinstance(prepared_data_to_check[key], list):
+            prepared_data_to_check.pop(key)
+    return prepared_data_to_check
+
+
+def check_categories(request):
+    """
+    Check if the categories are ok
+
+    Example:
+
+    The following fixture must exist in the database. The departments will not be included in the
+    check for now. Also the PK does not matter, the fields are most important because they define
+    the category and cannot change (yet).
+
+    {
+      "model": "signals.subcategory",
+      "pk": 1,
+      "fields": {
+        "main_category": 1,
+        "slug": "veeg-zwerfvuil",
+        "name": "Veeg- / zwerfvuil",
+        "handling": "A3DEC",
+        "departments": [
+          4,
+          6,
+          12
+        ]
+      }
+    },
+
+    :param request:
+    :return HttpResponse:
+    """
+
+    models = {
+        'signals.subcategory': SubCategory,
+        'signals.maincategory': MainCategory,
+    }
+
+    try:
+        _count_categories(SubCategory,
+                          minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
+
+        _count_categories(MainCategory,
+                          minimum_count=settings.HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT)
+
+        fixture_file = os.path.join(
+            os.path.dirname(os.path.dirname(settings.BASE_DIR)),
+            'app/signals/apps/signals/fixtures/categories.json'
+        )
+
+        with open(fixture_file) as f:
+            fixture_data = json.load(f)
+
+        for fixture in fixture_data:
+            model_str = fixture['model']
+            if model_str in models:
+                model = models[model_str]
+                data_to_check = _prepare_data_to_check(data_to_check=fixture)
+                _check_fixture_exists_in_db(model, data_to_check)
+
+    except Exception as e:
+        return HttpResponse(e, content_type='text/plain', status=500)
+
+    return HttpResponse(
+        'Data OK {}, {}'.format(SubCategory.__name__, MainCategory.__name__),
+        content_type='text/plain', status=200
+    )

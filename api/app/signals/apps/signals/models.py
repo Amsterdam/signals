@@ -1,200 +1,20 @@
+import copy
 import uuid
 
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.dispatch import Signal as DjangoSignal
 from django.utils.text import slugify
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
-
-# Declaring custom Django signals for our `SignalManager`.
-create_initial = DjangoSignal(providing_args=['signal_obj'])
-update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
-update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
-update_category_assignment = DjangoSignal(providing_args=['signal_obj',
-                                                          'category_assignment',
-                                                          'prev_category_assignment'])
-update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
-update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
-create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
-
-
-class SignalManager(models.Manager):
-
-    def create_initial(self,
-                       signal_data,
-                       location_data,
-                       status_data,
-                       category_assignment_data,
-                       reporter_data,
-                       priority_data=None):
-        """Create a new `Signal` object with all related objects.
-
-        :param signal_data: deserialized data dict
-        :param location_data: deserialized data dict
-        :param status_data: deserialized data dict
-        :param category_assignment_data: deserialized data dict
-        :param reporter_data: deserialized data dict
-        :param priority_data: deserialized data dict (Default: None)
-        :returns: Signal object
-        """
-        with transaction.atomic():
-            signal = self.create(**signal_data)
-
-            # Set default (empty dict) value for `priority_data` if None is given.
-            priority_data = priority_data or {}
-
-            # Create dependent model instances with correct foreign keys to Signal
-            location = Location.objects.create(**location_data, _signal_id=signal.pk)
-            status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
-                                                                    _signal_id=signal.pk)
-            reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
-            priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
-
-            # Set Signal to dependent model instance foreign keys
-            signal.location = location
-            signal.status = status
-            signal.category_assignment = category_assignment
-            signal.reporter = reporter
-            signal.priority = priority
-            signal.save()
-
-            transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
-                                                              signal_obj=signal))
-
-        return signal
-
-    def update_location(self, data, signal):
-        """Update (create new) `Location` object for given `Signal` object.
-
-        :param data: deserialized data dict
-        :param signal: Signal object
-        :returns: Location object
-        """
-        with transaction.atomic():
-            prev_location = signal.location
-
-            location = Location.objects.create(**data, _signal_id=signal.id)
-            signal.location = location
-            signal.save()
-
-            transaction.on_commit(lambda: update_location.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               location=location,
-                                                               prev_location=prev_location))
-
-        return location
-
-    def update_status(self, data, signal):
-        """Update (create new) `Status` object for given `Signal` object.
-
-        :param data: deserialized data dict
-        :param signal: Signal object
-        :returns: Status object
-        """
-        with transaction.atomic():
-            status = Status(_signal=signal, **data)
-            status.full_clean()
-            status.save()
-
-            prev_status = signal.status
-            signal.status = status
-            signal.save()
-
-            transaction.on_commit(lambda: update_status.send(sender=self.__class__,
-                                                             signal_obj=signal,
-                                                             status=status,
-                                                             prev_status=prev_status))
-
-        return status
-
-    def update_category_assignment(self, data, signal):
-        """Update (create new) `CategoryAssignment` object for given `Signal` object.
-
-        :param data: deserialized data dict
-        :param signal: Signal object
-        :returns: Category object
-        """
-        with transaction.atomic():
-            prev_category_assignment = signal.category_assignment
-
-            category_assignment = CategoryAssignment.objects.create(**data, _signal_id=signal.id)
-            signal.category_assignment = category_assignment
-            signal.save()
-
-            transaction.on_commit(lambda: update_category_assignment.send(
-                sender=self.__class__,
-                signal_obj=signal,
-                category_assignment=category_assignment,
-                prev_category_assignment=prev_category_assignment))
-
-        return category_assignment
-
-    def update_reporter(self, data, signal):
-        """Update (create new) `Reporter` object for given `Signal` object.
-
-        :param data: deserialized data dict
-        :param signal: Signal object
-        :returns: Reporter object
-        """
-        with transaction.atomic():
-            prev_reporter = signal.reporter
-
-            reporter = Reporter.objects.create(**data, _signal_id=signal.id)
-            signal.reporter = reporter
-            signal.save()
-
-            transaction.on_commit(lambda: update_reporter.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               reporter=reporter,
-                                                               prev_reporter=prev_reporter))
-
-        return reporter
-
-    def update_priority(self, data, signal):
-        """Update (create new) `Priority` object for given `Signal` object.
-
-        :param data: deserialized data dict
-        :param signal: Signal object
-        :returns: Priority object
-        """
-        with transaction.atomic():
-            prev_priority = signal.priority
-
-            priority = Priority.objects.create(**data, _signal_id=signal.id)
-            signal.priority = priority
-            signal.save()
-
-            transaction.on_commit(lambda: update_priority.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               priority=priority,
-                                                               prev_priority=prev_priority))
-
-        return priority
-
-    def create_note(self, data, signal):
-        """Create a new `Note` object for a given `Signal` object.
-
-        :param data: deserialized data dict
-        :returns: Note object
-        """
-        # Added for completeness of the internal API, and firing of Django
-        # signals upon creation of a Note.
-        with transaction.atomic():
-            note = Note.objects.create(**data, _signal_id=signal.id)
-            transaction.on_commit(lambda: create_note.send(sender=self.__class__,
-                                                           signal_obj=signal,
-                                                           note=note))
-
-        return note
+from signals.apps.signals.managers import SignalManager
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 
 class CreatedUpdatedModel(models.Model):
@@ -407,6 +227,16 @@ class Location(CreatedUpdatedModel):
         self.set_address_text()
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
+    def get_rd_coordinates(self):
+        to_transform = copy.deepcopy(self.geometrie)
+        to_transform.transform(
+            CoordTransform(
+                SpatialReference(4326),  # WGS84
+                SpatialReference(28992)  # RD
+            )
+        )
+        return to_transform
+
 
 class Reporter(CreatedUpdatedModel):
     """Privacy sensitive information on reporter."""
@@ -507,7 +337,7 @@ class Status(CreatedUpdatedModel):
             errors['target_api'] = ValidationError(error_msg, code='invalid')
 
         # Validating text field required.
-        if new_state == workflow.AFGEHANDELD and not self.text:
+        if new_state in [workflow.AFGEHANDELD, workflow.HEROPEND] and not self.text:
             error_msg = 'This field is required when changing `state` to `{new_state}`.'.format(
                 new_state=new_state_display)
             errors['text'] = ValidationError(error_msg, code='required')
@@ -637,3 +467,42 @@ class Note(CreatedUpdatedModel):
 
     class Meta:
         ordering = ('-created_at', )
+
+
+class History(models.Model):
+    identifier = models.CharField(primary_key=True, max_length=255)
+    _signal = models.ForeignKey('signals.Signal',
+                                related_name='history',
+                                null=False,
+                                on_delete=models.CASCADE)
+    when = models.DateTimeField(null=True)
+    what = models.CharField(max_length=255)
+    who = models.CharField(max_length=255, null=True)  # old entries in database may have no user
+    extra = models.CharField(max_length=255, null=True)  # not relevant for every logged model.
+    description = models.TextField(max_length=3000)
+
+    # No changes to this database view please!
+    def save(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @property
+    def action(self):
+        """Generate text for the action field that can serve as title in UI."""
+        if self.what == 'UPDATE_STATUS':
+            return 'Update status naar: {}'.format(
+                dict(STATUS_CHOICES).get(self.extra, 'Onbekend'))
+        elif self.what == 'UPDATE_PRIORITY':
+            return 'Prioriteit update naar: {}'.format(
+                dict(Priority.PRIORITY_CHOICES).get(self.extra, 'Onbekend'))
+        elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
+            return 'Categorie gewijzigd naar: {}'.format(self.extra)
+        elif self.what == 'CREATE_NOTE' or self.what == 'UPDATE_LOCATION':
+            return self.extra
+        return 'Actie onbekend.'
+
+    class Meta:
+        managed = False
+        db_table = 'signals_history_view'

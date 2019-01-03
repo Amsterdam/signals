@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from signals.apps.signals.models import update_status
+from signals.apps.signals.managers import update_status
 from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 

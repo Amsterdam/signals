@@ -45,5 +45,7 @@ isort
 pytest
 pytest-cov
 pytest-django
+pytest-xdist
+pytest-timeout
 tox
 xmlunittest

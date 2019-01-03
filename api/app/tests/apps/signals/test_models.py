@@ -58,7 +58,7 @@ class TestSignalManager(TransactionTestCase):
             'created_by': 'test@example.com',
         }
 
-    @mock.patch('signals.apps.signals.models.create_initial', autospec=True)
+    @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
     def test_create_initial(self, patched_create_initial):
         # Create the full Signal
         signal = Signal.actions.create_initial(
@@ -80,7 +80,8 @@ class TestSignalManager(TransactionTestCase):
         patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
                                                             signal_obj=signal)
 
-    def test_create_initial_with_priority_data(self):
+    @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
+    def test_create_initial_with_priority_data(self, patched_create_initial):
         signal = Signal.actions.create_initial(
             self.signal_data,
             self.location_data,
@@ -91,7 +92,7 @@ class TestSignalManager(TransactionTestCase):
 
         self.assertEqual(signal.priority.priority, Priority.PRIORITY_HIGH)
 
-    @mock.patch('signals.apps.signals.models.update_location', autospec=True)
+    @mock.patch('signals.apps.signals.managers.update_location', autospec=True)
     def test_update_location(self, patched_update_location):
         signal = factories.SignalFactory.create()
 
@@ -110,7 +111,7 @@ class TestSignalManager(TransactionTestCase):
             location=location,
             prev_location=prev_location)
 
-    @mock.patch('signals.apps.signals.models.update_status', autospec=True)
+    @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
     @mock.patch.object(Status, 'clean')
     def test_update_status(self, mocked_status_clean, patched_update_status):
         signal = factories.SignalFactory.create()
@@ -137,7 +138,7 @@ class TestSignalManager(TransactionTestCase):
             status=status,
             prev_status=prev_status)
 
-    @mock.patch('signals.apps.signals.models.update_category_assignment', autospec=True)
+    @mock.patch('signals.apps.signals.managers.update_category_assignment', autospec=True)
     def test_update_category_assignment(self, patched_update_category_assignment):
         signal = factories.SignalFactory.create()
 
@@ -157,7 +158,7 @@ class TestSignalManager(TransactionTestCase):
             category_assignment=category_assignment,
             prev_category_assignment=prev_category_assignment)
 
-    @mock.patch('signals.apps.signals.models.update_reporter', autospec=True)
+    @mock.patch('signals.apps.signals.managers.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
         signal = factories.SignalFactory.create()
 
@@ -175,7 +176,7 @@ class TestSignalManager(TransactionTestCase):
             reporter=reporter,
             prev_reporter=prev_reporter)
 
-    @mock.patch('signals.apps.signals.models.update_priority')
+    @mock.patch('signals.apps.signals.managers.update_priority')
     def test_update_priority(self, patched_update_priority):
         signal = factories.SignalFactory.create()
 
@@ -193,7 +194,7 @@ class TestSignalManager(TransactionTestCase):
             priority=priority,
             prev_priority=prev_priority)
 
-    @mock.patch('signals.apps.signals.models.create_note')
+    @mock.patch('signals.apps.signals.managers.create_note')
     def test_create_note(self, patched_create_note):
         signal = factories.SignalFactory.create()
 

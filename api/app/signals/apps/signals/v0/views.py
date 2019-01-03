@@ -1,3 +1,7 @@
+"""
+Views that are used exclusively by the V0 API
+"""
+
 import logging
 import re
 
@@ -6,47 +10,35 @@ from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.filters import (
+from signals.apps.signals.api_generics.filters import (
     FieldMappingOrderingFilter,
     LocationFilter,
     SignalFilter,
     StatusFilter
 )
-from signals.apps.signals.models import (
-    CategoryAssignment,
-    Location,
-    MainCategory,
-    Note,
-    Priority,
-    Signal,
-    Status,
-    SubCategory
-)
-from signals.apps.signals.permissions import (
+from signals.apps.signals.api_generics.permissions import (
     CategoryPermission,
     LocationPermission,
     NotePermission,
     PriorityPermission,
     StatusPermission
 )
-from signals.apps.signals.serializers import (
+from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
+from signals.apps.signals.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
-    MainCategoryHALSerializer,
     NoteHALSerializer,
     PriorityHALSerializer,
     SignalAuthHALSerializer,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
-    StatusHALSerializer,
-    SubCategoryHALSerializer
+    StatusHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
@@ -199,27 +191,6 @@ class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_class = PriorityHALSerializer
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ['priority', ]
-
-
-class MainCategoryViewSet(DatapuntViewSet):
-    queryset = MainCategory.objects.all()
-    serializer_detail_class = MainCategoryHALSerializer
-    serializer_class = MainCategoryHALSerializer
-    lookup_field = 'slug'
-
-
-class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = SubCategory.objects.all()
-    serializer_class = SubCategoryHALSerializer
-    pagination_class = HALPagination
-
-    def get_object(self):
-        queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset,
-                                main_category__slug=self.kwargs['slug'],
-                                slug=self.kwargs['sub_slug'])
-        self.check_object_permissions(self.request, obj)
-        return obj
 
 
 class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):

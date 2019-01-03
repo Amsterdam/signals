@@ -1,3 +1,6 @@
+"""
+Serializsers that are used exclusively by the V0 API
+"""
 import logging
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -6,23 +9,12 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
-from signals.apps.signals.fields import (
-    CategoryLinksField,
-    MainCategoryHyperlinkedIdentityField,
-    NoteHyperlinkedIdentityField,
-    PriorityLinksField,
-    SignalLinksField,
-    SignalUnauthenticatedLinksField,
-    StatusLinksField,
-    SubCategoryHyperlinkedIdentityField,
-    SubCategoryHyperlinkedRelatedField
-)
-from signals.apps.signals.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.mixins import AddExtrasMixin
+from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
     Location,
-    MainCategory,
     Note,
     Priority,
     Reporter,
@@ -30,7 +22,17 @@ from signals.apps.signals.models import (
     Status,
     SubCategory
 )
-from signals.apps.signals.validators import NearAmsterdamValidatorMixin
+from signals.apps.signals.v0.fields import (
+    CategoryLinksField,
+    PriorityLinksField,
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField
+)
+from signals.apps.signals.v1.fields import (
+    NoteHyperlinkedIdentityField,
+    SubCategoryHyperlinkedRelatedField
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +73,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
             raise PermissionDenied("Melding is reeds van foto voorzien.")
 
         if image:
-            setattr(instance, 'image', image)
-            instance.save()
+            Signal.actions.add_image(image, instance)
 
         return instance
 
@@ -521,40 +522,6 @@ class _NestedDepartmentSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'is_intern',
-        )
-
-
-class SubCategoryHALSerializer(HALSerializer):
-    serializer_url_field = SubCategoryHyperlinkedIdentityField
-    _display = DisplayField()
-    departments = _NestedDepartmentSerializer(many=True)
-
-    class Meta:
-        model = SubCategory
-        fields = (
-            '_links',
-            '_display',
-            'name',
-            'slug',
-            'handling',
-            'departments',
-            'is_active',
-        )
-
-
-class MainCategoryHALSerializer(HALSerializer):
-    serializer_url_field = MainCategoryHyperlinkedIdentityField
-    _display = DisplayField()
-    sub_categories = SubCategoryHALSerializer(many=True)
-
-    class Meta:
-        model = MainCategory
-        fields = (
-            '_links',
-            '_display',
-            'name',
-            'slug',
-            'sub_categories',
         )
 
 

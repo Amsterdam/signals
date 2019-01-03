@@ -1,6 +1,8 @@
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """
+# ! There is also a workflow.py file in the ZDS. This file needs to be updated with
+# ! the status as wel when this file is updated.
 
 # Internal statusses
 LEEG = ''
@@ -10,6 +12,8 @@ BEHANDELING = 'b'
 ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
+
+HEROPEND = 'reopened'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
@@ -27,6 +31,7 @@ STATUS_CHOICES_API = (
     (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
+    (HEROPEND, 'Heropend'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -95,6 +100,20 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
     ],
-    AFGEHANDELD: [],
-    GEANNULEERD: [],
+    AFGEHANDELD: [
+        HEROPEND,
+    ],
+    GEANNULEERD: [
+        HEROPEND,
+    ],
+    # TODO: Check assumption that HEROPEND has equivalent role to GEMELD. Note
+    # that this leads to many new transitions in the workflow state machine.
+    HEROPEND: [
+        AFWACHTING,
+        BEHANDELING,
+        ON_HOLD,
+        AFGEHANDELD,
+        GEANNULEERD,
+        TE_VERZENDEN,
+    ],
 }
