@@ -3,6 +3,7 @@ This module contains a minimal implementation of the StUF standard as it
 applies to communication between the SIA system and Sigmax CityControl.
 """
 import logging
+import re
 
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
@@ -68,35 +69,61 @@ def _handle_unknown_soap_action(request):
 
 
 def _parse_zaak_identificatie(zaak_id):
-    """Extract `Signal` identifier in SIA from CityControl identifier string."""
-    # Both old and new style "zaak identificatie" strings coming from
-    # CityControl are supported. So SIA-123 and SIA-123.01 styles are supported
-    # and both should produce the integer: 123
-    if zaak_id.startswith('SIA-'):
-        chunks = zaak_id[4:].split('.')
-        n_chunks = len(chunks)
+    """Parse incoming zaakidentificatie (find SIA id and sequence number)."""
+    old_style_pattern = re.compile(r'^\s*SIA-(?P<_id>[1-9]\d*)\s*$')
+    new_style_pattern = re.compile(r'^\s*SIA-(?P<_id>[1-9]\d*)\.(?P<sequence_number>\d{2})\s*$')
 
-        if n_chunks in [1, 2]:
-            return int(chunks[0])
+    if zaak_id is None:
+        raise ValueError("Incorrect value for sia_id: {}".format(repr(zaak_id)))
 
-    raise ValueError("Incorrect value for sia_id: '{}'".format(zaak_id))
+    m = old_style_pattern.match(zaak_id)
+    if m:
+        d = m.groupdict()
+        return int(d['_id']), None
+
+    m = new_style_pattern.match(zaak_id)
+    if m:
+        d = m.groupdict()
+        _id = int(d['_id'])
+        sequence_number = int(d['sequence_number'])
+
+        if sequence_number == 0:  # Cannot have 0 as sequence_number
+            raise ValueError("Incorrect value for sia_id: {}".format(repr(zaak_id)))
+
+        return _id, sequence_number
+
+    else:
+        raise ValueError("Incorrect value for sia_id: {}".format(repr(zaak_id)))
 
 
-def _handle_actualiseerZaakstatus_Lk01(request):
+def _handle_actualiseerZaakstatus_Lk01(request):  # noqa: C901
     """
     Checks that incoming message has required info, updates Signal if ok.
     """
-    # TODO: Check that the incoming message matches our expectations, else Fo03
+    # Note: `sequence_number` below is not currently checked against outstanding
+    # meldingen (Signal instances) sent to CityControl. This is safe because the
+    # sequence numbers are only relevant in the CityControl software (and we
+    # reply using exactly the sequence number provided by CityControl).
 
     request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
     zaak_id = request_data['zaak_id']  # zaak identifier in CityControl
 
-    # Retrieve the relevant Signal, error out if it cannot be found
+    # Retrieve the relevant Signal, error out if it cannot be found or incoming
+    # zaak identificatie cannot be parsed.
     try:
-        _id = _parse_zaak_identificatie(zaak_id)  # raise ValueError or AttributeError
+        _id, sequence_number = _parse_zaak_identificatie(zaak_id)
         signal = Signal.objects.get(pk=_id)
-    except (Signal.DoesNotExist, ValueError, AttributeError):
+    except Signal.DoesNotExist:
         error_msg = f'Melding met sia_id {zaak_id} niet gevonden.'
+        logger.warning(error_msg, exc_info=True)
+        return render(
+            request,
+            'sigmax/actualiseerZaakstatus_Fo03.xml',
+            context={'error_msg': error_msg, },
+            content_type='text/xml; charset=utf-8',
+            status=500)
+    except ValueError as e:
+        error_msg = str(e)
         logger.warning(error_msg, exc_info=True)
         return render(
             request,
@@ -138,7 +165,7 @@ def _handle_actualiseerZaakstatus_Lk01(request):
     try:
         Signal.actions.update_status(data=status_data, signal=signal)
     except ValidationError:
-        error_msg = f'Melding met zaak identificatie {zaak_id} was niet in verzonden staat in SIA.'
+        error_msg = f'Melding met zaak identificatie {zaak_id} en volgnummer {sequence_number} was niet in verzonden staat in SIA.'  # noqa
         logger.warning(error_msg, exc_info=True)
         return render(
             request,
@@ -147,9 +174,16 @@ def _handle_actualiseerZaakstatus_Lk01(request):
             content_type='text/xml; charset=utf-8',
             status=500)
 
-    response = render(request, 'sigmax/actualiseerZaakstatus_Bv03.xml', context={
-        'signal': signal
-    }, content_type='text/xml; charset=utf-8', status=200)
+    bv03_context = {'signal': signal}
+    if sequence_number is not None:
+        bv03_context['sequence_number'] = '{0:02d}'.format(sequence_number)
+
+    response = render(
+        request,
+        'sigmax/actualiseerZaakstatus_Bv03.xml',
+        context=bv03_context,
+        content_type='text/xml; charset=utf-8', status=200
+    )
 
     logging.warning('SIA sent the following Bv03 message:', extra={
         'content': response.content.decode('utf-8')

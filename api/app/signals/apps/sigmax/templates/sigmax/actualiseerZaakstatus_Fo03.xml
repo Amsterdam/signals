@@ -15,8 +15,11 @@
                <organisatie>SMX</organisatie>
                <applicatie>CTC</applicatie>
             </ontvanger>
-            <referentienummer>{{ signal.sia_id }}</referentienummer>
-            <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
+           {% if sequence_number %}
+           <referentienummer>{{ signal.sia_id }}.{{ sequence_number }}</referentienummer>
+           {% else %}
+           <referentienummer>{{ signal.sia_id }}</referentienummer>
+           {% endif %}            <tijdstipBericht>{% now "YmdHis" %}</tijdstipBericht>
          </stuurgegevens>
          <body>
             <code>Fo03</code>

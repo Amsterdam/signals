@@ -73,6 +73,22 @@ class TestJWTAuthBackend(TestCase):
         self.assertEqual(user, self.normal_user)
         self.assertEqual(scope, 'SIG/ALL')
 
+    @mock.patch('signals.auth.backend.cache')
+    def test_get_token_subject_is_none(self, mocked_cache):
+        # In case the subject is not set on the JWT token (as the `sub claim`).
+        # This test demonstrates the problem. See SIG-889 for next steps.
+
+        jwt_auth_backend = backend.JWTAuthBackend()
+
+        mocked_request = mock.Mock()
+        mocked_request.is_authorized_for.return_value = True
+        mocked_request.get_token_subject = None
+
+        mocked_cache.get.return_value = None  # Force database lookup
+
+        with self.assertRaises(AttributeError):
+            jwt_auth_backend.authenticate(mocked_request)
+
     # --- Note ---
     # For local development the "always_ok" user with email=settings.TEST_LOGIN
     # must be present to bypass the OAuth2 check. Previous versions of the

@@ -207,6 +207,54 @@ class TestSoapEndpoint(APITestCase):
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
 
+    def test_with_signal_for_message_correct_state_new_style_zaak_identificatie(self):
+        signal = SignalFactoryValidLocation.create()
+        signal.status.state = workflow.VERZONDEN
+        signal.status.save()
+        signal.refresh_from_db()
+
+        self.assertEqual(Signal.objects.count(), 1)
+
+        incoming_context = {
+            'signal': signal,
+            'tijdstipbericht': '20180927100000',
+            'resultaat_omschrijving': 'Op locatie geweest, niets aangetroffen',
+            'resultaat_toelichting': 'Het probleem is opgelost',
+            'resultaat_datum': '2018101111485276',
+            'sequence_number': '05',
+        }
+        incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
+
+        # authenticate
+        superuser = SuperUserFactory.create()
+        self.client.force_authenticate(user=superuser)
+
+        # call our SOAP endpoint
+        response = self.client.post(
+            SOAP_ENDPOINT,
+            data=incoming_msg,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            content_type='text/xml',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(str(signal.sia_id) + '.05', response.content.decode('utf-8', 'strict'))
+        self.assertIn('Bv03', response.content.decode('utf-8', 'strict'))
+
+        signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+        self.assertEqual(
+            signal.status.text,
+            'Op locatie geweest, niets aangetroffen: Het probleem is opgelost'
+        )
+        self.assertEqual(signal.status.extra_properties, {
+            'sigmax_datum_afgehandeld': incoming_context['resultaat_datum'],
+            'sigmax_resultaat': incoming_context['resultaat_omschrijving'],
+            'sigmax_reden': incoming_context['resultaat_toelichting'],
+        })
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
+
     def test_with_signal_for_message_correct_state_no_resultaat_toelichting(self):
         signal = SignalFactoryValidLocation.create()
         signal.status.state = workflow.VERZONDEN
@@ -282,15 +330,50 @@ class TestProcessTestActualiseerZaakStatus(TestCase):
 
 class TestParseZaakIdentificatie(TestCase):
     def test_correct_zaak_identificatie(self):
-        self.assertEqual(_parse_zaak_identificatie('SIA-987'), 987)  # old
-        self.assertEqual(_parse_zaak_identificatie('SIA-987.01'), 987)  # new
+        # Test backwards compatibility
+        self.assertEqual(_parse_zaak_identificatie('SIA-111'), (111, None))
+
+        # Test new style
+        self.assertEqual(_parse_zaak_identificatie('SIA-123.01'), (123, 1))
+        self.assertEqual(_parse_zaak_identificatie('SIA-99.05'), (99, 5))
+
+        # Accept extra white space before and/or after SIA id and sequence number
+        self.assertEqual(_parse_zaak_identificatie('SIA-99.05  '), (99, 5))
+        self.assertEqual(_parse_zaak_identificatie('  SIA-99.05  '), (99, 5))
+        self.assertEqual(_parse_zaak_identificatie('  SIA-99.05'), (99, 5))
 
     def test_wrong_zaak_identificatie(self):
-        with self.assertRaises(ValueError):
-            _parse_zaak_identificatie('NOT A SIA ID')
+        should_fail = [
+            # Do not accept 0 padding in SIA id
+            'SIA-0',
+            'SIA-0.01',
+            'SIA-01',
+            'SIA-01.01',
 
-        with self.assertRaises(ValueError):
-            _parse_zaak_identificatie('SIA-NOTNUMBER')
+            # Do not accept 0 as a sequence number
+            'SIA-1.00',
+
+            # Too high sequence number (max two digits)
+            'SIA-1.100',
+
+            # SIA id must be present
+            'SIA-.01',
+
+            # Do not accept whitespace inside the SIA id and sequence number
+            'SIA- 123',
+            'SIA- 123.01',
+            'SIA-123. 01',
+            'SIA-123 .01',
+
+            # Miscellaneous misspellings
+            'SII-111',
+            'SIA-99.05.02',
+            'SIA-99.05 .02',
+            'SIA-99.O5',
+        ]
+        for wrong_zaak_identificatie in should_fail:
+            with self.assertRaises(ValueError):
+                _parse_zaak_identificatie(wrong_zaak_identificatie)
 
     def test_empty_zaak_identificatie(self):
         with self.assertRaises(ValueError):
@@ -300,5 +383,5 @@ class TestParseZaakIdentificatie(TestCase):
             _parse_zaak_identificatie('SIA-')
 
     def test_incorrect_type(self):
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(ValueError):
             _parse_zaak_identificatie(None)
