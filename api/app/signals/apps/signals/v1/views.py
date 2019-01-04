@@ -15,14 +15,21 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
 
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import (
+    History,
+    MainCategory,
+    Signal,
+    Status,
+    SubCategory,
+)
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    SubCategoryHALSerializer
+    StatusHALSerializer,
+    SubCategoryHALSerializer,
 )
 from signals.auth.backend import JWTAuthBackend
 
@@ -87,6 +94,33 @@ class PrivateSignalViewSet(DatapuntViewSet):
 
         # TODO: Check what to do about the headers (see V0 API)
         return Response({}, status=HTTP_202_ACCEPTED)
+
+    # Speculative (subject to business approval) - only serialize the current
+    # information on the detail view of a `signal` instance, on paths below that
+    # show the various update histories - leads to smaller JSON on the detail
+    # view page. This is a slight deviation from the original V1 design.
+    @action(detail=True, methods=['GET'])
+    def statusses(self, request, pk=None):  # required for compat. with V0
+        status_entries = Status.objects.filter(_signal__id=pk)
+        serializer = StatusHALSerializer(status_entries, many=True)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['GET'])
+    def locations(self, request, pk=None):
+        return Response({'msg': 'not implemented yet'})
+
+    @action(detail=True, methods=['GET'])
+    def categories(self, request, pk=None):
+        return Response({'msg': 'not implemented yet'})
+
+    @action(detail=True, methods=['GET'])
+    def priorities(self, request, pk=None):
+        return Response({'msg': 'not implemented yet'})
+
+    @action(detail=True, methods=['GET'])
+    def notes(self, request, pk=None):  # required for compat. with V0
+        return Response({'msg': 'not implemented yet'})
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
