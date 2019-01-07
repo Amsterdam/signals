@@ -5,13 +5,24 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory, Status
+from signals.apps.signals.models import (
+    CategoryAssignment,
+    History,
+    Location,
+    MainCategory,
+    Note,
+    Priority,
+    Signal,
+    SubCategory,
+    Status
+)
 from signals.apps.signals.v0.serializers import _NestedDepartmentSerializer  # TODO: ../generic/.. ?
 from signals.apps.signals.v1.fields import (
     MainCategoryHyperlinkedIdentityField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
     SubCategoryHyperlinkedIdentityField,
+    SubCategoryHyperlinkedRelatedField,
 )
 from signals.apps.signals import workflow
 
@@ -76,6 +87,34 @@ class HistoryHalSerializer(HALSerializer):
         )
 
 
+class CategoryHALSerializer(HALSerializer):
+    # Should be required, but to make it work with the backwards compatibility fix it's not required
+    # at the moment..
+    sub = serializers.CharField(source='sub_category.name', read_only=True)
+    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
+    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+
+    # Backwards compatibility fix for departments, should be retrieved from category terms resource.
+    department = serializers.SerializerMethodField(source='sub_category.departments',
+                                                   read_only=True)
+
+    class Meta(object):
+        model = CategoryAssignment
+        fields = (
+            'sub',
+            'sub_slug',
+            'main',
+            'main_slug',
+            'department',
+            'created_by',
+            'created_at',
+        )
+
+    def get_department(self, obj):
+        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+
+
 class StatusHALSerializer(HALSerializer):
     state_display = serializers.CharField(source='get_state_display', read_only=True)
 
@@ -89,6 +128,45 @@ class StatusHALSerializer(HALSerializer):
             'state_display',
             'extra_properties',
             'created_at',
+        )
+
+
+class LocationHALSerializer(HALSerializer):
+
+    class Meta:
+        model = Location
+        fields = (
+            'id',
+            'stadsdeel',
+            'buurt_code',
+            'address',
+            'geometrie',
+            'created_by',
+            'extra_properties',
+            'created_at',
+        )
+
+
+class PriorityHALSerializer(HALSerializer):
+
+    class Meta:
+        model = Priority
+        fields = (
+            'id',
+            'priority',
+            'created_at',
+            'created_by',
+        )
+
+
+class NoteHALSerializer(HALSerializer):
+
+    class Meta:
+        model = Note
+        fields = (
+            'text',
+            'created_at',
+            'created_by',
         )
 
 

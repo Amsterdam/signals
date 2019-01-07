@@ -16,16 +16,24 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals.apps.signals.models import (
+    CategoryAssignment,
     History,
+    Location,
     MainCategory,
+    Note,
+    Priority,
     Signal,
     Status,
     SubCategory,
 )
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.serializers import (
+    CategoryHALSerializer,
     HistoryHalSerializer,
+    LocationHALSerializer,
     MainCategoryHALSerializer,
+    NoteHALSerializer,
+    PriorityHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     StatusHALSerializer,
@@ -108,19 +116,31 @@ class PrivateSignalViewSet(DatapuntViewSet):
 
     @action(detail=True, methods=['GET'])
     def locations(self, request, pk=None):
-        return Response({'msg': 'not implemented yet'})
+        location_entries = Location.objects.filter(_signal__id=pk)
+        serializer = LocationHALSerializer(location_entries, many=True)
+
+        return Response(serializer.data)
 
     @action(detail=True, methods=['GET'])
     def categories(self, request, pk=None):
-        return Response({'msg': 'not implemented yet'})
+        category_assignment_entries = CategoryAssignment.objects.filter(_signal__id=pk)
+        serializer = CategoryHALSerializer(category_assignment_entries, many=True)
+
+        return Response(serializer.data)
 
     @action(detail=True, methods=['GET'])
     def priorities(self, request, pk=None):
-        return Response({'msg': 'not implemented yet'})
+        priority_entries = Priority.objects.filter(_signal__id=pk)
+        serializer = PriorityHALSerializer(priority_entries, many=True)
+
+        return Response(serializer.data)
 
     @action(detail=True, methods=['GET'])
     def notes(self, request, pk=None):  # required for compat. with V0
-        return Response({'msg': 'not implemented yet'})
+        note_entries = Note.objects.filter(_signal__id=pk)
+        serializer = NoteHALSerializer(note_entries, many=True)
+
+        return Response(serializer.data)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
