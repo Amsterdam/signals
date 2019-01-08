@@ -16,27 +16,17 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
 
 from signals.apps.signals.models import (
-    CategoryAssignment,
     History,
-    Location,
     MainCategory,
-    Note,
-    Priority,
     Signal,
-    Status,
     SubCategory,
 )
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.serializers import (
-    CategoryHALSerializer,
     HistoryHalSerializer,
-    LocationHALSerializer,
     MainCategoryHALSerializer,
-    NoteHALSerializer,
-    PriorityHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    StatusHALSerializer,
     SubCategoryHALSerializer,
 )
 from signals.auth.backend import JWTAuthBackend
@@ -72,11 +62,23 @@ class PrivateSignalViewSet(DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )
 
-    @action(detail=True)  # default GET gets routed here
+    @action(detail=True)
     def history(self, request, pk=None):
-        history_entries = History.objects.filter(_signal__id=pk)
-        serializer = HistoryHalSerializer(history_entries, many=True)
+        """History endpoint filterable by action."""
+        POSSIBLE_HISTORY_ENTRIES = [
+            'UPDATE_STATUS',
+            'UPDATE_PRIORITY',
+            'UPDATE_CATEGORY_ASSIGNMENT',
+            'CREATE_NOTE',
+            'UPDATE_LOCATION',
+        ]
 
+        history_entries = History.objects.filter(_signal__id=pk)
+        what = self.request.query_params.get('what', None)
+        if what and what in POSSIBLE_HISTORY_ENTRIES:
+            history_entries = history_entries.filter(what=what)
+
+        serializer = HistoryHalSerializer(history_entries, many=True)
         return Response(serializer.data)
 
     # https://stackoverflow.com/questions/45564130/django-rest-framework-image-upload
@@ -102,45 +104,6 @@ class PrivateSignalViewSet(DatapuntViewSet):
 
         # TODO: Check what to do about the headers (see V0 API)
         return Response({}, status=HTTP_202_ACCEPTED)
-
-    # Speculative (subject to business approval) - only serialize the current
-    # information on the detail view of a `signal` instance, on paths below that
-    # show the various update histories - leads to smaller JSON on the detail
-    # view page. This is a slight deviation from the original V1 design.
-    @action(detail=True, methods=['GET'])
-    def statusses(self, request, pk=None):  # required for compat. with V0
-        status_entries = Status.objects.filter(_signal__id=pk)
-        serializer = StatusHALSerializer(status_entries, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['GET'])
-    def locations(self, request, pk=None):
-        location_entries = Location.objects.filter(_signal__id=pk)
-        serializer = LocationHALSerializer(location_entries, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['GET'])
-    def categories(self, request, pk=None):
-        category_assignment_entries = CategoryAssignment.objects.filter(_signal__id=pk)
-        serializer = CategoryHALSerializer(category_assignment_entries, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['GET'])
-    def priorities(self, request, pk=None):
-        priority_entries = Priority.objects.filter(_signal__id=pk)
-        serializer = PriorityHALSerializer(priority_entries, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['GET'])
-    def notes(self, request, pk=None):  # required for compat. with V0
-        note_entries = Note.objects.filter(_signal__id=pk)
-        serializer = NoteHALSerializer(note_entries, many=True)
-
-        return Response(serializer.data)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

@@ -99,13 +99,6 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
             ('image', dict(href=self.get_url(value, "private-signals-image", request, None))),
-
-            # speculative, see comment in the ./views.py PrivateSignalViewSet
-            ('statusses', dict(href=self.get_url(value, "private-signals-statusses", request, None))),
-            ('locations', dict(href=self.get_url(value, "private-signals-locations", request, None))),
-            ('categories', dict(href=self.get_url(value, "private-signals-categories", request, None))),
-            ('priorities', dict(href=self.get_url(value, "private-signals-priorities", request, None))),
-            ('notes', dict(href=self.get_url(value, "private-signals-notes", request, None))),
         ])
 
         return result
