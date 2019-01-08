@@ -305,11 +305,23 @@ class SignalAuthHALSerializer(HALSerializer):
     priority = _NestedPriorityModelSerializer(read_only=True)
     image = serializers.ImageField(source='image_crop', read_only=True)
     notes_count = serializers.SerializerMethodField()
+    zds_case = serializers.SerializerMethodField()
+    zds_statusses = serializers.SerializerMethodField()
 
     serializer_url_field = SignalLinksField
 
     def get_notes_count(self, obj):
         return obj.notes.count()
+
+    def get_zds_case(self, obj):
+        if hasattr(obj, 'case'):
+            return obj.case.get_case()
+        return {}
+
+    def get_zds_statusses(self, obj):
+        if hasattr(obj, 'case'):
+            return obj.case.get_statusses()
+        return []
 
     class Meta(object):
         model = Signal
@@ -334,12 +346,16 @@ class SignalAuthHALSerializer(HALSerializer):
             'image',
             'extra_properties',
             'notes_count',
+            'zds_case',
+            'zds_statusses',
         )
         read_only_fields = (
             'id',
             'signal_id',
             'created_at',
             'updated_at',
+            'zds_case',
+            'zds_statusses',
         )
 
 

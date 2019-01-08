@@ -450,9 +450,9 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 #
 # ZRC settings
 # TODO: This needs to contain the correct settings for the staging environment Amsterdam.
-ZRC_HOST = 'ref.tst.vng.cloud'
-ZRC_PORT = '443'
-ZRC_SCHEME = 'https'
+ZRC_HOST = os.getenv('ZRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
+ZRC_PORT = os.getenv('ZRC_PORT', '443')
+ZRC_SCHEME = os.getenv('ZRC_SCHEME', 'https')
 ZRC_AUTH = {
     'client_id': os.getenv('ZRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
     'secret': os.getenv('ZRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
@@ -461,6 +461,9 @@ ZRC_AUTH = {
         'zds.scopes.statussen.toevoegen',
         'zds.scopes.zaken.lezen',
         'zds.scopes.zaaktypes.lezen',
+    ],
+    'zaaktypes': [
+        'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2'
     ]
 }
 ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
@@ -468,9 +471,9 @@ ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
 
 # DRC settings
 # TODO: This needs to contain the correct settings for the staging environment Amsterdam.
-DRC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
-DRC_PORT = '443'
-DRC_SCHEME = 'https'
+DRC_HOST = os.getenv('DRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
+DRC_PORT = os.getenv('DRC_PORT', '443')
+DRC_SCHEME = os.getenv('DRC_SCHEME', 'https')
 DRC_AUTH = {
     'client_id': os.getenv('DRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
     'secret': os.getenv('DRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
@@ -480,9 +483,9 @@ DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
 
 # ZTC settings
 # TODO: This needs to contain the correct settings for the staging environment Amsterdam.
-ZTC_HOST = 'ref.tst.vng.cloud'  # should be a staging domain.
-ZTC_PORT = '443'
-ZTC_SCHEME = 'https'
+ZTC_HOST = os.getenv('ZTC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
+ZTC_PORT = os.getenv('ZTC_PORT', '443')
+ZTC_SCHEME = os.getenv('ZTC_SCHEME', 'https')
 ZTC_AUTH = {
     'client_id': os.getenv('ZTC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
     'secret': os.getenv('ZTC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),

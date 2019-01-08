@@ -15,11 +15,28 @@ class CaseSignal(CreatedUpdatedModel):
     objects = models.Manager()
     actions = CaseSignalManager()
 
+    __case_cache = None
+    __status_history = None
+
     class Meta:
         ordering = ('created_at', )
 
     def __str__(self):
         return self.zrc_link
+
+    def get_case(self):
+        from .tasks import get_case
+        if not self.__case_cache:
+            self.__case_cache = get_case(self.signal)
+        return self.__case_cache
+
+    def get_statusses(self):
+        from .tasks import get_status_history, get_status_type
+        if not self.__status_history:
+            self.__status_history = get_status_history(self.signal)
+            for state in self.__status_history:
+                state['statusType'] = get_status_type(state['statusType'])
+        return self.__status_history
 
     @property
     def document_url(self):

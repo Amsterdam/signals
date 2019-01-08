@@ -228,8 +228,13 @@ def get_status_history(signal):
     :return: response
     """
     try:
-        response = zds_client.zrc.list('status', params={
+        response = zds_client.zrc.list('status', query_params={
             'zaak': signal.case.zrc_link})
         return response
     except ObjectDoesNotExist:
         return []
+
+
+def get_status_type(url):
+    response = zds_client.ztc.retrieve('statustype', url=url)
+    return response
