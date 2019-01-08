@@ -15,8 +15,10 @@ class CaseSignal(CreatedUpdatedModel):
     objects = models.Manager()
     actions = CaseSignalManager()
 
-    __case_cache = None
-    __status_history = None
+    # Local cache
+    cache_case = None
+    cache_status_history = None
+    cache_images = None
 
     class Meta:
         ordering = ('created_at', )
@@ -26,17 +28,27 @@ class CaseSignal(CreatedUpdatedModel):
 
     def get_case(self):
         from .tasks import get_case
-        if not self.__case_cache:
-            self.__case_cache = get_case(self.signal)
-        return self.__case_cache
+        print(self.cache_case)
+        if not self.cache_case:
+            self.cache_case = get_case(self.signal)
+        return self.cache_case
 
     def get_statusses(self):
         from .tasks import get_status_history, get_status_type
-        if not self.__status_history:
-            self.__status_history = get_status_history(self.signal)
-            for state in self.__status_history:
+        if not self.cache_status_history:
+            self.cache_status_history = get_status_history(self.signal)
+            for state in self.cache_status_history:
                 state['statusType'] = get_status_type(state['statusType'])
-        return self.__status_history
+        return self.cache_status_history
+
+    def get_images(self):
+        from .tasks import get_documents_from_case, get_information_object
+        if not self.cache_images:
+            self.cache_images = get_documents_from_case(self.signal)
+
+            for image in self.cache_images:
+                image['informatieobject'] = get_information_object(image['informatieobject'])
+        return self.cache_images
 
     @property
     def document_url(self):

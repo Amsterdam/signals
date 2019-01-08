@@ -1,0 +1,15 @@
+{
+    "url": "http://example.com",
+    "identificatie": "string",
+    "bronorganisatie": "string",
+    "creatiedatum": "2018-11-13",
+    "titel": "string",
+    "vertrouwelijkaanduiding": "openbaar",
+    "auteur": "string",
+    "formaat": "string",
+    "taal": "aar",
+    "inhoud": "string",
+    "link": "http://example.com",
+    "beschrijving": "string",
+    "informatieobjecttype": "http://example.com"
+}

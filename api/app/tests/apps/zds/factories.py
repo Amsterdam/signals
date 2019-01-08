@@ -12,7 +12,7 @@ class CaseSignalFactory(factory.DjangoModelFactory):
         model = "zds.CaseSignal"
 
     signal = factory.SubFactory(SignalFactory)
-    zrc_link = factory.lazy_attribute(lambda obj: '{}/api/v1/zaken/{}'.format(
+    zrc_link = factory.lazy_attribute(lambda obj: '{}/zrc/api/v1/zaken/{}'.format(
         settings.ZRC_URL, uuid4()))
 
 

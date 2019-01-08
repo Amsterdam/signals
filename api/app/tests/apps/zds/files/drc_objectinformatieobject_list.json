@@ -1,7 +1,7 @@
 [
     {
         "url": "http://example.com",
-        "informatieobject": "http://example.com",
+        "informatieobject": "https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/1239d6b1-194a-4052-85c5-8c2876428531",
         "object": "http://example.com",
         "objectType": "besluit",
         "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",

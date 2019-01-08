@@ -216,7 +216,7 @@ def get_documents_from_case(signal):
 
     :return: response
     """
-    response = zds_client.drc.list('objectinformatieobject', params={
+    response = zds_client.drc.list('objectinformatieobject', query_params={
         'object': signal.case.zrc_link})
     return response
 
@@ -237,4 +237,9 @@ def get_status_history(signal):
 
 def get_status_type(url):
     response = zds_client.ztc.retrieve('statustype', url=url)
+    return response
+
+
+def get_information_object(url):
+    response = zds_client.drc.retrieve('enkelvoudiginformatieobject', url=url)
     return response

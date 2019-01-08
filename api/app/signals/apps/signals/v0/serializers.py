@@ -307,6 +307,7 @@ class SignalAuthHALSerializer(HALSerializer):
     notes_count = serializers.SerializerMethodField()
     zds_case = serializers.SerializerMethodField()
     zds_statusses = serializers.SerializerMethodField()
+    zds_images = serializers.SerializerMethodField()
 
     serializer_url_field = SignalLinksField
 
@@ -321,6 +322,11 @@ class SignalAuthHALSerializer(HALSerializer):
     def get_zds_statusses(self, obj):
         if hasattr(obj, 'case'):
             return obj.case.get_statusses()
+        return []
+
+    def get_zds_images(self, obj):
+        if hasattr(obj, 'case'):
+            return obj.case.get_images()
         return []
 
     class Meta(object):
@@ -348,6 +354,7 @@ class SignalAuthHALSerializer(HALSerializer):
             'notes_count',
             'zds_case',
             'zds_statusses',
+            'zds_images',
         )
         read_only_fields = (
             'id',
@@ -356,6 +363,7 @@ class SignalAuthHALSerializer(HALSerializer):
             'updated_at',
             'zds_case',
             'zds_statusses',
+            'zds_images',
         )
 
 

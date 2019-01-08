@@ -448,39 +448,6 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 #
 # Zaken settings
 #
-# ZRC settings
-# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
-ZRC_HOST = os.getenv('ZRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
-ZRC_PORT = os.getenv('ZRC_PORT', '443')
-ZRC_SCHEME = os.getenv('ZRC_SCHEME', 'https')
-ZRC_AUTH = {
-    'client_id': os.getenv('ZRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
-    'secret': os.getenv('ZRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
-    'scopes': [
-        'zds.scopes.zaken.aanmaken',
-        'zds.scopes.statussen.toevoegen',
-        'zds.scopes.zaken.lezen',
-        'zds.scopes.zaaktypes.lezen',
-    ],
-    'zaaktypes': [
-        'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2'
-    ]
-}
-ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
-ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
-
-# DRC settings
-# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
-DRC_HOST = os.getenv('DRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
-DRC_PORT = os.getenv('DRC_PORT', '443')
-DRC_SCHEME = os.getenv('DRC_SCHEME', 'https')
-DRC_AUTH = {
-    'client_id': os.getenv('DRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
-    'secret': os.getenv('DRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
-    'scopes': []
-}
-DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
-
 # ZTC settings
 # TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 ZTC_HOST = os.getenv('ZTC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
@@ -497,9 +464,10 @@ ZTC_URL = "{}://{}/ztc".format(ZTC_SCHEME, ZTC_HOST)
 
 HOST_URL = 'https://acc.meldingen.amsterdam.nl'
 
-ZTC_CATALOGUS_ID = '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18'
-ZTC_ZAAKTYPE_ID = 'c2f952ca-298e-488c-b1be-a87f11bd5fa2'
-ZTC_INFORMATIEOBJECTTYPE_ID = '5ab00303-1b58-4668-b054-595c0635596c'
+ZTC_CATALOGUS_ID = os.getenv('ZTC_CATALOGUS_ID', '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18')
+ZTC_ZAAKTYPE_ID = os.getenv('ZTC_ZAAKTYPE_ID', 'c2f952ca-298e-488c-b1be-a87f11bd5fa2')
+ZTC_INFORMATIEOBJECTTYPE_ID = os.getenv(
+    'ZTC_INFORMATIEOBJECTTYPE_ID', '5ab00303-1b58-4668-b054-595c0635596c')
 
 ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
     ztc_url=ZTC_URL, catalogus_id=ZTC_CATALOGUS_ID
@@ -507,8 +475,42 @@ ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
 ZTC_ZAAKTYPE_URL = '{catalogus_url}/zaaktypen/{zaaktype_id}'.format(
     catalogus_url=ZTC_CATALOGUS_URL, zaaktype_id=ZTC_ZAAKTYPE_ID,
 )
+
 ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informatietype_id}'.format(
     catalogus_url=ZTC_CATALOGUS_URL, informatietype_id=ZTC_INFORMATIEOBJECTTYPE_ID,
 )
+
+# ZRC settings
+# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
+ZRC_HOST = os.getenv('ZRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
+ZRC_PORT = os.getenv('ZRC_PORT', '443')
+ZRC_SCHEME = os.getenv('ZRC_SCHEME', 'https')
+ZRC_AUTH = {
+    'client_id': os.getenv('ZRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
+    'secret': os.getenv('ZRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
+    'scopes': [
+        'zds.scopes.zaken.aanmaken',
+        'zds.scopes.statussen.toevoegen',
+        'zds.scopes.zaken.lezen',
+        'zds.scopes.zaaktypes.lezen',
+    ],
+    'zaaktypes': [
+        ZTC_ZAAKTYPE_URL
+    ]
+}
+ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
+ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
+
+# DRC settings
+# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
+DRC_HOST = os.getenv('DRC_HOST', 'ref.tst.vng.cloud')  # should be a staging domain.
+DRC_PORT = os.getenv('DRC_PORT', '443')
+DRC_SCHEME = os.getenv('DRC_SCHEME', 'https')
+DRC_AUTH = {
+    'client_id': os.getenv('DRC_CLIENT_ID', 'mor-amsterdam-xyOyIP54BudG'),
+    'secret': os.getenv('DRC_CLIENT_SECRET', 'gdnsnNqEeDJWiDNExiSvabvOHo2KmHs9'),
+    'scopes': []
+}
+DRC_URL = "{}://{}:{}".format(DRC_SCHEME, DRC_HOST, DRC_PORT)
 
 RSIN_NUMBER = '002564440'

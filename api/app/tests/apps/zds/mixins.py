@@ -25,12 +25,17 @@ class ZDSMockMixin(object):
             'zrc_status_list': '/zrc/api/v1/statussen',
             'drc_openapi': '/drc/api/v1/schema/openapi.yaml?v=3',
             'drc_enkelvoudiginformatieobject_create': '/drc/api/v1/enkelvoudiginformatieobjecten',
+            'drc_enkelvoudiginformatieobject_read': '/drc/api/v1/enkelvoudiginformatieobjecten/',
             'drc_objectinformatieobject_create': '/drc/api/v1/objectinformatieobjecten',
             'drc_objectinformatieobject_list': '/drc/api/v1/objectinformatieobjecten',
             'ztc_openapi': '/ztc/api/v1/schema/openapi.yaml?v=3',
             'ztc_statustypen_list': (
                 '/ztc/api/v1/catalogussen/8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/' +
                 'c2f952ca-298e-488c-b1be-a87f11bd5fa2/statustypen'
+            ),
+            'ztc_statustypen_read': (
+                '/ztc/api/v1/catalogussen/8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/' +
+                'c2f952ca-298e-488c-b1be-a87f11bd5fa2/statustypen/'
             ),
         }
 
@@ -104,6 +109,12 @@ class ZDSMockMixin(object):
             return file.read()
 
     @property
+    def drc_enkelvoudiginformatieobject_read(self):
+        path = os.path.join(self.files_path, 'drc_enkelvoudiginformatieobject_read.json')
+        with open(path) as file:
+            return file.read()
+
+    @property
     def drc_objectinformatieobject_create(self):
         with open(os.path.join(self.files_path, 'drc_objectinformatieobject_create.json')) as file:
             return file.read()
@@ -124,8 +135,24 @@ class ZDSMockMixin(object):
         with open(os.path.join(self.files_path, 'ztc_statustypen_list.json')) as file:
             return file.read()
 
+    @property
+    def ztc_statustypen_read(self):
+        with open(os.path.join(self.files_path, 'ztc_statustypen_read.json')) as file:
+            return file.read()
+
     # ERRORS #######################################################################################
     @property
     def error_400(self):
         with open(os.path.join(self.files_path, '400.json')) as file:
+            return file.read()
+
+    # HELPERS ######################################################################################
+    @property
+    def ztc_statusses(self):
+        with open(os.path.join(self.files_path, 'ztc_statusses.json')) as file:
+            return file.read()
+
+    @property
+    def drc_images(self):
+        with open(os.path.join(self.files_path, 'drc_images.json')) as file:
             return file.read()

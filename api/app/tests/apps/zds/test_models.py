@@ -1,8 +1,12 @@
+import json
+
+import requests_mock
 from django.test import TestCase
 
 from signals.apps.zds.models import CaseDocument, CaseSignal
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
+from tests.apps.zds.mixins import ZDSMockMixin
 
 
 class TestCaseSignalManager(TestCase):
@@ -19,7 +23,7 @@ class TestCaseSignalManager(TestCase):
         CaseSignal.actions.add_document(case_signal)
 
 
-class TestCaseSignal(TestCase):
+class TestCaseSignal(ZDSMockMixin, TestCase):
 
     def test_str(self):
         case_signal = CaseSignalFactory()
@@ -39,6 +43,65 @@ class TestCaseSignal(TestCase):
         CaseDocumentFactory(case_signal=case_signal)
         case_document = CaseDocumentFactory(case_signal=case_signal)
         self.assertEqual(case_signal.document_url, case_document.drc_link)
+
+    @requests_mock.Mocker()
+    def test_get_case(self, mock):
+        case_signal = CaseSignalFactory()
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_zaak_read', url=case_signal.zrc_link)
+
+        self.assertEqual(case_signal.get_case(), json.loads(self.zrc_zaak_read))
+
+    def test_get_case_existing_cache(self):
+        case_signal = CaseSignalFactory()
+        case_signal.cache_case = 'Random'
+        self.assertEqual(case_signal.get_case(), 'Random')
+
+    @requests_mock.Mocker()
+    def test_get_statusses(self, mock):
+        url = (
+            'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/' +
+            '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2/' +
+            'statustypen/70ae2e9d-73a2-4f3d-849e-e0a29ef3064e'
+        )
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_status_list')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_read', url=url)
+
+        case_signal = CaseSignalFactory()
+        self.assertEqual(case_signal.get_statusses(), json.loads(self.ztc_statusses))
+
+    def test_get_statusses_existing_cache(self):
+        case_signal = CaseSignalFactory()
+        case_signal.cache_status_history = 'Random'
+        self.assertEqual(case_signal.get_statusses(), 'Random')
+
+    @requests_mock.Mocker()
+    def test_get_images(self, mock):
+        case_signal = CaseSignalFactory()
+
+        oio_url = (
+            'https://ref.tst.vng.cloud:443/drc/api/v1/objectinformatieobjecten?object={}'.format(
+                case_signal.zrc_link)
+        )
+        eio_url = (
+            'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/' +
+            '1239d6b1-194a-4052-85c5-8c2876428531'
+        )
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'drc_openapi')
+        self.get_mock(mock, 'drc_objectinformatieobject_list', url=oio_url)
+        self.get_mock(mock, 'drc_enkelvoudiginformatieobject_read', url=eio_url)
+
+        self.assertEqual(case_signal.get_images(), json.loads(self.drc_images))
+
+    def test_get_images_existing_cache(self):
+        case_signal = CaseSignalFactory()
+        case_signal.cache_images = 'Random'
+        self.assertEqual(case_signal.get_images(), 'Random')
 
 
 class TestCaseStatus(TestCase):

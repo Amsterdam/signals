@@ -314,7 +314,10 @@ class TestTasks(ZDSMockMixin, TestCase):
         self.assertEqual(response, [
             {
                 "url": "http://example.com",
-                "informatieobject": "http://example.com",
+                "informatieobject": (
+                    "https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/" +
+                    "1239d6b1-194a-4052-85c5-8c2876428531"
+                ),
                 "object": "http://example.com",
                 "objectType": "besluit",
                 "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
@@ -335,7 +338,12 @@ class TestTasks(ZDSMockMixin, TestCase):
             {
                 "url": "http://example.com",
                 "zaak": "http://example.com",
-                "statusType": "http://example.com",
+                "statusType": (
+                    "https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/" +
+                    "8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/" +
+                    "c2f952ca-298e-488c-b1be-a87f11bd5fa2/statustypen/" +
+                    "70ae2e9d-73a2-4f3d-849e-e0a29ef3064e"
+                ),
                 "datumStatusGezet": "2018-11-20T10:34:43Z",
                 "statustoelichting": "string"
             }
