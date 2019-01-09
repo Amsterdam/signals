@@ -236,10 +236,16 @@ def get_status_history(signal):
 
 
 def get_status_type(url):
+    """
+    This will fetch the needed information to show what type of status is fetched.
+    """
     response = zds_client.ztc.retrieve('statustype', url=url)
     return response
 
 
 def get_information_object(url):
+    """
+    This is used to be able to get the content url for the needed document.
+    """
     response = zds_client.drc.retrieve('enkelvoudiginformatieobject', url=url)
     return response

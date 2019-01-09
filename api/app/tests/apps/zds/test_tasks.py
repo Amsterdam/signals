@@ -19,8 +19,10 @@ from signals.apps.zds.tasks import (
     get_all_statusses,
     get_case,
     get_documents_from_case,
+    get_information_object,
     get_status,
-    get_status_history
+    get_status_history,
+    get_status_type
 )
 from tests.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
@@ -355,3 +357,44 @@ class TestTasks(ZDSMockMixin, TestCase):
 
         response = get_status_history(signal)
         self.assertEqual(response, [])
+
+    @requests_mock.Mocker()
+    def test_get_status_type(self, mock):
+        url = (
+            'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/' +
+            '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2/' +
+            'statustypen/70ae2e9d-73a2-4f3d-849e-e0a29ef3064e'
+        )
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_status_list')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_read', url=url)
+
+        case_status = CaseStatusFactory()
+
+        statusses = get_status_history(case_status.case_signal.signal)
+        response = get_status_type(statusses[0].get('statusType'))
+        self.assertIsNotNone(response)
+
+    @requests_mock.Mocker()
+    def test_get_infromatie_object(self, mock):
+        case_document = CaseDocumentFactory()
+
+        oio_url = (
+            'https://ref.tst.vng.cloud:443/drc/api/v1/objectinformatieobjecten?object={}'.format(
+                case_document.case_signal.zrc_link)
+        )
+        eio_url = (
+            'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/' +
+            '1239d6b1-194a-4052-85c5-8c2876428531'
+        )
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'drc_openapi')
+        self.get_mock(mock, 'drc_objectinformatieobject_list', url=oio_url)
+        self.get_mock(mock, 'drc_enkelvoudiginformatieobject_read', url=eio_url)
+
+        documents = get_documents_from_case(case_document.case_signal.signal)
+        response = get_information_object(documents[0].get('informatieobject'))
+        self.assertIsNotNone(response)
