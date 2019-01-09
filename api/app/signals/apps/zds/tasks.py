@@ -158,6 +158,7 @@ def create_document(signal):
         image_data = tmp_file.read()
 
     data = {
+        'bronorganisatie': settings.RSIN_NUMBER,
         'creatiedatum': timezone.now().strftime('%Y-%m-%d'),
         'titel': signal.image.name,
         'auteur': 'SIA Amsterdam',
@@ -204,10 +205,10 @@ def get_case(signal):
 
     :return: response
     """
-    if hasattr(signal, 'case'):
+    if hasattr(signal, 'case') and signal.case.zrc_link:
         response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
         return response
-    return None
+    return {}
 
 
 def get_documents_from_case(signal):

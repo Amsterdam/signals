@@ -49,6 +49,11 @@ urlpatterns = [
         name='schema-redoc'),
 ]
 
+# if 'signals.apps.zds' in settings.INSTALLED_APPS:
+urlpatterns += [
+    path('zds/', include(('signals.apps.zds.urls', 'zds'), namespace="zds")),
+]
+
 if settings.DEBUG:
     import debug_toolbar
     from django.conf.urls.static import static
