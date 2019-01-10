@@ -229,6 +229,8 @@ def get_status_history(signal):
     :return: response
     """
     try:
+        if not signal.case.zrc_link:
+            return []
         response = zds_client.zrc.list(resource='status', query_params={
             'zaak': signal.case.zrc_link})
         return response
