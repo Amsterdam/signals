@@ -32,7 +32,7 @@ De huidige versie van de SIA backend applicatie heeft 3 versie nummers:
 2. De originele API heeft een versie nummer dat niet gecommuniceerd wordt via de
    API, maar intern wel wordt bijgehouden. Deze zijn als volgt: 0.x.y
 3. De versie nummers en status van de V1 API zijn beschikbaar via de publieke
-   API op https://api.data.amsterdam.nl/signals/releases en zijn als volgt:
+   API op https://api.data.amsterdam.nl/signals en zijn als volgt:
    1.x.y
 
 Notabene: als het PATCH getal in een versie nummer 0 is wordt het weggelaten,
