@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Permission
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
@@ -78,9 +79,23 @@ class TestPrivateEndpoints(APITestCase):
             priority__id=1
         )
 
+        self.user_no_permissions = UserFactory.create()
+
+        read_permission = Permission.objects.get(codename='sia_read')
+        write_permission = Permission.objects.get(codename='sia_write')
+
+        self.user_permissions = UserFactory.create()
+        self.user_permissions.user_permissions.add(read_permission)
+        self.user_permissions.user_permissions.add(write_permission)
+
+        self.user_no_read_permissions = UserFactory.create()
+        self.user_no_read_permissions.user_permissions.add(write_permission)
+
+        self.user_no_write_permissions = UserFactory.create()
+        self.user_no_write_permissions.user_permissions.add(read_permission)
+
         # Forcing authentication
-        user = UserFactory.create()  # Normal user without any extra permissions.
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user_permissions)
 
         # Add one note to the signal
         self.note = NoteFactory(id=1, _signal=self.signal)
@@ -116,6 +131,32 @@ class TestPrivateEndpoints(APITestCase):
             response = self.client.get(url)
 
             self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
+
+    def test_get_detail_no_permissions(self):
+        self.client.logout()
+        self.client.force_login(self.user_no_permissions)
+
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
+
+        self.client.logout()
+        self.client.force_login(self.user_permissions)
+
+    def test_get_detail_no_read_permissions(self):
+        self.client.logout()
+        self.client.force_login(self.user_no_read_permissions)
+
+        for endpoint in self.endpoints:
+            url = f'{endpoint}1'
+            response = self.client.get(url)
+
+            self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
+
+        self.client.logout()
+        self.client.force_login(self.user_permissions)
 
     def test_delete_not_allowed(self):
         for endpoint in self.endpoints:

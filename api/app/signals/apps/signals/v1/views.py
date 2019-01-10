@@ -12,7 +12,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.api_generics.permissions import SIAPermissions
+from signals.apps.signals.models import MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
@@ -53,11 +54,14 @@ class PrivateSignalViewSet(DatapuntViewSet):
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )
+    permission_classes = (SIAPermissions, )
 
     @action(detail=True)  # default GET gets routed here
-    def history(self, request, pk=None):
-        history_entries = History.objects.filter(_signal__id=pk)
-        serializer = HistoryHalSerializer(history_entries, many=True)
+    def history(self, *args, **kwargs):
+        serializer = HistoryHalSerializer(
+            self.get_object().history.all(),
+            many=True
+        )
 
         return Response(serializer.data)
 
