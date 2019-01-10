@@ -43,7 +43,7 @@ Start the Postgres database and Rabbit MQ services in the background, then run t
 suite (we use Pytest as test runner, the tests themselves are Django unittest style):
 ```
 docker-compose up -d database rabbit
-docker-compose run --rm api pytest --ds=signals.settings.testing
+docker-compose run --rm api tox -e pytest
 ```
 
 Our build pipeline checks that the full test suite runs successfully, that the style
@@ -65,7 +65,7 @@ docker-compose up -d database rabbit
 
 Migrate the database:
 ```
-docker-compose run --rm python manage.py migrate
+docker-compose run --rm api python manage.py migrate
 ```
 
 Start the Signals web application:
