@@ -15,19 +15,14 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
 
-from signals.apps.signals.models import (
-    History,
-    MainCategory,
-    Signal,
-    SubCategory,
-)
+from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    SubCategoryHALSerializer,
+    SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 
