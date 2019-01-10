@@ -33,7 +33,7 @@ def get_all_statusses():
         'zaaktype_uuid': settings.ZTC_ZAAKTYPE_ID
     }
 
-    response = zds_client.ztc.list('statustype', **path_kwargs)
+    response = zds_client.ztc.list(resource='statustype', **path_kwargs)
     return response
 
 
@@ -81,7 +81,7 @@ def create_case(signal):
         data['uiterlijkeEinddatumAfdoening'] = signal.expire_date.strftime('%Y-%m-%d')
 
     try:
-        response = zds_client.zrc.create('zaak', data)
+        response = zds_client.zrc.create(resource='zaak', data=data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
         return case_signal
     except (ClientError, ConnectionError) as error:
@@ -104,7 +104,7 @@ def connect_signal_to_case(signal):
     }
 
     try:
-        zds_client.zrc.create('zaakobject', data)
+        zds_client.zrc.create(resource='zaakobject', data=data)
         CaseSignal.actions.connected_in_external_system(signal.case)
         return signal.case
     except (ClientError, ConnectionError) as error:
@@ -134,7 +134,7 @@ def add_status_to_case(signal, status):
         data['statustoelichting'] = status.text
 
     try:
-        response = zds_client.zrc.create('status', data)
+        response = zds_client.zrc.create(resource='status', data=data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_status)
         return case_status
     except (ClientError, ConnectionError) as error:
@@ -168,7 +168,7 @@ def create_document(signal):
     }
 
     try:
-        response = zds_client.drc.create("enkelvoudiginformatieobject", data)
+        response = zds_client.drc.create(resource="enkelvoudiginformatieobject", data=data)
         CaseSignal.actions.add_drc_link(response.get('url'), case_document)
         return case_document
     except (ClientError, ConnectionError) as error:
@@ -191,7 +191,7 @@ def add_document_to_case(signal, case_document):
     }
 
     try:
-        zds_client.drc.create('objectinformatieobject', data)
+        zds_client.drc.create(resource='objectinformatieobject', data=data)
         CaseSignal.actions.connected_in_external_system(case_document)
         return case_document
     except (ClientError, ConnectionError) as error:
@@ -206,7 +206,7 @@ def get_case(signal):
     :return: response
     """
     if hasattr(signal, 'case') and signal.case.zrc_link:
-        response = zds_client.zrc.retrieve('zaak', url=signal.case.zrc_link)
+        response = zds_client.zrc.retrieve(resource='zaak', url=signal.case.zrc_link)
         return response
     return {}
 
@@ -217,7 +217,7 @@ def get_documents_from_case(signal):
 
     :return: response
     """
-    response = zds_client.drc.list('objectinformatieobject', query_params={
+    response = zds_client.drc.list(resource='objectinformatieobject', query_params={
         'object': signal.case.zrc_link})
     return response
 
@@ -229,7 +229,7 @@ def get_status_history(signal):
     :return: response
     """
     try:
-        response = zds_client.zrc.list('status', query_params={
+        response = zds_client.zrc.list(resource='status', query_params={
             'zaak': signal.case.zrc_link})
         return response
     except ObjectDoesNotExist:
@@ -240,7 +240,7 @@ def get_status_type(url):
     """
     This will fetch the needed information to show what type of status is fetched.
     """
-    response = zds_client.ztc.retrieve('statustype', url=url)
+    response = zds_client.ztc.retrieve(resource='statustype', url=url)
     return response
 
 
@@ -248,5 +248,5 @@ def get_information_object(url):
     """
     This is used to be able to get the content url for the needed document.
     """
-    response = zds_client.drc.retrieve('enkelvoudiginformatieobject', url=url)
+    response = zds_client.drc.retrieve(resource='enkelvoudiginformatieobject', url=url)
     return response

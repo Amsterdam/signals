@@ -304,7 +304,7 @@ class TestTasks(ZDSMockMixin, TestCase):
         signal = SignalFactory()
 
         response = get_case(signal)
-        self.assertIsNone(response)
+        self.assertEqual(response, {})
 
     @requests_mock.Mocker()
     def test_get_documents_from_case(self, mock):

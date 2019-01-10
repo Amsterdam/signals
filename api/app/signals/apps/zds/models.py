@@ -1,4 +1,5 @@
 from django.db import models
+from requests.exceptions import ConnectionError
 
 from signals.apps.signals.models import CreatedUpdatedModel
 
@@ -28,26 +29,33 @@ class CaseSignal(CreatedUpdatedModel):
 
     def get_case(self):
         from .tasks import get_case
-        print(self.cache_case)
         if not self.cache_case:
-            self.cache_case = get_case(self.signal)
+            try:
+                self.cache_case = get_case(self.signal)
+            except ConnectionError:
+                pass
         return self.cache_case
 
     def get_statusses(self):
         from .tasks import get_status_history, get_status_type
         if not self.cache_status_history:
-            self.cache_status_history = get_status_history(self.signal)
-            for state in self.cache_status_history:
-                state['statusType'] = get_status_type(state['statusType'])
+            try:
+                self.cache_status_history = get_status_history(self.signal)
+                for state in self.cache_status_history:
+                    state['statusType'] = get_status_type(state['statusType'])
+            except ConnectionError:
+                pass
         return self.cache_status_history
 
     def get_images(self):
         from .tasks import get_documents_from_case, get_information_object
         if not self.cache_images:
-            self.cache_images = get_documents_from_case(self.signal)
-
-            for image in self.cache_images:
-                image['informatieobject'] = get_information_object(image['informatieobject'])
+            try:
+                self.cache_images = get_documents_from_case(self.signal)
+                for image in self.cache_images:
+                    image['informatieobject'] = get_information_object(image['informatieobject'])
+            except ConnectionError:
+                pass
         return self.cache_images
 
     @property
