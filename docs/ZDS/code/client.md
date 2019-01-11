@@ -1,6 +1,6 @@
 # Client
 
-[back](./index.md)
+[back](./readme.md)
 
 This is a small wrapper around the `ZDS client` created by VNG.
 

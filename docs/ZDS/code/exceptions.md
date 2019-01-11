@@ -1,6 +1,6 @@
 # Exceptions
 
-[back](./index.md)
+[back](./readme.md)
 
 This are some default exceptions. Some exceptions that are returned from the `ZDS Components` will
 be catched. These Exceptions will be thrown so we know how to handle it further.
