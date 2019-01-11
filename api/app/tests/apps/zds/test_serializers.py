@@ -1,12 +1,11 @@
-from django.test import TestCase
 import requests_mock
+from django.test import TestCase
 from zds_client.client import ClientError
 
 from signals.apps.zds.api.serializers import SignalZDSSerializer
-from signals.apps.signals.models import Signal
-
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.zds.mixins import ZDSMockMixin
+
 from .factories import CaseSignalFactory
 
 
@@ -94,7 +93,7 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
                 'url': 'http://example.com',
                 'informatieobject': [{
                     'url': 'http://example.com',
-                    'informatieobject': 'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/1239d6b1-194a-4052-85c5-8c2876428531',
+                    'informatieobject': enkelvoudiginformatieobject_url,
                     'object': 'http://example.com',
                     'objectType': 'besluit',
                     'aardRelatieWeergave': 'Hoort bij, omgekeerd: kent',
@@ -158,7 +157,7 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
                 'url': 'http://example.com',
                 'informatieobject': [{
                     'url': 'http://example.com',
-                    'informatieobject': 'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/1239d6b1-194a-4052-85c5-8c2876428531',
+                    'informatieobject': enkelvoudiginformatieobject_url,
                     'object': 'http://example.com',
                     'objectType': 'besluit',
                     'aardRelatieWeergave': 'Hoort bij, omgekeerd: kent',
@@ -177,11 +176,6 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
 
     @requests_mock.Mocker()
     def test_with_signal_case_status_error(self, mock):
-        status_type_url = (
-            'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/' +
-            '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2/' +
-            'statustypen/70ae2e9d-73a2-4f3d-849e-e0a29ef3064e'
-        )
         enkelvoudiginformatieobject_url = (
             'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/' +
             '1239d6b1-194a-4052-85c5-8c2876428531'
@@ -194,8 +188,6 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
         self.get_mock(mock, 'zrc_openapi')
         self.get_mock(mock, 'zrc_zaak_read', url=case_signal.zrc_link)
         self.get_exception_mock(mock, 'zrc_status_list', ClientError)
-        self.get_mock(mock, 'ztc_openapi')
-        self.get_mock(mock, 'ztc_statustypen_read', url=status_type_url)
         self.get_mock(mock, 'drc_openapi')
         self.get_mock(mock, 'drc_objectinformatieobject_list')
         self.get_mock(mock, 'drc_objectinformatieobject_list', url=enkelvoudiginformatieobject_url)
@@ -230,7 +222,7 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
                 'url': 'http://example.com',
                 'informatieobject': [{
                     'url': 'http://example.com',
-                    'informatieobject': 'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/1239d6b1-194a-4052-85c5-8c2876428531',
+                    'informatieobject': enkelvoudiginformatieobject_url,
                     'object': 'http://example.com',
                     'objectType': 'besluit',
                     'aardRelatieWeergave': 'Hoort bij, omgekeerd: kent',
@@ -253,10 +245,6 @@ class TestSignalZDSSerializer(ZDSMockMixin, TestCase):
             'https://ref.tst.vng.cloud/ztc/api/v1/catalogussen/' +
             '8ffb11f0-c7cc-4e35-8a64-a0639aeb8f18/zaaktypen/c2f952ca-298e-488c-b1be-a87f11bd5fa2/' +
             'statustypen/70ae2e9d-73a2-4f3d-849e-e0a29ef3064e'
-        )
-        enkelvoudiginformatieobject_url = (
-            'https://ref.tst.vng.cloud/drc/api/v1/enkelvoudiginformatieobjecten/' +
-            '1239d6b1-194a-4052-85c5-8c2876428531'
         )
 
         signal = SignalFactory()
