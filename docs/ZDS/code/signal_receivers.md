@@ -5,7 +5,7 @@
 **This is SIA Amsterdam specific code**
 
 The signal receivers are where we listen to changes on the `django signals`.
-When we receive a signal we will send the needed data to the `ZDS` components.
+When we receive a signal we will send the needed data to the `ZDS Components`.
 
 ## create_initial_handler
 The create initial handler is used when a `melding` is created. This will be the main entry point
@@ -22,7 +22,7 @@ The create initial handler will call the following tasks:
 
 ## update_status_handler
 This will listen to status updates. Once there is a status update it will send the new status to
-the `ZDS` components
+the `ZDS Components`
 
 The update status handler will call the following tasks:
 1. add_status_to_case

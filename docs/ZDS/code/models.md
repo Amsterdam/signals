@@ -5,8 +5,8 @@
 **This is SIA Amsterdam specific code**
 
 The models are a way to know how far along we are with sending the needed data to the
-`ZDS` components. This will create a link between the object that we are trying to send and the
-responses from the `ZDS` components.
+`ZDS Components`. This will create a link between the object that we are trying to send and the
+responses from the `ZDS Components`.
 
 
 ## CaseSignal

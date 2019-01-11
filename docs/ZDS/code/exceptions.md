@@ -2,7 +2,7 @@
 
 [back](./index.md)
 
-This are some default exceptions. Some exceptions that are returned from the `ZDS` components will
+This are some default exceptions. Some exceptions that are returned from the `ZDS Components` will
 be catched. These Exceptions will be thrown so we know how to handle it further.
 
 So if we get the CaseNotCreatedException we will know that we don't have to continue connecting the
