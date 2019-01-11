@@ -65,11 +65,12 @@ class ZDSMockMixin(object):
             self.urls[name], text=getattr(self, 'error_{}'.format(status)), status_code=status
         )
 
-    def get_exception_mock(self, mock, name, exception_class):
+    def get_exception_mock(self, mock, name, exception_class, url=None):
         """This is a mock for an exception. This will throw the exception_class error"""
-        return mock.get(
-            self.urls[name], exc=exception_class
-        )
+        if url is None:
+            url = self.urls[name]
+
+        return mock.get(url, exc=exception_class)
 
     # ZRC ##########################################################################################
     @property
