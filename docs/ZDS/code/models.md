@@ -16,7 +16,7 @@ This is the connection between the case and the `melding`.
 | ---------------------------- | ---------------- | --- |
 | signal                       | ForeignKey       | Connection to the 'melding` from the SIA project. |
 | zrc_link                     | UrlField         | The link to the case. This way we can see if the case is created or not. |
-| connected_in_external_system | BooleanField     | If the `melding` url is send to the `ZDS` component. |
+| connected_in_external_system | BooleanField     | If the `melding` url is send to the `ZDS components`. |
 | sync_completed               | BooleanField     | If the management command has other items to send over. |
 
 ## CaseStatus
