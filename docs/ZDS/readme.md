@@ -16,4 +16,4 @@ Hier is ook nog een lijstje met bevindingen binnen Amsterdam voor het ZDS projec
 - [SIA-to-ZRC-improvements](./SIA-to-ZRC-improvements.md)
 
 Wil je meer weten over wat de code doet, lees dan meer uitleg over de code.
-- [code](./code/index.md)
+- [code](./code/readme.md)
