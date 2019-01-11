@@ -112,7 +112,7 @@ class SignalViewSet(mixins.CreateModelMixin,
 
 
 class SignalAuthViewSet(DatapuntViewSet):
-    authentication_classes = []
+    authentication_classes = (JWTAuthBackend, )
     queryset = Signal.objects.all()
     serializer_detail_class = SignalAuthHALSerializer
     serializer_class = SignalAuthHALSerializer
