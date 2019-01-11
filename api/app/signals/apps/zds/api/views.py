@@ -10,7 +10,7 @@ from .serializers import SignalZDSSerializer
 
 
 class SignalZDSViewSet(DatapuntViewSet):
-    authentication_classes = (JWTAuthBackend, )
+    authentication_classes = []
     queryset = Signal.objects.order_by('-created_at')
     serializer_detail_class = SignalZDSSerializer
     serializer_class = SignalZDSSerializer

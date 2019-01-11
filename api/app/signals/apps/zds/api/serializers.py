@@ -39,16 +39,12 @@ class SignalZDSSerializer(serializers.ModelSerializer):
         model = Signal
         fields = (
             'id',
-            'created_at',
-            'updated_at',
             'zds_case',
             'zds_statusses',
             'zds_images',
         )
         read_only_fields = (
             'id',
-            'created_at',
-            'updated_at',
             'zds_case',
             'zds_statusses',
             'zds_images',

@@ -2,25 +2,10 @@ import json
 
 import requests_mock
 from django.test import TestCase
+from requests.exceptions import ConnectionError
 
-from signals.apps.zds.models import CaseDocument, CaseSignal
-from tests.apps.signals.factories import SignalFactory
 from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
 from tests.apps.zds.mixins import ZDSMockMixin
-
-
-class TestCaseSignalManager(TestCase):
-
-    def test_create_case_signal(self):
-        self.assertEqual(CaseSignal.objects.count(), 0)
-        signal = SignalFactory()
-        CaseSignal.actions.create_case_signal(signal)
-        self.assertEqual(CaseSignal.objects.count(), 1)
-
-    def test_add_document(self):
-        self.assertEqual(CaseDocument.objects.count(), 0)
-        case_signal = CaseSignalFactory()
-        CaseSignal.actions.add_document(case_signal)
 
 
 class TestCaseSignal(ZDSMockMixin, TestCase):
@@ -53,6 +38,14 @@ class TestCaseSignal(ZDSMockMixin, TestCase):
 
         self.assertEqual(case_signal.get_case(), json.loads(self.zrc_zaak_read))
 
+    @requests_mock.Mocker()
+    def test_get_case_connection_error(self, mock):
+        case_signal = CaseSignalFactory()
+
+        self.get_exception_mock(mock, 'zrc_openapi', ConnectionError)
+
+        self.assertIsNone(case_signal.get_case())
+
     def test_get_case_existing_cache(self):
         case_signal = CaseSignalFactory()
         case_signal.cache_case = 'Random'
@@ -73,6 +66,12 @@ class TestCaseSignal(ZDSMockMixin, TestCase):
         case_signal = CaseSignalFactory()
         self.assertEqual(case_signal.get_statusses(), json.loads(self.ztc_statusses))
 
+    @requests_mock.Mocker()
+    def test_get_statusses_connection_error(self, mock):
+        case_signal = CaseSignalFactory()
+        self.get_exception_mock(mock, 'zrc_openapi', ConnectionError)
+        self.assertIsNone(case_signal.get_statusses())
+
     def test_get_statusses_existing_cache(self):
         case_signal = CaseSignalFactory()
         case_signal.cache_status_history = 'Random'
@@ -91,12 +90,17 @@ class TestCaseSignal(ZDSMockMixin, TestCase):
             '1239d6b1-194a-4052-85c5-8c2876428531'
         )
 
-        self.get_mock(mock, 'zrc_openapi')
         self.get_mock(mock, 'drc_openapi')
         self.get_mock(mock, 'drc_objectinformatieobject_list', url=oio_url)
         self.get_mock(mock, 'drc_enkelvoudiginformatieobject_read', url=eio_url)
 
         self.assertEqual(case_signal.get_images(), json.loads(self.drc_images))
+
+    @requests_mock.Mocker()
+    def test_get_images_connection_error(self, mock):
+        case_signal = CaseSignalFactory()
+        self.get_exception_mock(mock, 'drc_openapi', ConnectionError)
+        self.assertIsNone(case_signal.get_images())
 
     def test_get_images_existing_cache(self):
         case_signal = CaseSignalFactory()

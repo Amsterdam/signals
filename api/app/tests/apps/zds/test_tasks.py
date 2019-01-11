@@ -174,6 +174,17 @@ class TestTasks(ZDSMockMixin, TestCase):
         add_status_to_case(case_signal.signal, case_signal.signal.status)
 
     @requests_mock.Mocker()
+    def test_add_status_to_case_no_zrc_link(self, mock):
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'ztc_openapi')
+        self.get_mock(mock, 'ztc_statustypen_list')
+        self.post_mock(mock, 'zrc_status_create')
+
+        case_signal = CaseSignalFactory()
+        CaseStatusFactory(case_signal=case_signal, zrc_link='', status=case_signal.signal.status)
+        add_status_to_case(case_signal.signal, case_signal.signal.status)
+
+    @requests_mock.Mocker()
     def test_add_status_to_case_with_no_text(self, mock):
         self.get_mock(mock, 'zrc_openapi')
         self.get_mock(mock, 'ztc_openapi')
@@ -350,6 +361,15 @@ class TestTasks(ZDSMockMixin, TestCase):
                 "statustoelichting": "string"
             }
         ])
+
+    @requests_mock.Mocker()
+    def test_get_status_history_no_zrc_link(self, mock):
+        zaak_signal = CaseSignalFactory(zrc_link='')
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_status_list')
+
+        response = get_status_history(zaak_signal.signal)
+        self.assertEqual(response, [])
 
     @requests_mock.Mocker()
     def test_get_status_history_no_case(self, mock):
