@@ -97,7 +97,7 @@ python-keystoneclient==3.17.0
 python-magic==0.4.15
 python-swiftclient==3.6.0
 pytz==2018.5
-PyYAML==3.13
+PyYAML==4.2b1
 raven==6.9.0
 requests==2.20.0
 rfc3986==1.1.0
