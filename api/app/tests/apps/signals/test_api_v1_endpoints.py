@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, MainCategory, Signal
+from signals.apps.signals.models import History, MainCategory, Signal, Priority
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
     MainCategoryFactory,
@@ -243,7 +243,15 @@ class TestPrivateSignalViewSet(APITestCase):
         self.signal_no_image = SignalFactoryValidLocation.create()
         self.signal_with_image = SignalFactoryWithImage.create()
 
-        self.superuser = SuperUserFactory(username='superuser@example.com')
+        self.superuser = SuperUserFactory.create(
+            email='superuser@example.com',
+            username='superuser@example.com',
+        )
+        self.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+            b'\x02\x4c\x01\x00\x3b'
+        )
 
         # No URL reversing here, these endpoints are part of the spec (and thus
         # should not change).
@@ -279,7 +287,7 @@ class TestPrivateSignalViewSet(APITestCase):
         # TODO: add more detailed tests using a JSONSchema
         # TODO: consider naming of 'note' object (is list, so 'notes')?
         response_json = response.json()
-        for key in ['status', 'category', 'priority', 'location', 'reporter', 'note', 'image']:
+        for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
             self.assertIn(key, response_json)
 
     def test_history_action(self):
@@ -309,26 +317,92 @@ class TestPrivateSignalViewSet(APITestCase):
             result = self.client.get(base_url + '?' + querystring)
             self.assertEqual(len(result.json()), n_results)
 
-    # -- Write tests --
+        # Filter by non-existing value, should get zero results
+        querystring = urlencode({'what': 'DOES_NOT_EXIST'})
+        result = self.client.get(base_url + '?' + querystring)
+        self.assertEqual(len(result.json()), 0)        
+
+    # -- write tests --
 
     def test_create_initial(self):
+        # Authenticate, load fixture.
         self.client.force_authenticate(user=self.superuser)
 
         fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        
-        assert 'incident_date_start' in data
 
+        # Create initial Signal, check that it reached the database.
+        signal_count = Signal.objects.count()
         response = self.client.post(self.list_endpoint, data, format='json')
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+        pk = response.json()['id']
+        priorities = Priority.objects.filter(_signal__id=pk).values()
+        print(priorities)
 
+        # Check that the actions are logged with the correct user email
+        new_url = response.json()['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
 
-    def test_add_image(self):
-        pass
+        self.assertEqual(response_json['status']['user'], self.superuser.email)
+        self.assertEqual(response_json['priority']['created_by'], self.superuser.email)
+        self.assertEqual(response_json['location']['created_by'], self.superuser.email)
+        self.assertEqual(response_json['category']['created_by'], self.superuser.email)
+
+    def test_create_initial_and_upload_image(self):
+        # Authenticate, load fixture.
+        self.client.force_authenticate(user=self.superuser)
+        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        # Create initial Signal.
+        signal_count = Signal.objects.count()
+        response = self.client.post(self.list_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # Store URL of the newly created Signal, then upload image to it.
+        new_url = response.json()['_links']['self']['href']
+
+        new_image_url = f'{new_url}/image'
+        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        response = self.client.post(new_image_url, data={'image': image})
+
+        self.assertEqual(response.status_code, 202)
+
+        # Check that a second upload is rejected
+        response = self.client.post(new_image_url, data={'image': image})
+        self.assertEqual(response.status_code, 403)
 
     def test_update_location(self):
-        pass
+        # Partial update to update the location, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+        print('history_endpoint', history_endpoint)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        print('detail_endpoint', detail_endpoint)
+        response = self.client.patch(
+            detail_endpoint,
+            data,
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_update_status(self):
         pass
@@ -344,3 +418,6 @@ class TestPrivateSignalViewSet(APITestCase):
 
     def test_create_note(self):
         pass
+
+# TODO:
+# * check that an uploaded signal can only be created in gemeld (?)

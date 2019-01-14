@@ -1,0 +1,18 @@
+{
+    "location": {
+        "geometrie": {
+            "lat": 52.37993429553087,
+            "lon": 4.900771379470825
+        },
+        "address": {
+            "openbare_ruimte": "De Ruijterkade",
+            "huisnummer": "36",
+            "huisletter": "A",
+            "huisnummer_toevoeging": "",
+            "postcode": "1012AA",
+            "woonplaats": "Amsterdam"
+        },
+        "stadsdeel": "A",
+        "buurt_code": "A01a"
+    }
+}

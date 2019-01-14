@@ -48,7 +48,7 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin):
+class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList
@@ -70,7 +70,7 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin):
 
         history_entries = History.objects.filter(_signal__id=pk)
         what = self.request.query_params.get('what', None)
-        if what and what in POSSIBLE_HISTORY_ENTRIES:
+        if what:
             history_entries = history_entries.filter(what=what)
 
         serializer = HistoryHalSerializer(history_entries, many=True)

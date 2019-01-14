@@ -25,6 +25,7 @@ from signals.apps.signals.v1.fields import (
     SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
+from signals.apps.signals import workflow
 
 
 class SubCategoryHALSerializer(HALSerializer):
@@ -86,23 +87,6 @@ class HistoryHalSerializer(HALSerializer):
         )
 
 
-# -- serializers related to /signals/private/signals/ --
-
-class PrivateSignalSerializerList(HALSerializer):
-    serializer_url_field = PrivateSignalLinksField
-    _display = DisplayField()
-
-    class Meta:
-        model = Signal
-        fields = (
-            '_links',
-            '_display',
-            'id',
-        )
-
-
-# -- serializers related to /signals/private/signals/<pk> --
-
 class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
 
     class Meta:
@@ -116,6 +100,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'address_text',
             'geometrie',
             'extra_properties',
+            'created_by',
         )
         read_only_fields = (
             'id',
@@ -167,6 +152,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'main_slug',
             'sub_category',
             'department',
+            'created_by',
         )
 
     def get_department(self, obj):
@@ -203,11 +189,11 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedPriorityModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Priority
         fields = (
             'priority',
+            'created_by',
         )
 
 
@@ -224,20 +210,60 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
 
 class PrivateSignalSerializerDetail(HALSerializer):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
-#    _display = DisplayField()
+    _display = DisplayField()
     image = serializers.ImageField(read_only=True)
 
-    location = _NestedLocationModelSerializer()
-    status = _NestedStatusModelSerializer()
-    category = _NestedCategoryModelSerializer(source='category_assignment')
-    reporter = _NestedReporterModelSerializer()
-    priority = _NestedPriorityModelSerializer()
-    note = _NestedNoteModelSerializer(source='notes', many=True)
+    location = _NestedLocationModelSerializer(required=False)
+    status = _NestedStatusModelSerializer(required=False)
+    category = _NestedCategoryModelSerializer(source='category_assignment', required=False)
+    reporter = _NestedReporterModelSerializer(required=False)
+    priority = _NestedPriorityModelSerializer(required=False)
+    notes = _NestedNoteModelSerializer(many=True, required=False)
 
     class Meta:
         model = Signal
         fields = (
-            
+            '_links',
+            '_display',
+            'category',
+            'id',
+            'image',
+            'location',
+            'status',
+            'reporter',
+            'priority',
+            'notes',
+        )
+        read_only_fields = (
+            'id',
+            'image',
+        )
+
+    def update(self, validated_data):
+        if 'location' in validated_data and validated_data['location']:
+            location_data = validated_data.pop('location')
+            location_data['created_by'] = self.context['request'].user
+            Signal.actions.update_location()
+
+
+class PrivateSignalSerializerList(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+    _display = DisplayField()
+
+    image = serializers.ImageField(read_only=True)
+
+    location = _NestedLocationModelSerializer()
+    status = _NestedStatusModelSerializer(required=False)
+    category = _NestedCategoryModelSerializer(source='category_assignment')
+    reporter = _NestedReporterModelSerializer()
+    priority = _NestedPriorityModelSerializer(required=False)
+    notes = _NestedNoteModelSerializer(many=True, required=False)
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display', 
             'id',
             'signal_id',
             'source',
@@ -255,5 +281,59 @@ class PrivateSignalSerializerDetail(HALSerializer):
             'operational_date',
             'image',
             'extra_properties',
-            'note',
+            'notes',
         )
+        read_only_fields = (
+            'created_at',
+            'updated_at',
+        )
+
+    def validate(self, data):
+        # for debugging
+        # print('\nData received\n', data, '\n')
+        return super().validate(data)
+
+    def create(self, validated_data):
+        # We ignore the status from the incoming Signal and replace it with the
+        # initial state in the workflow (GEMELD).
+        logged_in_user = self.context['request'].user
+        INITIAL_STATUS = {
+            'state': workflow.GEMELD,  # see models.py is already default
+            'text': None,
+            'user': logged_in_user.email,
+        }
+        validated_data.pop('status', None)  # Discard what was sent over the API
+        
+        # We require location and reporter to be set and to be valid.
+        reporter_data = validated_data.pop('reporter')
+
+        location_data = validated_data.pop('location')
+        location_data['created_by'] = logged_in_user.email
+
+        category_assignment_data = validated_data.pop('category_assignment')
+        category_assignment_data['created_by'] = logged_in_user.email
+
+        # We will use the priority on the incoming message if present.
+        priority_data = validated_data.pop('priority', {
+            'priority': Priority.PRIORITY_NORMAL
+        })
+        priority_data['created_by'] = logged_in_user.email
+
+        signal = Signal.actions.create_initial(
+            validated_data,
+            location_data,
+            INITIAL_STATUS,
+            category_assignment_data,
+            reporter_data,
+            priority_data
+        )
+        return signal
+
+# ingelogd:
+# * status negeren
+# * locatie verplichten (in toekomst adres validatie)
+# * melder verplichten
+# * urgentie mogelijk, maar niet verplicht
+# * categorie mogelijk (in de toekomst ook vanuit backend call naar ML tool)
+
+# wens: JPG, PNG en GIF ondersteunen
