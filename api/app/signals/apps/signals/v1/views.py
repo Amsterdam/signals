@@ -48,7 +48,7 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class PrivateSignalViewSet(DatapuntViewSet):
+class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList

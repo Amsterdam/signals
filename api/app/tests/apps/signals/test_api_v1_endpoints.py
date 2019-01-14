@@ -1,4 +1,9 @@
+import json
+import os
+
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
+from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
@@ -9,9 +14,13 @@ from tests.apps.signals.factories import (
     MainCategoryFactory,
     NoteFactory,
     SignalFactory,
+    SignalFactoryValidLocation,
+    SignalFactoryWithImage,
     SubCategoryFactory
 )
 from tests.apps.users.factories import SuperUserFactory, UserFactory
+
+THIS_DIR = os.path.dirname(__file__)
 
 
 class TestAPIRoot(APITestCase):
@@ -226,3 +235,112 @@ class TestImageUpload(APITestCase):
         )
 
         self.assertEqual(response.status_code, 202)
+
+
+class TestPrivateSignalViewSet(APITestCase):
+    def setUp(self):
+        # initialize database with 2 Signals
+        self.signal_no_image = SignalFactoryValidLocation.create()
+        self.signal_with_image = SignalFactoryWithImage.create()
+
+        self.superuser = SuperUserFactory(username='superuser@example.com')
+
+        # No URL reversing here, these endpoints are part of the spec (and thus
+        # should not change).
+        self.list_endpoint = '/signals/v1/private/signals/'
+        self.detail_endpoint  = '/signals/v1/private/signals/{pk}'
+        self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
+        self.history_image = '/signals/v1/private/signals/{pk}/image'
+
+    # -- Read tests --
+
+    def test_list_endpoint_without_authentication_should_fail(self):
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, 401)
+
+    def test_list_endpoint(self):
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response.json()['count'], 2)
+
+    def test_detail_endpoint_without_authentication_should_fail(self):
+        response = self.client.get(self.detail_endpoint.format(pk=1))
+        self.assertEqual(response.status_code, 401)
+
+    def test_detail_endpoint(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        response = self.client.get(self.detail_endpoint.format(pk=pk))
+        self.assertEqual(response.status_code, 200)
+
+        # TODO: add more detailed tests using a JSONSchema
+        # TODO: consider naming of 'note' object (is list, so 'notes')?
+        response_json = response.json()
+        for key in ['status', 'category', 'priority', 'location', 'reporter', 'note', 'image']:
+            self.assertIn(key, response_json)
+
+    def test_history_action(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        response = self.client.get(self.history_endpoint.format(pk=pk))
+        self.assertEqual(response.status_code, 200)
+
+        # SIA currently does 4 updates before Signal is fully in the system
+        self.assertEqual(len(response.json()), 4)
+
+    def test_history_action_filters(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        base_url = self.history_endpoint.format(pk=pk)
+
+        # TODO: elaborate filter testing in tests with interactions with API
+        for filter_value, n_results in [
+            ('UPDATE_STATUS', 1),
+            ('UPDATE_LOCATION', 1),
+            ('UPDATE_CATEGORY_ASSIGNMENT', 1),
+            ('UPDATE_PRIORITY', 1),
+        ]:
+            querystring = urlencode({'what': filter_value})
+            result = self.client.get(base_url + '?' + querystring)
+            self.assertEqual(len(result.json()), n_results)
+
+    # -- Write tests --
+
+    def test_create_initial(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        
+        assert 'incident_date_start' in data
+
+        response = self.client.post(self.list_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+
+    def test_add_image(self):
+        pass
+
+    def test_update_location(self):
+        pass
+
+    def test_update_status(self):
+        pass
+
+    def test_update_category_assignment(self):
+        pass
+
+    def test_update_reporter(self):
+        pass
+
+    def test_update_priority(self):
+        pass
+
+    def test_create_note(self):
+        pass

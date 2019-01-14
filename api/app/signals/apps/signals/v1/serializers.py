@@ -224,7 +224,7 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
 
 class PrivateSignalSerializerDetail(HALSerializer):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
-    _display = DisplayField()
+#    _display = DisplayField()
     image = serializers.ImageField(read_only=True)
 
     location = _NestedLocationModelSerializer()
@@ -237,14 +237,23 @@ class PrivateSignalSerializerDetail(HALSerializer):
     class Meta:
         model = Signal
         fields = (
-            '_links',
-            '_display',
-            'category',
+            
             'id',
-            'image',
-            'location',
+            'signal_id',
+            'source',
+            'text',
+            'text_extra',
             'status',
+            'location',
+            'category',
             'reporter',
             'priority',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+            'image',
+            'extra_properties',
             'note',
         )
