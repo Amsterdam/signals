@@ -49,6 +49,15 @@ urlpatterns = [
         name='schema-redoc'),
 ]
 
+
+if 'signals.apps.dashboards' in settings.INSTALLED_APPS:
+    urlpatterns.append(
+        path(
+            'signals/experimental/dashboards/',
+            include('signals.apps.dashboards.urls')
+        )
+    )
+
 if settings.DEBUG:
     import debug_toolbar
     from django.conf.urls.static import static

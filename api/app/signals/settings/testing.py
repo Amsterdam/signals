@@ -7,4 +7,5 @@ TEST_LOGIN = 'signals.admin@amsterdam.nl'
 SITE_DOMAIN = 'localhost:8000'
 INSTALLED_APPS += [  # noqa
     'signals.apps.zds',
+    'signals.apps.dashboards',
 ]
