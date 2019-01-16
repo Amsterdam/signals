@@ -1,6 +1,8 @@
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """
+# ! Made sure that the status that is created also exists in the ZTC on staging. Otherwise it will
+# ! fail with setting the status.
 
 # Internal statusses
 LEEG = ''
