@@ -28,7 +28,6 @@ class ZDSClient:
         Client.load_config(**config)
 
     def get_client(self, client_type):
-        # TODO: This needs to contain the correct base_path for the staging environment Amsterdam.
         base_path = settings.ZDS_BASE_PATH
         base_path = base_path.format(client_type)
 
