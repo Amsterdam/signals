@@ -40,6 +40,7 @@ def get_all_statusses():
 def get_status(status_name):
     """
     This will now be a local filter. This should ideally be done via the api.
+    Issue: https://github.com/VNG-Realisatie/gemma-zaken/issues/642
     """
     statusses = get_all_statusses()
     for status in statusses:
@@ -105,7 +106,7 @@ def connect_signal_to_case(signal):
 
     try:
         zds_client.zrc.create(resource='zaakobject', data=data)
-        CaseSignal.actions.connected_in_external_system(signal.case)
+        CaseSignal.actions.set_connected_in_external_system(signal.case)
         return signal.case
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
@@ -114,8 +115,12 @@ def connect_signal_to_case(signal):
 
 def add_status_to_case(signal, status):
     """
-    This will create a new status for an existing case. If the case already has a status.
-    A new status will be created. Always the latest created status will be the active one.
+    This will create a new status for an existing case.
+
+    If the status is already send to the ZDS once, it will return without uploading the status
+    again.
+
+    Always the latest created status will be the active one.
     """
     try:
         case_status = status.case_status
@@ -193,7 +198,7 @@ def add_document_to_case(signal, case_document):
 
     try:
         zds_client.drc.create(resource='objectinformatieobject', data=data)
-        CaseSignal.actions.connected_in_external_system(case_document)
+        CaseSignal.actions.set_connected_in_external_system(case_document)
         return case_document
     except (ClientError, ConnectionError) as error:
         logger.exception(error)
@@ -204,11 +209,10 @@ def get_case(signal):
     """
     This will get the case with all needed data.
 
-    :return: response
+    :return: dict
     """
     if hasattr(signal, 'case') and signal.case.zrc_link:
-        response = zds_client.zrc.retrieve(resource='zaak', url=signal.case.zrc_link)
-        return response
+        return zds_client.zrc.retrieve(resource='zaak', url=signal.case.zrc_link)
     return {}
 
 
@@ -216,25 +220,23 @@ def get_documents_from_case(signal):
     """
     This will fetch all documents connected to the case
 
-    :return: response
+    :return: list
     """
-    response = zds_client.drc.list(resource='objectinformatieobject', query_params={
+    return zds_client.drc.list(resource='objectinformatieobject', query_params={
         'object': signal.case.zrc_link})
-    return response
 
 
 def get_status_history(signal):
     """
     This will fetch all statusses that are connected to the
 
-    :return: response
+    :return: list
     """
     try:
         if not signal.case.zrc_link:
             return []
-        response = zds_client.zrc.list(resource='status', query_params={
+        return zds_client.zrc.list(resource='status', query_params={
             'zaak': signal.case.zrc_link})
-        return response
     except ObjectDoesNotExist:
         return []
 
@@ -242,14 +244,17 @@ def get_status_history(signal):
 def get_status_type(url):
     """
     This will fetch the needed information to show what type of status is fetched.
+
+    :return: dict
     """
-    response = zds_client.ztc.retrieve(resource='statustype', url=url)
-    return response
+    return zds_client.ztc.retrieve(resource='statustype', url=url)
 
 
 def get_information_object(url):
     """
     This is used to be able to get the content url for the needed document.
+
+    :return: dict
     """
-    response = zds_client.drc.retrieve(resource='enkelvoudiginformatieobject', url=url)
-    return response
+    return zds_client.drc.retrieve(resource='enkelvoudiginformatieobject', url=url)
+

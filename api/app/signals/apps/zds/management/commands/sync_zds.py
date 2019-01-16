@@ -27,6 +27,10 @@ class Command(BaseCommand):
     help = "Sync the signals with the ZDS components"
 
     def handle(self, *args, **options):
+        """
+        Only select the signals that are 10 minutes old.
+        Select signals that have no case or have not been done syncing.
+        """
         ten_minutes_ago = timezone.now() - timedelta(seconds=600)
         signals_id1 = list(Signal.objects.filter(case__isnull=True).values_list('pk', flat=True))
         signals_id2 = list(Signal.objects.filter(case__isnull=False).filter(

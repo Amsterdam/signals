@@ -53,7 +53,7 @@ class CaseSignalManager(models.Manager):
 
         return obj
 
-    def connected_in_external_system(self, obj):
+    def set_connected_in_external_system(self, obj):
         with transaction.atomic():
             obj.connected_in_external_system = True
             obj.save()
