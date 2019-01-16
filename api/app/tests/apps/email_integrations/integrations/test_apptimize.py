@@ -95,3 +95,13 @@ class TestIntegrationApptimize(TestCase):
         result = apptimize.is_signal_applicable(signal)
 
         self.assertEqual(result, False)
+
+    def test_is_signal_applicable_in_category_broken_bin(self):
+        # See SIG-900
+        signal = SignalFactory.create(
+            category_assignment__sub_category__main_category__name='Afval',
+            category_assignment__sub_category__name='Prullenbak is kapot')
+
+        result = apptimize.is_signal_applicable(signal)
+
+        self.assertEqual(result, True)
