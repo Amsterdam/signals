@@ -17,3 +17,7 @@ Hier is ook nog een lijstje met bevindingen binnen Amsterdam voor het ZDS projec
 
 Wil je meer weten over wat de code doet, lees dan meer uitleg over de code.
 - [code](./code/readme.md)
+
+Wat extra informatie:
+- [veranderingen meerdere documenten support](./multiple_images.md)
+- [API versie upgraden](./workaround_url_update.md)
