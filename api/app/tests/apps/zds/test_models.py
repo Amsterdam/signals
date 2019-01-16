@@ -4,6 +4,8 @@ import requests_mock
 from django.test import TestCase
 from requests.exceptions import ConnectionError
 
+from signals.apps.zds.models import CaseSignal
+
 from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
 from tests.apps.zds.mixins import ZDSMockMixin
 
@@ -106,6 +108,53 @@ class TestCaseSignal(ZDSMockMixin, TestCase):
         case_signal = CaseSignalFactory()
         case_signal.cache_images = 'Random'
         self.assertEqual(case_signal.get_images(), 'Random')
+
+    @requests_mock.Mocker()
+    def test_cache_per_instance(self, mock):
+        case_signal = CaseSignalFactory()
+        case_signal2 = CaseSignalFactory()
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_zaak_read', url=case_signal.zrc_link)
+
+        self.assertIsNone(case_signal.cache_case)
+        self.assertIsNone(case_signal.cache_status_history)
+        self.assertIsNone(case_signal.cache_images)
+        self.assertIsNone(case_signal2.cache_case)
+        self.assertIsNone(case_signal2.cache_status_history)
+        self.assertIsNone(case_signal2.cache_images)
+
+        case_signal.get_case()
+        self.assertIsNotNone(case_signal.cache_case)
+        self.assertIsNone(case_signal.cache_status_history)
+        self.assertIsNone(case_signal.cache_images)
+        self.assertIsNone(case_signal2.cache_case)
+        self.assertIsNone(case_signal2.cache_status_history)
+        self.assertIsNone(case_signal2.cache_images)
+
+    @requests_mock.Mocker()
+    def test_cache_per_instance_lifetime(self, mock):
+        case_signal = CaseSignalFactory()
+
+        self.get_mock(mock, 'zrc_openapi')
+        self.get_mock(mock, 'zrc_zaak_read', url=case_signal.zrc_link)
+
+        case_signal2 = CaseSignal.objects.get(pk=case_signal.pk)
+
+        self.assertIsNone(case_signal.cache_case)
+        self.assertIsNone(case_signal.cache_status_history)
+        self.assertIsNone(case_signal.cache_images)
+        self.assertIsNone(case_signal2.cache_case)
+        self.assertIsNone(case_signal2.cache_status_history)
+        self.assertIsNone(case_signal2.cache_images)
+
+        case_signal.get_case()
+        self.assertIsNotNone(case_signal.cache_case)
+        self.assertIsNone(case_signal.cache_status_history)
+        self.assertIsNone(case_signal.cache_images)
+        self.assertIsNone(case_signal2.cache_case)
+        self.assertIsNone(case_signal2.cache_status_history)
+        self.assertIsNone(case_signal2.cache_images)
 
 
 class TestCaseStatus(TestCase):

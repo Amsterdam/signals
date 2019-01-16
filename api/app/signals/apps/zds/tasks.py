@@ -148,8 +148,8 @@ def create_document(signal):
     This will create a document in the DRC. This will be base of the photo upload.
     """
     if (
-        signal.case.documents.count() == 1
-        and signal.case.documents.order_by('created_at').first().drc_link is not None
+        signal.case.documents.count() == 1 and
+        signal.case.documents.order_by('created_at').first().drc_link is not None
     ):
         return signal.case.documents.first()
 

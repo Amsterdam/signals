@@ -38,6 +38,12 @@ class Command(BaseCommand):
             self.sync_case(signal)
 
     def sync_case(self, signal):
+        """
+        Push the case to the ZDS components.
+        If the case already exists, it will continue to connect the signal to the case.
+
+        If everything went correctly, continue to add the statusses to the ZDS components.
+        """
         try:
             create_case(signal)
 
@@ -52,6 +58,12 @@ class Command(BaseCommand):
             self.stderr.write(repr(case_exception))
 
     def sync_status(self, signal):
+        """
+        Push all the statusses that are connected to the signal to the ZDS components.
+        If a status already exists, it will skip the status and continue with the other statusses.
+
+        If everything went correctly, continue to add the documents to the ZDS components.
+        """
         try:
             for status in signal.statuses.order_by('created_at'):
                 add_status_to_case(signal, status)
@@ -62,6 +74,10 @@ class Command(BaseCommand):
             self.stderr.write(repr(status_exception))
 
     def sync_document(self, signal):
+        """
+        Push all the images that are connected to the signal to the ZDS components.
+        If the document already exists, set signal sync to completed.
+        """
         if signal.image:
             try:
                 case_document = create_document(signal)
