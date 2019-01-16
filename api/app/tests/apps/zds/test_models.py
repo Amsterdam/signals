@@ -5,7 +5,6 @@ from django.test import TestCase
 from requests.exceptions import ConnectionError
 
 from signals.apps.zds.models import CaseSignal
-
 from tests.apps.zds.factories import CaseDocumentFactory, CaseSignalFactory, CaseStatusFactory
 from tests.apps.zds.mixins import ZDSMockMixin
 

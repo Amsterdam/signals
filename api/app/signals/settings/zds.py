@@ -5,9 +5,9 @@ import os
 #
 ZDS_BASE_PATH = '/api/v1/'
 RSIN_NUMBER = '002564440'
+HOST_URL = os.getenv('HOST_URL')
 
 # ZTC settings
-# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 ZTC_HOST = os.getenv('ZTC_HOST')
 ZTC_PORT = os.getenv('ZTC_PORT')
 ZTC_SCHEME = os.getenv('ZTC_SCHEME', 'https')
@@ -24,7 +24,6 @@ ZTC_INFORMATIEOBJECTTYPE_ID = os.getenv('ZTC_INFORMATIEOBJECTTYPE_ID')
 ZTC_APPENDED_PATH = ''
 
 ZTC_URL = "{}://{}{}".format(ZTC_SCHEME, ZTC_HOST, ZTC_APPENDED_PATH)
-HOST_URL = 'https://acc.meldingen.amsterdam.nl'
 ZTC_CATALOGUS_URL = '{ztc_url}/api/v1/catalogussen/{catalogus_id}'.format(
     ztc_url=ZTC_URL, catalogus_id=ZTC_CATALOGUS_ID
 )
@@ -36,7 +35,6 @@ ZTC_INFORMATIEOBJECTTYPE_URL = '{catalogus_url}/informatieobjecttypen/{informati
 )
 
 # ZRC settings
-# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 ZRC_HOST = os.getenv('ZRC_HOST')
 ZRC_PORT = os.getenv('ZRC_PORT')
 ZRC_SCHEME = os.getenv('ZRC_SCHEME', 'https')
@@ -58,7 +56,6 @@ ZRC_URL = "{}://{}:{}".format(ZRC_SCHEME, ZRC_HOST, ZRC_PORT)
 ZRC_ZAAKOBJECT_TYPE = 'MeldingOpenbareRuimte'
 
 # DRC settings
-# TODO: This needs to contain the correct settings for the staging environment Amsterdam.
 DRC_HOST = os.getenv('DRC_HOST')  # should be a staging domain.
 DRC_PORT = os.getenv('DRC_PORT')
 DRC_SCHEME = os.getenv('DRC_SCHEME', 'https')

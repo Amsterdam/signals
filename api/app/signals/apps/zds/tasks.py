@@ -127,7 +127,6 @@ def add_status_to_case(signal, status):
         if case_status.zrc_link:
             return case_status
     except ObjectDoesNotExist:
-
         case_status = CaseSignal.actions.add_status(signal.case, status)
 
     data = {
@@ -257,4 +256,3 @@ def get_information_object(url):
     :return: dict
     """
     return zds_client.drc.retrieve(resource='enkelvoudiginformatieobject', url=url)
-
