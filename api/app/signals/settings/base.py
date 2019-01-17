@@ -21,7 +21,7 @@ from signals.settings.settings_databases import (
 
 # ! If you want to connect to the reference implementation build by VNG Use the following settings
 # ! Put 'from .zds_vng import *' in your local.py
-## ---
+# ---
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
