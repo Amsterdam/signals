@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
+import logging
 
 from django.db import connection
 from django.utils import timezone
@@ -9,6 +10,9 @@ from rest_framework.views import APIView
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+
+log = logging.getLogger(__name__)
+
 
 # See: https://www.postgresql.org/docs/10/functions-datetime.html for date_trunc
 SQL_COUNT_SIGNALS_PER_HOUR = \
@@ -85,7 +89,6 @@ class DashboardProtype(APIView):
         signals_per_status = [
             {'name': mapping[code], 'count':  count} for code, count in signals_per_status_code
         ]
-        # TODO: deal with missing statusses
 
         return signals_per_status
 
@@ -100,7 +103,6 @@ class DashboardProtype(APIView):
         signals_per_category = [
             {'name': name, 'count': count} for name, count in signals_per_main_category
         ]
-        # TODO: deal with missing main categories
 
         return signals_per_main_category
 
@@ -108,12 +110,39 @@ class DashboardProtype(APIView):
         """
         Get Signal counts per hour for the given interval (assumption: rounded to hours).
         """
-        # TODO: check for timezone issues and fill missing hours entries (in case no signals)
         with connection.cursor() as cursor:
             cursor.execute(SQL_COUNT_SIGNALS_PER_HOUR, [report_start, report_end])
             signals_per_hour = cursor.fetchall()
 
-        return signals_per_hour
+        # Assuming report_start and report_end are rounded to hours we fill in
+        # any missing entries. We want an entry for each hour in the interval;
+        # if there are no signals in some hourly interval we add an enty with 0.
+        out = []
+        signals_per_hour.sort(key=lambda x: x[0])
+        signals_per_hour.reverse()
+
+        # create placeholders in case we need to fix missing entries
+        t_interval_start = report_start
+        if signals_per_hour:
+            earliest_entry = signals_per_hour.pop()
+        else:
+            # Choose entry outside of interval, will not be used.
+            earliest_entry = ((report_end + timedelta(hours=1), 0))
+
+        while t_interval_start < report_end:
+            if t_interval_start == earliest_entry[0]:
+                out.append(earliest_entry)
+
+                earliest_entry = signals_per_hour.pop() if signals_per_hour else ((report_end + timedelta(hours=1), 0))
+
+            elif t_interval_start < earliest_entry[0]:
+                out.append((t_interval_start, 0))
+            else:
+                # this should not happen
+                raise Exception()
+            t_interval_start += timedelta(hours=1)
+
+        return out
 
     def get(self, request, format=None):
         """
@@ -124,7 +153,7 @@ class DashboardProtype(APIView):
         # the start of an hour, still move the end time to next hour.
         report_end = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
         # Start of reporting is 24 hours earlier:
-        report_start = report_end - timedelta(days=1)
+        report_start = report_end - timedelta(days=1
 
         data = {
             'hour': self._get_signals_per_hour(report_start, report_end),
