@@ -153,7 +153,7 @@ class DashboardProtype(APIView):
         # the start of an hour, still move the end time to next hour.
         report_end = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
         # Start of reporting is 24 hours earlier:
-        report_start = report_end - timedelta(days=1
+        report_start = report_end - timedelta(days=1)
 
         data = {
             'hour': self._get_signals_per_hour(report_start, report_end),
