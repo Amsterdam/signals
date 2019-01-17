@@ -12,10 +12,16 @@ from signals.settings.settings_databases import (
     in_docker
 )
 
-from .zds import *  # noqa
+# ---
+# To enable the ZDS integration in all environments activate the following
+# line and add 'signals.apps.zds' to installed apps. For now it is only active
+# in testing and development environments (to prevent bit-rot).
+# ---
+# from .zds import *  # noqa
 
 # ! If you want to connect to the reference implementation build by VNG Use the following settings
 # ! Put 'from .zds_vng import *' in your local.py
+## ---
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
