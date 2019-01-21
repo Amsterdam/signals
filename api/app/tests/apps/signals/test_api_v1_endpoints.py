@@ -1,14 +1,14 @@
 import json
 import os
+import unittest
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, MainCategory, Signal, Priority
+from signals.apps.signals.models import History, MainCategory, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
     MainCategoryFactory,
@@ -238,6 +238,11 @@ class TestImageUpload(APITestCase):
 
 
 class TestPrivateSignalViewSet(APITestCase):
+    """
+    Test basic properties of the V1 /signals/v1/private/signals endpoint.
+
+    Note: we check both the list endpoint and associated detail endpoint.
+    """
     def setUp(self):
         # initialize database with 2 Signals
         self.signal_no_image = SignalFactoryValidLocation.create()
@@ -256,7 +261,7 @@ class TestPrivateSignalViewSet(APITestCase):
         # No URL reversing here, these endpoints are part of the spec (and thus
         # should not change).
         self.list_endpoint = '/signals/v1/private/signals/'
-        self.detail_endpoint  = '/signals/v1/private/signals/{pk}'
+        self.detail_endpoint = '/signals/v1/private/signals/{pk}'
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
 
@@ -320,7 +325,7 @@ class TestPrivateSignalViewSet(APITestCase):
         # Filter by non-existing value, should get zero results
         querystring = urlencode({'what': 'DOES_NOT_EXIST'})
         result = self.client.get(base_url + '?' + querystring)
-        self.assertEqual(len(result.json()), 0)        
+        self.assertEqual(len(result.json()), 0)
 
     # -- write tests --
 
@@ -337,9 +342,6 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.post(self.list_endpoint, data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), signal_count + 1)
-        pk = response.json()['id']
-        priorities = Priority.objects.filter(_signal__id=pk).values()
-        print(priorities)
 
         # Check that the actions are logged with the correct user email
         new_url = response.json()['_links']['self']['href']
@@ -376,6 +378,7 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.post(new_image_url, data={'image': image})
         self.assertEqual(response.status_code, 403)
 
+    @unittest.skip('Updates not yet supported')
     def test_update_location(self):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
@@ -420,4 +423,5 @@ class TestPrivateSignalViewSet(APITestCase):
         pass
 
 # TODO:
-# * check that an uploaded signal can only be created in gemeld (?)
+# * Add test to check that an uploaded signal can only be created in gemeld state via public
+#   unauthenticated endpoint.

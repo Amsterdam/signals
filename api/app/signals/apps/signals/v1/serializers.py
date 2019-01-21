@@ -4,6 +4,7 @@ Serializsers that are used exclusively by the V1 API
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
+from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
@@ -25,7 +26,6 @@ from signals.apps.signals.v1.fields import (
     SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
-from signals.apps.signals import workflow
 
 
 class SubCategoryHALSerializer(HALSerializer):
@@ -263,7 +263,7 @@ class PrivateSignalSerializerList(HALSerializer):
         model = Signal
         fields = (
             '_links',
-            '_display', 
+            '_display',
             'id',
             'signal_id',
             'source',
@@ -303,7 +303,7 @@ class PrivateSignalSerializerList(HALSerializer):
             'user': logged_in_user.email,
         }
         validated_data.pop('status', None)  # Discard what was sent over the API
-        
+
         # We require location and reporter to be set and to be valid.
         reporter_data = validated_data.pop('reporter')
 
