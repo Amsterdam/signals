@@ -1,0 +1,28 @@
+{
+    "url": "http://example.com",
+    "identificatie": "string",
+    "bronorganisatie": "string",
+    "omschrijving": "string",
+    "zaaktype": "http://example.com",
+    "registratiedatum": "2018-11-14",
+    "verantwoordelijkeOrganisatie": "http://example.com",
+    "startdatum": "2018-11-14",
+    "einddatum": "2018-11-14",
+    "einddatumGepland": "2018-11-14",
+    "uiterlijkeEinddatumAfdoening": "2018-11-14",
+    "toelichting": "string",
+    "zaakgeometrie": {
+        "type": "Point",
+        "coordinates": [
+            0,
+            0
+        ]
+    },
+    "status": "http://example.com",
+    "kenmerken": [
+        {
+            "kenmerk": "string",
+            "bron": "string"
+        }
+    ]
+}

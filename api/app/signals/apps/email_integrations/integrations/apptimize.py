@@ -52,6 +52,7 @@ def is_signal_applicable(signal: Signal) -> bool:
         Q(main_category__slug='openbaar-groen-en-water') |
         Q(main_category__slug='wegen-verkeer-straatmeubilair') |
         Q(main_category__slug='afval', slug='prullenbak-is-vol') |
+        Q(main_category__slug='afval', slug='prullenbak-is-kapot') |
         Q(main_category__slug='afval', slug='veeg-zwerfvuil'))
 
     is_applicable_for_apptimize = (

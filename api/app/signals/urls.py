@@ -49,7 +49,6 @@ urlpatterns = [
         name='schema-redoc'),
 ]
 
-
 if 'signals.apps.dashboards' in settings.INSTALLED_APPS:
     urlpatterns.append(
         path(
@@ -57,6 +56,11 @@ if 'signals.apps.dashboards' in settings.INSTALLED_APPS:
             include('signals.apps.dashboards.urls')
         )
     )
+
+if 'signals.apps.zds' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('zds/', include(('signals.apps.zds.urls', 'zds'), namespace="zds")),
+    ]
 
 if settings.DEBUG:
     import debug_toolbar

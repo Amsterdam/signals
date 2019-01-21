@@ -2,6 +2,8 @@ import os
 
 from signals.settings.base import *  # noqa
 
+from .zds import *  # noqa
+
 SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
