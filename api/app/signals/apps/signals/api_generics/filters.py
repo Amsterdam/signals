@@ -1,4 +1,5 @@
 from datapunt_api import bbox
+from django import forms
 from django.contrib.gis.geos import Point, Polygon
 from django.core.exceptions import ImproperlyConfigured
 from django_filters.rest_framework import FilterSet, filters
@@ -38,7 +39,7 @@ def parse_xyr(value):
         lat = float(lat)
         radius = float(radius)
     except ValueError:
-        raise(
+        raise (
             'locatie must be x: float, y: float, r: float'
         )
 
@@ -54,8 +55,12 @@ def status_choices():
     return [(c, f'{n} ({c})') for c, n in STATUS_CHOICES]
 
 
+class IntegerFilter(filters.Filter):
+    field_class = forms.IntegerField
+
+
 class SignalFilter(FilterSet):
-    id = filters.CharFilter()
+    id = IntegerFilter()
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
     geo = filters.CharFilter(method="locatie_filter", label='x,y,r')
 
