@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, InvalidURL
 from zds_client import ClientError
 
 from signals.apps.zds import zds_client
@@ -85,7 +85,7 @@ def create_case(signal):
         response = zds_client.zrc.create(resource='zaak', data=data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_signal)
         return case_signal
-    except (ClientError, ConnectionError) as error:
+    except (ClientError, ConnectionError, InvalidURL) as error:
         logger.exception(error)
         raise CaseNotCreatedException()
 
@@ -108,7 +108,7 @@ def connect_signal_to_case(signal):
         zds_client.zrc.create(resource='zaakobject', data=data)
         CaseSignal.actions.set_connected_in_external_system(signal.case)
         return signal.case
-    except (ClientError, ConnectionError) as error:
+    except (ClientError, ConnectionError, InvalidURL) as error:
         logger.exception(error)
         raise CaseConnectionException()
 
@@ -142,7 +142,7 @@ def add_status_to_case(signal, status):
         response = zds_client.zrc.create(resource='status', data=data)
         CaseSignal.actions.add_zrc_link(response.get('url'), case_status)
         return case_status
-    except (ClientError, ConnectionError) as error:
+    except (ClientError, ConnectionError, InvalidURL) as error:
         logger.exception(error)
         raise StatusNotCreatedException()
 
@@ -176,7 +176,7 @@ def create_document(signal):
         response = zds_client.drc.create(resource="enkelvoudiginformatieobject", data=data)
         CaseSignal.actions.add_drc_link(response.get('url'), case_document)
         return case_document
-    except (ClientError, ConnectionError) as error:
+    except (ClientError, ConnectionError, InvalidURL) as error:
         logger.exception(error)
         raise DocumentNotCreatedException()
 
@@ -199,7 +199,7 @@ def add_document_to_case(signal, case_document):
         zds_client.drc.create(resource='objectinformatieobject', data=data)
         CaseSignal.actions.set_connected_in_external_system(case_document)
         return case_document
-    except (ClientError, ConnectionError) as error:
+    except (ClientError, ConnectionError, InvalidURL) as error:
         logger.exception(error)
         raise DocumentConnectionException()
 
