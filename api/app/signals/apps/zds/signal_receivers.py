@@ -3,8 +3,13 @@ from django.dispatch import receiver
 
 from signals.apps.signals.managers import add_image, create_initial, update_status
 from signals.apps.zds import tasks
-from signals.apps.zds.exceptions import CaseNotCreatedException, DocumentNotCreatedException
-
+from signals.apps.zds.exceptions import (
+    CaseConnectionException,
+    CaseNotCreatedException,
+    DocumentConnectionException,
+    DocumentNotCreatedException,
+    StatusNotCreatedException
+)
 
 @receiver(create_initial, dispatch_uid='zds_create_case')
 def create_initial_handler(sender, signal_obj, **kwargs):
@@ -27,10 +32,10 @@ def create_initial_handler(sender, signal_obj, **kwargs):
             try:
                 case_document = tasks.create_document(signal_obj)
                 tasks.add_document_to_case(signal_obj, case_document)
-            except DocumentNotCreatedException:
+            except (DocumentNotCreatedException, DocumentConnectionException):
                 pass
 
-    except CaseNotCreatedException:
+    except (CaseNotCreatedException, CaseConnectionException, StatusNotCreatedException):
         pass
 
 
