@@ -1,0 +1,20 @@
+[
+    {
+        "url": "http://example.com",
+        "omschrijving": "Gemeld",
+        "omschrijvingGeneriek": "string",
+        "statustekst": "string",
+        "isVan": "http://example.com",
+        "volgnummer": 1,
+        "isEindstatus": true
+    },
+    {
+        "url": "http://example.com",
+        "omschrijving": "Done",
+        "omschrijvingGeneriek": "string",
+        "statustekst": "string",
+        "isVan": "http://example.com",
+        "volgnummer": 1,
+        "isEindstatus": true
+    }
+]

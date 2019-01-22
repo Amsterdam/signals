@@ -4,7 +4,7 @@ from zds_client import Client
 
 class ZDSClient:
     def __init__(self):
-        Client.load_config(**{
+        config = {
             'zrc': {
                 'scheme': settings.ZRC_SCHEME,
                 'host': settings.ZRC_HOST,
@@ -23,11 +23,15 @@ class ZDSClient:
                 'port': settings.ZTC_PORT,
                 'auth': settings.ZTC_AUTH,
             }
-        })
+        }
+
+        Client.load_config(**config)
 
     def get_client(self, client_type):
-        # TODO: This needs to contain the correct base_path for the staging environment Amsterdam.
-        return Client(client_type, base_path='/{}/api/v1/'.format(client_type))
+        base_path = settings.ZDS_BASE_PATH
+        base_path = base_path.format(client_type)
+
+        return Client(client_type, base_path=base_path)
 
     @property
     def ztc(self):

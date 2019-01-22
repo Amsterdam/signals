@@ -1,0 +1,15 @@
+[{
+    "url": "http://example.com",
+    "zaak": "http://example.com",
+    "statusType": {
+        "url": "http://example.com",
+        "omschrijving": "Gemeld",
+        "omschrijvingGeneriek": "string",
+        "statustekst": "string",
+        "isVan": "http://example.com",
+        "volgnummer": 1,
+        "isEindstatus": true
+    },
+    "datumStatusGezet": "2018-11-20T10:34:43Z",
+    "statustoelichting": "string"
+}]

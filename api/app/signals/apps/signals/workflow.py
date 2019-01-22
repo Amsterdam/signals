@@ -1,8 +1,8 @@
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """
-# ! There is also a workflow.py file in the ZDS. This file needs to be updated with
-# ! the status as wel when this file is updated.
+# ! Made sure that the status that is created also exists in the ZTC on staging. Otherwise it will
+# ! fail with setting the status.
 
 # Internal statusses
 LEEG = ''

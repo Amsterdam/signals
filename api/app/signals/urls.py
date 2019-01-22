@@ -37,6 +37,8 @@ urlpatterns = [
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
 
+    path('signals/experimental/dashboards/', include('signals.apps.dashboards.urls')),
+
     # Swagger
     url(r'^signals/swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=None),
@@ -49,14 +51,10 @@ urlpatterns = [
         name='schema-redoc'),
 ]
 
-
-if 'signals.apps.dashboards' in settings.INSTALLED_APPS:
-    urlpatterns.append(
-        path(
-            'signals/experimental/dashboards/',
-            include('signals.apps.dashboards.urls')
-        )
-    )
+if 'signals.apps.zds' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('zds/', include(('signals.apps.zds.urls', 'zds'), namespace="zds")),
+    ]
 
 if settings.DEBUG:
     import debug_toolbar
