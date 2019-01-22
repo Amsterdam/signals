@@ -132,10 +132,14 @@ class DashboardPrototype(APIView):
         # Start of reporting is 24 hours earlier:
         report_start = report_end - timedelta(days=1)
 
+        per_hour = self._get_signals_per_hour(report_start, report_end)
+        total = sum(item["count"] for item in per_hour)
+
         data = {
-            'hour': self._get_signals_per_hour(report_start, report_end),
+            'hour': per_hour,
             'category': self._get_signals_per_category(report_start, report_end),
             'status': self._get_signals_per_status(report_start, report_end),
+            'total': total,
         }
 
         return Response(data=data)

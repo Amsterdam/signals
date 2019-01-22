@@ -161,19 +161,21 @@ class TestDashboardPrototype(APITestCase):
         response = self.client.get(self.url)
         self.assertEquals(401, response.status_code)
 
-    def test_get_authenticated(self):
+    def _do_request(self):
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
         response = self.client.get(self.url)
         self.assertEquals(200, response.status_code)
 
-        json_data = json.loads(response.content)
+        return json.loads(response.content)
 
-        self.assertEquals(3, len(json_data.keys()))
+    def test_get_authenticated(self):
+        json_data = self._do_request()
+
+        self.assertEquals(4, len(json_data.keys()))
         self.assertEquals(24, len(json_data["hour"]))
         self.assertEquals(9, len(json_data["category"]))
         self.assertEquals(5, len(json_data["status"]))
-
         self.assertEquals(10, json_data["hour"][-1]["count"])
 
         # Test date/time format
@@ -182,10 +184,22 @@ class TestDashboardPrototype(APITestCase):
         self.assertEquals((self.report_end - timedelta(hours=1)).hour,
                           json_data["hour"][-1]["hour"])
 
-        # Test types
+    def test_get_totals(self):
+        json_data = self._do_request()
+
+        # Should all add up to 10
+        self.assertEquals(10, json_data["total"])
+        self.assertEquals(10, sum(item["count"] for item in json_data["hour"]))
+        self.assertEquals(10, sum(item["count"] for item in json_data["category"]))
+        self.assertEquals(10, sum(item["count"] for item in json_data["status"]))
+
+    def test_get_types(self):
+        json_data = self._do_request()
+
         self.assertTrue(type(json_data["hour"][0]["hour"]) == int)
         self.assertTrue(type(json_data["hour"][0]["count"]) == int)  # 0
         self.assertTrue(type(json_data["hour"][-1]["count"]) == int)  # 10
         self.assertTrue(type(json_data["category"][0]["count"]) == int)  # 7
         self.assertTrue(type(json_data["category"][3]["count"]) == int)  # 0
         self.assertTrue(type(json_data["status"][0]["count"]) == int)
+        self.assertTrue(type(json_data["total"]) == int)

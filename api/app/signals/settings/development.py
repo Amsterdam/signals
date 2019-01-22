@@ -12,7 +12,6 @@ SITE_DOMAIN = 'localhost:8000'
 INSTALLED_APPS += [  # noqa
     'debug_toolbar',
     'signals.apps.zds',
-    'signals.apps.dashboards',
 ]
 MIDDLEWARE.append(  # noqa
     'debug_toolbar.middleware.DebugToolbarMiddleware',
