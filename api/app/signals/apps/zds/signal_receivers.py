@@ -11,6 +11,7 @@ from signals.apps.zds.exceptions import (
     StatusNotCreatedException
 )
 
+
 @receiver(create_initial, dispatch_uid='zds_create_case')
 def create_initial_handler(sender, signal_obj, **kwargs):
     """
