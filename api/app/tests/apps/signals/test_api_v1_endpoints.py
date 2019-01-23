@@ -176,6 +176,7 @@ class TestPrivateEndpoints(APITestCase):
 
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
+    @unittest.skip('Put is being implemented')
     def test_put_not_allowed(self):
         for endpoint in self.endpoints:
             url = f'{endpoint}1'
@@ -183,6 +184,7 @@ class TestPrivateEndpoints(APITestCase):
 
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
+    @unittest.skip('Patch is being implemented')
     def test_patch_not_allowed(self):
         for endpoint in self.endpoints:
             url = f'{endpoint}1'
@@ -437,7 +439,6 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.post(new_image_url, data={'image': image})
         self.assertEqual(response.status_code, 403)
 
-    @unittest.skip('Updates not yet supported')
     def test_update_location(self):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
@@ -449,7 +450,6 @@ class TestPrivateSignalViewSet(APITestCase):
         # check that only one Location is in the history
         querystring = urlencode({'what': 'UPDATE_LOCATION'})
         response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
@@ -457,28 +457,155 @@ class TestPrivateSignalViewSet(APITestCase):
         with open(fixture_file, 'r') as f:
             data = json.load(f)
 
-        response = self.client.patch(
-            detail_endpoint,
-            data,
-            format='json',
-        )
+        # update location, check that the correct user performed the action.
+        response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
+        # check that there are two Locations is in the history
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.location.created_by,
+            self.superuser.email,
+        )
+
     def test_update_status(self):
-        pass
+        # Partial update to update the status, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one Status is in the history
+        querystring = urlencode({'what': 'UPDATE_STATUS'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_status.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two Statusses is in the history
+        self.signal_no_image.refresh_from_db()
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # check that the correct user is logged
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.status.user,
+            self.superuser.email,
+        )
 
     def test_update_category_assignment(self):
-        pass
+        # Partial update to update the location, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
 
-    def test_update_reporter(self):
-        pass
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one category assignment is in the history
+        querystring = urlencode({'what': 'UPDATE_CATEGORY_ASSIGNMENT'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_category_assignment.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        data['category']['sub_category'] = self.link_test_cat_sub
+        
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two category assignments in the history
+        self.signal_no_image.refresh_from_db()
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # check that the correct user is logged
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.category_assignment.created_by,
+            self.superuser.email,
+        )
 
     def test_update_priority(self):
-        pass
+        # Partial update to update the priority, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one Priority is in the history
+        querystring = urlencode({'what': 'UPDATE_PRIORITY'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_priority.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two priorities is in the history
+        self.signal_no_image.refresh_from_db()
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # check that the correct user is logged
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.priority.created_by,
+            self.superuser.email,
+        )
 
     def test_create_note(self):
-        pass
+        # Partial update to update the status, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
 
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that there is no Note the history
+        querystring = urlencode({'what': 'CREATE_NOTE'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 0)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'create_note.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+            print('RAW LOADED DATA')
+            import pprint
+            pprint.pprint(data)
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there is now one Note in the history
+        self.signal_no_image.refresh_from_db()
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # check that the correct user is logged
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.note.created_by,
+            self.superuser.email,
+        )
 # TODO:
 # * Add test to check that an uploaded signal can only be created in gemeld state via public
 #   unauthenticated endpoint.

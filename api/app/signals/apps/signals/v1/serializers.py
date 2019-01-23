@@ -109,7 +109,8 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'id': {'label': 'ID', },
         }
 
-
+# TODO: extend _NestedStatusModelSerializer with validate method like that one in
+# signals.apps.signals.v0.serializers.StatusHALSerializer (i.e. check permissions ...)
 class _NestedStatusModelSerializer(serializers.ModelSerializer):
     state_display = serializers.CharField(source='get_state_display', read_only=True)
 
@@ -219,11 +220,61 @@ class PrivateSignalSerializerDetail(HALSerializer):
             'image',
         )
 
-    def update(self, validated_data):
-        if 'location' in validated_data and validated_data['location']:
+    def update(self, instance, validated_data):
+        """
+        Perform update on nested models.
+
+        Note: Reporter cannot be updated via the API.
+        """
+        print(validated_data.keys())
+        user_email = self.context['request'].user.email
+
+        if 'location' in validated_data:
             location_data = validated_data.pop('location')
-            location_data['created_by'] = self.context['request'].user
-            Signal.actions.update_location()
+            location_data['created_by'] = user_email
+
+            Signal.actions.update_location(
+                location_data,
+                instance,
+            )
+        # TODO: see comment above _NestedStatusModelSerializer in this module 
+        # TODO: consider renaming user property to created_by for symmetry
+        if 'status' in validated_data:
+            status_data = validated_data.pop('status')
+            status_data['user'] = user_email
+    
+            Signal.actions.update_status(
+                status_data,
+                instance,
+            )
+        # TODO: fix problem with SubCategory URL, see failing test
+        if 'category' in validated_data:
+            category_data = validated_data['category']
+            category_data['created_by'] = user_email
+
+            Signal.actions.update_category_assignment(
+                category_data,
+                instance,
+            )
+        if 'priority' in validated_data:
+            priority_data = validated_data['priority']
+            priority_data['created_by'] = user_email
+
+            Signal.actions.update_priority(
+                priority_data,
+                instance,
+            )
+        if 'note' in validated_data:
+            print("CREATE NOTE AS REQUESTED")
+            note_data = validated_data['note']
+            note_data['created_by'] = user_email
+    
+            Signal.actions.create_note(
+                note_data,
+                instance,
+            )
+
+        return instance
 
 
 class PrivateSignalSerializerList(HALSerializer):
