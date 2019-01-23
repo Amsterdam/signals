@@ -40,16 +40,15 @@ class TestAddressValidation(SimpleTestCase):
 
     def test_validate_with_results(self):
         address_validation = AddressValidation()
-        address = "Weesperstraat 113"
 
         atlas_first_result = self._get_atlas_response()["results"][0]
 
         address_validation._search_atlas = MagicMock(return_value=[atlas_first_result])
         address_validation._atlas_result_to_address = MagicMock()
 
-        address_validation.validate(address)
+        address_validation.validate(self.address)
 
-        address_validation._search_atlas.assert_called_with(address)
+        address_validation._search_atlas.assert_called_with(self.address)
         address_validation._atlas_result_to_address.assert_called_with(atlas_first_result)
 
     def test_search_atlas_with_unsuccessful_http_code(self):
