@@ -12,6 +12,7 @@ BEHANDELING = 'b'
 ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
+GESPLITST = 's'
 
 HEROPEND = 'reopened'
 
@@ -59,6 +60,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
+        GESPLITST,
     ],
     AFWACHTING: [
         AFWACHTING,
@@ -116,4 +118,6 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,
         TE_VERZENDEN,
     ],
+    # TODO: Check if correct?
+    GESPLITST: [],
 }
