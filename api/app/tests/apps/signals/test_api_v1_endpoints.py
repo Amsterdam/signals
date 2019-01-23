@@ -95,9 +95,9 @@ class TestPrivateEndpoints(APITestCase):
         read_permission = Permission.objects.get(codename='sia_read')
         write_permission = Permission.objects.get(codename='sia_write')
 
-        self.user_permissions = UserFactory.create()
-        self.user_permissions.user_permissions.add(read_permission)
-        self.user_permissions.user_permissions.add(write_permission)
+        self.user_with_permissions = UserFactory.create()
+        self.user_with_permissions.user_permissions.add(read_permission)
+        self.user_with_permissions.user_permissions.add(write_permission)
 
         self.user_no_read_permissions = UserFactory.create()
         self.user_no_read_permissions.user_permissions.add(write_permission)
@@ -106,7 +106,7 @@ class TestPrivateEndpoints(APITestCase):
         self.user_no_write_permissions.user_permissions.add(read_permission)
 
         # Forcing authentication
-        self.client.force_authenticate(user=self.user_permissions)
+        self.client.force_authenticate(user=self.user_with_permissions)
 
         # Add one note to the signal
         self.note = NoteFactory(id=1, _signal=self.signal)
@@ -154,7 +154,7 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
 
         self.client.logout()
-        self.client.force_login(self.user_permissions)
+        self.client.force_login(self.user_with_permissions)
 
     def test_get_detail_no_read_permissions(self):
         self.client.logout()
@@ -167,7 +167,7 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
 
         self.client.logout()
-        self.client.force_login(self.user_permissions)
+        self.client.force_login(self.user_with_permissions)
 
     def test_delete_not_allowed(self):
         for endpoint in self.endpoints:
