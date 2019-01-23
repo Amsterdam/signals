@@ -64,6 +64,9 @@ class SignalFactory(factory.DjangoModelFactory):
     )
     extra_properties = {}
 
+    # SIG-884
+    parent = None
+
     @factory.post_generation
     def set_one_to_one_relations(self, create, extracted, **kwargs):
         """Set o2o relations on given `Signal` object."""

@@ -87,6 +87,10 @@ class Signal(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)
 
+    # SIG-884
+    parent = models.ForeignKey(to='self', related_name='children', null=True, blank=True,
+                               on_delete=models.SET_NULL)
+
     objects = models.Manager()
     actions = SignalManager()
 
@@ -149,6 +153,48 @@ class Signal(CreatedUpdatedModel):
                 domain=current_site.domain,
                 path=self.image_crop.url)
             return fqdn_url
+
+    def is_parent(self):
+        # If we have children we are a parent
+        return self.children.exists()
+
+    def is_child(self):
+        # If we have a parent we are a child
+        return self.parent is not None
+
+    def get_siblings(self):
+        if self.is_child():
+            # If we are a child return all siblings
+            siblings_qs = self.parent.children.all()
+            if self.pk:
+                # Exclude myself if possible
+                return siblings_qs.exclude(pk=self.pk)
+            return siblings_qs
+
+        # Return a non queryset
+        return self.__class__.objects.none()
+
+    def _validate(self):
+        if self.is_parent() and self.is_child():
+            # We cannot be a parent and a child at once
+            raise ValidationError('Cannot be a parent and a child at the once')
+
+        if self.parent and self.parent.is_child():
+            # The parent of this Signal cannot be a child of another Signal
+            raise ValidationError('A child of a child is not allowed')
+
+        if (self.is_child() and
+                self.get_siblings().count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
+            # we are a child and our parent already has the max number of children
+            raise ValidationError('Maximum number of children reached for the parent Signal')
+
+        if self.children.exists() and self.status.state != workflow.GESPLITST:
+            # If we have children our status can only be "gesplitst"
+            raise ValidationError('The status of a parent Signal can only be "gesplitst"')
+
+    def save(self, *args, **kwargs):
+        self._validate()
+        super(Signal, self).save(*args, **kwargs)
 
 
 STADSDEEL_CENTRUM = 'A'
