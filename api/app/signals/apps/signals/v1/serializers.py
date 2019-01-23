@@ -102,6 +102,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'geometrie',
             'extra_properties',
             'created_by',
+            'bag_validated',
         )
         read_only_fields = (
             'id',
