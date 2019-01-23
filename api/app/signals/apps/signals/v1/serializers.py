@@ -130,18 +130,16 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
-    # Should be required, but to make it work with the backwards compatibility fix it's not required
-    # at the moment..
-    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
-
+    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=True)
     sub = serializers.CharField(source='sub_category.name', read_only=True)
     sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
     main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
-    # Backwards compatibility fix for departments, should be retrieved from category terms resource.
-    department = serializers.SerializerMethodField(source='sub_category.departments',
-                                                   read_only=True)
+    departments = serializers.SerializerMethodField(
+        source='sub_category.departments',
+        read_only=True
+    )
 
     class Meta:
         model = CategoryAssignment
@@ -151,30 +149,12 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'main',
             'main_slug',
             'sub_category',
-            'department',
+            'departments',
             'created_by',
         )
 
-    def get_department(self, obj):
+    def get_departments(self, obj):
         return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
-
-    def to_internal_value(self, data):
-        internal_data = super().to_internal_value(data)
-
-        # Backwards compatibility fix to let this endpoint work with `sub` as key.
-        is_main_name_posted = 'main' in data
-        is_sub_name_posted = 'sub' in data
-        is_sub_category_not_posted = 'sub_category' not in data
-        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
-            try:
-                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
-                                                       name__iexact=data['sub'])
-            except SubCategory.DoesNotExist:
-                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
-            else:
-                internal_data['sub_category'] = sub_category
-
-        return internal_data
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -288,11 +268,6 @@ class PrivateSignalSerializerList(HALSerializer):
             'updated_at',
         )
 
-    def validate(self, data):
-        # for debugging
-        # print('\nData received\n', data, '\n')
-        return super().validate(data)
-
     def create(self, validated_data):
         # We ignore the status from the incoming Signal and replace it with the
         # initial state in the workflow (GEMELD).
@@ -328,12 +303,3 @@ class PrivateSignalSerializerList(HALSerializer):
             priority_data
         )
         return signal
-
-# ingelogd:
-# * status negeren
-# * locatie verplichten (in toekomst adres validatie)
-# * melder verplichten
-# * urgentie mogelijk, maar niet verplicht
-# * categorie mogelijk (in de toekomst ook vanuit backend call naar ML tool)
-
-# wens: JPG, PNG en GIF ondersteunen

@@ -4,11 +4,12 @@ import unittest
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.http import urlencode
+from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, MainCategory, Signal
+from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
     MainCategoryFactory,
@@ -265,6 +266,30 @@ class TestPrivateSignalViewSet(APITestCase):
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
 
+        # Create a special pair of sub and main categories for testing (insulate our tests
+        # from future changes in categories).
+        # TODO: add to factories.
+        self.test_cat_main = MainCategory(name='testmain')
+        self.test_cat_main.save()
+        self.test_cat_sub = SubCategory(
+            main_category=self.test_cat_main,
+            name='testsub',
+            handling=SubCategory.HANDLING_A3DMC,
+        )
+        self.test_cat_sub.save()
+        self.link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.test_cat_main.slug,
+                'sub_slug': self.test_cat_sub.slug,
+            }
+        )
+
+        # Load fixture of initial data, augment with above test categories.
+        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+        with open(fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+        self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
+
     # -- Read tests --
 
     def test_list_endpoint_without_authentication_should_fail(self):
@@ -330,16 +355,12 @@ class TestPrivateSignalViewSet(APITestCase):
     # -- write tests --
 
     def test_create_initial(self):
-        # Authenticate, load fixture.
+        # Authenticate, load fixture and add relevant main and sub category.
         self.client.force_authenticate(user=self.superuser)
-
-        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
-        with open(fixture_file, 'r') as f:
-            data = json.load(f)
 
         # Create initial Signal, check that it reached the database.
         signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
@@ -355,13 +376,10 @@ class TestPrivateSignalViewSet(APITestCase):
     def test_create_initial_and_upload_image(self):
         # Authenticate, load fixture.
         self.client.force_authenticate(user=self.superuser)
-        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
-        with open(fixture_file, 'r') as f:
-            data = json.load(f)
 
         # Create initial Signal.
         signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
@@ -386,7 +404,6 @@ class TestPrivateSignalViewSet(APITestCase):
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
         history_endpoint = self.history_endpoint.format(pk=pk)
-        print('history_endpoint', history_endpoint)
 
         # check that only one Location is in the history
         querystring = urlencode({'what': 'UPDATE_LOCATION'})
@@ -399,7 +416,6 @@ class TestPrivateSignalViewSet(APITestCase):
         with open(fixture_file, 'r') as f:
             data = json.load(f)
 
-        print('detail_endpoint', detail_endpoint)
         response = self.client.patch(
             detail_endpoint,
             data,

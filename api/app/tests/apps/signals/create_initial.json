@@ -22,8 +22,7 @@
         "extra_properties": {}
     },
     "category": {
-        "main": "Afval",
-        "sub": "Veeg- / zwerfvuil"
+        "sub_category": "http://example.com/placeholder/replace/in/tests"
     },
     "reporter": {
         "email": "melder@example.com",
