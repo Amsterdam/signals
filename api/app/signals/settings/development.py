@@ -2,7 +2,7 @@ import os
 
 from signals.settings.base import *  # noqa
 
-from .zds import *  # noqa
+from .zds_vng import *  # noqa
 
 SECRET_KEY = 'insecure'
 DEBUG = True
