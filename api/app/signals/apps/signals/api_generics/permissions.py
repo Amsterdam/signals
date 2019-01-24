@@ -1,7 +1,8 @@
-from rest_framework import permissions
+from rest_framework import exceptions
+from rest_framework.permissions import BasePermission
 
 
-class StatusPermission(permissions.BasePermission):
+class StatusPermission(BasePermission):
     """Permission check for `Status`."""
 
     def has_permission(self, request, view):
@@ -13,7 +14,7 @@ class StatusPermission(permissions.BasePermission):
             return False
 
 
-class CategoryPermission(permissions.BasePermission):
+class CategoryPermission(BasePermission):
     """Permission check for `Category`."""
 
     def has_permission(self, request, view):
@@ -26,7 +27,7 @@ class CategoryPermission(permissions.BasePermission):
             return False
 
 
-class LocationPermission(permissions.BasePermission):
+class LocationPermission(BasePermission):
     """Permission check for `Location`."""
 
     def has_permission(self, request, view):
@@ -38,7 +39,7 @@ class LocationPermission(permissions.BasePermission):
             return False
 
 
-class PriorityPermission(permissions.BasePermission):
+class PriorityPermission(BasePermission):
     """Permission check for `Priority`."""
 
     def has_permission(self, request, view):
@@ -50,7 +51,7 @@ class PriorityPermission(permissions.BasePermission):
             return False
 
 
-class NotePermission(permissions.BasePermission):
+class NotePermission(BasePermission):
     """Permission check for `Note`."""
 
     def has_permission(self, request, view):
@@ -60,3 +61,24 @@ class NotePermission(permissions.BasePermission):
             return True
         else:
             return False
+
+
+class SIAPermissions(BasePermission):
+    perms_map = {
+        'GET': ['signals.sia_read'],
+        'OPTIONS': [],
+        'HEAD': [],
+        'POST': ['signals.sia_write'],
+        'PUT': ['signals.sia_write'],
+        'PATCH': ['signals.sia_write'],
+    }
+
+    def get_required_permissions(self, method):
+        if method not in self.perms_map:
+            raise exceptions.MethodNotAllowed(method)
+
+        return self.perms_map[method]
+
+    def has_permission(self, request, view):
+        perms = self.get_required_permissions(method=request.method)
+        return request.user.has_perms(perms)

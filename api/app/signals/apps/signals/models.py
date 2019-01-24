@@ -91,6 +91,10 @@ class Signal(CreatedUpdatedModel):
     actions = SignalManager()
 
     class Meta:
+        permissions = (
+            ('sia_read', 'Can read from SIA'),
+            ('sia_write', 'Can write to SIA'),
+        )
         ordering = ('created_at', )
 
     def __init__(self, *args, **kwargs):
