@@ -290,11 +290,16 @@ class PrivateSignalSerializerList(HALSerializer):
         location_data = validated_data.pop('location')
         location_data['created_by'] = logged_in_user.email
 
-        address_validation = AddressValidation()
-
         try:
-            address_validation.validate_address_dict(location_data["address"])
+            address_validation = AddressValidation()
+            validated_address = address_validation.validate_address_dict(location_data["address"])
+
+            # Set suggested address from AddressValidation as address and save original address in
+            # extra_properties, to correct possible spelling mistakes in the original address.
+            location_data["extra_properties"]["original_address"] = location_data["address"]
+            location_data["address"] = validated_address
             location_data["bag_validated"] = True
+
         except AddressValidationUnavailableException:
             # Ignore it when the address validation is unavailable. Just save the unvalidated
             # location.
