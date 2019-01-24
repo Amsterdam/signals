@@ -95,6 +95,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
         )
         read_only_fields = (
             'id',
+            'bag_validated',
         )
         extra_kwargs = {
             'id': {'label': 'ID', },

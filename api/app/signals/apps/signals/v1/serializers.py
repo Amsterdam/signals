@@ -3,9 +3,14 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from signals.apps.signals import workflow
+from signals.apps.signals.address.validation import (
+    AddressValidation,
+    AddressValidationUnavailableException,
+    NoResultsException
+)
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
@@ -89,7 +94,6 @@ class HistoryHalSerializer(HALSerializer):
 
 
 class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Location
         geo_field = 'geometrie'
@@ -106,6 +110,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
         )
         read_only_fields = (
             'id',
+            'bag_validated',
         )
         extra_kwargs = {
             'id': {'label': 'ID', },
@@ -171,7 +176,6 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Reporter
         fields = (
@@ -191,7 +195,6 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedNoteModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Note
         fields = (
@@ -365,6 +368,18 @@ class PrivateSignalSerializerList(HALSerializer):
 
         location_data = validated_data.pop('location')
         location_data['created_by'] = logged_in_user.email
+
+        address_validation = AddressValidation()
+
+        try:
+            address_validation.validate_address_dict(location_data["address"])
+            location_data["bag_validated"] = True
+        except AddressValidationUnavailableException:
+            # Ignore it when the address validation is unavailable. Just save the unvalidated
+            # location.
+            pass
+        except NoResultsException:
+            raise ValidationError({"location": "Niet-bestaand adres."})
 
         category_assignment_data = validated_data.pop('category_assignment')
         category_assignment_data['created_by'] = logged_in_user.email
