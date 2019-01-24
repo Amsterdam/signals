@@ -1,10 +1,11 @@
-from django.conf import settings
 from json import loads
+
+from django.conf import settings
 from requests import get
 from requests.exceptions import RequestException
 
 
-class AtlasResultUnavailableException(Exception):
+class AddressValidationUnavailableException(Exception):
     pass
 
 
@@ -15,7 +16,7 @@ class NoResultsException(Exception):
 class AddressValidation:
     ATLAS_SEARCH_URL = settings.DATAPUNT_API_URL + 'atlas/search'
 
-    def validate(self, address: str) -> dict:
+    def validate_address_string(self, address: str) -> dict:
         results = self._search_atlas(address)
 
         if len(results) == 0:
@@ -23,12 +24,39 @@ class AddressValidation:
 
         return self._atlas_result_to_address(results[0])
 
+    def validate_address_dict(self, address: dict) -> dict:
+        """ Expects address dict with the following fields:
+
+        - openbare ruimte
+        - huisnummer
+        - huisletter (optional)
+        - huisnummer_toevoeging (optional)
+
+        Postcode and woonplaats fields will be ignored
+        """
+        address_str = self._address_dict_to_string(address)
+
+        return self.validate_address_string(address_str)
+
+    def _address_dict_to_string(self, address: dict) -> str:
+        """ Expects dict in the same format as validate_address_dict """
+
+        assert "huisnummer" in address
+        assert "openbare_ruimte" in address
+
+        return "{} {}{}{}".format(
+            address["openbare_ruimte"],
+            address["huisnummer"],
+            address["huisletter"] if "huisletter" in address else "",
+            ("-" + address["huisnummer_toevoeging"]) if "huisnummer_toevoeging" in address else "",
+        )
+
     def _search_atlas(self, address: str) -> dict:
         try:
             response = get(self.ATLAS_SEARCH_URL + '/adres', params={'q': address})
             response.raise_for_status()
         except RequestException as e:
-            raise AtlasResultUnavailableException(e)
+            raise AddressValidationUnavailableException(e)
 
         return loads(response.text)["results"]
 

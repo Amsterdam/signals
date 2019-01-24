@@ -1,5 +1,6 @@
 import json
 import os
+from unittest.mock import MagicMock
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -9,6 +10,7 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
+from signals.apps.signals.address.validation import AddressValidation
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
@@ -233,6 +235,25 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
         )
+
+    def test_post_signal_with_bag_validated(self):
+        """ Tests that the bag_validated field cannot be set manually and that the address
+            validation is NOT called on the v0 endpoint """
+
+        # Make sure the address is not validated
+        AddressValidation.validate_address_dict = MagicMock()
+
+        postjson = self._get_fixture('post_signal')
+        postjson["location"]["bag_validated"] = True
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        AddressValidation.validate_address_dict.assert_not_called()
+
+        id = response.data['id']
+        s = Signal.objects.get(id=id)
+        self.assertFalse(s.location.bag_validated)
 
     def test_post_signal_with_multipart_and_image(self):
         data = self._get_fixture('post_signal')
@@ -597,6 +618,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
 class TestUserLogging(TestAPIEnpointsBase):
     """Check that the API returns who did what and when."""
+
     def setUp(self):
         super().setUp()
 

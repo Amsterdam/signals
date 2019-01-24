@@ -1,6 +1,7 @@
 import json
 import os
-import unittest
+from unittest import skip
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -10,6 +11,10 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
+from signals.apps.signals.address.validation import (
+    AddressValidationUnavailableException,
+    NoResultsException
+)
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
@@ -285,6 +290,7 @@ class TestPrivateSignalViewSet(APITestCase):
 
     Note: we check both the list endpoint and associated detail endpoint.
     """
+
     def setUp(self):
         # initialize database with 2 Signals
         self.signal_no_image = SignalFactoryValidLocation.create()
@@ -395,7 +401,9 @@ class TestPrivateSignalViewSet(APITestCase):
 
     # -- write tests --
 
-    def test_create_initial(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial(self, validate_address_dict):
         # Authenticate, load fixture and add relevant main and sub category.
         self.client.force_authenticate(user=self.superuser)
 
@@ -414,7 +422,71 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response_json['location']['created_by'], self.superuser.email)
         self.assertEqual(response_json['category']['created_by'], self.superuser.email)
 
-    def test_create_initial_and_upload_image(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=NoResultsException)
+    def test_create_initial_invalid_location(self, validate_address_dict):
+        """ Tests that a 400 is returned when an invalid location is provided """
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_create_initial_valid_location(self, validate_address_dict):
+        """ Tests that bag_validated is set to True when a valid location is provided """
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertTrue(signal.location.bag_validated)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_address_validation_unavailable(self, validate_address_dict):
+        """ Tests that the signal is created even though the address validation service is
+        unavailable. Should set bag_validated to False """
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        # Signal should be added, but bag_validated should be False
+        self.assertFalse(signal.location.bag_validated)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_try_update_bag_validated(self, validate_address_dict):
+        """ Tests that the bag_validated field cannot be set manually, and that the address
+        validation is called """
+
+        self.client.force_authenticate(user=self.superuser)
+
+        data = self.create_initial_data
+        data['location']['bag_validated'] = True
+        response = self.client.post(self.list_endpoint, data, format='json')
+
+        validate_address_dict.assert_called_once()
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertFalse(signal.location.bag_validated)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_and_upload_image(self, validate_address_dict):
         # Authenticate, load fixture.
         self.client.force_authenticate(user=self.superuser)
 
@@ -437,7 +509,7 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.post(new_image_url, data={'image': image})
         self.assertEqual(response.status_code, 403)
 
-    @unittest.skip('Updates not yet supported')
+    @skip('Updates not yet supported')
     def test_update_location(self):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
