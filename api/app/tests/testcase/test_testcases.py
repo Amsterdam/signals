@@ -32,13 +32,15 @@ class TestJsonAPITestCase(APITestCase):
             self.json_api_testcase.assertResponseFormat(dict_a, dict_b)
 
         for dict_a, dict_b in self._get_test_assertResponseFormat_fail_testcases():
-            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a, dict_b)
+            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a,
+                              dict_b)
 
         for dict_a, dict_b in self._get_test_assertResponseFormat_testcases_list_types():
             self.json_api_testcase.assertResponseFormat(dict_a, dict_b, True)
 
         for dict_a, dict_b in self._get_test_assertResponseFormat_testcases_list_types():
-            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a, dict_b)
+            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a,
+                              dict_b)
 
     def _get_test_assertResponseFormat_success_testcases(self) -> List[Tuple[dict, dict]]:
         testcases = [
