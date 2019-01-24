@@ -1,6 +1,6 @@
 import json
 import os
-from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -10,7 +10,6 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.address.validation import AddressValidation
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
@@ -236,12 +235,10 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
             "Reporter is missing _signal field?"
         )
 
-    def test_post_signal_with_bag_validated(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_post_signal_with_bag_validated(self, validate_address_dict):
         """ Tests that the bag_validated field cannot be set manually and that the address
             validation is NOT called on the v0 endpoint """
-
-        # Make sure the address is not validated
-        AddressValidation.validate_address_dict = MagicMock()
 
         postjson = self._get_fixture('post_signal')
         postjson["location"]["bag_validated"] = True
@@ -249,7 +246,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
-        AddressValidation.validate_address_dict.assert_not_called()
+        validate_address_dict.assert_not_called()
 
         id = response.data['id']
         s = Signal.objects.get(id=id)

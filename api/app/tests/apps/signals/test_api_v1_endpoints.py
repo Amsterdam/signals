@@ -423,7 +423,14 @@ class TestPrivateSignalViewSet(APITestCase):
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_create_initial_valid_location(self, validate_address_dict):
-        """ Tests that bag_validated is set to True when a valid location is provided """
+        """ Tests that bag_validated is set to True when a valid location is provided and that
+        the address is replaced with the suggested address. The original address should be saved
+        in the extra_properties of the Location object """
+
+        original_address = self.create_initial_data["location"]["address"]
+        suggested_address = self.create_initial_data["location"]["address"]
+        suggested_address["openbare_ruimte"] = "Amsteltje"
+        validate_address_dict.return_value = suggested_address
 
         self.client.force_authenticate(user=self.superuser)
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -434,6 +441,10 @@ class TestPrivateSignalViewSet(APITestCase):
         signal = Signal.objects.get(id=signal_id)
 
         self.assertTrue(signal.location.bag_validated)
+        self.assertEquals(original_address, signal.location.extra_properties["original_address"],
+                          "Original address should appear in extra_properties.original_address")
+        self.assertEquals(suggested_address, signal.location.address,
+                          "Suggested address should appear instead of the received address")
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
