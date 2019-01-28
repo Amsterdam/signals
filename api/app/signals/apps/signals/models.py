@@ -308,6 +308,15 @@ class Status(CreatedUpdatedModel):
     def __str__(self):
         return str(self.text)
 
+    # TODO: Maybe migrate user to created_by, for now made this work-around
+    @property
+    def created_by(self):
+        return self.user
+
+    @created_by.setter
+    def created_by(self, created_by):
+        self.user = created_by
+
     def clean(self):
         """Validate instance.
 

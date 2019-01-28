@@ -1,6 +1,5 @@
 import json
 import os
-import unittest
 
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -173,22 +172,6 @@ class TestPrivateEndpoints(APITestCase):
         for endpoint in self.endpoints:
             url = f'{endpoint}1'
             response = self.client.delete(url)
-
-            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
-
-    @unittest.skip('Put is being implemented')
-    def test_put_not_allowed(self):
-        for endpoint in self.endpoints:
-            url = f'{endpoint}1'
-            response = self.client.put(url)
-
-            self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
-
-    @unittest.skip('Patch is being implemented')
-    def test_patch_not_allowed(self):
-        for endpoint in self.endpoints:
-            url = f'{endpoint}1'
-            response = self.client.patch(url)
 
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
@@ -522,12 +505,13 @@ class TestPrivateSignalViewSet(APITestCase):
         with open(fixture_file, 'r') as f:
             data = json.load(f)
         data['category']['sub_category'] = self.link_test_cat_sub
-        
+
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
         # check that there are two category assignments in the history
         self.signal_no_image.refresh_from_db()
+
         response = self.client.get(history_endpoint + '?' + querystring)
         self.assertEqual(len(response.json()), 2)
 
@@ -588,9 +572,6 @@ class TestPrivateSignalViewSet(APITestCase):
         fixture_file = os.path.join(THIS_DIR, 'create_note.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-            print('RAW LOADED DATA')
-            import pprint
-            pprint.pprint(data)
 
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -603,9 +584,10 @@ class TestPrivateSignalViewSet(APITestCase):
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
-            self.signal_no_image.note.created_by,
+            self.signal_no_image.notes.first().created_by,
             self.superuser.email,
         )
+
 # TODO:
 # * Add test to check that an uploaded signal can only be created in gemeld state via public
 #   unauthenticated endpoint.

@@ -3,6 +3,7 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
@@ -109,8 +110,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'id': {'label': 'ID', },
         }
 
-# TODO: extend _NestedStatusModelSerializer with validate method like that one in
-# signals.apps.signals.v0.serializers.StatusHALSerializer (i.e. check permissions ...)
+
 class _NestedStatusModelSerializer(serializers.ModelSerializer):
     state_display = serializers.CharField(source='get_state_display', read_only=True)
 
@@ -125,9 +125,20 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
             'created_at',
         )
         read_only_fields = (
-            'state',
             'created_at',
         )
+
+    def validate(self, attrs):
+        if (attrs['state'] == workflow.TE_VERZENDEN
+                and attrs.get('target_api') == Status.TARGET_API_SIGMAX):
+
+            request = self.context.get('request')
+            if request and not request.user.has_perm('signals.push_to_sigmax'):
+                raise PermissionDenied({
+                    'state': "You don't have permissions to push to Sigmax/CityControl."
+                })
+
+        return super(_NestedStatusModelSerializer, self).validate(attrs=attrs)
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
@@ -220,59 +231,77 @@ class PrivateSignalSerializerDetail(HALSerializer):
             'image',
         )
 
+    def _update_location(self, instance, validated_data):
+        """
+        Update the location of a Signal using the action manager
+        """
+        if 'location' in validated_data:
+            location_data = validated_data.pop('location')
+            location_data['created_by'] = self.context['request'].user.email
+
+            Signal.actions.update_location(location_data, instance)
+
+    def _update_status(self, instance, validated_data):
+        """
+        Update the status of a Signal using the action manager
+        """
+        if 'status' in validated_data:
+            status_data = validated_data.pop('status')
+            status_data['created_by'] = self.context['request'].user.email
+
+            Signal.actions.update_status(status_data, instance)
+
+    def _update_category_assignment(self, instance, validated_data):
+        """
+        Update the category assignment of a Signal using the action manager
+        """
+        category_assignment_data = validated_data['category_assignment']
+        category_assignment_data['created_by'] = self.context['request'].user.email
+
+        Signal.actions.update_category_assignment(category_assignment_data, instance)
+
+    def _update_priority(self, instance, validated_data):
+        """
+        Update the priority of a Signal using the action manager
+        """
+        priority_data = validated_data['priority']
+        priority_data['created_by'] = self.context['request'].user.email
+
+        Signal.actions.update_priority(priority_data, instance)
+
+    def _update_notes(self, instance, validated_data):
+        """
+        Not really updating notes, we are only adding new notes
+
+        Note: For now we only allow the creation of only one note through the API, it still needs
+              to be provided as a list though :(
+        """
+        if 'notes' in validated_data and len(validated_data['notes']) > 0:
+            note_data = validated_data['notes'][0]
+            note_data['created_by'] = self.context['request'].user.email
+
+            Signal.actions.create_note(note_data, instance)
+
     def update(self, instance, validated_data):
         """
         Perform update on nested models.
 
         Note: Reporter cannot be updated via the API.
         """
-        print(validated_data.keys())
-        user_email = self.context['request'].user.email
-
         if 'location' in validated_data:
-            location_data = validated_data.pop('location')
-            location_data['created_by'] = user_email
+            self._update_location(instance, validated_data)
 
-            Signal.actions.update_location(
-                location_data,
-                instance,
-            )
-        # TODO: see comment above _NestedStatusModelSerializer in this module 
-        # TODO: consider renaming user property to created_by for symmetry
         if 'status' in validated_data:
-            status_data = validated_data.pop('status')
-            status_data['user'] = user_email
-    
-            Signal.actions.update_status(
-                status_data,
-                instance,
-            )
-        # TODO: fix problem with SubCategory URL, see failing test
-        if 'category' in validated_data:
-            category_data = validated_data['category']
-            category_data['created_by'] = user_email
+            self._update_status(instance, validated_data)
 
-            Signal.actions.update_category_assignment(
-                category_data,
-                instance,
-            )
+        if 'category_assignment' in validated_data:
+            self._update_category_assignment(instance, validated_data)
+
         if 'priority' in validated_data:
-            priority_data = validated_data['priority']
-            priority_data['created_by'] = user_email
+            self._update_priority(instance, validated_data)
 
-            Signal.actions.update_priority(
-                priority_data,
-                instance,
-            )
-        if 'note' in validated_data:
-            print("CREATE NOTE AS REQUESTED")
-            note_data = validated_data['note']
-            note_data['created_by'] = user_email
-    
-            Signal.actions.create_note(
-                note_data,
-                instance,
-            )
+        if 'notes' in validated_data:
+            self._update_notes(instance, validated_data)
 
         return instance
 

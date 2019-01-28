@@ -94,20 +94,6 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
         # TODO: Check what to do about the headers (see V0 API)
         return Response({}, status=HTTP_202_ACCEPTED)
 
-    def partial_update(self, request, pk=None):
-        print('\nAttempting partial update')
-
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-
-        import pprint
-        print('Data is validated:', serializer.is_valid(raise_exception=False))
-        print('\n\nValidation errors:')
-        pprint.pprint(serializer.errors)
-
-
-        return super().partial_update(request, pk=pk)
-
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
     object = None
