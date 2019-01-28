@@ -1,203 +1,146 @@
-from typing import List, Tuple
+from unittest.mock import MagicMock
 
 from rest_framework.test import APITestCase
 
-from .testcases import JsonAPITestCase
+from .testcases import JsonAPITestCase, ValidationException
 
 
 class TestJsonAPITestCase(APITestCase):
-    json_api_testcase = JsonAPITestCase()
 
-    def test_assert_list_type(self):
-        self.assertEquals(int, self.json_api_testcase._assert_list_type([1, 2, 3]))
-        self.assertEquals(str, self.json_api_testcase._assert_list_type(["a", "b", "c"]))
-        self.assertEquals(None, self.json_api_testcase._assert_list_type([]))
+    def test_additional_properties_defaults_false(self):
+        json_api_testcase = JsonAPITestCase()
+        json_api_testcase._validate = MagicMock()
 
-        self.assertRaises(AssertionError, self.json_api_testcase._assert_list_type, [1, "a", 3])
-        self.assertRaises(AssertionError, self.json_api_testcase._assert_list_type, [True, 3, "b"])
+        schema = {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string",
+                },
+            },
+        }
+        data = {
+            "key": "value"
+        }
+        json_api_testcase.assertJsonSchema(schema, data)
 
-    def test_assert_list_types(self):
-        self.json_api_testcase._assert_list_types([1, 3, 4], [2, 4, 5])
-        self.json_api_testcase._assert_list_types([], [1, 2])
-        self.json_api_testcase._assert_list_types(["a", "b"], [])
-        self.json_api_testcase._assert_list_types([], [])
-        self.json_api_testcase._assert_list_types([True], [False])
+        schema["additionalProperties"] = False
+        json_api_testcase._validate.assert_called_with(schema, data)
 
-        self.assertRaises(AssertionError, self.json_api_testcase._assert_list_types, [1, 3],
-                          [False])
+    def test_additional_properties_not_overridden_when_true(self):
+        json_api_testcase = JsonAPITestCase()
+        json_api_testcase._validate = MagicMock()
 
-    def test_assertResponseFormat(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string",
+                },
+            },
+            "additionalProperties": True
+        }
+        data = {
+            "key": "value"
+        }
 
-        for dict_a, dict_b in self._get_test_assertResponseFormat_success_testcases():
-            self.json_api_testcase.assertResponseFormat(dict_a, dict_b)
+        json_api_testcase.assertJsonSchema(schema, data)
+        json_api_testcase._validate.assert_called_with(schema, data)
 
-        for dict_a, dict_b in self._get_test_assertResponseFormat_fail_testcases():
-            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a,
-                              dict_b)
-
-        for dict_a, dict_b in self._get_test_assertResponseFormat_testcases_list_types():
-            self.json_api_testcase.assertResponseFormat(dict_a, dict_b, True)
-
-        for dict_a, dict_b in self._get_test_assertResponseFormat_testcases_list_types():
-            self.assertRaises(AssertionError, self.json_api_testcase.assertResponseFormat, dict_a,
-                              dict_b)
-
-    def _get_test_assertResponseFormat_success_testcases(self) -> List[Tuple[dict, dict]]:
-        testcases = [
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": True,
+    def _get_schema(self):
+        return {
+            "type": "object",
+            "properties": {
+                "numberproperty": {
+                    "type": "number",
+                },
+                "strproperty": {
+                    "type": "string",
+                },
+                "objproperty": {
+                    "type": "object",
+                    "properties": {
+                        "prop1": {
+                            "type": "number",
+                        },
+                        "prop2": {
+                            "type": "string",
                         },
                     },
                 },
-
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": {
-                        "intkey": 0,
-                        "float": .4,
-                        "subsubdict": {
-                            "bool": False,
-                        },
-                    },
+                "arrayproperty": {
+                    "type": "array",
                 },
-
-            ),
-        ]
-
-        return testcases
-
-    def _get_test_assertResponseFormat_fail_testcases(self) -> List[Tuple[dict, dict]]:
-        testcases = [
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": "True",
-                        },
-                    },
+                "booleanproperty": {
+                    "type": "boolean",
                 },
-
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": {
-                        "intkey": 0,
-                        "float": .4,
-                        "subsubdict": {
-                            "bool": False,
-                        },
-                    },
+                "nullproperty": {
+                    "type": "null",
                 },
-            ),
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": "True",
-                        },
-                    },
+                "enumproperty": {
+                    # Can be used with or without type.
+                    "enum": ["a", "b", "c", 1, 4],
                 },
-
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": ["some list which isn't a dict"],
+                "constproperty": {
+                    "const": "This should always be this text",
                 },
-            ),
-        ]
+            },
+        }
 
-        return testcases
+    def _get_data(self):
+        return {
+            "numberproperty": 4,
+            "strproperty": "string value",
+            "objproperty": {
+                "prop1": .4,
+                "prop2": "string val",
+            },
+            "arrayproperty": [1, 2, 3, 4, 5],
+            "booleanproperty": True,
+            "nullproperty": None,
+            "enumproperty": "b",
+            "constproperty": "This should always be this text",
+        }
 
-    def _get_test_assertResponseFormat_testcases_list_types(self) -> List[Tuple[dict, dict]]:
-        testcases = [
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": True,
-                            "listofints": []
-                        },
-                    },
-                },
+    def _test_schema_data(self, schema: dict, data: dict):
+        json_api_testcase = JsonAPITestCase()
+        json_api_testcase.assertJsonSchema(schema, data)
 
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": {
-                        "intkey": 0,
-                        "float": .4,
-                        "subsubdict": {
-                            "bool": False,
-                            "listofints": ["a", True]
-                        },
-                    },
-                },
+    def test_basic_valid_schema(self):
+        """ Uses a schema definition with some different properties as example. See json-schema.org
+        for more advanced schema's. """
 
-            ),
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": True,
-                            "listofints": [2, "a", True]
-                        },
-                    },
-                },
+        self._test_schema_data(self._get_schema(), self._get_data())
 
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": {
-                        "intkey": 0,
-                        "float": .4,
-                        "subsubdict": {
-                            "bool": False,
-                            "listofints": ["a", "b"]
-                        },
-                    },
-                },
+    def test_missing_property(self):
+        """ Missing property should throw exception """
 
-            ),
-            (
-                {
-                    "stringkey": "stringval",
-                    "subdict": {
-                        "intkey": 84024024,
-                        "float": 8.4,
-                        "subsubdict": {
-                            "bool": True,
-                            "listofints": [2, 4, 0, 4, 3]
-                        },
-                    },
-                },
+        data = self._get_data()
+        del data["booleanproperty"]
 
-                {
-                    "stringkey": "somestringvalue",
-                    "subdict": {
-                        "intkey": 0,
-                        "float": .4,
-                        "subsubdict": {
-                            "bool": False,
-                            "listofints": ["a", "b"]
-                        },
-                    },
-                },
+        self.assertRaises(ValidationException, self._test_schema_data, self._get_schema(), data)
 
-            ),
-        ]
+    def test_allow_missing_property(self):
+        """ Allows missing properties when 'required' list is explicitly set """
 
-        return testcases
+        schema = self._get_schema()
+        schema["properties"]["objproperty"]["required"] = ["prop2"]
+        data = self._get_data()
+        del data["objproperty"]["prop1"]
+
+        self._test_schema_data(schema, data)
+
+    def test_missing_nested_property(self):
+        """ Missing property should throw exception """
+
+        data = self._get_data()
+        del data["objproperty"]["prop1"]
+
+        self.assertRaises(ValidationException, self._test_schema_data, self._get_schema(), data)
+
+    def test_wrong_property_type(self):
+        """ Wrong property type should throw exception """
+        data = self._get_data()
+        data["booleanproperty"] = "Wrong type"
+
+        self.assertRaises(ValidationException, self._test_schema_data, self._get_schema(), data)

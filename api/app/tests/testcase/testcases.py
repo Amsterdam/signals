@@ -1,63 +1,47 @@
-from typing import Optional
-
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 from rest_framework.test import APITestCase
+
+
+class ValidationException(Exception):
+    pass
 
 
 class JsonAPITestCase(APITestCase):
 
-    def assertResponseFormat(self, left_dict: dict, right_dict: dict, ignore_list_types=False):
-        """ Asserts that both dictionaries contain the same keys and value types. Fails when the
-        keys in both dictionaries don't match or are associated with different value types.
-        Traverses the dictionaries recursively.
+    def assertJsonSchema(self, schema: dict, json_dict: dict):
+        """ Validates json_dict against schema. Schema format as defined on json-schema.org . If
+        additionalProperties is not set in schema, it will be set to False. This assertion
+        treats all properties as 'required', except for when required properties are explicitly
+        set according to the json-schema.org standard """
 
-        When ignore_list_types is set to False, we check if the items in the list are homogeneous
-        and the same for both lists in both dictionaries. Set ignore_list_types to True if you are
-        dealing with heterogeneous types.
+        if "additionalProperties" not in schema:
+            schema["additionalProperties"] = False
 
-        Does not necessarily work when dictionaries contain objects (which should not be the case
-        when we use this for JSON-deserialised structures)
-        """
+        schema = self._make_all_properties_required(schema)
 
-        self._assert_dicts(left_dict, right_dict, ignore_list_types)
+        self._validate(schema, json_dict)
 
-    def _assert_dicts(self, left_dict: dict, right_dict: dict, ignore_list_types=False):
-        """ Recursively compares dictionaries according to description in assertResponseFormat """
+    def _make_all_properties_required(self, schema: dict):
+        """ Adds the 'required' key to all types 'object', except for when the 'required' key
+        already exists """
 
-        for k, v in left_dict.items():
-            assert k in right_dict, "Missing key {} in right dictionary".format(k)
-            assert isinstance(v,
-                              type(right_dict[k])), "Types belonging to key {} to do match".format(
-                k)
+        if "type" in schema and schema[
+            "type"] == "object" and "properties" in schema and isinstance(schema["properties"],
+                                                                          dict):
 
-            if type(v) == dict:
-                self._assert_dicts(v, right_dict[k], ignore_list_types)
+            keys = schema["properties"].keys()
+            for key in keys:
+                schema["properties"][key] = self._make_all_properties_required(
+                    schema["properties"][key])
 
-            if type(v) == list and not ignore_list_types:
-                self._assert_list_types(v, right_dict[k])
+            if "required" not in schema.keys():
+                schema["required"] = list(keys)
 
-        assert len(left_dict.keys()) == len(
-            right_dict.keys()), "Number of keys in both dicts do not match"
+        return schema
 
-    def _assert_list_types(self, left_list: list, right_list: list):
-        left_type = self._assert_list_type(left_list)
-        right_type = self._assert_list_type(right_list)
-
-        if left_type is not None and right_type is not None:
-            assert left_type == right_type, "List types do not match"
-
-    def _assert_list_type(self, lst: list) -> Optional[type]:
-        """ Checks the list is homogeneously typed. Returns the type on success, or None when the
-        list is empty (and thus the type could be anything).
-
-        Note: Currently not checking recursively (list within lists)
-        """
-
-        if len(lst) == 0:
-            return None
-
-        t = type(lst[0])
-
-        for item in lst:
-            assert isinstance(item, t), "Expected list item to be of type {}".format(t)
-
-        return t
+    def _validate(self, schema: dict, json_dict: dict):
+        try:
+            validate(instance=json_dict, schema=schema)
+        except ValidationError as e:
+            raise ValidationException(e)
