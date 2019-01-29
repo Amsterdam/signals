@@ -588,6 +588,16 @@ class TestPrivateSignalViewSet(APITestCase):
             self.superuser.email,
         )
 
+    def test_put_not_allowed(self):
+        # Partial update to update the status, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+
+        response = self.client.put(detail_endpoint, {}, format='json')
+        self.assertEqual(response.status_code, 405)
+
 # TODO:
 # * Add test to check that an uploaded signal can only be created in gemeld state via public
 #   unauthenticated endpoint.

@@ -59,6 +59,8 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
     filter_backends = (DjangoFilterBackend, )
     permission_classes = (SIAPermissions, )
 
+    http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
+
     @action(detail=True)
     def history(self, request, pk=None):
         """History endpoint filterable by action."""
