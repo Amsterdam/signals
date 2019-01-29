@@ -49,7 +49,7 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin):
+class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList
@@ -58,6 +58,8 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin):
     authentication_classes = (JWTAuthBackend, )
     filter_backends = (DjangoFilterBackend, )
     permission_classes = (SIAPermissions, )
+
+    http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
     @action(detail=True)
     def history(self, request, pk=None):
