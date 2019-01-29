@@ -1,10 +1,6 @@
 import json
 import os
-<<<<<<< HEAD
-=======
-from unittest import skip
 from unittest.mock import patch
->>>>>>> SIG-881 Implement address validation on v1 endpoint
 
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
