@@ -42,11 +42,11 @@ left outer join
 on
     signals_subcategory.id = signals_categoryassignment.sub_category_id
 left join
-	 (select _signal_id, max(created_at) as created_at from signals_categoryassignment group by _signal_id) as maxsignal
+    (select _signal_id, max(created_at) as created_at from signals_categoryassignment group by _signal_id) as maxsignal
 on
-	maxsignal.created_at = signals_categoryassignment.created_at
+    maxsignal.created_at = signals_categoryassignment.created_at
 and
-	maxsignal._signal_id = signals_categoryassignment._signal_id
+    maxsignal._signal_id = signals_categoryassignment._signal_id
 left outer join
     signals_signal
 on
@@ -58,7 +58,7 @@ group by
 order by
     signals_maincategory."name"
 ;
-"""
+"""  # noqa
 
 SQL_COUNT_PER_STATUS = \
     """
@@ -83,7 +83,7 @@ group by
     signals_status.state
 order by
     signals_status.state;
-"""
+"""  # noqa
 
 
 class DashboardPrototype(APIView):

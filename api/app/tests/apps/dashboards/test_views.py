@@ -52,7 +52,8 @@ class TestDashboardPrototype(APITestCase):
         signal.save()
 
         # Test multiple categories for this object. Only last status should appear in overview
-        CategoryAssignment.objects.create(_signal=signal, sub_category=SubCategory.objects.get(pk=56))
+        CategoryAssignment.objects.create(
+            _signal=signal, sub_category=SubCategory.objects.get(pk=56))
 
         # Make sure times correspond with created signals
         self.report_end = (timezone.now() +
