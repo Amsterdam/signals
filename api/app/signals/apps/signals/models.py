@@ -162,7 +162,8 @@ class Signal(CreatedUpdatedModel):
         # If we have a parent we are a child
         return self.parent is not None
 
-    def get_siblings(self):
+    @property
+    def siblings(self):
         if self.is_child():
             # If we are a child return all siblings
             siblings_qs = self.parent.children.all()
@@ -184,7 +185,7 @@ class Signal(CreatedUpdatedModel):
             raise ValidationError('A child of a child is not allowed')
 
         if (self.is_child() and
-                self.get_siblings().count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
+                self.siblings.count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
             # we are a child and our parent already has the max number of children
             raise ValidationError('Maximum number of children reached for the parent Signal')
 
