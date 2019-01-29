@@ -259,7 +259,7 @@ class TestSignalModel(TestCase):
         signal_from_db = Signal.objects.get(pk=signal.id)
         self.assertEquals(signal_from_db.parent_id, signal.parent_id)
 
-        self.assertEquals(signal_from_db.get_siblings().count(), 0)  # Excluding the signal self
+        self.assertEquals(signal_from_db.siblings.count(), 0)  # Excluding the signal self
         self.assertEquals(signal_from_db.parent.children.count(), 1)  # All children of the parent
 
     def test_split_signal_cannot_be_parent_and_child(self):
