@@ -32,17 +32,27 @@ class TestDashboardPrototype(APITestCase):
             sub_category=subcategory
         )
 
+        return signal
+
     def setUp(self):
         self._create_test_signal(GEMELD, SubCategory.objects.get(pk=2))
         self._create_test_signal(GEMELD, SubCategory.objects.get(pk=3))
         self._create_test_signal(AFGEHANDELD, SubCategory.objects.get(pk=3))
         self._create_test_signal(AFWACHTING, SubCategory.objects.get(pk=15))
-        self._create_test_signal(BEHANDELING, SubCategory.objects.get(pk=56))
         self._create_test_signal(ON_HOLD, SubCategory.objects.get(pk=7))
         self._create_test_signal(AFWACHTING, SubCategory.objects.get(pk=3))
         self._create_test_signal(BEHANDELING, SubCategory.objects.get(pk=38))
         self._create_test_signal(ON_HOLD, SubCategory.objects.get(pk=2))
         self._create_test_signal(GEMELD, SubCategory.objects.get(pk=2))
+        signal = self._create_test_signal(GEMELD, SubCategory.objects.get(pk=38))
+
+        # Test multiple statuses for this object. Only last status should appear in overview
+        status_obj = Status.objects.create(state=BEHANDELING, _signal=signal)
+        signal.status = status_obj
+        signal.save()
+
+        # Test multiple categories for this object. Only last status should appear in overview
+        CategoryAssignment.objects.create(_signal=signal, sub_category=SubCategory.objects.get(pk=56))
 
         # Make sure times correspond with created signals
         self.report_end = (timezone.now() +

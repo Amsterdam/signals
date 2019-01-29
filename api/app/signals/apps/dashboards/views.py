@@ -41,10 +41,16 @@ left outer join
     signals_categoryassignment
 on
     signals_subcategory.id = signals_categoryassignment.sub_category_id
+left join
+	 (select _signal_id, max(created_at) as created_at from signals_categoryassignment group by _signal_id) as maxsignal
+on
+	maxsignal.created_at = signals_categoryassignment.created_at
+and
+	maxsignal._signal_id = signals_categoryassignment._signal_id
 left outer join
     signals_signal
 on
-    signals_signal.id = signals_categoryassignment."_signal_id"
+    signals_signal.id = maxsignal."_signal_id"
 and
     signals_signal.created_at >= %s and signals_signal.created_at <= %s
 group by
@@ -57,9 +63,16 @@ order by
 SQL_COUNT_PER_STATUS = \
     """
 select
-    signals_status.state, count(signals_signal.id)
-from
-    signals_status
+	signals_status.state, count(signals_signal.id)
+from (
+	select _signal_id, max(created_at) as created_at from signals_status group by _signal_id
+) as maxsignal
+left join
+	signals_status
+on
+	signals_status._signal_id = maxsignal._signal_id
+and
+	signals_status.created_at = maxsignal.created_at
 left join
     signals_signal
 on
