@@ -44,7 +44,8 @@ class TestFilters(APITestCase):
 
     @classmethod
     def _distribute_signals_days(cls):
-        """ Distributes SIGNALS_DISTRIBUTE_DAYS_CNT signals, one per day, from yesterday backwards """
+        """ Distributes SIGNALS_DISTRIBUTE_DAYS_CNT signals, one per day, from yesterday
+        backwards """
 
         now = datetime.utcnow()
 
