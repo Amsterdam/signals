@@ -1,11 +1,14 @@
 {
     "location": {
         "geometrie": {
-            "lat": 52.37993429553087,
-            "lon": 4.900771379470825
+            "type": "Point",
+            "coordinates": [
+                4.90022563,
+                52.36768424
+            ]
         },
         "address": {
-            "openbare_ruimte": "De Ruijterkade",
+            "openbare_ruimte": "AAARRGH De Ruijterkade",
             "huisnummer": "36",
             "huisletter": "A",
             "huisnummer_toevoeging": "",
