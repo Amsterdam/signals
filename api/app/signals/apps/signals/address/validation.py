@@ -1,5 +1,3 @@
-from json import loads
-
 from django.conf import settings
 from requests import get
 from requests.exceptions import RequestException
@@ -27,19 +25,20 @@ class AddressValidation:
     def validate_address_dict(self, address: dict) -> dict:
         """ Expects address dict with the following fields:
 
-        - openbare ruimte
+        - openbare_ruimte
         - huisnummer
         - huisletter (optional)
         - huisnummer_toevoeging (optional)
 
-        Postcode and woonplaats fields will be ignored
+        Postcode and woonplaats fields will be ignored (the atlas search does not accept those)
         """
         address_str = self._address_dict_to_string(address)
 
         return self.validate_address_string(address_str)
 
     def _address_dict_to_string(self, address: dict) -> str:
-        """ Expects dict in the same format as validate_address_dict """
+        """ Returns a search string as understood by the atlas search. Expects dict in the same
+        format as validate_address_dict """
 
         assert "huisnummer" in address
         assert "openbare_ruimte" in address
@@ -58,7 +57,7 @@ class AddressValidation:
         except RequestException as e:
             raise AddressValidationUnavailableException(e)
 
-        return loads(response.text)["results"]
+        return response.json()["results"]
 
     def _atlas_result_to_address(self, address: dict) -> dict:
         mapping = {
@@ -67,6 +66,7 @@ class AddressValidation:
             "huisnummer": "huisnummer",
             "bag_huisletter": "huisletter",
             "bag_toevoeging": "huisnummer_toevoeging",
+            "woonplaats": "woonplaats",
         }
 
         result = {}

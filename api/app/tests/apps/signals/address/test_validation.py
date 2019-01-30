@@ -157,6 +157,7 @@ class TestAddressValidation(SimpleTestCase):
                     "huisnummer": 113,
                     "bag_huisletter": "A",
                     "bag_toevoeging": "I",
+                    "woonplaats": "Amsterdam",
                 },
                 {
                     # Expected output
@@ -164,7 +165,8 @@ class TestAddressValidation(SimpleTestCase):
                     "postcode": "1018VN",
                     "huisnummer": 113,
                     "huisletter": "A",
-                    "huisnummer_toevoeging": "I"
+                    "huisnummer_toevoeging": "I",
+                    "woonplaats": "Amsterdam",
                 }
             ),
             (
@@ -175,6 +177,7 @@ class TestAddressValidation(SimpleTestCase):
                     "huisnummer": 113,
                     "bag_huisletter": "",
                     "bag_toevoeging": "",
+                    "woonplaats": "Amsterdam",
                 },
                 {
                     # Expected output
@@ -182,7 +185,8 @@ class TestAddressValidation(SimpleTestCase):
                     "postcode": "1018VN",
                     "huisnummer": 113,
                     "huisletter": "",
-                    "huisnummer_toevoeging": ""
+                    "huisnummer_toevoeging": "",
+                    "woonplaats": "Amsterdam",
                 }
             )
         ]
