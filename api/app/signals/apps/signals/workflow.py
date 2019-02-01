@@ -33,6 +33,7 @@ STATUS_CHOICES_API = (
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
     (HEROPEND, 'Heropend'),
+    (GESPLITST, 'Gesplitst'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
