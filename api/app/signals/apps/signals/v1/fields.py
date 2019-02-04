@@ -114,3 +114,16 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         ])
 
         return result
+
+
+class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
+    lookup_field = 'signal_id'
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self', dict(href=self.get_url(value, "public-signals-detail", request, None))),
+        ])
+
+        return result

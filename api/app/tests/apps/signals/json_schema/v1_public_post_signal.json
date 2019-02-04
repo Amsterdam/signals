@@ -1,0 +1,167 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "signal_id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "text_extra": {
+      "type": "string"
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "string"}
+          ]
+        },
+        "user": {
+          "type": "null"
+        },
+        "state": {
+          "type": "string"
+        },
+        "state_display": {
+          "type": "string"
+        },
+        "extra_properties": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "object"}
+
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "stadsdeel": {
+          "type": "string"
+        },
+        "buurt_code": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "openbare_ruimte": {
+              "type": "string"
+            },
+            "huisnummer": {
+              "type": "number"
+            },
+            "huisletter": {
+              "type": "string"
+            },
+            "huisnummer_toevoeging": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "string"
+            },
+            "woonplaats": {
+              "type": "string"
+            }
+          }
+        },
+        "address_text": {
+          "type": "string"
+        },
+        "geometrie": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "coordinates": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "extra_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "category": {
+      "type": "object",
+      "properties": {
+        "sub": {
+          "type": "string"
+        },
+        "sub_slug": {
+          "type": "string"
+        },
+        "main": {
+          "type": "string"
+        },
+        "main_slug": {
+          "type": "string"
+        }
+      }
+    },
+    "reporter": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "extra_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "priority": {
+      "type": "object",
+      "properties": {
+        "priority": {
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "incident_date_start": {
+      "type": "string"
+    },
+    "incident_date_end": {
+      "type": "null"
+    },
+    "operational_date": {
+      "type": "null"
+    },
+    "image": {
+      "type": "null"
+    },
+    "extra_properties": {
+      "type": "null"
+    }
+  }
+}

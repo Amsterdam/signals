@@ -24,6 +24,10 @@ signal_router_v1.register(r'public/terms/categories',
 signal_router_v1.register(r'private/signals',
                           v1_views.PrivateSignalViewSet,
                           base_name='private-signals')
+signal_router_v1.register(r'public/signals',
+                          v1_views.PublicSignalViewSet,
+                          base_name='public-signals')
+
 
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(

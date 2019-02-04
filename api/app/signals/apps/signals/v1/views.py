@@ -14,6 +14,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
+from rest_framework.viewsets import ViewSet
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
@@ -23,9 +24,12 @@ from signals.apps.signals.v1.serializers import (
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    SubCategoryHALSerializer
+    PublicSignalCreateSerializer,
+    PublicSignalSerializerDetail,
+    SubCategoryHALSerializer,
 )
 from signals.auth.backend import JWTAuthBackend
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 
 class MainCategoryViewSet(DatapuntViewSet):
@@ -49,35 +53,14 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin):
-    """Viewset for `Signal` objects in V1 private API"""
-    queryset = Signal.objects.all()
-    serializer_class = PrivateSignalSerializerList
-    serializer_detail_class = PrivateSignalSerializerDetail
-    pagination_class = HALPagination
-    authentication_classes = (JWTAuthBackend, )
-    filter_backends = (DjangoFilterBackend, )
-    permission_classes = (SIAPermissions, )
-
-    http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
-
-    @action(detail=True)
-    def history(self, request, pk=None):
-        """History endpoint filterable by action."""
-        history_entries = History.objects.filter(_signal__id=pk)
-        what = self.request.query_params.get('what', None)
-        if what:
-            history_entries = history_entries.filter(what=what)
-
-        serializer = HistoryHalSerializer(history_entries, many=True)
-        return Response(serializer.data)
-
+class AddSignalImageMixin(ViewSet):
     # https://stackoverflow.com/questions/45564130/django-rest-framework-image-upload
     # note starting DRF 3.8, @detail_route and @list_route are replaced with action
 
     @action(detail=True, methods=['POST'])
-    def image(self, request, pk=None):
-        signal = Signal.objects.get(pk=pk)
+    def image(self, request, **kwargs):
+        # **kwargs contains the url parameters (pk or uuid or ...)
+        signal = Signal.objects.get(**kwargs)
 
         if signal.image:
             raise PermissionDenied("Melding is reeds van foto voorzien.")
@@ -93,8 +76,44 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
         signal.image = image
         signal.save()
 
-        # TODO: Check what to do about the headers (see V0 API)
         return Response({}, status=HTTP_202_ACCEPTED)
+
+
+class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                           AddSignalImageMixin):
+    """Viewset for `Signal` objects in V1 private API"""
+    queryset = Signal.objects.all()
+    serializer_class = PrivateSignalSerializerList
+    serializer_detail_class = PrivateSignalSerializerDetail
+    pagination_class = HALPagination
+    authentication_classes = (JWTAuthBackend,)
+    filter_backends = (DjangoFilterBackend,)
+    permission_classes = (SIAPermissions,)
+
+    http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
+
+    @action(detail=True)
+    def history(self, request, pk=None):
+        """History endpoint filterable by action."""
+        history_entries = History.objects.filter(_signal__id=pk)
+        what = self.request.query_params.get('what', None)
+        if what:
+            history_entries = history_entries.filter(what=what)
+
+        serializer = HistoryHalSerializer(history_entries, many=True)
+        return Response(serializer.data)
+
+
+class PublicSignalViewSet(mixins.CreateModelMixin,
+                          DetailSerializerMixin,
+                          mixins.RetrieveModelMixin,
+                          viewsets.GenericViewSet,
+                          AddSignalImageMixin):
+
+    queryset = Signal.objects.all()
+    serializer_class = PublicSignalCreateSerializer
+    serializer_detail_class = PublicSignalSerializerDetail
+    lookup_field = 'signal_id'
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

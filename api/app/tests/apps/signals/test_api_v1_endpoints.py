@@ -20,6 +20,7 @@ from tests.apps.signals.factories import (
     SubCategoryFactory
 )
 from tests.apps.users.factories import SuperUserFactory, UserFactory
+from tests.testcase.testcases import JsonAPITestCase
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -270,6 +271,7 @@ class TestPrivateSignalViewSet(APITestCase):
 
     Note: we check both the list endpoint and associated detail endpoint.
     """
+
     def setUp(self):
         # initialize database with 2 Signals
         self.signal_no_image = SignalFactoryValidLocation.create()
@@ -398,6 +400,20 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response_json['priority']['created_by'], self.superuser.email)
         self.assertEqual(response_json['location']['created_by'], self.superuser.email)
         self.assertEqual(response_json['category']['created_by'], self.superuser.email)
+
+    def test_create_with_status(self):
+        """ Tests that an error is returned when we try to set the status """
+        self.client.force_authenticate(user=self.superuser)
+        
+        initial_data = self.create_initial_data.copy()
+        initial_data["status"] = {
+            "state": workflow.BEHANDELING,
+            "text": "Invalid stuff happening here"
+        }
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEquals(400, response.status_code)
 
     def test_create_initial_and_upload_image(self):
         # Authenticate, load fixture.
@@ -598,6 +614,86 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.put(detail_endpoint, {}, format='json')
         self.assertEqual(response.status_code, 405)
 
-# TODO:
-# * Add test to check that an uploaded signal can only be created in gemeld state via public
-#   unauthenticated endpoint.
+
+class TestPublicSignalViewSet(JsonAPITestCase):
+    post_endpoint = "/signals/v1/public/signals/"
+    get_endpoint = post_endpoint + "{uuid}"
+    image_endpoint = get_endpoint + "/image"
+
+    fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+
+    small_gif = (
+        b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+        b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+        b'\x02\x4c\x01\x00\x3b'
+    )
+
+    def setUp(self):
+        with open(self.fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+
+        self.subcategory = SubCategoryFactory.create()
+
+        link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.subcategory.main_category.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+
+    def _load_schema(self, filename: str):
+        with open(os.path.join(THIS_DIR, 'json_schema', filename)) as f:
+            return json.load(f)
+
+    def test_create(self):
+        response = self.client.post(self.post_endpoint, self.create_initial_data, format='json')
+
+        self.assertEquals(201, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal.json"), response.json())
+        self.assertEquals(1, Signal.objects.count())
+
+        signal = Signal.objects.last()
+        self.assertEquals(workflow.GEMELD, signal.status.state)
+        self.assertEquals(self.subcategory, signal.category_assignment.sub_category)
+        self.assertEquals("melder@example.com", signal.reporter.email)
+        self.assertEquals("Amstel 1 1011PN Amsterdam", signal.location.address_text)
+        self.assertEquals("Luidruchtige vergadering", signal.text)
+        self.assertEquals("extra: heel luidruchtig debat", signal.text_extra)
+        
+    def test_create_with_status(self):
+        """ Tests that an error is returned when we try to set the status """
+
+        initial_data = self.create_initial_data.copy()
+        initial_data["status"] = {
+            "state": workflow.BEHANDELING,
+            "text": "Invalid stuff happening here"
+        }
+
+        response = self.client.post(self.post_endpoint, initial_data, format='json')
+
+        self.assertEquals(400, response.status_code)
+        self.assertEquals(0, Signal.objects.count())
+
+    def test_get_by_uuid(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.get_endpoint.format(uuid=uuid), format='json')
+
+        self.assertEquals(200, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_get_signal.json"), response.json())
+        
+    def test_add_image(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        data = {"image": SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')}
+
+        response = self.client.post(self.image_endpoint.format(uuid=uuid), data)
+
+        self.assertEquals(202, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal_image.json"),
+                              response.json())
+

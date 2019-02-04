@@ -3,7 +3,7 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
@@ -24,6 +24,7 @@ from signals.apps.signals.v1.fields import (
     MainCategoryHyperlinkedIdentityField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
+    PublicSignalLinksField,
     SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
 )
@@ -89,7 +90,6 @@ class HistoryHalSerializer(HALSerializer):
 
 
 class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Location
         geo_field = 'geometrie'
@@ -141,6 +141,23 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         return super(_NestedStatusModelSerializer, self).validate(attrs=attrs)
 
 
+class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
+
+    class Meta:
+        model = Status
+        fields = (
+            'id',
+            'state',
+            'state_display',
+        )
+        read_only_fields = (
+            'id',
+            'state',
+            'state_display',
+        )
+
+
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=True)
     sub = serializers.CharField(source='sub_category.name', read_only=True)
@@ -170,7 +187,6 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Reporter
         fields = (
@@ -190,7 +206,6 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedNoteModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Note
         fields = (
@@ -349,6 +364,9 @@ class PrivateSignalSerializerList(HALSerializer):
         )
 
     def create(self, validated_data):
+        if validated_data.get('status') is not None:
+            raise ValidationError("Status can not be set on initial creation")
+
         # We ignore the status from the incoming Signal and replace it with the
         # initial state in the workflow (GEMELD).
         logged_in_user = self.context['request'].user
@@ -357,7 +375,6 @@ class PrivateSignalSerializerList(HALSerializer):
             'text': None,
             'user': logged_in_user.email,
         }
-        validated_data.pop('status', None)  # Discard what was sent over the API
 
         # We require location and reporter to be set and to be valid.
         reporter_data = validated_data.pop('reporter')
@@ -383,3 +400,81 @@ class PrivateSignalSerializerList(HALSerializer):
             priority_data
         )
         return signal
+
+
+class PublicSignalSerializerDetail(HALSerializer):
+    status = _NestedPublicStatusModelSerializer(required=False)
+    serializer_url_field = PublicSignalLinksField
+    _display = DisplayField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'signal_id',
+            'status',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+        )
+
+
+class PublicSignalCreateSerializer(serializers.ModelSerializer):
+    location = _NestedLocationModelSerializer()
+    reporter = _NestedReporterModelSerializer()
+    status = _NestedStatusModelSerializer(required=False)
+    category = _NestedCategoryModelSerializer(source='category_assignment')
+    priority = _NestedPriorityModelSerializer(required=False, read_only=True)
+
+    incident_date_start = serializers.DateTimeField()
+
+    class Meta(object):
+        model = Signal
+        fields = (
+            'id',
+            'signal_id',
+            'source',
+            'text',
+            'text_extra',
+            'location',
+            'category',
+            'reporter',
+            'status',
+            'priority',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+            'image',
+            'extra_properties',
+        )
+        read_only_fields = (
+            'id',
+            'signal_id',
+            'created_at',
+            'updated_at',
+            'status',
+            'image'
+        )
+        extra_kwargs = {
+            'id': {'label': 'ID'},
+            'signal_id': {'label': 'SIGNAL_ID'},
+        }
+
+    def create(self, validated_data):
+        if validated_data.get('status') is not None:
+            raise ValidationError("Status can not be set on initial creation")
+
+        location_data = validated_data.pop('location')
+        reporter_data = validated_data.pop('reporter')
+        category_assignment_data = validated_data.pop('category_assignment')
+
+        status_data = {"state": workflow.GEMELD}
+        signal = Signal.actions.create_initial(
+            validated_data, location_data, status_data, category_assignment_data, reporter_data)
+        return signal
+
