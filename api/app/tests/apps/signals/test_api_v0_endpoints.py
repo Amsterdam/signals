@@ -27,6 +27,44 @@ from tests.apps.signals.factories import SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
+small_gif = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+    b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+    b'\x02\x4c\x01\x00\x3b'
+)
+
+def add_non_image_attachments(signal, n=3):
+    doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
+    attachments = []
+
+    for _ in range(n):
+        with open(doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.doc", f.read(),
+                                            content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment._signal = signal
+            attachment.save()
+            attachments.append(attachment)
+
+    return attachments
+
+
+def add_image_attachments(signal, n=1):
+    attachments = []
+
+    for _ in range(n):
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        attachment = Attachment()
+        attachment.file = image
+        attachment._signal = signal
+        attachment.save()
+        attachments.append(attachment)
+
+    return attachments
+
+
 class TestAPIRoot(APITestCase):
 
     def test_signals_index(self):
@@ -273,6 +311,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
 
         signal = Signal.objects.get(id=response.json()['id'])
         self.assertTrue(signal.image)
+        self.assertEquals("http://testserver" + signal.image_crop.url, response.json()['image'])
 
     def test_post_signal_image(self):
         url = f'{self.endpoint}image/'
@@ -285,23 +324,10 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertTrue(self.signal.image)
 
-    def _add_some_non_image_attachments(self, signal, n=3):
-        doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
-
-        for _ in range(n):
-            with open(doc_upload_location, "rb") as f:
-                doc_upload = SimpleUploadedFile("file.doc", f.read(),
-                                                content_type="application/msword")
-
-                attachment = Attachment()
-                attachment.file = doc_upload
-                attachment._signal = signal
-                attachment.save()
-
     def test_post_signal_image_other_attachments_exists(self):
         """ It should be possible to add an image when no image is added to the signal, even if
         other types of attachments are added. """
-        self._add_some_non_image_attachments(self.signal)
+        add_non_image_attachments(self.signal)
 
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
@@ -318,14 +344,10 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         present attachments is an image """
 
         # Add some non-image attachments
-        self._add_some_non_image_attachments(self.signal)
+        add_non_image_attachments(self.signal)
 
         # Add image attachment
-        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
-        attachment = Attachment()
-        attachment.file = image
-        attachment._signal = self.signal
-        attachment.save()
+        add_image_attachments(self.signal, 1)
 
         image2 = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
 
@@ -353,6 +375,7 @@ class TestAuthSignalEndpoint(APITestCase):
         # Forcing authentication
         superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
+        self.signal = factories.SignalFactory.create()
 
     def test_ordering_by_all_fields(self):
         # Just check if all ordering fields are working as in, do they return a 200 response.
@@ -400,6 +423,25 @@ class TestAuthSignalEndpoint(APITestCase):
 
         data = response.json()
         self.assertEqual(data['results'][0]['signal_id'], str(self.centrum.signal_id))
+
+    def test_return_first_image_attachment(self):
+        """ If multiple attachments are present, the v0 API should return only the first ever
+        uploaded image through the 'image' field and ignore the rest. """
+
+        # Create some random attachments, keep the first
+        add_non_image_attachments(self.signal)
+        image_attachment, _ = add_image_attachments(self.signal, 2)
+        add_non_image_attachments(self.signal)
+        add_image_attachments(self.signal, 3)
+
+        url = "/signals/auth/signal/{}/".format(self.signal.id)
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        json_resp = response.json()
+
+        self.assertEquals("http://testserver" + image_attachment.image_crop.url,
+                          json_resp["image"])
 
 
 class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):

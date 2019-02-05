@@ -207,7 +207,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
-    image = serializers.CharField(source='image.url', read_only=True)
+    image = serializers.ImageField(source='image_crop', read_only=True)
 
     incident_date_start = serializers.DateTimeField()
 
