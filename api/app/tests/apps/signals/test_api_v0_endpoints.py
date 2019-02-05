@@ -12,6 +12,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
+    Attachment,
     CategoryAssignment,
     Location,
     Note,
@@ -284,9 +285,23 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertTrue(self.signal.image)
 
-    def test_post_signal_image_already_exists(self):
-        self.signal.image = 'already_exists'
-        self.signal.save()
+    def _add_some_non_image_attachments(self, signal, n=3):
+        doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
+
+        for _ in range(n):
+            with open(doc_upload_location, "rb") as f:
+                doc_upload = SimpleUploadedFile("file.doc", f.read(),
+                                                content_type="application/msword")
+
+                attachment = Attachment()
+                attachment.file = doc_upload
+                attachment._signal = signal
+                attachment.save()
+
+    def test_post_signal_image_other_attachments_exists(self):
+        """ It should be possible to add an image when no image is added to the signal, even if
+        other types of attachments are added. """
+        self._add_some_non_image_attachments(self.signal)
 
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
@@ -294,7 +309,35 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
+        self.assertEqual(response.status_code, 202)
+        self.signal.refresh_from_db()
+        self.assertTrue(self.signal.image)
+
+    def test_post_signal_image_image_attachment_exists(self):
+        """ It should not be possible to add an image through the v0 api when one of the already
+        present attachments is an image """
+
+        # Add some non-image attachments
+        self._add_some_non_image_attachments(self.signal)
+
+        # Add image attachment
+        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        attachment = Attachment()
+        attachment.file = image
+        attachment._signal = self.signal
+        attachment.save()
+
+        image2 = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+
+        # Then assert that adding another image through the v0 API fails
+        url = f'{self.endpoint}image/'
+        response = self.client.post(
+            url, {'signal_id': self.signal.signal_id, 'image': image2})
+
+        # 403 is not the best response code, but consistent with existing v0 endpoint
         self.assertEqual(response.status_code, 403)
+        self.signal.refresh_from_db()
+        self.assertTrue(self.signal.image)
 
 
 class TestAuthSignalEndpoint(APITestCase):
@@ -597,6 +640,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
 
 class TestUserLogging(TestAPIEnpointsBase):
     """Check that the API returns who did what and when."""
+
     def setUp(self):
         super().setUp()
 

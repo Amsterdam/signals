@@ -12,6 +12,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
+    Attachment,
     CategoryAssignment,
     Department,
     Location,
@@ -54,8 +55,17 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
         instance = Signal.objects.get(signal_id=signal_id)
         return self.update(instance, validated_data)
 
+    def _image_attachment_exists(self):
+        signal_id = self.initial_data.get('signal_id')
+        signal = Signal.objects.get(signal_id=signal_id)
+        image_attachments = Attachment.actions.get_images(signal)
+
+        return len(image_attachments) > 0
+
     def validate(self, attrs):
-        # self.data.is_valid()
+        if self._image_attachment_exists():
+            raise PermissionDenied("Melding is reeds van foto voorzien")
+
         image = self.initial_data.get('image', False)
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
@@ -63,6 +73,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
         else:
             raise ValidationError("Foto is een verplicht veld.")
 
+        attrs['image'] = image
         return attrs
 
     def update(self, instance, validated_data):
@@ -196,6 +207,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
     status = _NestedStatusModelSerializer()
     category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
+    image = serializers.CharField(source='image.url', read_only=True)
 
     incident_date_start = serializers.DateTimeField()
 
@@ -205,6 +217,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'id',
             'signal_id',
             'source',
+            'image',
             'text',
             'text_extra',
             'status',
@@ -217,7 +230,6 @@ class SignalCreateSerializer(serializers.ModelSerializer):
             'incident_date_start',
             'incident_date_end',
             'operational_date',
-            'image',
             'extra_properties',
         )
         read_only_fields = (
@@ -236,8 +248,15 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_assignment_data = validated_data.pop('category_assignment')
+
+        image = validated_data.pop('image', None)
+
         signal = Signal.actions.create_initial(
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
+
+        if image:
+            Signal.actions.add_image(image, signal)
+
         return signal
 
     def validate(self, data):
@@ -245,6 +264,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         if image:
             if image.size > 8388608:  # 8MB = 8*1024*1024
                 raise ValidationError("Maximum photo size is 8Mb.")
+
+        if image:
+            data['image'] = image
 
         return data
 

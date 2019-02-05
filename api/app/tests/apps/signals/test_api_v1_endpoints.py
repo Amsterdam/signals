@@ -239,7 +239,7 @@ class TestHistoryAction(APITestCase):
         self.assertEqual(new_entry['description'], status.text)
 
 
-class TestImageUpload(APITestCase):
+class TestAttachmentUpload(APITestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
         self.superuser = SuperUserFactory(username='superuser@example.com')
@@ -252,13 +252,13 @@ class TestImageUpload(APITestCase):
 
     def test_authenticated_upload(self):
         # images are attached to pre-existing Signals
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/image'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/attachment'
         image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
 
         self.client.force_authenticate(user=self.superuser)
         response = self.client.post(
             endpoint,
-            data={'image': image},
+            data={'file': image},
             # format='multipart'
         )
 
@@ -428,15 +428,16 @@ class TestPrivateSignalViewSet(APITestCase):
         # Store URL of the newly created Signal, then upload image to it.
         new_url = response.json()['_links']['self']['href']
 
-        new_image_url = f'{new_url}/image'
+        new_image_url = f'{new_url}/attachment'
         image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'image': image})
+        response = self.client.post(new_image_url, data={'file': image})
 
         self.assertEqual(response.status_code, 202)
 
-        # Check that a second upload is rejected
-        response = self.client.post(new_image_url, data={'image': image})
-        self.assertEqual(response.status_code, 403)
+        # Check that a second upload is NOT rejected
+        image2 = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        response = self.client.post(new_image_url, data={'file': image2})
+        self.assertEqual(response.status_code, 202)
 
     def test_update_location(self):
         # Partial update to update the location, all interaction via API.
@@ -699,7 +700,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         attachment = Attachment.objects.last()
         self.assertEquals("image/gif", attachment.mimetype)
-        self.assertIsInstance(attachment.get_cropped_image().url, str)
+        self.assertIsInstance(attachment.image_crop.url, str)
 
     def test_add_attachment_nonimagetype(self):
         signal = SignalFactory.create()

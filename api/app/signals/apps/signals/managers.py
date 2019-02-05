@@ -15,6 +15,19 @@ update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_p
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 
+class AttachmentManager(models.Manager):
+
+    def get_attachments(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal)
+
+    def get_images(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal, is_image=True)
+
+
 class SignalManager(models.Manager):
 
     def create_initial(self,
@@ -64,11 +77,8 @@ class SignalManager(models.Manager):
         return signal
 
     def add_image(self, image, signal):
-        with transaction.atomic():
-            signal.image = image
-            signal.save()
-
-            add_image.send(sender=self.__class__, signal_obj=signal)
+        self.add_attachment(image, signal)
+        add_image.send(sender=self.__class__, signal_obj=signal)
 
         return image
 
@@ -81,11 +91,9 @@ class SignalManager(models.Manager):
             attachment.file = file
 
             # TODO do something with signal?
-            attachment.mimetype = file.content_type
             attachment.save()
 
         return file
-
 
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.

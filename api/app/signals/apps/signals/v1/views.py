@@ -53,32 +53,6 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class AddSignalImageMixin(ViewSet):
-    # https://stackoverflow.com/questions/45564130/django-rest-framework-image-upload
-    # note starting DRF 3.8, @detail_route and @list_route are replaced with action
-
-    @action(detail=True, methods=['POST'])
-    def image(self, request, **kwargs):
-        # **kwargs contains the url parameters (pk or uuid or ...)
-        signal = Signal.objects.get(**kwargs)
-
-        if signal.image:
-            raise PermissionDenied("Melding is reeds van foto voorzien.")
-
-        # Check upload is present and not too big image wise:
-        image = request.data.get('image', None)
-        if image:
-            if image.size > 8388608:  # 8MB = 8*1024*1024
-                raise ValidationError("Foto mag maximaal 8Mb groot zijn.")
-        else:
-            raise ValidationError("Foto is een verplicht veld.")
-
-        signal.image = image
-        signal.save()
-
-        return Response({}, status=HTTP_202_ACCEPTED)
-
-
 class AddAttachmentMixin(ViewSet):
 
     @action(detail=True, methods=['POST'])
@@ -99,8 +73,10 @@ class AddAttachmentMixin(ViewSet):
         return Response({}, status=HTTP_202_ACCEPTED)
 
 
-class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                           AddSignalImageMixin):
+class PrivateSignalViewSet(DatapuntViewSet,
+                           mixins.CreateModelMixin,
+                           mixins.UpdateModelMixin,
+                           AddAttachmentMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList

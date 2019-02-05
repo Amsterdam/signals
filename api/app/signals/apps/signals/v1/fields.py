@@ -98,7 +98,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
-            ('image', dict(href=self.get_url(value, "private-signals-image", request, None))),
+            ('image', dict(href=self.get_url(value, "private-signals-attachment", request, None))),
         ])
 
         return result

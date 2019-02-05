@@ -10,13 +10,12 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from imagekit import ImageSpec
-from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from imagekit.cachefiles import ImageCacheFile
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
-from signals.apps.signals.managers import SignalManager
+from signals.apps.signals.managers import AttachmentManager, SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 
@@ -79,11 +78,6 @@ class Signal(CreatedUpdatedModel):
 
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
-    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
-    image_crop = ImageSpecField(source='image',
-                                processors=[ResizeToFit(800, 800), ],
-                                format='JPEG',
-                                options={'quality': 80})
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
     upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
@@ -92,6 +86,26 @@ class Signal(CreatedUpdatedModel):
 
     objects = models.Manager()
     actions = SignalManager()
+
+    @property
+    def image(self):
+        """ Field for backwards compatibility. The attachment table replaces the old 'image'
+        property """
+        attachment = self._image_attachment()
+
+        return attachment.file if attachment else ""
+
+    @property
+    def image_crop(self):
+        attachment = self._image_attachment()
+
+        if attachment:
+            return attachment.image_crop
+
+        return ""
+
+    def _image_attachment(self):
+        return Attachment.actions.get_images(self).first()
 
     class Meta:
         permissions = (
@@ -152,7 +166,6 @@ class Signal(CreatedUpdatedModel):
                 domain=current_site.domain,
                 path=self.image_crop.url)
             return fqdn_url
-
 
 STADSDEEL_CENTRUM = 'A'
 STADSDEEL_WESTPOORT = 'B'
@@ -545,10 +558,14 @@ class Attachment(CreatedUpdatedModel):
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
 
+    objects = models.Manager()
+    actions = AttachmentManager()
+
     class NotAnImageException(Exception):
         pass
 
-    def get_cropped_image(self):
+    @property
+    def image_crop(self):
         return self._crop_image()
 
     def _crop_image(self):
@@ -568,7 +585,7 @@ class Attachment(CreatedUpdatedModel):
             # Check if file is image
             self.is_image = imghdr.what(self.file) is not None
 
-            if not self.mimetype:
+            if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type
 
         super().save(*args, **kwargs)

@@ -21,8 +21,12 @@
       "properties": {
         "text": {
           "anyOf": [
-            {"type": "null"},
-            {"type": "string"}
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
           ]
         },
         "user": {
@@ -36,9 +40,12 @@
         },
         "extra_properties": {
           "anyOf": [
-            {"type": "null"},
-            {"type": "object"}
-
+            {
+              "type": "null"
+            },
+            {
+              "type": "object"
+            }
           ]
         },
         "created_at": {
@@ -158,7 +165,14 @@
       "type": "null"
     },
     "image": {
-      "type": "null"
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "extra_properties": {
       "type": "null"

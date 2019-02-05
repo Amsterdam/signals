@@ -390,18 +390,18 @@ class TestAttachmentModel(LiveServerTestCase):
         attachment.mimetype = "image/gif"
         attachment.save()
 
-        self.assertIsInstance(attachment.get_cropped_image().url, str)
-        self.assertTrue(attachment.get_cropped_image().url.endswith(".jpg"))
+        self.assertIsInstance(attachment.image_crop.url, str)
+        self.assertTrue(attachment.image_crop.url.endswith(".jpg"))
 
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEquals(200, resp.status_code, "Original image is not reachable")
 
-        resp = requests.get(self.live_server_url + attachment.get_cropped_image().url)
+        resp = requests.get(self.live_server_url + attachment.image_crop.url)
         self.assertEquals(200, resp.status_code, "Cropped image is not reachable")
 
     def test_cache_file_with_word_doc(self):
         with open(self.doc_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("file.doc", f.read()) #, content_type="application/msword")
+            doc_upload = SimpleUploadedFile("file.doc", f.read(), content_type="application/msword")
 
             attachment = Attachment()
             attachment.file = doc_upload
@@ -410,7 +410,7 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.save()
 
         with self.assertRaises(Attachment.NotAnImageException):
-            attachment.get_cropped_image()
+            attachment.image_crop()
 
         print(self.live_server_url + attachment.file.url)
         resp = requests.get(self.live_server_url + attachment.file.url)
@@ -427,7 +427,7 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.save()
 
         with self.assertRaises(Attachment.NotAnImageException):
-            attachment.get_cropped_image()
+            attachment.image_crop()
 
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEquals(200, resp.status_code, "Original file is not reachable")
@@ -442,7 +442,7 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.save()
 
         with self.assertRaises(Attachment.NotAnImageException):
-            attachment.get_cropped_image()
+            attachment.image_crop()
 
         self.assertEquals("application/json", attachment.mimetype, "Mimetype should be set "
                                                                    "automatically when not set "
