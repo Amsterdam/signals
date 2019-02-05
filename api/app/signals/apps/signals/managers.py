@@ -19,9 +19,10 @@ create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 class SignalManager(models.Manager):
 
-    def _create_initial(self, signal_data, location_data, status_data, category_assignment_data,
-                        reporter_data, priority_data=None):
+    def _create_initial_no_transaction(self, signal_data, location_data, status_data,
+                                       category_assignment_data, reporter_data, priority_data=None):
         """Create a new `Signal` object with all related objects.
+            If a transaction is needed use create_initial
 
         :param signal_data: deserialized data dict
         :param location_data: deserialized data dict
@@ -69,12 +70,14 @@ class SignalManager(models.Manager):
         :returns: Signal object
         """
         with transaction.atomic():
-            signal = self._create_initial(signal_data=signal_data,
-                                          location_data=location_data,
-                                          status_data=status_data,
-                                          category_assignment_data=category_assignment_data,
-                                          reporter_data=reporter_data,
-                                          priority_data=priority_data)
+            signal = self._create_initial_no_transaction(
+                signal_data=signal_data,
+                location_data=location_data,
+                status_data=status_data,
+                category_assignment_data=category_assignment_data,
+                reporter_data=reporter_data,
+                priority_data=priority_data
+            )
 
             transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
                                                               signal_obj=signal))
@@ -82,9 +85,8 @@ class SignalManager(models.Manager):
         return signal
 
     def split(self, split_data, signal):
-        """
-        Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
-        new signals
+        """ Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
+            new signals
 
         :param split_data: deserialized data dict containing data for new signals
         :param signal: Signal object, the original Signal
@@ -133,7 +135,7 @@ class SignalManager(models.Manager):
                 split_signal.save()
 
             # Let's update the parent signal status to GESPLITST
-            status, prev_status = self._update_status(
+            status, prev_status = self._update_status_no_transaction(
                 {'state': workflow.GESPLITST, 'text': 'Signal opgesplitst.', },
                 signal=signal
             )
@@ -177,8 +179,9 @@ class SignalManager(models.Manager):
 
         return location
 
-    def _update_status(self, data, signal):
-        """Update (create new) `Status` object for given `Signal` object.
+    def _update_status_no_transaction(self, data, signal):
+        """ Update (create new) `Status` object for given `Signal` object.
+            If a transaction is needed use update status
 
         :param data: deserialized data dict
         :param signal: Signal object
@@ -197,8 +200,14 @@ class SignalManager(models.Manager):
         return status, prev_status
 
     def update_status(self, data, signal):
+        """ Add a transaction to the _update_status_no_transaction
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Status object
+        """
         with transaction.atomic():
-            status, prev_status = self._update_status(data=data, signal=signal)
+            status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
                                                              signal_obj=signal,
                                                              status=status,

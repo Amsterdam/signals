@@ -645,7 +645,7 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()[0],
-            'A signal can only be splitted into min 2 and max 3 signals'
+            'A signal can only be split into min 2 and max 3 signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)
@@ -662,9 +662,6 @@ class TestPrivateSignalViewSet(APITestCase):
             split_endpoint,
             [
                 {'text': 'Child #1'},
-                {'text': 'Child #2'},
-                {'text': 'Child #3'},
-                {'text': 'Child #4'},
             ],
             format='json'
         )
@@ -672,7 +669,7 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()[0],
-            'A signal can only be splitted into min 2 and max 3 signals'
+            'A signal can only be split into min 2 and max 3 signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)
@@ -699,7 +696,7 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()[0],
-            'A signal can only be splitted into min 2 and max 3 signals'
+            'A signal can only be split into min 2 and max 3 signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)

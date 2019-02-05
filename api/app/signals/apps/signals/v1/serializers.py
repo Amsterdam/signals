@@ -388,10 +388,10 @@ class PrivateSignalSerializerList(HALSerializer):
 
 class SplitPrivateSignalSerializerList(serializers.ListSerializer):
     def is_valid(self, raise_exception=False):
-        if (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN > len(self.initial_data) or
-                len(self.initial_data) > settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
+        if not (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN
+                <= len(self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
             self._validated_data = []
-            self._errors = ['A signal can only be splitted into min {} and max {} signals'.format(
+            self._errors = ['A signal can only be split into min {} and max {} signals'.format(
                 settings.SIGNAL_MIN_NUMBER_OF_CHILDREN,
                 settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
             )]
