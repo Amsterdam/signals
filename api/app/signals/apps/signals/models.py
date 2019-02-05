@@ -1,5 +1,6 @@
 import copy
 import uuid
+import imghdr
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -8,8 +9,10 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
+from imagekit import ImageSpec
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from imagekit.cachefiles import ImageCacheFile
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
@@ -95,7 +98,7 @@ class Signal(CreatedUpdatedModel):
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
         )
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -303,7 +306,7 @@ class Status(CreatedUpdatedModel):
         )
         verbose_name_plural = 'Statuses'
         get_latest_by = 'datetime'
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __str__(self):
         return str(self.text)
@@ -392,7 +395,7 @@ class MainCategory(models.Model):
     slug = models.SlugField(unique=True)
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('name',)
         verbose_name_plural = 'Main Categories'
 
     def __str__(self):
@@ -442,8 +445,8 @@ class SubCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ('name', )
-        unique_together = ('main_category', 'slug', )
+        ordering = ('name',)
+        unique_together = ('main_category', 'slug',)
         verbose_name_plural = 'Sub Categories'
 
     def __str__(self):
@@ -462,7 +465,7 @@ class Department(models.Model):
     is_intern = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('name',)
 
     def __str__(self):
         """String representation."""
@@ -479,7 +482,7 @@ class Note(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)  # analoog Priority model
 
     class Meta:
-        ordering = ('-created_at', )
+        ordering = ('-created_at',)
 
 
 class History(models.Model):
@@ -519,3 +522,53 @@ class History(models.Model):
     class Meta:
         managed = False
         db_table = 'signals_history_view'
+
+
+class CroppedImage(ImageSpec):
+    processors = [ResizeToFit(800, 800), ]
+    format = 'JPEG'
+    options = {'quality': 80}
+
+
+class Attachment(CreatedUpdatedModel):
+    created_by = models.EmailField(null=True, blank=True)
+    _signal = models.ForeignKey(
+        "signals.Signal", related_name="attachments",
+        null=False, on_delete=models.CASCADE
+    )
+    file = models.FileField(
+        upload_to='attachments/%Y/%m/%d/',
+        null=False,
+        blank=False,
+        max_length=255
+    )
+    mimetype = models.CharField(max_length=30, blank=False, null=False)
+    is_image = models.BooleanField(default=False)
+
+    class NotAnImageException(Exception):
+        pass
+
+    def get_cropped_image(self):
+        return self._crop_image()
+
+    def _crop_image(self):
+        if not self.is_image:
+            raise Attachment.NotAnImageException("Attachment is not an image. Use is_image to check"
+                                                 " if attachment is an image before asking for the "
+                                                 "cropped version.")
+
+        generator = CroppedImage(source=self.file)
+        cache_file = ImageCacheFile(generator)
+        cache_file.generate()
+
+        return cache_file
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            # Check if file is image
+            self.is_image = imghdr.what(self.file) is not None
+
+            if not self.mimetype:
+                self.mimetype = self.file.file.content_type
+
+        super().save(*args, **kwargs)

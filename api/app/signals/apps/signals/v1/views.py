@@ -79,6 +79,26 @@ class AddSignalImageMixin(ViewSet):
         return Response({}, status=HTTP_202_ACCEPTED)
 
 
+class AddAttachmentMixin(ViewSet):
+
+    @action(detail=True, methods=['POST'])
+    def attachment(self, request, **kwargs):
+        # **kwargs contains the url parameters (pk or uuid or ...)
+        signal = Signal.objects.get(**kwargs)
+
+        # Check upload is present and not too big
+        file = request.data.get('file', None)
+        if file:
+            if file.size > 8388608:  # 8MB = 8*1024*1024
+                raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
+        else:
+            raise ValidationError("File is een verplicht veld.")
+
+        Signal.actions.add_attachment(file, signal)
+
+        return Response({}, status=HTTP_202_ACCEPTED)
+
+
 class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin,
                            AddSignalImageMixin):
     """Viewset for `Signal` objects in V1 private API"""
@@ -108,8 +128,7 @@ class PublicSignalViewSet(mixins.CreateModelMixin,
                           DetailSerializerMixin,
                           mixins.RetrieveModelMixin,
                           viewsets.GenericViewSet,
-                          AddSignalImageMixin):
-
+                          AddAttachmentMixin):
     queryset = Signal.objects.all()
     serializer_class = PublicSignalCreateSerializer
     serializer_detail_class = PublicSignalSerializerDetail

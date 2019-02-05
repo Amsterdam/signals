@@ -72,6 +72,21 @@ class SignalManager(models.Manager):
 
         return image
 
+    def add_attachment(self, file, signal):
+        from .models import Attachment
+
+        with transaction.atomic():
+            attachment = Attachment()
+            attachment._signal = signal
+            attachment.file = file
+
+            # TODO do something with signal?
+            attachment.mimetype = file.content_type
+            attachment.save()
+
+        return file
+
+
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.
 

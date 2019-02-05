@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
 from signals.utils.version import get_version
 from tests.apps.signals.factories import (
     MainCategoryFactory,
@@ -404,7 +404,7 @@ class TestPrivateSignalViewSet(APITestCase):
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
         self.client.force_authenticate(user=self.superuser)
-        
+
         initial_data = self.create_initial_data.copy()
         initial_data["status"] = {
             "state": workflow.BEHANDELING,
@@ -618,7 +618,7 @@ class TestPrivateSignalViewSet(APITestCase):
 class TestPublicSignalViewSet(JsonAPITestCase):
     post_endpoint = "/signals/v1/public/signals/"
     get_endpoint = post_endpoint + "{uuid}"
-    image_endpoint = get_endpoint + "/image"
+    attachment_endpoint = get_endpoint + "/attachment"
 
     fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
 
@@ -661,7 +661,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         self.assertEquals("Amstel 1 1011PN Amsterdam", signal.location.address_text)
         self.assertEquals("Luidruchtige vergadering", signal.text)
         self.assertEquals("extra: heel luidruchtig debat", signal.text_extra)
-        
+
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
 
@@ -684,16 +684,36 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         self.assertEquals(200, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_get_signal.json"), response.json())
-        
-    def test_add_image(self):
+
+    def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
         uuid = signal.signal_id
 
-        data = {"image": SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')}
+        data = {"file": SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')}
 
-        response = self.client.post(self.image_endpoint.format(uuid=uuid), data)
+        response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
         self.assertEquals(202, response.status_code)
-        self.assertJsonSchema(self._load_schema("v1_public_post_signal_image.json"),
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
                               response.json())
 
+        attachment = Attachment.objects.last()
+        self.assertEquals("image/gif", attachment.mimetype)
+        self.assertIsInstance(attachment.get_cropped_image().url, str)
+
+    def test_add_attachment_nonimagetype(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+        with open(doc_upload, encoding='latin-1') as f:
+            data = {"file": f}
+
+            response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
+
+        self.assertEquals(202, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
+                              response.json())
+
+        attachment = Attachment.objects.last()
+        self.assertEquals("application/msword", attachment.mimetype)

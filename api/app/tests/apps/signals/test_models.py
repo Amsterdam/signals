@@ -1,15 +1,19 @@
 from unittest import mock
+import os
+import requests
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.test import TestCase, TransactionTestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, TransactionTestCase, LiveServerTestCase
 from django.utils import timezone
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
+    Attachment,
     CategoryAssignment,
     Location,
     Note,
@@ -362,3 +366,87 @@ class GetAddressTextTest(TestCase):
 
         correct = 'Sesamstraat 1A-achter 9999ZZ Amsterdam'
         self.assertEqual(get_address_text(self.location, short=False), correct)
+
+
+class TestAttachmentModel(LiveServerTestCase):
+    doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
+    json_upload_location = os.path.join(os.path.dirname(__file__), 'create_initial.json')
+
+    small_gif = (
+        b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
+        b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
+        b'\x02\x4c\x01\x00\x3b'
+    )
+
+    def setUp(self):
+        self.signal = factories.SignalFactory.create()
+
+        self.gif_upload = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+
+    def test_cropping_image_cache_file(self):
+        attachment = Attachment()
+        attachment.file = self.gif_upload
+        attachment._signal = self.signal
+        attachment.mimetype = "image/gif"
+        attachment.save()
+
+        self.assertIsInstance(attachment.get_cropped_image().url, str)
+        self.assertTrue(attachment.get_cropped_image().url.endswith(".jpg"))
+
+        resp = requests.get(self.live_server_url + attachment.file.url)
+        self.assertEquals(200, resp.status_code, "Original image is not reachable")
+
+        resp = requests.get(self.live_server_url + attachment.get_cropped_image().url)
+        self.assertEquals(200, resp.status_code, "Cropped image is not reachable")
+
+    def test_cache_file_with_word_doc(self):
+        with open(self.doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.doc", f.read()) #, content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/msword"
+            attachment._signal = self.signal
+            attachment.save()
+
+        with self.assertRaises(Attachment.NotAnImageException):
+            attachment.get_cropped_image()
+
+        print(self.live_server_url + attachment.file.url)
+        resp = requests.get(self.live_server_url + attachment.file.url)
+        self.assertEquals(200, resp.status_code, "Original file is not reachable")
+
+    def test_cache_file_with_json_file(self):
+        with open(self.json_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("upload.json", f.read(), content_type="application/json")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/json"
+            attachment._signal = self.signal
+            attachment.save()
+
+        with self.assertRaises(Attachment.NotAnImageException):
+            attachment.get_cropped_image()
+
+        resp = requests.get(self.live_server_url + attachment.file.url)
+        self.assertEquals(200, resp.status_code, "Original file is not reachable")
+
+    def test_cache_file_without_mimetype(self):
+        with open(self.json_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("upload.json", f.read(), content_type="application/json")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment._signal = self.signal
+            attachment.save()
+
+        with self.assertRaises(Attachment.NotAnImageException):
+            attachment.get_cropped_image()
+
+        self.assertEquals("application/json", attachment.mimetype, "Mimetype should be set "
+                                                                   "automatically when not set "
+                                                                   "explicitly")
+
+        resp = requests.get(self.live_server_url + attachment.file.url)
+        self.assertEquals(200, resp.status_code, "Original file is not reachable")
