@@ -7,8 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
-from tests.apps.signals.attachment_helpers import add_image_attachments, add_non_image_attachments, \
-    small_gif
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
@@ -24,6 +22,11 @@ from signals.apps.signals.models import (
 )
 from signals.utils.version import get_version
 from tests.apps.signals import factories
+from tests.apps.signals.attachment_helpers import (
+    add_image_attachments,
+    add_non_image_attachments,
+    small_gif
+)
 from tests.apps.signals.factories import SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 

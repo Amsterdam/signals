@@ -10,11 +10,11 @@ from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.viewsets import ViewSet
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
@@ -26,10 +26,9 @@ from signals.apps.signals.v1.serializers import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
-    SubCategoryHALSerializer,
+    SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
-from rest_framework_extensions.mixins import DetailSerializerMixin
 
 
 class MainCategoryViewSet(DatapuntViewSet):

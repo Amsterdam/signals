@@ -1,13 +1,13 @@
-from unittest import mock
 import os
-import requests
+from unittest import mock
 
+import requests
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, TransactionTestCase, LiveServerTestCase
+from django.test import LiveServerTestCase, TestCase, TransactionTestCase
 from django.utils import timezone
 
 from signals.apps.signals import workflow
@@ -412,13 +412,13 @@ class TestAttachmentModel(LiveServerTestCase):
         with self.assertRaises(Attachment.NotAnImageException):
             attachment.image_crop()
 
-        print(self.live_server_url + attachment.file.url)
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEquals(200, resp.status_code, "Original file is not reachable")
 
     def test_cache_file_with_json_file(self):
         with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(), content_type="application/json")
+            doc_upload = SimpleUploadedFile("upload.json", f.read(),
+                                            content_type="application/json")
 
             attachment = Attachment()
             attachment.file = doc_upload
@@ -434,7 +434,8 @@ class TestAttachmentModel(LiveServerTestCase):
 
     def test_cache_file_without_mimetype(self):
         with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(), content_type="application/json")
+            doc_upload = SimpleUploadedFile("upload.json", f.read(),
+                                            content_type="application/json")
 
             attachment = Attachment()
             attachment.file = doc_upload

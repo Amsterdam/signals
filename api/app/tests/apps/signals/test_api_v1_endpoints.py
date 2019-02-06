@@ -7,12 +7,15 @@ from django.utils.http import urlencode
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from tests.apps.signals.attachment_helpers import add_non_image_attachments, add_image_attachments, \
-    small_gif
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
 from signals.utils.version import get_version
+from tests.apps.signals.attachment_helpers import (
+    add_image_attachments,
+    add_non_image_attachments,
+    small_gif
+)
 from tests.apps.signals.factories import (
     MainCategoryFactory,
     NoteFactory,
@@ -659,7 +662,8 @@ class TestPrivateSignalAttachments(APITestCase):
         self.assertTrue('attachments' in json_item)
         self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
         self.assertEquals(4, len(json_item['attachments']))
-        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['attachments'][1]['file'])
+        self.assertEquals(self.test_host + image_attachments[0].file.url,
+                          json_item['attachments'][1]['file'])
         self.assertTrue(json_item['attachments'][2]['is_image'])
         self.assertEquals(self.test_host + non_image_attachments[1].file.url,
                           json_item['attachments'][3]['file'])
@@ -678,7 +682,8 @@ class TestPrivateSignalAttachments(APITestCase):
         self.assertTrue('attachments' in json_item)
         self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
         self.assertEquals(4, len(json_item['attachments']))
-        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['attachments'][1]['file'])
+        self.assertEquals(self.test_host + image_attachments[0].file.url,
+                          json_item['attachments'][1]['file'])
         self.assertTrue(json_item['attachments'][2]['is_image'])
         self.assertEquals(self.test_host + non_image_attachments[1].file.url,
                           json_item['attachments'][3]['file'])

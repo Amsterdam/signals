@@ -1,5 +1,7 @@
 import os
+
 from django.core.files.uploadedfile import SimpleUploadedFile
+
 from signals.apps.signals.models import Attachment
 
 small_gif = (

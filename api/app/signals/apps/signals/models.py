@@ -1,6 +1,6 @@
 import copy
-import uuid
 import imghdr
+import uuid
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -10,8 +10,8 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from imagekit import ImageSpec
-from imagekit.processors import ResizeToFit
 from imagekit.cachefiles import ImageCacheFile
+from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
@@ -170,6 +170,7 @@ class Signal(CreatedUpdatedModel):
                 domain=current_site.domain,
                 path=self.image_crop.url)
             return fqdn_url
+
 
 STADSDEEL_CENTRUM = 'A'
 STADSDEEL_WESTPOORT = 'B'
