@@ -23,8 +23,10 @@ from signals.apps.signals.models import (
 from signals.apps.signals.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.signals.v1.fields import (
     MainCategoryHyperlinkedIdentityField,
+    PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
+    PublicSignalAttachmentLinksField,
     PublicSignalLinksField,
     SubCategoryHyperlinkedIdentityField,
     SubCategoryHyperlinkedRelatedField
@@ -418,6 +420,58 @@ class PrivateSignalSerializerList(HALSerializer):
             priority_data
         )
         return signal
+
+
+class SignalAttachmentSerializer(HALSerializer):
+    _display = DisplayField()
+    location = serializers.FileField(source='file', required=False)
+
+    # serializer_url_field = PrivateSignalAttachmentLinksField
+
+    class Meta:
+        model = Attachment
+        fields = (
+            '_display',
+            '_links',
+            'location',
+            'is_image',
+            'created_at',
+            'file',
+        )
+
+        read_only = (
+            '_display',
+            '_links',
+            'location',
+            'is_image',
+            'created_at',
+        )
+
+        extra_kwargs = {'file': {'write_only': True}}
+
+    def __init__(self, *args, **kwargs):
+        if kwargs['context']['view'].is_public:
+            self.serializer_url_field = PublicSignalAttachmentLinksField
+        else:
+            self.serializer_url_field = PrivateSignalAttachmentLinksField
+
+        super().__init__(*args, **kwargs)
+
+    def create(self, validated_data):
+        signal = self.context['view'].signal
+        attachment = Signal.actions.add_attachment(validated_data['file'], signal)
+
+        if self.context['request'].user:
+            attachment.created_by = self.context['request'].user.email
+            attachment.save()
+
+        return attachment
+
+    def validate_file(self, file):
+        if file.size > 8388608:  # 8MB = 8*1024*1024
+            raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
+
+        return file
 
 
 class PublicSignalSerializerDetail(HALSerializer):

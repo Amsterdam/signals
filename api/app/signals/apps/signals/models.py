@@ -542,12 +542,6 @@ class History(models.Model):
         db_table = 'signals_history_view'
 
 
-class CroppedImage(ImageSpec):
-    processors = [ResizeToFit(800, 800), ]
-    format = 'JPEG'
-    options = {'quality': 80}
-
-
 class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     _signal = models.ForeignKey(
@@ -569,6 +563,11 @@ class Attachment(CreatedUpdatedModel):
     class NotAnImageException(Exception):
         pass
 
+    class CroppedImage(ImageSpec):
+        processors = [ResizeToFit(800, 800), ]
+        format = 'JPEG'
+        options = {'quality': 80}
+
     @property
     def image_crop(self):
         return self._crop_image()
@@ -579,7 +578,7 @@ class Attachment(CreatedUpdatedModel):
                                                  " if attachment is an image before asking for the "
                                                  "cropped version.")
 
-        generator = CroppedImage(source=self.file)
+        generator = Attachment.CroppedImage(source=self.file)
         cache_file = ImageCacheFile(generator)
         cache_file.generate()
 

@@ -4,7 +4,6 @@ Views that are used exclusively by the V1 API
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,12 +11,10 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_202_ACCEPTED
-from rest_framework.viewsets import ViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
@@ -27,6 +24,7 @@ from signals.apps.signals.v1.serializers import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
+    SignalAttachmentSerializer,
     SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
@@ -53,34 +51,9 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class AddAttachmentMixin(ViewSet):
-
-    @action(detail=True, methods=['POST'])
-    def attachment(self, request, **kwargs):
-        # **kwargs contains the url parameters (pk or uuid or ...)
-        signal = Signal.objects.get(**kwargs)
-
-        # Check upload is present and not too big
-        file = request.data.get('file', None)
-        if file:
-            if file.size > 8388608:  # 8MB = 8*1024*1024
-                raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
-        else:
-            raise ValidationError("File is een verplicht veld.")
-
-        attachment = Signal.actions.add_attachment(file, signal)
-
-        if request.user:
-            attachment.created_by = request.user.email
-            attachment.save()
-
-        return Response({}, status=HTTP_202_ACCEPTED)
-
-
 class PrivateSignalViewSet(DatapuntViewSet,
                            mixins.CreateModelMixin,
-                           mixins.UpdateModelMixin,
-                           AddAttachmentMixin):
+                           mixins.UpdateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList
@@ -108,12 +81,42 @@ class PrivateSignalViewSet(DatapuntViewSet,
 class PublicSignalViewSet(mixins.CreateModelMixin,
                           DetailSerializerMixin,
                           mixins.RetrieveModelMixin,
-                          viewsets.GenericViewSet,
-                          AddAttachmentMixin):
+                          viewsets.GenericViewSet):
     queryset = Signal.objects.all()
     serializer_class = PublicSignalCreateSerializer
     serializer_detail_class = PublicSignalSerializerDetail
     lookup_field = 'signal_id'
+
+
+class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = SignalAttachmentSerializer
+    signal = None
+    is_public = True
+    lookup_field = 'signal_id'
+    lookup_url_kwarg = 'signal_id'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        return
+
+    def _set_signal(self):
+        self.signal = Signal.objects.get(**{self.lookup_field: self.kwargs[
+            self.lookup_url_kwarg]})  # signal_id=self.kwargs.get('uuid'))
+
+    def create(self, request, *args, **kwargs):
+        self._set_signal()
+        return super().create(request, args, kwargs)
+
+
+class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.ListModelMixin):
+    is_public = False
+    pagination_class = None
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        self._set_signal()
+        return Attachment.actions.get_attachments(self.signal)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

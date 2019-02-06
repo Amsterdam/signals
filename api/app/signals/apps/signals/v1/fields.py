@@ -98,7 +98,8 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
-            ('image', dict(href=self.get_url(value, "private-signals-attachment", request, None))),
+            ('attachments',
+             dict(href=self.get_url(value, "private-signals-attachments", request, None))),
         ])
 
         return result
@@ -124,6 +125,32 @@ class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
 
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "public-signals-detail", request, None))),
+        ])
+
+        return result
+
+
+class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
+    lookup_field = 'signal_id'
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self',
+             dict(href=self.get_url(value._signal, "public-signals-attachments", request, None))),
+        ])
+
+        return result
+
+
+class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self',
+             dict(href=self.get_url(value._signal, "private-signals-attachments", request, None))),
         ])
 
         return result

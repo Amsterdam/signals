@@ -402,16 +402,16 @@ class TestPrivateSignalViewSet(APITestCase):
         # Store URL of the newly created Signal, then upload image to it.
         new_url = response.json()['_links']['self']['href']
 
-        new_image_url = f'{new_url}/attachment'
+        new_image_url = f'{new_url}/attachments'
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image})
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
 
         # Check that a second upload is NOT rejected
         image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image2})
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
 
     def test_update_location(self):
         # Partial update to update the location, all interaction via API.
@@ -593,7 +593,7 @@ class TestPrivateSignalViewSet(APITestCase):
 class TestPrivateSignalAttachments(APITestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = list_endpoint + '{}/'
-    attachment_endpoint = detail_endpoint + 'attachment'
+    attachment_endpoint = detail_endpoint + 'attachments'
     test_host = 'http://testserver'
 
     def setUp(self):
@@ -623,7 +623,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
         response = self.client.post(endpoint, data={'file': image})
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsInstance(self.signal._image_attachment(), Attachment)
 
@@ -636,7 +636,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
             response = self.client.post(endpoint, data)
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsNone(self.signal._image_attachment())
         self.assertEquals('superuser@example.com', self.signal.attachments.first().created_by)
@@ -693,7 +693,7 @@ class TestPrivateSignalAttachments(APITestCase):
 class TestPublicSignalViewSet(JsonAPITestCase):
     post_endpoint = "/signals/v1/public/signals/"
     get_endpoint = post_endpoint + "{uuid}"
-    attachment_endpoint = get_endpoint + "/attachment"
+    attachment_endpoint = get_endpoint + "/attachments"
 
     fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
 
@@ -765,7 +765,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
-        self.assertEquals(202, response.status_code)
+        self.assertEquals(201, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
                               response.json())
 
@@ -784,7 +784,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
             response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
-        self.assertEquals(202, response.status_code)
+        self.assertEquals(201, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
                               response.json())
 
