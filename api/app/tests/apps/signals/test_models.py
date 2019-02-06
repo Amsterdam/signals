@@ -197,6 +197,7 @@ class TestSignalManager(TransactionTestCase):
     @mock.patch('signals.apps.signals.managers.create_note')
     def test_create_note(self, patched_create_note):
         signal = factories.SignalFactory.create()
+        old_updated_at = signal.updated_at
 
         # add note to signal via internal actions API
         note = Signal.actions.create_note(self.note_data, signal)
@@ -204,6 +205,10 @@ class TestSignalManager(TransactionTestCase):
         # check that the note was added to the db
         self.assertEqual(Note.objects.count(), 1)
         self.assertEqual(signal.notes.count(), 1)
+
+        # signal updated_at field should be updated
+        new_updated_at = Signal.objects.get(id=signal.id).updated_at
+        self.assertNotEquals(old_updated_at, new_updated_at)
 
         # check that the relevant Django signal fired
         patched_create_note.send.assert_called_once_with(
