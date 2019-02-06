@@ -105,6 +105,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
         )
         read_only_fields = (
             'id',
+            'created_by',
         )
         extra_kwargs = {
             'id': {'label': 'ID', },
@@ -126,6 +127,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'created_at',
+            'user',
         )
 
     def validate(self, attrs):
@@ -164,6 +166,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'departments',
             'created_by',
         )
+        read_only_fields = (
+            'created_by',
+            'departments',
+        )
 
     def get_departments(self, obj):
         return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
@@ -176,7 +182,6 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
         fields = (
             'email',
             'phone',
-            'extra_properties',
         )
 
 
@@ -187,6 +192,9 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
             'priority',
             'created_by',
         )
+        read_only_fields = (
+            'created_by',
+        )
 
 
 class _NestedNoteModelSerializer(serializers.ModelSerializer):
@@ -195,7 +203,9 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
         model = Note
         fields = (
             'text',
-            'created_at',
+            'created_by',
+        )
+        read_only_fields = (
             'created_by',
         )
 
