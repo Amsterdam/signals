@@ -68,7 +68,11 @@ class AddAttachmentMixin(ViewSet):
         else:
             raise ValidationError("File is een verplicht veld.")
 
-        Signal.actions.add_attachment(file, signal)
+        attachment = Signal.actions.add_attachment(file, signal)
+
+        if request.user:
+            attachment.created_by = request.user.email
+            attachment.save()
 
         return Response({}, status=HTTP_202_ACCEPTED)
 

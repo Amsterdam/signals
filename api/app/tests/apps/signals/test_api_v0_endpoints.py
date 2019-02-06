@@ -7,12 +7,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
+from tests.apps.signals.attachment_helpers import add_image_attachments, add_non_image_attachments, \
+    small_gif
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
-    Attachment,
     CategoryAssignment,
     Location,
     Note,
@@ -25,44 +26,6 @@ from signals.utils.version import get_version
 from tests.apps.signals import factories
 from tests.apps.signals.factories import SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
-
-
-small_gif = (
-    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-    b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-    b'\x02\x4c\x01\x00\x3b'
-)
-
-def add_non_image_attachments(signal, n=3):
-    doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
-    attachments = []
-
-    for _ in range(n):
-        with open(doc_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("file.doc", f.read(),
-                                            content_type="application/msword")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment._signal = signal
-            attachment.save()
-            attachments.append(attachment)
-
-    return attachments
-
-
-def add_image_attachments(signal, n=1):
-    attachments = []
-
-    for _ in range(n):
-        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        attachment = Attachment()
-        attachment.file = image
-        attachment._signal = signal
-        attachment.save()
-        attachments.append(attachment)
-
-    return attachments
 
 
 class TestAPIRoot(APITestCase):
@@ -162,7 +125,7 @@ class TestAuthAPIEndpoints(APITestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestAPIEnpointsBase(APITestCase):
+class TestAPIEndpointsBase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -187,14 +150,8 @@ class TestAPIEnpointsBase(APITestCase):
         self.category_assignment = self.signal.category_assignment
         self.reporter = self.signal.reporter
 
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
 
-
-class TestPublicSignalEndpoint(TestAPIEnpointsBase):
+class TestPublicSignalEndpoint(TestAPIEndpointsBase):
     """Test for public endpoint `/signals/signal/`."""
 
     endpoint = '/signals/signal/'
@@ -238,6 +195,10 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         postjson = self._get_fixture('post_signal')
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
+
+        self.assertTrue('image' in response.json())
+        self.assertFalse('attachments' in response.json(), 'Attachments is a v1-only field')
+
         self.assertEqual(Signal.objects.count(), 2)
         id = response.data['id']
         s = Signal.objects.get(id=id)
@@ -278,7 +239,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
 
         # Adding a testing image to the posting data.
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         data['image'] = image
 
         # Changing data dict structure (loaded from json file) to work with
@@ -316,7 +277,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
     def test_post_signal_image(self):
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
@@ -331,7 +292,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
 
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
@@ -349,7 +310,7 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         # Add image attachment
         add_image_attachments(self.signal, 1)
 
-        image2 = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
 
         # Then assert that adding another image through the v0 API fails
         url = f'{self.endpoint}image/'
@@ -375,7 +336,6 @@ class TestAuthSignalEndpoint(APITestCase):
         # Forcing authentication
         superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
         self.client.force_authenticate(user=superuser)
-        self.signal = factories.SignalFactory.create()
 
     def test_ordering_by_all_fields(self):
         # Just check if all ordering fields are working as in, do they return a 200 response.
@@ -429,12 +389,12 @@ class TestAuthSignalEndpoint(APITestCase):
         uploaded image through the 'image' field and ignore the rest. """
 
         # Create some random attachments, keep the first
-        add_non_image_attachments(self.signal)
-        image_attachment, _ = add_image_attachments(self.signal, 2)
-        add_non_image_attachments(self.signal)
-        add_image_attachments(self.signal, 3)
+        add_non_image_attachments(self.last)
+        image_attachment, _ = add_image_attachments(self.last, 2)
+        add_non_image_attachments(self.last)
+        add_image_attachments(self.last, 3)
 
-        url = "/signals/auth/signal/{}/".format(self.signal.id)
+        url = "/signals/auth/signal/{}/".format(self.last.id)
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -442,9 +402,10 @@ class TestAuthSignalEndpoint(APITestCase):
 
         self.assertEquals("http://testserver" + image_attachment.image_crop.url,
                           json_resp["image"])
+        self.assertFalse('attachments' in json_resp, "Attachments is a v1-only field")
 
 
-class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
+class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
 
     def setUp(self):
         super().setUp()
@@ -680,7 +641,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(note.created_by, self.user.username)
 
 
-class TestUserLogging(TestAPIEnpointsBase):
+class TestUserLogging(TestAPIEndpointsBase):
     """Check that the API returns who did what and when."""
 
     def setUp(self):

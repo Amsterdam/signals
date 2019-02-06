@@ -104,6 +104,10 @@ class Signal(CreatedUpdatedModel):
 
         return ""
 
+    @property
+    def attachments(self):
+        return Attachment.actions.get_attachments(self)
+
     def _image_attachment(self):
         return Attachment.actions.get_images(self).first()
 
@@ -546,7 +550,7 @@ class CroppedImage(ImageSpec):
 class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     _signal = models.ForeignKey(
-        "signals.Signal", related_name="attachments",
+        "signals.Signal",
         null=False, on_delete=models.CASCADE
     )
     file = models.FileField(

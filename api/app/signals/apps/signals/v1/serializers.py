@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
+    Attachment,
     CategoryAssignment,
     History,
     Location,
@@ -215,6 +216,16 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
         )
 
 
+class _NestedAttachmentModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = (
+            'file',
+            'created_at',
+            'is_image',
+        )
+
+
 class PrivateSignalSerializerDetail(HALSerializer):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
@@ -226,6 +237,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
     reporter = _NestedReporterModelSerializer(required=False)
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
+    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
 
     class Meta:
         model = Signal
@@ -235,6 +247,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
             'category',
             'id',
             'image',
+            'attachments',
             'location',
             'status',
             'reporter',
@@ -244,6 +257,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
         read_only_fields = (
             'id',
             'image',
+            'attachments',
         )
 
     def _update_location(self, instance, validated_data):
@@ -333,6 +347,7 @@ class PrivateSignalSerializerList(HALSerializer):
     reporter = _NestedReporterModelSerializer()
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
+    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
 
     class Meta:
         model = Signal
@@ -355,12 +370,15 @@ class PrivateSignalSerializerList(HALSerializer):
             'incident_date_end',
             'operational_date',
             'image',
+            'attachments',
             'extra_properties',
             'notes',
         )
         read_only_fields = (
             'created_at',
             'updated_at',
+            'image',
+            'attachments',
         )
 
     def create(self, validated_data):
@@ -428,6 +446,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     status = _NestedStatusModelSerializer(required=False)
     category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
+    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
 
     incident_date_start = serializers.DateTimeField()
 
@@ -450,6 +469,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'incident_date_end',
             'operational_date',
             'image',
+            'attachments',
             'extra_properties',
         )
         read_only_fields = (
@@ -459,6 +479,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'updated_at',
             'status',
             'image'
+            'attachments',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
@@ -477,4 +498,3 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         signal = Signal.actions.create_initial(
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
-

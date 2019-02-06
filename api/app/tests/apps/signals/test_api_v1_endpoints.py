@@ -7,6 +7,8 @@ from django.utils.http import urlencode
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from tests.apps.signals.attachment_helpers import add_non_image_attachments, add_image_attachments, \
+    small_gif
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
@@ -239,32 +241,6 @@ class TestHistoryAction(APITestCase):
         self.assertEqual(new_entry['description'], status.text)
 
 
-class TestAttachmentUpload(APITestCase):
-    def setUp(self):
-        self.signal = SignalFactory.create()
-        self.superuser = SuperUserFactory(username='superuser@example.com')
-
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
-
-    def test_authenticated_upload(self):
-        # images are attached to pre-existing Signals
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/attachment'
-        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
-
-        self.client.force_authenticate(user=self.superuser)
-        response = self.client.post(
-            endpoint,
-            data={'file': image},
-            # format='multipart'
-        )
-
-        self.assertEqual(response.status_code, 202)
-
-
 class TestPrivateSignalViewSet(APITestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
@@ -280,11 +256,6 @@ class TestPrivateSignalViewSet(APITestCase):
         self.superuser = SuperUserFactory.create(
             email='superuser@example.com',
             username='superuser@example.com',
-        )
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
         )
 
         # No URL reversing here, these endpoints are part of the spec (and thus
@@ -429,13 +400,13 @@ class TestPrivateSignalViewSet(APITestCase):
         new_url = response.json()['_links']['self']['href']
 
         new_image_url = f'{new_url}/attachment'
-        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image})
 
         self.assertEqual(response.status_code, 202)
 
         # Check that a second upload is NOT rejected
-        image2 = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image2})
         self.assertEqual(response.status_code, 202)
 
@@ -616,18 +587,110 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response.status_code, 405)
 
 
+class TestPrivateSignalAttachments(APITestCase):
+    list_endpoint = '/signals/v1/private/signals/'
+    detail_endpoint = list_endpoint + '{}/'
+    attachment_endpoint = detail_endpoint + 'attachment'
+    test_host = 'http://testserver'
+
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.superuser = SuperUserFactory(email='superuser@example.com')
+        self.client.force_authenticate(user=self.superuser)
+
+        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+
+        with open(fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+
+        self.subcategory = SubCategoryFactory.create()
+
+        link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.subcategory.main_category.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+
+    def test_image_upload(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+
+        response = self.client.post(endpoint, data={'file': image})
+
+        self.assertEqual(response.status_code, 202)
+        self.assertIsInstance(self.signal.attachments.first(), Attachment)
+        self.assertIsInstance(self.signal._image_attachment(), Attachment)
+
+    def test_attachment_upload(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+
+        with open(doc_upload, encoding='latin-1') as f:
+            data = {"file": f}
+
+            response = self.client.post(endpoint, data)
+
+        self.assertEqual(response.status_code, 202)
+        self.assertIsInstance(self.signal.attachments.first(), Attachment)
+        self.assertIsNone(self.signal._image_attachment())
+        self.assertEquals('superuser@example.com', self.signal.attachments.first().created_by)
+
+    def test_create_contains_image_and_attachments(self):
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue('image' in response.json())
+        self.assertTrue('attachments' in response.json())
+        self.assertIsInstance(response.json()['attachments'], list)
+
+    def test_get_detail_contains_image_and_attachments(self):
+        non_image_attachments = add_non_image_attachments(self.signal, 1)
+        image_attachments = add_image_attachments(self.signal, 2)
+        non_image_attachments += add_non_image_attachments(self.signal, 1)
+
+        response = self.client.get(self.list_endpoint, self.create_initial_data)
+        self.assertEquals(200, response.status_code)
+
+        json_item = response.json()['results'][0]
+        self.assertTrue('image' in json_item)
+        self.assertTrue('attachments' in json_item)
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEquals(4, len(json_item['attachments']))
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['attachments'][1]['file'])
+        self.assertTrue(json_item['attachments'][2]['is_image'])
+        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
+                          json_item['attachments'][3]['file'])
+        self.assertFalse(json_item['attachments'][3]['is_image'])
+
+    def test_get_list_contains_image_and_attachments(self):
+        non_image_attachments = add_non_image_attachments(self.signal, 1)
+        image_attachments = add_image_attachments(self.signal, 2)
+        non_image_attachments += add_non_image_attachments(self.signal, 1)
+
+        response = self.client.get(self.list_endpoint, self.create_initial_data)
+        self.assertEquals(200, response.status_code)
+
+        json_item = response.json()['results'][0]
+        self.assertTrue('image' in json_item)
+        self.assertTrue('attachments' in json_item)
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEquals(4, len(json_item['attachments']))
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['attachments'][1]['file'])
+        self.assertTrue(json_item['attachments'][2]['is_image'])
+        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
+                          json_item['attachments'][3]['file'])
+        self.assertFalse(json_item['attachments'][3]['is_image'])
+
+
 class TestPublicSignalViewSet(JsonAPITestCase):
     post_endpoint = "/signals/v1/public/signals/"
     get_endpoint = post_endpoint + "{uuid}"
     attachment_endpoint = get_endpoint + "/attachment"
 
     fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
-
-    small_gif = (
-        b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-        b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-        b'\x02\x4c\x01\x00\x3b'
-    )
 
     def setUp(self):
         with open(self.fixture_file, 'r') as f:
@@ -654,6 +717,9 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         self.assertEquals(201, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_post_signal.json"), response.json())
         self.assertEquals(1, Signal.objects.count())
+        self.assertTrue('image' in response.json())
+        self.assertTrue('attachments' in response.json())
+        self.assertIsInstance(response.json()['attachments'], list)
 
         signal = Signal.objects.last()
         self.assertEquals(workflow.GEMELD, signal.status.state)
@@ -690,7 +756,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         signal = SignalFactory.create()
         uuid = signal.signal_id
 
-        data = {"file": SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')}
+        data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
 
         response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
@@ -701,6 +767,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         attachment = Attachment.objects.last()
         self.assertEquals("image/gif", attachment.mimetype)
         self.assertIsInstance(attachment.image_crop.url, str)
+        self.assertIsNone(attachment.created_by)
 
     def test_add_attachment_nonimagetype(self):
         signal = SignalFactory.create()
