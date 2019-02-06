@@ -74,7 +74,8 @@ if __name__ == "__main__":
     password = os.getenv('SIGNALS_PASSWORD', 'insecure')
     access_token = GetAccessToken().getAccessToken(email, password, acceptance)
     print(f'Received new Access Token Header: {access_token}')
-    url = "https://acc.api.data.amsterdam.nl/signals/auth/signal"
+
+    url = "https://acc.api.data.amsterdam.nl/signals/v1/private/signals"
     response = requests.get(url, headers=access_token)
     jsonresponse = response.json()
     print(jsonresponse)

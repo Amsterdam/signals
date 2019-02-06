@@ -19,6 +19,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 from signals.apps.signals.api_generics.permissions import SIAPermissions
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
+from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
     MainCategoryHALSerializer,
@@ -87,6 +88,7 @@ class PrivateSignalViewSet(DatapuntViewSet,
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend,)
     filter_backends = (DjangoFilterBackend,)
+    filter_class = SignalFilter
     permission_classes = (SIAPermissions,)
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']

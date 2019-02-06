@@ -229,5 +229,6 @@ class SignalManager(models.Manager):
             transaction.on_commit(lambda: create_note.send(sender=self.__class__,
                                                            signal_obj=signal,
                                                            note=note))
+            signal.save()
 
         return note
