@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('mimetype', models.CharField(max_length=30)),
                 ('is_image', models.BooleanField(default=False)),
                 ('_signal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                              related_name='attachments', to='signals.Signal')),
+                                              to='signals.Signal')),
             ],
             options={
                 'abstract': False,
