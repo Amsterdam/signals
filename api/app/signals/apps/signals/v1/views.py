@@ -107,8 +107,7 @@ class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, viewsets.GenericVi
     lookup_url_kwarg = 'signal_id'
 
     def _set_signal(self):
-        self.signal = Signal.objects.get(**{self.lookup_field: self.kwargs[
-            self.lookup_url_kwarg]})  # signal_id=self.kwargs.get('uuid'))
+        self.signal = Signal.objects.get(**{self.lookup_field: self.kwargs[self.lookup_url_kwarg]})
 
     def create(self, request, *args, **kwargs):
         self._set_signal()
