@@ -162,7 +162,7 @@ paths:
   /signals/v1/public/terms/categories/{main_slug}:
     get:
       description: Information about a specific main category and its sub categories.
-      reponse:
+      response:
         '200':
           description: Detailed information.
       parameters:
@@ -178,7 +178,7 @@ paths:
   /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
       description: Information about a specific sub category.
-      response:
+      responses:
         '200':
           description: Detailed information.
       parameters:
@@ -198,7 +198,7 @@ paths:
   /signals/user/auth/me:
     get:
       description: Information about the currently authenticated user.
-      response:
+      responses:
         '200':
           description: User information including permissions.
         '401':
@@ -378,6 +378,7 @@ components:
         - h
         - o
         - a
+        - s
         - "ready to send"
         - "sent"
         - "send failed"
