@@ -26,7 +26,7 @@ def copy_images(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('signals', '0030_attachment'),
+        ('signals', '0032_attachment'),
     ]
 
     operations = [
