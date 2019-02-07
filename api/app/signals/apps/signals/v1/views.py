@@ -129,15 +129,6 @@ class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.Lis
         self._set_signal()
         return Attachment.actions.get_attachments(self.signal)
 
-    @action(detail=True, methods=['POST'],
-            serializer_detail_class=SplitPrivateSignalSerializerDetail)
-    def split(self, request, pk=None, *args, **kwargs):
-        serializer = self.get_serializer(many=True, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-
-        return Response(serializer.data, status=HTTP_201_CREATED)
-
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
     object = None
