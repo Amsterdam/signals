@@ -244,7 +244,7 @@ class TestHistoryAction(APITestCase):
         self.assertEqual(new_entry['description'], status.text)
 
 
-class TestPrivateSignalViewSet(APITestCase):
+class TestPrivateSignalViewSet(JsonAPITestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
 
@@ -623,6 +623,19 @@ class TestPrivateSignalViewSet(APITestCase):
             for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
                 self.assertIn(key, response_json)
 
+    def test_split_get_splitted_signal(self):
+        """ A GET /<signal_id>/split on a splitted signal should return a 200 with its
+        children in the response body """
+        pass
+
+    def test_split_get_not_splitted_signal(self):
+        """ A GET /<signal_id>/split on a non-splitted signal should return a 404 """
+        pass
+
+    def test_split_post_splitted_signal(self):
+        """ A POST /<signal_id>/split on an already updated signal should return a 412 """
+        pass
+
     def test_split_empty_data(self):
         self.client.force_authenticate(user=self.superuser)
 
@@ -635,8 +648,8 @@ class TestPrivateSignalViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
-            'A signal can only be split into min 2 and max 3 signals'
+            response.json()["non_field_errors"][0],
+            "Verwachtte een lijst met items, maar kreeg type \"dict\"."
         )
 
         self.assertEqual(Signal.objects.count(), 2)
@@ -659,7 +672,7 @@ class TestPrivateSignalViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
+            response.json()["non_field_errors"][0],
             'A signal can only be split into min 2 and max 3 signals'
         )
 
@@ -686,7 +699,7 @@ class TestPrivateSignalViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
+            response.json()["non_field_errors"][0],
             'A signal can only be split into min 2 and max 3 signals'
         )
 

@@ -29,6 +29,12 @@ signal_router_v1.register(r'public/signals',
                           base_name='public-signals')
 
 signal_router_v1.urls.append(
+    path('private/signals/<int:pk>/split',
+         v1_views.PrivateSignalSplitViewSet.as_view({'post': 'create'}),
+         name='private-signals-split')
+)
+
+signal_router_v1.urls.append(
     path('private/signals/<int:pk>/attachments',
          v1_views.PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
          name='private-signals-attachments')

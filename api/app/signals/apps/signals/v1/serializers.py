@@ -423,25 +423,7 @@ class PrivateSignalSerializerList(HALSerializer):
         return signal
 
 
-class SplitPrivateSignalSerializerList(serializers.ListSerializer):
-    def is_valid(self, raise_exception=False):
-        if not (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN
-                <= len(self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
-            self._validated_data = []
-            self._errors = ['A signal can only be split into min {} and max {} signals'.format(
-                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN,
-                settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
-            )]
-
-        return super(SplitPrivateSignalSerializerList, self).is_valid(raise_exception)
-
-    def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data,
-                                      signal=self.context['view'].get_object())
-        return signal.children.all()
-
-
-class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
+class _NestedSplitSignalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Signal
         fields = (
@@ -455,14 +437,30 @@ class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
             'text': {'write_only': True}
         }
 
-        list_serializer_class = SplitPrivateSignalSerializerList
+
+class SplitPrivateSignalCreateSerializer(serializers.ListSerializer):
+    child = _NestedSplitSignalSerializer()
+
+    def validate(self, attrs):
+        if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
+                attrs) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            raise ValidationError(
+                'A signal can only be split into min {} and max {} signals'.format(
+                    settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
+                ))
+
+        return attrs
+
+    def create(self, validated_data):
+        signal = Signal.actions.split(split_data=validated_data,
+                                      signal=self.context['view'].get_object())
+
+        return signal.children.all()
 
 
 class SignalAttachmentSerializer(HALSerializer):
     _display = DisplayField()
     location = serializers.FileField(source='file', required=False)
-
-    # serializer_url_field = PrivateSignalAttachmentLinksField
 
     class Meta:
         model = Attachment
