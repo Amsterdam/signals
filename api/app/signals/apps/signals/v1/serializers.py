@@ -5,6 +5,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from signals import settings
 from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
@@ -383,3 +384,38 @@ class PrivateSignalSerializerList(HALSerializer):
             priority_data
         )
         return signal
+
+
+class SplitPrivateSignalSerializerList(serializers.ListSerializer):
+    def is_valid(self, raise_exception=False):
+        if not (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN
+                <= len(self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
+            self._validated_data = []
+            self._errors = ['A signal can only be split into min {} and max {} signals'.format(
+                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN,
+                settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
+            )]
+
+        return super(SplitPrivateSignalSerializerList, self).is_valid(raise_exception)
+
+    def create(self, validated_data):
+        signal = Signal.actions.split(split_data=validated_data,
+                                      signal=self.context['view'].get_object())
+        return signal.children.all()
+
+
+class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
+    class Meta:
+        model = Signal
+        fields = (
+            'id',
+            'text',
+        )
+        read_only_fields = (
+            'id',
+        )
+        extra_kwargs = {
+            'text': {'write_only': True}
+        }
+
+        list_serializer_class = SplitPrivateSignalSerializerList

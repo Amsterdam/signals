@@ -598,6 +598,109 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.put(detail_endpoint, {}, format='json')
         self.assertEqual(response.status_code, 405)
 
+    def test_split(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'}
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+
+        for item in data:
+            self.assertEqual(Signal.objects.count(), 4)
+
+            response = self.client.get(self.detail_endpoint.format(pk=item['id']))
+            self.assertEqual(response.status_code, 200)
+
+            # TODO: add more detailed tests using a JSONSchema
+            # TODO: consider naming of 'note' object (is list, so 'notes')?
+            response_json = response.json()
+            for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
+                self.assertIn(key, response_json)
+
+    def test_split_empty_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(split_endpoint, None, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+    def test_split_less_than_min_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+    def test_split_more_than_max_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'},
+                {'text': 'Child #3'},
+                {'text': 'Child #4'},
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
 # TODO:
 # * Add test to check that an uploaded signal can only be created in gemeld state via public
 #   unauthenticated endpoint.
