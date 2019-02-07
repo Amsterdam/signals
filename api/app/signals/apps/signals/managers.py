@@ -7,6 +7,7 @@ from django.dispatch import Signal as DjangoSignal
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
+add_attachment = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category_assignment = DjangoSignal(providing_args=['signal_obj',
@@ -15,6 +16,19 @@ update_category_assignment = DjangoSignal(providing_args=['signal_obj',
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
+
+
+class AttachmentManager(models.Manager):
+
+    def get_attachments(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal).order_by('created_at')
+
+    def get_images(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal, is_image=True).order_by('created_at')
 
 
 class SignalManager(models.Manager):
@@ -148,13 +162,23 @@ class SignalManager(models.Manager):
         return signal
 
     def add_image(self, image, signal):
+        return self.add_attachment(image, signal)
+
+    def add_attachment(self, file, signal):
+        from .models import Attachment
+
         with transaction.atomic():
-            signal.image = image
-            signal.save()
+            attachment = Attachment()
+            attachment._signal = signal
+            attachment.file = file
+            attachment.save()
 
-            add_image.send(sender=self.__class__, signal_obj=signal)
+            if attachment.is_image:
+                add_image.send(sender=self.__class__, signal_obj=signal)
 
-        return image
+            add_attachment.send(sender=self.__class__, signal_obj=signal)
+
+        return attachment
 
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.
@@ -299,5 +323,6 @@ class SignalManager(models.Manager):
             transaction.on_commit(lambda: create_note.send(sender=self.__class__,
                                                            signal_obj=signal,
                                                            note=note))
+            signal.save()
 
         return note

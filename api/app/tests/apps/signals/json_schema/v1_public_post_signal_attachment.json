@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "_display": {
+      "type": "string"
+    },
+    "_links": {
+      "type": "object",
+      "properties": {
+        "self": {
+          "type": "object",
+          "properties": {
+            "href": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "is_image": {
+      "type": "boolean"
+    },
+    "location": {
+      "type": "string"
+    }
+  }
+}
