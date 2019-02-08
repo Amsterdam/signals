@@ -443,6 +443,23 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEquals(suggested_address, signal.location.address,
                           "Suggested address should appear instead of the received address")
 
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_create_initial_valid_location_but_no_address(self, validate_address_dict):
+        """Tests that a Signal can be created when loccation has no known address but
+        coordinates are known."""
+        del self.create_initial_data["location"]["address"]
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        validate_address_dict.assert_not_called()
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertEqual(signal.location.bag_validated, False)
+
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
     def test_create_initial_address_validation_unavailable(self, validate_address_dict):
