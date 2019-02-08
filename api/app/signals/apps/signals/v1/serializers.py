@@ -206,10 +206,11 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
 
 class AddressValidationMixin():
     def validate_location(self, location_data):
-        print('location_data', location_data)
         """Validate location data used in creation and update of Signal instances"""
         # Validate address, but only if it is present in input. SIA must also
         # accept location data without address but with coordinates.
+        if 'geometrie' not in location_data:
+            raise ValidationError('Coordinate data must be present')
         if 'address' in location_data and location_data['address']:
             try:
                 address_validation = AddressValidation()
