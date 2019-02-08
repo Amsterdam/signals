@@ -1,6 +1,6 @@
+import copy
 import json
 import os
-from unittest import skip
 from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
@@ -523,8 +523,8 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.post(new_image_url, data={'image': image})
         self.assertEqual(response.status_code, 403)
 
-    @skip('Updates not yet supported')
-    def test_update_location(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_update_location(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
 
@@ -541,8 +541,10 @@ class TestPrivateSignalViewSet(APITestCase):
         fixture_file = os.path.join(THIS_DIR, 'update_location.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
+        validated_address = copy.deepcopy(data['location']['address'])
+        validate_address_dict.return_value = validated_address
 
-        # update location, check that the correct user performed the action.
+        # update location
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
@@ -551,6 +553,45 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(len(response.json()), 2)
 
         self.signal_no_image.refresh_from_db()
+        # Check that the correct user performed the action.
+        self.assertEqual(
+            self.signal_no_image.location.created_by,
+            self.superuser.email,
+        )
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_update_location_no_address(self, validate_address_dict):
+        # Partial update to update the location, all interaction via API.
+        # SIA must also allow location updates without known address but with
+        # known coordinates.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        del data['location']['address']
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+        validate_address_dict.assert_not_called()
+
+        # check that there are two Locations is in the history
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        self.signal_no_image.refresh_from_db()
+        # Check that the correct user performed the action.
         self.assertEqual(
             self.signal_no_image.location.created_by,
             self.superuser.email,

@@ -8,13 +8,14 @@
             ]
         },
         "address": {
-            "openbare_ruimte": "AAARRGH De Ruijterkade",
+            "openbare_ruimte": "De Ruijterkade",
             "huisnummer": "36",
             "huisletter": "A",
             "huisnummer_toevoeging": "",
             "postcode": "1012AA",
             "woonplaats": "Amsterdam"
         },
+        "extra_properties": {},
         "stadsdeel": "A",
         "buurt_code": "A01a"
     }
