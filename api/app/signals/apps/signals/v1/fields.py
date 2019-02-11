@@ -111,7 +111,7 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         request = self.context.get('request')
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
+            ('self', dict(href=self.get_url(value, "v1:private-signals-detail", request, None))),
         ])
 
         return result
@@ -151,6 +151,18 @@ class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
         result = OrderedDict([
             ('self',
              dict(href=self.get_url(value._signal, "private-signals-attachments", request, None))),
+        ])
+
+        return result
+
+
+class PrivateSignalSplitLinksField(serializers.HyperlinkedIdentityField):
+    def to_representation(self, signal):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('self',
+             dict(href=self.get_url(signal, "v1:private-signals-split", request, None))),
         ])
 
         return result

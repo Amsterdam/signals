@@ -267,6 +267,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
+        self.split_endpoint = '/signals/v1/private/signals/{pk}/split'
 
         # Create a special pair of sub and main categories for testing (insulate our tests
         # from future changes in categories).
@@ -291,6 +292,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
         self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
+
+    def _load_json_schema(self, filename: str):
+        with open(os.path.join(THIS_DIR, 'json_schema', filename)) as f:
+            return json.load(f)
 
     # -- Read tests --
 
@@ -595,10 +600,9 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
         pk = self.signal_no_image.id
-        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
 
         response = self.client.post(
-            split_endpoint,
+            self.split_endpoint.format(pk=pk),
             [
                 {'text': 'Child #1'},
                 {'text': 'Child #2'}
@@ -609,9 +613,11 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(response.status_code, 201)
 
         data = response.json()
-        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data['children']), 2)
+        self.assertJsonSchema(self._load_json_schema("v1_private_get_post_signal_split.json"),
+                              data)
 
-        for item in data:
+        for item in data['children']:
             self.assertEqual(Signal.objects.count(), 4)
 
             response = self.client.get(self.detail_endpoint.format(pk=item['id']))
@@ -623,18 +629,51 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
                 self.assertIn(key, response_json)
 
-    def test_split_get_splitted_signal(self):
-        """ A GET /<signal_id>/split on a splitted signal should return a 200 with its
+        self.assertEquals(4, Signal.objects.count())
+        self.assertEquals(2, len(self.signal_no_image.children.all()))
+
+    def _create_split_signal(self):
+        parent_signal = SignalFactory.create()
+        split_data = [
+            {"text": "Child signal 1"},
+            {"text": "Child signal 2"}
+        ]
+        Signal.actions.split(split_data, parent_signal)
+
+        return parent_signal
+
+    def test_split_get_split_signal(self):
+        """ A GET /<signal_id>/split on a split signal should return a 200 with its
         children in the response body """
-        pass
 
-    def test_split_get_not_splitted_signal(self):
-        """ A GET /<signal_id>/split on a non-splitted signal should return a 404 """
-        pass
+        signal = self._create_split_signal()
+        response = self.client.get(self.split_endpoint.format(pk=signal.pk))
 
-    def test_split_post_splitted_signal(self):
+        self.assertEquals(200, response.status_code)
+        json_response = response.json()
+
+        self.assertEquals(2, len(json_response['children']))
+        self.assertEquals("Child signal 1", json_response['children'][0]['text'])
+        self.assertEquals("Child signal 2", json_response['children'][1]['text'])
+
+        self.assertJsonSchema(self._load_json_schema("v1_private_get_post_signal_split.json"),
+                              json_response)
+
+    def test_split_get_not_split_signal(self):
+        """ A GET /<signal_id>/split on a non-split signal should return a 404 """
+
+        signal = SignalFactory.create()
+        response = self.client.get(self.split_endpoint.format(pk=signal.pk))
+        self.assertEquals(404, response.status_code)
+
+    def test_split_post_split_signal(self):
         """ A POST /<signal_id>/split on an already updated signal should return a 412 """
-        pass
+
+        signal = self._create_split_signal()
+        data = [{"text": "Child 1"}, {"text": "Child 2"}]
+        response = self.client.post(self.split_endpoint.format(pk=signal.pk), data, format='json')
+        self.assertEquals(412, response.status_code)
+        self.assertEquals("Signal has already been split", response.json()["detail"])
 
     def test_split_empty_data(self):
         self.client.force_authenticate(user=self.superuser)
@@ -642,14 +681,17 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
         pk = self.signal_no_image.id
-        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
 
-        response = self.client.post(split_endpoint, None, format='json')
+        response = self.client.post(
+            self.split_endpoint.format(pk=pk),
+            None,
+            format='json'
+        )
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()["non_field_errors"][0],
-            "Verwachtte een lijst met items, maar kreeg type \"dict\"."
+            response.json()[0],
+            "A signal can only be split into min 2 and max 3 signals"
         )
 
         self.assertEqual(Signal.objects.count(), 2)
@@ -660,10 +702,9 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
         pk = self.signal_no_image.id
-        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
 
         response = self.client.post(
-            split_endpoint,
+            self.split_endpoint.format(pk=pk),
             [
                 {'text': 'Child #1'},
             ],
@@ -672,7 +713,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()["non_field_errors"][0],
+            response.json()[0],
             'A signal can only be split into min 2 and max 3 signals'
         )
 
@@ -684,10 +725,9 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
         pk = self.signal_no_image.id
-        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
 
         response = self.client.post(
-            split_endpoint,
+            self.split_endpoint.format(pk=pk),
             [
                 {'text': 'Child #1'},
                 {'text': 'Child #2'},
@@ -699,7 +739,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()["non_field_errors"][0],
+            response.json()[0],
             'A signal can only be split into min 2 and max 3 signals'
         )
 

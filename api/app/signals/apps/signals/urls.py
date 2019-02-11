@@ -30,7 +30,7 @@ signal_router_v1.register(r'public/signals',
 
 signal_router_v1.urls.append(
     path('private/signals/<int:pk>/split',
-         v1_views.PrivateSignalSplitViewSet.as_view({'post': 'create'}),
+         v1_views.PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
          name='private-signals-split')
 )
 

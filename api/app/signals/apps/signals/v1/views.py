@@ -22,10 +22,10 @@ from signals.apps.signals.v1.serializers import (
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    PrivateSplitSignalSerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
     SignalAttachmentSerializer,
-    SplitPrivateSignalCreateSerializer,
     SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
@@ -79,8 +79,9 @@ class PrivateSignalViewSet(DatapuntViewSet,
         return Response(serializer.data)
 
 
-class PrivateSignalSplitViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = SplitPrivateSignalCreateSerializer
+class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
+                                viewsets.GenericViewSet):
+    serializer_class = PrivateSplitSignalSerializer
     queryset = Signal.objects.all()
 
 

@@ -3,10 +3,11 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 from signals import settings
 from signals.apps.signals import workflow
+from signals.apps.signals.api_generics.exceptions import PreconditionFailed
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     Attachment,
@@ -27,6 +28,7 @@ from signals.apps.signals.v1.fields import (
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
+    PrivateSignalSplitLinksField,
     PublicSignalAttachmentLinksField,
     PublicSignalLinksField,
     SubCategoryHyperlinkedIdentityField,
@@ -423,39 +425,65 @@ class PrivateSignalSerializerList(HALSerializer):
         return signal
 
 
-class _NestedSplitSignalSerializer(serializers.ModelSerializer):
+class _NestedSplitSignalSerializer(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+
     class Meta:
         model = Signal
         fields = (
             'id',
             'text',
+            '_links',
         )
         read_only_fields = (
             'id',
+            '_links',
         )
-        extra_kwargs = {
-            'text': {'write_only': True}
-        }
 
 
-class SplitPrivateSignalCreateSerializer(serializers.ListSerializer):
-    child = _NestedSplitSignalSerializer()
+class PrivateSplitSignalSerializer(serializers.BaseSerializer):
 
-    def validate(self, attrs):
+    @property
+    def validated_data(self):
+        if self.context['view'].get_object().status.state == workflow.GESPLITST:
+            raise PreconditionFailed("Signal has already been split")
+
+        serializer = _NestedSplitSignalSerializer(many=True)
+        serializer.validate(self.initial_data)
+
         if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
-                attrs) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+                self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
             raise ValidationError(
                 'A signal can only be split into min {} and max {} signals'.format(
                     settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
                 ))
 
-        return attrs
+        return {"children": self.initial_data}
+
+    def to_internal_value(self, data):
+        return data
+
+    def to_representation(self, signal):
+        if self.context['view'].get_object().children.count() == 0:
+            raise NotFound("Split signal not found")
+
+        child_serializer = _NestedSplitSignalSerializer()
+        links_field = PrivateSignalSplitLinksField(self.context['view'])
+
+        children = []
+        for child in signal.children.all():
+            children.append(child_serializer.to_representation(child))
+
+        return {
+            "_links": links_field.to_representation(signal),
+            "children": children,
+        }
 
     def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data,
+        signal = Signal.actions.split(split_data=validated_data["children"],
                                       signal=self.context['view'].get_object())
 
-        return signal.children.all()
+        return signal
 
 
 class SignalAttachmentSerializer(HALSerializer):
