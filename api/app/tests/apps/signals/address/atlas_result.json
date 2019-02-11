@@ -29,6 +29,7 @@
             "bag_toevoeging": "",
             "bag_huisletter": "",
             "hoofdadres": true,
+            "woonplaats": "Amsterdam",
             "status": [
                 {
                     "code": "16",
