@@ -13,16 +13,18 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_202_ACCEPTED
+from rest_framework.status import HTTP_201_CREATED, HTTP_202_ACCEPTED
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
 from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
+from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    SplitPrivateSignalSerializerDetail,
     SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
@@ -55,9 +57,10 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
     serializer_class = PrivateSignalSerializerList
     serializer_detail_class = PrivateSignalSerializerDetail
     pagination_class = HALPagination
-    authentication_classes = (JWTAuthBackend, )
-    filter_backends = (DjangoFilterBackend, )
-    permission_classes = (SIAPermissions, )
+    authentication_classes = (JWTAuthBackend,)
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = SignalFilter
+    permission_classes = (SIAPermissions,)
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
@@ -95,6 +98,15 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
 
         # TODO: Check what to do about the headers (see V0 API)
         return Response({}, status=HTTP_202_ACCEPTED)
+
+    @action(detail=True, methods=['POST'],
+            serializer_detail_class=SplitPrivateSignalSerializerDetail)
+    def split(self, request, pk=None, *args, **kwargs):
+        serializer = self.get_serializer(many=True, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+        return Response(serializer.data, status=HTTP_201_CREATED)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

@@ -80,5 +80,7 @@ class SIAPermissions(BasePermission):
         return self.perms_map[method]
 
     def has_permission(self, request, view):
-        perms = self.get_required_permissions(method=request.method)
-        return request.user.has_perms(perms)
+        if request.user:
+            perms = self.get_required_permissions(method=request.method)
+            return request.user.has_perms(perms)
+        return False
