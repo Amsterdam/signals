@@ -24,6 +24,7 @@ from signals.apps.signals.models import (
     get_address_text
 )
 from tests.apps.signals import factories, valid_locations
+from tests.apps.signals.attachment_helpers import small_gif
 
 
 class TestSignalManager(TransactionTestCase):
@@ -484,16 +485,10 @@ class TestAttachmentModel(LiveServerTestCase):
     doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
     json_upload_location = os.path.join(os.path.dirname(__file__), 'create_initial.json')
 
-    small_gif = (
-        b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-        b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-        b'\x02\x4c\x01\x00\x3b'
-    )
-
     def setUp(self):
         self.signal = factories.SignalFactory.create()
 
-        self.gif_upload = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
+        self.gif_upload = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
 
     def test_cropping_image_cache_file(self):
         attachment = Attachment()

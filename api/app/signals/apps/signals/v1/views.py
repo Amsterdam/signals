@@ -106,12 +106,19 @@ class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, viewsets.GenericVi
     lookup_field = 'signal_id'
     lookup_url_kwarg = 'signal_id'
 
-    def _set_signal(self):
-        self.signal = Signal.objects.get(**{self.lookup_field: self.kwargs[self.lookup_url_kwarg]})
+    def _get_signal(self):
+        if self.signal is None:
+            self.signal = Signal.objects.get(
+                **{self.lookup_field: self.kwargs[self.lookup_url_kwarg]})
 
-    def create(self, request, *args, **kwargs):
-        self._set_signal()
-        return super().create(request, args, kwargs)
+        return self.signal
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['signal'] = self._get_signal()
+        context['is_public'] = self.is_public
+
+        return context
 
 
 class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.ListModelMixin):
@@ -121,8 +128,7 @@ class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.Lis
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
-        self._set_signal()
-        return Attachment.actions.get_attachments(self.signal)
+        return Attachment.actions.get_attachments(self._get_signal())
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

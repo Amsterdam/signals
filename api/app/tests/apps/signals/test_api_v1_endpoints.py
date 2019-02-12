@@ -794,9 +794,9 @@ class TestPrivateSignalAttachments(APITestCase):
 
 
 class TestPublicSignalViewSet(JsonAPITestCase):
-    post_endpoint = "/signals/v1/public/signals/"
-    get_endpoint = post_endpoint + "{uuid}"
-    attachment_endpoint = get_endpoint + "/attachments"
+    list_endpoint = "/signals/v1/public/signals/"
+    detail_endpoint = list_endpoint + "{uuid}"
+    attachment_endpoint = detail_endpoint + "/attachments"
 
     fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
 
@@ -820,7 +820,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
             return json.load(f)
 
     def test_create(self):
-        response = self.client.post(self.post_endpoint, self.create_initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEquals(201, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_post_signal.json"), response.json())
@@ -846,7 +846,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
             "text": "Invalid stuff happening here"
         }
 
-        response = self.client.post(self.post_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEquals(400, response.status_code)
         self.assertEquals(0, Signal.objects.count())
@@ -855,7 +855,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         signal = SignalFactory.create()
         uuid = signal.signal_id
 
-        response = self.client.get(self.get_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
 
         self.assertEquals(200, response.status_code)
         self.assertJsonSchema(self._load_schema("v1_public_get_signal.json"), response.json())

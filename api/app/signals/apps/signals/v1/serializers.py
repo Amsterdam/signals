@@ -388,8 +388,7 @@ class PrivateSignalSerializerList(HALSerializer):
         if validated_data.get('status') is not None:
             raise ValidationError("Status can not be set on initial creation")
 
-        # We ignore the status from the incoming Signal and replace it with the
-        # initial state in the workflow (GEMELD).
+        # Set default status
         logged_in_user = self.context['request'].user
         INITIAL_STATUS = {
             'state': workflow.GEMELD,  # see models.py is already default
@@ -462,8 +461,6 @@ class SignalAttachmentSerializer(HALSerializer):
     _display = DisplayField()
     location = serializers.FileField(source='file', required=False)
 
-    # serializer_url_field = PrivateSignalAttachmentLinksField
-
     class Meta:
         model = Attachment
         fields = (
@@ -486,7 +483,9 @@ class SignalAttachmentSerializer(HALSerializer):
         extra_kwargs = {'file': {'write_only': True}}
 
     def __init__(self, *args, **kwargs):
-        if kwargs['context']['view'].is_public:
+
+        # Set correct version of the links field (public/private)
+        if kwargs['context']['is_public']:
             self.serializer_url_field = PublicSignalAttachmentLinksField
         else:
             self.serializer_url_field = PrivateSignalAttachmentLinksField
@@ -494,7 +493,7 @@ class SignalAttachmentSerializer(HALSerializer):
         super().__init__(*args, **kwargs)
 
     def create(self, validated_data):
-        signal = self.context['view'].signal
+        signal = self.context['signal']
         attachment = Signal.actions.add_attachment(validated_data['file'], signal)
 
         if self.context['request'].user:
