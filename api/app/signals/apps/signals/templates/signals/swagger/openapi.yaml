@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Signalen Informatievoorziening Amsterdam (SIA) API spec V1"
-  description: One of the tasks of the municipality of Amsterdam is to maintain 
+  description: One of the tasks of the municipality of Amsterdam is to maintain
     public spaces like roads, parks. When citizens have complaints about public
     spaces they can leave these complaints with the municipality. SIA, the
     Signalen Informatievoorziening Amsterdam, receives these complaints and is
@@ -72,7 +72,7 @@ paths:
             type: string
       responses:
         '200':
-          description: List of signals            
+          description: List of signals
         '401':
           description: Unauthorized, may be caused by expired token.
       security:
@@ -174,7 +174,7 @@ paths:
             type: string
 
   # This seems not to work, while the generated URI is correct and data is
-  # returned from API. Checked via web inspector.  
+  # returned from API. Checked via web inspector.
   /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
       description: Information about a specific sub category.
@@ -275,7 +275,7 @@ components:
         geometrie:
           type: object
           properties:
-            type: 
+            type:
               type: string
               enum:
                 - "Point"
