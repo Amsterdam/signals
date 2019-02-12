@@ -286,6 +286,7 @@ class Location(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = JSONField(null=True)
+    bag_validated = models.BooleanField(default=False)
 
     @property
     def short_address_text(self):

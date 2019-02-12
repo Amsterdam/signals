@@ -1,0 +1,54 @@
+{
+    "_links": {
+        "self": {
+            "href": "https://api.data.amsterdam.nl/atlas/search/adres/?q=weesperstraat%20113&page=1"
+        },
+        "next": {
+            "href": null
+        },
+        "prev": {
+            "href": null
+        }
+    },
+    "count_hits": 1,
+    "count": 1,
+    "results": [
+        {
+            "_links": {
+                "self": {
+                    "href": "https://api.data.amsterdam.nl/bag/verblijfsobject/03630000864314/"
+                }
+            },
+            "type": "verblijfsobject",
+            "dataset": "nummeraanduiding",
+            "adres": "Weesperstraat 113",
+            "postcode": "1018VN",
+            "straatnaam": "Weesperstraat",
+            "huisnummer": 113,
+            "toevoeging": "113",
+            "bag_toevoeging": "",
+            "bag_huisletter": "",
+            "hoofdadres": true,
+            "woonplaats": "Amsterdam",
+            "status": [
+                {
+                    "code": "16",
+                    "omschrijving": "Naamgeving uitgegeven"
+                }
+            ],
+            "vbo_status": [
+                {
+                    "code": "21",
+                    "omschrijving": "Verblijfsobject in gebruik"
+                }
+            ],
+            "subtype": "verblijfsobject",
+            "centroid": [
+                4.907205867943042,
+                52.363066102529295
+            ],
+            "subtype_id": "03630000864314",
+            "_display": "Weesperstraat 113"
+        }
+    ]
+}

@@ -1,5 +1,6 @@
 import json
 import os
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -236,6 +237,23 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
         )
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_post_signal_with_bag_validated(self, validate_address_dict):
+        """ Tests that the bag_validated field cannot be set manually and that the address
+            validation is NOT called on the v0 endpoint """
+
+        postjson = self._get_fixture('post_signal')
+        postjson["location"]["bag_validated"] = True
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        validate_address_dict.assert_not_called()
+
+        id = response.data['id']
+        s = Signal.objects.get(id=id)
+        self.assertFalse(s.location.bag_validated)
 
     def test_post_signal_with_multipart_and_image(self):
         data = self._get_fixture('post_signal')
