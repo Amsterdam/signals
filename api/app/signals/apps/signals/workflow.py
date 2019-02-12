@@ -12,6 +12,7 @@ BEHANDELING = 'b'
 ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
+GESPLITST = 's'
 
 HEROPEND = 'reopened'
 
@@ -32,6 +33,7 @@ STATUS_CHOICES_API = (
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
     (HEROPEND, 'Heropend'),
+    (GESPLITST, 'Gesplitst'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -59,6 +61,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
+        GESPLITST,
     ],
     AFWACHTING: [
         AFWACHTING,
@@ -116,4 +119,6 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,
         TE_VERZENDEN,
     ],
+    # TODO: Check if correct?
+    GESPLITST: [],
 }

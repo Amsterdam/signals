@@ -1,4 +1,5 @@
 import copy
+import imghdr
 import uuid
 
 from django.conf import settings
@@ -8,12 +9,13 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
-from imagekit.models import ImageSpecField
+from imagekit import ImageSpec
+from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
-from signals.apps.signals.managers import SignalManager
+from signals.apps.signals.managers import AttachmentManager, SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 
@@ -76,26 +78,49 @@ class Signal(CreatedUpdatedModel):
 
     # Date we should have reported back to reporter.
     expire_date = models.DateTimeField(null=True)
-    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
-    image_crop = ImageSpecField(source='image',
-                                processors=[ResizeToFit(800, 800), ],
-                                format='JPEG',
-                                options={'quality': 80})
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
     upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
 
     extra_properties = JSONField(null=True)
 
+    # SIG-884
+    parent = models.ForeignKey(to='self', related_name='children', null=True, blank=True,
+                               on_delete=models.SET_NULL)
+
     objects = models.Manager()
     actions = SignalManager()
+
+    @property
+    def image(self):
+        """ Field for backwards compatibility. The attachment table replaces the old 'image'
+        property """
+        attachment = self._image_attachment()
+
+        return attachment.file if attachment else ""
+
+    @property
+    def image_crop(self):
+        attachment = self._image_attachment()
+
+        if attachment:
+            return attachment.image_crop
+
+        return ""
+
+    @property
+    def attachments(self):
+        return Attachment.actions.get_attachments(self)
+
+    def _image_attachment(self):
+        return Attachment.actions.get_images(self).first()
 
     class Meta:
         permissions = (
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
         )
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -149,6 +174,49 @@ class Signal(CreatedUpdatedModel):
                 domain=current_site.domain,
                 path=self.image_crop.url)
             return fqdn_url
+
+    def is_parent(self):
+        # If we have children we are a parent
+        return self.children.exists()
+
+    def is_child(self):
+        # If we have a parent we are a child
+        return self.parent is not None
+
+    @property
+    def siblings(self):
+        if self.is_child():
+            # If we are a child return all siblings
+            siblings_qs = self.parent.children.all()
+            if self.pk:
+                # Exclude myself if possible
+                return siblings_qs.exclude(pk=self.pk)
+            return siblings_qs
+
+        # Return a non queryset
+        return self.__class__.objects.none()
+
+    def _validate(self):
+        if self.is_parent() and self.is_child():
+            # We cannot be a parent and a child at once
+            raise ValidationError('Cannot be a parent and a child at the once')
+
+        if self.parent and self.parent.is_child():
+            # The parent of this Signal cannot be a child of another Signal
+            raise ValidationError('A child of a child is not allowed')
+
+        if (self.is_child() and
+                self.siblings.count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
+            # we are a child and our parent already has the max number of children
+            raise ValidationError('Maximum number of children reached for the parent Signal')
+
+        if self.children.exists() and self.status.state != workflow.GESPLITST:
+            # If we have children our status can only be "gesplitst"
+            raise ValidationError('The status of a parent Signal can only be "gesplitst"')
+
+    def save(self, *args, **kwargs):
+        self._validate()
+        super(Signal, self).save(*args, **kwargs)
 
 
 STADSDEEL_CENTRUM = 'A'
@@ -218,6 +286,7 @@ class Location(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = JSONField(null=True)
+    bag_validated = models.BooleanField(default=False)
 
     @property
     def short_address_text(self):
@@ -303,7 +372,7 @@ class Status(CreatedUpdatedModel):
         )
         verbose_name_plural = 'Statuses'
         get_latest_by = 'datetime'
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __str__(self):
         return str(self.text)
@@ -392,7 +461,7 @@ class MainCategory(models.Model):
     slug = models.SlugField(unique=True)
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('name',)
         verbose_name_plural = 'Main Categories'
 
     def __str__(self):
@@ -442,8 +511,8 @@ class SubCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ('name', )
-        unique_together = ('main_category', 'slug', )
+        ordering = ('name',)
+        unique_together = ('main_category', 'slug',)
         verbose_name_plural = 'Sub Categories'
 
     def __str__(self):
@@ -462,7 +531,7 @@ class Department(models.Model):
     is_intern = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ('name', )
+        ordering = ('name',)
 
     def __str__(self):
         """String representation."""
@@ -479,7 +548,7 @@ class Note(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)  # analoog Priority model
 
     class Meta:
-        ordering = ('-created_at', )
+        ordering = ('-created_at',)
 
 
 class History(models.Model):
@@ -519,3 +588,56 @@ class History(models.Model):
     class Meta:
         managed = False
         db_table = 'signals_history_view'
+
+
+class Attachment(CreatedUpdatedModel):
+    created_by = models.EmailField(null=True, blank=True)
+    _signal = models.ForeignKey(
+        "signals.Signal",
+        null=False, on_delete=models.CASCADE
+    )
+    file = models.FileField(
+        upload_to='attachments/%Y/%m/%d/',
+        null=False,
+        blank=False,
+        max_length=255
+    )
+    mimetype = models.CharField(max_length=30, blank=False, null=False)
+    is_image = models.BooleanField(default=False)
+
+    objects = models.Manager()
+    actions = AttachmentManager()
+
+    class NotAnImageException(Exception):
+        pass
+
+    class CroppedImage(ImageSpec):
+        processors = [ResizeToFit(800, 800), ]
+        format = 'JPEG'
+        options = {'quality': 80}
+
+    @property
+    def image_crop(self):
+        return self._crop_image()
+
+    def _crop_image(self):
+        if not self.is_image:
+            raise Attachment.NotAnImageException("Attachment is not an image. Use is_image to check"
+                                                 " if attachment is an image before asking for the "
+                                                 "cropped version.")
+
+        generator = Attachment.CroppedImage(source=self.file)
+        cache_file = ImageCacheFile(generator)
+        cache_file.generate()
+
+        return cache_file
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            # Check if file is image
+            self.is_image = imghdr.what(self.file) is not None
+
+            if not self.mimetype and hasattr(self.file.file, 'content_type'):
+                self.mimetype = self.file.file.content_type
+
+        super().save(*args, **kwargs)

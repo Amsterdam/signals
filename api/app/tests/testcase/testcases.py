@@ -35,7 +35,7 @@ class JsonAPITestCase(APITestCase):
                 schema["properties"][key] = self._make_all_properties_required(
                     schema["properties"][key])
 
-            if "required" not in schema.keys():
+            if "required" not in schema.keys() and len(keys) > 0:
                 schema["required"] = list(keys)
 
         return schema

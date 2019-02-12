@@ -1,3 +1,5 @@
+import copy
+
 from django.contrib.gis.db import models
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
@@ -5,6 +7,7 @@ from django.dispatch import Signal as DjangoSignal
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
+add_attachment = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category_assignment = DjangoSignal(providing_args=['signal_obj',
@@ -15,16 +18,25 @@ update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_p
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 
+class AttachmentManager(models.Manager):
+
+    def get_attachments(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal).order_by('created_at')
+
+    def get_images(self, signal):
+        from signals.apps.signals.models import Attachment
+
+        return Attachment.objects.filter(_signal=signal, is_image=True).order_by('created_at')
+
+
 class SignalManager(models.Manager):
 
-    def create_initial(self,
-                       signal_data,
-                       location_data,
-                       status_data,
-                       category_assignment_data,
-                       reporter_data,
-                       priority_data=None):
+    def _create_initial_no_transaction(self, signal_data, location_data, status_data,
+                                       category_assignment_data, reporter_data, priority_data=None):
         """Create a new `Signal` object with all related objects.
+            If a transaction is needed use create_initial
 
         :param signal_data: deserialized data dict
         :param location_data: deserialized data dict
@@ -36,41 +48,137 @@ class SignalManager(models.Manager):
         """
         from .models import Location, Status, CategoryAssignment, Reporter, Priority
 
+        signal = self.create(**signal_data)
+
+        # Set default (empty dict) value for `priority_data` if None is given.
+        priority_data = priority_data or {}
+
+        # Create dependent model instances with correct foreign keys to Signal
+        location = Location.objects.create(**location_data, _signal_id=signal.pk)
+        status = Status.objects.create(**status_data, _signal_id=signal.pk)
+        category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
+                                                                _signal_id=signal.pk)
+        reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
+        priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
+
+        # Set Signal to dependent model instance foreign keys
+        signal.location = location
+        signal.status = status
+        signal.category_assignment = category_assignment
+        signal.reporter = reporter
+        signal.priority = priority
+        signal.save()
+
+        return signal
+
+    def create_initial(self, signal_data, location_data, status_data, category_assignment_data,
+                       reporter_data, priority_data=None):
+        """Create a new `Signal` object with all related objects.
+
+        :param signal_data: deserialized data dict
+        :param location_data: deserialized data dict
+        :param status_data: deserialized data dict
+        :param category_assignment_data: deserialized data dict
+        :param reporter_data: deserialized data dict
+        :param priority_data: deserialized data dict (Default: None)
+        :returns: Signal object
+        """
         with transaction.atomic():
-            signal = self.create(**signal_data)
-
-            # Set default (empty dict) value for `priority_data` if None is given.
-            priority_data = priority_data or {}
-
-            # Create dependent model instances with correct foreign keys to Signal
-            location = Location.objects.create(**location_data, _signal_id=signal.pk)
-            status = Status.objects.create(**status_data, _signal_id=signal.pk)
-            category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
-                                                                    _signal_id=signal.pk)
-            reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
-            priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
-
-            # Set Signal to dependent model instance foreign keys
-            signal.location = location
-            signal.status = status
-            signal.category_assignment = category_assignment
-            signal.reporter = reporter
-            signal.priority = priority
-            signal.save()
+            signal = self._create_initial_no_transaction(
+                signal_data=signal_data,
+                location_data=location_data,
+                status_data=status_data,
+                category_assignment_data=category_assignment_data,
+                reporter_data=reporter_data,
+                priority_data=priority_data
+            )
 
             transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
                                                               signal_obj=signal))
 
         return signal
 
-    def add_image(self, image, signal):
+    def split(self, split_data, signal):
+        """ Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
+            new signals
+
+        :param split_data: deserialized data dict containing data for new signals
+        :param signal: Signal object, the original Signal
+        :return: Signal object, the original Signal
+        """
+        from .models import Status
+        from signals.apps.signals import workflow
+
         with transaction.atomic():
-            signal.image = image
-            signal.save()
+            # The initial status for all new splitted signals
+            initial_status = {'state': workflow.GEMELD, 'text': None, 'user': signal.status.user, }
 
-            add_image.send(sender=self.__class__, signal_obj=signal)
+            for validated_data in split_data:
+                split_signal = copy.deepcopy(signal)
 
-        return image
+                create_objs = {'location': None,  # We are copying this from the parent
+                               'reporter': None,  # We are copying this from the parent
+                               'priority': None,  # We are copying this from the parent
+                               'category_assignment': None}  # We are copying this from the parent
+                for attr in create_objs.keys():
+                    if hasattr(split_signal, attr):
+                        create_objs[attr] = getattr(split_signal, attr)
+                        setattr(create_objs[attr], 'pk', None)
+                        setattr(create_objs[attr], '_signal', None)
+                        setattr(split_signal, attr, None)
+
+                # Save the cloned signal to the database
+                split_signal.status = None
+                split_signal.pk = None
+                split_signal.save()
+
+                # Also add a the status GEMELD
+                create_objs.update({'status': Status(**initial_status)})
+
+                for key, obj in create_objs.items():
+                    obj._signal_id = split_signal.pk
+                    obj.save()
+
+                # Set data from the serializer
+                split_signal.text = validated_data['text']
+
+                # Link to parent signal
+                split_signal.parent_id = signal.pk
+
+                # Store the signal with all the cloned data to the database
+                split_signal.save()
+
+            # Let's update the parent signal status to GESPLITST
+            status, prev_status = self._update_status_no_transaction(
+                {'state': workflow.GESPLITST, 'text': 'Signal opgesplitst.', },
+                signal=signal
+            )
+
+            transaction.on_commit(lambda: update_status.send(sender=self.__class__,
+                                                             signal_obj=signal,
+                                                             status=status,
+                                                             prev_status=prev_status))
+
+        return signal
+
+    def add_image(self, image, signal):
+        return self.add_attachment(image, signal)
+
+    def add_attachment(self, file, signal):
+        from .models import Attachment
+
+        with transaction.atomic():
+            attachment = Attachment()
+            attachment._signal = signal
+            attachment.file = file
+            attachment.save()
+
+            if attachment.is_image:
+                add_image.send(sender=self.__class__, signal_obj=signal)
+
+            add_attachment.send(sender=self.__class__, signal_obj=signal)
+
+        return attachment
 
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.
@@ -95,8 +203,9 @@ class SignalManager(models.Manager):
 
         return location
 
-    def update_status(self, data, signal):
-        """Update (create new) `Status` object for given `Signal` object.
+    def _update_status_no_transaction(self, data, signal):
+        """ Update (create new) `Status` object for given `Signal` object.
+            If a transaction is needed use update status
 
         :param data: deserialized data dict
         :param signal: Signal object
@@ -104,20 +213,29 @@ class SignalManager(models.Manager):
         """
         from .models import Status
 
+        status = Status(_signal=signal, **data)
+        status.full_clean()
+        status.save()
+
+        prev_status = signal.status
+        signal.status = status
+        signal.save()
+
+        return status, prev_status
+
+    def update_status(self, data, signal):
+        """ Add a transaction to the _update_status_no_transaction
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Status object
+        """
         with transaction.atomic():
-            status = Status(_signal=signal, **data)
-            status.full_clean()
-            status.save()
-
-            prev_status = signal.status
-            signal.status = status
-            signal.save()
-
+            status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
                                                              signal_obj=signal,
                                                              status=status,
                                                              prev_status=prev_status))
-
         return status
 
     def update_category_assignment(self, data, signal):

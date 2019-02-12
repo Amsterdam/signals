@@ -1,5 +1,7 @@
+import copy
 import json
 import os
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,8 +11,17 @@ from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.address.validation import (
+    AddressValidationUnavailableException,
+    NoResultsException
+)
+from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
 from signals.utils.version import get_version
+from tests.apps.signals.attachment_helpers import (
+    add_image_attachments,
+    add_non_image_attachments,
+    small_gif
+)
 from tests.apps.signals.factories import (
     MainCategoryFactory,
     NoteFactory,
@@ -20,6 +31,7 @@ from tests.apps.signals.factories import (
     SubCategoryFactory
 )
 from tests.apps.users.factories import SuperUserFactory, UserFactory
+from tests.testcase.testcases import JsonAPITestCase
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -238,38 +250,13 @@ class TestHistoryAction(APITestCase):
         self.assertEqual(new_entry['description'], status.text)
 
 
-class TestImageUpload(APITestCase):
-    def setUp(self):
-        self.signal = SignalFactory.create()
-        self.superuser = SuperUserFactory(username='superuser@example.com')
-
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
-
-    def test_authenticated_upload(self):
-        # images are attached to pre-existing Signals
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/image'
-        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
-
-        self.client.force_authenticate(user=self.superuser)
-        response = self.client.post(
-            endpoint,
-            data={'image': image},
-            # format='multipart'
-        )
-
-        self.assertEqual(response.status_code, 202)
-
-
 class TestPrivateSignalViewSet(APITestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
 
     Note: we check both the list endpoint and associated detail endpoint.
     """
+
     def setUp(self):
         # initialize database with 2 Signals
         self.signal_no_image = SignalFactoryValidLocation.create()
@@ -278,11 +265,6 @@ class TestPrivateSignalViewSet(APITestCase):
         self.superuser = SuperUserFactory.create(
             email='superuser@example.com',
             username='superuser@example.com',
-        )
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
         )
 
         # No URL reversing here, these endpoints are part of the spec (and thus
@@ -380,7 +362,9 @@ class TestPrivateSignalViewSet(APITestCase):
 
     # -- write tests --
 
-    def test_create_initial(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial(self, validate_address_dict):
         # Authenticate, load fixture and add relevant main and sub category.
         self.client.force_authenticate(user=self.superuser)
 
@@ -399,7 +383,113 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(response_json['location']['created_by'], self.superuser.email)
         self.assertEqual(response_json['category']['created_by'], self.superuser.email)
 
-    def test_create_initial_and_upload_image(self):
+    def test_create_with_status(self):
+        """ Tests that an error is returned when we try to set the status """
+        self.client.force_authenticate(user=self.superuser)
+
+        initial_data = self.create_initial_data.copy()
+        initial_data["status"] = {
+            "state": workflow.BEHANDELING,
+            "text": "Invalid stuff happening here"
+        }
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEquals(400, response.status_code)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=NoResultsException)
+    def test_create_initial_invalid_location(self, validate_address_dict):
+        """ Tests that a 400 is returned when an invalid location is provided """
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_create_initial_valid_location(self, validate_address_dict):
+        """ Tests that bag_validated is set to True when a valid location is provided and that
+        the address is replaced with the suggested address. The original address should be saved
+        in the extra_properties of the Location object """
+
+        original_address = self.create_initial_data["location"]["address"]
+        suggested_address = self.create_initial_data["location"]["address"]
+        suggested_address["openbare_ruimte"] = "Amsteltje"
+        validate_address_dict.return_value = suggested_address
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertTrue(signal.location.bag_validated)
+        self.assertEquals(original_address, signal.location.extra_properties["original_address"],
+                          "Original address should appear in extra_properties.original_address")
+        self.assertEquals(suggested_address, signal.location.address,
+                          "Suggested address should appear instead of the received address")
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_create_initial_valid_location_but_no_address(self, validate_address_dict):
+        """Tests that a Signal can be created when loccation has no known address but
+        coordinates are known."""
+        del self.create_initial_data["location"]["address"]
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        validate_address_dict.assert_not_called()
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertEqual(signal.location.bag_validated, False)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_address_validation_unavailable(self, validate_address_dict):
+        """ Tests that the signal is created even though the address validation service is
+        unavailable. Should set bag_validated to False """
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        # Signal should be added, but bag_validated should be False
+        self.assertFalse(signal.location.bag_validated)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_try_update_bag_validated(self, validate_address_dict):
+        """ Tests that the bag_validated field cannot be set manually, and that the address
+        validation is called """
+
+        self.client.force_authenticate(user=self.superuser)
+
+        data = self.create_initial_data
+        data['location']['bag_validated'] = True
+        response = self.client.post(self.list_endpoint, data, format='json')
+
+        validate_address_dict.assert_called_once()
+
+        self.assertEqual(response.status_code, 201)
+
+        signal_id = response.data['id']
+        signal = Signal.objects.get(id=signal_id)
+
+        self.assertFalse(signal.location.bag_validated)
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_and_upload_image(self, validate_address_dict):
         # Authenticate, load fixture.
         self.client.force_authenticate(user=self.superuser)
 
@@ -412,17 +502,19 @@ class TestPrivateSignalViewSet(APITestCase):
         # Store URL of the newly created Signal, then upload image to it.
         new_url = response.json()['_links']['self']['href']
 
-        new_image_url = f'{new_url}/image'
-        image = SimpleUploadedFile('image.gif', self.small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'image': image})
+        new_image_url = f'{new_url}/attachments'
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        response = self.client.post(new_image_url, data={'file': image})
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 201)
 
-        # Check that a second upload is rejected
-        response = self.client.post(new_image_url, data={'image': image})
-        self.assertEqual(response.status_code, 403)
+        # Check that a second upload is NOT rejected
+        image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        response = self.client.post(new_image_url, data={'file': image2})
+        self.assertEqual(response.status_code, 201)
 
-    def test_update_location(self):
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_update_location(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
 
@@ -439,8 +531,10 @@ class TestPrivateSignalViewSet(APITestCase):
         fixture_file = os.path.join(THIS_DIR, 'update_location.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
+        validated_address = copy.deepcopy(data['location']['address'])
+        validate_address_dict.return_value = validated_address
 
-        # update location, check that the correct user performed the action.
+        # update location
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
@@ -449,10 +543,76 @@ class TestPrivateSignalViewSet(APITestCase):
         self.assertEqual(len(response.json()), 2)
 
         self.signal_no_image.refresh_from_db()
+        # Check that the correct user performed the action.
         self.assertEqual(
             self.signal_no_image.location.created_by,
             self.superuser.email,
         )
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_update_location_no_address(self, validate_address_dict):
+        # Partial update to update the location, all interaction via API.
+        # SIA must also allow location updates without known address but with
+        # known coordinates.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        del data['location']['address']
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+        validate_address_dict.assert_not_called()
+
+        # check that there are two Locations is in the history
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        self.signal_no_image.refresh_from_db()
+        # Check that the correct user performed the action.
+        self.assertEqual(
+            self.signal_no_image.location.created_by,
+            self.superuser.email,
+        )
+
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_update_location_no_coordinates(self, validate_address_dict):
+        # Partial update to update the location, all interaction via API.
+        # SIA must also allow location updates without known address but with
+        # known coordinates.
+        self.client.force_authenticate(user=self.superuser)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+        history_endpoint = self.history_endpoint.format(pk=pk)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        del data['location']['geometrie']
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 400)
+        validate_address_dict.assert_not_called()
 
     def test_update_status(self):
         # Partial update to update the status, all interaction via API.
@@ -598,6 +758,307 @@ class TestPrivateSignalViewSet(APITestCase):
         response = self.client.put(detail_endpoint, {}, format='json')
         self.assertEqual(response.status_code, 405)
 
-# TODO:
-# * Add test to check that an uploaded signal can only be created in gemeld state via public
-#   unauthenticated endpoint.
+    def test_split(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'}
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+
+        for item in data:
+            self.assertEqual(Signal.objects.count(), 4)
+
+            response = self.client.get(self.detail_endpoint.format(pk=item['id']))
+            self.assertEqual(response.status_code, 200)
+
+            # TODO: add more detailed tests using a JSONSchema
+            # TODO: consider naming of 'note' object (is list, so 'notes')?
+            response_json = response.json()
+            for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
+                self.assertIn(key, response_json)
+
+    def test_split_empty_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(split_endpoint, None, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+    def test_split_less_than_min_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+    def test_split_more_than_max_data(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+        pk = self.signal_no_image.id
+        split_endpoint = '{}/split'.format(self.detail_endpoint.format(pk=pk))
+
+        response = self.client.post(
+            split_endpoint,
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'},
+                {'text': 'Child #3'},
+                {'text': 'Child #4'},
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()[0],
+            'A signal can only be split into min 2 and max 3 signals'
+        )
+
+        self.assertEqual(Signal.objects.count(), 2)
+
+
+class TestPrivateSignalAttachments(APITestCase):
+    list_endpoint = '/signals/v1/private/signals/'
+    detail_endpoint = list_endpoint + '{}/'
+    attachment_endpoint = detail_endpoint + 'attachments'
+    test_host = 'http://testserver'
+
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.superuser = SuperUserFactory(email='superuser@example.com')
+        self.client.force_authenticate(user=self.superuser)
+
+        fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+
+        with open(fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+
+        self.subcategory = SubCategoryFactory.create()
+
+        link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.subcategory.main_category.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+
+    def test_image_upload(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+
+        response = self.client.post(endpoint, data={'file': image})
+
+        self.assertEqual(response.status_code, 201)
+        self.assertIsInstance(self.signal.attachments.first(), Attachment)
+        self.assertIsInstance(self.signal._image_attachment(), Attachment)
+
+    def test_attachment_upload(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+
+        with open(doc_upload, encoding='latin-1') as f:
+            data = {"file": f}
+
+            response = self.client.post(endpoint, data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertIsInstance(self.signal.attachments.first(), Attachment)
+        self.assertIsNone(self.signal._image_attachment())
+        self.assertEquals('superuser@example.com', self.signal.attachments.first().created_by)
+
+    def test_create_contains_image_and_attachments(self):
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue('image' in response.json())
+        self.assertTrue('attachments' in response.json())
+        self.assertIsInstance(response.json()['attachments'], list)
+
+    def test_get_detail_contains_image_and_attachments(self):
+        non_image_attachments = add_non_image_attachments(self.signal, 1)
+        image_attachments = add_image_attachments(self.signal, 2)
+        non_image_attachments += add_non_image_attachments(self.signal, 1)
+
+        response = self.client.get(self.list_endpoint, self.create_initial_data)
+        self.assertEquals(200, response.status_code)
+
+        json_item = response.json()['results'][0]
+        self.assertTrue('image' in json_item)
+        self.assertTrue('attachments' in json_item)
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEquals(4, len(json_item['attachments']))
+        self.assertEquals(self.test_host + image_attachments[0].file.url,
+                          json_item['attachments'][1]['file'])
+        self.assertTrue(json_item['attachments'][2]['is_image'])
+        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
+                          json_item['attachments'][3]['file'])
+        self.assertFalse(json_item['attachments'][3]['is_image'])
+
+    def test_get_list_contains_image_and_attachments(self):
+        non_image_attachments = add_non_image_attachments(self.signal, 1)
+        image_attachments = add_image_attachments(self.signal, 2)
+        non_image_attachments += add_non_image_attachments(self.signal, 1)
+
+        response = self.client.get(self.list_endpoint, self.create_initial_data)
+        self.assertEquals(200, response.status_code)
+
+        json_item = response.json()['results'][0]
+        self.assertTrue('image' in json_item)
+        self.assertTrue('attachments' in json_item)
+        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEquals(4, len(json_item['attachments']))
+        self.assertEquals(self.test_host + image_attachments[0].file.url,
+                          json_item['attachments'][1]['file'])
+        self.assertTrue(json_item['attachments'][2]['is_image'])
+        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
+                          json_item['attachments'][3]['file'])
+        self.assertFalse(json_item['attachments'][3]['is_image'])
+
+
+class TestPublicSignalViewSet(JsonAPITestCase):
+    list_endpoint = "/signals/v1/public/signals/"
+    detail_endpoint = list_endpoint + "{uuid}"
+    attachment_endpoint = detail_endpoint + "/attachments"
+
+    fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+
+    def setUp(self):
+        with open(self.fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+
+        self.subcategory = SubCategoryFactory.create()
+
+        link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.subcategory.main_category.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+
+    def _load_schema(self, filename: str):
+        with open(os.path.join(THIS_DIR, 'json_schema', filename)) as f:
+            return json.load(f)
+
+    def test_create(self):
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
+        self.assertEquals(201, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal.json"), response.json())
+        self.assertEquals(1, Signal.objects.count())
+        self.assertTrue('image' in response.json())
+        self.assertTrue('attachments' in response.json())
+        self.assertIsInstance(response.json()['attachments'], list)
+
+        signal = Signal.objects.last()
+        self.assertEquals(workflow.GEMELD, signal.status.state)
+        self.assertEquals(self.subcategory, signal.category_assignment.sub_category)
+        self.assertEquals("melder@example.com", signal.reporter.email)
+        self.assertEquals("Amstel 1 1011PN Amsterdam", signal.location.address_text)
+        self.assertEquals("Luidruchtige vergadering", signal.text)
+        self.assertEquals("extra: heel luidruchtig debat", signal.text_extra)
+
+    def test_create_with_status(self):
+        """ Tests that an error is returned when we try to set the status """
+
+        initial_data = self.create_initial_data.copy()
+        initial_data["status"] = {
+            "state": workflow.BEHANDELING,
+            "text": "Invalid stuff happening here"
+        }
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEquals(400, response.status_code)
+        self.assertEquals(0, Signal.objects.count())
+
+    def test_get_by_uuid(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+
+        self.assertEquals(200, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_get_signal.json"), response.json())
+
+    def test_add_attachment_imagetype(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+
+        response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
+
+        self.assertEquals(201, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
+                              response.json())
+
+        attachment = Attachment.objects.last()
+        self.assertEquals("image/gif", attachment.mimetype)
+        self.assertIsInstance(attachment.image_crop.url, str)
+        self.assertIsNone(attachment.created_by)
+
+    def test_add_attachment_nonimagetype(self):
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+        with open(doc_upload, encoding='latin-1') as f:
+            data = {"file": f}
+
+            response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
+
+        self.assertEquals(201, response.status_code)
+        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
+                              response.json())
+
+        attachment = Attachment.objects.last()
+        self.assertEquals("application/msword", attachment.mimetype)

@@ -1,5 +1,6 @@
 import json
 import os
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -22,6 +23,11 @@ from signals.apps.signals.models import (
 )
 from signals.utils.version import get_version
 from tests.apps.signals import factories
+from tests.apps.signals.attachment_helpers import (
+    add_image_attachments,
+    add_non_image_attachments,
+    small_gif
+)
 from tests.apps.signals.factories import SubCategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
@@ -123,7 +129,7 @@ class TestAuthAPIEndpoints(APITestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestAPIEnpointsBase(APITestCase):
+class TestAPIEndpointsBase(APITestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -148,14 +154,8 @@ class TestAPIEnpointsBase(APITestCase):
         self.category_assignment = self.signal.category_assignment
         self.reporter = self.signal.reporter
 
-        self.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04'
-            b'\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02'
-            b'\x02\x4c\x01\x00\x3b'
-        )
 
-
-class TestPublicSignalEndpoint(TestAPIEnpointsBase):
+class TestPublicSignalEndpoint(TestAPIEndpointsBase):
     """Test for public endpoint `/signals/signal/`."""
 
     endpoint = '/signals/signal/'
@@ -199,6 +199,10 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         postjson = self._get_fixture('post_signal')
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
+
+        self.assertTrue('image' in response.json())
+        self.assertFalse('attachments' in response.json(), 'Attachments is a v1-only field')
+
         self.assertEqual(Signal.objects.count(), 2)
         id = response.data['id']
         s = Signal.objects.get(id=id)
@@ -234,12 +238,29 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
             "Reporter is missing _signal field?"
         )
 
+    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    def test_post_signal_with_bag_validated(self, validate_address_dict):
+        """ Tests that the bag_validated field cannot be set manually and that the address
+            validation is NOT called on the v0 endpoint """
+
+        postjson = self._get_fixture('post_signal')
+        postjson["location"]["bag_validated"] = True
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        validate_address_dict.assert_not_called()
+
+        id = response.data['id']
+        s = Signal.objects.get(id=id)
+        self.assertFalse(s.location.bag_validated)
+
     def test_post_signal_with_multipart_and_image(self):
         data = self._get_fixture('post_signal')
 
         # Adding a testing image to the posting data.
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         data['image'] = image
 
         # Changing data dict structure (loaded from json file) to work with
@@ -272,11 +293,12 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
 
         signal = Signal.objects.get(id=response.json()['id'])
         self.assertTrue(signal.image)
+        self.assertEquals("http://testserver" + signal.image_crop.url, response.json()['image'])
 
     def test_post_signal_image(self):
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
@@ -284,17 +306,42 @@ class TestPublicSignalEndpoint(TestAPIEnpointsBase):
         self.signal.refresh_from_db()
         self.assertTrue(self.signal.image)
 
-    def test_post_signal_image_already_exists(self):
-        self.signal.image = 'already_exists'
-        self.signal.save()
+    def test_post_signal_image_other_attachments_exists(self):
+        """ It should be possible to add an image when no image is added to the signal, even if
+        other types of attachments are added. """
+        add_non_image_attachments(self.signal)
 
         url = f'{self.endpoint}image/'
         image = SimpleUploadedFile(
-            'image.gif', self.small_gif, content_type='image/gif')
+            'image.gif', small_gif, content_type='image/gif')
         response = self.client.post(
             url, {'signal_id': self.signal.signal_id, 'image': image})
 
+        self.assertEqual(response.status_code, 202)
+        self.signal.refresh_from_db()
+        self.assertTrue(self.signal.image)
+
+    def test_post_signal_image_image_attachment_exists(self):
+        """ It should not be possible to add an image through the v0 api when one of the already
+        present attachments is an image """
+
+        # Add some non-image attachments
+        add_non_image_attachments(self.signal)
+
+        # Add image attachment
+        add_image_attachments(self.signal, 1)
+
+        image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+
+        # Then assert that adding another image through the v0 API fails
+        url = f'{self.endpoint}image/'
+        response = self.client.post(
+            url, {'signal_id': self.signal.signal_id, 'image': image2})
+
+        # 403 is not the best response code, but consistent with existing v0 endpoint
         self.assertEqual(response.status_code, 403)
+        self.signal.refresh_from_db()
+        self.assertTrue(self.signal.image)
 
 
 class TestAuthSignalEndpoint(APITestCase):
@@ -358,8 +405,28 @@ class TestAuthSignalEndpoint(APITestCase):
         data = response.json()
         self.assertEqual(data['results'][0]['signal_id'], str(self.centrum.signal_id))
 
+    def test_return_first_image_attachment(self):
+        """ If multiple attachments are present, the v0 API should return only the first ever
+        uploaded image through the 'image' field and ignore the rest. """
 
-class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
+        # Create some random attachments, keep the first
+        add_non_image_attachments(self.last)
+        image_attachment, _ = add_image_attachments(self.last, 2)
+        add_non_image_attachments(self.last)
+        add_image_attachments(self.last, 3)
+
+        url = "/signals/auth/signal/{}/".format(self.last.id)
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        json_resp = response.json()
+
+        self.assertEquals("http://testserver" + image_attachment.image_crop.url,
+                          json_resp["image"])
+        self.assertFalse('attachments' in json_resp, "Attachments is a v1-only field")
+
+
+class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
 
     def setUp(self):
         super().setUp()
@@ -595,8 +662,9 @@ class TestAuthAPIEndpointsPOST(TestAPIEnpointsBase):
         self.assertEqual(note.created_by, self.user.username)
 
 
-class TestUserLogging(TestAPIEnpointsBase):
+class TestUserLogging(TestAPIEndpointsBase):
     """Check that the API returns who did what and when."""
+
     def setUp(self):
         super().setUp()
 
