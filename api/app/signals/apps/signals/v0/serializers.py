@@ -91,9 +91,11 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'address_text',
             'geometrie',
             'extra_properties',
+            'bag_validated',
         )
         read_only_fields = (
             'id',
+            'bag_validated',
         )
         extra_kwargs = {
             'id': {'label': 'ID', },
@@ -358,6 +360,7 @@ class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSeri
             'created_by',
             'extra_properties',
             'created_at',
+            'bag_validated',
         )
 
     def create(self, validated_data):

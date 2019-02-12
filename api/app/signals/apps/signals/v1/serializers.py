@@ -3,10 +3,15 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from signals import settings
 from signals.apps.signals import workflow
+from signals.apps.signals.address.validation import (
+    AddressValidation,
+    AddressValidationUnavailableException,
+    NoResultsException
+)
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     CategoryAssignment,
@@ -90,7 +95,6 @@ class HistoryHalSerializer(HALSerializer):
 
 
 class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Location
         geo_field = 'geometrie'
@@ -103,9 +107,11 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
             'geometrie',
             'extra_properties',
             'created_by',
+            'bag_validated',
         )
         read_only_fields = (
             'id',
+            'bag_validated',
         )
         extra_kwargs = {
             'id': {'label': 'ID', },
@@ -171,7 +177,6 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Reporter
         fields = (
@@ -191,7 +196,6 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedNoteModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Note
         fields = (
@@ -201,7 +205,36 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
         )
 
 
-class PrivateSignalSerializerDetail(HALSerializer):
+class AddressValidationMixin():
+    def validate_location(self, location_data):
+        """Validate location data used in creation and update of Signal instances"""
+        # Validate address, but only if it is present in input. SIA must also
+        # accept location data without address but with coordinates.
+        if 'geometrie' not in location_data:
+            raise ValidationError('Coordinate data must be present')
+        if 'address' in location_data and location_data['address']:
+            try:
+                address_validation = AddressValidation()
+                validated_address = address_validation.validate_address_dict(
+                    location_data["address"])
+
+                # Set suggested address from AddressValidation as address and save original address
+                # in extra_properties, to correct possible spelling mistakes in original address.
+                location_data["extra_properties"]["original_address"] = location_data["address"]
+                location_data["address"] = validated_address
+                location_data["bag_validated"] = True
+
+            except AddressValidationUnavailableException:
+                # Ignore it when the address validation is unavailable. Just save the unvalidated
+                # location.
+                pass
+            except NoResultsException:
+                raise ValidationError({"location": "Niet-bestaand adres."})
+
+        return location_data
+
+
+class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
     image = serializers.ImageField(read_only=True)
@@ -307,7 +340,7 @@ class PrivateSignalSerializerDetail(HALSerializer):
         return instance
 
 
-class PrivateSignalSerializerList(HALSerializer):
+class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
 
