@@ -244,7 +244,7 @@ components:
           nullable: true
         extra_properties:
           type: object
-          additionalProperties: yes
+          additionalProperties: true
       required:
         - text
         - location
