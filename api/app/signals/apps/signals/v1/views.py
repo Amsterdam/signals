@@ -4,19 +4,18 @@ Views that are used exclusively by the V1 API
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_202_ACCEPTED
+from rest_framework.status import HTTP_201_CREATED
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
-from signals.apps.signals.models import History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
@@ -24,6 +23,9 @@ from signals.apps.signals.v1.serializers import (
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    PublicSignalCreateSerializer,
+    PublicSignalSerializerDetail,
+    SignalAttachmentSerializer,
     SplitPrivateSignalSerializerDetail,
     SubCategoryHALSerializer
 )
@@ -51,7 +53,9 @@ class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         return obj
 
 
-class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.UpdateModelMixin):
+class PrivateSignalViewSet(DatapuntViewSet,
+                           mixins.CreateModelMixin,
+                           mixins.UpdateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.all()
     serializer_class = PrivateSignalSerializerList
@@ -75,30 +79,6 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
         serializer = HistoryHalSerializer(history_entries, many=True)
         return Response(serializer.data)
 
-    # https://stackoverflow.com/questions/45564130/django-rest-framework-image-upload
-    # note starting DRF 3.8, @detail_route and @list_route are replaced with action
-
-    @action(detail=True, methods=['POST'])
-    def image(self, request, pk=None):
-        signal = Signal.objects.get(pk=pk)
-
-        if signal.image:
-            raise PermissionDenied("Melding is reeds van foto voorzien.")
-
-        # Check upload is present and not too big image wise:
-        image = request.data.get('image', None)
-        if image:
-            if image.size > 8388608:  # 8MB = 8*1024*1024
-                raise ValidationError("Foto mag maximaal 8Mb groot zijn.")
-        else:
-            raise ValidationError("Foto is een verplicht veld.")
-
-        signal.image = image
-        signal.save()
-
-        # TODO: Check what to do about the headers (see V0 API)
-        return Response({}, status=HTTP_202_ACCEPTED)
-
     @action(detail=True, methods=['POST'],
             serializer_detail_class=SplitPrivateSignalSerializerDetail)
     def split(self, request, pk=None, *args, **kwargs):
@@ -107,6 +87,48 @@ class PrivateSignalViewSet(DatapuntViewSet, mixins.CreateModelMixin, mixins.Upda
             serializer.save()
 
         return Response(serializer.data, status=HTTP_201_CREATED)
+
+
+class PublicSignalViewSet(mixins.CreateModelMixin,
+                          DetailSerializerMixin,
+                          mixins.RetrieveModelMixin,
+                          viewsets.GenericViewSet):
+    queryset = Signal.objects.all()
+    serializer_class = PublicSignalCreateSerializer
+    serializer_detail_class = PublicSignalSerializerDetail
+    lookup_field = 'signal_id'
+
+
+class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = SignalAttachmentSerializer
+    signal = None
+    is_public = True
+    lookup_field = 'signal_id'
+    lookup_url_kwarg = 'signal_id'
+
+    def _get_signal(self):
+        if self.signal is None:
+            self.signal = Signal.objects.get(
+                **{self.lookup_field: self.kwargs[self.lookup_url_kwarg]})
+
+        return self.signal
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['signal'] = self._get_signal()
+        context['is_public'] = self.is_public
+
+        return context
+
+
+class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.ListModelMixin):
+    is_public = False
+    pagination_class = None
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return Attachment.actions.get_attachments(self._get_signal())
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

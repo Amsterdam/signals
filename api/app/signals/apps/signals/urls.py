@@ -24,6 +24,21 @@ signal_router_v1.register(r'public/terms/categories',
 signal_router_v1.register(r'private/signals',
                           v1_views.PrivateSignalViewSet,
                           base_name='private-signals')
+signal_router_v1.register(r'public/signals',
+                          v1_views.PublicSignalViewSet,
+                          base_name='public-signals')
+
+signal_router_v1.urls.append(
+    path('private/signals/<int:pk>/attachments',
+         v1_views.PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='private-signals-attachments')
+)
+
+signal_router_v1.urls.append(
+    path('public/signals/<str:signal_id>/attachments',
+         v1_views.PublicSignalAttachmentsViewSet.as_view({'post': 'create'}),
+         name='public-signals-attachments')
+)
 
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(
