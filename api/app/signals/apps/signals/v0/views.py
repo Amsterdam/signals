@@ -26,6 +26,7 @@ from signals.apps.signals.api_generics.permissions import (
     LocationPermission,
     NotePermission,
     PriorityPermission,
+    SIABackofficePermission,
     StatusPermission
 )
 from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
@@ -118,6 +119,7 @@ class SignalAuthViewSet(DatapuntViewSet):
     serializer_class = SignalAuthHALSerializer
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filter_class = SignalFilter
+    permission_classes = (SIABackofficePermission,)
     ordering_fields = (
         'id',
         'created_at',
@@ -156,7 +158,7 @@ class SignalAuthViewSet(DatapuntViewSet):
 
 class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
-    permission_classes = (LocationPermission, )
+    permission_classes = (LocationPermission, SIABackofficePermission, )
     queryset = Location.objects.all().order_by('created_at').prefetch_related('signal')
     serializer_detail_class = LocationHALSerializer
     serializer_class = LocationHALSerializer
@@ -166,7 +168,7 @@ class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
-    permission_classes = (StatusPermission, )
+    permission_classes = (StatusPermission, SIABackofficePermission, )
     queryset = Status.objects.all().order_by('created_at')
     serializer_detail_class = StatusHALSerializer
     serializer_class = StatusHALSerializer
@@ -176,7 +178,7 @@ class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
-    permission_classes = (CategoryPermission, )
+    permission_classes = (CategoryPermission, SIABackofficePermission, )
     queryset = CategoryAssignment.objects.all().order_by('id').prefetch_related('signal')
     serializer_detail_class = CategoryHALSerializer
     serializer_class = CategoryHALSerializer
@@ -185,7 +187,7 @@ class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
-    permission_classes = (PriorityPermission, )
+    permission_classes = (PriorityPermission, SIABackofficePermission, )
     queryset = Priority.objects.all().order_by('id').prefetch_related('signal')
     serializer_detail_class = PriorityHALSerializer
     serializer_class = PriorityHALSerializer
@@ -199,6 +201,6 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_detail_class = NoteHALSerializer
     pagination_class = HALPagination
     authentication_classes = (JWTAuthBackend, )
-    permission_classes = (NotePermission, )
+    permission_classes = (NotePermission, SIABackofficePermission, )
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ('_signal__id', )

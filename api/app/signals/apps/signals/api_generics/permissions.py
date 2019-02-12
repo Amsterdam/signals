@@ -1,6 +1,8 @@
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission
 
+from signals.apps.signals import permissions
+
 
 class StatusPermission(BasePermission):
     """Permission check for `Status`."""
@@ -84,3 +86,9 @@ class SIAPermissions(BasePermission):
             perms = self.get_required_permissions(method=request.method)
             return request.user.has_perms(perms)
         return False
+
+
+class SIABackofficePermission(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user and request.user.has_perm('signals.' + permissions.SIA_BACKOFFICE)

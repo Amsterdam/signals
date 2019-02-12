@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
-from signals.apps.signals import workflow
+from signals.apps.signals import permissions, workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
@@ -74,7 +74,13 @@ class TestAuthAPIEndpoints(APITestCase):
                                               priority__id=1)
 
         # Forcing authentication
-        user = UserFactory.create()  # Normal user without any extra permissions.
+        user = UserFactory.create()  # Normal user without any extra permissions (except see below)
+
+        # Add SIA_BACKOFFICE permission. No permissions at all would give 403's since the
+        # introduction of the SIA_BACKOFFICE permission. The test_category_permissions.py file tests
+        # for those cases. In this case we add the SIA_BACKOFFICE permission to test the actual
+        # available request methods.
+        user.user_permissions.add(Permission.objects.get(codename=permissions.SIA_BACKOFFICE))
         self.client.force_authenticate(user=user)
 
         # Add one note to the signal

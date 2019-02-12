@@ -14,7 +14,7 @@ from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
-from signals.apps.signals import workflow
+from signals.apps.signals import permissions, workflow
 from signals.apps.signals.managers import AttachmentManager, SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
 
@@ -117,8 +117,9 @@ class Signal(CreatedUpdatedModel):
 
     class Meta:
         permissions = (
-            ('sia_read', 'Can read from SIA'),
-            ('sia_write', 'Can write to SIA'),
+            (permissions.SIA_READ, 'Can read from SIA'),
+            (permissions.SIA_WRITE, 'Can write to SIA'),
+            (permissions.SIA_BACKOFFICE, 'SIA Backoffice'),
         )
         ordering = ('created_at',)
 

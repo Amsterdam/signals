@@ -10,7 +10,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
-from signals.apps.signals import workflow
+from signals.apps.signals import permissions, workflow
 from signals.apps.signals.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
@@ -103,8 +103,8 @@ class TestPrivateEndpoints(APITestCase):
 
         self.user_no_permissions = UserFactory.create()
 
-        read_permission = Permission.objects.get(codename='sia_read')
-        write_permission = Permission.objects.get(codename='sia_write')
+        read_permission = Permission.objects.get(codename=permissions.SIA_READ)
+        write_permission = Permission.objects.get(codename=permissions.SIA_WRITE)
 
         self.user_with_permissions = UserFactory.create()
         self.user_with_permissions.user_permissions.add(read_permission)
