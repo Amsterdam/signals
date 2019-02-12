@@ -6,7 +6,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from signals.apps.signals.models import Attachment, SubCategory
+from signals.apps.signals.models import Attachment, Signal, SubCategory
 
 
 class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
@@ -157,7 +157,7 @@ class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
 
 
 class PrivateSignalSplitLinksField(serializers.HyperlinkedIdentityField):
-    def to_representation(self, signal):
+    def to_representation(self, signal: Signal):
         request = self.context.get('request')
 
         result = OrderedDict([
