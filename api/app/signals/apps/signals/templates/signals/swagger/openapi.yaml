@@ -11,7 +11,7 @@ info:
     email: "datapunt@amsterdam.nl"
   version: "TBD"
 servers:
-  - url: '{{global_api_root}}'
+  - url: '{{ global_api_root }}'
     description: "Datapunt acceptatie server for SIA testing and acceptation."
 paths:
   /signals/v1/private/signals/:
@@ -76,7 +76,7 @@ paths:
         '401':
           description: Unauthorized, may be caused by expired token.
       security:
-      - siaAuth:
+      - OAuth2:
         - SIG/ALL
     post:
       description: "Create a new signal."
@@ -91,7 +91,7 @@ paths:
         '201':
           description: New signal created.
       security:
-      - siaAuth:
+      - OAuth2:
         - SIG/ALL
   /signals/v1/private/signals/{id}:
     get:
@@ -109,7 +109,7 @@ paths:
         '401':
           description: Unauthorized, may be caused by expired token.
       security:
-      - siaAuth:
+      - OAuth2:
         - SIG/ALL
     patch:
       description: Partial update to signal.
@@ -124,7 +124,7 @@ paths:
         '401':
           description: Unauthorized, may be caused by expired token.
       security:
-      - siaAuth:
+      - OAuth2:
         - SIG/ALL
       requestBody:
         description: JSON data to update signal.
@@ -204,7 +204,7 @@ paths:
         '401':
           description: Unauthorized, may be caused by expired token.
       security:
-      - siaAuth:
+      - OAuth2:
         - SIG/ALL
 
 components:
@@ -387,9 +387,9 @@ components:
       enum: ['normal', 'high']
 
   securitySchemes:
-    siaAuth:
-      type: oauth2
+    OAuth2:
       description: SIA API is using OAuth2 implicit grant flow.
+      type: oauth2
       flows:
         implicit:
           authorizationUrl: '{{ global_api_root }}/oauth2/authorize'
