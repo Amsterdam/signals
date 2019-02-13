@@ -336,7 +336,7 @@ class CategoryAssignment(CreatedUpdatedModel):
                                      related_name='category_assignments')
     created_by = models.EmailField(null=True, blank=True)
 
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True)  # TODO: candidate for removal
 
     def __str__(self):
         """String representation."""
