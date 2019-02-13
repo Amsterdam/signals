@@ -11,8 +11,10 @@ info:
     email: "datapunt@amsterdam.nl"
   version: "TBD"
 servers:
-  - url: '{{ global_api_root }}'
+  - url: 'https://acc.api.data.amsterdam.nl'
     description: "Datapunt acceptatie server for SIA testing and acceptation."
+  - url: 'https://api.data.amsterdam.nl'
+    description: "Datapunt productie server for SIA."
 paths:
   /signals/v1/private/signals/:
     get:
@@ -392,6 +394,6 @@ components:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: '{{ global_api_root }}/oauth2/authorize'
+          authorizationUrl: '/oauth2/authorize'
           scopes:
             SIG/ALL: General access to SIA Django application.
