@@ -11,7 +11,7 @@ info:
     email: "datapunt@amsterdam.nl"
   version: "TBD"
 servers:
-  - url: {{global_api_root}}
+  - url: '{{global_api_root}}'
     description: "Datapunt acceptatie server for SIA testing and acceptation."
 paths:
   /signals/v1/private/signals/:
@@ -162,7 +162,7 @@ paths:
   /signals/v1/public/terms/categories/{main_slug}:
     get:
       description: Information about a specific main category and its sub categories.
-      response:
+      responses:
         '200':
           description: Detailed information.
       parameters:
@@ -320,10 +320,7 @@ components:
           type: string
           description: Message to log with status update, will show in logs.
         state:
-          type: string
-          enum:
-            $ref: '#/components/schemas/stateChoices'
-          description: Status string (predefined).
+          $ref: '#/components/schemas/stateChoices'
       required:
         - state
 
@@ -370,6 +367,7 @@ components:
           type: string
 
     stateChoices:
+      description: Status string (predefined).
       type: string
       enum:
         - m
@@ -394,6 +392,6 @@ components:
       description: SIA API is using OAuth2 implicit grant flow.
       flows:
         implicit:
-          authorizationUrl: {{ global_api_root }}/oauth2/authorize
+          authorizationUrl: '{{ global_api_root }}/oauth2/authorize'
           scopes:
             SIG/ALL: General access to SIA Django application.
