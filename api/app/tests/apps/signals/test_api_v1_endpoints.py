@@ -105,10 +105,12 @@ class TestPrivateEndpoints(APITestCase):
 
         read_permission = Permission.objects.get(codename=permissions.SIA_READ)
         write_permission = Permission.objects.get(codename=permissions.SIA_WRITE)
+        backoffice_permission = Permission.objects.get(codename=permissions.SIA_BACKOFFICE)
 
         self.user_with_permissions = UserFactory.create()
         self.user_with_permissions.user_permissions.add(read_permission)
         self.user_with_permissions.user_permissions.add(write_permission)
+        self.user_with_permissions.user_permissions.add(backoffice_permission)
 
         self.user_no_read_permissions = UserFactory.create()
         self.user_no_read_permissions.user_permissions.add(write_permission)

@@ -19,7 +19,7 @@ signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, base_name='not
 # API Version 1
 signal_router_v1 = SignalsRouterVersion1()
 signal_router_v1.register(r'public/terms/categories',
-                          v1_views.MainCategoryViewSet,
+                          v1_views.PublicMainCategoryViewSet,
                           base_name='category')
 signal_router_v1.register(r'private/signals',
                           v1_views.PrivateSignalViewSet,
@@ -43,7 +43,7 @@ signal_router_v1.urls.append(
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(
     path('public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-         v1_views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
+         v1_views.PublicSubCategoryViewSet.as_view({'get': 'retrieve'}),
          name='sub-category-detail'),
 )
 

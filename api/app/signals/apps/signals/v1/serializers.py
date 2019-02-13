@@ -494,6 +494,7 @@ class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
 
 
 class SignalAttachmentSerializer(HALSerializer):
+    parent = None
     _display = DisplayField()
     location = serializers.FileField(source='file', required=False)
 
@@ -521,7 +522,7 @@ class SignalAttachmentSerializer(HALSerializer):
     def __init__(self, *args, **kwargs):
 
         # Set correct version of the links field (public/private)
-        if kwargs['context']['is_public']:
+        if kwargs['context']['view'].is_public:
             self.serializer_url_field = PublicSignalAttachmentLinksField
         else:
             self.serializer_url_field = PrivateSignalAttachmentLinksField
@@ -529,7 +530,7 @@ class SignalAttachmentSerializer(HALSerializer):
         super().__init__(*args, **kwargs)
 
     def create(self, validated_data):
-        signal = self.context['signal']
+        signal = self.context['view'].get_object()
         attachment = Signal.actions.add_attachment(validated_data['file'], signal)
 
         if self.context['request'].user:
