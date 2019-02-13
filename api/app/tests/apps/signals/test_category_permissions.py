@@ -1,9 +1,10 @@
 from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from signals.apps.signals import permissions, workflow
-from signals.apps.signals.models import Priority
+from signals.apps.signals.models import MainCategory, Priority
 from tests.apps.signals.attachment_helpers import small_gif
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
@@ -39,16 +40,19 @@ class TestCategoryPermissions(APITestCase):
 
     class PermissionTest:
         user = None
+
+        # Be aware that the signal lists contain ids, whereas the categories lists contain the
+        # category objects.
         all_signals_ids = None
-        all_categories_ids = None
+        all_categories = None
         test_class = None
 
         # Default everything closed
         v0_access = False
         signals_access_ids = []
         signals_no_access_ids = []
-        categories_access_ids = []
-        categories_no_access_ids = []
+        categories_access = []
+        categories_no_access = []
 
         location = {
             "geometrie": {
@@ -67,7 +71,7 @@ class TestCategoryPermissions(APITestCase):
         def __init__(self, user, signals, categories, test_class):
             self.user = user
             self.all_signals_ids = [signal.id for signal in signals]
-            self.all_categories_ids = [category.id for category in categories]
+            self.all_categories = categories
             self.test_class = test_class
 
         def should_have_v0_access(self, v0_access: bool = True):
@@ -79,9 +83,12 @@ class TestCategoryPermissions(APITestCase):
                                                                self.signals_access_ids)
 
         def should_have_access_to_categories(self, categories: list):
-            self.categories_access_ids = [category.id for category in categories]
-            self.categories_no_access_ids = self._list_difference(self.all_categories_ids,
-                                                                  self.categories_access_ids)
+            self.categories_access = categories
+            self.categories_no_access = self._list_difference(self.all_categories,
+                                                              self.categories_access)
+
+            assert len(self.categories_access) + len(self.categories_no_access) == len(
+                self.all_categories)
 
         def execute(self):
             self.test_class.client.force_authenticate(user=self.user)
@@ -106,7 +113,7 @@ class TestCategoryPermissions(APITestCase):
             return response
 
         def _test_patch_endpoint(self, endpoint: str, data: dict, expected_status_code: int):
-            response = self.test_class.client.patch(endpoint, data)
+            response = self.test_class.client.patch(endpoint, data, format='json')
             self.test_class.assertEquals(expected_status_code, response.status_code)
             return response
 
@@ -183,7 +190,7 @@ class TestCategoryPermissions(APITestCase):
             self.test_class.assertEquals(len(ids), len(set(ids)))
 
         def _test_v1_get_signal_by_id(self):
-            """ Test that GET /signals/v1/private/signals/{id}/ only gives us access to the signals
+            """ Tests that GET /signals/v1/private/signals/{id} only gives us access to the signals
             we have access to """
 
             endpoint = '/signals/v1/private/signals/{}'
@@ -195,7 +202,7 @@ class TestCategoryPermissions(APITestCase):
                 self._test_get_endpoint(endpoint.format(signal_id), 403)
 
         def _test_v1_add_attachment_to_signals(self):
-            """ Test that POST /signals/v1/private/signals/{id}/attachments/ only allows us to post
+            """ Tests that POST /signals/v1/private/signals/{id}/attachments/ only allows us to post
             a new attachment to signals we have access to """
 
             endpoint = '/signals/v1/private/signals/{}/attachments/'
@@ -209,12 +216,57 @@ class TestCategoryPermissions(APITestCase):
                 self._test_post_endpoint(endpoint.format(signal_id), {'file': image}, 403)
 
         def _test_v1_update_signals_in_category(self):
-            # Test we can only update signals in our own categories
-            pass
+            """ Tests that PATCH /signals/v1/private/signals/{id} only works for categories we have
+            access to """
+
+            endpoint = '/signals/v1/private/signals/{}'
+
+            data = {
+                "status": {
+                    "text": "Test status update",
+                    "state": "b"
+                }
+            }
+
+            for signal_id in self.signals_access_ids:
+                self._test_patch_endpoint(endpoint.format(signal_id), data, 200)
+
+            for signal_id in self.signals_no_access_ids:
+                self._test_patch_endpoint(endpoint.format(signal_id), data, 403)
 
         def _test_v1_update_signals_move_to_other_category(self):
-            # Test we can only move signals between own categories
-            pass
+            """ Tests that we can not move a signal from our own category to a category we don't
+            have access to """
+
+            if len(self.signals_access_ids) == 0:
+                # Cannot test this without a signal I have access to
+                return
+
+            # Only test with one signal. Access is tested in _test_v1_update_signals_in_category.
+            # We know that we are allowed to update this signal.
+            endpoint = '/signals/v1/private/signals/{}'.format(self.signals_access_ids[0])
+
+            data = {
+                "category": {
+                    "text": "Update category test",
+                }
+            }
+
+            def get_category_link(category):
+                return reverse(
+                    'v1:sub-category-detail', kwargs={
+                        'slug': category.main_category.slug,
+                        'sub_slug': category.slug,
+                    }
+                )
+
+            for category in self.categories_access:
+                data["category"]["sub_category"] = get_category_link(category)
+                self._test_patch_endpoint(endpoint, data, 200)
+
+            for category in self.categories_no_access:
+                data["category"]["sub_category"] = get_category_link(category)
+                self._test_patch_endpoint(endpoint, data, 403)
 
     def setUp(self):
         """
@@ -226,7 +278,10 @@ class TestCategoryPermissions(APITestCase):
         """
         self.signals = []
         self.assigned_signals = []
-        self.categories = [SubCategoryFactory.create() for _ in range(5)]
+        main_category = MainCategory(name='testmain')
+        main_category.save()
+
+        self.categories = [SubCategoryFactory.create(main_category=main_category) for _ in range(5)]
         self.assigned_categories = []
 
         for idx, category in enumerate(self.categories):
@@ -292,6 +347,9 @@ class TestCategoryPermissions(APITestCase):
             def __init__(self, id):
                 self.id = id
 
+            def __eq__(self, other):
+                return self.id == other.id
+
         permission_test = self.__class__.PermissionTest(UserFactory.create(),
                                                         [IdObject(1), IdObject(2), IdObject(3),
                                                          IdObject(4), IdObject(5)],
@@ -303,4 +361,4 @@ class TestCategoryPermissions(APITestCase):
         self.assertEquals([4, 5], permission_test.signals_no_access_ids)
 
         permission_test.should_have_access_to_categories([IdObject(7), IdObject(8), IdObject(9)])
-        self.assertEquals([6, 10], permission_test.categories_no_access_ids)
+        self.assertEquals([IdObject(6), IdObject(10)], permission_test.categories_no_access)
