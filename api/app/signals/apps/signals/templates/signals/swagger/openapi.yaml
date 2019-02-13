@@ -10,11 +10,6 @@ info:
   contact:
     email: "datapunt@amsterdam.nl"
   version: "TBD"
-servers:
-  - url: 'https://acc.api.data.amsterdam.nl'
-    description: "Datapunt acceptatie server for SIA testing and acceptation."
-  - url: 'https://api.data.amsterdam.nl'
-    description: "Datapunt productie server for SIA."
 paths:
   /signals/v1/private/signals/:
     get:
@@ -151,7 +146,9 @@ paths:
           description: List of history entries for given signal instance.
         '401':
           description: Unauthorized, may be caused by expired token.
-
+      security:
+      - OAuth2:
+        - SIG/ALL
   /signals/v1/public/terms/categories:
     get:
       description: Categories known to SIA.
