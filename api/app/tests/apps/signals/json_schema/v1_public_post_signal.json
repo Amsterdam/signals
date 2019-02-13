@@ -135,9 +135,6 @@
         },
         "phone": {
           "type": "string"
-        },
-        "extra_properties": {
-          "type": "object"
         }
       }
     },

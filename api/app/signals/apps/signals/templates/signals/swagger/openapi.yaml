@@ -1,0 +1,396 @@
+openapi: 3.0.0
+info:
+  title: Signalen Informatievoorziening Amsterdam (SIA) API spec V1"
+  description: One of the tasks of the municipality of Amsterdam is to maintain
+    public spaces like roads, parks. When citizens have complaints about public
+    spaces they can leave these complaints with the municipality. SIA, the
+    Signalen Informatievoorziening Amsterdam, receives these complaints and is
+    used to track progress on their resolution. SIA provides an API that is used
+    both by the SIA frontend and external systems that integrate with SIA.
+  contact:
+    email: "datapunt@amsterdam.nl"
+  version: "TBD"
+paths:
+  /signals/v1/private/signals/:
+    get:
+      description: Signals list endpoint
+      parameters:
+        - name: "created_before"
+          in: query
+          description: Filter returns only signals created before specified
+            datetime.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: "created_after"
+          in: query
+          description: Filter returns only signals created after specified
+            datetime.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: "updated_before"
+          in: query
+          description: Filter returns only signals updated before specified
+            datetime.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: updated_after
+          in: query
+          description: Filter returns only signals updated after specified
+            datetime.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: status
+          in: query
+          description: Filter returns only signals with specified status.
+          schema:
+            $ref: '#/components/schemas/stateChoices'
+          required: false
+        - name: maincategory_slug
+          description: Filter returns only signals with matching main category
+            slug.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category_slug
+          description: Filter returns only signals with matching sub category
+            slug.
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of signals
+        '401':
+          description: Unauthorized, may be caused by expired token.
+      security:
+      - OAuth2:
+        - SIG/ALL
+    post:
+      description: "Create a new signal."
+      requestBody:
+        description: Serialized signal data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signalCreate'
+      responses:
+        '201':
+          description: New signal created.
+      security:
+      - OAuth2:
+        - SIG/ALL
+  /signals/v1/private/signals/{id}:
+    get:
+      description: Retrieve signal by ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal that needs to be retrieved.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed signal instance information.
+        '401':
+          description: Unauthorized, may be caused by expired token.
+      security:
+      - OAuth2:
+        - SIG/ALL
+    patch:
+      description: Partial update to signal.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal that needs to be updated.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '401':
+          description: Unauthorized, may be caused by expired token.
+      security:
+      - OAuth2:
+        - SIG/ALL
+      requestBody:
+        description: JSON data to update signal.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signalPatch'
+
+  /signals/v1/private/signals/{id}/history:
+    get:
+      description: History of signal instance with specified ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal whose history needs to be retrieved.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of history entries for given signal instance.
+        '401':
+          description: Unauthorized, may be caused by expired token.
+      security:
+      - OAuth2:
+        - SIG/ALL
+  /signals/v1/public/terms/categories:
+    get:
+      description: Categories known to SIA.
+      responses:
+        '200':
+          description: List of all main categories with embedded sub categories.
+
+  # This seems not to work, while the generated URI is correct and data is
+  # returned from API. Checked via web inspector.
+  /signals/v1/public/terms/categories/{main_slug}:
+    get:
+      description: Information about a specific main category and its sub categories.
+      responses:
+        '200':
+          description: Detailed information.
+      parameters:
+        - name: main_slug
+          in: path
+          description: Slug that identifies the main category.
+          required: true
+          schema:
+            type: string
+
+  # This seems not to work, while the generated URI is correct and data is
+  # returned from API. Checked via web inspector.
+  /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
+    get:
+      description: Information about a specific sub category.
+      responses:
+        '200':
+          description: Detailed information.
+      parameters:
+        - name: main_slug
+          in: path
+          description: Slug that identifies the main category.
+          required: true
+          schema:
+            type: string
+        - name: sub_slug
+          in: path
+          description: Slug that identifies the sub category.
+          required: true
+          schema:
+            type: string
+
+  /signals/user/auth/me:
+    get:
+      description: Information about the currently authenticated user.
+      responses:
+        '200':
+          description: User information including permissions.
+        '401':
+          description: Unauthorized, may be caused by expired token.
+      security:
+      - OAuth2:
+        - SIG/ALL
+
+components:
+  schemas:
+
+    signalCreate:
+      type: object
+      properties:
+        source:
+          type: string
+        text:
+          type: string
+          description: The complaint text.
+        text_extra:
+          type: string
+          nullable: true
+        location:
+          $ref: '#/components/schemas/locationInput'
+        category:
+          $ref: '#/components/schemas/categoryInput'
+        reporter:
+          $ref: '#/components/schemas/reporterInput'
+        priority:
+          $ref: '#/components/schemas/priorityInput'
+        notes:
+          $ref: '#/components/schemas/notesInput'
+        incident_date_start:
+          type: string
+          format: date-time
+        incident_date_end:
+          type: string
+          format: date-time
+          nullable: true
+        operational_date:
+          type: string
+          format: date-time
+          nullable: true
+        extra_properties:
+          type: object
+          additionalProperties: true
+      required:
+        - text
+        - location
+        - incident_date_start
+
+    signalPatch:
+      type: object
+      properties:
+        location:
+          $ref: '#/components/schemas/locationInput'
+        status:
+          $ref: '#/components/schemas/statusInput'
+        category:
+          $ref: '#/components/schemas/categoryInput'
+        priority:
+          $ref: '#/components/schemas/priorityInput'
+        notes:
+          $ref: '#/components/schemas/notesInput'
+
+    locationInput:
+      description: Location data associated with a signal. Provide either
+        only the "geometrie" in EPSG:4326 coordinates [longitude, latitude]
+        or a valid address and the "geometrie" in EPSG:4326 coordinates
+        [longitude, latitude]. Providing only a valid address is not
+        allowed.
+      type: object
+      properties:
+        geometrie:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - "Point"
+            coordinates:
+              type: array
+              items:
+                type: number
+                minItems: 2
+                maxItems: 3
+          required:
+            - coordinates
+            - type
+        stadsdeel:
+          type: string
+        buurt_code:
+          type: string
+        address:  # Check that this matches the new address validation rules.
+          type: object
+          properties:
+            openbare_ruimte:
+              type: string
+            huisnummer:
+              type: number
+            huisletter:
+              type: string
+            huisnumer_toevoegen:
+              type: number
+            postcode:
+              type: string
+            woonplaats:
+              type: string
+        extra_properties:
+          type: object
+      required:
+          - geometrie
+
+    statusInput:
+      description: JSON status data for status updates.
+      type: object
+      properties:
+        text:
+          type: string
+          description: Message to log with status update, will show in logs.
+        state:
+          $ref: '#/components/schemas/stateChoices'
+      required:
+        - state
+
+    categoryInput:
+      description: JSON category data for category updates.
+      type: object
+      properties:
+        text:
+          type: string
+          description: Message to log with category update, will show in logs.
+        sub_category:
+          type: string
+          format: uri
+      required:
+        - sub_category
+
+    priorityInput:
+      description: JSON data for priority updates.
+      type: object
+      properties:
+        priority:
+          $ref: '#/components/schemas/priorityChoices'
+
+    notesInput:
+      description: JSON data for notes updates.
+      type: array
+      items:
+        type: object
+        properties:
+          text:
+            type: string
+            description: Note text.
+
+    reporterInput:
+      description: Contact information on the reporter of the signal.
+      type: object
+      properties:
+        email:
+          description: Email address of reporter.
+          type: string
+          format: email
+        phone:
+          description: Phone number of reporter.
+          type: string
+
+    stateChoices:
+      description: Status string (predefined).
+      type: string
+      enum:
+        - m
+        - i
+        - b
+        - h
+        - o
+        - a
+        - s
+        - "ready to send"
+        - "sent"
+        - "send failed"
+        - "done external"
+
+    priorityChoices:
+      type: string
+      enum: ['normal', 'high']
+
+  securitySchemes:
+    OAuth2:
+      description: SIA API is using OAuth2 implicit grant flow.
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: '/oauth2/authorize'
+          scopes:
+            SIG/ALL: General access to SIA Django application.
