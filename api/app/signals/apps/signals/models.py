@@ -628,7 +628,6 @@ class Attachment(CreatedUpdatedModel):
 
         generator = Attachment.CroppedImage(source=self.file)
         cache_file = ImageCacheFile(generator)
-        cache_file.generate()
 
         return cache_file
 
