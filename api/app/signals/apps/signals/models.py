@@ -1,5 +1,6 @@
 import copy
 import imghdr
+import logging
 import uuid
 
 from django.conf import settings
@@ -17,6 +18,8 @@ from swift.storage import SwiftStorage
 from signals.apps.signals import workflow
 from signals.apps.signals.managers import AttachmentManager, SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
+
+logger = logging.getLogger(__name__)
 
 
 class CreatedUpdatedModel(models.Model):
@@ -628,7 +631,11 @@ class Attachment(CreatedUpdatedModel):
 
         generator = Attachment.CroppedImage(source=self.file)
         cache_file = ImageCacheFile(generator)
-        cache_file.generate()
+
+        try:
+            cache_file.generate()
+        except FileNotFoundError as e:
+            logger.warn("File not found when generating cache file: " + str(e))
 
         return cache_file
 
