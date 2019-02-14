@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from signals.apps.signals.api_generics.views import SwaggerView
 from signals.apps.signals.v0 import views as v0_views
 from signals.apps.signals.v0.routers import SignalsRouterVersion0
 from signals.apps.signals.v1 import views as v1_views
@@ -65,4 +66,7 @@ urlpatterns = [
 
     # API Version 1
     path('v1/', include((signal_router_v1.urls, 'signals'), namespace='v1')),
+
+    # Swagger
+    path('swagger/openapi.yaml', SwaggerView.as_view()),
 ]

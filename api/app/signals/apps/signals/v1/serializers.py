@@ -117,6 +117,7 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.Mo
         )
         read_only_fields = (
             'id',
+            'created_by',
             'bag_validated',
         )
         extra_kwargs = {
@@ -139,6 +140,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'created_at',
+            'user',
         )
 
     def validate(self, attrs):
@@ -194,6 +196,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'departments',
             'created_by',
         )
+        read_only_fields = (
+            'created_by',
+            'departments',
+        )
 
     def get_departments(self, obj):
         return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
@@ -205,7 +211,6 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
         fields = (
             'email',
             'phone',
-            'extra_properties',
         )
 
 
@@ -216,6 +221,9 @@ class _NestedPriorityModelSerializer(serializers.ModelSerializer):
             'priority',
             'created_by',
         )
+        read_only_fields = (
+            'created_by',
+        )
 
 
 class _NestedNoteModelSerializer(serializers.ModelSerializer):
@@ -223,7 +231,9 @@ class _NestedNoteModelSerializer(serializers.ModelSerializer):
         model = Note
         fields = (
             'text',
-            'created_at',
+            'created_by',
+        )
+        read_only_fields = (
             'created_by',
         )
 
@@ -253,6 +263,9 @@ class AddressValidationMixin():
 
                 # Set suggested address from AddressValidation as address and save original address
                 # in extra_properties, to correct possible spelling mistakes in original address.
+                if "extra_properties" not in location_data:
+                    location_data["extra_properties"] = {}
+
                 location_data["extra_properties"]["original_address"] = location_data["address"]
                 location_data["address"] = validated_address
                 location_data["bag_validated"] = True

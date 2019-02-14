@@ -21,9 +21,7 @@ djangorestframework-csv
 djangorestframework-gis
 djangorestframework-xml
 drf-extensions
-drf-yasg[validation]
 drf_amsterdam
-drf_yasg
 flex
 graypy
 jsonschema
@@ -34,7 +32,6 @@ pygelf
 python-dateutil
 raven
 requests
-swagger-spec-validator
 WeasyPrint
 
 # Test Libraries
