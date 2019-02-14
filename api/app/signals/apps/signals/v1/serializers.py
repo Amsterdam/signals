@@ -491,13 +491,12 @@ class _NestedSplitSignalSerializer(HALSerializer):
 
 class PrivateSplitSignalSerializer(serializers.BaseSerializer):
 
-    @property
-    def validated_data(self):
+    def to_internal_value(self, data):
         if self.context['view'].get_object().status.state == workflow.GESPLITST:
             raise PreconditionFailed("Signal has already been split")
 
-        serializer = _NestedSplitSignalSerializer(many=True)
-        serializer.validate(self.initial_data)
+        serializer = _NestedSplitSignalSerializer(data=data, many=True)
+        serializer.is_valid()
 
         if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
                 self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
@@ -506,10 +505,9 @@ class PrivateSplitSignalSerializer(serializers.BaseSerializer):
                     settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
                 ))
 
-        return {"children": self.initial_data}
-
-    def to_internal_value(self, data):
-        return data
+        return {
+            "children": self.initial_data
+        }
 
     def to_representation(self, signal):
         if self.context['view'].get_object().children.count() == 0:
