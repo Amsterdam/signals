@@ -261,6 +261,9 @@ class AddressValidationMixin():
 
                 # Set suggested address from AddressValidation as address and save original address
                 # in extra_properties, to correct possible spelling mistakes in original address.
+                if "extra_properties" not in location_data:
+                    location_data["extra_properties"] = {}
+
                 location_data["extra_properties"]["original_address"] = location_data["address"]
                 location_data["address"] = validated_address
                 location_data["bag_validated"] = True
