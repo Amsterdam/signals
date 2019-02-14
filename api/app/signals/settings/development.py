@@ -20,7 +20,7 @@ MIDDLEWARE.append(  # noqa
 
 TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@amsterdam.nl')
 
-IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.JustInTime'
+IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
 
 try:
     from signals.settings.local import *  # noqa
