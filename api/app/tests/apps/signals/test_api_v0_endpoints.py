@@ -545,6 +545,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
             content_type=status_content_type)
         user = UserFactory.create()
         user.user_permissions.add(permission_add_status)
+        user.user_permissions.add(Permission.objects.get(codename=permissions.SIA_BACKOFFICE))
         self.client.force_authenticate(user=user)
 
         # Post an status change "push to Sigmax" without the correct permissions.

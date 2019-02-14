@@ -1,10 +1,12 @@
 import csv
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.admin import GroupAdmin, UserAdmin
+from django.contrib.auth.models import Group, User
 from django.http import HttpResponse
 from django.utils import timezone
+
+from signals.apps.signals.permissions import CategoryPermissions
 
 
 class SignalsUserAdmin(UserAdmin):
@@ -52,6 +54,21 @@ class SignalsUserAdmin(UserAdmin):
         self.message_user(request, 'Created summary CSV file: {}'.format(filename))
         return response
 
+    def get_form(self, request, obj=None, **kwargs):
+        """ Makes sure the category permissions are updated on user form load """
+        CategoryPermissions.create_for_all_categories()
+        return super().get_form(request, obj=obj, **kwargs)
+
+
+class SignalsGroupAdmin(GroupAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        """ Makes sure the category permissions are updated on group form load """
+        CategoryPermissions.create_for_all_categories()
+        return super().get_form(request, obj=obj, **kwargs)
+
 
 admin.site.unregister(User)
 admin.site.register(User, SignalsUserAdmin)
+
+admin.site.unregister(Group)
+admin.site.register(Group, SignalsGroupAdmin)

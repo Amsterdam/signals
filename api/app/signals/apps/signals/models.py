@@ -511,6 +511,13 @@ class SubCategory(models.Model):
     departments = models.ManyToManyField('signals.Department')
     is_active = models.BooleanField(default=True)
 
+    # Permission needed to access signals from this category (if user does not operate under the
+    # SIA_BACKOFFICE permission)
+    permission = models.ForeignKey('auth.Permission',
+                                   related_name='categories',
+                                   on_delete=models.SET_NULL,
+                                   null=True)
+
     class Meta:
         ordering = ('name',)
         unique_together = ('main_category', 'slug',)

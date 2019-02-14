@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from signals import settings
-from signals.apps.signals import workflow
+from signals.apps.signals import permissions, workflow
 from signals.apps.signals.address.validation import (
     AddressValidation,
     AddressValidationUnavailableException,
@@ -359,6 +359,21 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             note_data['created_by'] = self.context['request'].user.email
 
             Signal.actions.create_note(note_data, instance)
+
+    def validate(self, attrs):
+        if 'category_assignment' in attrs:
+            user = self.context['request'].user
+
+            # A user who does not have the SIA_BACKOFFICE permission (and thus has limited access to
+            # categories) should not be able to move a signal to a category he doesn't have access
+            # to.
+            if not user.has_perm('signals.' + permissions.SIA_BACKOFFICE) and \
+                    not user.has_perm('signals.' + attrs['category_assignment'][
+                        'sub_category'].permission.codename):
+                raise PermissionDenied(
+                    "You don't have permission to move a signal to this category")
+
+        return attrs
 
     def update(self, instance, validated_data):
         """

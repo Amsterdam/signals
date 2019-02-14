@@ -111,18 +111,20 @@ class PrivateSignalViewSetBase:
     IMPORTANT! This class should always be the first parent of the inheriting class, because
     we want get_object from this class to be called, instead of some other instance.
     """
+
     @property
     def all_signals(self):
         return Signal.objects
 
     @property
     def signals_queryset(self):
-        if self.request.user and self.request.user.has_perm('signals.' + permissions.SIA_BACKOFFICE):
+        user = self.request.user
+        if user and user.has_perm('signals.' + permissions.SIA_BACKOFFICE):
             return self.all_signals.all()
 
-        category_ids = []
-
-        return self.all_signals.filter(category_assignment__sub_category__id__in=category_ids)
+        return self.all_signals.filter(
+            category_assignment__sub_category__permission__in=user.user_permissions.all()
+        )
 
     def get_signal(self, **filter_kwargs):
         # First query on all signals (triggers a 404)
@@ -132,7 +134,7 @@ class PrivateSignalViewSetBase:
         try:
             return self.signals_queryset.get(**filter_kwargs)
         except Signal.DoesNotExist:
-            raise PermissionDenied()
+            raise PermissionDenied("No permission to access this signal")
 
     def get_object(self):
         """ Returns signal object based on lookup_field and lookup_url_kwarg (standard Django REST

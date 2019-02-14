@@ -181,8 +181,12 @@ class TestCategoryPermissions(APITestCase):
             ids = self._get_ids_from_response_list(response.json()['results'])
 
             # Test correct id's in response.
-            self.test_class.assertEquals(len(self.signals_access_ids), len(ids))
-            self.test_class.assertEquals(set(self.signals_access_ids), set(ids))
+            self.test_class.assertEquals(len(self.signals_access_ids), len(ids),
+                                         "Expected {} ids in the response".format(
+                                             len(self.signals_access_ids)))
+            self.test_class.assertEquals(set(self.signals_access_ids), set(ids),
+                                         "Expected {} unique ids in the response".format(
+                                             len(set(self.signals_access_ids))))
 
             # Should never fail, but knowing that the length of the list and sets are equal (ie we
             # don't have doubles), means we can get away with not checking if the signals we don't
@@ -301,6 +305,12 @@ class TestCategoryPermissions(APITestCase):
                 if assign:
                     self.assigned_signals.append(signal)
 
+        # Call this manually. Normally called when accessing admin page.
+        permissions.CategoryPermissions.create_for_all_categories()
+
+        for category in self.categories:
+            category.refresh_from_db()
+
     def _user_add_default_permissions(self, user: User):
         # V0 permissions
         user.user_permissions.add(Permission.objects.get(codename='add_note'))
@@ -337,6 +347,25 @@ class TestCategoryPermissions(APITestCase):
         test.should_have_access_to_categories(self.categories)
         test.should_have_access_to_signals(self.signals)
         test.should_have_v0_access()
+
+        test.execute()
+
+    def test_filter_by_subcategory(self):
+        """ Test user without backoffice permissions, but with access to certain categories.
+        Should not have v0 access and should not have access to signals from forbidden categories in
+        v1.
+        """
+        user = UserFactory.create()
+        self._user_add_default_permissions(user)
+
+        for category in self.assigned_categories:
+            user.user_permissions.add(category.permission)
+
+        user.refresh_from_db()
+        test = self.__class__.PermissionTest(user, self.signals, self.categories, self)
+        test.should_have_access_to_categories(self.assigned_categories)
+        test.should_have_access_to_signals(self.assigned_signals)
+        test.should_have_v0_access(False)
 
         test.execute()
 
