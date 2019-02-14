@@ -1,12 +1,16 @@
 openapi: 3.0.0
 info:
   title: Signalen Informatievoorziening Amsterdam (SIA) API spec V1"
-  description: One of the tasks of the municipality of Amsterdam is to maintain
+  description: >-
+    One of the tasks of the municipality of Amsterdam is to maintain
     public spaces like roads, parks. When citizens have complaints about public
     spaces they can leave these complaints with the municipality. SIA, the
     Signalen Informatievoorziening Amsterdam, receives these complaints and is
-    used to track progress on their resolution. SIA provides an API that is used
-    both by the SIA frontend and external systems that integrate with SIA.
+    used to track progress towards their resolution.
+
+
+    SIA provides an API that is used both by the SIA frontend and external
+    systems that integrate with SIA. This swagger file documents that API.
   contact:
     email: "datapunt@amsterdam.nl"
   version: "TBD"
@@ -17,32 +21,36 @@ paths:
       parameters:
         - name: "created_before"
           in: query
-          description: Filter returns only signals created before specified
-            datetime.
+          description: >-
+            Filter returns only signals created before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
             format: date-time
           required: false
         - name: "created_after"
           in: query
-          description: Filter returns only signals created after specified
-            datetime.
+          description: >-
+            Filter returns only signals created after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
             format: date-time
           required: false
         - name: "updated_before"
           in: query
-          description: Filter returns only signals updated before specified
-            datetime.
+          description: >-
+            Filter returns only signals updated before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
             format: date-time
           required: false
         - name: updated_after
           in: query
-          description: Filter returns only signals updated after specified
-            datetime.
+          description: >-
+            Filter returns only signals updated after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
             format: date-time
@@ -61,8 +69,8 @@ paths:
           schema:
             type: string
         - name: category_slug
-          description: Filter returns only signals with matching sub category
-            slug.
+          description: >-
+            Filter returns only signals with matching sub category slug.
           in: query
           required: false
           schema:
@@ -130,7 +138,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/signalPatch'
-
   /signals/v1/private/signals/{id}/history:
     get:
       description: History of signal instance with specified ID.
@@ -155,12 +162,10 @@ paths:
       responses:
         '200':
           description: List of all main categories with embedded sub categories.
-
-  # This seems not to work, while the generated URI is correct and data is
-  # returned from API. Checked via web inspector.
   /signals/v1/public/terms/categories/{main_slug}:
     get:
-      description: Information about a specific main category and its sub categories.
+      description: >-
+        Information about a specific main category and its sub categories.
       responses:
         '200':
           description: Detailed information.
@@ -171,9 +176,6 @@ paths:
           required: true
           schema:
             type: string
-
-  # This seems not to work, while the generated URI is correct and data is
-  # returned from API. Checked via web inspector.
   /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
       description: Information about a specific sub category.
@@ -193,7 +195,6 @@ paths:
           required: true
           schema:
             type: string
-
   /signals/user/auth/me:
     get:
       description: Information about the currently authenticated user.
@@ -264,7 +265,8 @@ components:
           $ref: '#/components/schemas/notesInput'
 
     locationInput:
-      description: Location data associated with a signal. Provide either
+      description: >-
+        Location data associated with a signal. Provide either
         only the "geometrie" in EPSG:4326 coordinates [longitude, latitude]
         or a valid address and the "geometrie" in EPSG:4326 coordinates
         [longitude, latitude]. Providing only a valid address is not
