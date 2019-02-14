@@ -515,16 +515,12 @@ class PrivateSplitSignalSerializer(serializers.BaseSerializer):
         if self.context['view'].get_object().children.count() == 0:
             raise NotFound("Split signal not found")
 
-        child_serializer = _NestedSplitSignalSerializer()
         links_field = PrivateSignalSplitLinksField(self.context['view'])
-
-        children = []
-        for child in signal.children.all():
-            children.append(child_serializer.to_representation(child))
+        nss = _NestedSplitSignalSerializer(signal.children.all(), many=True)
 
         return {
             "_links": links_field.to_representation(signal),
-            "children": children,
+            "children": nss.data,
         }
 
     def create(self, validated_data):
