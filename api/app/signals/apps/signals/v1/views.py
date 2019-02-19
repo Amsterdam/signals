@@ -11,7 +11,6 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
@@ -23,10 +22,10 @@ from signals.apps.signals.v1.serializers import (
     MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    PrivateSplitSignalSerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
     SignalAttachmentSerializer,
-    SplitPrivateSignalSerializerDetail,
     SubCategoryHALSerializer
 )
 from signals.auth.backend import JWTAuthBackend
@@ -79,14 +78,11 @@ class PrivateSignalViewSet(DatapuntViewSet,
         serializer = HistoryHalSerializer(history_entries, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['POST'],
-            serializer_detail_class=SplitPrivateSignalSerializerDetail)
-    def split(self, request, pk=None, *args, **kwargs):
-        serializer = self.get_serializer(many=True, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
 
-        return Response(serializer.data, status=HTTP_201_CREATED)
+class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
+                                viewsets.GenericViewSet):
+    serializer_class = PrivateSplitSignalSerializer
+    queryset = Signal.objects.all()
 
 
 class PublicSignalViewSet(mixins.CreateModelMixin,

@@ -3,7 +3,7 @@ Serializsers that are used exclusively by the V1 API
 """
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 from signals import settings
 from signals.apps.signals import workflow
@@ -12,6 +12,7 @@ from signals.apps.signals.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.signals.api_generics.exceptions import PreconditionFailed
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     Attachment,
@@ -32,6 +33,7 @@ from signals.apps.signals.v1.fields import (
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
+    PrivateSignalSplitLinksField,
     PublicSignalAttachmentLinksField,
     PublicSignalLinksField,
     SubCategoryHyperlinkedIdentityField,
@@ -472,39 +474,59 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         return signal
 
 
-class SplitPrivateSignalSerializerList(serializers.ListSerializer):
-    def is_valid(self, raise_exception=False):
-        if not (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN
-                <= len(self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
-            self._validated_data = []
-            self._errors = ['A signal can only be split into min {} and max {} signals'.format(
-                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN,
-                settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
-            )]
+class _NestedSplitSignalSerializer(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
 
-        return super(SplitPrivateSignalSerializerList, self).is_valid(raise_exception)
-
-    def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data,
-                                      signal=self.context['view'].get_object())
-        return signal.children.all()
-
-
-class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
     class Meta:
         model = Signal
         fields = (
             'id',
             'text',
+            '_links',
         )
         read_only_fields = (
             'id',
+            '_links',
         )
-        extra_kwargs = {
-            'text': {'write_only': True}
+
+
+class PrivateSplitSignalSerializer(serializers.BaseSerializer):
+
+    def to_internal_value(self, data):
+        if self.context['view'].get_object().status.state == workflow.GESPLITST:
+            raise PreconditionFailed("Signal has already been split")
+
+        serializer = _NestedSplitSignalSerializer(data=data, many=True)
+        serializer.is_valid()
+
+        if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
+                self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            raise ValidationError(
+                'A signal can only be split into min {} and max {} signals'.format(
+                    settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
+                ))
+
+        return {
+            "children": self.initial_data
         }
 
-        list_serializer_class = SplitPrivateSignalSerializerList
+    def to_representation(self, signal):
+        if self.context['view'].get_object().children.count() == 0:
+            raise NotFound("Split signal not found")
+
+        links_field = PrivateSignalSplitLinksField(self.context['view'])
+        nss = _NestedSplitSignalSerializer(signal.children.all(), many=True)
+
+        return {
+            "_links": links_field.to_representation(signal),
+            "children": nss.data,
+        }
+
+    def create(self, validated_data):
+        signal = Signal.actions.split(split_data=validated_data["children"],
+                                      signal=self.context['view'].get_object())
+
+        return signal
 
 
 class SignalAttachmentSerializer(HALSerializer):
