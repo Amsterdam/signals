@@ -1,0 +1,231 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"next": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"previous": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self",
+				"next",
+				"previous"
+			]
+		},
+		"count": {
+			"type": "integer"
+		},
+		"results": {
+			"type": "array",
+			"items": [
+				{
+					"type": "object",
+					"properties": {
+						"_links": {
+							"type": "object",
+							"properties": {
+								"self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								}
+							},
+							"required": [
+								"self"
+							]
+						},
+						"_display": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						},
+						"slug": {
+							"type": "string"
+						},
+						"sub_categories": {
+							"type": "array",
+							"items": [
+								{
+									"type": "object",
+									"properties": {
+										"_links": {
+											"type": "object",
+											"properties": {
+												"self": {
+													"type": "object",
+													"properties": {
+														"href": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"href"
+													]
+												}
+											},
+											"required": [
+												"self"
+											]
+										},
+										"_display": {
+											"type": "string"
+										},
+										"name": {
+											"type": "string"
+										},
+										"slug": {
+											"type": "string"
+										},
+										"handling": {
+											"type": "string"
+										},
+										"departments": {
+											"type": "array",
+											"items": [
+												{
+													"type": "object",
+													"properties": {
+														"code": {
+															"type": "string"
+														},
+														"name": {
+															"type": "string"
+														},
+														"is_intern": {
+															"type": "boolean"
+														}
+													},
+													"required": [
+														"code",
+														"name",
+														"is_intern"
+													]
+												},
+												{
+													"type": "object",
+													"properties": {
+														"code": {
+															"type": "string"
+														},
+														"name": {
+															"type": "string"
+														},
+														"is_intern": {
+															"type": "boolean"
+														}
+													},
+													"required": [
+														"code",
+														"name",
+														"is_intern"
+													]
+												},
+												{
+													"type": "object",
+													"properties": {
+														"code": {
+															"type": "string"
+														},
+														"name": {
+															"type": "string"
+														},
+														"is_intern": {
+															"type": "boolean"
+														}
+													},
+													"required": [
+														"code",
+														"name",
+														"is_intern"
+													]
+												}
+											]
+										},
+										"is_active": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"_links",
+										"_display",
+										"name",
+										"slug",
+										"handling",
+										"departments",
+										"is_active"
+									]
+								}
+							]
+						}
+					},
+					"required": [
+						"_links",
+						"_display",
+						"name",
+						"slug",
+						"sub_categories"
+					]
+				}
+			]
+		}
+	},
+	"required": [
+		"_links",
+		"count",
+		"results"
+	]
+}

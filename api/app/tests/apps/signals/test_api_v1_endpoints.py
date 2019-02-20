@@ -44,8 +44,33 @@ class TestAPIRoot(APITestCase):
         self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v1']))
 
 
-class TestCategoryTermsEndpoints(APITestCase):
+class TestCategoryTermsEndpoints(JsonAPITestCase):
     fixtures = ['categories.json', ]
+
+    def setUp(self):
+        self.list_categories_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_public_terms_categories.json'
+            )
+        )
+        self.retrieve_category_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_public_terms_categories_{slug}.json'
+            )
+        )
+        self.retrieve_sub_category_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_public_terms_categories_{slug}_sub_categories_{sub_slug}.json'
+            )
+        )
+
+        super(TestCategoryTermsEndpoints, self).setUp()
 
     def test_category_list(self):
         # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
@@ -56,6 +81,10 @@ class TestCategoryTermsEndpoints(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.list_categories_schema, data)
+
         self.assertEqual(len(data['results']), 9)
 
     def test_category_detail(self):
@@ -68,6 +97,10 @@ class TestCategoryTermsEndpoints(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_category_schema, data)
+
         self.assertEqual(data['name'], 'Afval')
         self.assertEqual(len(data['sub_categories']), 13)
 
@@ -81,6 +114,10 @@ class TestCategoryTermsEndpoints(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+
         self.assertEqual(data['name'], 'Grofvuil')
         self.assertIn('is_active', data)
 
@@ -188,11 +225,19 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestHistoryAction(APITestCase):
+class TestHistoryAction(JsonAPITestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
         self.superuser = SuperUserFactory(username='superuser@example.com')
         self.user = UserFactory(username='user@example.com')
+
+        self.list_history_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_private_signals_{pk}_history.json'
+            )
+        )
 
     def test_history_action_present(self):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
@@ -202,6 +247,10 @@ class TestHistoryAction(APITestCase):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
     def test_history_endpoint_rendering(self):
         history_entries = History.objects.filter(_signal__id=self.signal.pk)
 
@@ -209,8 +258,11 @@ class TestHistoryAction(APITestCase):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
-        result = response.json()
-        self.assertEqual(len(result), history_entries.count())
+        data = response.json()
+        self.assertEqual(len(data), history_entries.count())
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.list_history_schema, data)
 
     def test_history_entry_contents(self):
         keys = ['identifier', 'when', 'what', 'action', 'description', 'who', '_signal']
@@ -219,7 +271,11 @@ class TestHistoryAction(APITestCase):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
-        for entry in response.json():
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
+        for entry in data:
             for k in keys:
                 self.assertIn(k, entry)
 
@@ -245,7 +301,11 @@ class TestHistoryAction(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), n_entries + 1)
 
-        new_entry = response.json()[0]  # most recent status should be first
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
+        new_entry = data[0]  # most recent status should be first
         self.assertEqual(new_entry['who'], self.user.username)
         self.assertEqual(new_entry['description'], status.text)
 
@@ -299,9 +359,33 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.create_initial_data = json.load(f)
         self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
 
-    def _load_json_schema(self, filename: str):
-        with open(os.path.join(THIS_DIR, 'json_schema', filename)) as f:
-            return json.load(f)
+        self.list_signals_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_private_signals.json')
+        )
+        self.retrieve_signal_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_private_signals_{pk}.json'
+            )
+        )
+        self.list_history_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_private_signals_{pk}_history.json'
+            )
+        )
+        self.post_split_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'post_signals_v1_private_signals_{pk}_split.json'
+            )
+        )
 
     # -- Read tests --
 
@@ -316,6 +400,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.json()['count'], 2)
 
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_signals_schema, data)
+
     def test_detail_endpoint_without_authentication_should_fail(self):
         response = self.client.get(self.detail_endpoint.format(pk=1))
         self.assertEqual(response.status_code, 401)
@@ -327,11 +415,9 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.get(self.detail_endpoint.format(pk=pk))
         self.assertEqual(response.status_code, 200)
 
-        # TODO: add more detailed tests using a JSONSchema
-        # TODO: consider naming of 'note' object (is list, so 'notes')?
-        response_json = response.json()
-        for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
-            self.assertIn(key, response_json)
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.retrieve_signal_schema, data)
 
     def test_history_action(self):
         self.client.force_authenticate(user=self.superuser)
@@ -342,6 +428,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         # SIA currently does 4 updates before Signal is fully in the system
         self.assertEqual(len(response.json()), 4)
+
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
 
     def test_history_action_filters(self):
         self.client.force_authenticate(user=self.superuser)
@@ -365,6 +455,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         result = self.client.get(base_url + '?' + querystring)
         self.assertEqual(len(result.json()), 0)
 
+        # JSONSchema validation
+        data = result.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
     # -- write tests --
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
@@ -382,6 +476,9 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # Check that the actions are logged with the correct user email
         new_url = response.json()['_links']['self']['href']
         response_json = self.client.get(new_url).json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
         self.assertEqual(response_json['status']['user'], self.superuser.email)
         self.assertEqual(response_json['priority']['created_by'], self.superuser.email)
@@ -428,6 +525,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 201)
 
+        data = response.json()
         signal_id = response.data['id']
         signal = Signal.objects.get(id=signal_id)
 
@@ -436,6 +534,11 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
                           "Original address should appear in extra_properties.original_address")
         self.assertEquals(suggested_address, signal.location.address,
                           "Suggested address should appear instead of the received address")
+
+        # JSONSchema validation
+        new_url = data['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_create_initial_valid_location_but_no_address(self, validate_address_dict):
@@ -454,6 +557,12 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(signal.location.bag_validated, False)
 
+        # JSONSchema validation
+        data = response.json()
+        new_url = data['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
     def test_create_initial_address_validation_unavailable(self, validate_address_dict):
@@ -470,6 +579,12 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         # Signal should be added, but bag_validated should be False
         self.assertFalse(signal.location.bag_validated)
+
+        # JSONSchema validation
+        data = response.json()
+        new_url = data['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
@@ -491,6 +606,12 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         signal = Signal.objects.get(id=signal_id)
 
         self.assertFalse(signal.location.bag_validated)
+
+        # JSONSchema validation
+        data = response.json()
+        new_url = data['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
@@ -517,6 +638,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image2})
         self.assertEqual(response.status_code, 201)
+
+        # JSONSchema validation
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_update_location(self, validate_address_dict):
@@ -553,6 +678,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.signal_no_image.location.created_by,
             self.superuser.email,
         )
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_update_location_no_address(self, validate_address_dict):
@@ -591,6 +720,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.signal_no_image.location.created_by,
             self.superuser.email,
         )
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_update_location_no_coordinates(self, validate_address_dict):
@@ -652,6 +785,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.superuser.email,
         )
 
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
     def test_update_category_assignment(self):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
@@ -687,6 +824,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.superuser.email,
         )
 
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
     def test_update_priority(self):
         # Partial update to update the priority, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
@@ -719,6 +860,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.signal_no_image.priority.created_by,
             self.superuser.email,
         )
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_create_note(self):
         # Partial update to update the status, all interaction via API.
@@ -753,6 +898,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.superuser.email,
         )
 
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
     def test_put_not_allowed(self):
         # Partial update to update the status, all interaction via API.
         self.client.force_authenticate(user=self.superuser)
@@ -783,8 +932,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         data = response.json()
         self.assertEqual(len(data['children']), 2)
-        self.assertJsonSchema(self._load_json_schema("v1_private_get_post_signal_split.json"),
-                              data)
+        self.assertJsonSchema(self.post_split_schema, data)
 
         for item in data['children']:
             self.assertEqual(Signal.objects.count(), 4)
@@ -825,8 +973,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEquals("Child signal 1", json_response['children'][0]['text'])
         self.assertEquals("Child signal 2", json_response['children'][1]['text'])
 
-        self.assertJsonSchema(self._load_json_schema("v1_private_get_post_signal_split.json"),
-                              json_response)
+        self.assertJsonSchema(self.post_split_schema, json_response)
 
     def test_split_get_not_split_signal(self):
         """ A GET /<signal_id>/split on a non-split signal should return a 404 """
@@ -1037,15 +1184,33 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
 
-    def _load_schema(self, filename: str):
-        with open(os.path.join(THIS_DIR, 'json_schema', filename)) as f:
-            return json.load(f)
+        self.retrieve_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'get_signals_v1_public_signals_{uuid}.json'
+            )
+        )
+        self.create_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'post_signals_v1_public_signals.json'
+            )
+        )
+        self.create_attachment_schema = self._load_schema(
+            os.path.join(
+                THIS_DIR,
+                'json_schema',
+                'post_signals_v1_public_signals_attachment.json'
+            )
+        )
 
     def test_create(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEquals(201, response.status_code)
-        self.assertJsonSchema(self._load_schema("v1_public_post_signal.json"), response.json())
+        self.assertJsonSchema(self.create_schema, response.json())
         self.assertEquals(1, Signal.objects.count())
         self.assertTrue('image' in response.json())
         self.assertTrue('attachments' in response.json())
@@ -1080,7 +1245,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
 
         self.assertEquals(200, response.status_code)
-        self.assertJsonSchema(self._load_schema("v1_public_get_signal.json"), response.json())
+        self.assertJsonSchema(self.retrieve_schema, response.json())
 
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
@@ -1091,8 +1256,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
         self.assertEquals(201, response.status_code)
-        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
-                              response.json())
+        self.assertJsonSchema(self.create_attachment_schema, response.json())
 
         attachment = Attachment.objects.last()
         self.assertEquals("image/gif", attachment.mimetype)
@@ -1110,8 +1274,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
             response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
         self.assertEquals(201, response.status_code)
-        self.assertJsonSchema(self._load_schema("v1_public_post_signal_attachment.json"),
-                              response.json())
+        self.assertJsonSchema(self.create_attachment_schema, response.json())
 
         attachment = Attachment.objects.last()
         self.assertEquals("application/msword", attachment.mimetype)
