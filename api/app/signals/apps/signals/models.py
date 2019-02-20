@@ -326,7 +326,7 @@ class Reporter(CreatedUpdatedModel):
     phone = models.CharField(max_length=17, blank=True)
     remove_at = models.DateTimeField(null=True)
 
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True)  # TODO: candidate for removal
 
 
 class CategoryAssignment(CreatedUpdatedModel):

@@ -801,6 +801,68 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEquals(4, Signal.objects.count())
         self.assertEquals(2, len(self.signal_no_image.children.all()))
 
+    def test_split_children_must_inherit_these_properties(self):
+        """When a signal is split its children must inherit certain properties."""
+
+        def is_same_location(a, b):
+            """Compare relevant parts of a Location object."""
+            # TODO: consider moving to method on model.
+            compare_keys = ['address_text', 'address', 'geometrie']
+
+            if type(a) != type(b):
+                return False
+
+            for k in compare_keys:
+                if a[k] != b[k]:
+                    return False
+
+            return True
+
+        # Split the signal, take not of the returned children
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(
+            self.split_endpoint.format(pk=self.signal_no_image.id),
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'}
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        split_json = response.json()
+
+        # Retrieve parent data
+        response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
+        parent_json = response.json()
+
+        for item in split_json['children']:
+            # Retrieve detailed data on each child:
+            response = self.client.get(self.detail_endpoint.format(pk=item['id']))
+            child_json = response.json()
+
+            # Check that status is correctly set
+            self.assertIsNotNone(child_json['status'])
+            self.assertEqual(child_json['status']['state'], workflow.GEMELD)
+
+            # Check that the location is correctly set
+            self.assertIsNotNone(child_json['location'])
+            self.assertTrue(is_same_location(parent_json['location'], child_json['location']))
+
+            # Check that the reporter is correctly set
+            self.assertIsNotNone(child_json['reporter'])
+            self.assertEqual(child_json['reporter']['email'], parent_json['reporter']['email'])
+
+            # Check that the priority is correctly set
+            self.assertIsNotNone(child_json['priority'])
+            self.assertEqual(
+                child_json['priority']['priority'],
+                parent_json['priority']['priority']
+            )
+
+            # Check category assignment
+            self.assertIsNotNone(child_json['category'])
+
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()
         split_data = [
