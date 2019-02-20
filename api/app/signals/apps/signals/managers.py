@@ -1,5 +1,3 @@
-import copy
-
 from django.contrib.gis.db import models
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
@@ -106,53 +104,79 @@ class SignalManager(models.Manager):
         :param signal: Signal object, the original Signal
         :return: Signal object, the original Signal
         """
-        from .models import Status
+        # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
+        from .models import CategoryAssignment, Location, Priority, Reporter, Signal, Status
         from signals.apps.signals import workflow
 
         with transaction.atomic():
-            # The initial status for all new splitted signals
-            initial_status = {'state': workflow.GEMELD, 'text': None, 'user': signal.status.user, }
-
             for validated_data in split_data:
-                split_signal = copy.deepcopy(signal)
+                # Create a new Signal, save it to get an ID in DB.
+                child_signal = Signal.objects.create(**{
+                    'text': validated_data['text'],
+                    'incident_date_start': signal.incident_date_start,
+                    'parent': signal,
+                })
 
-                create_objs = {'location': None,  # We are copying this from the parent
-                               'reporter': None,  # We are copying this from the parent
-                               'priority': None,  # We are copying this from the parent
-                               'category_assignment': None}  # We are copying this from the parent
-                for attr in create_objs.keys():
-                    if hasattr(split_signal, attr):
-                        create_objs[attr] = getattr(split_signal, attr)
-                        setattr(create_objs[attr], 'pk', None)
-                        setattr(create_objs[attr], '_signal', None)
-                        setattr(split_signal, attr, None)
+                # Set the relevant properties: location, status, reporter, priority, cate
+                # Deal with reverse foreign keys to child signal (for history tracking):
+                status = Status.objects.create(**{
+                    '_signal': signal,
+                    'state': workflow.GEMELD,
+                    'text': None,
+                    'user': None,  # i.e. SIA system
+                })
 
-                # Save the cloned signal to the database
-                split_signal.status = None
-                split_signal.pk = None
-                split_signal.save()
+                location_data = {'_signal': signal}
+                location_data.update({
+                    k: getattr(signal.location, k) for k in [
+                        'geometrie',
+                        'stadsdeel',
+                        'buurt_code',
+                        'address',
+                        'created_by',
+                        'extra_properties',
+                        'bag_validated'
+                    ]
+                })
+                location = Location.objects.create(**location_data)
 
-                # Also add a the status GEMELD
-                create_objs.update({'status': Status(**initial_status)})
+                reporter_data = {'_signal': signal}
+                reporter_data.update({
+                    k: getattr(signal.reporter, k) for k in ['email', 'phone', 'remove_at']
+                })
+                reporter = Reporter.objects.create(**reporter_data)
 
-                for key, obj in create_objs.items():
-                    obj._signal_id = split_signal.pk
-                    obj.save()
+                priority_data = {'_signal': signal}
+                priority_data.update({
+                    k: getattr(signal.priority, k) for k in ['priority', 'created_by']
+                })
+                priority = Priority.objects.create(**priority_data)
 
-                # Set data from the serializer
-                split_signal.text = validated_data['text']
+                # For now we first copy category assignment from parent signal
+                # TODO: consider adding category assignment to serializer, to
+                # streamline the process of splitting.
+                category_assignment_data = {'_signal': signal}
+                category_assignment_data.update({
+                    k: getattr(signal.category_assignment, k) for k in [
+                        'sub_category',
+                        'created_by',
+                    ]
+                })
+                category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
 
-                # Link to parent signal
-                split_signal.parent_id = signal.pk
-
-                # Store the signal with all the cloned data to the database
-                split_signal.save()
+                # Deal with forward foreign keys from child signal
+                child_signal.location = location
+                child_signal.status = status
+                child_signal.reporter = reporter
+                child_signal.priority = priority
+                child_signal.category_assignment = category_assignment
+                child_signal.save()
 
             # Let's update the parent signal status to GESPLITST
-            status, prev_status = self._update_status_no_transaction(
-                {'state': workflow.GESPLITST, 'text': 'Signal opgesplitst.', },
-                signal=signal
-            )
+            status, prev_status = self._update_status_no_transaction({
+                'state': workflow.GESPLITST,
+                'text': 'Deze melding is opgesplitst.'
+            }, signal=signal)
 
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
                                                              signal_obj=signal,

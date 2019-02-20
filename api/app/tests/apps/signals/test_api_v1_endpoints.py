@@ -861,7 +861,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             )
 
             # Check category assignment
-            self.assertIsNotNone(child_json['category_assignment'])
+            self.assertIsNotNone(child_json['category'])
 
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()
