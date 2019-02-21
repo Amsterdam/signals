@@ -1053,6 +1053,39 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEquals(412, response.status_code)
         self.assertEquals("Signal has already been split", response.json()["detail"])
 
+    def test_child_cannot_be_split(self):
+        self.client.force_authenticate(user=self.superuser)
+        pk = self.signal_no_image.id
+
+        response = self.client.post(
+            self.split_endpoint.format(pk=pk),
+            [
+                {'text': 'Child #1'},
+                {'text': 'Child #2'}
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+        self.assertEqual(len(data['children']), 2)
+        self.assertJsonSchema(self.post_split_schema, data)
+
+        # Try to split each of the children, should produce HTTP 412 pre-
+        # condition failed.
+        for item in data['children']:
+            pk = item['id']
+            response = self.client.post(
+                self.split_endpoint.format(pk=item['id']),
+                [
+                    {'text': 'Child #1'},
+                    {'text': 'Child #2'}
+                ],
+                format='json',
+            )
+            self.assertEqual(response.status_code, 412)
+
     def test_split_empty_data(self):
         self.client.force_authenticate(user=self.superuser)
 
