@@ -493,8 +493,12 @@ class _NestedSplitSignalSerializer(HALSerializer):
 class PrivateSplitSignalSerializer(serializers.BaseSerializer):
 
     def to_internal_value(self, data):
-        if self.context['view'].get_object().status.state == workflow.GESPLITST:
+        potential_parent_signal = self.context['view'].get_object()
+
+        if potential_parent_signal.status.state == workflow.GESPLITST:
             raise PreconditionFailed("Signal has already been split")
+        if potential_parent_signal.is_child():
+            raise PreconditionFailed("A child signal cannot itself be split.")
 
         serializer = _NestedSplitSignalSerializer(data=data, many=True)
         serializer.is_valid()

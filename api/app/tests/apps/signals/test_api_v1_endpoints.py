@@ -1054,6 +1054,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEquals("Signal has already been split", response.json()["detail"])
 
     def test_child_cannot_be_split(self):
+        """Child signals cannot themselves have children (i.e. not be split)."""
         self.client.force_authenticate(user=self.superuser)
         pk = self.signal_no_image.id
 
