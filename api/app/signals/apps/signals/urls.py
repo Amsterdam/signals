@@ -3,8 +3,9 @@ from django.urls import include, path
 from signals.apps.signals.api_generics.views import SwaggerView
 from signals.apps.signals.v0 import views as v0_views
 from signals.apps.signals.v0.routers import SignalsRouterVersion0
-from signals.apps.signals.v1 import views as v1_views
 from signals.apps.signals.v1.routers import SignalsRouterVersion1
+from signals.apps.signals.v1.views import private as v1_private_views
+from signals.apps.signals.v1.views import public as v1_public_views
 
 # API Version 0
 signal_router_v0 = SignalsRouterVersion0()
@@ -19,45 +20,68 @@ signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, base_name='not
 
 # API Version 1
 signal_router_v1 = SignalsRouterVersion1()
-signal_router_v1.register(r'public/terms/categories',
-                          v1_views.MainCategoryViewSet,
-                          base_name='category')
-signal_router_v1.register(r'private/signals',
-                          v1_views.PrivateSignalViewSet,
-                          base_name='private-signals')
-signal_router_v1.register(r'public/signals',
-                          v1_views.PublicSignalViewSet,
-                          base_name='public-signals')
 
-signal_router_v1.urls.append(
-    path('private/signals/<int:pk>/split',
-         v1_views.PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
-         name='private-signals-split')
+signal_router_v1.register(
+    r'public/terms/categories',
+    v1_public_views.MainCategoryViewSet,
+    base_name='category'
 )
 
-signal_router_v1.urls.append(
-    path('private/signals/<int:pk>/attachments',
-         v1_views.PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
-         name='private-signals-attachments')
+signal_router_v1.register(
+    r'private/signals',
+    v1_private_views.PrivateSignalViewSet,
+    base_name='private-signals'
 )
 
+signal_router_v1.register(
+    r'public/signals',
+    v1_public_views.PublicSignalViewSet,
+    base_name='public-signals'
+)
+
+# Private split
 signal_router_v1.urls.append(
-    path('public/signals/<str:signal_id>/attachments',
-         v1_views.PublicSignalAttachmentsViewSet.as_view({'post': 'create'}),
-         name='public-signals-attachments')
+    path(
+        'private/signals/<int:pk>/split',
+        v1_private_views.PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
+        name='private-signals-split'
+    )
+)
+
+# Private attachments
+signal_router_v1.urls.append(
+    path(
+        'private/signals/<int:pk>/attachments',
+        v1_private_views.PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='private-signals-attachments'
+    )
+)
+
+# Public attachments
+signal_router_v1.urls.append(
+    path(
+        'public/signals/<str:signal_id>/attachments',
+        v1_public_views.PublicSignalAttachmentsViewSet.as_view({'post': 'create'}),
+        name='public-signals-attachments'
+    )
 )
 
 # Appending extra url route for sub category detail endpoint.
 signal_router_v1.urls.append(
-    path('public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-         v1_views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
-         name='sub-category-detail'),
+    path(
+        'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
+        v1_public_views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
+        name='sub-category-detail'
+    )
 )
 
+# PDF
 signal_router_v1.urls.append(
-    path('pdf/SIA-<int:signal_id>.pdf',
-         v1_views.GeneratePdfView.as_view(),
-         name='signal-pdf-download'),
+    path(
+        'pdf/SIA-<int:signal_id>.pdf',
+        v1_private_views.GeneratePdfView.as_view(),
+        name='signal-pdf-download'
+    )
 )
 
 urlpatterns = [

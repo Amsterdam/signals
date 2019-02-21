@@ -9,47 +9,20 @@ from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
-from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Attachment, History, Signal
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
-    MainCategoryHALSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PrivateSplitSignalSerializer,
-    PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail,
-    SignalAttachmentSerializer,
-    SubCategoryHALSerializer
+    SignalAttachmentSerializer
 )
 from signals.auth.backend import JWTAuthBackend
-
-
-class MainCategoryViewSet(DatapuntViewSet):
-    queryset = MainCategory.objects.all()
-    serializer_detail_class = MainCategoryHALSerializer
-    serializer_class = MainCategoryHALSerializer
-    lookup_field = 'slug'
-
-
-class SubCategoryViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = SubCategory.objects.all()
-    serializer_class = SubCategoryHALSerializer
-    pagination_class = HALPagination
-
-    def get_object(self):
-        queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset,
-                                main_category__slug=self.kwargs['slug'],
-                                slug=self.kwargs['sub_slug'])
-        self.check_object_permissions(self.request, obj)
-        return obj
 
 
 class PrivateSignalViewSet(DatapuntViewSet,
@@ -85,46 +58,23 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
     queryset = Signal.objects.all()
 
 
-class PublicSignalViewSet(mixins.CreateModelMixin,
-                          DetailSerializerMixin,
-                          mixins.RetrieveModelMixin,
-                          viewsets.GenericViewSet):
-    queryset = Signal.objects.all()
-    serializer_class = PublicSignalCreateSerializer
-    serializer_detail_class = PublicSignalSerializerDetail
-    lookup_field = 'signal_id'
-
-
-class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                                      viewsets.GenericViewSet):
     serializer_class = SignalAttachmentSerializer
-    signal = None
-    is_public = True
-    lookup_field = 'signal_id'
-    lookup_url_kwarg = 'signal_id'
-
-    def _get_signal(self):
-        if self.signal is None:
-            self.signal = Signal.objects.get(
-                **{self.lookup_field: self.kwargs[self.lookup_url_kwarg]})
-
-        return self.signal
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['signal'] = self._get_signal()
-        context['is_public'] = self.is_public
-
-        return context
-
-
-class PrivateSignalAttachmentsViewSet(PublicSignalAttachmentsViewSet, mixins.ListModelMixin):
-    is_public = False
     pagination_class = None
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+
+    _signal = None
+
+    @property
+    def signal(self):
+        if not self._signal:
+            signal_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
+            self._signal = Signal.objects.get(pk=signal_id)
+
+        return self._signal
 
     def get_queryset(self):
-        return Attachment.actions.get_attachments(self._get_signal())
+        return Attachment.actions.get_attachments(self.signal)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):

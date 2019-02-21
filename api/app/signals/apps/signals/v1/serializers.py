@@ -559,17 +559,22 @@ class SignalAttachmentSerializer(HALSerializer):
         extra_kwargs = {'file': {'write_only': True}}
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._public = getattr(kwargs['context']['view'], 'is_public', False)
 
         # Set correct version of the links field (public/private)
-        if kwargs['context']['is_public']:
+        if self._public:
             self.serializer_url_field = PublicSignalAttachmentLinksField
         else:
             self.serializer_url_field = PrivateSignalAttachmentLinksField
 
-        super().__init__(*args, **kwargs)
-
     def create(self, validated_data):
-        signal = self.context['signal']
+        if self._public:
+            signal = self.context['view'].get_object()
+        else:
+            signal = self.context['view'].signal
+
         attachment = Signal.actions.add_attachment(validated_data['file'], signal)
 
         if self.context['request'].user:
