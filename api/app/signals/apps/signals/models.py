@@ -408,6 +408,8 @@ class Status(CreatedUpdatedModel):
             current_state = workflow.LEEG
             current_state_display = workflow.LEEG
 
+            logger.warning('Signal #{} has status set to None'.format(self._signal.pk))
+
         new_state = self.state
         new_state_display = self.get_state_display()
 

@@ -844,7 +844,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
-        # The only status that is allowed is "GEMELD" so let's set it
+        # The only status that is allowed is "GEMELD" so check with a diferrent state
         data = {'status': {'text': 'Test status update', 'state': 'b'}}
         with self.assertRaises(ValidationError):
             self.client.patch(detail_endpoint, data, format='json')
