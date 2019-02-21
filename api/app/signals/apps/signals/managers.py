@@ -108,25 +108,26 @@ class SignalManager(models.Manager):
         from .models import CategoryAssignment, Location, Priority, Reporter, Signal, Status
         from signals.apps.signals import workflow
 
+        parent_signal = signal
         with transaction.atomic():
             for validated_data in split_data:
                 # Create a new Signal, save it to get an ID in DB.
                 child_signal = Signal.objects.create(**{
                     'text': validated_data['text'],
-                    'incident_date_start': signal.incident_date_start,
-                    'parent': signal,
+                    'incident_date_start': parent_signal.incident_date_start,
+                    'parent': parent_signal,
                 })
 
                 # Set the relevant properties: location, status, reporter, priority, cate
                 # Deal with reverse foreign keys to child signal (for history tracking):
                 status = Status.objects.create(**{
-                    '_signal': signal,
+                    '_signal': child_signal,
                     'state': workflow.GEMELD,
                     'text': None,
                     'user': None,  # i.e. SIA system
                 })
 
-                location_data = {'_signal': signal}
+                location_data = {'_signal': child_signal}
                 location_data.update({
                     k: getattr(signal.location, k) for k in [
                         'geometrie',
@@ -140,13 +141,13 @@ class SignalManager(models.Manager):
                 })
                 location = Location.objects.create(**location_data)
 
-                reporter_data = {'_signal': signal}
+                reporter_data = {'_signal': child_signal}
                 reporter_data.update({
                     k: getattr(signal.reporter, k) for k in ['email', 'phone', 'remove_at']
                 })
                 reporter = Reporter.objects.create(**reporter_data)
 
-                priority_data = {'_signal': signal}
+                priority_data = {'_signal': child_signal}
                 priority_data.update({
                     k: getattr(signal.priority, k) for k in ['priority', 'created_by']
                 })
@@ -155,7 +156,7 @@ class SignalManager(models.Manager):
                 # For now we first copy category assignment from parent signal
                 # TODO: consider adding category assignment to serializer, to
                 # streamline the process of splitting.
-                category_assignment_data = {'_signal': signal}
+                category_assignment_data = {'_signal': child_signal}
                 category_assignment_data.update({
                     k: getattr(signal.category_assignment, k) for k in [
                         'sub_category',
@@ -176,7 +177,7 @@ class SignalManager(models.Manager):
             status, prev_status = self._update_status_no_transaction({
                 'state': workflow.GESPLITST,
                 'text': 'Deze melding is opgesplitst.'
-            }, signal=signal)
+            }, signal=parent_signal)
 
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
                                                              signal_obj=signal,
