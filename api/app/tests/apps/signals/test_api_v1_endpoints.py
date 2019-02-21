@@ -4,6 +4,7 @@ import os
 from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.http import urlencode
 from rest_framework.reverse import reverse
@@ -784,6 +785,74 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.signal_no_image.status.user,
             self.superuser.email,
         )
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_status_signal_has_no_status(self):
+        # A signal that has no status
+        signal_no_status = SignalFactoryValidLocation.create(status=None)
+
+        # Partial update to update the status, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
+        history_endpoint = '?'.join([
+            self.history_endpoint.format(pk=signal_no_status.id),
+            urlencode({'what': 'UPDATE_STATUS'})
+        ])
+
+        # check that there is no Status is in the history
+        response = self.client.get(history_endpoint)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+        # The only status that is allowed is "GEMELD" so let's set it
+        data = {'status': {'text': 'Test status update', 'state': 'm'}}
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that the Status is there
+        response = self.client.get(history_endpoint)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+
+        # check that the correct user is logged
+        signal_no_status.refresh_from_db()
+        self.assertEqual(signal_no_status.status.user, self.superuser.email)
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_status_signal_has_no_status_invalid_new_state(self):
+        # A signal that has no status
+        signal_no_status = SignalFactoryValidLocation.create(status=None)
+
+        # Partial update to update the status, all interaction via API.
+        self.client.force_authenticate(user=self.superuser)
+
+        detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
+        history_endpoint = '?'.join([
+            self.history_endpoint.format(pk=signal_no_status.id),
+            urlencode({'what': 'UPDATE_STATUS'})
+        ])
+
+        # check that there is no Status is in the history
+        response = self.client.get(history_endpoint)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+        # The only status that is allowed is "GEMELD" so let's set it
+        data = {'status': {'text': 'Test status update', 'state': 'b'}}
+        with self.assertRaises(ValidationError):
+            self.client.patch(detail_endpoint, data, format='json')
+
+        # check that the Status is there
+        response = self.client.get(history_endpoint)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
 
         # JSONSchema validation
         response_json = response.json()

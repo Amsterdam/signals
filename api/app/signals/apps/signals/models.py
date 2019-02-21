@@ -398,8 +398,16 @@ class Status(CreatedUpdatedModel):
         :returns:
         """
         errors = {}
-        current_state = self._signal.status.state
-        current_state_display = self._signal.status.get_state_display()
+
+        if self._signal.status:
+            # We already have a status so let's check if the new status can be set
+            current_state = self._signal.status.state
+            current_state_display = self._signal.status.get_state_display()
+        else:
+            # No status has been set yet so we default to LEEG
+            current_state = workflow.LEEG
+            current_state_display = workflow.LEEG
+
         new_state = self.state
         new_state_display = self.get_state_display()
 
