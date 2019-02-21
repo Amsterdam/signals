@@ -1,0 +1,48 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "array",
+	"items": [
+		{
+			"type": "object",
+			"properties": {
+				"identifier": {
+					"type": "string"
+				},
+				"when": {
+					"type": "string"
+				},
+				"what": {
+					"type": "string"
+				},
+				"action": {
+					"type": "string"
+				},
+				"description": {
+					"anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+				},
+				"who": {
+					"type": "string"
+				},
+				"_signal": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"identifier",
+				"when",
+				"what",
+				"action",
+				"description",
+				"who",
+				"_signal"
+			]
+		}
+	]
+}
