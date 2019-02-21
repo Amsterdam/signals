@@ -34,8 +34,8 @@ class BatchUpdate:
         self.auth_header = self._get_access_token()
 
     def run(self):
-        for id, status, text in self.rows:
-            self._update_status(id, status, text)
+        for _id, status, text in self.rows:
+            self._update_status(_id, status, text)
 
     def _get_access_token(self):
         gat = GetAccessToken()
