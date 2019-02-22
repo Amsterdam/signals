@@ -1,16 +1,16 @@
-import csv
-import os
-import sys
-
-import requests
-from get_signals import GetAccessToken
-
 """
 update_status_batch.py - Batch update signal status script
 
 Expects a CSV file with status updates as input, with three values per row; the signal id, the new
 status (m, o, e, i, or ...) and the status change text.
 """
+import argparse
+import csv
+import os
+import sys
+
+import requests
+from get_signals import GetAccessToken
 
 EMAIL = ''
 PASSWORD = ''
@@ -76,10 +76,33 @@ class BatchUpdate:
         print("Signal {: >8}: ERROR".format(signal_id))
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Please provide an input CSV")
-        exit(1)
+def handle_commandline():
+    parser = argparse.ArgumentParser(description='Perform bulk status update.')
+    parser.add_argument(
+        'csv_file', metavar='CSV_FILE', type=str,
+        help='CSV file with <signal id>;<status string>;<Status update message>',
+    )
+    parser.add_argument(
+        '--url', metavar='API_URL', type=str, required=True,
+        help='Signals API Base url e.g. http://localhost:8000/signals'
+    )
+    parser.add_argument(
+        '--user', metavar='USER', type=str, required=True,
+        help='SIA user on whose behalf these changes will be performed'
+    )
+    parser.add_argument(
+        '--password', metavar='PW', type=str, required=True,
+        help='Password to authenticate the SIA user with.'
+    )
+    parser.add_argument(
+        '--production', type=bool, action='store_true',
+        help='Perform bulk update on the PRODUCTION system!'
+    )
 
-    batch_update = BatchUpdate(sys.argv[1])
-    batch_update.run()
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    args = handle_commandline()
+
+    batch_update = BatchUpdate(args.csv_file)
+    # batch_update.run()
