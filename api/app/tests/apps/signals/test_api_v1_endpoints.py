@@ -1262,7 +1262,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
-        self.assertIsInstance(self.signal._image_attachment(), Attachment)
+        self.assertIsInstance(self.signal.attachments.filter(is_image=True).first(), Attachment)
 
     def test_attachment_upload(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)
@@ -1275,7 +1275,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
-        self.assertIsNone(self.signal._image_attachment())
+        self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
         self.assertEquals('superuser@example.com', self.signal.attachments.first().created_by)
 
     def test_create_contains_image_and_attachments(self):

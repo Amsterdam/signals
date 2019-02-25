@@ -8,9 +8,9 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 from signals.apps.signals.models import MainCategory, Signal, SubCategory
 from signals.apps.signals.v1.serializers import (
     MainCategoryHALSerializer,
+    PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
-    SignalAttachmentSerializer,
     SubCategoryHALSerializer
 )
 
@@ -18,8 +18,6 @@ from signals.apps.signals.v1.serializers import (
 class PublicSignalGenericViewSet(GenericViewSet):
     lookup_field = 'signal_id'
     lookup_url_kwarg = 'signal_id'
-
-    is_public = True
 
     queryset = Signal.objects.all()
 
@@ -34,7 +32,7 @@ class PublicSignalViewSet(CreateModelMixin, DetailSerializerMixin, RetrieveModel
 
 
 class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSet):
-    serializer_class = SignalAttachmentSerializer
+    serializer_class = PublicSignalAttachmentSerializer
 
 
 class MainCategoryViewSet(DatapuntViewSet):

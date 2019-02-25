@@ -558,24 +558,9 @@ class SignalAttachmentSerializer(HALSerializer):
 
         extra_kwargs = {'file': {'write_only': True}}
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self._public = getattr(kwargs['context']['view'], 'is_public', False)
-
-        # Set correct version of the links field (public/private)
-        if self._public:
-            self.serializer_url_field = PublicSignalAttachmentLinksField
-        else:
-            self.serializer_url_field = PrivateSignalAttachmentLinksField
-
     def create(self, validated_data):
-        if self._public:
-            signal = self.context['view'].get_object()
-        else:
-            signal = self.context['view'].signal
-
-        attachment = Signal.actions.add_attachment(validated_data['file'], signal)
+        attachment = Signal.actions.add_attachment(validated_data['file'],
+                                                   self.context['view'].get_object())
 
         if self.context['request'].user:
             attachment.created_by = self.context['request'].user.email
@@ -586,8 +571,15 @@ class SignalAttachmentSerializer(HALSerializer):
     def validate_file(self, file):
         if file.size > 8388608:  # 8MB = 8*1024*1024
             raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
-
         return file
+
+
+class PublicSignalAttachmentSerializer(SignalAttachmentSerializer):
+    serializer_url_field = PublicSignalAttachmentLinksField
+
+
+class PrivateSignalAttachmentSerializer(SignalAttachmentSerializer):
+    serializer_url_field = PrivateSignalAttachmentLinksField
 
 
 class PublicSignalSerializerDetail(HALSerializer):

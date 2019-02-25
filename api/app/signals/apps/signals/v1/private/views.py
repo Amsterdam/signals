@@ -12,15 +12,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from signals.apps.signals.api_generics.permissions import SIAPermissions
-from signals.apps.signals.models import Attachment, History, Signal
+from signals.apps.signals.models import History, Signal
 from signals.apps.signals.pdf.views import PDFTemplateView
 from signals.apps.signals.v1.filters import SignalFilter
 from signals.apps.signals.v1.serializers import (
     HistoryHalSerializer,
+    PrivateSignalAttachmentSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    PrivateSplitSignalSerializer,
-    SignalAttachmentSerializer
+    PrivateSplitSignalSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 
@@ -60,21 +60,10 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
 
 class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                                       viewsets.GenericViewSet):
-    serializer_class = SignalAttachmentSerializer
+    serializer_class = PrivateSignalAttachmentSerializer
     pagination_class = None
 
-    _signal = None
-
-    @property
-    def signal(self):
-        if not self._signal:
-            signal_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
-            self._signal = Signal.objects.get(pk=signal_id)
-
-        return self._signal
-
-    def get_queryset(self):
-        return Attachment.actions.get_attachments(self.signal)
+    queryset = Signal.objects.all()
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
