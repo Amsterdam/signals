@@ -66,7 +66,7 @@ signal_router_v1.urls.append(
 # New PDF route according to the correct URL convention
 signal_router_v1.urls.append(
     path(
-        'private/signals/pdf/SIA-<int:signal_id>.pdf',
+        'private/signals/<int:pk>/pdf',
         v1_private_views.GeneratePdfView.as_view(),
         name='signal-pdf-download'
     )

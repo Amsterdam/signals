@@ -68,7 +68,6 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
     object = None
-    pk_url_kwarg = 'signal_id'
     queryset = Signal.objects.all()
 
     template_name = 'signals/pdf/print_signal.html'
