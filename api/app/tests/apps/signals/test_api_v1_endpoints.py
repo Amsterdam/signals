@@ -1171,7 +1171,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
+            response.json()['children'],
             "A signal can only be split into min 2 and max 3 signals"
         )
 
@@ -1194,7 +1194,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
+            response.json()['children'],
             'A signal can only be split into min 2 and max 3 signals'
         )
 
@@ -1220,7 +1220,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0],
+            response.json()['children'],
             'A signal can only be split into min 2 and max 3 signals'
         )
 

@@ -1,6 +1,8 @@
 """
 Serializsers that are used exclusively by the V1 API
 """
+from collections import OrderedDict
+
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -490,7 +492,7 @@ class _NestedSplitSignalSerializer(HALSerializer):
         )
 
 
-class PrivateSplitSignalSerializer(serializers.BaseSerializer):
+class PrivateSplitSignalSerializer(serializers.Serializer):
 
     def to_internal_value(self, data):
         potential_parent_signal = self.context['view'].get_object()
@@ -503,19 +505,22 @@ class PrivateSplitSignalSerializer(serializers.BaseSerializer):
         serializer = _NestedSplitSignalSerializer(data=data, many=True)
         serializer.is_valid()
 
+        errors = OrderedDict()
         if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
                 self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
-            raise ValidationError(
-                'A signal can only be split into min {} and max {} signals'.format(
-                    settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
-                ))
+            errors["children"] = 'A signal can only be split into min {} and max {} signals'.format(
+                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
+            )
+
+        if errors:
+            raise ValidationError(errors)
 
         return {
             "children": self.initial_data
         }
 
     def to_representation(self, signal):
-        if self.context['view'].get_object().children.count() == 0:
+        if signal.children.count() == 0:
             raise NotFound("Split signal not found")
 
         links_field = PrivateSignalSplitLinksField(self.context['view'])
