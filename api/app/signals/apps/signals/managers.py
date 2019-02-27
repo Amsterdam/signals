@@ -16,19 +16,6 @@ update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_p
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 
-class AttachmentManager(models.Manager):
-
-    def get_attachments(self, signal):
-        from signals.apps.signals.models import Attachment
-
-        return Attachment.objects.filter(_signal=signal).order_by('created_at')
-
-    def get_images(self, signal):
-        from signals.apps.signals.models import Attachment
-
-        return Attachment.objects.filter(_signal=signal, is_image=True).order_by('created_at')
-
-
 class SignalManager(models.Manager):
 
     def _create_initial_no_transaction(self, signal_data, location_data, status_data,

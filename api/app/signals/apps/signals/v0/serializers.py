@@ -12,7 +12,6 @@ from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
-    Attachment,
     CategoryAssignment,
     Department,
     Location,
@@ -58,7 +57,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
     def _image_attachment_exists(self):
         signal_id = self.initial_data.get('signal_id')
         signal = Signal.objects.get(signal_id=signal_id)
-        image_attachments = Attachment.actions.get_images(signal)
+        image_attachments = signal.attachments.filter(is_image=True)
 
         return len(image_attachments) > 0
 

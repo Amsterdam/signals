@@ -16,7 +16,7 @@ from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
-from signals.apps.signals.managers import AttachmentManager, SignalManager
+from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 logger = logging.getLogger(__name__)
@@ -98,32 +98,20 @@ class Signal(CreatedUpdatedModel):
     def image(self):
         """ Field for backwards compatibility. The attachment table replaces the old 'image'
         property """
-        attachment = self._image_attachment()
-
+        attachment = self.attachments.filter(is_image=True).first()
         return attachment.file if attachment else ""
 
     @property
     def image_crop(self):
-        attachment = self._image_attachment()
-
-        if attachment:
-            return attachment.image_crop
-
-        return ""
-
-    @property
-    def attachments(self):
-        return Attachment.actions.get_attachments(self)
-
-    def _image_attachment(self):
-        return Attachment.actions.get_images(self).first()
+        attachment = self.attachments.filter(is_image=True).first()
+        return attachment.image_crop if self.image else ''
 
     class Meta:
         permissions = (
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
         )
-        ordering = ('created_at',)
+        ordering = ('created_at', )
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -607,7 +595,9 @@ class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     _signal = models.ForeignKey(
         "signals.Signal",
-        null=False, on_delete=models.CASCADE
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='attachments',
     )
     file = models.FileField(
         upload_to='attachments/%Y/%m/%d/',
@@ -618,8 +608,8 @@ class Attachment(CreatedUpdatedModel):
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
 
-    objects = models.Manager()
-    actions = AttachmentManager()
+    class Meta:
+        ordering = ('created_at', )
 
     class NotAnImageException(Exception):
         pass
