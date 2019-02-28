@@ -172,7 +172,7 @@ class SignalManager(models.Manager):
             }, signal=parent_signal)
 
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
-                                                             signal_obj=signal,
+                                                             signal_obj=parent_signal,
                                                              status=status,
                                                              prev_status=prev_status))
 
