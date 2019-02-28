@@ -3,6 +3,7 @@ from unittest import mock
 from django.test import TestCase
 
 from signals.apps.signals.managers import (
+    create_child,
     create_initial,
     update_category_assignment,
     update_location,
@@ -98,3 +99,14 @@ class TestSignalReceivers(TestCase):
                              prev_reporter=prev_reporter)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
+
+    @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
+    def test_create_child_handler(self, mocked_tasks):
+        signal = SignalFactory.create()
+        create_child.send(sender=self.__class__, signal_obj=signal)
+
+        mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_handhaving_or_oost.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_toezicht_or_nieuw_west.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_vth_nieuw_west.delay.assert_called_once_with(pk=signal.id)

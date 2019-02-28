@@ -4,6 +4,7 @@ from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
+create_child = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
 add_attachment = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
@@ -159,6 +160,10 @@ class SignalManager(models.Manager):
                 child_signal.priority = priority
                 child_signal.category_assignment = category_assignment
                 child_signal.save()
+
+                # Ensure each child signal creation sends a DjangoSignal.
+                transaction.on_commit(lambda: create_child.send(sender=self.__class__,
+                                                                signal_obj=child_signal))
 
             # Let's update the parent signal status to GESPLITST
             status, prev_status = self._update_status_no_transaction({
