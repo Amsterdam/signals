@@ -45,13 +45,13 @@ class SubCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
     def to_internal_value(self, data):
         request = self.context.get('request', None)
-        origional_version = request.version
+        original_version = request.version
 
         # Tricking DRF to use API version `v1` because our `sub-category-detail` view lives in API
         # version 1. Afterwards we revert back to the origional API version from the request.
         request.version = 'v1'
         value = super().to_internal_value(data)
-        request.version = origional_version
+        request.version = original_version
 
         return value
 
@@ -91,16 +91,28 @@ class NoteHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 
 
 class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
-
     def to_representation(self, value):
         request = self.context.get('request')
 
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse("signal-namespace", request=request))),
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
-            ('attachments',
+            ('sia:attachments',
              dict(href=self.get_url(value, "private-signals-attachments", request, None))),
         ])
+
+        if value.is_child():
+            result.update({
+                'sia:parent':
+                dict(href=self.get_url(value.parent, "private-signals-detail", request, None))
+            })
+
+        if value.is_parent():
+            result.update({'sia:children': [
+                dict(href=self.get_url(child, "private-signals-detail", request, None))
+                for child in value.children.all()
+            ]})
 
         return result
 

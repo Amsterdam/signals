@@ -72,6 +72,14 @@ signal_router_v1.urls.append(
     )
 )
 
+signal_router_v1.urls.append(
+    path(
+        'relations',
+        v1_public_views.NamespaceView.as_view(),
+        name='signal-namespace'
+    )
+)
+
 urlpatterns = [
     path('v1/', include(signal_router_v1.urls)),
 ]
