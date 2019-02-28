@@ -68,6 +68,7 @@ class TestCore(TestCase):
         self.assertEqual(num_of_messages, None)
 
     def test_create_status_change_notification_message(self):
+
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done.')
         self.signal.status = status
@@ -117,7 +118,8 @@ class TestSignalSplitEmailFlow(TestCase):
         self.child_signal_2 = SignalFactory.create(
             status__state=workflow.GEMELD, parent=self.parent_signal)
 
-    def test_send_mail_reporter_status_changed_split_faal(self):
+    def test_send_mail_reporter_status_changed_split(self):
+        """Original reporter must be emailed with resolution GESPLITST."""
         num_of_messages = core.send_mail_reporter_status_changed_split(
             self.parent_signal, self.parent_signal.status)
 
@@ -127,6 +129,7 @@ class TestSignalSplitEmailFlow(TestCase):
         self.assertEqual(mail.outbox[0].to, ['piet@example.com'])
 
     def test_send_mail_reporter_status_changed_split_no_correct_status(self):
+        """No resolution GESPLITST email should be sent if status is not GESPLITST."""
         wrong_status = StatusFactory.create(state=workflow.GEMELD)
         self.parent_signal.status = wrong_status
 
@@ -135,6 +138,7 @@ class TestSignalSplitEmailFlow(TestCase):
         self.assertEqual(num_of_messages, None)
 
     def test_send_mail_reporter_status_changed_split_no_email(self):
+        """No email should be sent when the reporter did not leave an email address."""
         self.parent_signal.reporter.email = None
         self.parent_signal.save()
 
@@ -143,7 +147,7 @@ class TestSignalSplitEmailFlow(TestCase):
         self.assertEqual(num_of_messages, None)
 
     def test_create_status_change_notification_split(self):
-
+        """Resolution GESPLITST email must contain references to relevant signals."""
         txt_message = core.create_status_change_notification_split(
             self.parent_signal, self.parent_signal.status)
 
