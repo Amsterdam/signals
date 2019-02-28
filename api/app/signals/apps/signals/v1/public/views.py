@@ -2,6 +2,8 @@ from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
@@ -54,3 +56,14 @@ class SubCategoryViewSet(RetrieveModelMixin, GenericViewSet):
                                 slug=self.kwargs['sub_slug'])
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class NamespaceView(APIView):
+    """
+    Used for the curies namespace, at this moment it is just a dummy landing page so that we have
+    a valid URI that resolves
+
+    TODO: Implement HAL standard for curies in the future
+    """
+    def get(self, request):
+        return Response()
