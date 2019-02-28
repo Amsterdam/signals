@@ -101,6 +101,7 @@ def send_mail_reporter_status_changed_split(signal, status):
     :returns: number of successfully send messages or None
     """
     signal_split = status.state == workflow.GESPLITST
+
     if not signal_split or not signal.reporter.email:
         return None
 
@@ -123,6 +124,6 @@ def create_status_change_notification_split(signal, status):
         'status': status,
     }
 
-    template = loader.get_template('email/signals_status_changed_split.txt')
+    template = loader.get_template('email/signal_status_changed_split.txt')
     message = template.render(context)
     return message

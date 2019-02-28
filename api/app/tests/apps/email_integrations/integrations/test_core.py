@@ -106,3 +106,46 @@ class TestCore(TestCase):
                                                                            status=status)
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
+
+
+class TestSignalSplitEmailFlow(TestCase):
+    def setUp(self):
+        self.parent_signal = SignalFactory.create(
+            status__state=workflow.GESPLITST, parent=None, reporter__email='piet@example.com')
+        self.child_signal_1 = SignalFactory.create(
+            status__state=workflow.GEMELD, parent=self.parent_signal)
+        self.child_signal_2 = SignalFactory.create(
+            status__state=workflow.GEMELD, parent=self.parent_signal)
+
+    def test_send_mail_reporter_status_changed_split_faal(self):
+        num_of_messages = core.send_mail_reporter_status_changed_split(
+            self.parent_signal, self.parent_signal.status)
+
+        self.assertEqual(num_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.parent_signal.id}')
+        self.assertEqual(mail.outbox[0].to, ['piet@example.com'])
+
+    def test_send_mail_reporter_status_changed_split_no_correct_status(self):
+        wrong_status = StatusFactory.create(state=workflow.GEMELD)
+        self.parent_signal.status = wrong_status
+
+        num_of_messages = core.send_mail_reporter_status_changed_split(
+            self.parent_signal, self.parent_signal.status)
+        self.assertEqual(num_of_messages, None)
+
+    def test_send_mail_reporter_status_changed_split_no_email(self):
+        self.parent_signal.reporter.email = None
+        self.parent_signal.save()
+
+        num_of_messages = core.send_mail_reporter_status_changed_split(
+            self.parent_signal, self.parent_signal.status)
+        self.assertEqual(num_of_messages, None)
+
+    def test_create_status_change_notification_split(self):
+
+        txt_message = core.create_status_change_notification_split(
+            self.parent_signal, self.parent_signal.status)
+
+        for signal in [self.parent_signal, self.child_signal_1, self.child_signal_2]:
+            self.assertIn(str(signal.id), txt_message)

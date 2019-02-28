@@ -10,7 +10,8 @@ from signals.apps.zds.exceptions import (
     DocumentNotCreatedException,
     StatusNotCreatedException
 )
-# TODO: when the ZDS integration is updated, it should also listen to 
+
+# TODO: when the ZDS integration is updated, it should also listen to
 # `create_child` DjangoSignals (these are used when new SIA Signals are
 # created after a split action).
 
