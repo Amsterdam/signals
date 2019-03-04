@@ -1035,7 +1035,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
             return True
 
-        # Split the signal, take not of the returned children
+        # Split the signal, take note of the returned children
         self.client.force_authenticate(user=self.superuser)
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_no_image.id),
@@ -1079,6 +1079,58 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
             # Check category assignment
             self.assertIsNotNone(child_json['category'])
+
+    def test_split_children_must_inherit_parent_images(self):
+        # Split the signal, take note of the returned children
+
+        def md5(fname):
+            import hashlib
+            hash_md5 = hashlib.md5()
+            with open(fname, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(
+            self.split_endpoint.format(pk=self.signal_with_image.id),
+            [
+                {'text': 'Child #1', 'reuse_parent_image': True},
+                {'text': 'Child #2', 'reuse_parent_image': True}
+            ],
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        self.signal_with_image.refresh_from_db()
+
+        md5_parent_image = md5(self.signal_with_image.image.path)
+        for child_signal in self.signal_with_image.children.all():
+            md5_child_image = md5(child_signal.image.path)
+
+            self.assertEqual(md5_parent_image, md5_child_image)
+
+    def test_split_children_must_inherit_parent_images_for_1st_child(self):
+        # Split the signal, take note of the returned children
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(
+            self.split_endpoint.format(pk=self.signal_with_image.id),
+            [
+                {'text': 'Child #1', 'reuse_parent_image': True},
+                {'text': 'Child #2'}
+            ],
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+        self.signal_with_image.refresh_from_db()
+
+        child_signal_1 = self.signal_with_image.children.first()
+        self.assertNotEqual(child_signal_1.image, '')
+
+        child_signal_2 = self.signal_with_image.children.last()
+        self.assertEqual(child_signal_2.image, '')
 
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()

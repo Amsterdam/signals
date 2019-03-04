@@ -93,12 +93,16 @@ class SignalManager(models.Manager):
         :return: Signal object, the original Signal
         """
         # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
-        from .models import CategoryAssignment, Location, Priority, Reporter, Signal, Status
+        from .models import (Attachment, CategoryAssignment, Location, Priority, Reporter,
+                             Signal, Status)
         from signals.apps.signals import workflow
 
+        loop_counter = 0
         parent_signal = signal
         with transaction.atomic():
             for validated_data in split_data:
+                loop_counter += 1
+
                 # Create a new Signal, save it to get an ID in DB.
                 child_signal = Signal.objects.create(**{
                     'text': validated_data['text'],
@@ -117,7 +121,7 @@ class SignalManager(models.Manager):
 
                 location_data = {'_signal': child_signal}
                 location_data.update({
-                    k: getattr(signal.location, k) for k in [
+                    k: getattr(parent_signal.location, k) for k in [
                         'geometrie',
                         'stadsdeel',
                         'buurt_code',
@@ -131,22 +135,24 @@ class SignalManager(models.Manager):
 
                 reporter_data = {'_signal': child_signal}
                 reporter_data.update({
-                    k: getattr(signal.reporter, k) for k in ['email', 'phone', 'remove_at']
+                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'remove_at']
                 })
                 reporter = Reporter.objects.create(**reporter_data)
 
-                priority_data = {'_signal': child_signal}
-                priority_data.update({
-                    k: getattr(signal.priority, k) for k in ['priority', 'created_by']
-                })
-                priority = Priority.objects.create(**priority_data)
+                priority = None
+                if parent_signal.priority:
+                    priority_data = {'_signal': child_signal}
+                    priority_data.update({
+                        k: getattr(parent_signal.priority, k) for k in ['priority', 'created_by']
+                    })
+                    priority = Priority.objects.create(**priority_data)
 
                 # For now we first copy category assignment from parent signal
                 # TODO: consider adding category assignment to serializer, to
                 # streamline the process of splitting.
                 category_assignment_data = {'_signal': child_signal}
                 category_assignment_data.update({
-                    k: getattr(signal.category_assignment, k) for k in [
+                    k: getattr(parent_signal.category_assignment, k) for k in [
                         'sub_category',
                         'created_by',
                     ]
@@ -164,6 +170,28 @@ class SignalManager(models.Manager):
                 # Ensure each child signal creation sends a DjangoSignal.
                 transaction.on_commit(lambda: create_child.send(sender=self.__class__,
                                                                 signal_obj=child_signal))
+
+                # Check if we need to copy the images of the parent
+                if 'reuse_parent_image' in validated_data and validated_data['reuse_parent_image']:
+                    parent_image_qs = parent_signal.attachments.filter(is_image=True)
+                    if parent_image_qs.exists():
+                        for parent_image in parent_image_qs.all():
+                            # Copy the original file and rename it by pre-pending the name with
+                            # split_{loop_counter}_{original_name}
+                            child_image_name = 'split_{}_{}'.format(
+                                loop_counter,
+                                parent_image.file.name.split('/').pop()
+                            )
+
+                            attachment = Attachment()
+                            attachment._signal = child_signal
+                            try:
+                                attachment.file.save(name=child_image_name,
+                                                     content=parent_image.file)
+                            except FileNotFoundError:
+                                pass
+                            else:
+                                attachment.save()
 
             # Let's update the parent signal status to GESPLITST
             status, prev_status = self._update_status_no_transaction({

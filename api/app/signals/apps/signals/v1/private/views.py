@@ -56,6 +56,7 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
                                 viewsets.GenericViewSet):
     serializer_class = PrivateSplitSignalSerializer
     queryset = Signal.objects.all()
+    pagination_class = None
 
 
 class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,

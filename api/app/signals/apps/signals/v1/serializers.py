@@ -478,12 +478,14 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
 
 class _NestedSplitSignalSerializer(HALSerializer):
     serializer_url_field = PrivateSignalLinksField
+    reuse_parent_image = serializers.BooleanField(default=False, write_only=True)
 
     class Meta:
         model = Signal
         fields = (
             'id',
             'text',
+            'reuse_parent_image',
             '_links',
         )
         read_only_fields = (
