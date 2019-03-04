@@ -1,6 +1,6 @@
 Beste melder,
 
-Uw melding over {{ signal.category_assignment.sub_category.name }}} met registratienummer {{ signal.id }} bevatte 
+Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} bevatte
 verschillende onderwerpen. Wij hebben daarom deze melding opgesplitst in de
 volgende aparte meldingen:
 
