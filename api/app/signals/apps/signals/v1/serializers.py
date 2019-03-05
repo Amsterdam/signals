@@ -506,7 +506,7 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         if potential_parent_signal.is_child():
             raise PreconditionFailed("A child signal cannot itself be split.")
 
-        serializer = _NestedSplitSignalSerializer(data=data, many=True)
+        serializer = _NestedSplitSignalSerializer(data=data, many=True, context=self.context)
         serializer.is_valid()
 
         errors = OrderedDict()
