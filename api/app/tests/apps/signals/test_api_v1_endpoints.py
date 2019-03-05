@@ -347,6 +347,8 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             handling=SubCategory.HANDLING_A3DMC,
         )
         self.test_cat_sub.save()
+        assert 'sub-category-' not in self.test_cat_sub.slug
+
         self.link_test_cat_sub = reverse(
             'v1:sub-category-detail', kwargs={
                 'slug': self.test_cat_main.slug,
@@ -1171,11 +1173,11 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         split_data = [
             {
                 "text": "Child signal 1",
-                'category': {'sub_category': self.link_test_cat_sub}
+                'category': {'sub_category': self.test_cat_sub}
             },
             {
                 "text": "Child signal 2",
-                'category': {'sub_category': self.link_test_cat_sub}
+                'category': {'sub_category': self.test_cat_sub}
             }
         ]
         Signal.actions.split(split_data, parent_signal)

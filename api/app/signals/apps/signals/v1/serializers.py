@@ -1,9 +1,11 @@
 """
 Serializsers that are used exclusively by the V1 API
 """
+import copy
 from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -497,6 +499,8 @@ class _NestedSplitSignalSerializer(HALSerializer):
 
 
 class PrivateSplitSignalSerializer(serializers.Serializer):
+    def validate(self, data):
+        return self.to_internal_value(data)
 
     def to_internal_value(self, data):
         potential_parent_signal = self.context['view'].get_object()
@@ -519,9 +523,19 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         if errors:
             raise ValidationError(errors)
 
-        return {
-            "children": self.initial_data
-        }
+        # TODO: find a cleaner solution to the sub category handling.
+        output = {"children": copy.deepcopy(self.initial_data)}
+
+        for item in output["children"]:
+            sub_category_url = item['category']['sub_category']
+            view, args, kwargs = resolve(sub_category_url)  # noqa
+            sub_category = SubCategory.objects.get(
+                slug=kwargs['sub_slug'],  # Check the urls.py for why!
+                main_category__slug=kwargs['slug'],
+            )
+            item['category']['sub_category'] = sub_category
+
+        return output
 
     def to_representation(self, signal):
         if signal.children.count() == 0:
