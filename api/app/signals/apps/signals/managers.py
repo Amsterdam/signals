@@ -147,16 +147,12 @@ class SignalManager(models.Manager):
                     })
                     priority = Priority.objects.create(**priority_data)
 
-                # For now we first copy category assignment from parent signal
-                # TODO: consider adding category assignment to serializer, to
-                # streamline the process of splitting.
-                category_assignment_data = {'_signal': child_signal}
-                category_assignment_data.update({
-                    k: getattr(parent_signal.category_assignment, k) for k in [
-                        'sub_category',
-                        'created_by',
-                    ]
-                })
+                sub_category = validated_data['category']['sub_category']
+                category_assignment_data = {
+                    '_signal': child_signal,
+                    'sub_category': sub_category,
+                }
+
                 category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
 
                 # Deal with forward foreign keys from child signal

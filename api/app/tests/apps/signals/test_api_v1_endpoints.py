@@ -347,6 +347,8 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             handling=SubCategory.HANDLING_A3DMC,
         )
         self.test_cat_sub.save()
+        assert 'sub-category-' not in self.test_cat_sub.slug
+
         self.link_test_cat_sub = reverse(
             'v1:sub-category-detail', kwargs={
                 'slug': self.test_cat_main.slug,
@@ -991,8 +993,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=pk),
             [
-                {'text': 'Child #1'},
-                {'text': 'Child #2'}
+                {
+                    'text': 'Child #1',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                }
             ],
             format='json'
         )
@@ -1040,8 +1048,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_no_image.id),
             [
-                {'text': 'Child #1'},
-                {'text': 'Child #2'}
+                {
+                    'text': 'Child #1',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                }
             ],
             format='json'
         )
@@ -1078,7 +1092,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             )
 
             # Check category assignment
-            self.assertIsNotNone(child_json['category'])
+            self.assertEqual(
+                child_json['category']['sub_slug'],
+                self.test_cat_sub.slug
+            )
+            self.assertEqual(
+                child_json['category']['main_slug'],
+                self.test_cat_main.slug
+            )
 
     def test_split_children_must_inherit_parent_images(self):
         # Split the signal, take note of the returned children
@@ -1095,8 +1116,16 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_with_image.id),
             [
-                {'text': 'Child #1', 'reuse_parent_image': True},
-                {'text': 'Child #2', 'reuse_parent_image': True}
+                {
+                    'text': 'Child #1',
+                    'reuse_parent_image': True,
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'reuse_parent_image': True,
+                    'category': {'sub_category': self.link_test_cat_sub}
+                }
             ],
             format='json'
         )
@@ -1117,8 +1146,15 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_with_image.id),
             [
-                {'text': 'Child #1', 'reuse_parent_image': True},
-                {'text': 'Child #2'}
+                {
+                    'text': 'Child #1',
+                    'reuse_parent_image': True,
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                }
             ],
             format='json'
         )
@@ -1135,8 +1171,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()
         split_data = [
-            {"text": "Child signal 1"},
-            {"text": "Child signal 2"}
+            {
+                "text": "Child signal 1",
+                'category': {'sub_category': self.test_cat_sub}
+            },
+            {
+                "text": "Child signal 2",
+                'category': {'sub_category': self.test_cat_sub}
+            }
         ]
         Signal.actions.split(split_data, parent_signal)
 
@@ -1182,8 +1224,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=pk),
             [
-                {'text': 'Child #1'},
-                {'text': 'Child #2'}
+                {
+                    'text': 'Child #1',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                }
             ],
             format='json'
         )
@@ -1201,8 +1249,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             response = self.client.post(
                 self.split_endpoint.format(pk=item['id']),
                 [
-                    {'text': 'Child #1'},
-                    {'text': 'Child #2'}
+                    {
+                        'text': 'Child #1',
+                        'category': {'sub_category': self.link_test_cat_sub}
+                    },
+                    {
+                        'text': 'Child #2',
+                        'category': {'sub_category': self.link_test_cat_sub}
+                    }
                 ],
                 format='json',
             )
@@ -1239,7 +1293,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=pk),
             [
-                {'text': 'Child #1'},
+                {
+                    'text': 'Child #1',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
             ],
             format='json'
         )
@@ -1262,10 +1319,22 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         response = self.client.post(
             self.split_endpoint.format(pk=pk),
             [
-                {'text': 'Child #1'},
-                {'text': 'Child #2'},
-                {'text': 'Child #3'},
-                {'text': 'Child #4'},
+                {
+                    'text': 'Child #1',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #2',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #3',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
+                {
+                    'text': 'Child #4',
+                    'category': {'sub_category': self.link_test_cat_sub}
+                },
             ],
             format='json'
         )

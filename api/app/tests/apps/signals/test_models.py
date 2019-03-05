@@ -239,10 +239,22 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 1)
         self.assertEqual(Priority.objects.count(), 1)
 
+        sub_cat = factories.SubCategoryFactory.create()
+
         Signal.actions.split(
             split_data=[
-                {'text': 'child #1'},
-                {'text': 'child #2'}
+                {
+                    'text': 'child #1',
+                    'category': {
+                        'sub_category': sub_cat,
+                    }
+                },
+                {
+                    'text': 'child #2',
+                    'category': {
+                        'sub_category': sub_cat,
+                    }
+                }
             ],
             signal=parent_signal
         )
