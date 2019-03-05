@@ -528,7 +528,11 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
 
         for item in output["children"]:
             sub_category_url = item['category']['sub_category']
-            view, args, kwargs = resolve(sub_category_url)  # noqa
+
+            from urllib.parse import urlparse
+            path = (urlparse(sub_category_url)).path
+
+            view, args, kwargs = resolve(path)  # noqa
             sub_category = SubCategory.objects.get(
                 slug=kwargs['sub_slug'],  # Check the urls.py for why!
                 main_category__slug=kwargs['slug'],
