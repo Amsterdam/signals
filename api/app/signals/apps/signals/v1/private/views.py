@@ -29,14 +29,31 @@ class PrivateSignalViewSet(DatapuntViewSet,
                            mixins.CreateModelMixin,
                            mixins.UpdateModelMixin):
     """Viewset for `Signal` objects in V1 private API"""
-    queryset = Signal.objects.all()
+    queryset = Signal.objects.select_related(
+        'location',
+        'status',
+        'category_assignment',
+        'category_assignment__sub_category__main_category',
+        'reporter',
+        'priority',
+        'parent',
+    ).prefetch_related(
+        'category_assignment__sub_category__departments',
+        'children',
+        'attachments',
+        'notes',
+    ).all()
+
     serializer_class = PrivateSignalSerializerList
     serializer_detail_class = PrivateSignalSerializerDetail
+
     pagination_class = HALPagination
+
     authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
     filter_backends = (DjangoFilterBackend,)
     filter_class = SignalFilter
-    permission_classes = (SIAPermissions,)
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
