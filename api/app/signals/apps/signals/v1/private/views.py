@@ -75,6 +75,8 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
     queryset = Signal.objects.all()
     pagination_class = None
 
+    permission_classes = (SIAPermissions,)
+
 
 class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                                       viewsets.GenericViewSet):
@@ -82,6 +84,7 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
     pagination_class = None
 
     queryset = Signal.objects.all()
+    permission_classes = (SIAPermissions,)
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
