@@ -1189,6 +1189,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         children in the response body """
 
         signal = self._create_split_signal()
+        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
 
         self.assertEquals(200, response.status_code)
@@ -1204,6 +1205,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         """ A GET /<signal_id>/split on a non-split signal should return a 404 """
 
         signal = SignalFactory.create()
+        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
         self.assertEquals(404, response.status_code)
 
@@ -1212,6 +1214,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         signal = self._create_split_signal()
         data = [{"text": "Child 1"}, {"text": "Child 2"}]
+        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.post(self.split_endpoint.format(pk=signal.pk), data, format='json')
         self.assertEquals(412, response.status_code)
         self.assertEquals("Signal has already been split", response.json()["detail"])
