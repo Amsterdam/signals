@@ -75,6 +75,7 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
     queryset = Signal.objects.all()
     pagination_class = None
 
+    authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
 
@@ -82,8 +83,9 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
                                       viewsets.GenericViewSet):
     serializer_class = PrivateSignalAttachmentSerializer
     pagination_class = None
-
     queryset = Signal.objects.all()
+
+    authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
 
