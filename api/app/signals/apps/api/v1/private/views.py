@@ -70,6 +70,19 @@ class PrivateSignalViewSet(DatapuntViewSet,
         serializer = HistoryHalSerializer(history_entries, many=True)
         return Response(serializer.data)
 
+    @action(detail=False)
+    def search(self, request, *args, **kwargs):
+        query = request.query_params.get('q', None)
+        signals = Signal.search.filter_by_query(query=query)
+
+        serializer = self.get_serializer(signals, many=True)
+
+        page = self.paginate_queryset(signals)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+
+        return Response(serializer.data)
+
 
 class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
                                 viewsets.GenericViewSet):
