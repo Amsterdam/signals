@@ -111,8 +111,8 @@ class TestAddressValidation(SimpleTestCase):
         ]
 
         for test_case in test_cases:
-            self.assertEquals(test_case[1],
-                              address_validation._address_dict_to_string(test_case[0]))
+            self.assertEqual(test_case[1],
+                             address_validation._address_dict_to_string(test_case[0]))
 
     def test_search_atlas_with_unsuccessful_http_code(self):
         address_validation = AddressValidation()
@@ -143,7 +143,7 @@ class TestAddressValidation(SimpleTestCase):
         with Mocker() as m:
             m.get(self._get_atlas_search_url(), text=dumps(search_result))
 
-            self.assertEquals(address_validation._search_atlas(self.address), expected)
+            self.assertEqual(address_validation._search_atlas(self.address), expected)
 
     def test_atlas_result_to_address(self):
         address_validation = AddressValidation()
@@ -194,4 +194,4 @@ class TestAddressValidation(SimpleTestCase):
         for input_data, expected_result in test_cases:
             result = address_validation._atlas_result_to_address(input_data)
 
-            self.assertEquals(expected_result, result)
+            self.assertEqual(expected_result, result)

@@ -1,48 +1,57 @@
-Celery
-coreapi
-datapunt-authorization-django
-datapunt-authorization-levels
+# Bleeding edge Django
+
+# Django packages
 django-braces
 django-celery-beat
 django-celery-email
 django-celery-results
 django-cors-headers
-django-debug-toolbar
 django-extensions
 django-filter
 django-imagekit
 django-rest-swagger
 django-storage-swift
 django-storages
-django>=2.0
 django_extensions
+
+# Database
+psycopg2-binary
+
+# Requests
+requests
+
+# REST
 djangorestframework
 djangorestframework-csv
 djangorestframework-gis
 djangorestframework-xml
-drf-extensions
+
+# Datapunt packages
+datapunt-authorization-django
+datapunt-authorization-levels
 drf_amsterdam
+drf-extensions
 flex
-graypy
-jsonschema
-lxml
-Pillow
-psycopg2-binary
-pygelf
-python-dateutil
+
+# Documentation
+coreapi
+
+# Celery
+Celery
+
+# Sentry
 raven
-requests
+
+# PDF
+lxml
 WeasyPrint
 
-# Test Libraries
-factory-boy
-flake8
-freezegun
-isort
-pytest
-pytest-cov
-pytest-django
-pytest-xdist
-pytest-timeout
-tox
-xmlunittest
+# GELF
+graypy
+pygelf
+
+# Images
+Pillow
+
+# Date util
+python-dateutil

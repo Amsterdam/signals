@@ -10,19 +10,19 @@ signal_router_v1 = SignalsRouterVersion1()
 signal_router_v1.register(
     r'public/terms/categories',
     v1_public_views.MainCategoryViewSet,
-    base_name='category'
+    basename='category'
 )
 
 signal_router_v1.register(
     r'private/signals',
     v1_private_views.PrivateSignalViewSet,
-    base_name='private-signals'
+    basename='private-signals'
 )
 
 signal_router_v1.register(
     r'public/signals',
     v1_public_views.PublicSignalViewSet,
-    base_name='public-signals'
+    basename='public-signals'
 )
 
 # Private split

@@ -1,0 +1,25 @@
+# Test Libraries
+factory-boy
+
+# Datetime
+freezegun
+
+# Flake/isort
+flake8
+isort
+
+# pytest
+pytest
+pytest-cov
+pytest-django
+pytest-timeout
+pytest-xdist
+
+# tox
+tox
+
+# XML Helper
+xmlunittest
+
+# JSONSchema
+jsonschema
