@@ -18,7 +18,7 @@ class TestPDFView(TestCase):
     def test_get_pdf(self):
         response = self.client.get(path=reverse(
             'v1:signal-pdf-download',
-            kwargs={'signal_id': self.signal.id})
+            kwargs={'pk': self.signal.id})
         )
 
         self.assertEqual(response.status_code, 200)
@@ -31,7 +31,7 @@ class TestPDFView(TestCase):
     def test_get_pdf_signal_does_not_exists(self):
         response = self.client.get(path=reverse(
             'v1:signal-pdf-download',
-            kwargs={'signal_id': 999})
+            kwargs={'pk': 999})
         )
 
         self.assertEqual(response.status_code, 404)
@@ -41,7 +41,7 @@ class TestPDFView(TestCase):
 
         response = self.client.get(path=reverse(
             'v1:signal-pdf-download',
-            kwargs={'signal_id': 999})
+            kwargs={'pk': 999})
         )
 
         self.assertEqual(response.status_code, 302)

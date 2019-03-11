@@ -91,3 +91,39 @@ def create_status_change_notification_html_message(signal, status):
     template = loader.get_template('email/signal_status_changed_afgehandeld.html')
     message = template.render(context)
     return message
+
+
+def send_mail_reporter_status_changed_split(signal, status):
+    """Notify reporter that `Signal` was split into several children.
+
+    :param signal: Signal object
+    :param status: Status object
+    :returns: number of successfully send messages or None
+    """
+    signal_split = status.state == workflow.GESPLITST
+
+    if not signal_split or not signal.reporter.email:
+        return None
+
+    subject = f'Betreft melding: {signal.id}'
+    txt_message = create_status_change_notification_split(signal, status)
+    to = signal.reporter.email
+
+    return send_mail(subject, txt_message, settings.NOREPLY, (to, ))
+
+
+def create_status_change_notification_split(signal, status):
+    """Create e-mail body message about status change to split of the given `Signal` object.
+
+    :param signal: Signal object
+    :param status: Status object
+    :returns: message (str)
+    """
+    context = {
+        'signal': signal,
+        'status': status,
+    }
+
+    template = loader.get_template('email/signal_status_changed_split.txt')
+    message = template.render(context)
+    return message

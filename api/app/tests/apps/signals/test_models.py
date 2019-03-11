@@ -221,17 +221,17 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             note=note)
 
-    @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
+    @mock.patch('signals.apps.signals.managers.create_child', autospec=True)
     @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
-    def test_split_signal(self, patched_create_initial, patched_update_status):
+    def test_split_signal(self, patched_update_status, patched_create_child):
         self.assertEqual(Signal.objects.count(), 0)
         self.assertEqual(Location.objects.count(), 0)
         self.assertEqual(Status.objects.count(), 0)
         self.assertEqual(CategoryAssignment.objects.count(), 0)
         self.assertEqual(Priority.objects.count(), 0)
 
-        signal = factories.SignalFactory.create()
-        # prev_status = signal.status
+        parent_signal = factories.SignalFactory.create()
+        prev_status = parent_signal.status
 
         self.assertEqual(Signal.objects.count(), 1)
         self.assertEqual(Location.objects.count(), 1)
@@ -239,7 +239,25 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 1)
         self.assertEqual(Priority.objects.count(), 1)
 
-        Signal.actions.split(split_data=[{'text': 'child #1'}, {'text': 'child #2'}], signal=signal)
+        sub_cat = factories.SubCategoryFactory.create()
+
+        Signal.actions.split(
+            split_data=[
+                {
+                    'text': 'child #1',
+                    'category': {
+                        'sub_category': sub_cat,
+                    }
+                },
+                {
+                    'text': 'child #2',
+                    'category': {
+                        'sub_category': sub_cat,
+                    }
+                }
+            ],
+            signal=parent_signal
+        )
 
         self.assertEqual(Signal.objects.count(), 3)
         self.assertEqual(Location.objects.count(), 3)
@@ -247,17 +265,22 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 3)
         self.assertEqual(Priority.objects.count(), 3)
 
-        self.assertTrue(signal.is_parent())
-        self.assertFalse(signal.is_child())
-        self.assertEqual(signal.children.count(), 2)
-        self.assertEqual(signal.status.state, workflow.GESPLITST)
+        self.assertTrue(parent_signal.is_parent())
+        self.assertFalse(parent_signal.is_child())
+        self.assertEqual(parent_signal.children.count(), 2)
+        self.assertEqual(parent_signal.status.state, workflow.GESPLITST)
 
-        # Check that we sent the correct Django signal
-        # patched_update_status.send.assert_called_once_with(
-        #     sender=Signal.actions.__class__,
-        #     signal_obj=signal,
-        #     status=signal.status,
-        #     prev_status=prev_status)
+        parent_signal_statusses = list(Status.objects.filter(_signal=parent_signal).order_by('id'))
+        prev_status = parent_signal_statusses[0]
+        status = parent_signal_statusses[1]
+
+        patched_update_status.send.assert_called_with(
+            sender=Signal.actions.__class__,
+            signal_obj=parent_signal,
+            status=status,
+            prev_status=prev_status)
+
+        self.assertEqual(patched_create_child.send.call_count, 2)
 
 
 class TestSignalModel(TestCase):

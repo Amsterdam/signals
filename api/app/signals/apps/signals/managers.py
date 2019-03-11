@@ -1,11 +1,10 @@
-import copy
-
 from django.contrib.gis.db import models
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
 create_initial = DjangoSignal(providing_args=['signal_obj'])
+create_child = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
 add_attachment = DjangoSignal(providing_args=['signal_obj'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
@@ -16,19 +15,6 @@ update_category_assignment = DjangoSignal(providing_args=['signal_obj',
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
-
-
-class AttachmentManager(models.Manager):
-
-    def get_attachments(self, signal):
-        from signals.apps.signals.models import Attachment
-
-        return Attachment.objects.filter(_signal=signal).order_by('created_at')
-
-    def get_images(self, signal):
-        from signals.apps.signals.models import Attachment
-
-        return Attachment.objects.filter(_signal=signal, is_image=True).order_by('created_at')
 
 
 class SignalManager(models.Manager):
@@ -106,56 +92,111 @@ class SignalManager(models.Manager):
         :param signal: Signal object, the original Signal
         :return: Signal object, the original Signal
         """
-        from .models import Status
+        # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
+        from .models import (Attachment, CategoryAssignment, Location, Priority, Reporter,
+                             Signal, Status)
         from signals.apps.signals import workflow
 
+        loop_counter = 0
+        parent_signal = signal
         with transaction.atomic():
-            # The initial status for all new splitted signals
-            initial_status = {'state': workflow.GEMELD, 'text': None, 'user': signal.status.user, }
-
             for validated_data in split_data:
-                split_signal = copy.deepcopy(signal)
+                loop_counter += 1
 
-                create_objs = {'location': None,  # We are copying this from the parent
-                               'reporter': None,  # We are copying this from the parent
-                               'priority': None,  # We are copying this from the parent
-                               'category_assignment': None}  # We are copying this from the parent
-                for attr in create_objs.keys():
-                    if hasattr(split_signal, attr):
-                        create_objs[attr] = getattr(split_signal, attr)
-                        setattr(create_objs[attr], 'pk', None)
-                        setattr(create_objs[attr], '_signal', None)
-                        setattr(split_signal, attr, None)
+                # Create a new Signal, save it to get an ID in DB.
+                child_signal = Signal.objects.create(**{
+                    'text': validated_data['text'],
+                    'incident_date_start': parent_signal.incident_date_start,
+                    'parent': parent_signal,
+                })
 
-                # Save the cloned signal to the database
-                split_signal.status = None
-                split_signal.pk = None
-                split_signal.save()
+                # Set the relevant properties: location, status, reporter, priority, cate
+                # Deal with reverse foreign keys to child signal (for history tracking):
+                status = Status.objects.create(**{
+                    '_signal': child_signal,
+                    'state': workflow.GEMELD,
+                    'text': None,
+                    'user': None,  # i.e. SIA system
+                })
 
-                # Also add a the status GEMELD
-                create_objs.update({'status': Status(**initial_status)})
+                location_data = {'_signal': child_signal}
+                location_data.update({
+                    k: getattr(parent_signal.location, k) for k in [
+                        'geometrie',
+                        'stadsdeel',
+                        'buurt_code',
+                        'address',
+                        'created_by',
+                        'extra_properties',
+                        'bag_validated'
+                    ]
+                })
+                location = Location.objects.create(**location_data)
 
-                for key, obj in create_objs.items():
-                    obj._signal_id = split_signal.pk
-                    obj.save()
+                reporter_data = {'_signal': child_signal}
+                reporter_data.update({
+                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'remove_at']
+                })
+                reporter = Reporter.objects.create(**reporter_data)
 
-                # Set data from the serializer
-                split_signal.text = validated_data['text']
+                priority = None
+                if parent_signal.priority:
+                    priority_data = {'_signal': child_signal}
+                    priority_data.update({
+                        k: getattr(parent_signal.priority, k) for k in ['priority', 'created_by']
+                    })
+                    priority = Priority.objects.create(**priority_data)
 
-                # Link to parent signal
-                split_signal.parent_id = signal.pk
+                sub_category = validated_data['category']['sub_category']
+                category_assignment_data = {
+                    '_signal': child_signal,
+                    'sub_category': sub_category,
+                }
 
-                # Store the signal with all the cloned data to the database
-                split_signal.save()
+                category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
+
+                # Deal with forward foreign keys from child signal
+                child_signal.location = location
+                child_signal.status = status
+                child_signal.reporter = reporter
+                child_signal.priority = priority
+                child_signal.category_assignment = category_assignment
+                child_signal.save()
+
+                # Ensure each child signal creation sends a DjangoSignal.
+                transaction.on_commit(lambda: create_child.send(sender=self.__class__,
+                                                                signal_obj=child_signal))
+
+                # Check if we need to copy the images of the parent
+                if 'reuse_parent_image' in validated_data and validated_data['reuse_parent_image']:
+                    parent_image_qs = parent_signal.attachments.filter(is_image=True)
+                    if parent_image_qs.exists():
+                        for parent_image in parent_image_qs.all():
+                            # Copy the original file and rename it by pre-pending the name with
+                            # split_{loop_counter}_{original_name}
+                            child_image_name = 'split_{}_{}'.format(
+                                loop_counter,
+                                parent_image.file.name.split('/').pop()
+                            )
+
+                            attachment = Attachment()
+                            attachment._signal = child_signal
+                            try:
+                                attachment.file.save(name=child_image_name,
+                                                     content=parent_image.file)
+                            except FileNotFoundError:
+                                pass
+                            else:
+                                attachment.save()
 
             # Let's update the parent signal status to GESPLITST
-            status, prev_status = self._update_status_no_transaction(
-                {'state': workflow.GESPLITST, 'text': 'Signal opgesplitst.', },
-                signal=signal
-            )
+            status, prev_status = self._update_status_no_transaction({
+                'state': workflow.GESPLITST,
+                'text': 'Deze melding is opgesplitst.'
+            }, signal=parent_signal)
 
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,
-                                                             signal_obj=signal,
+                                                             signal_obj=parent_signal,
                                                              status=status,
                                                              prev_status=prev_status))
 

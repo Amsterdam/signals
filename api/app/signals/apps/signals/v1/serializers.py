@@ -1,9 +1,13 @@
 """
 Serializsers that are used exclusively by the V1 API
 """
+import copy
+from collections import OrderedDict
+
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.urls import resolve
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 from signals import settings
 from signals.apps.signals import permissions, workflow
@@ -12,6 +16,7 @@ from signals.apps.signals.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.signals.api_generics.exceptions import PreconditionFailed
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     Attachment,
@@ -32,6 +37,7 @@ from signals.apps.signals.v1.fields import (
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
+    PrivateSignalSplitLinksField,
     PublicSignalAttachmentLinksField,
     PublicSignalLinksField,
     SubCategoryHyperlinkedIdentityField,
@@ -261,6 +267,10 @@ class AddressValidationMixin():
 
                 # Set suggested address from AddressValidation as address and save original address
                 # in extra_properties, to correct possible spelling mistakes in original address.
+                if ("extra_properties" not in location_data or
+                        location_data['extra_properties'] is None):
+                    location_data["extra_properties"] = {}
+
                 location_data["extra_properties"]["original_address"] = location_data["address"]
                 location_data["address"] = validated_address
                 location_data["bag_validated"] = True
@@ -483,39 +493,86 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         return signal
 
 
-class SplitPrivateSignalSerializerList(serializers.ListSerializer):
-    def is_valid(self, raise_exception=False):
-        if not (settings.SIGNAL_MIN_NUMBER_OF_CHILDREN
-                <= len(self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
-            self._validated_data = []
-            self._errors = ['A signal can only be split into min {} and max {} signals'.format(
-                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN,
-                settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
-            )]
+class _NestedSplitSignalSerializer(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+    reuse_parent_image = serializers.BooleanField(default=False, write_only=True)
+    category = _NestedCategoryModelSerializer(required=True, source='category_assignment')
 
-        return super(SplitPrivateSignalSerializerList, self).is_valid(raise_exception)
-
-    def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data,
-                                      signal=self.context['view'].get_object())
-        return signal.children.all()
-
-
-class SplitPrivateSignalSerializerDetail(serializers.ModelSerializer):
     class Meta:
         model = Signal
         fields = (
             'id',
             'text',
+            'reuse_parent_image',
+            'category',
+            '_links',
         )
         read_only_fields = (
             'id',
+            '_links',
         )
-        extra_kwargs = {
-            'text': {'write_only': True}
+
+
+class PrivateSplitSignalSerializer(serializers.Serializer):
+    def validate(self, data):
+        return self.to_internal_value(data)
+
+    def to_internal_value(self, data):
+        potential_parent_signal = self.context['view'].get_object()
+
+        if potential_parent_signal.status.state == workflow.GESPLITST:
+            raise PreconditionFailed("Signal has already been split")
+        if potential_parent_signal.is_child():
+            raise PreconditionFailed("A child signal cannot itself be split.")
+
+        serializer = _NestedSplitSignalSerializer(data=data, many=True, context=self.context)
+        serializer.is_valid()
+
+        errors = OrderedDict()
+        if not settings.SIGNAL_MIN_NUMBER_OF_CHILDREN <= len(
+                self.initial_data) <= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            errors["children"] = 'A signal can only be split into min {} and max {} signals'.format(
+                settings.SIGNAL_MIN_NUMBER_OF_CHILDREN, settings.SIGNAL_MAX_NUMBER_OF_CHILDREN
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
+        # TODO: find a cleaner solution to the sub category handling.
+        output = {"children": copy.deepcopy(self.initial_data)}
+
+        for item in output["children"]:
+            sub_category_url = item['category']['sub_category']
+
+            from urllib.parse import urlparse
+            path = (urlparse(sub_category_url)).path
+
+            view, args, kwargs = resolve(path)  # noqa
+            sub_category = SubCategory.objects.get(
+                slug=kwargs['sub_slug'],  # Check the urls.py for why!
+                main_category__slug=kwargs['slug'],
+            )
+            item['category']['sub_category'] = sub_category
+
+        return output
+
+    def to_representation(self, signal):
+        if signal.children.count() == 0:
+            raise NotFound("Split signal not found")
+
+        links_field = PrivateSignalSplitLinksField(self.context['view'])
+        nss = _NestedSplitSignalSerializer(signal.children.all(), many=True)
+
+        return {
+            "_links": links_field.to_representation(signal),
+            "children": nss.data,
         }
 
-        list_serializer_class = SplitPrivateSignalSerializerList
+    def create(self, validated_data):
+        signal = Signal.actions.split(split_data=validated_data["children"],
+                                      signal=self.context['view'].get_object())
+
+        return signal
 
 
 class SignalAttachmentSerializer(HALSerializer):
@@ -544,19 +601,9 @@ class SignalAttachmentSerializer(HALSerializer):
 
         extra_kwargs = {'file': {'write_only': True}}
 
-    def __init__(self, *args, **kwargs):
-
-        # Set correct version of the links field (public/private)
-        if kwargs['context']['view'].is_public:
-            self.serializer_url_field = PublicSignalAttachmentLinksField
-        else:
-            self.serializer_url_field = PrivateSignalAttachmentLinksField
-
-        super().__init__(*args, **kwargs)
-
     def create(self, validated_data):
-        signal = self.context['view'].get_object()
-        attachment = Signal.actions.add_attachment(validated_data['file'], signal)
+        attachment = Signal.actions.add_attachment(validated_data['file'],
+                                                   self.context['view'].get_object())
 
         if self.context['request'].user:
             attachment.created_by = self.context['request'].user.email
@@ -567,8 +614,15 @@ class SignalAttachmentSerializer(HALSerializer):
     def validate_file(self, file):
         if file.size > 8388608:  # 8MB = 8*1024*1024
             raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
-
         return file
+
+
+class PublicSignalAttachmentSerializer(SignalAttachmentSerializer):
+    serializer_url_field = PublicSignalAttachmentLinksField
+
+
+class PrivateSignalAttachmentSerializer(SignalAttachmentSerializer):
+    serializer_url_field = PrivateSignalAttachmentLinksField
 
 
 class PublicSignalSerializerDetail(HALSerializer):

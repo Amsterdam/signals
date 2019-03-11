@@ -1,3 +1,5 @@
+import json
+
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from rest_framework.test import APITestCase
@@ -8,7 +10,6 @@ class ValidationException(Exception):
 
 
 class JsonAPITestCase(APITestCase):
-
     def assertJsonSchema(self, schema: dict, json_dict: dict):
         """ Validates json_dict against schema. Schema format as defined on json-schema.org . If
         additionalProperties is not set in schema, it will be set to False. This assertion
@@ -45,3 +46,7 @@ class JsonAPITestCase(APITestCase):
             validate(instance=json_dict, schema=schema)
         except ValidationError as e:
             raise ValidationException(e)
+
+    def _load_schema(self, filename: str):
+        with open(filename) as f:
+            return json.load(f)

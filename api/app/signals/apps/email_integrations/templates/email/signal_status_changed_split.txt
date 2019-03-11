@@ -1,0 +1,14 @@
+Beste melder,
+
+Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} bevatte
+verschillende onderwerpen. Wij hebben daarom deze melding opgesplitst in de
+volgende aparte meldingen:
+
+{% for child_signal in signal.children.all %}
+Melding {{ child_signal.id }}: {{ child_signal.category_assignment.sub_category.name }}
+{% endfor %}
+
+U krijgt per melding een apart bericht over de afhandeling. De eerste melding is afgesloten.
+
+****************************
+Als u nog vragen hebt, dan kunt u bellen met de gemeente via 14 020.

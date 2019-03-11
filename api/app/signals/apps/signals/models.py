@@ -1,5 +1,6 @@
 import copy
 import imghdr
+import logging
 import uuid
 
 from django.conf import settings
@@ -14,9 +15,11 @@ from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
-from signals.apps.signals import permissions, workflow
-from signals.apps.signals.managers import AttachmentManager, SignalManager
+from signals.apps.signals import permissions
+from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
+
+logger = logging.getLogger(__name__)
 
 
 class CreatedUpdatedModel(models.Model):
@@ -95,25 +98,13 @@ class Signal(CreatedUpdatedModel):
     def image(self):
         """ Field for backwards compatibility. The attachment table replaces the old 'image'
         property """
-        attachment = self._image_attachment()
-
+        attachment = self.attachments.filter(is_image=True).first()
         return attachment.file if attachment else ""
 
     @property
     def image_crop(self):
-        attachment = self._image_attachment()
-
-        if attachment:
-            return attachment.image_crop
-
-        return ""
-
-    @property
-    def attachments(self):
-        return Attachment.actions.get_attachments(self)
-
-    def _image_attachment(self):
-        return Attachment.actions.get_images(self).first()
+        attachment = self.attachments.filter(is_image=True).first()
+        return attachment.image_crop if self.image else ''
 
     class Meta:
         permissions = (
@@ -121,7 +112,7 @@ class Signal(CreatedUpdatedModel):
             (permissions.SIA_WRITE, 'Can write to SIA'),
             (permissions.SIA_BACKOFFICE, 'SIA Backoffice'),
         )
-        ordering = ('created_at',)
+        ordering = ('created_at', )
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -324,7 +315,7 @@ class Reporter(CreatedUpdatedModel):
     phone = models.CharField(max_length=17, blank=True)
     remove_at = models.DateTimeField(null=True)
 
-    extra_properties = JSONField(null=True)
+    extra_properties = JSONField(null=True)  # TODO: candidate for removal
 
 
 class CategoryAssignment(CreatedUpdatedModel):
@@ -396,8 +387,18 @@ class Status(CreatedUpdatedModel):
         :returns:
         """
         errors = {}
-        current_state = self._signal.status.state
-        current_state_display = self._signal.status.get_state_display()
+
+        if self._signal.status:
+            # We already have a status so let's check if the new status can be set
+            current_state = self._signal.status.state
+            current_state_display = self._signal.status.get_state_display()
+        else:
+            # No status has been set yet so we default to LEEG
+            current_state = workflow.LEEG
+            current_state_display = workflow.LEEG
+
+            logger.warning('Signal #{} has status set to None'.format(self._signal.pk))
+
         new_state = self.state
         new_state_display = self.get_state_display()
 
@@ -602,7 +603,9 @@ class Attachment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     _signal = models.ForeignKey(
         "signals.Signal",
-        null=False, on_delete=models.CASCADE
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='attachments',
     )
     file = models.FileField(
         upload_to='attachments/%Y/%m/%d/',
@@ -613,8 +616,8 @@ class Attachment(CreatedUpdatedModel):
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
 
-    objects = models.Manager()
-    actions = AttachmentManager()
+    class Meta:
+        ordering = ('created_at', )
 
     class NotAnImageException(Exception):
         pass
@@ -636,7 +639,11 @@ class Attachment(CreatedUpdatedModel):
 
         generator = Attachment.CroppedImage(source=self.file)
         cache_file = ImageCacheFile(generator)
-        cache_file.generate()
+
+        try:
+            cache_file.generate()
+        except FileNotFoundError as e:
+            logger.warn("File not found when generating cache file: " + str(e))
 
         return cache_file
 

@@ -12,7 +12,6 @@ from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
-    Attachment,
     CategoryAssignment,
     Department,
     Location,
@@ -58,7 +57,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
     def _image_attachment_exists(self):
         signal_id = self.initial_data.get('signal_id')
         signal = Signal.objects.get(signal_id=signal_id)
-        image_attachments = Attachment.actions.get_images(signal)
+        image_attachments = signal.attachments.filter(is_image=True)
 
         return len(image_attachments) > 0
 
@@ -330,6 +329,9 @@ class SignalAuthHALSerializer(HALSerializer):
     image = serializers.ImageField(source='image_crop', read_only=True)
     notes_count = serializers.SerializerMethodField()
 
+    parent_id = serializers.IntegerField(read_only=True)
+    child_ids = serializers.SerializerMethodField(read_only=True)
+
     serializer_url_field = SignalLinksField
 
     def get_notes_count(self, obj):
@@ -358,6 +360,8 @@ class SignalAuthHALSerializer(HALSerializer):
             'image',
             'extra_properties',
             'notes_count',
+            'parent_id',
+            'child_ids',
         )
         read_only_fields = (
             'id',
@@ -365,6 +369,9 @@ class SignalAuthHALSerializer(HALSerializer):
             'created_at',
             'updated_at',
         )
+
+    def get_child_ids(self, obj):
+        return obj.children.values_list('id', flat=True)
 
 
 class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSerializer):
