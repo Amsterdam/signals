@@ -26,7 +26,6 @@ class CategoryPermissions:
             permission = Permission(
                 codename='category_access_' + str(category.id),
                 content_type=ContentType.objects.get_for_model(Signal),
-                name='Category access - ' + category.name
             )
             permission.save()
             category.permission = permission

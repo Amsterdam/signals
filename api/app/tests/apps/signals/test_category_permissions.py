@@ -391,3 +391,31 @@ class TestCategoryPermissions(APITestCase):
 
         permission_test.should_have_access_to_categories([IdObject(7), IdObject(8), IdObject(9)])
         self.assertEquals([IdObject(6), IdObject(10)], permission_test.categories_no_access)
+
+    def test_set_permission_name(self):
+        """ Tests that the permission name is set when a new category is created and the permission
+        is generated """
+
+        main_category = MainCategory(name="main cat")
+        main_category.save()
+        category = SubCategoryFactory.create(main_category=main_category)
+        category_name = category.name
+
+        permissions.CategoryPermissions.create_for_all_categories()
+        category.refresh_from_db()
+
+        self.assertEquals('Category access - ' + category_name, category.permission.name)
+
+    def test_update_category_name(self):
+        """ Tests that the permission name is updated when the category name is updated """
+
+        category = self.categories[0]
+        old_name = category.name
+        category.name = old_name + "_renamed"
+
+        self.assertEquals('Category access - ' + old_name, category.permission.name)
+
+        category.save()
+        category.refresh_from_db()
+
+        self.assertEquals('Category access - ' + old_name + '_renamed', category.permission.name)

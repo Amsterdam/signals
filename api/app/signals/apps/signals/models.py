@@ -15,7 +15,7 @@ from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
 from swift.storage import SwiftStorage
 
-from signals.apps.signals import permissions
+from signals.apps.signals import permissions, workflow
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.workflow import STATUS_CHOICES
 
@@ -530,7 +530,14 @@ class SubCategory(models.Model):
                                                  main_category=self.main_category.name)
 
     def save(self, *args, **kwargs):
+        old_slug = self.slug
         self.slug = slugify(self.name)
+
+        # Update permission name if new or category name updated
+        if self.permission is not None and (old_slug != self.slug or not self.permission.name):
+            self.permission.name = 'Category access - ' + self.name
+            self.permission.save()
+
         super().save(*args, **kwargs)
 
 
