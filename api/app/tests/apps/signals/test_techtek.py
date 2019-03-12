@@ -1,9 +1,9 @@
-'''
+"""
 Tests the full flow that Techtek uses.
 
 Note that this tests the initial version of the relevant flow, future per
 category permissions will complicate the flow somewhat.
-'''
+"""
 # TODO:
 # - correct / incorrect address
 # - ...
@@ -57,6 +57,8 @@ NOT_TECHTEK_SUB_SLUG = 'asbest-accu'
 
 
 class TestTechtekFlow(APITestCase):
+    fixtures = ['categories.json', ]
+
     def setUp(self):
         """Setup test environment"""
         # Create a test user for Techtek.
