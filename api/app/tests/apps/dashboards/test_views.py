@@ -73,7 +73,7 @@ class TestDashboardPrototype(APITestCase):
             {"name": "On hold", "count": 2},
         ]
 
-        self.assertEquals(result, signals)
+        self.assertEqual(result, signals)
 
         # Test empty interval
         signals = self.dashboard_prototype._get_signals_per_status(
@@ -89,7 +89,7 @@ class TestDashboardPrototype(APITestCase):
             {"name": "On hold", "count": 0},
         ]
 
-        self.assertEquals(result, signals)
+        self.assertEqual(result, signals)
 
     def test_signals_per_category(self):
         signals = self.dashboard_prototype._get_signals_per_category(self.report_start,
@@ -107,7 +107,7 @@ class TestDashboardPrototype(APITestCase):
             {"name": "Wegen, verkeer, straatmeubilair", "count": 1},
         ]
 
-        self.assertEquals(result, signals)
+        self.assertEqual(result, signals)
 
         # Test empty interval
         signals = self.dashboard_prototype._get_signals_per_category(
@@ -127,7 +127,7 @@ class TestDashboardPrototype(APITestCase):
             {"name": "Wegen, verkeer, straatmeubilair", "count": 0},
         ]
 
-        self.assertEquals(result, signals)
+        self.assertEqual(result, signals)
 
     def test_signals_per_hour(self):
         signals = self.dashboard_prototype._get_signals_per_hour(self.report_start, self.report_end)
@@ -153,7 +153,7 @@ class TestDashboardPrototype(APITestCase):
 
         expected_result[-1]["count"] = 10  # New signals should appear in last hour
 
-        self.assertEquals(expected_result, signals)
+        self.assertEqual(expected_result, signals)
 
         # Test interval without any signals
         for row in expected_result:
@@ -166,43 +166,42 @@ class TestDashboardPrototype(APITestCase):
             self.report_end - timedelta(days=1),
         )
 
-        self.assertEquals(expected_result, signals)
+        self.assertEqual(expected_result, signals)
 
     def test_get_unauthenticated(self):
         response = self.client.get(self.url)
-        self.assertEquals(401, response.status_code)
+        self.assertEqual(401, response.status_code)
 
     def _do_request(self):
         superuser = SuperUserFactory.create()
         self.client.force_authenticate(user=superuser)
         response = self.client.get(self.url)
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         return json.loads(response.content)
 
     def test_get_authenticated(self):
         json_data = self._do_request()
 
-        self.assertEquals(4, len(json_data.keys()))
-        self.assertEquals(24, len(json_data["hour"]))
-        self.assertEquals(9, len(json_data["category"]))
-        self.assertEquals(5, len(json_data["status"]))
-        self.assertEquals(10, json_data["hour"][-1]["count"])
+        self.assertEqual(4, len(json_data.keys()))
+        self.assertEqual(24, len(json_data["hour"]))
+        self.assertEqual(9, len(json_data["category"]))
+        self.assertEqual(5, len(json_data["status"]))
+        self.assertEqual(10, json_data["hour"][-1]["count"])
 
         # Test date/time format
         interval_start = (self.report_end - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
-        self.assertEquals(interval_start, json_data["hour"][-1]["interval_start"])
-        self.assertEquals((self.report_end - timedelta(hours=1)).hour,
-                          json_data["hour"][-1]["hour"])
+        self.assertEqual(interval_start, json_data["hour"][-1]["interval_start"])
+        self.assertEqual((self.report_end - timedelta(hours=1)).hour, json_data["hour"][-1]["hour"])
 
     def test_get_totals(self):
         json_data = self._do_request()
 
         # Should all add up to 10
-        self.assertEquals(10, json_data["total"])
-        self.assertEquals(10, sum(item["count"] for item in json_data["hour"]))
-        self.assertEquals(10, sum(item["count"] for item in json_data["category"]))
-        self.assertEquals(10, sum(item["count"] for item in json_data["status"]))
+        self.assertEqual(10, json_data["total"])
+        self.assertEqual(10, sum(item["count"] for item in json_data["hour"]))
+        self.assertEqual(10, sum(item["count"] for item in json_data["category"]))
+        self.assertEqual(10, sum(item["count"] for item in json_data["status"]))
 
     def test_get_types(self):
         json_data = self._do_request()

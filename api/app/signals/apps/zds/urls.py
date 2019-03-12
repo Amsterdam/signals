@@ -5,7 +5,7 @@ from .api.views import SignalZDSViewSet
 
 # API Version 0
 router = DefaultRouter()
-router.register(r'signals', SignalZDSViewSet, base_name='zds')
+router.register(r'signals', SignalZDSViewSet, basename='zds')
 
 
 urlpatterns = [
