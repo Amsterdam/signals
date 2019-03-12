@@ -35,9 +35,21 @@ class Buurt(models.Model):
     id = models.CharField(max_length=14)
     vollcode = models.CharField(max_length=4)
     naam = models.CharField(max_length=40)
+    wkb_geometry = models.PolygonField(srid=4326, null=True)
 
     class Meta:
         db_table = 'buurt_simple'
+
+
+class Stadsdeel(models.Model):
+    ogc_fid = models.IntegerField(primary_key=True)
+    id = models.CharField(max_length=14)
+    code = models.CharField(max_length=1)
+    naam = models.CharField(max_length=40)
+    wkb_geometry = models.PolygonField(srid=4326, null=True)
+
+    class Meta:
+        db_table = 'stadsdeel'
 
 
 class Signal(CreatedUpdatedModel):
@@ -111,7 +123,7 @@ class Signal(CreatedUpdatedModel):
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
         )
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -609,7 +621,7 @@ class Attachment(CreatedUpdatedModel):
     is_image = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     class NotAnImageException(Exception):
         pass
