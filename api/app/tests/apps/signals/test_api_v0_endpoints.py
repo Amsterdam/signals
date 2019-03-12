@@ -293,7 +293,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
 
         signal = Signal.objects.get(id=response.json()['id'])
         self.assertTrue(signal.image)
-        self.assertEquals("http://testserver" + signal.image_crop.url, response.json()['image'])
+        self.assertEqual("http://testserver" + signal.image_crop.url, response.json()['image'])
 
     def test_post_signal_image(self):
         url = f'{self.endpoint}image/'
@@ -418,11 +418,10 @@ class TestAuthSignalEndpoint(APITestCase):
         url = "/signals/auth/signal/{}/".format(self.last.id)
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         json_resp = response.json()
 
-        self.assertEquals("http://testserver" + image_attachment.image_crop.url,
-                          json_resp["image"])
+        self.assertEqual("http://testserver" + image_attachment.image_crop.url, json_resp["image"])
         self.assertFalse('attachments' in json_resp, "Attachments is a v1-only field")
 
 

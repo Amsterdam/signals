@@ -6,14 +6,14 @@ from signals.apps.signals.v0.routers import SignalsRouterVersion0
 
 # API Version 0
 signal_router_v0 = SignalsRouterVersion0()
-signal_router_v0.register(r'signal/image', v0_views.SignalImageUpdateView, base_name='signal-img')
-signal_router_v0.register(r'signal', v0_views.SignalViewSet, base_name='signal')
-signal_router_v0.register(r'auth/signal', v0_views.SignalAuthViewSet, base_name='signal-auth')
-signal_router_v0.register(r'auth/status', v0_views.StatusAuthViewSet, base_name='status-auth')
-signal_router_v0.register(r'auth/category', v0_views.CategoryAuthViewSet, base_name='category-auth')
-signal_router_v0.register(r'auth/location', v0_views.LocationAuthViewSet, base_name='location-auth')
-signal_router_v0.register(r'auth/priority', v0_views.PriorityAuthViewSet, base_name='priority-auth')
-signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, base_name='note-auth')
+signal_router_v0.register(r'signal/image', v0_views.SignalImageUpdateView, basename='signal-img')
+signal_router_v0.register(r'signal', v0_views.SignalViewSet, basename='signal')
+signal_router_v0.register(r'auth/signal', v0_views.SignalAuthViewSet, basename='signal-auth')
+signal_router_v0.register(r'auth/status', v0_views.StatusAuthViewSet, basename='status-auth')
+signal_router_v0.register(r'auth/category', v0_views.CategoryAuthViewSet, basename='category-auth')
+signal_router_v0.register(r'auth/location', v0_views.LocationAuthViewSet, basename='location-auth')
+signal_router_v0.register(r'auth/priority', v0_views.PriorityAuthViewSet, basename='priority-auth')
+signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, basename='note-auth')
 
 urlpatterns = [
     # AP Version 0
