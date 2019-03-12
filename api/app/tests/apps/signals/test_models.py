@@ -74,12 +74,12 @@ class TestSignalManager(TransactionTestCase):
             self.reporter_data)
 
         # Check everything is present:
-        self.assertEquals(Signal.objects.count(), 1)
-        self.assertEquals(Location.objects.count(), 1)
-        self.assertEquals(Status.objects.count(), 1)
-        self.assertEquals(CategoryAssignment.objects.count(), 1)
-        self.assertEquals(Reporter.objects.count(), 1)
-        self.assertEquals(Priority.objects.count(), 1)
+        self.assertEqual(Signal.objects.count(), 1)
+        self.assertEqual(Location.objects.count(), 1)
+        self.assertEqual(Status.objects.count(), 1)
+        self.assertEqual(CategoryAssignment.objects.count(), 1)
+        self.assertEqual(Reporter.objects.count(), 1)
+        self.assertEqual(Priority.objects.count(), 1)
 
         # Check that we sent the correct Django signal
         patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
@@ -213,7 +213,7 @@ class TestSignalManager(TransactionTestCase):
 
         # signal updated_at field should be updated
         new_updated_at = Signal.objects.get(id=signal.id).updated_at
-        self.assertNotEquals(old_updated_at, new_updated_at)
+        self.assertNotEqual(old_updated_at, new_updated_at)
 
         # check that the relevant Django signal fired
         patched_create_note.send.assert_called_once_with(
@@ -328,10 +328,10 @@ class TestSignalModel(TestCase):
         signal.save()
 
         signal_from_db = Signal.objects.get(pk=signal.id)
-        self.assertEquals(signal_from_db.parent_id, signal.parent_id)
+        self.assertEqual(signal_from_db.parent_id, signal.parent_id)
 
-        self.assertEquals(signal_from_db.siblings.count(), 0)  # Excluding the signal self
-        self.assertEquals(signal_from_db.parent.children.count(), 1)  # All children of the parent
+        self.assertEqual(signal_from_db.siblings.count(), 0)  # Excluding the signal self
+        self.assertEqual(signal_from_db.parent.children.count(), 1)  # All children of the parent
 
     def test_split_signal_cannot_be_parent_and_child(self):
         signal_parent = factories.SignalFactory.create()
@@ -342,7 +342,7 @@ class TestSignalModel(TestCase):
             signal_parent.save()
 
         e = cm.exception
-        self.assertEquals(e.message, 'Cannot be a parent and a child at the once')
+        self.assertEqual(e.message, 'Cannot be a parent and a child at the once')
 
     def test_split_signal_cannot_be_child_of_a_child(self):
         signal_parent = factories.SignalFactory.create()
@@ -355,7 +355,7 @@ class TestSignalModel(TestCase):
             signal.save()
 
         e = cm.exception
-        self.assertEquals(e.message, 'A child of a child is not allowed')
+        self.assertEqual(e.message, 'A child of a child is not allowed')
 
     def test_split_signal_max_children_reached(self):
         signal_parent = factories.SignalFactory.create()
@@ -368,7 +368,7 @@ class TestSignalModel(TestCase):
             signal.save()
 
         e = cm.exception
-        self.assertEquals(e.message, 'Maximum number of children reached for the parent Signal')
+        self.assertEqual(e.message, 'Maximum number of children reached for the parent Signal')
 
     def test_split_signal_parent_status_cannot_change_from_gesplits(self):
         status_gesplitst = factories.StatusFactory.create(state=workflow.GESPLITST)
@@ -382,7 +382,7 @@ class TestSignalModel(TestCase):
             signal_parent.save()
 
         e = cm.exception
-        self.assertEquals(e.message, 'The status of a parent Signal can only be "gesplitst"')
+        self.assertEqual(e.message, 'The status of a parent Signal can only be "gesplitst"')
 
     # End test for SIG-884
 
@@ -524,10 +524,10 @@ class TestAttachmentModel(LiveServerTestCase):
         self.assertTrue(attachment.image_crop.url.endswith(".jpg"))
 
         resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEquals(200, resp.status_code, "Original image is not reachable")
+        self.assertEqual(200, resp.status_code, "Original image is not reachable")
 
         resp = requests.get(self.live_server_url + attachment.image_crop.url)
-        self.assertEquals(200, resp.status_code, "Cropped image is not reachable")
+        self.assertEqual(200, resp.status_code, "Cropped image is not reachable")
 
     def test_cache_file_with_word_doc(self):
         with open(self.doc_upload_location, "rb") as f:
@@ -543,7 +543,7 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.image_crop()
 
         resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEquals(200, resp.status_code, "Original file is not reachable")
+        self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
     def test_cache_file_with_json_file(self):
         with open(self.json_upload_location, "rb") as f:
@@ -560,7 +560,7 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.image_crop()
 
         resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEquals(200, resp.status_code, "Original file is not reachable")
+        self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
     def test_cache_file_without_mimetype(self):
         with open(self.json_upload_location, "rb") as f:
@@ -575,9 +575,9 @@ class TestAttachmentModel(LiveServerTestCase):
         with self.assertRaises(Attachment.NotAnImageException):
             attachment.image_crop()
 
-        self.assertEquals("application/json", attachment.mimetype, "Mimetype should be set "
-                                                                   "automatically when not set "
-                                                                   "explicitly")
+        self.assertEqual("application/json", attachment.mimetype, "Mimetype should be set "
+                                                                  "automatically when not set "
+                                                                  "explicitly")
 
         resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEquals(200, resp.status_code, "Original file is not reachable")
+        self.assertEqual(200, resp.status_code, "Original file is not reachable")

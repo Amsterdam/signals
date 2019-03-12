@@ -78,26 +78,26 @@ class TestFilters(APITestCase):
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
 
-        self.assertEquals(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
 
         resp_json = resp.json()
         ids = [res["id"] for res in resp_json["results"]]
 
-        self.assertEquals(resp_json["count"], len(ids))
+        self.assertEqual(resp_json["count"], len(ids))
 
         return ids
 
     def test_result_all(self):
         """ No filtering should return all """
         result_ids = self._request_filter_signals({})
-        self.assertEquals(len(self.signals), len(result_ids))
+        self.assertEqual(len(self.signals), len(result_ids))
 
     def test_filter_id(self):
         """ Filtering on id should return one signal """
         id = self.signals[0].id
         result_ids = self._request_filter_signals({"id": id})
 
-        self.assertEquals(1, len(result_ids))
+        self.assertEqual(1, len(result_ids))
         self.assertListEqual([id], result_ids)
 
     def test_filter_updated_after(self):
@@ -108,7 +108,7 @@ class TestFilters(APITestCase):
         result_ids = self._request_filter_signals(params)
 
         # Expect 5 results. now, now - 1, now - 2, now - 3, now - 4 hours
-        self.assertEquals(5, len(result_ids))
+        self.assertEqual(5, len(result_ids))
 
     def test_filter_updated_before(self):
         """ Test updated_before """
@@ -118,7 +118,7 @@ class TestFilters(APITestCase):
         result_ids = self._request_filter_signals(params)
 
         # Expect 10 results
-        self.assertEquals(10, len(result_ids))
+        self.assertEqual(10, len(result_ids))
 
     def test_filter_created_after(self):
         """ Test created_after """
@@ -127,7 +127,7 @@ class TestFilters(APITestCase):
         params = {"created_after": now - timedelta(minutes=30)}
         result_ids = self._request_filter_signals(params)
 
-        self.assertEquals(1, len(result_ids))
+        self.assertEqual(1, len(result_ids))
 
     def test_filter_created_before(self):
         """ Test created_before """
@@ -136,7 +136,7 @@ class TestFilters(APITestCase):
         params = {"created_before": now - timedelta(days=8, hours=12)}
         result_ids = self._request_filter_signals(params)
 
-        self.assertEquals(2, len(result_ids))
+        self.assertEqual(2, len(result_ids))
 
     def test_filter_combined_no_results(self):
         """ Test combination of created_before and created_after, distinct sets """
@@ -149,7 +149,7 @@ class TestFilters(APITestCase):
         }
 
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(0, len(result_ids))
+        self.assertEqual(0, len(result_ids))
 
     def test_filter_combined_with_one_result(self):
         """ Test combination of created_before and created_after, union contains one signal """
@@ -162,7 +162,7 @@ class TestFilters(APITestCase):
         }
 
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(1, len(result_ids))
+        self.assertEqual(1, len(result_ids))
 
     def test_filter_combined_with_all_results(self):
         """ Test combination of created_before and created_after, union contains all signals """
@@ -175,7 +175,7 @@ class TestFilters(APITestCase):
         }
 
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(20, len(result_ids))
+        self.assertEqual(20, len(result_ids))
 
     def test_filter_categories_slug(self):
         """ Test multiple slugs. Should return all signals that appear in either of the categories
@@ -192,7 +192,7 @@ class TestFilters(APITestCase):
                 self.signals) % len(self.sub_categories) > len(slugs) else len(self.signals) % len(
                 self.sub_categories))
 
-        self.assertEquals(expected_cnt, len(result_ids))
+        self.assertEqual(expected_cnt, len(result_ids))
 
     def test_filter_maincategories_slug(self):
         """ Test multiple slugs. Should return all signals that appear in either of the categories
@@ -210,7 +210,7 @@ class TestFilters(APITestCase):
                 self.signals) % len(self.sub_categories) > len(slugs) else len(self.signals) % len(
                 self.sub_categories))
 
-        self.assertEquals(expected_cnt, len(result_ids))
+        self.assertEqual(expected_cnt, len(result_ids))
 
     def test_filter_all_statuses(self):
         """ Test set of all used statuses (in this class). Should return all signals """
@@ -218,23 +218,23 @@ class TestFilters(APITestCase):
         params = {"status": statuses}
 
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(len(self.signals), len(result_ids))
+        self.assertEqual(len(self.signals), len(result_ids))
 
     def test_filter_statuses_separate(self):
         """ Test result sets of statuses separately, and combined. """
         params = {"status": ['m']}
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(self.states.count(GEMELD), len(result_ids))
+        self.assertEqual(self.states.count(GEMELD), len(result_ids))
 
         params = {"status": ['b']}
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(self.states.count(BEHANDELING), len(result_ids))
+        self.assertEqual(self.states.count(BEHANDELING), len(result_ids))
 
         params = {"status": ['h']}
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(self.states.count(ON_HOLD), len(result_ids))
+        self.assertEqual(self.states.count(ON_HOLD), len(result_ids))
 
         params = {"status": ['h', 'b']}
         result_ids = self._request_filter_signals(params)
-        self.assertEquals(self.states.count(ON_HOLD) + self.states.count(BEHANDELING),
-                          len(result_ids))
+        self.assertEqual(self.states.count(ON_HOLD) + self.states.count(BEHANDELING),
+                         len(result_ids))

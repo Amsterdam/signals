@@ -500,7 +500,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
            side_effect=NoResultsException)
@@ -533,10 +533,10 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         signal = Signal.objects.get(id=signal_id)
 
         self.assertTrue(signal.location.bag_validated)
-        self.assertEquals(original_address, signal.location.extra_properties["original_address"],
-                          "Original address should appear in extra_properties.original_address")
-        self.assertEquals(suggested_address, signal.location.address,
-                          "Suggested address should appear instead of the received address")
+        self.assertEqual(original_address, signal.location.extra_properties["original_address"],
+                         "Original address should appear in extra_properties.original_address")
+        self.assertEqual(suggested_address, signal.location.address,
+                         "Suggested address should appear instead of the received address")
 
         # JSONSchema validation
         new_url = data['_links']['self']['href']
@@ -1023,8 +1023,8 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
                 self.assertIn(key, response_json)
 
-        self.assertEquals(4, Signal.objects.count())
-        self.assertEquals(2, len(self.signal_no_image.children.all()))
+        self.assertEqual(4, Signal.objects.count())
+        self.assertEqual(2, len(self.signal_no_image.children.all()))
 
     def test_split_children_must_inherit_these_properties(self):
         """When a signal is split its children must inherit certain properties."""
@@ -1192,12 +1192,12 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         json_response = response.json()
 
-        self.assertEquals(2, len(json_response['children']))
-        self.assertEquals("Child signal 1", json_response['children'][0]['text'])
-        self.assertEquals("Child signal 2", json_response['children'][1]['text'])
+        self.assertEqual(2, len(json_response['children']))
+        self.assertEqual("Child signal 1", json_response['children'][0]['text'])
+        self.assertEqual("Child signal 2", json_response['children'][1]['text'])
 
         self.assertJsonSchema(self.post_split_schema, json_response)
 
@@ -1207,7 +1207,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         signal = SignalFactory.create()
         self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_split_post_split_signal(self):
         """ A POST /<signal_id>/split on an already updated signal should return a 412 """
@@ -1216,8 +1216,8 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         data = [{"text": "Child 1"}, {"text": "Child 2"}]
         self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
         response = self.client.post(self.split_endpoint.format(pk=signal.pk), data, format='json')
-        self.assertEquals(412, response.status_code)
-        self.assertEquals("Signal has already been split", response.json()["detail"])
+        self.assertEqual(412, response.status_code)
+        self.assertEqual("Signal has already been split", response.json()["detail"])
 
     def test_child_cannot_be_split(self):
         """Child signals cannot themselves have children (i.e. not be split)."""
@@ -1400,7 +1400,7 @@ class TestPrivateSignalAttachments(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
-        self.assertEquals('superuser@example.com', self.signal.attachments.first().created_by)
+        self.assertEqual('superuser@example.com', self.signal.attachments.first().created_by)
 
     def test_create_contains_image_and_attachments(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -1416,18 +1416,18 @@ class TestPrivateSignalAttachments(APITestCase):
         non_image_attachments += add_non_image_attachments(self.signal, 1)
 
         response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         json_item = response.json()['results'][0]
         self.assertTrue('image' in json_item)
         self.assertTrue('attachments' in json_item)
-        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEquals(4, len(json_item['attachments']))
-        self.assertEquals(self.test_host + image_attachments[0].file.url,
-                          json_item['attachments'][1]['file'])
+        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEqual(4, len(json_item['attachments']))
+        self.assertEqual(self.test_host + image_attachments[0].file.url,
+                         json_item['attachments'][1]['file'])
         self.assertTrue(json_item['attachments'][2]['is_image'])
-        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
-                          json_item['attachments'][3]['file'])
+        self.assertEqual(self.test_host + non_image_attachments[1].file.url,
+                         json_item['attachments'][3]['file'])
         self.assertFalse(json_item['attachments'][3]['is_image'])
 
     def test_get_list_contains_image_and_attachments(self):
@@ -1436,18 +1436,18 @@ class TestPrivateSignalAttachments(APITestCase):
         non_image_attachments += add_non_image_attachments(self.signal, 1)
 
         response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         json_item = response.json()['results'][0]
         self.assertTrue('image' in json_item)
         self.assertTrue('attachments' in json_item)
-        self.assertEquals(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEquals(4, len(json_item['attachments']))
-        self.assertEquals(self.test_host + image_attachments[0].file.url,
-                          json_item['attachments'][1]['file'])
+        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
+        self.assertEqual(4, len(json_item['attachments']))
+        self.assertEqual(self.test_host + image_attachments[0].file.url,
+                         json_item['attachments'][1]['file'])
         self.assertTrue(json_item['attachments'][2]['is_image'])
-        self.assertEquals(self.test_host + non_image_attachments[1].file.url,
-                          json_item['attachments'][3]['file'])
+        self.assertEqual(self.test_host + non_image_attachments[1].file.url,
+                         json_item['attachments'][3]['file'])
         self.assertFalse(json_item['attachments'][3]['is_image'])
 
 
@@ -1498,20 +1498,20 @@ class TestPublicSignalViewSet(JsonAPITestCase):
     def test_create(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
-        self.assertEquals(201, response.status_code)
+        self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_schema, response.json())
-        self.assertEquals(1, Signal.objects.count())
+        self.assertEqual(1, Signal.objects.count())
         self.assertTrue('image' in response.json())
         self.assertTrue('attachments' in response.json())
         self.assertIsInstance(response.json()['attachments'], list)
 
         signal = Signal.objects.last()
-        self.assertEquals(workflow.GEMELD, signal.status.state)
-        self.assertEquals(self.subcategory, signal.category_assignment.sub_category)
-        self.assertEquals("melder@example.com", signal.reporter.email)
-        self.assertEquals("Amstel 1 1011PN Amsterdam", signal.location.address_text)
-        self.assertEquals("Luidruchtige vergadering", signal.text)
-        self.assertEquals("extra: heel luidruchtig debat", signal.text_extra)
+        self.assertEqual(workflow.GEMELD, signal.status.state)
+        self.assertEqual(self.subcategory, signal.category_assignment.sub_category)
+        self.assertEqual("melder@example.com", signal.reporter.email)
+        self.assertEqual("Amstel 1 1011PN Amsterdam", signal.location.address_text)
+        self.assertEqual("Luidruchtige vergadering", signal.text)
+        self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
 
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
@@ -1524,8 +1524,8 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
-        self.assertEquals(400, response.status_code)
-        self.assertEquals(0, Signal.objects.count())
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
 
     def test_get_by_uuid(self):
         signal = SignalFactory.create()
@@ -1533,7 +1533,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertJsonSchema(self.retrieve_schema, response.json())
 
     def test_add_attachment_imagetype(self):
@@ -1544,11 +1544,11 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
-        self.assertEquals(201, response.status_code)
+        self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_attachment_schema, response.json())
 
         attachment = Attachment.objects.last()
-        self.assertEquals("image/gif", attachment.mimetype)
+        self.assertEqual("image/gif", attachment.mimetype)
         self.assertIsInstance(attachment.image_crop.url, str)
         self.assertIsNone(attachment.created_by)
 
@@ -1562,7 +1562,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
             response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
 
-        self.assertEquals(201, response.status_code)
+        self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_attachment_schema, response.json())
 
         attachment = Attachment.objects.last()
