@@ -122,14 +122,14 @@ class SignalManager(models.Manager):
                 location_data = {'_signal': child_signal}
                 location_data.update({
                     k: getattr(parent_signal.location, k) for k in [
-                        'geometrie',
-                        'stadsdeel',
-                        'buurt_code',
-                        'address',
-                        'created_by',
-                        'extra_properties',
-                        'bag_validated'
-                    ]
+                    'geometrie',
+                    'stadsdeel',
+                    'buurt_code',
+                    'address',
+                    'created_by',
+                    'extra_properties',
+                    'bag_validated'
+                ]
                 })
                 location = Location.objects.create(**location_data)
 
@@ -287,6 +287,11 @@ class SignalManager(models.Manager):
         :returns: Category object
         """
         from .models import CategoryAssignment
+
+        if signal.category_assignment is not None \
+                and signal.category_assignment.sub_category.id == data['sub_category'].id:
+            # New category is the same as the old category. Skip
+            return
 
         with transaction.atomic():
             prev_category_assignment = signal.category_assignment
