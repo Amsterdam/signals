@@ -5,14 +5,14 @@ from signals.apps.signals.models import Buurt, Stadsdeel
 
 class AddressGebieden:
 
-    def get_gebieden_for_lat_long(self, lat: float, long: float):
+    def get_gebieden_for_long_lat(self, long: float, lat: float):
         pnt = Point(long, lat)
 
         buurt = self._get_buurt_for_point(pnt)
         stadsdeel = self._get_stadsdeel_for_point(pnt)
 
-        buurt_dict = self._buurt_to_dict(buurt) if buurt else {}
-        stadsdeel_dict = self._stadsdeel_to_dict(stadsdeel) if stadsdeel else {}
+        buurt_dict = self._buurt_to_dict(buurt) if buurt else None
+        stadsdeel_dict = self._stadsdeel_to_dict(stadsdeel) if stadsdeel else None
 
         return {
             "stadsdeel": stadsdeel_dict,

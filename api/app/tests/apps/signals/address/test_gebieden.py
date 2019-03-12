@@ -6,7 +6,7 @@ from signals.apps.signals.address.gebieden import AddressGebieden
 class TestAddressGebieden(TestCase):
     fixtures = ['buurten.json', 'stadsdeel.json', ]
 
-    def test_get_gebieden_for_lat_long(self):
+    def test_get_gebieden_for_long_lat(self):
         testcases = [
             {
                 # Dam square
@@ -43,8 +43,8 @@ class TestAddressGebieden(TestCase):
                 "lat": 24.5839024,
                 "long": -77.9868018,
                 "result": {
-                    "buurt": {},
-                    "stadsdeel": {},
+                    "buurt": None,
+                    "stadsdeel": None,
                 },
             },
         ]
@@ -52,6 +52,6 @@ class TestAddressGebieden(TestCase):
         address_gebieden = AddressGebieden()
 
         for testcase in testcases:
-            result = address_gebieden.get_gebieden_for_lat_long(testcase["lat"], testcase["long"])
+            result = address_gebieden.get_gebieden_for_long_lat(testcase["long"], testcase["lat"])
 
             self.assertEquals(testcase["result"], result)

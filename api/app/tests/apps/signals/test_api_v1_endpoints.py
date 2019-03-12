@@ -1567,3 +1567,72 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         attachment = Attachment.objects.last()
         self.assertEquals("application/msword", attachment.mimetype)
+
+
+class TestGebieden(APITestCase):
+    private_endpoint = "/signals/v1/private/signals/"
+    public_endpoint = "/signals/v1/public/signals/"
+
+    fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
+
+    gebied_response = {
+        "buurt": {
+            "code": "A04i",
+            "naam": "Waterloopleinbuurt",
+        },
+        "stadsdeel": {
+            "code": "A",
+            "naam": "Centrum",
+        },
+    }
+
+    def setUp(self):
+        with open(self.fixture_file, 'r') as f:
+            self.create_initial_data = json.load(f)
+
+        self.subcategory = SubCategoryFactory.create()
+
+        link_test_cat_sub = reverse(
+            'v1:sub-category-detail', kwargs={
+                'slug': self.subcategory.main_category.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+
+        # Add bogus data to location stadsdeel and buurt_code. Will be overwritten
+        self.create_initial_data['location']['stadsdeel'] = 'M'
+        self.create_initial_data['location']['buurt_code'] = 'ABCD'
+
+        self.user = UserFactory.create()
+        self.user.user_permissions.add(Permission.objects.get(codename='sia_write'))
+
+    @patch('signals.apps.signals.address.gebieden.AddressGebieden.get_gebieden_for_long_lat',
+           return_value=gebied_response)
+    def test_add_gebieden_private(self, address_gebieden):
+        """ Tests if the private endpoint sets the gebieden based on GPS coordinates """
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.private_endpoint, self.create_initial_data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        signal = Signal.objects.last()
+
+        self.assertEquals(self.gebied_response["buurt"]["code"], signal.location.buurt_code)
+        self.assertEquals(self.gebied_response["stadsdeel"]["code"], signal.location.stadsdeel)
+        self.assertEquals(self.gebied_response, signal.location.extra_properties['gebieden'])
+
+    @patch('signals.apps.signals.address.gebieden.AddressGebieden.get_gebieden_for_long_lat',
+           return_value=gebied_response)
+    def test_add_gebieden_public(self, address_gebieden):
+        """ Tests if the public endpoint sets the gebieden based on GPS coordinates """
+
+        response = self.client.post(self.public_endpoint, self.create_initial_data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        signal = Signal.objects.last()
+
+        self.assertEquals(self.gebied_response["buurt"]["code"], signal.location.buurt_code)
+        self.assertEquals(self.gebied_response["stadsdeel"]["code"], signal.location.stadsdeel)
+        self.assertEquals(self.gebied_response, signal.location.extra_properties['gebieden'])

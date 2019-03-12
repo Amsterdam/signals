@@ -11,6 +11,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 
 from signals import settings
 from signals.apps.signals import workflow
+from signals.apps.signals.address.gebieden import AddressGebieden
 from signals.apps.signals.address.validation import (
     AddressValidation,
     AddressValidationUnavailableException,
@@ -259,6 +260,10 @@ class AddressValidationMixin():
         # accept location data without address but with coordinates.
         if 'geometrie' not in location_data:
             raise ValidationError('Coordinate data must be present')
+
+        if "extra_properties" not in location_data or location_data['extra_properties'] is None:
+            location_data["extra_properties"] = {}
+
         if 'address' in location_data and location_data['address']:
             try:
                 address_validation = AddressValidation()
@@ -267,10 +272,6 @@ class AddressValidationMixin():
 
                 # Set suggested address from AddressValidation as address and save original address
                 # in extra_properties, to correct possible spelling mistakes in original address.
-                if ("extra_properties" not in location_data or
-                        location_data['extra_properties'] is None):
-                    location_data["extra_properties"] = {}
-
                 location_data["extra_properties"]["original_address"] = location_data["address"]
                 location_data["address"] = validated_address
                 location_data["bag_validated"] = True
@@ -281,6 +282,24 @@ class AddressValidationMixin():
                 pass
             except NoResultsException:
                 raise ValidationError({"location": "Niet-bestaand adres."})
+
+        location_data = self._add_gebieden(location_data)
+
+        return location_data
+
+    def _add_gebieden(self, location_data: dict):
+        lat = location_data['geometrie'].y
+        long = location_data['geometrie'].x
+
+        address_gebieden = AddressGebieden()
+        gebieden = address_gebieden.get_gebieden_for_long_lat(long, lat)
+        location_data['extra_properties']['gebieden'] = gebieden
+
+        if gebieden['buurt'] is not None:
+            location_data['buurt_code'] = gebieden['buurt']['code']
+
+        if gebieden['stadsdeel'] is not None:
+            location_data['stadsdeel'] = gebieden['stadsdeel']['code']
 
         return location_data
 
@@ -629,7 +648,7 @@ class PublicSignalSerializerDetail(HALSerializer):
         )
 
 
-class PublicSignalCreateSerializer(serializers.ModelSerializer):
+class PublicSignalCreateSerializer(serializers.ModelSerializer, AddressValidationMixin):
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer(required=False)
