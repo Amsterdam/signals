@@ -122,14 +122,14 @@ class SignalManager(models.Manager):
                 location_data = {'_signal': child_signal}
                 location_data.update({
                     k: getattr(parent_signal.location, k) for k in [
-                    'geometrie',
-                    'stadsdeel',
-                    'buurt_code',
-                    'address',
-                    'created_by',
-                    'extra_properties',
-                    'bag_validated'
-                ]
+                        'geometrie',
+                        'stadsdeel',
+                        'buurt_code',
+                        'address',
+                        'created_by',
+                        'extra_properties',
+                        'bag_validated'
+                    ]
                 })
                 location = Location.objects.create(**location_data)
 
