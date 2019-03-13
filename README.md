@@ -159,13 +159,13 @@ _dc01-acc.datapunt.amsterdam.nl_ or _dc01.datapunt.amsterdam.nl_  and become roo
 
 Then execute : 
 
-`docker exec -it signals python manage.py changepassword signals.admin@amsterdam.nl `
+`docker exec -it signals python manage.py changepassword signals.admin@example.com `
 
 and set the password. 
 
 If the user does not yest exist execute : 
 
-`docker exec -it signals python manage.py createsuperuser --username  signals.admin@amsterdam.nl --email signals.admin@amsterdam.nl
+`docker exec -it signals python manage.py createsuperuser --username  signals.admin@example.com --email signals.admin@example.com
 `
 
 and set the password. 
@@ -189,9 +189,9 @@ We can also import a CSV file with users. It should look like :
 
 ~~~~
 user_email,groups,departments,superuser,staff,action
-signals.monitor@amsterdam.nl,monitors,,false,false,
-signals.behandelaar@amsterdam.nl,behandelaars,,false,false,
-signals.coordinator@amsterdam.nl,coordinatoren,,false,false,
+signals.monitor@example.com,monitors,,false,false,
+signals.behandelaar@example.com,behandelaars,,false,false,
+signals.coordinator@example.com,coordinatoren,,false,false,
 user.todelete@amsterdam,,,,,delete
 ... 
 ~~~~  

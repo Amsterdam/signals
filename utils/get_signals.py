@@ -70,7 +70,7 @@ class GetAccessToken(object):
 
 if __name__ == "__main__":
     acceptance = True
-    email = os.getenv('SIGNALS_USER', 'signals.admin@amsterdam.nl')
+    email = os.getenv('SIGNALS_USER', 'signals.admin@example.com')
     password = os.getenv('SIGNALS_PASSWORD', 'insecure')
     access_token = GetAccessToken().getAccessToken(email, password, acceptance)
     print(f'Received new Access Token Header: {access_token}')

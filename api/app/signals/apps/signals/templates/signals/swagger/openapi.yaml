@@ -12,7 +12,7 @@ info:
     SIA provides an API that is used both by the SIA frontend and external
     systems that integrate with SIA. This swagger file documents that API.
   contact:
-    email: "datapunt@amsterdam.nl"
+    email: "datapunt@example.com"
   version: "TBD"
 paths:
   /signals/v1/private/signals/:
