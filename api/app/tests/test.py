@@ -53,7 +53,7 @@ class SIAReadUserMixin(SIAReadPermissionMixin):
         return user
 
 
-class SIAWriteUserMixin(SIAReadPermissionMixin, SIAWritePermissionMixin):
+class SIAWriteUserMixin(SIAWritePermissionMixin):
     @property
     def sia_write_user(self):
         user = UserFactory.create(
