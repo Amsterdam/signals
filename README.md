@@ -43,12 +43,12 @@ Start the Postgres database and Rabbit MQ services in the background, then run t
 suite (we use Pytest as test runner, the tests themselves are Django unittest style):
 ```
 docker-compose up -d database rabbit
-docker-compose run --rm api tox -e pytest
+docker-compose run --rm api tox -e pytest -- -n0 -s
 ```
 
 Our build pipeline checks that the full test suite runs successfully, that the style
 checks are passed, and that test code coverage is high enough. All these checks can
-be replicated locally by runnning Tox. 
+be replicated locally by running Tox.
 ```
 docker-compose run --rm api tox
 ```
@@ -81,6 +81,7 @@ This means that you can edit the application source on the host system and see t
 results reflected in the running application immediately, i.e. without rebuilding
 the `api` service.
 
+
 ## Other topics
 ### Celery
 
@@ -101,7 +102,7 @@ To start celery for testing we need to have SMTP settings in celery:
 
 
 RabbitMQ is run from a docker instance.  In order to be able to use it we need to specify 
-at startup the signala user and password and a vhost.
+at startup the signals user and password and a vhost.
 
 This is most easily using the default docker rabbitmq:3 and environment variables :
 
@@ -153,9 +154,8 @@ To maintain user and groups we use Django Admin. We cannot yet login to Djang Ad
 so for  now we need to set  a password for a staff account.  This is needed to login to Django Admin:
 
 
-This can be set the following commands. On acception or production you have to login to 
-
-_dc01-acc.datapunt.amsterdam.nl_ or _dc01.datapunt.amsterdam.nl_  and become root. 
+This can be set the following commands. On acception or production you have to
+login to the Docker host computer and become root.
 
 Then execute : 
 
@@ -163,12 +163,12 @@ Then execute :
 
 and set the password. 
 
-If the user does not yest exist execute : 
+If the user does not yest exist, you can create it by executing :
 
 `docker exec -it signals python manage.py createsuperuser --username  signals.admin@example.com --email signals.admin@example.com
 `
 
-and set the password. 
+and then setting the password.
 
 
 Then you can go to either : 
@@ -179,7 +179,8 @@ or
 
 `https://api.data.amsterdam.nl/signals/admin/`
 
-and login with credentials just created. 
+and login with credentials just created. Note: these URLs are not exposed
+publicly.
 
 In order to create some default groups for signals you have to run:
 
@@ -199,7 +200,7 @@ user.todelete@amsterdam,,,,,delete
 
 First copy the file to the server :
 
-`scp users.csv dc01-acc.datapunt.amsterdam.nl:/tmp/users.csv`
+`scp users.csv <servername>:/tmp/users.csv`
 
 The on that server copy it to the docker instance :
 
@@ -210,18 +211,3 @@ Then import the file with :
 `docker exec -it signals python manage.py create_users /tmp/users.csv`
 
 This should create users in the CSV file. It does NOT overwrite passwords.
-
-
-Currently three groups are defined to enable / disable specific operation 
-
-Users in the _**monitors**_ group  are only allowed to view tickets.
-
-Users in the _**behandelaars**_ group can make status changes. 
-
-User in the _**coordinatoren**_ group can also change the categories. 
-
-And users that are superuser can do everything. 
-
-Additionally  there groups defined for departments. They start with 'dep_'
-It is intended that users from a specific department should only see tickets 
-that belong to a specific department (in the category). But this is not yet implemented.
