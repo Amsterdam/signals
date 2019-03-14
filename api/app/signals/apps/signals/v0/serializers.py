@@ -133,7 +133,8 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    category = CategoryHyperlinkedRelatedField(write_only=True, required=False)
+    sub_category = CategoryHyperlinkedRelatedField(write_only=True, required=False,
+                                                   source='category')
 
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)
@@ -151,7 +152,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_slug',
             'main',
             'main_slug',
-            'category',
+            'sub_category',
             'department',
         )
 
@@ -160,6 +161,11 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
+
+        if 'sub_category' in data:
+            # Fix for renaming sub_category to category internally
+            data['category'] = data['sub_category']
+            del data['sub_category']
 
         # Backwards compatibility fix to let this endpoint work with `sub` as key.
         is_main_name_posted = 'main' in data
@@ -490,6 +496,11 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
+
+        if 'sub_category' in data:
+            # Fix for renaming sub_category to category internally
+            data['category'] = data['sub_category']
+            del data['sub_category']
 
         # Backwards compatibility fix to let this endpoint work with `sub` as key.
         is_main_name_posted = 'main' in data

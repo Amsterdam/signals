@@ -176,7 +176,7 @@ paths:
           required: true
           schema:
             type: string
-  /signals/v1/public/terms/categories/{main_slug}/categories/{sub_slug}:
+  /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
       description: Information about a specific sub category.
       responses:
@@ -332,11 +332,11 @@ components:
         text:
           type: string
           description: Message to log with category update, will show in logs.
-        category:
+        sub_category:
           type: string
           format: uri
       required:
-        - category
+        - sub_category
 
     priorityInput:
       description: JSON data for priority updates.
