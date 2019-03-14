@@ -18,7 +18,7 @@ MIDDLEWARE.append(  # noqa
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
-TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@amsterdam.nl')
+TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
 

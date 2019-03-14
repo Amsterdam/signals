@@ -21,7 +21,7 @@ class UserFactory(factory.DjangoModelFactory):
         lambda o: fake.password()
     )
     email = factory.LazyAttribute(
-        lambda o: '{}.{}@amsterdam.nl'.format(
+        lambda o: '{}.{}@example.com'.format(
             o.first_name.lower(),
             o.last_name.lower(),
         )
@@ -36,7 +36,7 @@ class UserFactory(factory.DjangoModelFactory):
 class SuperUserFactory(UserFactory):
     first_name = 'John'
     last_name = 'Doe'
-    email = 'signals.admin@amsterdam.nl'
+    email = 'signals.admin@example.com'
 
     is_superuser = True
     is_staff = True
