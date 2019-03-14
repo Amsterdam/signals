@@ -885,7 +885,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             data = json.load(f)
         data['category']['sub_category'] = self.link_test_cat_sub
 
-        Signal.actions.update_category_assignment({'sub_category': self.test_cat_sub},
+        Signal.actions.update_category_assignment({'category': self.test_cat_sub},
                                                   self.signal_no_image)
         self.signal_no_image.refresh_from_db()
 

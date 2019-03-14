@@ -289,7 +289,7 @@ class SignalManager(models.Manager):
         from .models import CategoryAssignment
 
         if signal.category_assignment is not None \
-                and signal.category_assignment.sub_category.id == data['sub_category'].id:
+                and signal.category_assignment.category.id == data['category'].id:
             # New category is the same as the old category. Skip
             return
 

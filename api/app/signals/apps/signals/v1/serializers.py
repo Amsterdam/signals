@@ -216,10 +216,10 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         from rest_framework.reverse import reverse
         request = self.context['request'] if 'request' in self.context else None
         return reverse(
-            'v1:sub-category-detail',
+            'v1:category-detail',
             kwargs={
-                'slug': obj.sub_category.main_category.slug,
-                'sub_slug': obj.sub_category.slug,
+                'slug': obj.category.parent.slug,
+                'sub_slug': obj.category.slug,
             },
             request=request
         )

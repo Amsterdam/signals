@@ -589,76 +589,76 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
 
-def test_post_category_backwards_compatibility_style(self):
-    """
-    Note, this is a backwards compatibility test for changing the category "old-style" posting.
-    Implementation and test should be removed after the FE is updated to "new-style" of changing
-    categories.
-    """
-    category_name = 'Overlast op het water - snel varen'
-    CategoryFactory.create(name=category_name,
-                           parent__name='Overlast op het water')
+    def test_post_category_backwards_compatibility_style(self):
+        """
+        Note, this is a backwards compatibility test for changing the category "old-style" posting.
+        Implementation and test should be removed after the FE is updated to "new-style" of changing
+        categories.
+        """
+        category_name = 'Overlast op het water - snel varen'
+        CategoryFactory.create(name=category_name,
+                               parent__name='Overlast op het water')
 
-    # Asserting that we don't change the category to the same value the signal object
-    # already has.
-    self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
+        # Asserting that we don't change the category to the same value the signal object
+        # already has.
+        self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
 
-    url = '/signals/auth/category/'
-    postjson = {
-        '_signal': self.signal.id,
-        'main': 'Overlast op het water',
-        'sub': category_name,
-    }
-    response = self.client.post(url, postjson, format='json')
-    self.assertEqual(response.status_code, 201)
+        url = '/signals/auth/category/'
+        postjson = {
+            '_signal': self.signal.id,
+            'main': 'Overlast op het water',
+            'sub': category_name,
+        }
+        response = self.client.post(url, postjson, format='json')
+        self.assertEqual(response.status_code, 201)
 
-    result = response.json()
-    self.assertEqual(result['sub'], category_name)
+        result = response.json()
+        self.assertEqual(result['sub'], category_name)
 
-    self.signal.refresh_from_db()
+        self.signal.refresh_from_db()
 
-    self.assertEqual(self.signal.category_assignment.category.name, category_name)
-    self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
-
-
-def test_post_priority(self):
-    url = '/signals/auth/priority/'
-    data = {
-        '_signal': self.signal.id,
-        'priority': Priority.PRIORITY_HIGH,
-    }
-    response = self.client.post(url, data, format='json')
-    result = response.json()
-
-    self.assertEqual(response.status_code, 201)
-
-    self.signal.refresh_from_db()
-    self.assertEqual(self.signal.priority.id, result['id'])
-    self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
-    self.assertEqual(self.signal.priority.created_by, self.superuser.username)
+        self.assertEqual(self.signal.category_assignment.category.name, category_name)
+        self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
 
-def test_post_note(self):
-    url = '/signals/auth/note/'
-    data = {
-        '_signal': self.signal.id,
-        'text': 'Dit is een test notitie bij een test melding.',
+    def test_post_priority(self):
+        url = '/signals/auth/priority/'
+        data = {
+            '_signal': self.signal.id,
+            'priority': Priority.PRIORITY_HIGH,
+        }
+        response = self.client.post(url, data, format='json')
+        result = response.json()
 
-    }
-    self.assertEqual(Note.objects.count(), 0)
-    response = self.client.post(url, data, format='json')
-    result = response.json()
+        self.assertEqual(response.status_code, 201)
 
-    self.assertEqual(response.status_code, 201)
-    self.assertEqual(Note.objects.count(), 1)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.priority.id, result['id'])
+        self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+        self.assertEqual(self.signal.priority.created_by, self.superuser.username)
 
-    self.signal.refresh_from_db()
-    self.assertEqual(self.signal.notes.count(), 1)
-    for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
-        self.assertIn(field, result)
 
-    note = Note.objects.get(_signal=self.signal)
-    self.assertEqual(note.created_by, self.superuser.username)
+    def test_post_note(self):
+        url = '/signals/auth/note/'
+        data = {
+            '_signal': self.signal.id,
+            'text': 'Dit is een test notitie bij een test melding.',
+
+        }
+        self.assertEqual(Note.objects.count(), 0)
+        response = self.client.post(url, data, format='json')
+        result = response.json()
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Note.objects.count(), 1)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.notes.count(), 1)
+        for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
+            self.assertIn(field, result)
+
+        note = Note.objects.get(_signal=self.signal)
+        self.assertEqual(note.created_by, self.superuser.username)
 
 
 class TestUserLogging(TestAPIEndpointsBase):
