@@ -1,4 +1,4 @@
-from django.contrib.postgres.search import SearchVector, SearchRank, SearchQuery
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import models
 
 
