@@ -141,6 +141,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
     main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
 
+    category_url = serializers.SerializerMethodField(read_only=True)
+
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(source='sub_category.departments',
                                                    read_only=True)
@@ -148,6 +150,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryAssignment
         fields = (
+            'category_url',
             'sub',
             'sub_slug',
             'main',
@@ -176,6 +179,18 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
                 internal_data['sub_category'] = sub_category
 
         return internal_data
+
+    def get_category_url(self, obj):
+        from rest_framework.reverse import reverse
+        request = self.context['request'] if 'request' in self.context else None
+        return reverse(
+            'v1:sub-category-detail',
+            kwargs={
+                'slug': obj.sub_category.main_category.slug,
+                'sub_slug': obj.sub_category.slug,
+            },
+            request=request
+        )
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):

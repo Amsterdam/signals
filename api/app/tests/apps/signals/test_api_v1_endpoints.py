@@ -874,6 +874,31 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
 
+    def test_update_category_assignment_same_category(self):
+        self.client.force_authenticate(user=self.write_user)
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_category_assignment.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        data['category']['sub_category'] = self.link_test_cat_sub
+
+        Signal.actions.update_category_assignment({'sub_category': self.test_cat_sub},
+                                                  self.signal_no_image)
+        self.signal_no_image.refresh_from_db()
+
+        # Signal is initialised with a known category.
+        cat_assignments_cnt = self.signal_no_image.category_assignments.count()
+
+        # Update signal with same category
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # No category assignment should be added
+        self.assertEquals(cat_assignments_cnt, self.signal_no_image.category_assignments.count())
+
     def test_update_priority(self):
         # Partial update to update the priority, all interaction via API.
         self.client.force_authenticate(user=self.sia_read_write_user)
