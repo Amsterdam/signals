@@ -39,6 +39,7 @@ class Buurt(models.Model):
 
     class Meta:
         db_table = 'buurt_simple'
+        managed = False
 
 
 class Stadsdeel(models.Model):
@@ -50,6 +51,7 @@ class Stadsdeel(models.Model):
 
     class Meta:
         db_table = 'stadsdeel'
+        managed = False
 
 
 class Signal(CreatedUpdatedModel):
