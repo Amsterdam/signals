@@ -17,6 +17,32 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Buurt',
+            fields=[
+                ('ogc_fid', models.IntegerField(primary_key=True, serialize=False)),
+                ('id', models.CharField(max_length=14)),
+                ('vollcode', models.CharField(max_length=4)),
+                ('naam', models.CharField(max_length=40)),
+                ('wkb_geometry', django.contrib.gis.db.models.PolygonField(srid=4326, null=True)),
+            ],
+            options={
+                'db_table': 'buurt_simple',
+            },
+        ),
+        migrations.CreateModel(
+            name='Stadsdeel',
+            fields=[
+                ('ogc_fid', models.IntegerField(primary_key=True, serialize=False)),
+                ('id', models.CharField(max_length=14)),
+                ('code', models.CharField(max_length=1)),
+                ('naam', models.CharField(max_length=40)),
+                ('wkb_geometry', django.contrib.gis.db.models.PolygonField(null=True, srid=4326)),
+            ],
+            options={
+                'db_table': 'stadsdeel',
+            },
+        ),
+        migrations.CreateModel(
             name='Category',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False,
