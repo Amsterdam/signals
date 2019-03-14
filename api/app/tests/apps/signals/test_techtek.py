@@ -12,12 +12,12 @@ import copy
 
 from django.contrib.auth.models import Permission
 from django.utils.http import urlencode
-from rest_framework.test import APITestCase
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Category
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.apps.users.factories import UserFactory
+from tests.test import SignalsBaseApiTestCase
 
 NEW_SIGNAL = {
     'source': 'TechView',
@@ -56,7 +56,7 @@ NOT_TECHTEK_MAIN_SLUG = 'afval'
 NOT_TECHTEK_SUB_SLUG = 'asbest-accu'
 
 
-class TestTechtekFlow(APITestCase):
+class TestTechtekFlow(SignalsBaseApiTestCase):
     fixtures = ['categories.json', ]
 
     def setUp(self):

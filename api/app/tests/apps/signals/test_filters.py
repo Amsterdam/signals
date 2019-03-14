@@ -6,14 +6,13 @@ from django.test import RequestFactory, TestCase
 from django.utils.http import urlencode
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.test import APITestCase
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.api_generics.filters import FieldMappingOrderingFilter
 from signals.apps.signals.models import Category, MainCategory, Priority, Signal
 from signals.apps.signals.v0.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
-from tests.apps.users.factories import SuperUserFactory
+from tests.test import SignalsBaseApiTestCase
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 N_RECORDS = 10
@@ -23,7 +22,7 @@ STATUS_ENDPOINT = '/signals/auth/status/'
 LOCATION_ENDPOINT = '/signals/auth/location/'
 
 
-class TestFilterBase(APITestCase):
+class TestFilterBase(SignalsBaseApiTestCase):
 
     def setUp(self):
         signals = [SignalFactory.create() for i in range(N_RECORDS)]
@@ -39,8 +38,7 @@ class TestFilterBase(APITestCase):
             signal.location.save()
 
         # Forcing authentication
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
     def _get_response(self, endpoint, querystring):
         return self.client.get(f'{endpoint}?{urlencode(querystring)}')
@@ -165,12 +163,11 @@ class TestLocatieFilter(TestFilterBase):
         self.assertEqual(response.json()['count'], 1)
 
 
-class TestPriorityFilter(APITestCase):
+class TestPriorityFilter(SignalsBaseApiTestCase):
 
     def setUp(self):
         # Forcing authentication
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         SignalFactory.create(id=1)
         SignalFactory.create(id=2)
@@ -306,7 +303,7 @@ class TestFieldMappingOrderingFilter(TestCase):
                           '`ordering_field_mappings` attribute.'))
 
 
-class TestSubSlugFilter(APITestCase):
+class TestSubSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
         # Assumes initial data in form of categories is present. (Possibly generalize this test
         # by not assuming a set category).
@@ -317,8 +314,7 @@ class TestSubSlugFilter(APITestCase):
         self.s2 = SignalFactory.create(category_assignment__category=self.sub_cat_2)
 
         # We are testing the authenticated part of the API, hence:
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
     def test_filter_on_sub_slug(self):
         payload = {'sub_slug': self.sub_cat_1.slug}
@@ -355,7 +351,7 @@ class TestSubSlugFilter(APITestCase):
         )
 
 
-class TestMainSlugFilter(APITestCase):
+class TestMainSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
         # Assumes initial data in form of categories is present. (Possibly generalize this test
         # by not assuming a set category).
@@ -368,8 +364,7 @@ class TestMainSlugFilter(APITestCase):
             category_assignment__category__parent=self.main_cat_2)
 
         # We are testing the authenticated part of the API, hence:
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
     def test_filter_on_main_slug(self):
         payload = {'main_slug': self.main_cat_1.slug}

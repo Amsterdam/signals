@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
-from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
@@ -29,10 +28,11 @@ from tests.apps.signals.attachment_helpers import (
     small_gif
 )
 from tests.apps.signals.factories import CategoryFactory
-from tests.apps.users.factories import SuperUserFactory, UserFactory
+from tests.apps.users.factories import UserFactory
+from tests.test import SignalsBaseApiTestCase
 
 
-class TestAPIRoot(APITestCase):
+class TestAPIRoot(SignalsBaseApiTestCase):
 
     def test_signals_index(self):
         response = self.client.get('/signals/')
@@ -55,7 +55,7 @@ class TestAPIRoot(APITestCase):
         self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v0']))
 
 
-class TestAuthAPIEndpoints(APITestCase):
+class TestAuthAPIEndpoints(SignalsBaseApiTestCase):
     endpoints = [
         '/signals/auth/signal/',
         '/signals/auth/status/',
@@ -74,8 +74,7 @@ class TestAuthAPIEndpoints(APITestCase):
                                               priority__id=1)
 
         # Forcing authentication
-        user = UserFactory.create()  # Normal user without any extra permissions.
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user)
 
         # Add one note to the signal
         self.note = factories.NoteFactory(id=1, _signal=self.signal)
@@ -129,7 +128,7 @@ class TestAuthAPIEndpoints(APITestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestAPIEndpointsBase(APITestCase):
+class TestAPIEndpointsBase(SignalsBaseApiTestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
         "post_status": "status_auth_post.json",
@@ -344,7 +343,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         self.assertTrue(self.signal.image)
 
 
-class TestAuthSignalEndpoint(APITestCase):
+class TestAuthSignalEndpoint(SignalsBaseApiTestCase):
 
     def setUp(self):
         self.first = factories.SignalFactory.create(location__stadsdeel=STADSDEEL_OOST)
@@ -355,8 +354,7 @@ class TestAuthSignalEndpoint(APITestCase):
         self.last = factories.SignalFactory.create(location__stadsdeel=STADSDEEL_OOST)
 
         # Forcing authentication
-        superuser = SuperUserFactory.create()  # Superuser has all permissions by default.
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
     def test_ordering_by_all_fields(self):
         # Just check if all ordering fields are working as in, do they return a 200 response.
@@ -431,9 +429,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         super().setUp()
 
         # Forcing authentication (Superuser has all permissions by default.)
-        superuser = SuperUserFactory.create(email='superuser@example.com')
-        self.user = superuser
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
     def test_signal_post_not_allowed(self):
         endpoint = '/signals/auth/signal/'
@@ -442,8 +438,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(response.status_code, 405)
 
     def test_endpoints_forbidden(self):
-        user = UserFactory.create()  # Normal user without any extra permissions.
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=self.user)
 
         # These endpoints are protected with object-level permissions. Check if we can't POST to
         # these endpoints with a normal `User` instance.
@@ -481,7 +476,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.status.text, result['text'])
         self.assertEqual(self.signal.status.user, result['user'])
         self.assertEqual(self.signal.status.state, result['state'])
-        self.assertEqual(self.signal.status.user, self.user.username)
+        self.assertEqual(self.signal.status.user, self.superuser.username)
 
     def test_post_status_minimal_fiels(self):
         # Asserting initial state.
@@ -499,7 +494,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.signal.refresh_from_db()
         result = response.json()
         self.assertEqual(self.signal.status.state, result['state'])
-        self.assertEqual(self.signal.status.user, self.user.username)
+        self.assertEqual(self.signal.status.user, self.superuser.username)
 
     def test_post_status_invalid_transition(self):
         # Prepare current state.
@@ -565,7 +560,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.signal.refresh_from_db()
         # check that current location of signal is now this one
         self.assertEqual(self.signal.location.id, result['id'])
-        self.assertEqual(self.signal.location.created_by, self.user.username)
+        self.assertEqual(self.signal.location.created_by, self.superuser.username)
 
     def test_post_category(self):
         category_name = 'Overlast op het water - snel varen'
@@ -589,76 +584,81 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(result['sub'], category_name)
 
         self.signal.refresh_from_db()
+
         self.assertEqual(self.signal.category_assignment.category, category)
-        self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
+        self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
-    def test_post_category_backwards_compatibility_style(self):
-        """
-        Note, this is a backwards compatibility test for changing the category "old-style" posting.
-        Implementation and test should be removed after the FE is updated to "new-style" of changing
-        categories.
-        """
-        category_name = 'Overlast op het water - snel varen'
-        CategoryFactory.create(name=category_name,
-                               parent__name='Overlast op het water')
 
-        # Asserting that we don't change the category to the same value the signal object
-        # already has.
-        self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
+def test_post_category_backwards_compatibility_style(self):
+    """
+    Note, this is a backwards compatibility test for changing the category "old-style" posting.
+    Implementation and test should be removed after the FE is updated to "new-style" of changing
+    categories.
+    """
+    category_name = 'Overlast op het water - snel varen'
+    CategoryFactory.create(name=category_name,
+                           parent__name='Overlast op het water')
 
-        url = '/signals/auth/category/'
-        postjson = {
-            '_signal': self.signal.id,
-            'main': 'Overlast op het water',
-            'sub': category_name,
-        }
-        response = self.client.post(url, postjson, format='json')
-        self.assertEqual(response.status_code, 201)
+    # Asserting that we don't change the category to the same value the signal object
+    # already has.
+    self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
 
-        result = response.json()
-        self.assertEqual(result['sub'], category_name)
+    url = '/signals/auth/category/'
+    postjson = {
+        '_signal': self.signal.id,
+        'main': 'Overlast op het water',
+        'sub': category_name,
+    }
+    response = self.client.post(url, postjson, format='json')
+    self.assertEqual(response.status_code, 201)
 
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.category_assignment.category.name, category_name)
-        self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
+    result = response.json()
+    self.assertEqual(result['sub'], category_name)
 
-    def test_post_priority(self):
-        url = '/signals/auth/priority/'
-        data = {
-            '_signal': self.signal.id,
-            'priority': Priority.PRIORITY_HIGH,
-        }
-        response = self.client.post(url, data, format='json')
-        result = response.json()
+    self.signal.refresh_from_db()
 
-        self.assertEqual(response.status_code, 201)
+    self.assertEqual(self.signal.category_assignment.category.name, category_name)
+    self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.priority.id, result['id'])
-        self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
-        self.assertEqual(self.signal.priority.created_by, self.user.username)
 
-    def test_post_note(self):
-        url = '/signals/auth/note/'
-        data = {
-            '_signal': self.signal.id,
-            'text': 'Dit is een test notitie bij een test melding.',
+def test_post_priority(self):
+    url = '/signals/auth/priority/'
+    data = {
+        '_signal': self.signal.id,
+        'priority': Priority.PRIORITY_HIGH,
+    }
+    response = self.client.post(url, data, format='json')
+    result = response.json()
 
-        }
-        self.assertEqual(Note.objects.count(), 0)
-        response = self.client.post(url, data, format='json')
-        result = response.json()
+    self.assertEqual(response.status_code, 201)
 
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Note.objects.count(), 1)
+    self.signal.refresh_from_db()
+    self.assertEqual(self.signal.priority.id, result['id'])
+    self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
+    self.assertEqual(self.signal.priority.created_by, self.superuser.username)
 
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.notes.count(), 1)
-        for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
-            self.assertIn(field, result)
 
-        note = Note.objects.get(_signal=self.signal)
-        self.assertEqual(note.created_by, self.user.username)
+def test_post_note(self):
+    url = '/signals/auth/note/'
+    data = {
+        '_signal': self.signal.id,
+        'text': 'Dit is een test notitie bij een test melding.',
+
+    }
+    self.assertEqual(Note.objects.count(), 0)
+    response = self.client.post(url, data, format='json')
+    result = response.json()
+
+    self.assertEqual(response.status_code, 201)
+    self.assertEqual(Note.objects.count(), 1)
+
+    self.signal.refresh_from_db()
+    self.assertEqual(self.signal.notes.count(), 1)
+    for field in ['_links', 'text', 'created_at', 'created_by', '_signal']:
+        self.assertIn(field, result)
+
+    note = Note.objects.get(_signal=self.signal)
+    self.assertEqual(note.created_by, self.superuser.username)
 
 
 class TestUserLogging(TestAPIEndpointsBase):
@@ -668,9 +668,7 @@ class TestUserLogging(TestAPIEndpointsBase):
         super().setUp()
 
         # Forcing authentication (Superuser has all permissions by default.)
-        superuser = SuperUserFactory.create(email='superuser@example.com')
-        self.user = superuser
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # We want the following fields present in relevant authenticated endpoints.
         self.required_fields = ['created_at', 'created_by', '_signal']

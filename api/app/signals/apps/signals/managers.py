@@ -288,6 +288,11 @@ class SignalManager(models.Manager):
         """
         from .models import CategoryAssignment
 
+        if signal.category_assignment is not None \
+                and signal.category_assignment.sub_category.id == data['sub_category'].id:
+            # New category is the same as the old category. Skip
+            return
+
         with transaction.atomic():
             prev_category_assignment = signal.category_assignment
 

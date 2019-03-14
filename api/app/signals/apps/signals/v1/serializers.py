@@ -185,6 +185,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main = serializers.CharField(source='category.parent.name', read_only=True)
     main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
+    category_url = serializers.SerializerMethodField(read_only=True)
+
     departments = serializers.SerializerMethodField(
         source='category.departments',
         read_only=True
@@ -193,6 +195,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryAssignment
         fields = (
+            'category_url',
             'sub',
             'sub_slug',
             'main',
@@ -208,6 +211,18 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
     def get_departments(self, obj):
         return ', '.join(obj.category.departments.values_list('code', flat=True))
+
+    def get_category_url(self, obj):
+        from rest_framework.reverse import reverse
+        request = self.context['request'] if 'request' in self.context else None
+        return reverse(
+            'v1:sub-category-detail',
+            kwargs={
+                'slug': obj.sub_category.main_category.slug,
+                'sub_slug': obj.sub_category.slug,
+            },
+            request=request
+        )
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -340,7 +355,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
             Signal.actions.update_status(status_data, instance)
 
-    def _update_category_assignment(self, instance, validated_data):
+    def _update_category_assignment(self, instance: Signal, validated_data):
         """
         Update the category assignment of a Signal using the action manager
         """

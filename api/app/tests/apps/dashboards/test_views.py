@@ -2,15 +2,14 @@ import json
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework.test import APITestCase
 
 from signals.apps.dashboards.views import DashboardPrototype
 from signals.apps.signals.models import Category, CategoryAssignment, Signal, Status
 from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, BEHANDELING, GEMELD, ON_HOLD
-from tests.apps.users.factories import SuperUserFactory
+from tests.test import SignalsBaseApiTestCase
 
 
-class TestDashboardPrototype(APITestCase):
+class TestDashboardPrototype(SignalsBaseApiTestCase):
     url = '/signals/experimental/dashboards/1'
     fixtures = ['categories.json']
     dashboard_prototype = DashboardPrototype()
@@ -173,8 +172,7 @@ class TestDashboardPrototype(APITestCase):
         self.assertEqual(401, response.status_code)
 
     def _do_request(self):
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
 

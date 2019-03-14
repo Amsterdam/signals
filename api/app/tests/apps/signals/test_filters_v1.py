@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from random import shuffle
 
 from freezegun import freeze_time
-from rest_framework.test import APITestCase
 
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.signals.factories import (
@@ -11,10 +10,10 @@ from tests.apps.signals.factories import (
     SignalFactory,
     StatusFactory
 )
-from tests.apps.users.factories import SuperUserFactory
+from tests.test import SignalsBaseApiTestCase
 
 
-class TestFilters(APITestCase):
+class TestFilters(SignalsBaseApiTestCase):
     """ Tests filters on the private v1 list endpoint: /signals/v1/private/signals """
     SIGNALS_DISTRIBUTE_DAYS_CNT = 10
     SIGNALS_DISTRIBUTE_HOURS_CNT = 10
@@ -66,7 +65,6 @@ class TestFilters(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls._create_signals()
-        cls.superuser = SuperUserFactory(username='superuser@example.com')
 
     def setUp(self):
         self.signals = TestFilters.signals
