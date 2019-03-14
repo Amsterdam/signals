@@ -875,7 +875,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_update_category_assignment_same_category(self):
-        self.client.force_authenticate(user=self.write_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
 
