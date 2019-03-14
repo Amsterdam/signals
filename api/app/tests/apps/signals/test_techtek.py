@@ -15,7 +15,7 @@ from django.utils.http import urlencode
 from rest_framework.test import APITestCase
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import SubCategory
+from signals.apps.signals.models import Category
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.apps.users.factories import UserFactory
 
@@ -76,28 +76,28 @@ class TestTechtekFlow(APITestCase):
             '{server}/signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}'
 
         # Fill test database with some signals to demonstrate filtering.
-        techtek_sub_cat = SubCategory.objects.get(
+        techtek_sub_cat = Category.objects.get(
             main_category__slug=TECHTEK_MAIN_SLUG,
             slug=TECHTEK_SUB_SLUG,
         )
 
         self._techtek_signal_1 = SignalFactoryValidLocation(
-            category_assignment__sub_category=techtek_sub_cat,
+            category_assignment__category=techtek_sub_cat,
             text='De straatverlichting werkt niet.',
             status__state=workflow.GEMELD,
         )
         self._techtek_signal_2 = SignalFactoryValidLocation(
-            category_assignment__sub_category=techtek_sub_cat,
+            category_assignment__category=techtek_sub_cat,
             text='De openbare klok op de hoek werkt niet.',
             status__state=workflow.AFGEHANDELD,
         )
 
-        other_cat = SubCategory.objects.get(
+        other_cat = Category.objects.get(
             main_category__slug=NOT_TECHTEK_MAIN_SLUG,
             slug=NOT_TECHTEK_SUB_SLUG,
         )
         self._signal = SignalFactory(
-            category_assignment__sub_category=other_cat,
+            category_assignment__category=other_cat,
             text='Er ligt een accu in de sloot.',
             status__state=workflow.GEMELD,
         )
