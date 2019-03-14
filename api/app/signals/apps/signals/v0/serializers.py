@@ -12,6 +12,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.api_generics.mixins import AddExtrasMixin
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
+    Category,
     CategoryAssignment,
     Department,
     Location,
@@ -19,8 +20,7 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status,
-    SubCategory
+    Status
 )
 from signals.apps.signals.v0.fields import (
     CategoryLinksField,
@@ -30,8 +30,8 @@ from signals.apps.signals.v0.fields import (
     StatusLinksField
 )
 from signals.apps.signals.v1.fields import (
-    NoteHyperlinkedIdentityField,
-    SubCategoryHyperlinkedRelatedField
+    CategoryHyperlinkedRelatedField,
+    NoteHyperlinkedIdentityField
 )
 
 logger = logging.getLogger(__name__)
@@ -89,7 +89,6 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
 
 
 class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Location
         geo_field = 'geometrie'
@@ -134,15 +133,15 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
+    category = CategoryHyperlinkedRelatedField(write_only=True, required=False)
 
-    sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+    sub = serializers.CharField(source='category.name', read_only=True)
+    sub_slug = serializers.CharField(source='category.slug', read_only=True)
+    main = serializers.CharField(source='category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='category.main_category.slug', read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
-    department = serializers.SerializerMethodField(source='sub_category.departments',
+    department = serializers.SerializerMethodField(source='category.departments',
                                                    read_only=True)
 
     class Meta:
@@ -152,12 +151,12 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_slug',
             'main',
             'main_slug',
-            'sub_category',
+            'category',
             'department',
         )
 
     def get_department(self, obj):
-        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+        return ', '.join(obj.category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
@@ -165,21 +164,20 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         # Backwards compatibility fix to let this endpoint work with `sub` as key.
         is_main_name_posted = 'main' in data
         is_sub_name_posted = 'sub' in data
-        is_sub_category_not_posted = 'sub_category' not in data
-        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+        is_category_not_posted = 'category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_category_not_posted:
             try:
-                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
-                                                       name__iexact=data['sub'])
-            except SubCategory.DoesNotExist:
-                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
+                category = Category.objects.get(main_category__name__iexact=data['main'],
+                                                name__iexact=data['sub'])
+            except Category.DoesNotExist:
+                internal_data['category'] = Category.objects.get(id=76)  # Overig
             else:
-                internal_data['sub_category'] = sub_category
+                internal_data['category'] = category
 
         return internal_data
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Reporter
         fields = (
@@ -190,12 +188,12 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedPriorityModelSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Priority
         fields = (
             'priority',
         )
+
 
 #
 # Unauth serializers
@@ -459,15 +457,16 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=False)
+    sub_category = CategoryHyperlinkedRelatedField(write_only=True, required=False,
+                                                   source='category')
 
-    sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+    sub = serializers.CharField(source='category.name', read_only=True)
+    sub_slug = serializers.CharField(source='category.slug', read_only=True)
+    main = serializers.CharField(source='category.main_category.name', read_only=True)
+    main_slug = serializers.CharField(source='category.main_category.slug', read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
-    department = serializers.SerializerMethodField(source='sub_category.departments',
+    department = serializers.SerializerMethodField(source='category.departments',
                                                    read_only=True)
 
     class Meta(object):
@@ -487,7 +486,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
         )
 
     def get_department(self, obj):
-        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+        return ', '.join(obj.category.departments.values_list('code', flat=True))
 
     def to_internal_value(self, data):
         internal_data = super().to_internal_value(data)
@@ -495,15 +494,15 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
         # Backwards compatibility fix to let this endpoint work with `sub` as key.
         is_main_name_posted = 'main' in data
         is_sub_name_posted = 'sub' in data
-        is_sub_category_not_posted = 'sub_category' not in data
-        if is_main_name_posted and is_sub_name_posted and is_sub_category_not_posted:
+        is_category_not_posted = 'category' not in data
+        if is_main_name_posted and is_sub_name_posted and is_category_not_posted:
             try:
-                sub_category = SubCategory.objects.get(main_category__name__iexact=data['main'],
-                                                       name__iexact=data['sub'])
-            except SubCategory.DoesNotExist:
-                internal_data['sub_category'] = SubCategory.objects.get(id=76)  # Overig
+                category = Category.objects.get(main_category__name__iexact=data['main'],
+                                                name__iexact=data['sub'])
+            except Category.DoesNotExist:
+                internal_data['category'] = Category.objects.get(id=76)  # Overig
             else:
-                internal_data['sub_category'] = sub_category
+                internal_data['category'] = category
 
         return internal_data
 
@@ -547,7 +546,6 @@ class PriorityHALSerializer(AddExtrasMixin, HALSerializer):
 #
 
 class _NestedDepartmentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Department
         fields = (

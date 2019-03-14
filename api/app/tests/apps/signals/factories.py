@@ -13,6 +13,7 @@ from factory import fuzzy
 from signals.apps.signals.models import (
     STADSDELEN,
     Attachment,
+    Category,
     CategoryAssignment,
     Department,
     Location,
@@ -21,8 +22,7 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status,
-    SubCategory
+    Status
 )
 from signals.apps.signals.workflow import GEMELD
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -161,7 +161,7 @@ class CategoryAssignmentFactory(factory.DjangoModelFactory):
 
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory',
                                  category_assignment=None)
-    sub_category = factory.SubFactory('tests.apps.signals.factories.SubCategoryFactory')
+    category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory')
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
@@ -211,14 +211,14 @@ class MainCategoryFactory(factory.DjangoModelFactory):
         django_get_or_create = ('slug', )
 
 
-class SubCategoryFactory(factory.DjangoModelFactory):
+class CategoryFactory(factory.DjangoModelFactory):
     main_category = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
-    name = factory.Sequence(lambda n: 'Sub category {}'.format(n))
+    name = factory.Sequence(lambda n: 'Category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
-    handling = fuzzy.FuzzyChoice([c[0] for c in SubCategory.HANDLING_CHOICES])
+    handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
 
     class Meta:
-        model = SubCategory
+        model = Category
         django_get_or_create = ('main_category', 'slug', )
 
     @factory.post_generation

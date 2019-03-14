@@ -16,7 +16,7 @@ from signals.apps.signals.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
-from signals.apps.signals.models import Attachment, History, MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Attachment, Category, History, MainCategory, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
@@ -24,12 +24,12 @@ from tests.apps.signals.attachment_helpers import (
     small_gif
 )
 from tests.apps.signals.factories import (
+    CategoryFactory,
     MainCategoryFactory,
     NoteFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage,
-    SubCategoryFactory
+    SignalFactoryWithImage
 )
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 from tests.testcase.testcases import JsonAPITestCase
@@ -91,7 +91,7 @@ class TestCategoryTermsEndpoints(JsonAPITestCase):
     def test_category_detail(self):
         # Asserting that we've 13 sub categories for our main category "Afval".
         main_category = MainCategoryFactory.create(name='Afval')
-        self.assertEqual(main_category.sub_categories.count(), 13)
+        self.assertEqual(main_category.categories.count(), 13)
 
         url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
         response = self.client.get(url)
@@ -106,7 +106,7 @@ class TestCategoryTermsEndpoints(JsonAPITestCase):
         self.assertEqual(len(data['sub_categories']), 13)
 
     def test_sub_category_detail(self):
-        sub_category = SubCategoryFactory.create(name='Grofvuil', main_category__name='Afval')
+        sub_category = CategoryFactory.create(name='Grofvuil', main_category__name='Afval')
 
         url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
             slug=sub_category.main_category.slug,
@@ -341,16 +341,16 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # TODO: add to factories.
         self.test_cat_main = MainCategory(name='testmain')
         self.test_cat_main.save()
-        self.test_cat_sub = SubCategory(
+        self.test_cat_sub = Category(
             main_category=self.test_cat_main,
             name='testsub',
-            handling=SubCategory.HANDLING_A3DMC,
+            handling=Category.HANDLING_A3DMC,
         )
         self.test_cat_sub.save()
         assert 'sub-category-' not in self.test_cat_sub.slug
 
         self.link_test_cat_sub = reverse(
-            'v1:sub-category-detail', kwargs={
+            'v1:category-detail', kwargs={
                 'slug': self.test_cat_main.slug,
                 'sub_slug': self.test_cat_sub.slug,
             }
@@ -1367,10 +1367,10 @@ class TestPrivateSignalAttachments(APITestCase):
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
 
-        self.subcategory = SubCategoryFactory.create()
+        self.subcategory = CategoryFactory.create()
 
         link_test_cat_sub = reverse(
-            'v1:sub-category-detail', kwargs={
+            'v1:category-detail', kwargs={
                 'slug': self.subcategory.main_category.slug,
                 'sub_slug': self.subcategory.slug,
             }
@@ -1462,10 +1462,10 @@ class TestPublicSignalViewSet(JsonAPITestCase):
         with open(self.fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
 
-        self.subcategory = SubCategoryFactory.create()
+        self.subcategory = CategoryFactory.create()
 
         link_test_cat_sub = reverse(
-            'v1:sub-category-detail', kwargs={
+            'v1:category-detail', kwargs={
                 'slug': self.subcategory.main_category.slug,
                 'sub_slug': self.subcategory.slug,
             }
@@ -1507,7 +1507,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         signal = Signal.objects.last()
         self.assertEqual(workflow.GEMELD, signal.status.state)
-        self.assertEqual(self.subcategory, signal.category_assignment.sub_category)
+        self.assertEqual(self.subcategory, signal.category_assignment.category)
         self.assertEqual("melder@example.com", signal.reporter.email)
         self.assertEqual("Amstel 1 1011PN Amsterdam", signal.location.address_text)
         self.assertEqual("Luidruchtige vergadering", signal.text)

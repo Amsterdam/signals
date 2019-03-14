@@ -10,7 +10,7 @@ from rest_framework.test import APITestCase
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.api_generics.filters import FieldMappingOrderingFilter
-from signals.apps.signals.models import MainCategory, Priority, Signal, SubCategory
+from signals.apps.signals.models import Category, MainCategory, Priority, Signal
 from signals.apps.signals.v0.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import SuperUserFactory
@@ -310,11 +310,11 @@ class TestSubSlugFilter(APITestCase):
     def setUp(self):
         # Assumes initial data in form of categories is present. (Possibly generalize this test
         # by not assuming a set category).
-        self.sub_cat_1 = SubCategory.objects.get(slug='asbest-accu')
-        self.sub_cat_2 = SubCategory.objects.get(slug='oever-kade-steiger')
+        self.sub_cat_1 = Category.objects.get(slug='asbest-accu')
+        self.sub_cat_2 = Category.objects.get(slug='oever-kade-steiger')
 
-        self.s1 = SignalFactory.create(category_assignment__sub_category=self.sub_cat_1)
-        self.s2 = SignalFactory.create(category_assignment__sub_category=self.sub_cat_2)
+        self.s1 = SignalFactory.create(category_assignment__category=self.sub_cat_1)
+        self.s2 = SignalFactory.create(category_assignment__category=self.sub_cat_2)
 
         # We are testing the authenticated part of the API, hence:
         superuser = SuperUserFactory.create()
@@ -330,7 +330,7 @@ class TestSubSlugFilter(APITestCase):
         self.assertEqual(json_response['count'], 1)
         self.assertEqual(
             json_response['results'][0]['category']['sub_slug'],
-            self.s1.category_assignment.sub_category.slug
+            self.s1.category_assignment.category.slug
         )
 
     def test_backwards_compatibility(self):
@@ -363,9 +363,9 @@ class TestMainSlugFilter(APITestCase):
         self.main_cat_2 = MainCategory.objects.get(slug='openbaar-groen-en-water')
 
         self.s1 = SignalFactory.create(
-            category_assignment__sub_category__main_category=self.main_cat_1)
+            category_assignment__category__main_category=self.main_cat_1)
         self.s2 = SignalFactory.create(
-            category_assignment__sub_category__main_category=self.main_cat_2)
+            category_assignment__category__main_category=self.main_cat_2)
 
         # We are testing the authenticated part of the API, hence:
         superuser = SuperUserFactory.create()
@@ -381,7 +381,7 @@ class TestMainSlugFilter(APITestCase):
         self.assertEqual(json_response['count'], 1)
         self.assertEqual(
             json_response['results'][0]['category']['main_slug'],
-            self.s1.category_assignment.sub_category.main_category.slug
+            self.s1.category_assignment.category.main_category.slug
         )
 
     def test_backwards_compatibility(self):

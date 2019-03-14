@@ -28,7 +28,7 @@ from tests.apps.signals.attachment_helpers import (
     add_non_image_attachments,
     small_gif
 )
-from tests.apps.signals.factories import SubCategoryFactory
+from tests.apps.signals.factories import CategoryFactory
 from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
@@ -568,28 +568,28 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.location.created_by, self.user.username)
 
     def test_post_category(self):
-        sub_category_name = 'Overlast op het water - snel varen'
-        sub_category = SubCategoryFactory.create(name=sub_category_name,
-                                                 main_category__name='Overlast op het water')
+        category_name = 'Overlast op het water - snel varen'
+        category = CategoryFactory.create(name=category_name,
+                                          main_category__name='Overlast op het water')
 
-        # Asserting that we don't change the sub category to the same value the signal object
+        # Asserting that we don't change the category to the same value the signal object
         # already has.
-        self.assertNotEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+        self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
 
         url = '/signals/auth/category/'
         postjson = {
             '_signal': self.signal.id,
             'sub_category': '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
-                sub_category.main_category.slug, sub_category.slug),
+                category.main_category.slug, category.slug),
         }
         response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
         result = response.json()
-        self.assertEqual(result['sub'], sub_category_name)
+        self.assertEqual(result['sub'], category_name)
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.category_assignment.sub_category, sub_category)
+        self.assertEqual(self.signal.category_assignment.category, category)
         self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
 
     def test_post_category_backwards_compatibility_style(self):
@@ -598,28 +598,28 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         Implementation and test should be removed after the FE is updated to "new-style" of changing
         categories.
         """
-        sub_category_name = 'Overlast op het water - snel varen'
-        SubCategoryFactory.create(name=sub_category_name,
-                                  main_category__name='Overlast op het water')
+        category_name = 'Overlast op het water - snel varen'
+        CategoryFactory.create(name=category_name,
+                               main_category__name='Overlast op het water')
 
-        # Asserting that we don't change the sub category to the same value the signal object
+        # Asserting that we don't change the category to the same value the signal object
         # already has.
-        self.assertNotEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+        self.assertNotEqual(self.signal.category_assignment.category.name, category_name)
 
         url = '/signals/auth/category/'
         postjson = {
             '_signal': self.signal.id,
             'main': 'Overlast op het water',
-            'sub': sub_category_name,
+            'sub': category_name,
         }
         response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
         result = response.json()
-        self.assertEqual(result['sub'], sub_category_name)
+        self.assertEqual(result['sub'], category_name)
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.category_assignment.sub_category.name, sub_category_name)
+        self.assertEqual(self.signal.category_assignment.category.name, category_name)
         self.assertEqual(self.signal.category_assignment.created_by, self.user.username)
 
     def test_post_priority(self):

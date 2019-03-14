@@ -10,7 +10,7 @@ from signals.apps.email_integrations.utils import (
     create_default_notification_message,
     is_business_hour
 )
-from signals.apps.signals.models import STADSDEEL_NIEUWWEST, Signal, SubCategory
+from signals.apps.signals.models import STADSDEEL_NIEUWWEST, Category, Signal
 
 
 def send_mail(signal: Signal) -> int:
@@ -49,7 +49,7 @@ def is_signal_applicable(signal: Signal) -> bool:
         return False
 
     # TODO: move this query to object manager.
-    eligible_sub_categories = SubCategory.objects.filter(
+    eligible_categories = Category.objects.filter(
         Q(main_category__slug='overlast-bedrijven-en-horeca') & (
             Q(slug='geluidsoverlast-muziek') |
             Q(slug='geluidsoverlast-installaties') |
@@ -57,4 +57,4 @@ def is_signal_applicable(signal: Signal) -> bool:
             Q(slug='stankoverlast') |
             Q(slug='overlast-door-bezoekers-niet-op-terras')))
 
-    return signal.category_assignment.sub_category in eligible_sub_categories
+    return signal.category_assignment.category in eligible_categories

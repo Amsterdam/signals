@@ -17,8 +17,8 @@ class TestIntegrationHandhavingOROost(TestCase):
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
         signal = SignalFactory.create(
-            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
-            category_assignment__sub_category__name='Parkeeroverlast',
+            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__name='Parkeeroverlast',
             location__stadsdeel=STADSDEEL_OOST)
 
         number_of_messages = handhaving_or_oost.send_mail(signal)
@@ -70,8 +70,8 @@ class TestIntegrationHandhavingOROost(TestCase):
                 return_value=False, autospec=True)
     def test_is_signal_applicable_true(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
-            category_assignment__sub_category__name='Fietswrak',
+            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
@@ -82,8 +82,8 @@ class TestIntegrationHandhavingOROost(TestCase):
                 return_value=True, autospec=True)
     def test_is_signal_applicable_is_business_hour(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
-            category_assignment__sub_category__name='Fietswrak',
+            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
@@ -94,8 +94,8 @@ class TestIntegrationHandhavingOROost(TestCase):
                 return_value=False, autospec=True)
     def test_is_signal_applicable_outside_category_in_stadsdeel_oost(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__sub_category__main_category__name='Some other main category',
-            category_assignment__sub_category__name='Some other sub category',
+            category_assignment__category__main_category__name='Some other main category',
+            category_assignment__category__name='Some other category',
             location__stadsdeel=STADSDEEL_OOST)
 
         result = handhaving_or_oost.is_signal_applicable(signal)
@@ -106,8 +106,8 @@ class TestIntegrationHandhavingOROost(TestCase):
                 return_value=False, autospec=True)
     def test_is_signal_applicable_in_category_outside_stadsdeel_oost(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__sub_category__main_category__name='Overlast in de openbare ruimte',
-            category_assignment__sub_category__name='Fietswrak',
+            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_NOORD)
 
         result = handhaving_or_oost.is_signal_applicable(signal)

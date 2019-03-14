@@ -56,8 +56,8 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-        v1_public_views.SubCategoryViewSet.as_view({'get': 'retrieve'}),
-        name='sub-category-detail'
+        v1_public_views.CategoryViewSet.as_view({'get': 'retrieve'}),
+        name='category-detail'
     )
 )
 

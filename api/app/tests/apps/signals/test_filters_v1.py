@@ -7,9 +7,9 @@ from rest_framework.test import APITestCase
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
+    CategoryFactory,
     SignalFactory,
-    StatusFactory,
-    SubCategoryFactory
+    StatusFactory
 )
 from tests.apps.users.factories import SuperUserFactory
 
@@ -48,14 +48,14 @@ class TestFilters(APITestCase):
         cls.states = 3 * [BEHANDELING] + 2 * [ON_HOLD] + (len(times) - 3 - 2) * [GEMELD]
         shuffle(cls.states)
 
-        cls.sub_categories = [SubCategoryFactory.create() for _ in range(cls.SUBCATEGORY_CNT)]
+        cls.sub_categories = [CategoryFactory.create() for _ in range(cls.SUBCATEGORY_CNT)]
 
         for idx, time in enumerate(times):
             with freeze_time(time):
                 signal = SignalFactory.create()
                 StatusFactory(_signal=signal, state=cls.states[idx])
                 category_assignment = CategoryAssignmentFactory(_signal=signal,
-                                                                sub_category=cls.sub_categories[
+                                                                category=cls.sub_categories[
                                                                     idx % len(cls.sub_categories)])
                 signal.category_assignment = category_assignment
                 signal.save()

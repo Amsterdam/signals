@@ -9,12 +9,12 @@ from rest_framework.serializers import ValidationError
 from signals.apps.signals.models import (
     STADSDELEN,
     Buurt,
+    Category,
     Location,
     MainCategory,
     Priority,
     Signal,
-    Status,
-    SubCategory
+    Status
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
 
@@ -103,21 +103,21 @@ class SignalFilter(FilterSet):
     category__main = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
         to_field_name='name',
-        field_name='category_assignment__sub_category__main_category__name')
+        field_name='category_assignment__category__main_category__name')
     category__sub = filters.ModelMultipleChoiceFilter(
-        queryset=SubCategory.objects.all(),
+        queryset=Category.objects.all(),
         to_field_name='name',
-        field_name='category_assignment__sub_category__name')
+        field_name='category_assignment__category__name')
     # category__main and category__sub filters will be replaced with main_slug and sub_slug
     main_slug = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all().select_related(),
         to_field_name='slug',
-        field_name='category_assignment__sub_category__main_category__slug',
+        field_name='category_assignment__category__main_category__slug',
     )
     sub_slug = filters.ModelMultipleChoiceFilter(
-        queryset=SubCategory.objects.all().select_related(),
+        queryset=Category.objects.all().select_related(),
         to_field_name='slug',
-        field_name='category_assignment__sub_category__slug',
+        field_name='category_assignment__category__slug',
     )
 
     priority__priority = filters.MultipleChoiceFilter(choices=Priority.PRIORITY_CHOICES)

@@ -147,10 +147,10 @@ class SignalManager(models.Manager):
                     })
                     priority = Priority.objects.create(**priority_data)
 
-                sub_category = validated_data['category']['sub_category']
+                category = validated_data['category']['sub_category']
                 category_assignment_data = {
                     '_signal': child_signal,
-                    'sub_category': sub_category,
+                    'category': category,
                 }
 
                 category_assignment = CategoryAssignment.objects.create(**category_assignment_data)

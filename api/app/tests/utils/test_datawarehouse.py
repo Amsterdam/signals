@@ -176,10 +176,10 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['id'], str(category_assignment.id))
                 self.assertEqual(row['_signal_id'], str(category_assignment._signal_id))
                 self.assertEqual(row['main'],
-                                 str(category_assignment.sub_category.main_category.name))
-                self.assertEqual(row['sub'], str(category_assignment.sub_category.name))
+                                 str(category_assignment.category.main_category.name))
+                self.assertEqual(row['sub'], str(category_assignment.category.name))
                 self.assertEqual(row['departments'],
-                                 ', '.join(category_assignment.sub_category.departments.values_list(
+                                 ', '.join(category_assignment.category.departments.values_list(
                                      'name', flat=True)))
                 self.assertEqual(row['created_at'], str(category_assignment.created_at))
                 self.assertEqual(row['updated_at'], str(category_assignment.updated_at))

@@ -7,13 +7,13 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.models import MainCategory, Signal, SubCategory
+from signals.apps.signals.models import Category, MainCategory, Signal
 from signals.apps.signals.v1.serializers import (
+    CategoryHALSerializer,
     MainCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail,
-    SubCategoryHALSerializer
+    PublicSignalSerializerDetail
 )
 
 
@@ -44,9 +44,9 @@ class MainCategoryViewSet(DatapuntViewSet):
     lookup_field = 'slug'
 
 
-class SubCategoryViewSet(RetrieveModelMixin, GenericViewSet):
-    queryset = SubCategory.objects.all()
-    serializer_class = SubCategoryHALSerializer
+class CategoryViewSet(RetrieveModelMixin, GenericViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategoryHALSerializer
     pagination_class = HALPagination
 
     def get_object(self):

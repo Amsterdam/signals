@@ -61,8 +61,8 @@ class Signal(CreatedUpdatedModel):
                                                related_name='signal',
                                                null=True,
                                                on_delete=models.SET_NULL)
-    sub_categories = models.ManyToManyField('signals.SubCategory',
-                                            through='signals.CategoryAssignment')
+    categories = models.ManyToManyField('signals.Category',
+                                        through='signals.CategoryAssignment')
     reporter = models.OneToOneField('signals.Reporter',
                                     related_name='signal',
                                     null=True,
@@ -111,7 +111,7 @@ class Signal(CreatedUpdatedModel):
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
         )
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -318,20 +318,20 @@ class Reporter(CreatedUpdatedModel):
 
 
 class CategoryAssignment(CreatedUpdatedModel):
-    """Many-to-Many through model for `Signal` <-> `SubCategory`."""
+    """Many-to-Many through model for `Signal` <-> `Category`."""
     _signal = models.ForeignKey('signals.Signal',
                                 on_delete=models.CASCADE,
                                 related_name='category_assignments')
-    sub_category = models.ForeignKey('signals.SubCategory',
-                                     on_delete=models.CASCADE,
-                                     related_name='category_assignments')
+    category = models.ForeignKey('signals.Category',
+                                 on_delete=models.CASCADE,
+                                 related_name='category_assignments')
     created_by = models.EmailField(null=True, blank=True)
 
     extra_properties = JSONField(null=True)  # TODO: candidate for removal
 
     def __str__(self):
         """String representation."""
-        return '{sub} - {signal}'.format(sub=self.sub_category, signal=self._signal)
+        return '{sub} - {signal}'.format(sub=self.category, signal=self._signal)
 
 
 class Status(CreatedUpdatedModel):
@@ -474,7 +474,7 @@ class MainCategory(models.Model):
         super().save(*args, **kwargs)
 
 
-class SubCategory(models.Model):
+class Category(models.Model):
     HANDLING_A3DMC = 'A3DMC'
     HANDLING_A3DEC = 'A3DEC'
     HANDLING_A3WMC = 'A3WMC'
@@ -503,7 +503,7 @@ class SubCategory(models.Model):
     )
 
     main_category = models.ForeignKey('signals.MainCategory',
-                                      related_name='sub_categories',
+                                      related_name='categories',
                                       on_delete=models.PROTECT)
     slug = models.SlugField()
     name = models.CharField(max_length=255)
@@ -609,7 +609,7 @@ class Attachment(CreatedUpdatedModel):
     is_image = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('created_at', )
+        ordering = ('created_at',)
 
     class NotAnImageException(Exception):
         pass
