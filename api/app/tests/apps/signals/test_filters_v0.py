@@ -59,8 +59,8 @@ class TestBboxFilter(TestFilterBase):
         response = self._get_response(
             LOCATION_ENDPOINT, {'in_bbox': f'{min_lon},{min_lat},{max_lon},{max_lat}'})
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.json()['count'], 0)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 0)
 
     def test_match_everything(self):
         # Determine boundingbox that contains all Signals (see setUp).
@@ -73,8 +73,8 @@ class TestBboxFilter(TestFilterBase):
         response = self._get_response(
             LOCATION_ENDPOINT, {'in_bbox': f'{min_lon},{min_lat},{max_lon},{max_lat}'})
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.json()['count'], N_RECORDS)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], N_RECORDS)
 
     def test_match_one(self):
         # Determine boundingbox that contains one single Signal (see setUp).
@@ -87,8 +87,8 @@ class TestBboxFilter(TestFilterBase):
         response = self._get_response(
             LOCATION_ENDPOINT, {'in_bbox': f'{min_lon},{min_lat},{max_lon},{max_lat}'})
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.json()['count'], 1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 1)
 
     def test_filter_signal_via_location(self):
         # Determine boundingbox that contains one single Signal (see setUp).
@@ -101,8 +101,8 @@ class TestBboxFilter(TestFilterBase):
         response = self._get_response(
             SIGNAL_ENDPOINT, {'in_bbox': f'{min_lon},{min_lat},{max_lon},{max_lat}'})
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.json()['count'], 1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 1)
 
     def test_filter_status_via_location(self):
         # Determine boundingbox that contains one single Status (see setUp).
@@ -115,8 +115,8 @@ class TestBboxFilter(TestFilterBase):
         response = self._get_response(
             STATUS_ENDPOINT, {'in_bbox': f'{min_lon},{min_lat},{max_lon},{max_lat}'})
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.json()['count'], 1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 1)
 
 
 class TestLocatieFilter(TestFilterBase):
@@ -129,8 +129,8 @@ class TestLocatieFilter(TestFilterBase):
             response = self._get_response(
                 endpoint, {'location': f'{lon},{lat},1'})
 
-            self.assertEquals(response.status_code, 200)
-            self.assertEquals(response.json()['count'], 0)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['count'], 0)
 
     def test_match_one_instance(self):
         lon, lat = IN_AMSTERDAM
@@ -139,8 +139,8 @@ class TestLocatieFilter(TestFilterBase):
             response = self._get_response(
                 endpoint, {'location': f'{lon},{lat},1'})
 
-            self.assertEquals(response.status_code, 200)
-            self.assertEquals(response.json()['count'], 1)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['count'], 1)
 
     def test_match_all_instances(self):
         lon, lat = IN_AMSTERDAM
@@ -149,8 +149,8 @@ class TestLocatieFilter(TestFilterBase):
             response = self._get_response(
                 endpoint, {'location': f'{lon},{lat},100000'})
 
-            self.assertEquals(response.status_code, 200)
-            self.assertEquals(response.json()['count'], N_RECORDS)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['count'], N_RECORDS)
 
     @unittest.expectedFailure
     def test_signal_filter(self):
@@ -160,9 +160,9 @@ class TestLocatieFilter(TestFilterBase):
         # hence this test.
         response = self._get_response(SIGNAL_ENDPOINT, {'location': f'{lon},{lat},1'})
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # will have N_RECORDS signals because the filter is not yet implemented
-        self.assertEquals(response.json()['count'], 1)
+        self.assertEqual(response.json()['count'], 1)
 
 
 class TestPriorityFilter(APITestCase):

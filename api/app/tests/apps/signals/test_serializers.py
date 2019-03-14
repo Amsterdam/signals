@@ -30,7 +30,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
 
         # check that valid data is returned, and wrong data rejected
         v = NearAmsterdamValidatorMixin()
-        self.assertEquals(correct, v.validate_geometrie(correct))
+        self.assertEqual(correct, v.validate_geometrie(correct))
 
         with self.assertRaises(serializers.ValidationError):
             v.validate_geometrie(wrong)

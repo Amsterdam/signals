@@ -23,7 +23,7 @@ def add_backoffice_permissions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('signals', '0035_auto_20190212_1722'),
+        ('signals', '0037_auto_20190212_1722'),
     ]
 
     operations = [

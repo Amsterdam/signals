@@ -336,7 +336,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
                         element.tag, correct))
                     logger.debug('element.text {}'.format(element.text))
 
-        self.assertEquals(len(need_to_find), 0)
+        self.assertEqual(len(need_to_find), 0)
 
     def test_no_address_means_no_address_fields(self):
         self.signal.location.address = None
@@ -403,21 +403,21 @@ class TestSendStufMessage(TestCase):
         # Check that headers are set correctly when sending an STUF message.
         args, kwargs = mocked_request_post.call_args
 
-        self.assertEquals(mocked_request_post.called, 1)
-        self.assertEquals(kwargs['url'], REQUIRED_ENV['SIGMAX_SERVER'])
-        self.assertEquals(
+        self.assertEqual(mocked_request_post.called, 1)
+        self.assertEqual(kwargs['url'], REQUIRED_ENV['SIGMAX_SERVER'])
+        self.assertEqual(
             kwargs['headers']['Authorization'],
             'Basic ' + REQUIRED_ENV['SIGMAX_AUTH_TOKEN']
         )
-        self.assertEquals(
+        self.assertEqual(
             kwargs['headers']['SOAPAction'],
             'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
         )
-        self.assertEquals(
+        self.assertEqual(
             kwargs['headers']['Content-Type'],
             'text/xml; charset=UTF-8'
         )
-        self.assertEquals(
+        self.assertEqual(
             b'%d' % len(message),
             kwargs['headers']['Content-Length']
         )

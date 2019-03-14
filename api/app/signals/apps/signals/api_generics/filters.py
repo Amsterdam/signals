@@ -142,7 +142,7 @@ class SignalFilter(FilterSet):
 
     def in_bbox_filter(self, qs, name, value):
         bbox_values, err = bbox.valid_bbox(value)
-        lat1, lon1, lat2, lon2 = bbox_values
+        lon1, lat1, lon2, lat2 = bbox_values
         poly_bbox = Polygon.from_bbox((lon1, lat1, lon2, lat2))
 
         if err:
@@ -190,7 +190,7 @@ class StatusFilter(FilterSet):
 
     def in_bbox_filter(self, qs, name, value):
         bbox_values, err = bbox.valid_bbox(value)
-        lat1, lon1, lat2, lon2 = bbox_values
+        lon1, lat1, lon2, lat2 = bbox_values
         poly_bbox = Polygon.from_bbox((lon1, lat1, lon2, lat2))
 
         if err:
@@ -230,7 +230,7 @@ class LocationFilter(FilterSet):
 
     def in_bbox_filter(self, qs, name, value):
         bbox_values, err = bbox.valid_bbox(value)
-        lat1, lon1, lat2, lon2 = bbox_values
+        lon1, lat1, lon2, lat2 = bbox_values
         poly_bbox = Polygon.from_bbox((lon1, lat1, lon2, lat2))
 
         if err:

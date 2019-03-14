@@ -163,7 +163,7 @@ class LocationAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_detail_class = LocationHALSerializer
     serializer_class = LocationHALSerializer
     filter_backends = (DjangoFilterBackend, )
-    filter_class = LocationFilter
+    filterset_class = LocationFilter
 
 
 class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
@@ -173,7 +173,7 @@ class StatusAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_detail_class = StatusHALSerializer
     serializer_class = StatusHALSerializer
     filter_backends = (DjangoFilterBackend, )
-    filter_class = StatusFilter
+    filterset_class = StatusFilter
 
 
 class CategoryAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
@@ -192,7 +192,7 @@ class PriorityAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     serializer_detail_class = PriorityHALSerializer
     serializer_class = PriorityHALSerializer
     filter_backends = (DjangoFilterBackend, )
-    filter_fields = ['priority', ]
+    filterset_fields = ['priority', ]
 
 
 class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
@@ -203,4 +203,4 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     permission_classes = (NotePermission, SIABackofficePermission, )
     filter_backends = (DjangoFilterBackend, )
-    filter_fields = ('_signal__id', )
+    filterset_fields = ('_signal__id', )

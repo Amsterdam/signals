@@ -89,7 +89,7 @@ class PrivateSignalViewSet(PrivateSignalViewSetBase,
     permission_classes = (SIAPermissions,)
 
     filter_backends = (DjangoFilterBackend,)
-    filter_class = SignalFilter
+    filterset_class = SignalFilter
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 

@@ -23,7 +23,7 @@ class TestPDFView(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get('Content-Type'), 'application/pdf')
-        self.assertEquals(
+        self.assertEqual(
             response.get('Content-Disposition'),
             'attachment; SIA-{}.pdf'.format(self.signal.pk)
         )

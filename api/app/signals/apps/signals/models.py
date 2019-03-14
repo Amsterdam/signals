@@ -113,6 +113,10 @@ class Signal(CreatedUpdatedModel):
             (permissions.SIA_BACKOFFICE, 'SIA Backoffice'),
         )
         ordering = ('created_at', )
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['id', 'parent']),
+        ]
 
     def __init__(self, *args, **kwargs):
         super(Signal, self).__init__(*args, **kwargs)
@@ -548,6 +552,9 @@ class Department(models.Model):
 
     class Meta:
         ordering = ('name',)
+        indexes = [
+            models.Index(fields=['name']),
+        ]
 
     def __str__(self):
         """String representation."""
@@ -565,6 +572,9 @@ class Note(CreatedUpdatedModel):
 
     class Meta:
         ordering = ('-created_at',)
+        indexes = [
+            models.Index(fields=['created_at']),
+        ]
 
 
 class History(models.Model):
@@ -625,6 +635,11 @@ class Attachment(CreatedUpdatedModel):
 
     class Meta:
         ordering = ('created_at', )
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['is_image']),
+            models.Index(fields=['_signal', 'is_image']),
+        ]
 
     class NotAnImageException(Exception):
         pass
