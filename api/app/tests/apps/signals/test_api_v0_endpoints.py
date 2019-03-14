@@ -588,7 +588,6 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.category_assignment.category, category)
         self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
-
     def test_post_category_backwards_compatibility_style(self):
         """
         Note, this is a backwards compatibility test for changing the category "old-style" posting.
@@ -620,7 +619,6 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.category_assignment.category.name, category_name)
         self.assertEqual(self.signal.category_assignment.created_by, self.superuser.username)
 
-
     def test_post_priority(self):
         url = '/signals/auth/priority/'
         data = {
@@ -636,7 +634,6 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.priority.id, result['id'])
         self.assertEqual(self.signal.priority.priority, Priority.PRIORITY_HIGH)
         self.assertEqual(self.signal.priority.created_by, self.superuser.username)
-
 
     def test_post_note(self):
         url = '/signals/auth/note/'
