@@ -358,7 +358,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
             Signal.actions.update_status(status_data, instance)
 
-    def _update_category_assignment(self, instance, validated_data):
+    def _update_category_assignment(self, instance: Signal, validated_data):
         """
         Update the category assignment of a Signal using the action manager
         """

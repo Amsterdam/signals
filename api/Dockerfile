@@ -14,10 +14,10 @@ RUN mkdir -p /media && chown datapunt /media
 RUN mkdir -p /deploy && chown datapunt /deploy
 
 COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
+
 COPY app /app/
 COPY deploy /deploy/
-
-RUN pip install --no-cache-dir -r /requirements.txt
 
 WORKDIR /app
 
