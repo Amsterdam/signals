@@ -77,7 +77,7 @@ class TestTechtekFlow(APITestCase):
 
         # Fill test database with some signals to demonstrate filtering.
         techtek_sub_cat = Category.objects.get(
-            main_category__slug=TECHTEK_MAIN_SLUG,
+            parent__slug=TECHTEK_MAIN_SLUG,
             slug=TECHTEK_SUB_SLUG,
         )
 
@@ -93,7 +93,7 @@ class TestTechtekFlow(APITestCase):
         )
 
         other_cat = Category.objects.get(
-            main_category__slug=NOT_TECHTEK_MAIN_SLUG,
+            parent__slug=NOT_TECHTEK_MAIN_SLUG,
             slug=NOT_TECHTEK_SUB_SLUG,
         )
         self._signal = SignalFactory(

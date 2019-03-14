@@ -209,7 +209,7 @@ def _create_category_assignments_csv(location):
         for category_assignment in CategoryAssignment.objects.all():
             writer.writerow([
                 category_assignment.pk,
-                category_assignment.category.main_category.name,
+                category_assignment.category.parent.name,
                 category_assignment.category.name,
                 ', '.join(category_assignment.category.departments.values_list(
                     'name', flat=True)),

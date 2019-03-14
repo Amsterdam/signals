@@ -26,7 +26,7 @@ def send_mail(signal: Signal) -> int:
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category_assignment.category.main_category.name,
+                'hoofdrubriek': signal.category_assignment.category.parent.name,
                 'subrubriek': signal.category_assignment.category.name,
             },
             'omschrijving': signal.text,
@@ -49,11 +49,11 @@ def is_signal_applicable(signal: Signal) -> bool:
     """
     # TODO: move this query to object manager.
     eligible_categories = Category.objects.filter(
-        Q(main_category__slug='openbaar-groen-en-water') |
-        Q(main_category__slug='wegen-verkeer-straatmeubilair') |
-        Q(main_category__slug='afval', slug='prullenbak-is-vol') |
-        Q(main_category__slug='afval', slug='prullenbak-is-kapot') |
-        Q(main_category__slug='afval', slug='veeg-zwerfvuil'))
+        Q(parent__slug='openbaar-groen-en-water') |
+        Q(parent__slug='wegen-verkeer-straatmeubilair') |
+        Q(parent__slug='afval', slug='prullenbak-is-vol') |
+        Q(parent__slug='afval', slug='prullenbak-is-kapot') |
+        Q(parent__slug='afval', slug='veeg-zwerfvuil'))
 
     is_applicable_for_apptimize = (
             settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None

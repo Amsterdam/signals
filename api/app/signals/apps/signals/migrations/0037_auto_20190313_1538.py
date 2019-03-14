@@ -18,4 +18,5 @@ class Migration(migrations.Migration):
             old_name='sub_category',
             new_name='category',
         ),
+
     ]

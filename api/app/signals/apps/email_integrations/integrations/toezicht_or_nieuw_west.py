@@ -48,7 +48,7 @@ def is_signal_applicable(signal: Signal) -> bool:
 
     # TODO: move this query to object manager.
     eligible_categories = Category.objects.filter(
-        Q(main_category__slug='overlast-in-de-openbare-ruimte') & (
+        Q(parent__slug='overlast-in-de-openbare-ruimte') & (
             Q(slug='parkeeroverlast') |
             Q(slug='fietswrak') |
             Q(slug='stank-geluidsoverlast') |

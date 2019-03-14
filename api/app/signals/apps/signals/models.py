@@ -506,9 +506,9 @@ class Category(models.Model):
         (HANDLING_REST, HANDLING_REST),
     )
 
-    main_category = models.ForeignKey('signals.MainCategory',
-                                      related_name='categories',
-                                      on_delete=models.PROTECT)
+    parent = models.ForeignKey('signals.MainCategory',
+                               related_name='categories',
+                               on_delete=models.PROTECT)
     slug = models.SlugField()
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
@@ -517,13 +517,13 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('name',)
-        unique_together = ('main_category', 'slug',)
+        unique_together = ('parent', 'slug',)
         verbose_name_plural = 'Sub Categories'
 
     def __str__(self):
         """String representation."""
-        return '{name} ({main_category})'.format(name=self.name,
-                                                 main_category=self.main_category.name)
+        return '{name} ({parent})'.format(name=self.name,
+                                          parent=self.parent.name)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

@@ -52,7 +52,7 @@ class CategoryViewSet(RetrieveModelMixin, GenericViewSet):
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset,
-                                main_category__slug=self.kwargs['slug'],
+                                parent__slug=self.kwargs['slug'],
                                 slug=self.kwargs['sub_slug'])
         self.check_object_permissions(self.request, obj)
         return obj

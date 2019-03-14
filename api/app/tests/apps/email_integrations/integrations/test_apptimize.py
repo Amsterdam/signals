@@ -15,7 +15,7 @@ class TestIntegrationApptimize(TestCase):
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Openbaar groen en water',
+            category_assignment__category__parent__name='Openbaar groen en water',
             category_assignment__category__name='Boom')
 
         number_of_messages = apptimize.send_mail(signal)
@@ -39,7 +39,7 @@ class TestIntegrationApptimize(TestCase):
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category_assignment.category.main_category.name,
+                'hoofdrubriek': signal.category_assignment.category.parent.name,
                 'subrubriek': signal.category_assignment.category.name,
             },
             'omschrijving': signal.text,
@@ -70,7 +70,7 @@ class TestIntegrationApptimize(TestCase):
 
     def test_is_signal_applicable_in_category(self):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Openbaar groen en water',
+            category_assignment__category__parent__name='Openbaar groen en water',
             category_assignment__category__name='Boom')
 
         result = apptimize.is_signal_applicable(signal)
@@ -79,7 +79,7 @@ class TestIntegrationApptimize(TestCase):
 
     def test_is_signal_applicable_outside_category(self):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Some other main category',
+            category_assignment__category__parent__name='Some other main category',
             category_assignment__category__name='Some other category')
 
         result = apptimize.is_signal_applicable(signal)
@@ -89,7 +89,7 @@ class TestIntegrationApptimize(TestCase):
     @override_settings(EMAIL_APPTIMIZE_INTEGRATION_ADDRESS=None)
     def test_is_signal_applicable_no_email(self):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Openbaar groen en water',
+            category_assignment__category__parent__name='Openbaar groen en water',
             category_assignment__category__name='Boom')
 
         result = apptimize.is_signal_applicable(signal)
@@ -99,7 +99,7 @@ class TestIntegrationApptimize(TestCase):
     def test_is_signal_applicable_in_category_broken_bin(self):
         # See SIG-900
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Afval',
+            category_assignment__category__parent__name='Afval',
             category_assignment__category__name='Prullenbak is kapot')
 
         result = apptimize.is_signal_applicable(signal)

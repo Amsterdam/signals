@@ -4,7 +4,7 @@ Nieuwe melding ({{ signal.id }}):
 
 *** Details melding ***
 
-Categorie: {{ signal.category_assignment.category.main_category.name }}
+Categorie: {{ signal.category_assignment.category.parent.name }}
 Subcategorie: {{ signal.category_assignment.category.name }}
 {% if signal.location.address_text %}Adres: {{ signal.location.address_text }}{% endif %}
 Tijdstip: {{ signal.incident_date_start|date:"DATETIME_FORMAT" }}

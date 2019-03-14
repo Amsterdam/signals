@@ -37,7 +37,7 @@ class TestPDF(TestCase):
         self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%d-%m-%Y'), html)
         self.assertIn(signal.incident_date_start.astimezone(current_tz).strftime('%H:%M:%S'), html)
         self.assertIn(signal.sia_id, html)
-        self.assertIn(signal.category_assignment.category.main_category.name, html)
+        self.assertIn(signal.category_assignment.category.parent.name, html)
         self.assertIn(signal.category_assignment.category.name, html)
         self.assertIn(signal.priority.get_priority_display(), html)
         self.assertIn(signal.text, html)

@@ -25,7 +25,7 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
-            'slug': obj.main_category.slug,
+            'slug': obj.parent.slug,
             'sub_slug': obj.slug,
         }
         return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
@@ -57,7 +57,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
     def get_url(self, obj, view_name, request, format):
         url_kwargs = {
-            'slug': obj.main_category.slug,
+            'slug': obj.parent.slug,
             'sub_slug': obj.slug,
         }
 
@@ -72,7 +72,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
     def get_object(self, view_name, view_args, view_kwargs):
         return self.get_queryset().get(
-            main_category__slug=view_kwargs['slug'],
+            parent__slug=view_kwargs['slug'],
             slug=view_kwargs['sub_slug'])
 
 

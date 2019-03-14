@@ -138,8 +138,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
 
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)
-    main = serializers.CharField(source='category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='category.main_category.slug', read_only=True)
+    main = serializers.CharField(source='category.parent.name', read_only=True)
+    main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(source='category.departments',
@@ -173,7 +173,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         is_category_not_posted = 'category' not in data
         if is_main_name_posted and is_sub_name_posted and is_category_not_posted:
             try:
-                category = Category.objects.get(main_category__name__iexact=data['main'],
+                category = Category.objects.get(parent__name__iexact=data['main'],
                                                 name__iexact=data['sub'])
             except Category.DoesNotExist:
                 internal_data['category'] = Category.objects.get(id=76)  # Overig
@@ -468,8 +468,8 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)
-    main = serializers.CharField(source='category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='category.main_category.slug', read_only=True)
+    main = serializers.CharField(source='category.parent.name', read_only=True)
+    main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     # Backwards compatibility fix for departments, should be retrieved from category terms resource.
     department = serializers.SerializerMethodField(source='category.departments',
@@ -508,7 +508,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
         is_category_not_posted = 'category' not in data
         if is_main_name_posted and is_sub_name_posted and is_category_not_posted:
             try:
-                category = Category.objects.get(main_category__name__iexact=data['main'],
+                category = Category.objects.get(parent__name__iexact=data['main'],
                                                 name__iexact=data['sub'])
             except Category.DoesNotExist:
                 internal_data['category'] = Category.objects.get(id=76)  # Overig

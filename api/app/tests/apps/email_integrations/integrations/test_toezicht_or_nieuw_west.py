@@ -17,7 +17,7 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
     def test_send_mail_integration_test(self):
         """Integration test for `send_mail` function."""
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__parent__name='Overlast in de openbare ruimte',
             category_assignment__category__name='Parkeeroverlast',
             location__stadsdeel=STADSDEEL_NIEUWWEST)
 
@@ -70,7 +70,7 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
                 'is_business_hour', return_value=False, autospec=True)
     def test_is_signal_applicable_true(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__parent__name='Overlast in de openbare ruimte',
             category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_NIEUWWEST)
 
@@ -82,7 +82,7 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
                 'is_business_hour', return_value=True, autospec=True)
     def test_is_signal_applicable_is_business_hour(self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__parent__name='Overlast in de openbare ruimte',
             category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_NIEUWWEST)
 
@@ -95,7 +95,7 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
     def test_is_signal_applicable_outside_category_in_stadsdeel_nieuwwest(
             self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Some other main category',
+            category_assignment__category__parent__name='Some other main category',
             category_assignment__category__name='Some other category',
             location__stadsdeel=STADSDEEL_NIEUWWEST)
 
@@ -108,7 +108,7 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
     def test_is_signal_applicable_in_category_outside_stadsdeel_nieuwwest(
             self, mocked_is_business_hour):
         signal = SignalFactory.create(
-            category_assignment__category__main_category__name='Overlast in de openbare ruimte',
+            category_assignment__category__parent__name='Overlast in de openbare ruimte',
             category_assignment__category__name='Fietswrak',
             location__stadsdeel=STADSDEEL_NOORD)
 

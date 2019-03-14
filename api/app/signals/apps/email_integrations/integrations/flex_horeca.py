@@ -56,7 +56,6 @@ def is_signal_applicable(signal: Signal) -> bool:
         return False
 
     # TODO: move this query to object manager.
-    eligible_categories = Category.objects.filter(
-        main_category__slug='overlast-bedrijven-en-horeca')
+    eligible_categories = Category.objects.filter(parent__slug='overlast-bedrijven-en-horeca')
 
     return signal.category_assignment.category in eligible_categories

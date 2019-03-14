@@ -18,7 +18,7 @@ class SignalFilter(FilterSet):
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
         to_field_name='slug',
-        field_name='category_assignment__category__main_category__slug',
+        field_name='category_assignment__category__parent__slug',
     )
 
     # category_slug, because we will soon be using one type of category, instead of main vs sub

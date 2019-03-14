@@ -182,8 +182,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
                                                    source='category')
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)
-    main = serializers.CharField(source='category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='category.main_category.slug', read_only=True)
+    main = serializers.CharField(source='category.parent.name', read_only=True)
+    main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     departments = serializers.SerializerMethodField(
         source='category.departments',
@@ -536,7 +536,7 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
             view, args, kwargs = resolve(path)  # noqa
             category = Category.objects.get(
                 slug=kwargs['sub_slug'],  # Check the urls.py for why!
-                main_category__slug=kwargs['slug'],
+                parent__slug=kwargs['slug'],
             )
             item['category']['sub_category'] = category
 

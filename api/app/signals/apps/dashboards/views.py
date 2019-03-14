@@ -36,7 +36,7 @@ from
 left outer join
     signals_category
 on
-    signals_category.main_category_id = signals_maincategory.id
+    signals_category.parent_id = signals_maincategory.id
 left outer join
     signals_categoryassignment
 on

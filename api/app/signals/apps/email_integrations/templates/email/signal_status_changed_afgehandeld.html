@@ -24,7 +24,7 @@
         <br/>
         Stadsdeel: {{ signal.location.get_stadsdeel_display }}
         <br/>
-        Rubriek: {{ signal.category_assignment.category.main_category.name }}
+        Rubriek: {{ signal.category_assignment.category.parent.name }}
         <br/>
         Uw omschrijving: {{ signal.text }}
     </p>

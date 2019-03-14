@@ -212,14 +212,14 @@ class MainCategoryFactory(factory.DjangoModelFactory):
 
 
 class CategoryFactory(factory.DjangoModelFactory):
-    main_category = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
+    parent = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
     name = factory.Sequence(lambda n: 'Category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
 
     class Meta:
         model = Category
-        django_get_or_create = ('main_category', 'slug', )
+        django_get_or_create = ('parent', 'slug', )
 
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):

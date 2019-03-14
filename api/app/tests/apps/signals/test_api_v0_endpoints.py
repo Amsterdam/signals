@@ -570,7 +570,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
     def test_post_category(self):
         category_name = 'Overlast op het water - snel varen'
         category = CategoryFactory.create(name=category_name,
-                                          main_category__name='Overlast op het water')
+                                          parent__name='Overlast op het water')
 
         # Asserting that we don't change the category to the same value the signal object
         # already has.
@@ -580,7 +580,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         postjson = {
             '_signal': self.signal.id,
             'sub_category': '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
-                category.main_category.slug, category.slug),
+                category.parent.slug, category.slug),
         }
         response = self.client.post(url, postjson, format='json')
         self.assertEqual(response.status_code, 201)
@@ -600,7 +600,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         """
         category_name = 'Overlast op het water - snel varen'
         CategoryFactory.create(name=category_name,
-                               main_category__name='Overlast op het water')
+                               parent__name='Overlast op het water')
 
         # Asserting that we don't change the category to the same value the signal object
         # already has.

@@ -363,9 +363,9 @@ class TestMainSlugFilter(APITestCase):
         self.main_cat_2 = MainCategory.objects.get(slug='openbaar-groen-en-water')
 
         self.s1 = SignalFactory.create(
-            category_assignment__category__main_category=self.main_cat_1)
+            category_assignment__category__parent=self.main_cat_1)
         self.s2 = SignalFactory.create(
-            category_assignment__category__main_category=self.main_cat_2)
+            category_assignment__category__parent=self.main_cat_2)
 
         # We are testing the authenticated part of the API, hence:
         superuser = SuperUserFactory.create()
@@ -381,7 +381,7 @@ class TestMainSlugFilter(APITestCase):
         self.assertEqual(json_response['count'], 1)
         self.assertEqual(
             json_response['results'][0]['category']['main_slug'],
-            self.s1.category_assignment.category.main_category.slug
+            self.s1.category_assignment.category.parent.slug
         )
 
     def test_backwards_compatibility(self):

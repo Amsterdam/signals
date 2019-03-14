@@ -197,8 +197,8 @@ class TestFilters(APITestCase):
     def test_filter_maincategories_slug(self):
         """ Test multiple slugs. Should return all signals that appear in either of the categories
         (OR) """
-        slugs = [self.sub_categories[0].main_category.slug,
-                 self.sub_categories[1].main_category.slug]
+        slugs = [self.sub_categories[0].parent.slug,
+                 self.sub_categories[1].parent.slug]
         params = {
             "maincategory_slug": slugs
         }

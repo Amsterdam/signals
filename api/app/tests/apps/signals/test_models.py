@@ -456,7 +456,7 @@ class TestCategoryDeclarations(TestCase):
         self.assertEqual(str(main_category), 'First category')
 
     def test_sub_category_string(self):
-        sub_category = factories.CategoryFactory.create(main_category__name='First category',
+        sub_category = factories.CategoryFactory.create(parent__name='First category',
                                                         name='Sub')
 
         self.assertEqual(str(sub_category), 'Sub (First category)')

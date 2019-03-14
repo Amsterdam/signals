@@ -106,10 +106,10 @@ class TestCategoryTermsEndpoints(JsonAPITestCase):
         self.assertEqual(len(data['sub_categories']), 13)
 
     def test_sub_category_detail(self):
-        sub_category = CategoryFactory.create(name='Grofvuil', main_category__name='Afval')
+        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
 
         url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
-            slug=sub_category.main_category.slug,
+            slug=sub_category.parent.slug,
             sub_slug=sub_category.slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -342,7 +342,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.test_cat_main = MainCategory(name='testmain')
         self.test_cat_main.save()
         self.test_cat_sub = Category(
-            main_category=self.test_cat_main,
+            parent=self.test_cat_main,
             name='testsub',
             handling=Category.HANDLING_A3DMC,
         )
@@ -1371,7 +1371,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
         link_test_cat_sub = reverse(
             'v1:category-detail', kwargs={
-                'slug': self.subcategory.main_category.slug,
+                'slug': self.subcategory.parent.slug,
                 'sub_slug': self.subcategory.slug,
             }
         )
@@ -1466,7 +1466,7 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         link_test_cat_sub = reverse(
             'v1:category-detail', kwargs={
-                'slug': self.subcategory.main_category.slug,
+                'slug': self.subcategory.parent.slug,
                 'sub_slug': self.subcategory.slug,
             }
         )
