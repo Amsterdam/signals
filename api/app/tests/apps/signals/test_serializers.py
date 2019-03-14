@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from rest_framework import serializers
-from rest_framework.test import APITestCase
 
 from signals.apps.signals.models import Location
 from signals.apps.signals.v0.fields import CategoryLinksField
@@ -17,6 +16,7 @@ from signals.apps.signals.v0.serializers import (
 )
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import UserFactory
+from tests.test import SignalsBaseApiTestCase
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 OUTSIDE_AMSTERDAM = tuple(reversed(IN_AMSTERDAM))
@@ -37,7 +37,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
 
 
 # TODO: move to endpoint tests (which these are)
-class TestLocationSerializer(APITestCase):
+class TestLocationSerializer(SignalsBaseApiTestCase):
     fixtures = ['categories.json', ]
 
     def _get_fixture(self):

@@ -3,12 +3,10 @@ import json
 import os
 from unittest.mock import patch
 
-from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.http import urlencode
 from rest_framework.reverse import reverse
-from rest_framework.test import APITestCase
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
@@ -31,13 +29,12 @@ from tests.apps.signals.factories import (
     SignalFactoryWithImage,
     SubCategoryFactory
 )
-from tests.apps.users.factories import SuperUserFactory, UserFactory
-from tests.testcase.testcases import JsonAPITestCase
+from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 
 
-class TestAPIRoot(APITestCase):
+class TestAPIRoot(SignalsBaseApiTestCase):
 
     def test_http_header_api_version(self):
         response = self.client.get('/signals/v1/')
@@ -45,25 +42,25 @@ class TestAPIRoot(APITestCase):
         self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v1']))
 
 
-class TestCategoryTermsEndpoints(JsonAPITestCase):
+class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
     fixtures = ['categories.json', ]
 
     def setUp(self):
-        self.list_categories_schema = self._load_schema(
+        self.list_categories_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_public_terms_categories.json'
             )
         )
-        self.retrieve_category_schema = self._load_schema(
+        self.retrieve_category_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_public_terms_categories_{slug}.json'
             )
         )
-        self.retrieve_sub_category_schema = self._load_schema(
+        self.retrieve_sub_category_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
@@ -123,7 +120,7 @@ class TestCategoryTermsEndpoints(JsonAPITestCase):
         self.assertIn('is_active', data)
 
 
-class TestPrivateEndpoints(APITestCase):
+class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """Test whether the endpoints in V1 API """
     endpoints = [
         '/signals/v1/private/signals/',
@@ -139,23 +136,8 @@ class TestPrivateEndpoints(APITestCase):
             priority__id=1
         )
 
-        self.user_no_permissions = UserFactory.create()
-
-        read_permission = Permission.objects.get(codename='sia_read')
-        write_permission = Permission.objects.get(codename='sia_write')
-
-        self.user_with_permissions = UserFactory.create()
-        self.user_with_permissions.user_permissions.add(read_permission)
-        self.user_with_permissions.user_permissions.add(write_permission)
-
-        self.user_no_read_permissions = UserFactory.create()
-        self.user_no_read_permissions.user_permissions.add(write_permission)
-
-        self.user_no_write_permissions = UserFactory.create()
-        self.user_no_write_permissions.user_permissions.add(read_permission)
-
         # Forcing authentication
-        self.client.force_authenticate(user=self.user_with_permissions)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         # Add one note to the signal
         self.note = NoteFactory(id=1, _signal=self.signal)
@@ -194,7 +176,7 @@ class TestPrivateEndpoints(APITestCase):
 
     def test_get_detail_no_permissions(self):
         self.client.logout()
-        self.client.force_login(self.user_no_permissions)
+        self.client.force_login(self.user)
 
         for endpoint in self.endpoints:
             url = f'{endpoint}1'
@@ -203,11 +185,11 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
 
         self.client.logout()
-        self.client.force_login(self.user_with_permissions)
+        self.client.force_login(self.sia_read_write_user)
 
     def test_get_detail_no_read_permissions(self):
         self.client.logout()
-        self.client.force_login(self.user_no_read_permissions)
+        self.client.force_login(self.user)
 
         for endpoint in self.endpoints:
             url = f'{endpoint}1'
@@ -216,7 +198,7 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 401, 'Wrong response code for {}'.format(url))
 
         self.client.logout()
-        self.client.force_login(self.user_with_permissions)
+        self.client.force_login(self.sia_read_write_user)
 
     def test_delete_not_allowed(self):
         for endpoint in self.endpoints:
@@ -226,13 +208,11 @@ class TestPrivateEndpoints(APITestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
-class TestHistoryAction(JsonAPITestCase):
+class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
-        self.superuser = SuperUserFactory(username='superuser@example.com')
-        self.user = UserFactory(username='user@example.com')
 
-        self.list_history_schema = self._load_schema(
+        self.list_history_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
@@ -244,7 +224,7 @@ class TestHistoryAction(JsonAPITestCase):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 401)
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
@@ -255,7 +235,7 @@ class TestHistoryAction(JsonAPITestCase):
     def test_history_endpoint_rendering(self):
         history_entries = History.objects.filter(_signal__id=self.signal.pk)
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
@@ -268,7 +248,7 @@ class TestHistoryAction(JsonAPITestCase):
     def test_history_entry_contents(self):
         keys = ['identifier', 'when', 'what', 'action', 'description', 'who', '_signal']
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
 
@@ -282,7 +262,7 @@ class TestHistoryAction(JsonAPITestCase):
 
     def test_update_shows_up(self):
         # Get a baseline for the Signal history
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         n_entries = len(response.json())
         self.assertEqual(response.status_code, 200)
@@ -311,7 +291,7 @@ class TestHistoryAction(JsonAPITestCase):
         self.assertEqual(new_entry['description'], status.text)
 
 
-class TestPrivateSignalViewSet(JsonAPITestCase):
+class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
 
@@ -322,14 +302,6 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # initialize database with 2 Signals
         self.signal_no_image = SignalFactoryValidLocation.create()
         self.signal_with_image = SignalFactoryWithImage.create()
-
-        self.superuser = SuperUserFactory.create(
-            email='superuser@example.com',
-            username='superuser@example.com',
-        )
-
-        self.write_user = UserFactory.create()
-        self.write_user.user_permissions.add(Permission.objects.get(codename='sia_write'))
 
         # No URL reversing here, these endpoints are part of the spec (and thus
         # should not change).
@@ -365,27 +337,27 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.create_initial_data = json.load(f)
         self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
 
-        self.list_signals_schema = self._load_schema(
+        self.list_signals_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_private_signals.json')
         )
-        self.retrieve_signal_schema = self._load_schema(
+        self.retrieve_signal_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_private_signals_{pk}.json'
             )
         )
-        self.list_history_schema = self._load_schema(
+        self.list_history_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_private_signals_{pk}_history.json'
             )
         )
-        self.post_split_schema = self._load_schema(
+        self.post_split_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
@@ -400,7 +372,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_list_endpoint(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(self.list_endpoint)
         self.assertEqual(response.status_code, 200)
 
@@ -415,7 +387,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_detail_endpoint(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         response = self.client.get(self.detail_endpoint.format(pk=pk))
@@ -426,7 +398,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertJsonSchema(self.retrieve_signal_schema, data)
 
     def test_history_action(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         response = self.client.get(self.history_endpoint.format(pk=pk))
@@ -440,7 +412,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertJsonSchema(self.list_history_schema, data)
 
     def test_history_action_filters(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         base_url = self.history_endpoint.format(pk=pk)
@@ -471,7 +443,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial(self, validate_address_dict):
         # Authenticate, load fixture and add relevant main and sub category.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         # Create initial Signal, check that it reached the database.
         signal_count = Signal.objects.count()
@@ -486,14 +458,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-        self.assertEqual(response_json['status']['user'], self.superuser.email)
-        self.assertEqual(response_json['priority']['created_by'], self.superuser.email)
-        self.assertEqual(response_json['location']['created_by'], self.superuser.email)
-        self.assertEqual(response_json['category']['created_by'], self.superuser.email)
+        self.assertEqual(response_json['status']['user'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['priority']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['category']['created_by'], self.sia_read_write_user.email)
 
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         initial_data = self.create_initial_data.copy()
         initial_data["status"] = {
@@ -510,7 +482,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
     def test_create_initial_invalid_location(self, validate_address_dict):
         """ Tests that a 400 is returned when an invalid location is provided """
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 400)
@@ -526,7 +498,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         suggested_address["openbare_ruimte"] = "Amsteltje"
         validate_address_dict.return_value = suggested_address
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
@@ -552,7 +524,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         coordinates are known."""
         del self.create_initial_data["location"]["address"]
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
@@ -575,7 +547,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         """ Tests that the signal is created even though the address validation service is
         unavailable. Should set bag_validated to False """
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
@@ -598,7 +570,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         """ Tests that the bag_validated field cannot be set manually, and that the address
         validation is called """
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         data = self.create_initial_data
         data['location']['bag_validated'] = True
@@ -623,7 +595,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_and_upload_image(self, validate_address_dict):
         # Authenticate, load fixture.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         # Create initial Signal.
         signal_count = Signal.objects.count()
@@ -652,7 +624,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
     @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
     def test_update_location(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -682,7 +654,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # Check that the correct user performed the action.
         self.assertEqual(
             self.signal_no_image.location.created_by,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -694,7 +666,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # Partial update to update the location, all interaction via API.
         # SIA must also allow location updates without known address but with
         # known coordinates.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -724,7 +696,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # Check that the correct user performed the action.
         self.assertEqual(
             self.signal_no_image.location.created_by,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -736,7 +708,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         # Partial update to update the location, all interaction via API.
         # SIA must also allow location updates without known address but with
         # known coordinates.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -760,7 +732,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
     def test_update_status(self):
         # Partial update to update the status, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -788,7 +760,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
             self.signal_no_image.status.user,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -800,7 +772,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         signal_no_status = SignalFactoryValidLocation.create(status=None)
 
         # Partial update to update the status, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
         history_endpoint = '?'.join([
@@ -825,7 +797,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         # check that the correct user is logged
         signal_no_status.refresh_from_db()
-        self.assertEqual(signal_no_status.status.user, self.superuser.email)
+        self.assertEqual(signal_no_status.status.user, self.sia_read_write_user.email)
 
         # JSONSchema validation
         response_json = response.json()
@@ -836,7 +808,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         signal_no_status = SignalFactoryValidLocation.create(status=None)
 
         # Partial update to update the status, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
         history_endpoint = '?'.join([
@@ -865,7 +837,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
     def test_update_category_assignment(self):
         # Partial update to update the location, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -895,7 +867,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
             self.signal_no_image.category_assignment.created_by,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -929,7 +901,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
     def test_update_priority(self):
         # Partial update to update the priority, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -957,7 +929,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
             self.signal_no_image.priority.created_by,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -966,7 +938,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
     def test_create_note(self):
         # Partial update to update the status, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -994,7 +966,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
             self.signal_no_image.notes.first().created_by,
-            self.superuser.email,
+            self.sia_read_write_user.email,
         )
 
         # JSONSchema validation
@@ -1003,7 +975,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
     def test_put_not_allowed(self):
         # Partial update to update the status, all interaction via API.
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         pk = self.signal_no_image.id
         detail_endpoint = self.detail_endpoint.format(pk=pk)
@@ -1012,7 +984,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_split(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1072,7 +1044,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             return True
 
         # Split the signal, take note of the returned children
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_no_image.id),
             [
@@ -1140,7 +1112,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
                     hash_md5.update(chunk)
             return hash_md5.hexdigest()
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_with_image.id),
             [
@@ -1170,7 +1142,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
     def test_split_children_must_inherit_parent_images_for_1st_child(self):
         # Split the signal, take note of the returned children
 
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(
             self.split_endpoint.format(pk=self.signal_with_image.id),
             [
@@ -1217,7 +1189,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         children in the response body """
 
         signal = self._create_split_signal()
-        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
 
         self.assertEqual(200, response.status_code)
@@ -1233,7 +1205,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         """ A GET /<signal_id>/split on a non-split signal should return a 404 """
 
         signal = SignalFactory.create()
-        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
         self.assertEqual(404, response.status_code)
 
@@ -1242,14 +1214,14 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
 
         signal = self._create_split_signal()
         data = [{"text": "Child 1"}, {"text": "Child 2"}]
-        self.client.force_authenticate(user=self.superuser)  # else 403 because SIAPermissions
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.post(self.split_endpoint.format(pk=signal.pk), data, format='json')
         self.assertEqual(412, response.status_code)
         self.assertEqual("Signal has already been split", response.json()["detail"])
 
     def test_child_cannot_be_split(self):
         """Child signals cannot themselves have children (i.e. not be split)."""
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         pk = self.signal_no_image.id
 
         response = self.client.post(
@@ -1294,7 +1266,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
             self.assertEqual(response.status_code, 412)
 
     def test_split_empty_data(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1315,7 +1287,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
     def test_split_less_than_min_data(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1341,7 +1313,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
     def test_split_more_than_max_data(self):
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1379,7 +1351,7 @@ class TestPrivateSignalViewSet(JsonAPITestCase):
         self.assertEqual(Signal.objects.count(), 2)
 
 
-class TestPrivateSignalAttachments(APITestCase):
+class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = list_endpoint + '{}/'
     attachment_endpoint = detail_endpoint + 'attachments'
@@ -1387,8 +1359,7 @@ class TestPrivateSignalAttachments(APITestCase):
 
     def setUp(self):
         self.signal = SignalFactory.create()
-        self.superuser = SuperUserFactory(email='superuser@example.com')
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
 
@@ -1428,7 +1399,7 @@ class TestPrivateSignalAttachments(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
-        self.assertEqual('superuser@example.com', self.signal.attachments.first().created_by)
+        self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
 
     def test_create_contains_image_and_attachments(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -1479,7 +1450,7 @@ class TestPrivateSignalAttachments(APITestCase):
         self.assertFalse(json_item['attachments'][3]['is_image'])
 
 
-class TestPublicSignalViewSet(JsonAPITestCase):
+class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     list_endpoint = "/signals/v1/public/signals/"
     detail_endpoint = list_endpoint + "{uuid}"
     attachment_endpoint = detail_endpoint + "/attachments"
@@ -1501,21 +1472,21 @@ class TestPublicSignalViewSet(JsonAPITestCase):
 
         self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
 
-        self.retrieve_schema = self._load_schema(
+        self.retrieve_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'get_signals_v1_public_signals_{uuid}.json'
             )
         )
-        self.create_schema = self._load_schema(
+        self.create_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
                 'post_signals_v1_public_signals.json'
             )
         )
-        self.create_attachment_schema = self._load_schema(
+        self.create_attachment_schema = self.load_json_schema(
             os.path.join(
                 THIS_DIR,
                 'json_schema',
