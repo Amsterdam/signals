@@ -14,7 +14,7 @@ from signals.apps.signals.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
-from signals.apps.signals.models import Attachment, Category, History, MainCategory, Signal
+from signals.apps.signals.models import Attachment, Category, History, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
@@ -23,8 +23,8 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
-    MainCategoryFactory,
     NoteFactory,
+    ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
@@ -72,7 +72,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
     def test_category_list(self):
         # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
-        self.assertEqual(MainCategory.objects.count(), 9)
+        self.assertEqual(Category.objects.filter(parent__isnull=True).count(), 9)
 
         url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
@@ -87,7 +87,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
     def test_category_detail(self):
         # Asserting that we've 13 sub categories for our main category "Afval".
-        main_category = MainCategoryFactory.create(name='Afval')
+        main_category = ParentCategoryFactory.create(name='Afval')
         self.assertEqual(main_category.categories.count(), 13)
 
         url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
@@ -314,7 +314,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Create a special pair of sub and main categories for testing (insulate our tests
         # from future changes in categories).
         # TODO: add to factories.
-        self.test_cat_main = MainCategory(name='testmain')
+        self.test_cat_main = Category(name='testmain')
         self.test_cat_main.save()
         self.test_cat_sub = Category(
             parent=self.test_cat_main,

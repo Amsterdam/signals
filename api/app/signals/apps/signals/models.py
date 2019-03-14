@@ -506,12 +506,13 @@ class Category(models.Model):
         (HANDLING_REST, HANDLING_REST),
     )
 
-    parent = models.ForeignKey('signals.MainCategory',
+    parent = models.ForeignKey('signals.Category',
                                related_name='categories',
-                               on_delete=models.PROTECT)
+                               on_delete=models.PROTECT,
+                               null=True)
     slug = models.SlugField()
     name = models.CharField(max_length=255)
-    handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
+    handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
     departments = models.ManyToManyField('signals.Department')
     is_active = models.BooleanField(default=True)
 
@@ -522,8 +523,9 @@ class Category(models.Model):
 
     def __str__(self):
         """String representation."""
-        return '{name} ({parent})'.format(name=self.name,
-                                          parent=self.parent.name)
+        return '{name}{parent}'.format(name=self.name,
+                                       parent=" ({})".format(
+                                           self.parent.name) if self.parent else "")
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

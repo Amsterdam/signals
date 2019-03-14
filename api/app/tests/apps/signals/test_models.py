@@ -451,7 +451,7 @@ class TestStatusModel(TestCase):
 class TestCategoryDeclarations(TestCase):
 
     def test_main_category_string(self):
-        main_category = factories.MainCategoryFactory.create(name='First category')
+        main_category = factories.ParentCategoryFactory.create(name='First category')
 
         self.assertEqual(str(main_category), 'First category')
 
