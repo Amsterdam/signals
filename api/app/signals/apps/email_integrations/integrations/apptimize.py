@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.db.models import Q
 
-from signals.apps.signals.models import Signal, SubCategory
+from signals.apps.signals.models import Category, Signal
 
 
 def send_mail(signal: Signal) -> int:
@@ -26,8 +26,8 @@ def send_mail(signal: Signal) -> int:
             'adres': signal.location.address,
             'stadsdeel': signal.location.stadsdeel,
             'categorie': {
-                'hoofdrubriek': signal.category_assignment.sub_category.main_category.name,
-                'subrubriek': signal.category_assignment.sub_category.name,
+                'hoofdrubriek': signal.category_assignment.category.parent.name,
+                'subrubriek': signal.category_assignment.category.name,
             },
             'omschrijving': signal.text,
         }, indent=4, sort_keys=True, default=str)
@@ -48,15 +48,15 @@ def is_signal_applicable(signal: Signal) -> bool:
     :returns: bool
     """
     # TODO: move this query to object manager.
-    eligible_sub_categories = SubCategory.objects.filter(
-        Q(main_category__slug='openbaar-groen-en-water') |
-        Q(main_category__slug='wegen-verkeer-straatmeubilair') |
-        Q(main_category__slug='afval', slug='prullenbak-is-vol') |
-        Q(main_category__slug='afval', slug='prullenbak-is-kapot') |
-        Q(main_category__slug='afval', slug='veeg-zwerfvuil'))
+    eligible_categories = Category.objects.filter(
+        Q(parent__slug='openbaar-groen-en-water') |
+        Q(parent__slug='wegen-verkeer-straatmeubilair') |
+        Q(parent__slug='afval', slug='prullenbak-is-vol') |
+        Q(parent__slug='afval', slug='prullenbak-is-kapot') |
+        Q(parent__slug='afval', slug='veeg-zwerfvuil'))
 
     is_applicable_for_apptimize = (
             settings.EMAIL_APPTIMIZE_INTEGRATION_ADDRESS is not None
-            and signal.category_assignment.sub_category in eligible_sub_categories)
+            and signal.category_assignment.category in eligible_categories)
 
     return is_applicable_for_apptimize

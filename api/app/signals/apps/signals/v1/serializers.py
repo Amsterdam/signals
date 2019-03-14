@@ -20,6 +20,7 @@ from signals.apps.signals.api_generics.exceptions import PreconditionFailed
 from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     Attachment,
+    Category,
     CategoryAssignment,
     History,
     Location,
@@ -28,30 +29,29 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status,
-    SubCategory
+    Status
 )
 from signals.apps.signals.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.signals.v1.fields import (
+    CategoryHyperlinkedIdentityField,
+    CategoryHyperlinkedRelatedField,
     MainCategoryHyperlinkedIdentityField,
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
     PrivateSignalSplitLinksField,
     PublicSignalAttachmentLinksField,
-    PublicSignalLinksField,
-    SubCategoryHyperlinkedIdentityField,
-    SubCategoryHyperlinkedRelatedField
+    PublicSignalLinksField
 )
 
 
-class SubCategoryHALSerializer(HALSerializer):
-    serializer_url_field = SubCategoryHyperlinkedIdentityField
+class CategoryHALSerializer(HALSerializer):
+    serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = _NestedDepartmentSerializer(many=True)
 
     class Meta:
-        model = SubCategory
+        model = Category
         fields = (
             '_links',
             '_display',
@@ -66,7 +66,7 @@ class SubCategoryHALSerializer(HALSerializer):
 class MainCategoryHALSerializer(HALSerializer):
     serializer_url_field = MainCategoryHyperlinkedIdentityField
     _display = DisplayField()
-    sub_categories = SubCategoryHALSerializer(many=True)
+    sub_categories = CategoryHALSerializer(many=True, source='categories')
 
     class Meta:
         model = MainCategory
@@ -178,16 +178,17 @@ class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
 
 
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
-    sub_category = SubCategoryHyperlinkedRelatedField(write_only=True, required=True)
-    sub = serializers.CharField(source='sub_category.name', read_only=True)
-    sub_slug = serializers.CharField(source='sub_category.slug', read_only=True)
-    main = serializers.CharField(source='sub_category.main_category.name', read_only=True)
-    main_slug = serializers.CharField(source='sub_category.main_category.slug', read_only=True)
+    sub_category = CategoryHyperlinkedRelatedField(write_only=True, required=True,
+                                                   source='category')
+    sub = serializers.CharField(source='category.name', read_only=True)
+    sub_slug = serializers.CharField(source='category.slug', read_only=True)
+    main = serializers.CharField(source='category.parent.name', read_only=True)
+    main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     category_url = serializers.SerializerMethodField(read_only=True)
 
     departments = serializers.SerializerMethodField(
-        source='sub_category.departments',
+        source='category.departments',
         read_only=True
     )
 
@@ -209,16 +210,16 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
         )
 
     def get_departments(self, obj):
-        return ', '.join(obj.sub_category.departments.values_list('code', flat=True))
+        return ', '.join(obj.category.departments.values_list('code', flat=True))
 
     def get_category_url(self, obj):
         from rest_framework.reverse import reverse
         request = self.context['request'] if 'request' in self.context else None
         return reverse(
-            'v1:sub-category-detail',
+            'v1:category-detail',
             kwargs={
-                'slug': obj.sub_category.main_category.slug,
-                'sub_slug': obj.sub_category.slug,
+                'slug': obj.category.parent.slug,
+                'sub_slug': obj.category.slug,
             },
             request=request
         )
@@ -542,17 +543,17 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         output = {"children": copy.deepcopy(self.initial_data)}
 
         for item in output["children"]:
-            sub_category_url = item['category']['sub_category']
+            category_url = item['category']['sub_category']
 
             from urllib.parse import urlparse
-            path = (urlparse(sub_category_url)).path
+            path = (urlparse(category_url)).path
 
             view, args, kwargs = resolve(path)  # noqa
-            sub_category = SubCategory.objects.get(
+            category = Category.objects.get(
                 slug=kwargs['sub_slug'],  # Check the urls.py for why!
-                main_category__slug=kwargs['slug'],
+                parent__slug=kwargs['slug'],
             )
-            item['category']['sub_category'] = sub_category
+            item['category']['sub_category'] = category
 
         return output
 

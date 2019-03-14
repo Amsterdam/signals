@@ -6,9 +6,9 @@ from freezegun import freeze_time
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
+    CategoryFactory,
     SignalFactory,
-    StatusFactory,
-    SubCategoryFactory
+    StatusFactory
 )
 from tests.test import SignalsBaseApiTestCase
 
@@ -47,14 +47,14 @@ class TestFilters(SignalsBaseApiTestCase):
         cls.states = 3 * [BEHANDELING] + 2 * [ON_HOLD] + (len(times) - 3 - 2) * [GEMELD]
         shuffle(cls.states)
 
-        cls.sub_categories = [SubCategoryFactory.create() for _ in range(cls.SUBCATEGORY_CNT)]
+        cls.sub_categories = [CategoryFactory.create() for _ in range(cls.SUBCATEGORY_CNT)]
 
         for idx, time in enumerate(times):
             with freeze_time(time):
                 signal = SignalFactory.create()
                 StatusFactory(_signal=signal, state=cls.states[idx])
                 category_assignment = CategoryAssignmentFactory(_signal=signal,
-                                                                sub_category=cls.sub_categories[
+                                                                category=cls.sub_categories[
                                                                     idx % len(cls.sub_categories)])
                 signal.category_assignment = category_assignment
                 signal.save()
@@ -195,8 +195,8 @@ class TestFilters(SignalsBaseApiTestCase):
     def test_filter_maincategories_slug(self):
         """ Test multiple slugs. Should return all signals that appear in either of the categories
         (OR) """
-        slugs = [self.sub_categories[0].main_category.slug,
-                 self.sub_categories[1].main_category.slug]
+        slugs = [self.sub_categories[0].parent.slug,
+                 self.sub_categories[1].parent.slug]
         params = {
             "maincategory_slug": slugs
         }

@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from signals.apps.dashboards.views import DashboardPrototype
-from signals.apps.signals.models import CategoryAssignment, Signal, Status, SubCategory
+from signals.apps.signals.models import Category, CategoryAssignment, Signal, Status
 from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, BEHANDELING, GEMELD, ON_HOLD
 from tests.test import SignalsBaseApiTestCase
 
@@ -28,22 +28,22 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         CategoryAssignment.objects.create(
             _signal=signal,
-            sub_category=subcategory
+            category=subcategory
         )
 
         return signal
 
     def setUp(self):
-        self._create_test_signal(GEMELD, SubCategory.objects.get(pk=2))
-        self._create_test_signal(GEMELD, SubCategory.objects.get(pk=3))
-        self._create_test_signal(AFGEHANDELD, SubCategory.objects.get(pk=3))
-        self._create_test_signal(AFWACHTING, SubCategory.objects.get(pk=15))
-        self._create_test_signal(ON_HOLD, SubCategory.objects.get(pk=7))
-        self._create_test_signal(AFWACHTING, SubCategory.objects.get(pk=3))
-        self._create_test_signal(BEHANDELING, SubCategory.objects.get(pk=38))
-        self._create_test_signal(ON_HOLD, SubCategory.objects.get(pk=2))
-        self._create_test_signal(GEMELD, SubCategory.objects.get(pk=2))
-        signal = self._create_test_signal(GEMELD, SubCategory.objects.get(pk=38))
+        self._create_test_signal(GEMELD, Category.objects.get(pk=2))
+        self._create_test_signal(GEMELD, Category.objects.get(pk=3))
+        self._create_test_signal(AFGEHANDELD, Category.objects.get(pk=3))
+        self._create_test_signal(AFWACHTING, Category.objects.get(pk=15))
+        self._create_test_signal(ON_HOLD, Category.objects.get(pk=7))
+        self._create_test_signal(AFWACHTING, Category.objects.get(pk=3))
+        self._create_test_signal(BEHANDELING, Category.objects.get(pk=38))
+        self._create_test_signal(ON_HOLD, Category.objects.get(pk=2))
+        self._create_test_signal(GEMELD, Category.objects.get(pk=2))
+        signal = self._create_test_signal(GEMELD, Category.objects.get(pk=38))
 
         # Test multiple statuses for this object. Only last status should appear in overview
         status_obj = Status.objects.create(state=BEHANDELING, _signal=signal)
@@ -52,7 +52,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         # Test multiple categories for this object. Only last status should appear in overview
         CategoryAssignment.objects.create(
-            _signal=signal, sub_category=SubCategory.objects.get(pk=56))
+            _signal=signal, category=Category.objects.get(pk=56))
 
         # Make sure times correspond with created signals
         self.report_end = (timezone.now() +

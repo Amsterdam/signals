@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} is afgehandeld.</title>
+    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.</title>
 </head>
 <body>
     <p>
@@ -10,7 +10,7 @@
     </p>
 
     <p>
-        Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} is afgehandeld.
+        Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.
         <br/><br/>
         {% if status.text %}
         De volgende toelichting is daarbij gegeven:<br/>
@@ -24,7 +24,7 @@
         <br/>
         Stadsdeel: {{ signal.location.get_stadsdeel_display }}
         <br/>
-        Rubriek: {{ signal.category_assignment.sub_category.main_category.name }}
+        Rubriek: {{ signal.category_assignment.category.parent.name }}
         <br/>
         Uw omschrijving: {{ signal.text }}
     </p>

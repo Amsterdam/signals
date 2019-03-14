@@ -1,7 +1,7 @@
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.signals.api_generics.filters import IntegerFilter, status_choices
-from signals.apps.signals.models import MainCategory, SubCategory
+from signals.apps.signals.models import Category, MainCategory
 
 
 class SignalFilter(FilterSet):
@@ -18,13 +18,13 @@ class SignalFilter(FilterSet):
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         queryset=MainCategory.objects.all(),
         to_field_name='slug',
-        field_name='category_assignment__sub_category__main_category__slug',
+        field_name='category_assignment__category__parent__slug',
     )
 
     # category_slug, because we will soon be using one type of category, instead of main vs sub
     # categories. This way the naming in the API will remain consistent
     category_slug = filters.ModelMultipleChoiceFilter(
-        queryset=SubCategory.objects.all(),
+        queryset=Category.objects.all(),
         to_field_name='slug',
-        field_name='category_assignment__sub_category__slug',
+        field_name='category_assignment__category__slug',
     )

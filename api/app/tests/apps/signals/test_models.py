@@ -30,7 +30,7 @@ from tests.apps.signals.attachment_helpers import small_gif
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
-        sub_category = factories.SubCategoryFactory.create(name='Veeg- / zwerfvuil')
+        sub_category = factories.CategoryFactory.create(name='Veeg- / zwerfvuil')
 
         # Deserialized data
         self.signal_data = {
@@ -48,7 +48,7 @@ class TestSignalManager(TransactionTestCase):
             'phone': '0123456789',
         }
         self.category_assignment_data = {
-            'sub_category': sub_category,
+            'category': sub_category,
         }
         self.status_data = {
             'state': workflow.GEMELD,
@@ -154,7 +154,7 @@ class TestSignalManager(TransactionTestCase):
 
         # Check that the signal was updated in db
         self.assertEqual(signal.category_assignment, category_assignment)
-        self.assertEqual(signal.sub_categories.count(), 2)
+        self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_category_assignment.send.assert_called_once_with(
@@ -239,7 +239,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 1)
         self.assertEqual(Priority.objects.count(), 1)
 
-        sub_cat = factories.SubCategoryFactory.create()
+        sub_cat = factories.CategoryFactory.create()
 
         Signal.actions.split(
             split_data=[
@@ -456,8 +456,8 @@ class TestCategoryDeclarations(TestCase):
         self.assertEqual(str(main_category), 'First category')
 
     def test_sub_category_string(self):
-        sub_category = factories.SubCategoryFactory.create(main_category__name='First category',
-                                                           name='Sub')
+        sub_category = factories.CategoryFactory.create(parent__name='First category',
+                                                        name='Sub')
 
         self.assertEqual(str(sub_category), 'Sub (First category)')
 
