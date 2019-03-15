@@ -93,7 +93,7 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
     object = None
     queryset = Signal.objects.all()
 
-    template_name = 'signals/pdf/print_signal.html'
+    template_name = 'api/pdf/print_signal.html'
     extra_context = {'now': timezone.datetime.now(), }
 
     def get_context_data(self, **kwargs):

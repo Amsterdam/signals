@@ -8,9 +8,17 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from signals.apps.api.generics.mixins import AddExtrasMixin
+from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
+from signals.apps.api.v0.fields import (
+    CategoryLinksField,
+    PriorityLinksField,
+    SignalLinksField,
+    SignalUnauthenticatedLinksField,
+    StatusLinksField
+)
+from signals.apps.api.v1.fields import CategoryHyperlinkedRelatedField, NoteHyperlinkedIdentityField
 from signals.apps.signals import workflow
-from signals.apps.signals.api_generics.mixins import AddExtrasMixin
-from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
@@ -21,17 +29,6 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status
-)
-from signals.apps.signals.v0.fields import (
-    CategoryLinksField,
-    PriorityLinksField,
-    SignalLinksField,
-    SignalUnauthenticatedLinksField,
-    StatusLinksField
-)
-from signals.apps.signals.v1.fields import (
-    CategoryHyperlinkedRelatedField,
-    NoteHyperlinkedIdentityField
 )
 
 logger = logging.getLogger(__name__)

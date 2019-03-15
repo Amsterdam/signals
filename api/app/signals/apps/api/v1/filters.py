@@ -1,6 +1,6 @@
 from django_filters.rest_framework import FilterSet, filters
 
-from signals.apps.signals.api_generics.filters import IntegerFilter, status_choices
+from signals.apps.api.generics.filters import IntegerFilter, status_choices
 from signals.apps.signals.models import Category, MainCategory
 
 

@@ -1,8 +1,8 @@
 from django.urls import include, path
 
-from signals.apps.signals.api_generics.views import SwaggerView
-from signals.apps.signals.v0 import views as v0_views
-from signals.apps.signals.v0.routers import SignalsRouterVersion0
+from signals.apps.api.api_generics.views import SwaggerView
+from signals.apps.api.v0 import views as v0_views
+from signals.apps.api.v0.routers import SignalsRouterVersion0
 
 # API Version 0
 signal_router_v0 = SignalsRouterVersion0()
