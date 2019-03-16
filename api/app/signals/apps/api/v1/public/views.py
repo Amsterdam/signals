@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.signals.models import Category, MainCategory, Signal
-from signals.apps.signals.v1.serializers import (
+from signals.apps.api.v1.serializers import (
     CategoryHALSerializer,
     MainCategoryHALSerializer,
     PublicSignalAttachmentSerializer,

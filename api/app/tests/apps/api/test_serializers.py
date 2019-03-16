@@ -8,8 +8,8 @@ from django.test import TestCase
 from rest_framework import serializers
 
 from signals.apps.signals.models import Location
-from signals.apps.signals.v0.fields import CategoryLinksField
-from signals.apps.signals.v0.serializers import (
+from signals.apps.api.v0.fields import CategoryLinksField
+from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
     NearAmsterdamValidatorMixin
@@ -44,7 +44,7 @@ class TestLocationSerializer(SignalsBaseApiTestCase):
         path = os.path.join(
             settings.BASE_DIR,
             'apps',
-            'signals',
+            'api',
             'fixtures',
             'signal_post.json'
         )

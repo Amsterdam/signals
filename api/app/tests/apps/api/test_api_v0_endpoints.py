@@ -139,7 +139,7 @@ class TestAPIEndpointsBase(SignalsBaseApiTestCase):
 
     def _get_fixture(self, name):
         filename = self.fixture_files[name]
-        path = os.path.join(settings.BASE_DIR, 'apps', 'signals', 'fixtures', filename)
+        path = os.path.join(settings.BASE_DIR, 'apps', 'api', 'fixtures', filename)
 
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())
@@ -237,7 +237,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             "Reporter is missing _signal field?"
         )
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_post_signal_with_bag_validated(self, validate_address_dict):
         """ Tests that the bag_validated field cannot be set manually and that the address
             validation is NOT called on the v0 endpoint """

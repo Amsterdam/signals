@@ -10,7 +10,7 @@ from rest_framework.reverse import reverse
 
 from signals import API_VERSIONS
 from signals.apps.signals import workflow
-from signals.apps.signals.address.validation import (
+from signals.apps.api.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
@@ -32,7 +32,8 @@ from tests.apps.signals.factories import (
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-
+SIGNALS_TEST_DIR = os.path.join(
+    os.path.split(THIS_DIR)[0], 'signals')
 
 class TestAPIRoot(SignalsBaseApiTestCase):
 
@@ -439,7 +440,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     # -- write tests --
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial(self, validate_address_dict):
         # Authenticate, load fixture and add relevant main and sub category.
@@ -477,7 +478,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(400, response.status_code)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict",
            side_effect=NoResultsException)
     def test_create_initial_invalid_location(self, validate_address_dict):
         """ Tests that a 400 is returned when an invalid location is provided """
@@ -487,7 +488,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_create_initial_valid_location(self, validate_address_dict):
         """ Tests that bag_validated is set to True when a valid location is provided and that
         the address is replaced with the suggested address. The original address should be saved
@@ -518,7 +519,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_create_initial_valid_location_but_no_address(self, validate_address_dict):
         """Tests that a Signal can be created when loccation has no known address but
         coordinates are known."""
@@ -541,7 +542,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
     def test_create_initial_address_validation_unavailable(self, validate_address_dict):
         """ Tests that the signal is created even though the address validation service is
@@ -564,7 +565,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)
     def test_create_initial_try_update_bag_validated(self, validate_address_dict):
         """ Tests that the bag_validated field cannot be set manually, and that the address
@@ -591,7 +592,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict",
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_and_upload_image(self, validate_address_dict):
         # Authenticate, load fixture.
@@ -621,7 +622,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_update_location(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -661,7 +662,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_update_location_no_address(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
         # SIA must also allow location updates without known address but with
@@ -703,7 +704,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
 
-    @patch("signals.apps.signals.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
     def test_update_location_no_coordinates(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
         # SIA must also allow location updates without known address but with
@@ -897,7 +898,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         # No category assignment should be added
-        self.assertEquals(cat_assignments_cnt, self.signal_no_image.category_assignments.count())
+        self.assertEqual(cat_assignments_cnt, self.signal_no_image.category_assignments.count())
 
     def test_update_priority(self):
         # Partial update to update the priority, all interaction via API.
@@ -1389,7 +1390,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
     def test_attachment_upload(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)
-        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+        doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
 
         with open(doc_upload, encoding='latin-1') as f:
             data = {"file": f}
@@ -1555,7 +1556,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         signal = SignalFactory.create()
         uuid = signal.signal_id
 
-        doc_upload = os.path.join(THIS_DIR, 'sia-ontwerp-testfile.doc')
+        doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
         with open(doc_upload, encoding='latin-1') as f:
             data = {"file": f}
 

@@ -506,7 +506,7 @@ class GetAddressTextTest(TestCase):
 
 class TestAttachmentModel(LiveServerTestCase):
     doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
-    json_upload_location = os.path.join(os.path.dirname(__file__), 'create_initial.json')
+    json_upload_location = os.path.join(os.path.dirname(__file__), 'upload_standin.json')
 
     def setUp(self):
         self.signal = factories.SignalFactory.create()

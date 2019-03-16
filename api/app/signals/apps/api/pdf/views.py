@@ -1,6 +1,6 @@
 from django.views.generic.base import ContextMixin, View
 
-from signals.apps.signals.pdf.mixins import PDFTemplateResponseMixin
+from signals.apps.api.pdf.mixins import PDFTemplateResponseMixin
 
 
 class PDFTemplateView(PDFTemplateResponseMixin, ContextMixin, View):
