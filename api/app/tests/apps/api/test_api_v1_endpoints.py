@@ -9,11 +9,11 @@ from django.utils.http import urlencode
 from rest_framework.reverse import reverse
 
 from signals import API_VERSIONS
-from signals.apps.signals import workflow
 from signals.apps.api.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Category, History, MainCategory, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.attachment_helpers import (
@@ -32,8 +32,8 @@ from tests.apps.signals.factories import (
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-SIGNALS_TEST_DIR = os.path.join(
-    os.path.split(THIS_DIR)[0], 'signals')
+SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], 'signals')
+
 
 class TestAPIRoot(SignalsBaseApiTestCase):
 

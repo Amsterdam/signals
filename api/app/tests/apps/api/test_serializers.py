@@ -7,13 +7,13 @@ from django.contrib.gis.geos import Point
 from django.test import TestCase
 from rest_framework import serializers
 
-from signals.apps.signals.models import Location
 from signals.apps.api.v0.fields import CategoryLinksField
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
     NearAmsterdamValidatorMixin
 )
+from signals.apps.signals.models import Location
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import UserFactory
 from tests.test import SignalsBaseApiTestCase

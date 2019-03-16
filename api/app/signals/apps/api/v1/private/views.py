@@ -12,7 +12,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.signals.models import History, Signal
 from signals.apps.api.pdf.views import PDFTemplateView
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
@@ -22,6 +21,7 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerList,
     PrivateSplitSignalSerializer
 )
+from signals.apps.signals.models import History, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
