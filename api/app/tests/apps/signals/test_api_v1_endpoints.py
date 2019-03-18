@@ -71,7 +71,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         super(TestCategoryTermsEndpoints, self).setUp()
 
     def test_category_list(self):
-        # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
+        # Asserting that we've 9 parent categories loaded from the json fixture.
         self.assertEqual(Category.objects.filter(parent__isnull=True).count(), 9)
 
         url = '/signals/v1/public/terms/categories/'

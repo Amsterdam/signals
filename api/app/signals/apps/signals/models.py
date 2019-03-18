@@ -456,28 +456,6 @@ class Priority(CreatedUpdatedModel):
         return self.get_priority_display()
 
 
-#
-# Category terms
-#
-
-
-class MainCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True)
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name_plural = 'Main Categories'
-
-    def __str__(self):
-        """String representation."""
-        return self.name
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-
 class Category(models.Model):
     HANDLING_A3DMC = 'A3DMC'
     HANDLING_A3DEC = 'A3DEC'

@@ -9,7 +9,7 @@ from rest_framework.reverse import reverse
 from signals.apps.signals.models import Attachment, Category, Signal
 
 
-class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     lookup_field = 'slug'
 
     def to_representation(self, value):

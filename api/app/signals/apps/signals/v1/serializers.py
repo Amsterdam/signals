@@ -24,7 +24,6 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     History,
     Location,
-    MainCategory,
     Note,
     Priority,
     Reporter,
@@ -35,7 +34,7 @@ from signals.apps.signals.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.signals.v1.fields import (
     CategoryHyperlinkedIdentityField,
     CategoryHyperlinkedRelatedField,
-    MainCategoryHyperlinkedIdentityField,
+    ParentCategoryHyperlinkedIdentityField,
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
@@ -63,13 +62,13 @@ class CategoryHALSerializer(HALSerializer):
         )
 
 
-class MainCategoryHALSerializer(HALSerializer):
-    serializer_url_field = MainCategoryHyperlinkedIdentityField
+class ParentCategoryHALSerializer(HALSerializer):
+    serializer_url_field = ParentCategoryHyperlinkedIdentityField
     _display = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='categories')
 
     class Meta:
-        model = MainCategory
+        model = Category
         fields = (
             '_links',
             '_display',

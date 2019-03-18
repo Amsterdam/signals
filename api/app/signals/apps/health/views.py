@@ -8,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import Error, connection
 from django.http import HttpResponse
 
-from signals.apps.signals.models import Category, MainCategory
+from signals.apps.signals.models import Category
 
 logger = logging.getLogger(__name__)
 
@@ -62,15 +62,15 @@ def _get_model(health_model):
     return health_check_model
 
 
-def _count_categories(health_model, minimum_count=1):
+def _count_categories(health_objects, minimum_count=1):
     """
     Simple count to check if there are at least 'minimum_count' of objects in the table
 
-    :param health_model:
+    :param health_objects:
     :param minimum_count:
     :return:
     """
-    if health_model.objects.count() < minimum_count:
+    if health_objects.count() < minimum_count:
         error_msg = 'Too few items in the database'
         logger.error(error_msg)
         raise Exception(error_msg)
@@ -138,14 +138,13 @@ def check_categories(request):
 
     models = {
         'signals.category': Category,
-        'signals.maincategory': MainCategory,
     }
 
     try:
-        _count_categories(Category,
+        _count_categories(Category.objects.filter(parent__isnull=False),
                           minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
 
-        _count_categories(MainCategory,
+        _count_categories(Category.objects.filter(parent__isnull=True),
                           minimum_count=settings.HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT)
 
         fixture_file = os.path.join(
@@ -167,6 +166,6 @@ def check_categories(request):
         return HttpResponse(e, content_type='text/plain', status=500)
 
     return HttpResponse(
-        'Data OK {}, {}'.format(Category.__name__, MainCategory.__name__),
+        'Data OK {}'.format(Category.__name__),
         content_type='text/plain', status=200
     )

@@ -9,7 +9,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.api_generics.filters import FieldMappingOrderingFilter
-from signals.apps.signals.models import Category, MainCategory, Priority, Signal
+from signals.apps.signals.models import Category, Priority, Signal
 from signals.apps.signals.v0.serializers import SignalAuthHALSerializer
 from tests.apps.signals.factories import SignalFactory
 from tests.test import SignalsBaseApiTestCase

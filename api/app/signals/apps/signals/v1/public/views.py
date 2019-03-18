@@ -10,7 +10,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.v1.serializers import (
     CategoryHALSerializer,
-    MainCategoryHALSerializer,
+    ParentCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail
@@ -39,8 +39,8 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSe
 
 class ParentCategoryViewSet(DatapuntViewSet):
     queryset = Category.objects.filter(parent__isnull=True)
-    serializer_detail_class = MainCategoryHALSerializer
-    serializer_class = MainCategoryHALSerializer
+    serializer_detail_class = ParentCategoryHALSerializer
+    serializer_class = ParentCategoryHALSerializer
     lookup_field = 'slug'
 
 
