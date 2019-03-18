@@ -6,7 +6,7 @@ from imagekit import ImageSpec
 from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
 
-from .mixins import CreatedUpdatedModel
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
 

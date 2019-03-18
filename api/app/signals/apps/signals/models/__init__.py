@@ -1,10 +1,10 @@
-from .attachment import Attachment
-from .buurt import Buurt
-from .category import Category, MainCategory
-from .category_assignment import CategoryAssignment
-from .department import Department
-from .history import History
-from .location import (
+from signals.apps.signals.models.attachment import Attachment
+from signals.apps.signals.models.buurt import Buurt
+from signals.apps.signals.models.category import Category, MainCategory
+from signals.apps.signals.models.category_assignment import CategoryAssignment
+from signals.apps.signals.models.department import Department
+from signals.apps.signals.models.history import History
+from signals.apps.signals.models.location import (
     STADSDEEL_CENTRUM,
     STADSDEEL_NIEUWWEST,
     STADSDEEL_NOORD,
@@ -17,12 +17,12 @@ from .location import (
     Location,
     get_address_text
 )
-from .mixins import CreatedUpdatedModel
-from .note import Note
-from .priority import Priority
-from .reporter import Reporter
-from .signal import Signal
-from .status import Status
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
+from signals.apps.signals.models.note import Note
+from signals.apps.signals.models.priority import Priority
+from signals.apps.signals.models.reporter import Reporter
+from signals.apps.signals.models.signal import Signal
+from signals.apps.signals.models.status import Status
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [

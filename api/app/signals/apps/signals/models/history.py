@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 
-from ..workflow import STATUS_CHOICES
-from .priority import Priority  # no circular imports ?
+from signals.apps.signals.models.priority import Priority  # no circular imports ?
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 
 class History(models.Model):

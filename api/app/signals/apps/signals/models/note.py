@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
 
-from .mixins import CreatedUpdatedModel
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
 class Note(CreatedUpdatedModel):

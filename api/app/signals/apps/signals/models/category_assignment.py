@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 
-from .mixins import CreatedUpdatedModel
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
 class CategoryAssignment(CreatedUpdatedModel):

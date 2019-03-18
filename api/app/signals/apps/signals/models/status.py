@@ -4,8 +4,8 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 
-from .. import workflow
-from .mixins import CreatedUpdatedModel
+from signals.apps.signals import workflow
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
 
