@@ -139,7 +139,8 @@ class TestAPIEndpointsBase(SignalsBaseApiTestCase):
 
     def _get_fixture(self, name):
         filename = self.fixture_files[name]
-        path = os.path.join(settings.BASE_DIR, 'apps', 'api', 'fixtures', filename)
+        path = os.path.join(settings.BASE_DIR, '..', 'tests', 'apps', 'api', 'request_data',
+                            filename)
 
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())

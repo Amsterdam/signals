@@ -43,9 +43,11 @@ class TestLocationSerializer(SignalsBaseApiTestCase):
     def _get_fixture(self):
         path = os.path.join(
             settings.BASE_DIR,
+            '..',
+            'tests',
             'apps',
             'api',
-            'fixtures',
+            'request_data',
             'signal_post.json'
         )
 
