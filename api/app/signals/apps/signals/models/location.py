@@ -31,7 +31,7 @@ def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
-def get_address_text(location, short=False):
+def get_address_text(location, short=False, no_postal_code=False):
     """Generate address text, shortened if needed."""
 
     field_prefixes = (
@@ -45,6 +45,8 @@ def get_address_text(location, short=False):
 
     if short:
         field_prefixes = field_prefixes[:-2]
+    if no_postal_code:
+        field_prefixes = tuple([fp for fp in field_prefixes if fp[0] != 'postcode'])
 
     address_text = ''
     if location.address and isinstance(location.address, dict):

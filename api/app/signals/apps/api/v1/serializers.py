@@ -43,6 +43,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.models.location import get_address_text
 
 
 class CategoryHALSerializer(HALSerializer):
@@ -84,12 +85,35 @@ class MainCategoryHALSerializer(HALSerializer):
 class HistoryHalSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     who = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     def get_who(self, obj):
         """Generate string to show in UI, missing users are set to default."""
         if obj.who is None:
             return 'SIA systeem'
         return obj.who
+
+    def get_description(self ,obj):
+        if obj.what != 'UPDATE_LOCATION':
+            return obj.description
+
+        # Retrieve relevant location update object
+        location_id = int(obj.identifier.strip('UPDATE_LOCATION_'))
+        location = Location.objects.get(id=location_id)
+
+        # Craft a message for UI
+        msg = 'Stadsdeel: {}\n'.format(location.get_stadsdeel_display()) if location.stadsdeel else ''
+
+        # Deal with address text or coordinates
+        if location.address and isinstance(location.address, dict):
+            msg += get_address_text(location, no_postal_code=True)  # probably needs extra newline
+        else:
+            msg += '{}, {}'.format(
+                location.geometrie[0],
+                location.geometrie[1],
+            )
+
+        return msg
 
     class Meta:
         model = History
