@@ -7,7 +7,7 @@ from django.test import SimpleTestCase
 from requests.exceptions import ConnectionError
 from requests_mock.mocker import Mocker
 
-from signals.apps.signals.address.validation import (
+from signals.apps.api.address.validation import (
     AddressValidation,
     AddressValidationUnavailableException,
     NoResultsException

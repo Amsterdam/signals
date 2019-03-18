@@ -10,14 +10,26 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 from signals import settings
-from signals.apps.signals import workflow
-from signals.apps.signals.address.validation import (
+from signals.apps.api.address.validation import (
     AddressValidation,
     AddressValidationUnavailableException,
     NoResultsException
 )
-from signals.apps.signals.api_generics.exceptions import PreconditionFailed
-from signals.apps.signals.api_generics.validators import NearAmsterdamValidatorMixin
+from signals.apps.api.generics.exceptions import PreconditionFailed
+from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
+from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
+from signals.apps.api.v1.fields import (
+    CategoryHyperlinkedIdentityField,
+    CategoryHyperlinkedRelatedField,
+    MainCategoryHyperlinkedIdentityField,
+    PrivateSignalAttachmentLinksField,
+    PrivateSignalLinksField,
+    PrivateSignalLinksFieldWithArchives,
+    PrivateSignalSplitLinksField,
+    PublicSignalAttachmentLinksField,
+    PublicSignalLinksField
+)
+from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Attachment,
     Category,
@@ -30,18 +42,6 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status
-)
-from signals.apps.signals.v0.serializers import _NestedDepartmentSerializer
-from signals.apps.signals.v1.fields import (
-    CategoryHyperlinkedIdentityField,
-    CategoryHyperlinkedRelatedField,
-    MainCategoryHyperlinkedIdentityField,
-    PrivateSignalAttachmentLinksField,
-    PrivateSignalLinksField,
-    PrivateSignalLinksFieldWithArchives,
-    PrivateSignalSplitLinksField,
-    PublicSignalAttachmentLinksField,
-    PublicSignalLinksField
 )
 
 
