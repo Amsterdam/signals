@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.signals.models import Category, MainCategory, Signal
+from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.v1.serializers import (
     CategoryHALSerializer,
     MainCategoryHALSerializer,
@@ -37,14 +37,14 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSe
     serializer_class = PublicSignalAttachmentSerializer
 
 
-class MainCategoryViewSet(DatapuntViewSet):
+class ParentCategoryViewSet(DatapuntViewSet):
     queryset = Category.objects.filter(parent__isnull=True)
     serializer_detail_class = MainCategoryHALSerializer
     serializer_class = MainCategoryHALSerializer
     lookup_field = 'slug'
 
 
-class CategoryViewSet(RetrieveModelMixin, GenericViewSet):
+class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryHALSerializer
     pagination_class = HALPagination
