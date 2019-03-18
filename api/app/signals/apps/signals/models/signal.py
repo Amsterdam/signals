@@ -7,9 +7,9 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from swift.storage import SwiftStorage
 
+from .. import workflow
 from ..managers import SignalManager
 from .mixins import CreatedUpdatedModel
-from .. import workflow
 
 
 class Signal(CreatedUpdatedModel):

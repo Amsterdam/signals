@@ -1,11 +1,11 @@
 import logging
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 
-from .mixins import CreatedUpdatedModel
 from .. import workflow
+from .mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
 

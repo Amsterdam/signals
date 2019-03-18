@@ -4,6 +4,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import JSONField
 
+from .buurt import Buurt
 from .mixins import CreatedUpdatedModel
 
 STADSDEEL_CENTRUM = 'A'
