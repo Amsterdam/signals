@@ -16,7 +16,7 @@ class SignalFilter(FilterSet):
     status = filters.MultipleChoiceFilter(field_name='status__state', choices=status_choices)
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
-        queryset=MainCategory.objects.all(),
+        queryset=Category.objects.filter(parent__isnull=True),
         to_field_name='slug',
         field_name='category_assignment__category__parent__slug',
     )

@@ -38,7 +38,7 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSe
 
 
 class MainCategoryViewSet(DatapuntViewSet):
-    queryset = MainCategory.objects.all()
+    queryset = Category.objects.filter(parent__isnull=True)
     serializer_detail_class = MainCategoryHALSerializer
     serializer_class = MainCategoryHALSerializer
     lookup_field = 'slug'
