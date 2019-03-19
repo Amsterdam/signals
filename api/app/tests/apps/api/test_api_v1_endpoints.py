@@ -3,7 +3,6 @@ import json
 import os
 from unittest.mock import patch
 
-from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.http import urlencode
 from rest_framework.reverse import reverse
@@ -824,8 +823,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # The only status that is allowed is "GEMELD" so check with a diferrent state
         data = {'status': {'text': 'Test status update', 'state': 'b'}}
-        with self.assertRaises(ValidationError):
-            self.client.patch(detail_endpoint, data, format='json')
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
 
         # check that the Status is there
         response = self.client.get(history_endpoint)
@@ -835,6 +834,23 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # JSONSchema validation
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_status_with_required_text(self):
+        """ Status change to 'afgehandeld' (o) requires text. When no text is supplied, a 400 should
+        be returned """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        fixture_file = os.path.join(THIS_DIR, 'update_status.json')
+
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        data["status"]["state"] = "o"
+        del data["status"]["text"]
+
+        response = self.client.patch(self.detail_endpoint.format(pk=self.signal_no_image.id), data,
+                                     format='json')
+        self.assertEqual(400, response.status_code)
 
     def test_update_category_assignment(self):
         # Partial update to update the location, all interaction via API.
