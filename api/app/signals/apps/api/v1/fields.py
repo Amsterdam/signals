@@ -55,18 +55,16 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
         return value
 
-    def get_url(self, obj, view_name, request, format):
+    def get_url(self, obj: Category, view_name, request, format):
 
-        if obj.parent is None:
-            # Parent category
-            url_kwargs = {
-                'slug': obj.slug,
-            }
-        else:
-            # Child category
+        if obj.is_child():
             url_kwargs = {
                 'slug': obj.parent.slug,
                 'sub_slug': obj.slug,
+            }
+        else:
+            url_kwargs = {
+                'slug': obj.slug,
             }
 
         # Tricking DRF to use API version `v1` because our `category-detail` view lives in API

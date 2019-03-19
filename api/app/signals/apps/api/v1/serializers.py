@@ -65,7 +65,7 @@ class CategoryHALSerializer(HALSerializer):
 class ParentCategoryHALSerializer(HALSerializer):
     serializer_url_field = ParentCategoryHyperlinkedIdentityField
     _display = DisplayField()
-    sub_categories = CategoryHALSerializer(many=True, source='categories')
+    sub_categories = CategoryHALSerializer(many=True, source='children')
 
     class Meta:
         model = Category
