@@ -72,10 +72,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 1,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "veeg-zwerfvuil",
     "name": "Veeg- / zwerfvuil",
     "handling": "A3DEC",
@@ -87,10 +87,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 2,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "grofvuil",
     "name": "Grofvuil",
     "handling": "A3DEVOMC",
@@ -102,10 +102,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 3,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "huisafval",
     "name": "Huisafval",
     "handling": "A3DMC",
@@ -117,10 +117,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 4,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "bedrijfsafval",
     "name": "Bedrijfsafval",
     "handling": "A3DMC",
@@ -132,10 +132,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 5,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "puin-sloopafval",
     "name": "Puin / sloopafval",
     "handling": "A3DMC",
@@ -147,10 +147,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 6,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "container-is-vol",
     "name": "Container is vol",
     "handling": "A3DMC",
@@ -162,10 +162,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 7,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "prullenbak-is-vol",
     "name": "Prullenbak is vol",
     "handling": "A3DEC",
@@ -177,10 +177,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 8,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "container-is-kapot",
     "name": "Container is kapot",
     "handling": "A3DMC",
@@ -192,10 +192,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 9,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "prullenbak-is-kapot",
     "name": "Prullenbak is kapot",
     "handling": "A3DMC",
@@ -207,10 +207,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 10,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "asbest-accu",
     "name": "Asbest / accu",
     "handling": "A3DMC",
@@ -222,10 +222,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 11,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "overig-afval",
     "name": "Overig afval",
     "handling": "I5DMC",
@@ -238,10 +238,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 12,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "container-voor-plastic-afval-is-vol",
     "name": "Container voor plastic afval is vol",
     "handling": "A3DMC",
@@ -253,10 +253,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 13,
   "fields": {
-    "main_category": 1,
+    "parent": 1,
     "slug": "container-voor-plastic-afval-is-kapot",
     "name": "Container voor plastic afval is kapot",
     "handling": "A3DMC",
@@ -268,10 +268,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 14,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "onderhoud-stoep-straat-en-fietspad",
     "name": "Onderhoud stoep, straat en fietspad",
     "handling": "A3DEC",
@@ -283,10 +283,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 15,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "verkeersbord-verkeersafzetting",
     "name": "Verkeersbord, verkeersafzetting",
     "handling": "A3DEC",
@@ -298,10 +298,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 16,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "gladheid",
     "name": "Gladheid",
     "handling": "GLADZC",
@@ -313,10 +313,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 17,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "omleiding-belijning-verkeer",
     "name": "Omleiding / belijning verkeer",
     "handling": "A3WEC",
@@ -328,10 +328,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 18,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "brug",
     "name": "Brug",
     "handling": "A3WEC",
@@ -343,10 +343,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 19,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "straatmeubilair",
     "name": "Straatmeubilair",
     "handling": "I5DMC",
@@ -358,10 +358,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 20,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "fietsrek-nietje",
     "name": "Fietsrek / nietje",
     "handling": "I5DMC",
@@ -373,10 +373,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 21,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "put-riolering-verstopt",
     "name": "Put / riolering verstopt",
     "handling": "I5DMC",
@@ -388,10 +388,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 22,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "speelplaats",
     "name": "Speelplaats",
     "handling": "I5DMC",
@@ -403,10 +403,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 23,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "sportvoorziening",
     "name": "Sportvoorziening",
     "handling": "I5DMC",
@@ -418,10 +418,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 24,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "straatverlichting-openbare-klok",
     "name": "Straatverlichting / openbare klok",
     "handling": "KLOKLICHTZC",
@@ -432,10 +432,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 25,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "klok",
     "name": "Klok",
     "handling": "KLOKLICHTZC",
@@ -447,10 +447,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 26,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "verkeerslicht",
     "name": "Verkeerslicht",
     "handling": "STOPEC",
@@ -462,10 +462,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 27,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "overig-wegen-verkeer-straatmeubilair",
     "name": "Overig Wegen, verkeer, straatmeubilair",
     "handling": "I5DMC",
@@ -477,10 +477,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 28,
   "fields": {
-    "main_category": 2,
+    "parent": 2,
     "slug": "verkeersoverlast-verkeerssituaties",
     "name": "Verkeersoverlast / Verkeerssituaties",
     "handling": "I5DMC",
@@ -492,10 +492,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 29,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "lozing-dumping-bodemverontreiniging",
     "name": "Lozing / dumping / bodemverontreiniging",
     "handling": "A3DMC",
@@ -507,10 +507,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 30,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "parkeeroverlast",
     "name": "Parkeeroverlast",
     "handling": "A3DMC",
@@ -522,10 +522,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 31,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "fietswrak",
     "name": "Fietswrak",
     "handling": "A3WMC",
@@ -538,10 +538,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 32,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "stank-geluidsoverlast",
     "name": "Stank- / geluidsoverlast",
     "handling": "A3WMC",
@@ -554,10 +554,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 33,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "bouw-sloopoverlast",
     "name": "Bouw- / sloopoverlast",
     "handling": "A3WMC",
@@ -569,10 +569,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 34,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "auto-scooter-bromfietswrak",
     "name": "Auto- / scooter- / bromfiets(wrak)",
     "handling": "A3WMC",
@@ -584,10 +584,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 35,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "graffiti-wildplak",
     "name": "Graffiti / wildplak",
     "handling": "I5DMC",
@@ -599,10 +599,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 36,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "hondenpoep",
     "name": "Honden(poep)",
     "handling": "A3WMC",
@@ -614,10 +614,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 37,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "hinderlijk-geplaatst-object",
     "name": "Hinderlijk geplaatst object",
     "handling": "I5DMC",
@@ -629,10 +629,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 38,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "deelfiets",
     "name": "Deelfiets",
     "handling": "A3WMC",
@@ -644,10 +644,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 39,
   "fields": {
-    "main_category": 3,
+    "parent": 3,
     "slug": "overig-openbare-ruimte",
     "name": "Overig openbare ruimte",
     "handling": "I5DMC",
@@ -661,10 +661,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 40,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "boom",
     "name": "Boom",
     "handling": "I5DMC",
@@ -676,10 +676,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 41,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "maaien-snoeien",
     "name": "Maaien / snoeien",
     "handling": "I5DMC",
@@ -691,10 +691,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 42,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "onkruid",
     "name": "Onkruid",
     "handling": "I5DMC",
@@ -706,10 +706,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 43,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "drijfvuil",
     "name": "Drijfvuil",
     "handling": "I5DMC",
@@ -721,10 +721,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 44,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "oever-kade-steiger",
     "name": "Oever / kade / steiger",
     "handling": "I5DMC",
@@ -736,10 +736,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 45,
   "fields": {
-    "main_category": 4,
+    "parent": 4,
     "slug": "overig-groen-en-water",
     "name": "Overig groen en water",
     "handling": "I5DMC",
@@ -751,10 +751,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 46,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "ratten",
     "name": "Ratten",
     "handling": "I5DMC",
@@ -766,10 +766,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 47,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "ganzen",
     "name": "Ganzen",
     "handling": "I5DMC",
@@ -781,10 +781,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 48,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "duiven",
     "name": "Duiven",
     "handling": "I5DMC",
@@ -796,10 +796,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 49,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "meeuwen",
     "name": "Meeuwen",
     "handling": "I5DMC",
@@ -811,10 +811,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 50,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "wespen",
     "name": "Wespen",
     "handling": "I5DMC",
@@ -826,10 +826,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 51,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "dode-dieren",
     "name": "Dode dieren",
     "handling": "A3DMC",
@@ -841,10 +841,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 52,
   "fields": {
-    "main_category": 5,
+    "parent": 5,
     "slug": "overig-dieren",
     "name": "Overig dieren",
     "handling": "I5DMC",
@@ -856,10 +856,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 53,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "vuurwerkoverlast",
     "name": "Vuurwerkoverlast",
     "handling": "A3DMC",
@@ -871,10 +871,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 54,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "overlast-door-afsteken-vuurwerk",
     "name": "Overlast door afsteken vuurwerk",
     "handling": "A3DMC",
@@ -886,10 +886,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 55,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "overige-overlast-door-personen",
     "name": "Overige overlast door personen",
     "handling": "A3DMC",
@@ -901,10 +901,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 56,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "personen-op-het-water",
     "name": "Personen op het water",
     "handling": "A3DMC",
@@ -916,10 +916,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 57,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "overlast-van-taxis-bussen-en-fietstaxis",
     "name": "Overlast van taxi's, bussen en fietstaxi's",
     "handling": "A3DMC",
@@ -931,10 +931,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 58,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "jongerenoverlast",
     "name": "Jongerenoverlast",
     "handling": "A3DMC",
@@ -946,10 +946,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 59,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "daklozen-bedelen",
     "name": "Daklozen / bedelen",
     "handling": "A3DMC",
@@ -961,10 +961,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 60,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "wildplassen-poepen-overgeven",
     "name": "Wildplassen / poepen / overgeven",
     "handling": "A3DMC",
@@ -976,10 +976,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 61,
   "fields": {
-    "main_category": 6,
+    "parent": 6,
     "slug": "drank-en-drugsoverlast",
     "name": "Drank- en drugsoverlast",
     "handling": "A3DMC",
@@ -991,10 +991,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 62,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "geluidsoverlast-muziek",
     "name": "Geluidsoverlast muziek",
     "handling": "I5DMC",
@@ -1006,10 +1006,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 63,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "geluidsoverlast-installaties",
     "name": "Geluidsoverlast installaties",
     "handling": "I5DMC",
@@ -1021,10 +1021,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 64,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "overlast-terrassen",
     "name": "Overlast terrassen",
     "handling": "I5DMC",
@@ -1036,10 +1036,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 65,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "stank-horecabedrijven",
     "name": "Stank horeca/bedrijven",
     "handling": "I5DMC",
@@ -1051,10 +1051,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 66,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "stankoverlast",
     "name": "Stankoverlast",
     "handling": "I5DMC",
@@ -1066,10 +1066,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 67,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "overlast-door-bezoekers-niet-op-terras",
     "name": "Overlast door bezoekers (niet op terras)",
     "handling": "I5DMC",
@@ -1081,10 +1081,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 68,
   "fields": {
-    "main_category": 7,
+    "parent": 7,
     "slug": "overig-horecabedrijven",
     "name": "Overig horeca/bedrijven",
     "handling": "I5DMC",
@@ -1097,10 +1097,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 69,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overlast-op-het-water-snel-varen",
     "name": "Overlast op het water - snel varen",
     "handling": "WS1EC",
@@ -1112,10 +1112,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 70,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overlast-op-het-water-vaargedrag",
     "name": "Overlast op het water - Vaargedrag",
     "handling": "WS1EC",
@@ -1127,10 +1127,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 71,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overlast-op-het-water-geluid",
     "name": "Overlast op het water - geluid",
     "handling": "WS1EC",
@@ -1142,10 +1142,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 72,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overlast-op-het-water-gezonken-boot",
     "name": "Overlast op het water - Gezonken boot",
     "handling": "WS2EC",
@@ -1157,10 +1157,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 73,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "scheepvaart-nautisch-toezicht",
     "name": "Scheepvaart nautisch toezicht",
     "handling": "WS1EC",
@@ -1172,10 +1172,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 74,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overlast-vanaf-het-water",
     "name": "Overlast vanaf het water",
     "handling": "WS1EC",
@@ -1187,10 +1187,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 75,
   "fields": {
-    "main_category": 8,
+    "parent": 8,
     "slug": "overig-boten",
     "name": "Overig boten",
     "handling": "WS1EC",
@@ -1202,10 +1202,10 @@
   }
 },
 {
-  "model": "signals.subcategory",
+  "model": "signals.category",
   "pk": 76,
   "fields": {
-    "main_category": 9,
+    "parent": 9,
     "slug": "overig",
     "name": "Overig",
     "handling": "REST",

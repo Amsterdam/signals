@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
+    'signals.apps.api',
     'signals.apps.users',
     'signals.apps.sigmax',
     'signals.apps.dashboards',
@@ -94,7 +95,7 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
-    'signals.apps.signals.middleware.APIVersionHeaderMiddleware',
+    'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
@@ -186,7 +187,7 @@ DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
-HEALTH_MODEL_SUB_CATEGORY = 'signals.SubCategory'
+HEALTH_MODEL_SUB_CATEGORY = 'signals.Category'
 HEALTH_MODEL_MAIN_CATEGORY = 'signals.MainCategory'
 HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT = 76
 HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT = 9

@@ -8,7 +8,7 @@ from django.core.mail import send_mail as django_send_mail
 from django.utils import timezone
 
 from signals.apps.email_integrations.utils import create_default_notification_message
-from signals.apps.signals.models import Signal, SubCategory
+from signals.apps.signals.models import Category, Signal
 
 
 def send_mail(signal: Signal) -> int:
@@ -56,7 +56,6 @@ def is_signal_applicable(signal: Signal) -> bool:
         return False
 
     # TODO: move this query to object manager.
-    eligible_sub_categories = SubCategory.objects.filter(
-        main_category__slug='overlast-bedrijven-en-horeca')
+    eligible_categories = Category.objects.filter(parent__slug='overlast-bedrijven-en-horeca')
 
-    return signal.category_assignment.sub_category in eligible_sub_categories
+    return signal.category_assignment.category in eligible_categories

@@ -34,7 +34,7 @@ def create_initial_create_notification_message(signal):
     context = {
         'signal': signal,
         'afhandelings_text': (
-            ALL_AFHANDELING_TEXT[signal.category_assignment.sub_category.handling]
+            ALL_AFHANDELING_TEXT[signal.category_assignment.category.handling]
         ),
     }
     template = loader.get_template('email/signal_created.txt')

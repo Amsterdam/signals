@@ -66,7 +66,7 @@ def _generate_omschrijving(signal):
     # We need sequence number to show in CityControl list view
     sequence_number = _generate_sequence_number(signal)
 
-    # Note: we do not mention main or subcategory here (too many characters)
+    # Note: we do not mention main or category here (too many characters)
     is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
 
     # Borough (stadsdeel) codes for Sigmax/CityControl are custom and do not

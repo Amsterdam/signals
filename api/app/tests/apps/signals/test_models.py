@@ -30,7 +30,7 @@ from tests.apps.signals.attachment_helpers import small_gif
 class TestSignalManager(TransactionTestCase):
 
     def setUp(self):
-        sub_category = factories.SubCategoryFactory.create(name='Veeg- / zwerfvuil')
+        sub_category = factories.CategoryFactory.create(name='Veeg- / zwerfvuil')
 
         # Deserialized data
         self.signal_data = {
@@ -48,7 +48,7 @@ class TestSignalManager(TransactionTestCase):
             'phone': '0123456789',
         }
         self.category_assignment_data = {
-            'sub_category': sub_category,
+            'category': sub_category,
         }
         self.status_data = {
             'state': workflow.GEMELD,
@@ -154,7 +154,7 @@ class TestSignalManager(TransactionTestCase):
 
         # Check that the signal was updated in db
         self.assertEqual(signal.category_assignment, category_assignment)
-        self.assertEqual(signal.sub_categories.count(), 2)
+        self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
         patched_update_category_assignment.send.assert_called_once_with(
@@ -239,7 +239,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 1)
         self.assertEqual(Priority.objects.count(), 1)
 
-        sub_cat = factories.SubCategoryFactory.create()
+        sub_cat = factories.CategoryFactory.create()
 
         Signal.actions.split(
             split_data=[
@@ -308,13 +308,14 @@ class TestSignalModel(TestCase):
         self.assertEqual('http://localhost:8000{}'.format(signal.image_crop.url), image_url)
 
     @mock.patch('imagekit.cachefiles.ImageCacheFile.url', new_callable=mock.PropertyMock)
-    @mock.patch('signals.apps.signals.models.isinstance', return_value=True)
+    @mock.patch('signals.apps.signals.models.signal.isinstance', return_value=True)
     def test_get_fqdn_image_crop_url_with_swift_image(self, mocked_isinstance, mocked_url):
         mocked_url.return_value = 'https://objectstore.com/url/coming/from/swift/image.jpg'
         signal = factories.SignalFactoryWithImage.create()
 
         image_url = signal.get_fqdn_image_crop_url()
 
+        mocked_isinstance.assert_called()
         self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 
     # Test for SIG-884
@@ -456,8 +457,8 @@ class TestCategoryDeclarations(TestCase):
         self.assertEqual(str(main_category), 'First category')
 
     def test_sub_category_string(self):
-        sub_category = factories.SubCategoryFactory.create(main_category__name='First category',
-                                                           name='Sub')
+        sub_category = factories.CategoryFactory.create(parent__name='First category',
+                                                        name='Sub')
 
         self.assertEqual(str(sub_category), 'Sub (First category)')
 
@@ -506,7 +507,7 @@ class GetAddressTextTest(TestCase):
 
 class TestAttachmentModel(LiveServerTestCase):
     doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
-    json_upload_location = os.path.join(os.path.dirname(__file__), 'create_initial.json')
+    json_upload_location = os.path.join(os.path.dirname(__file__), 'upload_standin.json')
 
     def setUp(self):
         self.signal = factories.SignalFactory.create()
