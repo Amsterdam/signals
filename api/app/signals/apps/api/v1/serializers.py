@@ -5,6 +5,7 @@ import copy
 from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.core import exceptions as core_exceptions
 from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -353,7 +354,12 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             status_data = validated_data.pop('status')
             status_data['created_by'] = self.context['request'].user.email
 
-            Signal.actions.update_status(status_data, instance)
+            try:
+                # Catch core validation exception raised when updating the status. Throw DRF
+                # ValidationError instead.
+                Signal.actions.update_status(status_data, instance)
+            except core_exceptions.ValidationError as e:
+                raise ValidationError(e)
 
     def _update_category_assignment(self, instance: Signal, validated_data):
         """
