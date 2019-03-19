@@ -1,4 +1,8 @@
 import logging
+from datetime import datetime, timedelta
+from typing import List
+
+from django.conf import settings
 
 # from signals.apps.sigmax import outgoing as sigmax
 from signals.apps.sigmax import outgoing
@@ -43,3 +47,25 @@ def push_to_sigmax(pk):
                 'state': workflow.VERZONDEN,
                 'text': success_message,
             }, signal=signal)
+
+
+def _get_stuck_sending_signals(before: datetime):
+    """ Returns stuck signals with the last status update before 'before'"""
+    return Signal.objects.filter(status__state=workflow.TE_VERZENDEN,
+                                 status__updated_at__lte=before)
+
+
+def _set_signals_to_failed(signals: List[Signal]):
+    for signal in signals:
+        Signal.actions.update_status({
+            'state': workflow.VERZENDEN_MISLUKT,
+            'text': 'Melding stond langer dan {} minuten op TE_VERZENDEN. Mislukt'.format(
+                settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES),
+        }, signal)
+
+
+@app.task
+def fail_stuck_sending_signals():
+    before = datetime.now() - timedelta(minutes=settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES)
+    signals = _get_stuck_sending_signals(before)
+    _set_signals_to_failed(signals)

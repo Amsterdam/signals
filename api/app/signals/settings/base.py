@@ -238,6 +238,10 @@ CELERY_BEAT_SCHEDULE = {
                 '.task_save_csv_files_datawarehouse',
         'schedule': crontab(hour=4),
     },
+    'sigmax-fail-stuck-sending-signals': {
+        'task': 'signals.apps.sigmax.tasks.fail_stuck_sending_signals',
+        'schedule': crontab(minute='*/15'),
+    }
 }
 
 # E-mail settings for SMTP (SendGrid)
@@ -452,6 +456,7 @@ SWAGGER_SETTINGS = {
 # Sigmax settings
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
+SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = 15
 
 # SIG-884
 SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
