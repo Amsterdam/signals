@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
+    'signals.apps.api',
     'signals.apps.users',
     'signals.apps.sigmax',
     'signals.apps.dashboards',
@@ -94,7 +95,7 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
-    'signals.apps.signals.middleware.APIVersionHeaderMiddleware',
+    'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'

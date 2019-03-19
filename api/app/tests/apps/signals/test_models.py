@@ -308,13 +308,14 @@ class TestSignalModel(TestCase):
         self.assertEqual('http://localhost:8000{}'.format(signal.image_crop.url), image_url)
 
     @mock.patch('imagekit.cachefiles.ImageCacheFile.url', new_callable=mock.PropertyMock)
-    @mock.patch('signals.apps.signals.models.isinstance', return_value=True)
+    @mock.patch('signals.apps.signals.models.signal.isinstance', return_value=True)
     def test_get_fqdn_image_crop_url_with_swift_image(self, mocked_isinstance, mocked_url):
         mocked_url.return_value = 'https://objectstore.com/url/coming/from/swift/image.jpg'
         signal = factories.SignalFactoryWithImage.create()
 
         image_url = signal.get_fqdn_image_crop_url()
 
+        mocked_isinstance.assert_called()
         self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 
     # Test for SIG-884
@@ -506,7 +507,7 @@ class GetAddressTextTest(TestCase):
 
 class TestAttachmentModel(LiveServerTestCase):
     doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
-    json_upload_location = os.path.join(os.path.dirname(__file__), 'create_initial.json')
+    json_upload_location = os.path.join(os.path.dirname(__file__), 'upload_standin.json')
 
     def setUp(self):
         self.signal = factories.SignalFactory.create()
