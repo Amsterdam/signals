@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from django.urls import include, path, resolve
 
 from signals.apps.api.v1.private import views as v1_private_views
+from signals.apps.api.v1.private.views import SignalCategoryRemovedAfterViewSet
 from signals.apps.api.v1.public import views as v1_public_views
 from signals.apps.api.v1.routers import SignalsRouterVersion1
 from signals.apps.signals.models import Category
@@ -80,6 +81,14 @@ signal_router_v1.urls.append(
         'relations',
         v1_public_views.NamespaceView.as_view(),
         name='signal-namespace'
+    )
+)
+
+signal_router_v1.urls.append(
+    path(
+        'private/signals/category/removed',
+        SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
+        name='signal-category-changed-since'
     )
 )
 
