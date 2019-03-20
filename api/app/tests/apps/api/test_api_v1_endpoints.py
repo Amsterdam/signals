@@ -1041,7 +1041,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 self.assertIn(key, response_json)
 
         self.assertEqual(4, Signal.objects.count())
+
+        self.signal_no_image.refresh_from_db()
         self.assertEqual(2, len(self.signal_no_image.children.all()))
+        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
 
     def test_split_children_must_inherit_these_properties(self):
         """When a signal is split its children must inherit certain properties."""
@@ -1118,6 +1121,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 self.test_cat_main.slug
             )
 
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images(self):
         # Split the signal, take note of the returned children
 
@@ -1156,6 +1162,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
             self.assertEqual(md5_parent_image, md5_child_image)
 
+        self.signal_with_image.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images_for_1st_child(self):
         # Split the signal, take note of the returned children
 
@@ -1184,6 +1193,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         child_signal_2 = self.signal_with_image.children.last()
         self.assertEqual(child_signal_2.image, '')
+
+        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
 
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()

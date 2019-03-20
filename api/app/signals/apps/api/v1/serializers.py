@@ -576,8 +576,9 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         }
 
     def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data["children"],
-                                      signal=self.context['view'].get_object())
+        signal = Signal.actions.split(split_data=validated_data['children'],
+                                      signal=self.context['view'].get_object(),
+                                      user=self.context['request'].user)
 
         return signal
 
