@@ -6,21 +6,18 @@ from rest_framework.test import APITestCase
 from signals.apps.signals import permissions, workflow
 from signals.apps.signals.models import MainCategory, Priority
 from tests.apps.signals.attachment_helpers import small_gif
-from tests.apps.signals.factories import (
-    CategoryAssignmentFactory,
-    SignalFactory,
-    SubCategoryFactory
-)
+from tests.apps.signals.factories import CategoryAssignmentFactory, CategoryFactory, SignalFactory
 from tests.apps.users.factories import UserFactory
 
 
 class TestCategoryPermissions(APITestCase):
     """
     This class tests the category permissions. A user can only see/edit signals he has access to.
-    Category permission checks will be skipped for users that have the SIA_BACKOFFICE permission.
+    Category permission checks will be skipped for users that have the SIA_ALL_CATEGORIES
+    permission.
 
 
-    endpoint                            sia_backoffice   limited access
+    endpoint                        sia_all_categories   limited access
 
     v0
     all auth endpoints                     full access   no access
@@ -104,17 +101,17 @@ class TestCategoryPermissions(APITestCase):
 
         def _test_get_endpoint(self, endpoint: str, expected_status_code: int):
             response = self.test_class.client.get(endpoint)
-            self.test_class.assertEquals(expected_status_code, response.status_code)
+            self.test_class.assertEqual(expected_status_code, response.status_code)
             return response
 
         def _test_post_endpoint(self, endpoint: str, data: dict, expected_status_code: int):
             response = self.test_class.client.post(endpoint, data, format='json')
-            self.test_class.assertEquals(expected_status_code, response.status_code)
+            self.test_class.assertEqual(expected_status_code, response.status_code)
             return response
 
         def _test_patch_endpoint(self, endpoint: str, data: dict, expected_status_code: int):
             response = self.test_class.client.patch(endpoint, data, format='json')
-            self.test_class.assertEquals(expected_status_code, response.status_code)
+            self.test_class.assertEqual(expected_status_code, response.status_code)
             return response
 
         def _get_ids_from_response_list(self, result: list):
@@ -131,8 +128,8 @@ class TestCategoryPermissions(APITestCase):
 
             if get_status_code == 200:
                 # Check response
-                self.test_class.assertEquals(len(self.all_signals_ids),
-                                             len(response.json()['results']))
+                self.test_class.assertEqual(len(self.all_signals_ids),
+                                            len(response.json()['results']))
 
             for signal_id in self.all_signals_ids:
                 self._test_get_endpoint('/signals/auth/signal/{}/'.format(signal_id),
@@ -181,17 +178,17 @@ class TestCategoryPermissions(APITestCase):
             ids = self._get_ids_from_response_list(response.json()['results'])
 
             # Test correct id's in response.
-            self.test_class.assertEquals(len(self.signals_access_ids), len(ids),
-                                         "Expected {} ids in the response".format(
-                                             len(self.signals_access_ids)))
-            self.test_class.assertEquals(set(self.signals_access_ids), set(ids),
-                                         "Expected {} unique ids in the response".format(
-                                             len(set(self.signals_access_ids))))
+            self.test_class.assertEqual(len(self.signals_access_ids), len(ids),
+                                        "Expected {} ids in the response".format(
+                                            len(self.signals_access_ids)))
+            self.test_class.assertEqual(set(self.signals_access_ids), set(ids),
+                                        "Expected {} unique ids in the response".format(
+                                            len(set(self.signals_access_ids))))
 
             # Should never fail, but knowing that the length of the list and sets are equal (ie we
             # don't have doubles), means we can get away with not checking if the signals we don't
             # have access to aren't showing up in the response.
-            self.test_class.assertEquals(len(ids), len(set(ids)))
+            self.test_class.assertEqual(len(ids), len(set(ids)))
 
         def _test_v1_get_signal_by_id(self):
             """ Tests that GET /signals/v1/private/signals/{id} only gives us access to the signals
@@ -258,8 +255,8 @@ class TestCategoryPermissions(APITestCase):
 
             def get_category_link(category):
                 return reverse(
-                    'v1:sub-category-detail', kwargs={
-                        'slug': category.main_category.slug,
+                    'v1:category-detail', kwargs={
+                        'slug': category.parent.slug,
                         'sub_slug': category.slug,
                     }
                 )
@@ -285,7 +282,7 @@ class TestCategoryPermissions(APITestCase):
         main_category = MainCategory(name='testmain')
         main_category.save()
 
-        self.categories = [SubCategoryFactory.create(main_category=main_category) for _ in range(5)]
+        self.categories = [CategoryFactory.create(parent=main_category) for _ in range(5)]
         self.assigned_categories = []
 
         for idx, category in enumerate(self.categories):
@@ -297,7 +294,7 @@ class TestCategoryPermissions(APITestCase):
             for _ in range(5):
                 signal = SignalFactory.create()
                 category_assignment = CategoryAssignmentFactory(_signal=signal,
-                                                                sub_category=category)
+                                                                category=category)
                 signal.category_assignment = category_assignment
                 signal.save()
                 self.signals.append(signal)
@@ -324,11 +321,11 @@ class TestCategoryPermissions(APITestCase):
         user.user_permissions.add(Permission.objects.get(codename=permissions.SIA_WRITE))
 
     def test_sia_no_permissions(self):
-        """ User without backoffice permissions should not have v0 access """
-        no_backoffice_permissions_user = UserFactory.create()
-        self._user_add_default_permissions(no_backoffice_permissions_user)
+        """ User without all_categories permissions should not have v0 access """
+        no_categories_permissions_user = UserFactory.create()
+        self._user_add_default_permissions(no_categories_permissions_user)
 
-        test = self.__class__.PermissionTest(no_backoffice_permissions_user, self.signals,
+        test = self.__class__.PermissionTest(no_categories_permissions_user, self.signals,
                                              self.categories, self)
         test.should_have_access_to_categories([])
         test.should_have_access_to_signals([])
@@ -336,11 +333,11 @@ class TestCategoryPermissions(APITestCase):
 
         test.execute()
 
-    def test_sia_backoffice_permission(self):
-        """ User with backoffice permissions should have full v0 access. """
-        backoffice_permission = Permission.objects.get(codename=permissions.SIA_BACKOFFICE)
+    def test_sia_all_categories_permission(self):
+        """ User with all_categories permissions should have full v0 access. """
+        all_categories_permission = Permission.objects.get(codename=permissions.SIA_ALL_CATEGORIES)
         backoffice_user = UserFactory.create()
-        backoffice_user.user_permissions.add(backoffice_permission)
+        backoffice_user.user_permissions.add(all_categories_permission)
         self._user_add_default_permissions(backoffice_user)
 
         test = self.__class__.PermissionTest(backoffice_user, self.signals, self.categories, self)
@@ -351,7 +348,7 @@ class TestCategoryPermissions(APITestCase):
         test.execute()
 
     def test_filter_by_subcategory(self):
-        """ Test user without backoffice permissions, but with access to certain categories.
+        """ Test user without all_categories permissions, but with access to certain categories.
         Should not have v0 access and should not have access to signals from forbidden categories in
         v1.
         """
@@ -387,10 +384,10 @@ class TestCategoryPermissions(APITestCase):
                                                         self)
 
         permission_test.should_have_access_to_signals([IdObject(1), IdObject(2), IdObject(3)])
-        self.assertEquals([4, 5], permission_test.signals_no_access_ids)
+        self.assertEqual([4, 5], permission_test.signals_no_access_ids)
 
         permission_test.should_have_access_to_categories([IdObject(7), IdObject(8), IdObject(9)])
-        self.assertEquals([IdObject(6), IdObject(10)], permission_test.categories_no_access)
+        self.assertEqual([IdObject(6), IdObject(10)], permission_test.categories_no_access)
 
     def test_set_permission_name(self):
         """ Tests that the permission name is set when a new category is created and the permission
@@ -398,13 +395,13 @@ class TestCategoryPermissions(APITestCase):
 
         main_category = MainCategory(name="main cat")
         main_category.save()
-        category = SubCategoryFactory.create(main_category=main_category)
+        category = CategoryFactory.create(parent=main_category)
         category_name = category.name
 
         permissions.CategoryPermissions.create_for_all_categories()
         category.refresh_from_db()
 
-        self.assertEquals('Category access - ' + category_name, category.permission.name)
+        self.assertEqual('Category access - ' + category_name, category.permission.name)
 
     def test_update_category_name(self):
         """ Tests that the permission name is updated when the category name is updated """
@@ -413,9 +410,9 @@ class TestCategoryPermissions(APITestCase):
         old_name = category.name
         category.name = old_name + "_renamed"
 
-        self.assertEquals('Category access - ' + old_name, category.permission.name)
+        self.assertEqual('Category access - ' + old_name, category.permission.name)
 
         category.save()
         category.refresh_from_db()
 
-        self.assertEquals('Category access - ' + old_name + '_renamed', category.permission.name)
+        self.assertEqual('Category access - ' + old_name + '_renamed', category.permission.name)

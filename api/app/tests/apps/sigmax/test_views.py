@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.test import TestCase
 from lxml import etree
-from rest_framework.test import APITestCase
 
 from signals.apps.sigmax.views import (
     ACTUALISEER_ZAAK_STATUS_SOAPACTION,
@@ -15,13 +14,13 @@ from signals.apps.sigmax.views import (
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
-from tests.apps.users.factories import SuperUserFactory
+from tests.test import SignalsBaseApiTestCase
 
 REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
 SOAP_ENDPOINT = '/signals/sigmax/soap'
 
 
-class TestSoapEndpoint(APITestCase):
+class TestSoapEndpoint(SignalsBaseApiTestCase):
     def test_routing(self):
         """Check that routing for Sigmax is active and correct"""
         response = self.client.get(SOAP_ENDPOINT)
@@ -32,8 +31,7 @@ class TestSoapEndpoint(APITestCase):
         not_allowed = ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']
         allowed = ['POST', 'OPTIONS']
 
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         for verb in not_allowed:
             method = getattr(self.client, verb.lower())
@@ -55,8 +53,7 @@ class TestSoapEndpoint(APITestCase):
 
     def test_soap_action_missing(self):
         """SOAP endpoint must reject messages with missing SOAPaction header"""
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         response = self.client.post(SOAP_ENDPOINT)
         self.assertEqual(response.status_code, 500)
@@ -70,8 +67,7 @@ class TestSoapEndpoint(APITestCase):
         handle_known.return_value = HttpResponse('Required by view function')
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
         self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
@@ -92,8 +88,7 @@ class TestSoapEndpoint(APITestCase):
     def test_wrong_soapaction_results_in_fo03(self):
         """Check that we send a StUF Fo03 when we receive an unknown SOAPAction"""
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # Check that wrong action is replied to with XML, StUF Fo03, status 500, utf-8 encoding.
         wrong_action = 'http://example.com/unknown'
@@ -123,8 +118,7 @@ class TestSoapEndpoint(APITestCase):
         })
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -147,8 +141,7 @@ class TestSoapEndpoint(APITestCase):
         })
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -178,8 +171,7 @@ class TestSoapEndpoint(APITestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -226,8 +218,7 @@ class TestSoapEndpoint(APITestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -273,8 +264,7 @@ class TestSoapEndpoint(APITestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        superuser = SuperUserFactory.create()
-        self.client.force_authenticate(user=superuser)
+        self.client.force_authenticate(user=self.superuser)
 
         # call our SOAP endpoint
         response = self.client.post(

@@ -34,13 +34,13 @@ select
 from
     signals_maincategory
 left outer join
-    signals_subcategory
+    signals_category
 on
-    signals_subcategory.main_category_id = signals_maincategory.id
+    signals_category.parent_id = signals_maincategory.id
 left outer join
     signals_categoryassignment
 on
-    signals_subcategory.id = signals_categoryassignment.sub_category_id
+    signals_category.id = signals_categoryassignment.category_id
 left join
     (select _signal_id, max(created_at) as created_at from signals_categoryassignment group by _signal_id) as maxsignal
 on

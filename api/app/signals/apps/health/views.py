@@ -8,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import Error, connection
 from django.http import HttpResponse
 
-from signals.apps.signals.models import MainCategory, SubCategory
+from signals.apps.signals.models import Category, MainCategory
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def check_categories(request):
     the category and cannot change (yet).
 
     {
-      "model": "signals.subcategory",
+      "model": "signals.category",
       "pk": 1,
       "fields": {
         "main_category": 1,
@@ -137,12 +137,12 @@ def check_categories(request):
     """
 
     models = {
-        'signals.subcategory': SubCategory,
+        'signals.category': Category,
         'signals.maincategory': MainCategory,
     }
 
     try:
-        _count_categories(SubCategory,
+        _count_categories(Category,
                           minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
 
         _count_categories(MainCategory,
@@ -167,6 +167,6 @@ def check_categories(request):
         return HttpResponse(e, content_type='text/plain', status=500)
 
     return HttpResponse(
-        'Data OK {}, {}'.format(SubCategory.__name__, MainCategory.__name__),
+        'Data OK {}, {}'.format(Category.__name__, MainCategory.__name__),
         content_type='text/plain', status=200
     )

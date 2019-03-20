@@ -1,6 +1,6 @@
 Geachte melder,
 
-Uw melding over {{ signal.category_assignment.sub_category.name }} met registratienummer {{ signal.id }} is afgehandeld.
+Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.
 
 {% if status.text %}
 De volgende toelichting is daarbij gegeven:
@@ -17,7 +17,7 @@ Adres: {{ signal.location.address_text }}
 
 Stadsdeel: {{ signal.location.get_stadsdeel_display }}
 
-Rubriek: {{ signal.category_assignment.sub_category.main_category.name }}
+Rubriek: {{ signal.category_assignment.category.parent.name }}
 
 Uw omschrijving: {{ signal.text }}
 
