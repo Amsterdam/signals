@@ -1,0 +1,28 @@
+Interactions with feedback endpoints:
+
+/signals/v1/public/feedback/standard_answers/
+GET -> List of questions currently set as visible. Not paginated, not filterable. HTTP 200
+
+
+
+--- possibilities
+
+/signals/v1/public/feedback/form/<UUID>
+
+If requested but wrong UUID:
+GET -> HTTP 404
+
+If requested feedback is not received on time:
+GET, PUT -> HTTP 410 Gone {'reason': 'too late'}
+
+If not yet filled out (but on time):
+GET -> HTTP 200 {} empty object
+PUT -> HTTP 200 BODY TBD
+
+If filled out already (but on time):
+GET -> HTTP 410 Gone {'reason': 'filled out'}
+
+
+## Check List
+- email
+- 
