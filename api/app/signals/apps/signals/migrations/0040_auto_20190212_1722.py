@@ -24,7 +24,7 @@ def add_category_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0009_alter_user_last_name_max_length'),
-        ('signals', '0038_auto_20190314_1311'),
+        ('signals', '0039_auto_20190314_1359'),
     ]
 
     operations = [
@@ -40,5 +40,11 @@ class Migration(migrations.Migration):
             name='permission',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
                                     related_name='categories', to='auth.Permission'),
+        ),
+        migrations.AlterField(
+            model_name='category',
+            name='parent',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='children', to='signals.Category'),
         ),
     ]

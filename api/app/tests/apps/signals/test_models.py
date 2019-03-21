@@ -14,6 +14,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     Attachment,
+    Category,
     CategoryAssignment,
     Location,
     Note,
@@ -385,7 +386,65 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'The status of a parent Signal can only be "gesplitst"')
 
-    # End test for SIG-884
+    def test_siblings_property(self):
+        """ Siblings property should return siblings, not self """
+        brother = factories.SignalFactory.create()
+        sister = factories.SignalFactory.create()
+        parent = factories.SignalFactory.create()
+
+        brother.parent = parent
+        brother.save()
+        sister.parent = parent
+        sister.save()
+
+        self.assertEqual(1, brother.siblings.count())
+        self.assertTrue(sister in brother.siblings)
+
+        self.assertEqual(1, sister.siblings.count())
+        self.assertTrue(brother in sister.siblings)
+
+        sistah = factories.SignalFactory.create()
+        sistah.parent = parent
+        sistah.save()
+
+        brother.refresh_from_db()
+        self.assertEqual(2, brother.siblings.count())
+        self.assertTrue(sister in brother.siblings)
+        self.assertTrue(sistah in brother.siblings)
+
+    def test_siblings_property_without_siblings(self):
+        """ Should return an empty queryset. Not None """
+        signal = factories.SignalFactory.create()
+        self.assertEqual(0, signal.siblings.count())
+
+    def test_to_str(self):
+        signal = factories.SignalFactory.create()
+        status = factories.StatusFactory.create(_signal=signal)
+
+        location_data = {
+            "geometrie": Point(4.9, 52.4),
+            "buurt_code": "ABCD",
+        }
+
+        Signal.actions.update_location(location_data, signal)
+
+        state = status.state
+        signal.refresh_from_db()
+
+        self.assertEqual('{} - {} - {} - {}'.format(
+            signal.id,
+            state,
+            "ABCD",
+            signal.created_at
+        ), signal.__str__())
+
+    @mock.patch("uuid.uuid4")
+    def test_uuid_assignment(self, mocked_uuid4):
+        """ UUID should be assigned on construction of Signal """
+
+        signal = Signal(signal_id=None)
+        self.assertIsNotNone(signal.signal_id)
+        mocked_uuid4.assert_called_once()
 
 
 class TestStatusModel(TestCase):
@@ -449,10 +508,65 @@ class TestStatusModel(TestCase):
         self.assertIn('text', error.exception.error_dict)
 
 
+class TestCategory(TestCase):
+
+    def setUp(self):
+        self.category = factories.ParentCategoryFactory(name='Parent category')
+
+    def test_is_parent(self):
+        self.assertFalse(self.category.is_parent())
+
+        child_category = factories.CategoryFactory(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        self.category.refresh_from_db()
+        self.assertTrue(self.category.is_parent())
+
+    def test_is_child(self):
+        category = factories.CategoryFactory(name='Child category', parent=None)
+        self.assertFalse(category.is_child())
+
+        category.parent = self.category
+        category.save()
+
+        self.assertTrue(category.is_child())
+
+    def test_category_two_deep(self):
+        child_category = Category(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        self.category.refresh_from_db()
+        self.assertEqual(1, self.category.children.count())
+
+    def test_category_three_deep_as_grandchild(self):
+        child_category = Category(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        grand_child_category = Category(name='Grandchild category')
+        grand_child_category.parent = child_category
+
+        self.assertRaises(ValidationError, grand_child_category.save)
+
+    def test_category_three_deep_as_child(self):
+        child_category = Category(name='Child category')
+        child_category.save()
+
+        grand_child_category = Category(name='Grandchild category')
+        grand_child_category.parent = child_category
+        grand_child_category.save()
+
+        child_category.parent = self.category
+
+        self.assertRaises(ValidationError, child_category.save)
+
+
 class TestCategoryDeclarations(TestCase):
 
     def test_main_category_string(self):
-        main_category = factories.MainCategoryFactory.create(name='First category')
+        main_category = factories.ParentCategoryFactory.create(name='First category')
 
         self.assertEqual(str(main_category), 'First category')
 

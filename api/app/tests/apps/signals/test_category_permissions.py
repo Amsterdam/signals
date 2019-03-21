@@ -4,7 +4,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from signals.apps.signals import permissions, workflow
-from signals.apps.signals.models import MainCategory, Priority
+from signals.apps.signals.models import Category, Priority
 from tests.apps.signals.attachment_helpers import small_gif
 from tests.apps.signals.factories import CategoryAssignmentFactory, CategoryFactory, SignalFactory
 from tests.apps.users.factories import UserFactory
@@ -279,7 +279,7 @@ class TestCategoryPermissions(APITestCase):
         """
         self.signals = []
         self.assigned_signals = []
-        main_category = MainCategory(name='testmain')
+        main_category = Category(name='testmain')
         main_category.save()
 
         self.categories = [CategoryFactory.create(parent=main_category) for _ in range(5)]
@@ -393,7 +393,7 @@ class TestCategoryPermissions(APITestCase):
         """ Tests that the permission name is set when a new category is created and the permission
         is generated """
 
-        main_category = MainCategory(name="main cat")
+        main_category = Category(name="main cat")
         main_category.save()
         category = CategoryFactory.create(parent=main_category)
         category_name = category.name

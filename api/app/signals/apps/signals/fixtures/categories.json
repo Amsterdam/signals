@@ -1,1362 +1,1432 @@
 [
-{
-  "model": "signals.maincategory",
-  "pk": 1,
-  "fields": {
-    "name": "Afval",
-    "slug": "afval"
+  {
+    "model": "signals.category",
+    "pk": 1,
+    "fields": {
+      "parent": 78,
+      "slug": "veeg-zwerfvuil",
+      "name": "Veeg- / zwerfvuil",
+      "handling": "A3DEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 2,
+    "fields": {
+      "parent": 78,
+      "slug": "grofvuil",
+      "name": "Grofvuil",
+      "handling": "A3DEVOMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 3,
+    "fields": {
+      "parent": 78,
+      "slug": "huisafval",
+      "name": "Huisafval",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 4,
+    "fields": {
+      "parent": 78,
+      "slug": "bedrijfsafval",
+      "name": "Bedrijfsafval",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 5,
+    "fields": {
+      "parent": 78,
+      "slug": "puin-sloopafval",
+      "name": "Puin / sloopafval",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 6,
+    "fields": {
+      "parent": 78,
+      "slug": "container-is-vol",
+      "name": "Container is vol",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 7,
+    "fields": {
+      "parent": 78,
+      "slug": "prullenbak-is-vol",
+      "name": "Prullenbak is vol",
+      "handling": "A3DEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 8,
+    "fields": {
+      "parent": 78,
+      "slug": "container-is-kapot",
+      "name": "Container is kapot",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 9,
+    "fields": {
+      "parent": 78,
+      "slug": "prullenbak-is-kapot",
+      "name": "Prullenbak is kapot",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 10,
+    "fields": {
+      "parent": 78,
+      "slug": "asbest-accu",
+      "name": "Asbest / accu",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 11,
+    "fields": {
+      "parent": 78,
+      "slug": "overig-afval",
+      "name": "Overig afval",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 12,
+    "fields": {
+      "parent": 78,
+      "slug": "container-voor-plastic-afval-is-vol",
+      "name": "Container voor plastic afval is vol",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 13,
+    "fields": {
+      "parent": 78,
+      "slug": "container-voor-plastic-afval-is-kapot",
+      "name": "Container voor plastic afval is kapot",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        5,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 14,
+    "fields": {
+      "parent": 79,
+      "slug": "onderhoud-stoep-straat-en-fietspad",
+      "name": "Onderhoud stoep, straat en fietspad",
+      "handling": "A3DEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 15,
+    "fields": {
+      "parent": 79,
+      "slug": "verkeersbord-verkeersafzetting",
+      "name": "Verkeersbord, verkeersafzetting",
+      "handling": "A3DEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 16,
+    "fields": {
+      "parent": 79,
+      "slug": "gladheid",
+      "name": "Gladheid",
+      "handling": "GLADZC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 17,
+    "fields": {
+      "parent": 79,
+      "slug": "omleiding-belijning-verkeer",
+      "name": "Omleiding / belijning verkeer",
+      "handling": "A3WEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 18,
+    "fields": {
+      "parent": 79,
+      "slug": "brug",
+      "name": "Brug",
+      "handling": "A3WEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 19,
+    "fields": {
+      "parent": 79,
+      "slug": "straatmeubilair",
+      "name": "Straatmeubilair",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 20,
+    "fields": {
+      "parent": 79,
+      "slug": "fietsrek-nietje",
+      "name": "Fietsrek / nietje",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 21,
+    "fields": {
+      "parent": 79,
+      "slug": "put-riolering-verstopt",
+      "name": "Put / riolering verstopt",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 22,
+    "fields": {
+      "parent": 79,
+      "slug": "speelplaats",
+      "name": "Speelplaats",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 23,
+    "fields": {
+      "parent": 79,
+      "slug": "sportvoorziening",
+      "name": "Sportvoorziening",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 24,
+    "fields": {
+      "parent": 79,
+      "slug": "straatverlichting-openbare-klok",
+      "name": "Straatverlichting / openbare klok",
+      "handling": "KLOKLICHTZC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 25,
+    "fields": {
+      "parent": 79,
+      "slug": "klok",
+      "name": "Klok",
+      "handling": "KLOKLICHTZC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        10
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 26,
+    "fields": {
+      "parent": 79,
+      "slug": "verkeerslicht",
+      "name": "Verkeerslicht",
+      "handling": "STOPEC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        11
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 27,
+    "fields": {
+      "parent": 79,
+      "slug": "overig-wegen-verkeer-straatmeubilair",
+      "name": "Overig Wegen, verkeer, straatmeubilair",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 28,
+    "fields": {
+      "parent": 79,
+      "slug": "verkeersoverlast-verkeerssituaties",
+      "name": "Verkeersoverlast / Verkeerssituaties",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 29,
+    "fields": {
+      "parent": 80,
+      "slug": "lozing-dumping-bodemverontreiniging",
+      "name": "Lozing / dumping / bodemverontreiniging",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        14
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 30,
+    "fields": {
+      "parent": 80,
+      "slug": "parkeeroverlast",
+      "name": "Parkeeroverlast",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 31,
+    "fields": {
+      "parent": 80,
+      "slug": "fietswrak",
+      "name": "Fietswrak",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 32,
+    "fields": {
+      "parent": 80,
+      "slug": "stank-geluidsoverlast",
+      "name": "Stank- / geluidsoverlast",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 33,
+    "fields": {
+      "parent": 80,
+      "slug": "bouw-sloopoverlast",
+      "name": "Bouw- / sloopoverlast",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 34,
+    "fields": {
+      "parent": 80,
+      "slug": "auto-scooter-bromfietswrak",
+      "name": "Auto- / scooter- / bromfiets(wrak)",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 35,
+    "fields": {
+      "parent": 80,
+      "slug": "graffiti-wildplak",
+      "name": "Graffiti / wildplak",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 36,
+    "fields": {
+      "parent": 80,
+      "slug": "hondenpoep",
+      "name": "Honden(poep)",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 37,
+    "fields": {
+      "parent": 80,
+      "slug": "hinderlijk-geplaatst-object",
+      "name": "Hinderlijk geplaatst object",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 38,
+    "fields": {
+      "parent": 80,
+      "slug": "deelfiets",
+      "name": "Deelfiets",
+      "handling": "A3WMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 39,
+    "fields": {
+      "parent": 80,
+      "slug": "overig-openbare-ruimte",
+      "name": "Overig openbare ruimte",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4,
+        2,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 40,
+    "fields": {
+      "parent": 81,
+      "slug": "boom",
+      "name": "Boom",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 41,
+    "fields": {
+      "parent": 81,
+      "slug": "maaien-snoeien",
+      "name": "Maaien / snoeien",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 42,
+    "fields": {
+      "parent": 81,
+      "slug": "onkruid",
+      "name": "Onkruid",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 43,
+    "fields": {
+      "parent": 81,
+      "slug": "drijfvuil",
+      "name": "Drijfvuil",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 44,
+    "fields": {
+      "parent": 81,
+      "slug": "oever-kade-steiger",
+      "name": "Oever / kade / steiger",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 45,
+    "fields": {
+      "parent": 81,
+      "slug": "overig-groen-en-water",
+      "name": "Overig groen en water",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        4
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 46,
+    "fields": {
+      "parent": 82,
+      "slug": "ratten",
+      "name": "Ratten",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 47,
+    "fields": {
+      "parent": 82,
+      "slug": "ganzen",
+      "name": "Ganzen",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 48,
+    "fields": {
+      "parent": 82,
+      "slug": "duiven",
+      "name": "Duiven",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 49,
+    "fields": {
+      "parent": 82,
+      "slug": "meeuwen",
+      "name": "Meeuwen",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 50,
+    "fields": {
+      "parent": 82,
+      "slug": "wespen",
+      "name": "Wespen",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 51,
+    "fields": {
+      "parent": 82,
+      "slug": "dode-dieren",
+      "name": "Dode dieren",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 52,
+    "fields": {
+      "parent": 82,
+      "slug": "overig-dieren",
+      "name": "Overig dieren",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        8
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 53,
+    "fields": {
+      "parent": 83,
+      "slug": "vuurwerkoverlast",
+      "name": "Vuurwerkoverlast",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 54,
+    "fields": {
+      "parent": 83,
+      "slug": "overlast-door-afsteken-vuurwerk",
+      "name": "Overlast door afsteken vuurwerk",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 55,
+    "fields": {
+      "parent": 83,
+      "slug": "overige-overlast-door-personen",
+      "name": "Overige overlast door personen",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 56,
+    "fields": {
+      "parent": 83,
+      "slug": "personen-op-het-water",
+      "name": "Personen op het water",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 57,
+    "fields": {
+      "parent": 83,
+      "slug": "overlast-van-taxis-bussen-en-fietstaxis",
+      "name": "Overlast van taxi's, bussen en fietstaxi's",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 58,
+    "fields": {
+      "parent": 83,
+      "slug": "jongerenoverlast",
+      "name": "Jongerenoverlast",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 59,
+    "fields": {
+      "parent": 83,
+      "slug": "daklozen-bedelen",
+      "name": "Daklozen / bedelen",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 60,
+    "fields": {
+      "parent": 83,
+      "slug": "wildplassen-poepen-overgeven",
+      "name": "Wildplassen / poepen / overgeven",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 61,
+    "fields": {
+      "parent": 83,
+      "slug": "drank-en-drugsoverlast",
+      "name": "Drank- en drugsoverlast",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 62,
+    "fields": {
+      "parent": 84,
+      "slug": "geluidsoverlast-muziek",
+      "name": "Geluidsoverlast muziek",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 63,
+    "fields": {
+      "parent": 84,
+      "slug": "geluidsoverlast-installaties",
+      "name": "Geluidsoverlast installaties",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 64,
+    "fields": {
+      "parent": 84,
+      "slug": "overlast-terrassen",
+      "name": "Overlast terrassen",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 65,
+    "fields": {
+      "parent": 84,
+      "slug": "stank-horecabedrijven",
+      "name": "Stank horeca/bedrijven",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 66,
+    "fields": {
+      "parent": 84,
+      "slug": "stankoverlast",
+      "name": "Stankoverlast",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 67,
+    "fields": {
+      "parent": 84,
+      "slug": "overlast-door-bezoekers-niet-op-terras",
+      "name": "Overlast door bezoekers (niet op terras)",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 68,
+    "fields": {
+      "parent": 84,
+      "slug": "overig-horecabedrijven",
+      "name": "Overig horeca/bedrijven",
+      "handling": "I5DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2,
+        15
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 69,
+    "fields": {
+      "parent": 85,
+      "slug": "overlast-op-het-water-snel-varen",
+      "name": "Overlast op het water - snel varen",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 70,
+    "fields": {
+      "parent": 85,
+      "slug": "overlast-op-het-water-vaargedrag",
+      "name": "Overlast op het water - Vaargedrag",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 71,
+    "fields": {
+      "parent": 85,
+      "slug": "overlast-op-het-water-geluid",
+      "name": "Overlast op het water - geluid",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 72,
+    "fields": {
+      "parent": 85,
+      "slug": "overlast-op-het-water-gezonken-boot",
+      "name": "Overlast op het water - Gezonken boot",
+      "handling": "WS2EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 73,
+    "fields": {
+      "parent": 85,
+      "slug": "scheepvaart-nautisch-toezicht",
+      "name": "Scheepvaart nautisch toezicht",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 74,
+    "fields": {
+      "parent": 85,
+      "slug": "overlast-vanaf-het-water",
+      "name": "Overlast vanaf het water",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 75,
+    "fields": {
+      "parent": 85,
+      "slug": "overig-boten",
+      "name": "Overig boten",
+      "handling": "WS1EC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        3
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 76,
+    "fields": {
+      "parent": 76,
+      "slug": "overig",
+      "name": "Overig",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 77,
+    "fields": {
+      "parent": 80,
+      "slug": "wegsleep",
+      "name": "Wegsleep",
+      "handling": "A3DMC",
+      "is_active": true,
+      "permission": null,
+      "departments": [
+        6,
+        12,
+        2
+      ]
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 78,
+    "fields": {
+      "parent": null,
+      "slug": "afval",
+      "name": "Afval",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 79,
+    "fields": {
+      "parent": null,
+      "slug": "wegen-verkeer-straatmeubilair",
+      "name": "Wegen, verkeer, straatmeubilair",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 80,
+    "fields": {
+      "parent": null,
+      "slug": "overlast-in-de-openbare-ruimte",
+      "name": "Overlast in de openbare ruimte",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 81,
+    "fields": {
+      "parent": null,
+      "slug": "openbaar-groen-en-water",
+      "name": "Openbaar groen en water",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 82,
+    "fields": {
+      "parent": null,
+      "slug": "overlast-van-dieren",
+      "name": "Overlast van dieren",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 83,
+    "fields": {
+      "parent": null,
+      "slug": "overlast-van-en-door-personen-of-groepen",
+      "name": "Overlast van en door personen of groepen",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 84,
+    "fields": {
+      "parent": null,
+      "slug": "overlast-bedrijven-en-horeca",
+      "name": "Overlast Bedrijven en Horeca",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 85,
+    "fields": {
+      "parent": null,
+      "slug": "overlast-op-het-water",
+      "name": "Overlast op het water",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
+  },
+  {
+    "model": "signals.category",
+    "pk": 86,
+    "fields": {
+      "parent": null,
+      "slug": "overig",
+      "name": "Overig",
+      "handling": "REST",
+      "is_active": true,
+      "permission": null,
+      "departments": []
+    }
   }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 2,
-  "fields": {
-    "name": "Wegen, verkeer, straatmeubilair",
-    "slug": "wegen-verkeer-straatmeubilair"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 3,
-  "fields": {
-    "name": "Overlast in de openbare ruimte",
-    "slug": "overlast-in-de-openbare-ruimte"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 4,
-  "fields": {
-    "name": "Openbaar groen en water",
-    "slug": "openbaar-groen-en-water"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 5,
-  "fields": {
-    "name": "Overlast van dieren",
-    "slug": "overlast-van-dieren"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 6,
-  "fields": {
-    "name": "Overlast van en door personen of groepen",
-    "slug": "overlast-van-en-door-personen-of-groepen"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 7,
-  "fields": {
-    "name": "Overlast Bedrijven en Horeca",
-    "slug": "overlast-bedrijven-en-horeca"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 8,
-  "fields": {
-    "name": "Overlast op het water",
-    "slug": "overlast-op-het-water"
-  }
-},
-{
-  "model": "signals.maincategory",
-  "pk": 9,
-  "fields": {
-    "name": "Overig",
-    "slug": "overig"
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 1,
-  "fields": {
-    "parent": 1,
-    "slug": "veeg-zwerfvuil",
-    "name": "Veeg- / zwerfvuil",
-    "handling": "A3DEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 2,
-  "fields": {
-    "parent": 1,
-    "slug": "grofvuil",
-    "name": "Grofvuil",
-    "handling": "A3DEVOMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 3,
-  "fields": {
-    "parent": 1,
-    "slug": "huisafval",
-    "name": "Huisafval",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 4,
-  "fields": {
-    "parent": 1,
-    "slug": "bedrijfsafval",
-    "name": "Bedrijfsafval",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 5,
-  "fields": {
-    "parent": 1,
-    "slug": "puin-sloopafval",
-    "name": "Puin / sloopafval",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 6,
-  "fields": {
-    "parent": 1,
-    "slug": "container-is-vol",
-    "name": "Container is vol",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 7,
-  "fields": {
-    "parent": 1,
-    "slug": "prullenbak-is-vol",
-    "name": "Prullenbak is vol",
-    "handling": "A3DEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 8,
-  "fields": {
-    "parent": 1,
-    "slug": "container-is-kapot",
-    "name": "Container is kapot",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 9,
-  "fields": {
-    "parent": 1,
-    "slug": "prullenbak-is-kapot",
-    "name": "Prullenbak is kapot",
-    "handling": "A3DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 10,
-  "fields": {
-    "parent": 1,
-    "slug": "asbest-accu",
-    "name": "Asbest / accu",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 11,
-  "fields": {
-    "parent": 1,
-    "slug": "overig-afval",
-    "name": "Overig afval",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 12,
-  "fields": {
-    "parent": 1,
-    "slug": "container-voor-plastic-afval-is-vol",
-    "name": "Container voor plastic afval is vol",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 13,
-  "fields": {
-    "parent": 1,
-    "slug": "container-voor-plastic-afval-is-kapot",
-    "name": "Container voor plastic afval is kapot",
-    "handling": "A3DMC",
-    "departments": [
-      5,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 14,
-  "fields": {
-    "parent": 2,
-    "slug": "onderhoud-stoep-straat-en-fietspad",
-    "name": "Onderhoud stoep, straat en fietspad",
-    "handling": "A3DEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 15,
-  "fields": {
-    "parent": 2,
-    "slug": "verkeersbord-verkeersafzetting",
-    "name": "Verkeersbord, verkeersafzetting",
-    "handling": "A3DEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 16,
-  "fields": {
-    "parent": 2,
-    "slug": "gladheid",
-    "name": "Gladheid",
-    "handling": "GLADZC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 17,
-  "fields": {
-    "parent": 2,
-    "slug": "omleiding-belijning-verkeer",
-    "name": "Omleiding / belijning verkeer",
-    "handling": "A3WEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 18,
-  "fields": {
-    "parent": 2,
-    "slug": "brug",
-    "name": "Brug",
-    "handling": "A3WEC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 19,
-  "fields": {
-    "parent": 2,
-    "slug": "straatmeubilair",
-    "name": "Straatmeubilair",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 20,
-  "fields": {
-    "parent": 2,
-    "slug": "fietsrek-nietje",
-    "name": "Fietsrek / nietje",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 21,
-  "fields": {
-    "parent": 2,
-    "slug": "put-riolering-verstopt",
-    "name": "Put / riolering verstopt",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 22,
-  "fields": {
-    "parent": 2,
-    "slug": "speelplaats",
-    "name": "Speelplaats",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 23,
-  "fields": {
-    "parent": 2,
-    "slug": "sportvoorziening",
-    "name": "Sportvoorziening",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 24,
-  "fields": {
-    "parent": 2,
-    "slug": "straatverlichting-openbare-klok",
-    "name": "Straatverlichting / openbare klok",
-    "handling": "KLOKLICHTZC",
-    "departments": [
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 25,
-  "fields": {
-    "parent": 2,
-    "slug": "klok",
-    "name": "Klok",
-    "handling": "KLOKLICHTZC",
-    "departments": [
-      6,
-      10,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 26,
-  "fields": {
-    "parent": 2,
-    "slug": "verkeerslicht",
-    "name": "Verkeerslicht",
-    "handling": "STOPEC",
-    "departments": [
-      6,
-      11,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 27,
-  "fields": {
-    "parent": 2,
-    "slug": "overig-wegen-verkeer-straatmeubilair",
-    "name": "Overig Wegen, verkeer, straatmeubilair",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 28,
-  "fields": {
-    "parent": 2,
-    "slug": "verkeersoverlast-verkeerssituaties",
-    "name": "Verkeersoverlast / Verkeerssituaties",
-    "handling": "I5DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 29,
-  "fields": {
-    "parent": 3,
-    "slug": "lozing-dumping-bodemverontreiniging",
-    "name": "Lozing / dumping / bodemverontreiniging",
-    "handling": "A3DMC",
-    "departments": [
-      6,
-      12,
-      14
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 30,
-  "fields": {
-    "parent": 3,
-    "slug": "parkeeroverlast",
-    "name": "Parkeeroverlast",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 31,
-  "fields": {
-    "parent": 3,
-    "slug": "fietswrak",
-    "name": "Fietswrak",
-    "handling": "A3WMC",
-    "departments": [
-      2,
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 32,
-  "fields": {
-    "parent": 3,
-    "slug": "stank-geluidsoverlast",
-    "name": "Stank- / geluidsoverlast",
-    "handling": "A3WMC",
-    "departments": [
-      2,
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 33,
-  "fields": {
-    "parent": 3,
-    "slug": "bouw-sloopoverlast",
-    "name": "Bouw- / sloopoverlast",
-    "handling": "A3WMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 34,
-  "fields": {
-    "parent": 3,
-    "slug": "auto-scooter-bromfietswrak",
-    "name": "Auto- / scooter- / bromfiets(wrak)",
-    "handling": "A3WMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 35,
-  "fields": {
-    "parent": 3,
-    "slug": "graffiti-wildplak",
-    "name": "Graffiti / wildplak",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 36,
-  "fields": {
-    "parent": 3,
-    "slug": "hondenpoep",
-    "name": "Honden(poep)",
-    "handling": "A3WMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 37,
-  "fields": {
-    "parent": 3,
-    "slug": "hinderlijk-geplaatst-object",
-    "name": "Hinderlijk geplaatst object",
-    "handling": "I5DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 38,
-  "fields": {
-    "parent": 3,
-    "slug": "deelfiets",
-    "name": "Deelfiets",
-    "handling": "A3WMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 39,
-  "fields": {
-    "parent": 3,
-    "slug": "overig-openbare-ruimte",
-    "name": "Overig openbare ruimte",
-    "handling": "I5DMC",
-    "departments": [
-      2,
-      4,
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 40,
-  "fields": {
-    "parent": 4,
-    "slug": "boom",
-    "name": "Boom",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 41,
-  "fields": {
-    "parent": 4,
-    "slug": "maaien-snoeien",
-    "name": "Maaien / snoeien",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 42,
-  "fields": {
-    "parent": 4,
-    "slug": "onkruid",
-    "name": "Onkruid",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 43,
-  "fields": {
-    "parent": 4,
-    "slug": "drijfvuil",
-    "name": "Drijfvuil",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 44,
-  "fields": {
-    "parent": 4,
-    "slug": "oever-kade-steiger",
-    "name": "Oever / kade / steiger",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 45,
-  "fields": {
-    "parent": 4,
-    "slug": "overig-groen-en-water",
-    "name": "Overig groen en water",
-    "handling": "I5DMC",
-    "departments": [
-      4,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 46,
-  "fields": {
-    "parent": 5,
-    "slug": "ratten",
-    "name": "Ratten",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 47,
-  "fields": {
-    "parent": 5,
-    "slug": "ganzen",
-    "name": "Ganzen",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 48,
-  "fields": {
-    "parent": 5,
-    "slug": "duiven",
-    "name": "Duiven",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 49,
-  "fields": {
-    "parent": 5,
-    "slug": "meeuwen",
-    "name": "Meeuwen",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 50,
-  "fields": {
-    "parent": 5,
-    "slug": "wespen",
-    "name": "Wespen",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 51,
-  "fields": {
-    "parent": 5,
-    "slug": "dode-dieren",
-    "name": "Dode dieren",
-    "handling": "A3DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 52,
-  "fields": {
-    "parent": 5,
-    "slug": "overig-dieren",
-    "name": "Overig dieren",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      8,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 53,
-  "fields": {
-    "parent": 6,
-    "slug": "vuurwerkoverlast",
-    "name": "Vuurwerkoverlast",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 54,
-  "fields": {
-    "parent": 6,
-    "slug": "overlast-door-afsteken-vuurwerk",
-    "name": "Overlast door afsteken vuurwerk",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 55,
-  "fields": {
-    "parent": 6,
-    "slug": "overige-overlast-door-personen",
-    "name": "Overige overlast door personen",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 56,
-  "fields": {
-    "parent": 6,
-    "slug": "personen-op-het-water",
-    "name": "Personen op het water",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 57,
-  "fields": {
-    "parent": 6,
-    "slug": "overlast-van-taxis-bussen-en-fietstaxis",
-    "name": "Overlast van taxi's, bussen en fietstaxi's",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 58,
-  "fields": {
-    "parent": 6,
-    "slug": "jongerenoverlast",
-    "name": "Jongerenoverlast",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 59,
-  "fields": {
-    "parent": 6,
-    "slug": "daklozen-bedelen",
-    "name": "Daklozen / bedelen",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 60,
-  "fields": {
-    "parent": 6,
-    "slug": "wildplassen-poepen-overgeven",
-    "name": "Wildplassen / poepen / overgeven",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 61,
-  "fields": {
-    "parent": 6,
-    "slug": "drank-en-drugsoverlast",
-    "name": "Drank- en drugsoverlast",
-    "handling": "A3DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 62,
-  "fields": {
-    "parent": 7,
-    "slug": "geluidsoverlast-muziek",
-    "name": "Geluidsoverlast muziek",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 63,
-  "fields": {
-    "parent": 7,
-    "slug": "geluidsoverlast-installaties",
-    "name": "Geluidsoverlast installaties",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 64,
-  "fields": {
-    "parent": 7,
-    "slug": "overlast-terrassen",
-    "name": "Overlast terrassen",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 65,
-  "fields": {
-    "parent": 7,
-    "slug": "stank-horecabedrijven",
-    "name": "Stank horeca/bedrijven",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 66,
-  "fields": {
-    "parent": 7,
-    "slug": "stankoverlast",
-    "name": "Stankoverlast",
-    "handling": "I5DMC",
-    "departments": [
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 67,
-  "fields": {
-    "parent": 7,
-    "slug": "overlast-door-bezoekers-niet-op-terras",
-    "name": "Overlast door bezoekers (niet op terras)",
-    "handling": "I5DMC",
-    "departments": [
-      2,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 68,
-  "fields": {
-    "parent": 7,
-    "slug": "overig-horecabedrijven",
-    "name": "Overig horeca/bedrijven",
-    "handling": "I5DMC",
-    "departments": [
-      2,
-      6,
-      12,
-      15
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 69,
-  "fields": {
-    "parent": 8,
-    "slug": "overlast-op-het-water-snel-varen",
-    "name": "Overlast op het water - snel varen",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 70,
-  "fields": {
-    "parent": 8,
-    "slug": "overlast-op-het-water-vaargedrag",
-    "name": "Overlast op het water - Vaargedrag",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 71,
-  "fields": {
-    "parent": 8,
-    "slug": "overlast-op-het-water-geluid",
-    "name": "Overlast op het water - geluid",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 72,
-  "fields": {
-    "parent": 8,
-    "slug": "overlast-op-het-water-gezonken-boot",
-    "name": "Overlast op het water - Gezonken boot",
-    "handling": "WS2EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 73,
-  "fields": {
-    "parent": 8,
-    "slug": "scheepvaart-nautisch-toezicht",
-    "name": "Scheepvaart nautisch toezicht",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 74,
-  "fields": {
-    "parent": 8,
-    "slug": "overlast-vanaf-het-water",
-    "name": "Overlast vanaf het water",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 75,
-  "fields": {
-    "parent": 8,
-    "slug": "overig-boten",
-    "name": "Overig boten",
-    "handling": "WS1EC",
-    "departments": [
-      3,
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.category",
-  "pk": 76,
-  "fields": {
-    "parent": 9,
-    "slug": "overig",
-    "name": "Overig",
-    "handling": "REST",
-    "departments": [
-      6,
-      12
-    ]
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 1,
-  "fields": {
-    "code": "POA",
-    "name": "Port of Amsterdam",
-    "is_intern": false
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 2,
-  "fields": {
-    "code": "THO",
-    "name": "THOR",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 3,
-  "fields": {
-    "code": "WAT",
-    "name": "Waternet",
-    "is_intern": false
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 4,
-  "fields": {
-    "code": "STW",
-    "name": "Stadswerken",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 5,
-  "fields": {
-    "code": "AEG",
-    "name": "Afval en Grondstoffen",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 6,
-  "fields": {
-    "code": "ASC",
-    "name": "Actie Service Centrum",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 7,
-  "fields": {
-    "code": "POL",
-    "name": "Politie",
-    "is_intern": false
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 8,
-  "fields": {
-    "code": "GGD",
-    "name": "GGD",
-    "is_intern": false
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 9,
-  "fields": {
-    "code": "VOR",
-    "name": "V&OR",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 10,
-  "fields": {
-    "code": "OVL",
-    "name": "V&OR OVL",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 11,
-  "fields": {
-    "code": "VRI",
-    "name": "V&OR VRI",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 12,
-  "fields": {
-    "code": "CCA",
-    "name": "CCA",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 13,
-  "fields": {
-    "code": "STL",
-    "name": "Stadsloket",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 14,
-  "fields": {
-    "code": "OMG",
-    "name": "Omgevingsdienst",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 15,
-  "fields": {
-    "code": "VTH",
-    "name": "VTH",
-    "is_intern": true
-  }
-},
-{
-  "model": "signals.department",
-  "pk": 16,
-  "fields": {
-    "code": "FB",
-    "name": "FB",
-    "is_intern": true
-  }
-}
 ]

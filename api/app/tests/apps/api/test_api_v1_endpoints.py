@@ -13,7 +13,7 @@ from signals.apps.api.address.validation import (
     NoResultsException
 )
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Category, History, MainCategory, Signal
+from signals.apps.signals.models import Attachment, Category, History, Signal
 from signals.utils.version import get_version
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
@@ -22,8 +22,8 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
-    MainCategoryFactory,
     NoteFactory,
+    ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
@@ -71,8 +71,8 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         super(TestCategoryTermsEndpoints, self).setUp()
 
     def test_category_list(self):
-        # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
-        self.assertEqual(MainCategory.objects.count(), 9)
+        # Asserting that we've 9 parent categories loaded from the json fixture.
+        self.assertEqual(Category.objects.filter(parent__isnull=True).count(), 9)
 
         url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
@@ -86,9 +86,9 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         self.assertEqual(len(data['results']), 9)
 
     def test_category_detail(self):
-        # Asserting that we've 13 sub categories for our main category "Afval".
-        main_category = MainCategoryFactory.create(name='Afval')
-        self.assertEqual(main_category.categories.count(), 13)
+        # Asserting that we've 13 sub categories for our parent category "Afval".
+        main_category = ParentCategoryFactory.create(name='Afval')
+        self.assertEqual(main_category.children.count(), 13)
 
         url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
         response = self.client.get(url)
@@ -314,7 +314,7 @@ class TestPrivateSignalViewSet(SIAFullAccessUserMixin, SignalsBaseApiTestCase):
         # Create a special pair of sub and main categories for testing (insulate our tests
         # from future changes in categories).
         # TODO: add to factories.
-        self.test_cat_main = MainCategory(name='testmain')
+        self.test_cat_main = Category(name='testmain')
         self.test_cat_main.save()
         self.test_cat_sub = Category(
             parent=self.test_cat_main,
@@ -1041,7 +1041,10 @@ class TestPrivateSignalViewSet(SIAFullAccessUserMixin, SignalsBaseApiTestCase):
                 self.assertIn(key, response_json)
 
         self.assertEqual(4, Signal.objects.count())
+
+        self.signal_no_image.refresh_from_db()
         self.assertEqual(2, len(self.signal_no_image.children.all()))
+        self.assertEqual(self.sia_full_access_user.email, self.signal_no_image.status.created_by)
 
     def test_split_children_must_inherit_these_properties(self):
         """When a signal is split its children must inherit certain properties."""
@@ -1118,6 +1121,9 @@ class TestPrivateSignalViewSet(SIAFullAccessUserMixin, SignalsBaseApiTestCase):
                 self.test_cat_main.slug
             )
 
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(self.sia_full_access_user.email, self.signal_no_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images(self):
         # Split the signal, take note of the returned children
 
@@ -1156,6 +1162,9 @@ class TestPrivateSignalViewSet(SIAFullAccessUserMixin, SignalsBaseApiTestCase):
 
             self.assertEqual(md5_parent_image, md5_child_image)
 
+        self.signal_with_image.refresh_from_db()
+        self.assertEqual(self.sia_full_access_user.email, self.signal_with_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images_for_1st_child(self):
         # Split the signal, take note of the returned children
 
@@ -1184,6 +1193,8 @@ class TestPrivateSignalViewSet(SIAFullAccessUserMixin, SignalsBaseApiTestCase):
 
         child_signal_2 = self.signal_with_image.children.last()
         self.assertEqual(child_signal_2.image, '')
+
+        self.assertEqual(self.sia_full_access_user.email, self.signal_with_image.status.created_by)
 
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()

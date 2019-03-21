@@ -1,22 +1,6 @@
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 from django.utils.text import slugify
-
-
-class MainCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True)
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name_plural = 'Main Categories'
-
-    def __str__(self):
-        """String representation."""
-        return self.name
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
 
 class Category(models.Model):
@@ -47,12 +31,13 @@ class Category(models.Model):
         (HANDLING_REST, HANDLING_REST),
     )
 
-    parent = models.ForeignKey('signals.MainCategory',
-                               related_name='categories',
-                               on_delete=models.PROTECT)
+    parent = models.ForeignKey('signals.Category',
+                               related_name='children',
+                               on_delete=models.SET_NULL,
+                               null=True)
     slug = models.SlugField()
     name = models.CharField(max_length=255)
-    handling = models.CharField(max_length=20, choices=HANDLING_CHOICES)
+    handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
     departments = models.ManyToManyField('signals.Department')
     is_active = models.BooleanField(default=True)
 
@@ -66,14 +51,28 @@ class Category(models.Model):
     class Meta:
         ordering = ('name',)
         unique_together = ('parent', 'slug',)
-        verbose_name_plural = 'Sub Categories'
+        verbose_name_plural = 'Categories'
 
     def __str__(self):
         """String representation."""
-        return '{name} ({parent})'.format(name=self.name,
-                                          parent=self.parent.name)
+        return '{name}{parent}'.format(name=self.name,
+                                       parent=" ({})".format(
+                                           self.parent.name) if self.parent else ""
+                                       )
+
+    def is_parent(self):
+        return self.children.exists()
+
+    def is_child(self):
+        return self.parent is not None
+
+    def _validate(self):
+        if self.is_parent() and self.is_child() or self.is_child() and self.parent.is_child():
+            raise ValidationError('Category hierarchy can only go one level deep')
 
     def save(self, *args, **kwargs):
+        self._validate()
+
         old_slug = self.slug
         self.slug = slugify(self.name)
 

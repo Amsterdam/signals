@@ -84,7 +84,7 @@ class SignalManager(models.Manager):
 
         return signal
 
-    def split(self, split_data, signal):
+    def split(self, split_data, signal, user=None):
         """ Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
             new signals
 
@@ -192,7 +192,8 @@ class SignalManager(models.Manager):
             # Let's update the parent signal status to GESPLITST
             status, prev_status = self._update_status_no_transaction({
                 'state': workflow.GESPLITST,
-                'text': 'Deze melding is opgesplitst.'
+                'text': 'Deze melding is opgesplitst.',
+                'created_by': user.email if user else None,
             }, signal=parent_signal)
 
             transaction.on_commit(lambda: update_status.send(sender=self.__class__,

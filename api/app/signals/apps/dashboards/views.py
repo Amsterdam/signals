@@ -30,17 +30,17 @@ order by
 SQL_COUNTS_PER_MAIN_CATEGORY = \
     """
 select
-    signals_maincategory."name", count(signals_signal.id)
+    maincategory."name", count(signals_signal.id)
 from
-    signals_maincategory
+    signals_category as maincategory
 left outer join
-    signals_category
+    signals_category as subcategory
 on
-    signals_category.parent_id = signals_maincategory.id
+    subcategory.parent_id = maincategory.id
 left outer join
     signals_categoryassignment
 on
-    signals_category.id = signals_categoryassignment.category_id
+    subcategory.id = signals_categoryassignment.category_id
 left join
     (select _signal_id, max(created_at) as created_at from signals_categoryassignment group by _signal_id) as maxsignal
 on
@@ -53,10 +53,12 @@ on
     signals_signal.id = maxsignal."_signal_id"
 and
     signals_signal.created_at >= %s and signals_signal.created_at <= %s
+where 
+	maincategory.parent_id is null
 group by
-    signals_maincategory."name"
+    maincategory."name"
 order by
-    signals_maincategory."name"
+    maincategory."name"
 ;
 """  # noqa
 

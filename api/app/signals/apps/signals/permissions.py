@@ -11,9 +11,10 @@ class CategoryPermissions:
 
     @staticmethod
     def create_for_all_categories():
+        """Creates permissions for all child categories. Ignores parent categories. """
         from signals.apps.signals.models import Category
 
-        categories = Category.objects.filter(permission__isnull=True)
+        categories = Category.objects.filter(permission__isnull=True, parent__isnull=False)
 
         for category in categories:
             CategoryPermissions.create_for_category(category)

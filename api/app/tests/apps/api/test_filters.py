@@ -10,7 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.v0.serializers import SignalAuthHALSerializer
-from signals.apps.signals.models import Category, MainCategory, Priority, Signal
+from signals.apps.signals.models import Category, Priority, Signal
 from tests.apps.signals.factories import SignalFactory
 from tests.test import SignalsBaseApiTestCase
 
@@ -355,8 +355,8 @@ class TestMainSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
         # Assumes initial data in form of categories is present. (Possibly generalize this test
         # by not assuming a set category).
-        self.main_cat_1 = MainCategory.objects.get(slug='afval')
-        self.main_cat_2 = MainCategory.objects.get(slug='openbaar-groen-en-water')
+        self.main_cat_1 = Category.objects.get(slug='afval')
+        self.main_cat_2 = Category.objects.get(slug='openbaar-groen-en-water')
 
         self.s1 = SignalFactory.create(
             category_assignment__category__parent=self.main_cat_1)

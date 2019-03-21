@@ -11,7 +11,9 @@ class TestPermissions(TestCase):
     categories = []
 
     def setUp(self):
-        Category.objects.all().delete()
+        Category.objects.filter(parent__isnull=False).delete()
+        Category.objects.filter(parent__isnull=True).delete()
+
         self.assertEqual(0, Category.objects.count())
         self.categories = [CategoryFactory.create() for _ in range(10)]
 
