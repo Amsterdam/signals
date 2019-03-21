@@ -24,7 +24,7 @@ def add_category_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0009_alter_user_last_name_max_length'),
-        ('signals', '0039_auto_20190314_1359'),
+        ('signals', '0040_auto_20190321_1226'),
     ]
 
     operations = [

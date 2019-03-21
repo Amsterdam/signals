@@ -20,13 +20,13 @@ class TestAdmin(TestCase):
     @patch("signals.apps.signals.permissions.CategoryPermissions.create_for_all_categories")
     def test_call_create_categories_on_user_page_load(self, create_for_all_categories):
         response = self.client.get("/signals/admin/auth/user/{}/change/".format(self.user.id))
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         create_for_all_categories.assert_called()
 
     @patch("signals.apps.signals.permissions.CategoryPermissions.create_for_all_categories")
     def test_call_create_categories_on_group_page_load(self, create_for_all_categories):
         response = self.client.get("/signals/admin/auth/group/{}/change/".format(self.group.id))
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         create_for_all_categories.assert_called()
