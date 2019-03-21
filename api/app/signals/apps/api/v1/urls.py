@@ -9,7 +9,7 @@ signal_router_v1 = SignalsRouterVersion1()
 
 signal_router_v1.register(
     r'public/terms/categories',
-    v1_public_views.MainCategoryViewSet,
+    v1_public_views.ParentCategoryViewSet,
     basename='category'
 )
 
@@ -56,7 +56,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-        v1_public_views.CategoryViewSet.as_view({'get': 'retrieve'}),
+        v1_public_views.ChildCategoryViewSet.as_view({'get': 'retrieve'}),
         name='category-detail'
     )
 )

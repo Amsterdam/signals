@@ -9,7 +9,7 @@ from rest_framework.reverse import reverse
 from signals.apps.signals.models import Attachment, Category, Signal
 
 
-class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     lookup_field = 'slug'
 
     def to_representation(self, value):
@@ -55,11 +55,17 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
         return value
 
-    def get_url(self, obj, view_name, request, format):
-        url_kwargs = {
-            'slug': obj.parent.slug,
-            'sub_slug': obj.slug,
-        }
+    def get_url(self, obj: Category, view_name, request, format):
+
+        if obj.is_child():
+            url_kwargs = {
+                'slug': obj.parent.slug,
+                'sub_slug': obj.slug,
+            }
+        else:
+            url_kwargs = {
+                'slug': obj.slug,
+            }
 
         # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
         # version 1. Afterwards we revert back to the origional API version from the request.

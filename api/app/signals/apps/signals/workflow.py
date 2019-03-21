@@ -80,7 +80,6 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
     ],
     ON_HOLD: [
-        GEMELD,  # Should this be possible?
         AFWACHTING,
         BEHANDELING,
         ON_HOLD,
