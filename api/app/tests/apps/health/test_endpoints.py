@@ -45,7 +45,7 @@ class TestHealthEndpoints(TestCase):
         response = self.client.get('/status/data/categories')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'Data OK Category, MainCategory')
+        self.assertEqual(response.content, b'Data OK Category')
 
     @override_settings(HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT=99999)
     def test_status_data_sub_categories_failed(self):

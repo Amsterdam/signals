@@ -9,12 +9,12 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.v1.serializers import (
     CategoryHALSerializer,
-    MainCategoryHALSerializer,
+    ParentCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail
 )
-from signals.apps.signals.models import Category, MainCategory, Signal
+from signals.apps.signals.models import Category, Signal
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
@@ -28,7 +28,6 @@ class PublicSignalGenericViewSet(GenericViewSet):
 
 class PublicSignalViewSet(CreateModelMixin, DetailSerializerMixin, RetrieveModelMixin,
                           PublicSignalGenericViewSet):
-
     serializer_class = PublicSignalCreateSerializer
     serializer_detail_class = PublicSignalSerializerDetail
 
@@ -37,14 +36,14 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSe
     serializer_class = PublicSignalAttachmentSerializer
 
 
-class MainCategoryViewSet(DatapuntViewSet):
-    queryset = MainCategory.objects.all()
-    serializer_detail_class = MainCategoryHALSerializer
-    serializer_class = MainCategoryHALSerializer
+class ParentCategoryViewSet(DatapuntViewSet):
+    queryset = Category.objects.filter(parent__isnull=True)
+    serializer_detail_class = ParentCategoryHALSerializer
+    serializer_class = ParentCategoryHALSerializer
     lookup_field = 'slug'
 
 
-class CategoryViewSet(RetrieveModelMixin, GenericViewSet):
+class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryHALSerializer
     pagination_class = HALPagination
@@ -65,5 +64,6 @@ class NamespaceView(APIView):
 
     TODO: Implement HAL standard for curies in the future
     """
+
     def get(self, request):
         return Response()
