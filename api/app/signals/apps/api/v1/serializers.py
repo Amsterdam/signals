@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.core import exceptions as core_exceptions
-from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -524,6 +523,8 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         return self.to_internal_value(data)
 
     def to_internal_value(self, data):
+        from signals.apps.api.v1.urls import category_from_url
+
         potential_parent_signal = self.context['view'].get_object()
 
         if potential_parent_signal.status.state == workflow.GESPLITST:
@@ -544,21 +545,11 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         if errors:
             raise ValidationError(errors)
 
-        # TODO: find a cleaner solution to the sub category handling.
         output = {"children": copy.deepcopy(self.initial_data)}
 
         for item in output["children"]:
-            category_url = item['category']['sub_category']
-
-            from urllib.parse import urlparse
-            path = (urlparse(category_url)).path
-
-            view, args, kwargs = resolve(path)  # noqa
-            category = Category.objects.get(
-                slug=kwargs['sub_slug'],  # Check the urls.py for why!
-                parent__slug=kwargs['slug'],
-            )
-            item['category']['sub_category'] = category
+            item['category']['sub_category'] = category_from_url(
+                item['category']['sub_category'])
 
         return output
 
