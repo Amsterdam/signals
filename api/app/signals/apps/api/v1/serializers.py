@@ -734,7 +734,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         return signal
 
 
-class PrivateSignalNotInCategoriesSerializerList(HALSerializer):
+class SignalIdListSerializer(HALSerializer):
     class Meta:
         model = Signal
         fields = (

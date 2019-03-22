@@ -17,10 +17,10 @@ from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter, Signal
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
     PrivateSignalAttachmentSerializer,
-    PrivateSignalNotInCategoriesSerializerList,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    PrivateSplitSignalSerializer
+    PrivateSplitSignalSerializer,
+    SignalIdListSerializer
 )
 from signals.apps.signals.models import History, Signal
 from signals.auth.backend import JWTAuthBackend
@@ -111,7 +111,7 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
 
 
 class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    serializer_class = PrivateSignalNotInCategoriesSerializerList
+    serializer_class = SignalIdListSerializer
     pagination_class = HALPagination
 
     authentication_classes = (JWTAuthBackend,)
