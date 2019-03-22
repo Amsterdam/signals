@@ -26,27 +26,22 @@ STADSDELEN = (
     (STADSDEEL_NIEUWWEST, 'Nieuw-West'),
 )
 
+_ADDRESS_FIELD_PREFIXES = (
+    ('openbare_ruimte', ''),
+    ('huisnummer', ' '),
+    ('huisletter', ''),
+    ('huisnummer_toevoeging', '-'),
+    ('postcode', ' '),
+    ('woonplaats', ' ')
+)
+
 
 def get_buurt_code_choices():
     return Buurt.objects.values_list('vollcode', 'naam')
 
 
-def get_address_text(location, short=False, no_postal_code=False):
+def get_address_text(location, field_prefixes=_ADDRESS_FIELD_PREFIXES):
     """Generate address text, shortened if needed."""
-
-    field_prefixes = (
-        ('openbare_ruimte', ''),
-        ('huisnummer', ' '),
-        ('huisletter', ''),
-        ('huisnummer_toevoeging', '-'),
-        ('postcode', ' '),
-        ('woonplaats', ' ')
-    )
-
-    if short:
-        field_prefixes = field_prefixes[:-2]
-    if no_postal_code:
-        field_prefixes = tuple([fp for fp in field_prefixes if fp[0] != 'postcode'])
 
     address_text = ''
     if location.address and isinstance(location.address, dict):
@@ -80,7 +75,11 @@ class Location(CreatedUpdatedModel):
 
     @property
     def short_address_text(self):
-        return get_address_text(self, short=True)
+        # no postal code, no municipality
+        field_prefixes = copy.deepcopy(_ADDRESS_FIELD_PREFIXES)
+        field_prefixes = field_prefixes[:-2]
+
+        return get_address_text(self, field_prefixes)
 
     def set_address_text(self):
         self.address_text = get_address_text(self)
@@ -88,7 +87,7 @@ class Location(CreatedUpdatedModel):
     def save(self, *args, **kwargs):
         # Set address_text
         self.set_address_text()
-        super().save(*args, **kwargs)  # Call the "real" save() method.
+        super().save(*args, **kwargs)
 
     def get_rd_coordinates(self):
         to_transform = copy.deepcopy(self.geometrie)

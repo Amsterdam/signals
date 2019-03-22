@@ -93,7 +93,7 @@ class HistoryHalSerializer(HALSerializer):
             return 'SIA systeem'
         return obj.who
 
-    def get_description(self ,obj):
+    def get_description(self, obj):
         if obj.what != 'UPDATE_LOCATION':
             return obj.description
 
@@ -102,11 +102,19 @@ class HistoryHalSerializer(HALSerializer):
         location = Location.objects.get(id=location_id)
 
         # Craft a message for UI
-        msg = 'Stadsdeel: {}\n'.format(location.get_stadsdeel_display()) if location.stadsdeel else ''
+        msg = 'Stadsdeel: {}\n'.format(
+            location.get_stadsdeel_display()) if location.stadsdeel else ''
 
         # Deal with address text or coordinates
         if location.address and isinstance(location.address, dict):
-            msg += get_address_text(location, no_postal_code=True)  # probably needs extra newline
+            field_prefixes = (
+                ('openbare_ruimte', ''),
+                ('huisnummer', ' '),
+                ('huisletter', ''),
+                ('huisnummer_toevoeging', '-'),
+                ('woonplaats', '\n')
+            )
+            msg += get_address_text(location, field_prefixes)
         else:
             msg += '{}, {}'.format(
                 location.geometrie[0],
