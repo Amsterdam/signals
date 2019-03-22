@@ -1419,12 +1419,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
         response_data = response.json()
         self.assertEqual(len(response_data), 3)
-        # import pprint
-        # pprint.pprint(response_data)
-        # pprint.pprint(data_no_address)
-
-        # import pdb; pdb.set_trace()
-
         self.assertIn(
             'Stadsdeel: Centrum',
             response_data[0]['description']
