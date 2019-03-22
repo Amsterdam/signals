@@ -1378,6 +1378,67 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(Signal.objects.count(), 2)
 
+    def test_update_location_renders_correctly_in_history(self):
+        """Test that location updates have correct description field in history.
+
+        Valid addresses in SIA have:
+        - coordinates and address
+        - only cooordinates
+
+        Furthermore locations without stadsdeel property should render as well.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+
+        # Prepare the data for the 3 types of Location updates
+        update_location_json = os.path.join(THIS_DIR, 'update_location.json')
+        with open(update_location_json, 'r') as f:
+            data_with_address = json.load(f)
+        data_no_address = copy.deepcopy(data_with_address)
+        data_no_address['location']['address'] = {}
+        data_no_address_no_stadsdeel = copy.deepcopy(data_no_address)
+        data_no_address_no_stadsdeel['location']['stadsdeel'] = None
+
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+        # Test full location (address and coordinates) case:
+        response = self.client.patch(detail_endpoint, data=data_with_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        self.assertEqual(
+            'Stadsdeel: Centrum\nDe Ruijterkade 36A\nAmsterdam',
+            response_data[0]['description']
+        )
+
+        # Test no address case:
+        response = self.client.patch(detail_endpoint, data=data_no_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 3)
+        self.assertIn(
+            'Stadsdeel: Centrum',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+
+        # Test no address and no address
+        response = self.client.patch(
+            detail_endpoint, data=data_no_address_no_stadsdeel, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 4)
+        self.assertNotIn(
+            'Stadsdeel:',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'

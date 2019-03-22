@@ -21,8 +21,7 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status,
-    get_address_text
+    Status
 )
 from tests.apps.signals import factories, valid_locations
 from tests.apps.signals.attachment_helpers import small_gif
@@ -592,17 +591,11 @@ class GetAddressTextTest(TestCase):
 
     def test_full_address_text(self):
         correct = 'Amstel 1 1011PN Amsterdam'
-        address_text = get_address_text(self.location)
-
-        self.assertEqual(correct, address_text)
-        self.assertEqual(self.signal.location.address_text, address_text)
+        self.assertEqual(self.location.address_text, correct)
 
     def test_short_address_text(self):
         correct = 'Amstel 1'
-        address_text = get_address_text(self.location, short=True)
-
-        self.assertEqual(address_text, correct)
-        self.assertEqual(self.signal.location.short_address_text, correct)
+        self.assertEqual(self.location.short_address_text, correct)
 
     def test_full_address_with_toevoeging(self):
         address = {
@@ -614,9 +607,10 @@ class GetAddressTextTest(TestCase):
             'woonplaats': 'Amsterdam',
         }
         self.location.address = address
+        self.location.save()
 
         correct = 'Sesamstraat 1A-achter 9999ZZ Amsterdam'
-        self.assertEqual(get_address_text(self.location, short=False), correct)
+        self.assertEqual(self.location.address_text, correct)
 
 
 class TestAttachmentModel(LiveServerTestCase):
