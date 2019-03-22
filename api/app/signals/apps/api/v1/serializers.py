@@ -732,3 +732,11 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         signal = Signal.actions.create_initial(
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
+
+
+class SignalIdListSerializer(HALSerializer):
+    class Meta:
+        model = Signal
+        fields = (
+            'id',
+        )

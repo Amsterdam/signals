@@ -13,13 +13,14 @@ from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView
-from signals.apps.api.v1.filters import SignalFilter
+from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter, SignalFilter
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
     PrivateSignalAttachmentSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    PrivateSplitSignalSerializer
+    PrivateSplitSignalSerializer,
+    SignalIdListSerializer
 )
 from signals.apps.signals.models import History, Signal
 from signals.auth.backend import JWTAuthBackend
@@ -107,3 +108,16 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
             rd_coordinates.y + 125.00,
         )
         return super(GeneratePdfView, self).get_context_data(bbox=bbox)
+
+
+class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    serializer_class = SignalIdListSerializer
+    pagination_class = HALPagination
+
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = SignalCategoryRemovedAfterFilter
+
+    queryset = Signal.objects.only('id').all()
