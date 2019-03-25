@@ -16,6 +16,9 @@ GESPLITST = 's'
 
 HEROPEND = 'reopened'
 
+# SIG-933
+VERZOEK_TOT_AFHANDELING = 'closure requested'
+
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
 VERZONDEN = 'sent'
@@ -34,6 +37,7 @@ STATUS_CHOICES_API = (
     (GEANNULEERD, 'Geannuleerd'),
     (HEROPEND, 'Heropend'),
     (GESPLITST, 'Gesplitst'),
+    (VERZOEK_TOT_AFHANDELING, 'Verzoek tot afhandeling'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -75,6 +79,7 @@ ALLOWED_STATUS_CHANGES = {
         # AFWACHTING,  # This should be possible?
         BEHANDELING,
         ON_HOLD,
+        VERZOEK_TOT_AFHANDELING,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
@@ -120,4 +125,9 @@ ALLOWED_STATUS_CHANGES = {
     ],
     # TODO: Check if correct?
     GESPLITST: [],
+    VERZOEK_TOT_AFHANDELING: [
+        BEHANDELING,
+        AFGEHANDELD,
+        GEANNULEERD,
+    ],
 }
