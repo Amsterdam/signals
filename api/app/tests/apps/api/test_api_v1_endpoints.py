@@ -1567,6 +1567,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             response_data[0]['description']
         )
         self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+        self.assertIn('Locatie is gepind op de kaart', response_data[0]['description'])
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

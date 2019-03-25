@@ -115,7 +115,7 @@ class HistoryHalSerializer(HALSerializer):
             )
             msg += get_address_text(location, field_prefixes)
         else:
-            msg += '{}, {}'.format(
+            msg += 'Locatie is gepind op de kaart\n{}, {}'.format(
                 location.geometrie[0],
                 location.geometrie[1],
             )
