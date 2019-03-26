@@ -1,10 +1,7 @@
 """
 Views for feedback handling.
 """
-from datetime import timedelta
-
 from datapunt_api.pagination import HALPagination
-from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
@@ -12,7 +9,6 @@ from rest_framework.status import HTTP_410_GONE
 
 from signals.apps.feedback.exceptions import Gone
 from signals.apps.feedback.models import (
-    FEEDBACK_EXPECTED_WITHIN_N_DAYS,
     Feedback,
     StandardAnswer,
 )
@@ -38,13 +34,11 @@ class FeedbackViewSet(
     def _raise_if_too_late_or_filled_out(self):
         """Raise HTTP 410 if feedback sent too late or twice or more."""
         obj = self.get_object()
-        # open_period = timedelta(days=FEEDBACK_EXPECTED_WITHIN_N_DAYS)
-        open_period = timedelta(days=14)
 
-        if timezone.now() > obj.created_at + open_period:
+        if obj.is_too_late:
             raise Gone(detail='too late')
 
-        if obj.submitted_at is not None:
+        if obj.is_filled_out:
             raise Gone(detail='filled out')
 
     def retrieve(self, request, *args, **kwargs):

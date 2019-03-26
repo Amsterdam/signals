@@ -7,14 +7,19 @@ from django.urls import include, path
 from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework import routers
+from rest_framework.test import APITestCase
 
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import (
+    Signal,
+    Status,
+)
+from signals.apps.feedback.routers import feedback_router
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
-from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
+from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation, SignalFactory
 
 # We want to keep these tests confined to the reusable application itself, see:
 # https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration
@@ -23,12 +28,8 @@ class NameSpace():
     pass
 
 
-test_router = routers.SimpleRouter()
-test_router.register(r'standard_answers', StandardAnswerViewSet)
-test_router.register(r'forms', FeedbackViewSet)
-
 test_urlconf = NameSpace()
-test_urlconf.urlpatterns = test_router.urls
+test_urlconf.urlpatterns = feedback_router.urls
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
@@ -111,17 +112,20 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         """Test that the feedback can be PUT once."""
         uuid = self.feedback.uuid
         reason = 'testen is leuk'
+        explanation = 'ook voor de lunch'
 
         data = {
             'is_satisfied': True,
             'allows_contact': True,
             'text': reason,
+            'text_area': explanation,
         }
 
         with freeze_time(self.t_now):
             response = self.client.put(
                 '/forms/{}/'.format(uuid),
-                data=data
+                data=data,
+                format='json',
             )
             self.assertEqual(response.status_code, 200)
 
@@ -129,6 +133,26 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(self.feedback.is_satisfied, True)
             self.assertEqual(self.feedback.allows_contact, True)
             self.assertEqual(self.feedback.text, reason)
+
+    def test_400_on_submit_feedback_without_is_satisfied(self):
+        """Test that the feedback can be PUT once."""
+        uuid = self.feedback.uuid
+        reason = 'testen is leuk'
+        explanation = 'ook voor de lunch'
+
+        data = {
+            'allows_contact': True,
+            'text': reason,
+            'text_area': explanation,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(uuid),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 400)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
