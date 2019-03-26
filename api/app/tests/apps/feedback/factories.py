@@ -1,6 +1,7 @@
 import datetime
 from random import choice
 
+from django.utils import timezone
 import factory
 from factory import fuzzy
 
@@ -34,8 +35,10 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
         model = Feedback
 
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
+    created_at = factory.LazyFunction(timezone.now)
+    submitted_at = None
+
     is_satisfied = fuzzy.FuzzyChoice([True, False])
     allows_contact = fuzzy.FuzzyChoice([True, False])
     text = fuzzy.FuzzyChoice(REASONS)
-    requested_before = factory.LazyAttribute(
-        lambda o: o._signal.updated_at + datetime.timedelta(days=14))
+    text_extra = fuzzy.FuzzyChoice([None, 'Daarom is waarom.'])

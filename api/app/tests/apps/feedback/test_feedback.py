@@ -1,5 +1,7 @@
 from datetime import timedelta
+from unittest import mock
 
+from django.core import mail
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone
@@ -8,8 +10,11 @@ from rest_framework import routers
 
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
+from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 
 # We want to keep these tests confined to the reusable application itself, see:
 # https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration
@@ -26,24 +31,40 @@ test_urlconf = NameSpace()
 test_urlconf.urlpatterns = test_router.urls
 
 
-@freeze_time('2019-03-20 12:00:00', tz_offset=0)
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestFeedbackFlow(SignalsBaseApiTestCase):
     def setUp(self):
-        self.feedback = FeedbackFactory(
-            is_satisfied=None,
-            _signal__created_at=timezone.now(),
-            requested_before=timezone.now() + timedelta(days=14),
-        )
-        self.feedback_expired = FeedbackFactory(
-            _signal__created_at=timezone.now() - timedelta(days=28),
-            requested_before=timezone.now() - timedelta(days=14),
-        )
-        self.feedback_received = FeedbackFactory(
-            is_satisfied=True,
-            _signal__created_at=timezone.now(),
-            requested_before=timezone.now() + timedelta(days=14),
-        )
+        # Times for various actions (assumes a 14 day window for feedback).
+        self.t_now = '2019-04-01 12:00:00'
+        self.t_creation = '2019-03-01 12:00:00'
+        self.t_expired = '2019-03-02 12:00:00'
+        self.t_received = '2019-03-29 12:00:00'
+
+        # Setup our test signal and feedback instances
+        with freeze_time(self.t_creation):
+            self.reporter = ReporterFactory()
+            self.signal = SignalFactoryValidLocation(
+                reporter=self.reporter,
+            )
+
+        with freeze_time(self.t_now):
+            self.feedback = FeedbackFactory(
+                submitted_at=None,
+                _signal=self.signal,
+            )
+
+        with freeze_time(self.t_expired):
+            self.feedback_expired = FeedbackFactory(
+                submitted_at=None,
+                _signal=self.signal,
+            )
+
+        with freeze_time(self.t_received):
+            self.feedback_received = FeedbackFactory(
+                submitted_at=timezone.now() - timedelta(days=5),
+                _signal=self.signal,
+            )
+
 
     def test_setup(self):
         self.assertEqual(Feedback.objects.count(), 3)
@@ -55,33 +76,36 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
     def test_410_gone_too_late(self):
         uuid = self.feedback_expired.uuid
 
-        response = self.client.get('/forms/{}/'.format(uuid))
-        self.assertEqual(response.status_code, 410)
-        self.assertEqual(response.json()['detail'], 'too late')
+        with freeze_time(self.t_now):
+            response = self.client.get('/forms/{}/'.format(uuid))
+            self.assertEqual(response.status_code, 410)  # faalt!
+            self.assertEqual(response.json()['detail'], 'too late')
 
-        response = self.client.put('/forms/{}/'.format(uuid), data={})
-        self.assertEqual(response.status_code, 410)
-        self.assertEqual(response.json()['detail'], 'too late')
+            response = self.client.put('/forms/{}/'.format(uuid), data={})
+            self.assertEqual(response.status_code, 410)
+            self.assertEqual(response.json()['detail'], 'too late')
 
     def test_410_gone_filled_out(self):
         """Test that we receive correct HTTP 410 reply when form filled out already"""
         uuid = self.feedback_received.uuid
 
-        response = self.client.get('/forms/{}/'.format(uuid))
-        self.assertEqual(response.status_code, 410)
-        self.assertEqual(response.json()['detail'], 'filled out')
+        with freeze_time(self.t_now):
+            response = self.client.get('/forms/{}/'.format(uuid))
+            self.assertEqual(response.status_code, 410)
+            self.assertEqual(response.json()['detail'], 'filled out')
 
-        response = self.client.put('/forms/{}/'.format(uuid), data={})
-        self.assertEqual(response.status_code, 410)
-        self.assertEqual(response.json()['detail'], 'filled out')
+            response = self.client.put('/forms/{}/'.format(uuid), data={})
+            self.assertEqual(response.status_code, 410)
+            self.assertEqual(response.json()['detail'], 'filled out')
 
     def test_200_if_feedback_requested(self):
         """Test that we receive an empty JSON object HTTP 200 reply."""
         uuid = self.feedback.uuid
 
-        response = self.client.get('/forms/{}/'.format(uuid))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {})
+        with freeze_time(self.t_now):
+            response = self.client.get('/forms/{}/'.format(uuid))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {})
 
     def test_200_on_submit_feedback(self):
         """Test that the feedback can be PUT once."""
@@ -93,16 +117,18 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             'allows_contact': True,
             'text': reason,
         }
-        response = self.client.put(
-            '/forms/{}/'.format(uuid),
-            data=data
-        )
-        self.assertEqual(response.status_code, 200)
 
-        self.feedback.refresh_from_db()
-        self.assertEqual(self.feedback.is_satisfied, True)
-        self.assertEqual(self.feedback.allows_contact, True)
-        self.assertEqual(self.feedback.text, reason)
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(uuid),
+                data=data
+            )
+            self.assertEqual(response.status_code, 200)
+
+            self.feedback.refresh_from_db()
+            self.assertEqual(self.feedback.is_satisfied, True)
+            self.assertEqual(self.feedback.allows_contact, True)
+            self.assertEqual(self.feedback.text, reason)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)

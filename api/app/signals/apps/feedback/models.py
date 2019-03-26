@@ -15,10 +15,14 @@ class StandardAnswer(models.Model):
 
 
 class Feedback(CreatedUpdatedModel):
+    # Bookkeeping
     uuid = models.UUIDField(db_index=True, primary_key=True, default=uuid.uuid4)
-
     _signal = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='feedback')
-    requested_before = models.DateTimeField(editable=False)  # should be something like now + 14 days ...
+    created_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(editable=False, null=True)
+
+    # Fields that we expect Reporter to fill out
     is_satisfied = models.BooleanField(null=True)
     allows_contact = models.BooleanField(default=False)
     text = models.TextField(max_length=1000, null=True, blank=True)
+    text_extra = models.TextField(max_length=1000, null=True, blank=True)

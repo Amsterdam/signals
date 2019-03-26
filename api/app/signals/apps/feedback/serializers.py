@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from signals.apps.feedback.models import Feedback, StandardAnswer
@@ -12,9 +13,15 @@ class StandardAnswerSerializer(serializers.ModelSerializer):
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ('is_satisfied', 'allows_contact', 'text')
+        fields = ('is_satisfied', 'allows_contact', 'text', 'text_extra')
         extra_kwargs = {
             'is_satisfied': {'write_only': True},
             'allows_contact': {'write_only': True},
             'text': {'write_only': True},
+            'text_extra': {'write_only': True},
         }
+
+    def update(self, instance, validated_data):
+        validated_data['submitted_at'] = timezone.now()
+
+        return super().update(instance, validated_data)
