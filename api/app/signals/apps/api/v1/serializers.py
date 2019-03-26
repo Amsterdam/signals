@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.core import exceptions as core_exceptions
-from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -43,6 +42,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.models.location import get_address_text
 
 
 class CategoryHALSerializer(HALSerializer):
@@ -84,12 +84,43 @@ class ParentCategoryHALSerializer(HALSerializer):
 class HistoryHalSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     who = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     def get_who(self, obj):
         """Generate string to show in UI, missing users are set to default."""
         if obj.who is None:
             return 'SIA systeem'
         return obj.who
+
+    def get_description(self, obj):
+        if obj.what != 'UPDATE_LOCATION':
+            return obj.description
+
+        # Retrieve relevant location update object
+        location_id = int(obj.identifier.strip('UPDATE_LOCATION_'))
+        location = Location.objects.get(id=location_id)
+
+        # Craft a message for UI
+        msg = 'Stadsdeel: {}\n'.format(
+            location.get_stadsdeel_display()) if location.stadsdeel else ''
+
+        # Deal with address text or coordinates
+        if location.address and isinstance(location.address, dict):
+            field_prefixes = (
+                ('openbare_ruimte', ''),
+                ('huisnummer', ' '),
+                ('huisletter', ''),
+                ('huisnummer_toevoeging', '-'),
+                ('woonplaats', '\n')
+            )
+            msg += get_address_text(location, field_prefixes)
+        else:
+            msg += 'Locatie is gepind op de kaart\n{}, {}'.format(
+                location.geometrie[0],
+                location.geometrie[1],
+            )
+
+        return msg
 
     class Meta:
         model = History
@@ -524,6 +555,8 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         return self.to_internal_value(data)
 
     def to_internal_value(self, data):
+        from signals.apps.api.v1.urls import category_from_url
+
         potential_parent_signal = self.context['view'].get_object()
 
         if potential_parent_signal.status.state == workflow.GESPLITST:
@@ -544,21 +577,11 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         if errors:
             raise ValidationError(errors)
 
-        # TODO: find a cleaner solution to the sub category handling.
         output = {"children": copy.deepcopy(self.initial_data)}
 
         for item in output["children"]:
-            category_url = item['category']['sub_category']
-
-            from urllib.parse import urlparse
-            path = (urlparse(category_url)).path
-
-            view, args, kwargs = resolve(path)  # noqa
-            category = Category.objects.get(
-                slug=kwargs['sub_slug'],  # Check the urls.py for why!
-                parent__slug=kwargs['slug'],
-            )
-            item['category']['sub_category'] = category
+            item['category']['sub_category'] = category_from_url(
+                item['category']['sub_category'])
 
         return output
 
@@ -709,3 +732,11 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         signal = Signal.actions.create_initial(
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
+
+
+class SignalIdListSerializer(HALSerializer):
+    class Meta:
+        model = Signal
+        fields = (
+            'id',
+        )

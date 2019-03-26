@@ -1,10 +1,13 @@
 import copy
 import json
 import os
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from django.utils.http import urlencode
+from freezegun import freeze_time
 from rest_framework.reverse import reverse
 
 from signals import API_VERSIONS
@@ -310,6 +313,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
         self.split_endpoint = '/signals/v1/private/signals/{pk}/split'
+        self.removed_from_category_endpoint = '/signals/v1/private/signals/category/removed'
 
         # Create a special pair of sub and main categories for testing (insulate our tests
         # from future changes in categories).
@@ -1377,6 +1381,193 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         )
 
         self.assertEqual(Signal.objects.count(), 2)
+
+    def test_removed_from_category(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=10)
+        querystring = urlencode({
+            'category': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        # The category has not been changed over the last 10 minutes
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        # Change the category
+        new_category = CategoryFactory.create()
+        Signal.actions.update_category_assignment({'category': new_category}, self.signal_no_image)
+
+        # Now we should get the signal_no_image in the response because we changed the category
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['id'], self.signal_no_image.id)
+
+    def test_removed_from_category_but_reassigned(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=10)
+        querystring = urlencode({
+            'category': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        # The category has not been changed over the last 10 minutes
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        # Change the category
+        prev_category = self.signal_no_image.category_assignment.category
+        new_category = CategoryFactory.create()
+        Signal.actions.update_category_assignment({'category': new_category},
+                                                  self.signal_no_image)
+        Signal.actions.update_category_assignment({'category': prev_category},
+                                                  self.signal_no_image)
+
+        # Still should not get the signal_no_image in the response because we changed the category
+        # back to the original category
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+    def test_removed_from_category_date_range(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        with freeze_time(timezone.now() - timedelta(minutes=5)):
+            after = timezone.now() - timedelta(minutes=5)
+            before = timezone.now() + timedelta(minutes=5)
+            querystring = urlencode({
+                'category': self.signal_no_image.category_assignment.category.slug,
+                'after': after.isoformat(),
+                'before': before.isoformat()
+            })
+            endpoint = '{}?{}'.format(
+                self.removed_from_category_endpoint,
+                querystring
+            )
+
+            # Change the category
+            new_category = CategoryFactory.create()
+            Signal.actions.update_category_assignment({'category': new_category},
+                                                      self.signal_no_image)
+
+            # Now we should get the signal_no_image in the response because we changed the category
+            response = self.client.get(endpoint, format='json')
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+            self.assertEqual(data['count'], 1)
+            self.assertEqual(data['results'][0]['id'], self.signal_no_image.id)
+
+    def test_removed_from_category_out_of_date_range(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=5)
+        before = timezone.now() + timedelta(minutes=5)
+        querystring = urlencode({
+            'category': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat(),
+            'before': before.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        with freeze_time(timezone.now() - timedelta(minutes=10)):
+            # Change the category
+            new_category = CategoryFactory.create()
+            Signal.actions.update_category_assignment({'category': new_category},
+                                                      self.signal_no_image)
+
+            # Now we should get the signal_no_image in the response because we changed the category
+            response = self.client.get(endpoint, format='json')
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+            self.assertEqual(data['count'], 0)
+
+    def test_update_location_renders_correctly_in_history(self):
+        """Test that location updates have correct description field in history.
+
+        Valid addresses in SIA have:
+        - coordinates and address
+        - only cooordinates
+
+        Furthermore locations without stadsdeel property should render as well.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+
+        # Prepare the data for the 3 types of Location updates
+        update_location_json = os.path.join(THIS_DIR, 'update_location.json')
+        with open(update_location_json, 'r') as f:
+            data_with_address = json.load(f)
+        data_no_address = copy.deepcopy(data_with_address)
+        data_no_address['location']['address'] = {}
+        data_no_address_no_stadsdeel = copy.deepcopy(data_no_address)
+        data_no_address_no_stadsdeel['location']['stadsdeel'] = None
+
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+        # Test full location (address and coordinates) case:
+        response = self.client.patch(detail_endpoint, data=data_with_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        self.assertEqual(
+            'Stadsdeel: Centrum\nDe Ruijterkade 36A\nAmsterdam',
+            response_data[0]['description']
+        )
+
+        # Test no address case:
+        response = self.client.patch(detail_endpoint, data=data_no_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 3)
+        self.assertIn(
+            'Stadsdeel: Centrum',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+
+        # Test no address and no address
+        response = self.client.patch(
+            detail_endpoint, data=data_no_address_no_stadsdeel, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 4)
+        self.assertNotIn(
+            'Stadsdeel:',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+        self.assertIn('Locatie is gepind op de kaart', response_data[0]['description'])
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

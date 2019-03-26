@@ -1,8 +1,12 @@
-from django.urls import include, path
+from urllib.parse import urlparse
+
+from django.urls import include, path, resolve
 
 from signals.apps.api.v1.private import views as v1_private_views
+from signals.apps.api.v1.private.views import SignalCategoryRemovedAfterViewSet
 from signals.apps.api.v1.public import views as v1_public_views
 from signals.apps.api.v1.routers import SignalsRouterVersion1
+from signals.apps.signals.models import Category
 
 # API Version 1
 signal_router_v1 = SignalsRouterVersion1()
@@ -80,6 +84,25 @@ signal_router_v1.urls.append(
     )
 )
 
+signal_router_v1.urls.append(
+    path(
+        'private/signals/category/removed',
+        SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
+        name='signal-category-changed-since'
+    )
+)
+
 urlpatterns = [
     path('v1/', include(signal_router_v1.urls)),
 ]
+
+
+def category_from_url(url: str):
+    view, args, kwargs = resolve(
+        (urlparse(url)).path
+    )
+    category = Category.objects.get(
+        slug=kwargs['sub_slug'],
+        parent__slug=kwargs['slug'],
+    )
+    return category
