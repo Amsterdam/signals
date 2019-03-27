@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import timedelta
 
@@ -10,6 +11,11 @@ from signals.apps.signals.models import Signal
 FEEDBACK_EXPECTED_WITHIN_N_DAYS = 14  # move to general settings file
 
 
+def generate_token():
+    """Use secrets module of Python to generate a UUID object."""
+    return uuid.UUID(hex=secrets.token_hex(16))
+
+
 class StandardAnswer(models.Model):
     is_visible = models.BooleanField(default=True)
     is_satisfied = models.BooleanField(default=True)
@@ -18,7 +24,7 @@ class StandardAnswer(models.Model):
 
 class Feedback(models.Model):
     # Bookkeeping
-    uuid = models.UUIDField(db_index=True, primary_key=True, default=uuid.uuid4)
+    token = models.UUIDField(db_index=True, primary_key=True, default=generate_token)
     _signal = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='feedback')
     created_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(editable=False, null=True)

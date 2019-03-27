@@ -60,46 +60,46 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.assertEqual(Feedback.objects.count(), 3)
 
     def test_404_if_no_feedback_requested(self):
-        response = self.client.get('/forms/DIT_IS_GEEN_UUID/')
+        response = self.client.get('/forms/DIT_IS_GEEN_token/')
         self.assertEqual(response.status_code, 404)
 
     def test_410_gone_too_late(self):
-        uuid = self.feedback_expired.uuid
+        token = self.feedback_expired.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(uuid))
+            response = self.client.get('/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 410)  # faalt!
             self.assertEqual(response.json()['detail'], 'too late')
 
-            response = self.client.put('/forms/{}/'.format(uuid), data={})
+            response = self.client.put('/forms/{}/'.format(token), data={})
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'too late')
 
     def test_410_gone_filled_out(self):
         """Test that we receive correct HTTP 410 reply when form filled out already"""
-        uuid = self.feedback_received.uuid
+        token = self.feedback_received.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(uuid))
+            response = self.client.get('/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'filled out')
 
-            response = self.client.put('/forms/{}/'.format(uuid), data={})
+            response = self.client.put('/forms/{}/'.format(token), data={})
             self.assertEqual(response.status_code, 410)
             self.assertEqual(response.json()['detail'], 'filled out')
 
     def test_200_if_feedback_requested(self):
         """Test that we receive an empty JSON object HTTP 200 reply."""
-        uuid = self.feedback.uuid
+        token = self.feedback.token
 
         with freeze_time(self.t_now):
-            response = self.client.get('/forms/{}/'.format(uuid))
+            response = self.client.get('/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {})
 
     def test_200_on_submit_feedback(self):
         """Test that the feedback can be PUT once."""
-        uuid = self.feedback.uuid
+        token = self.feedback.token
         reason = 'testen is leuk'
         explanation = 'ook voor de lunch'
 
@@ -112,7 +112,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(uuid),
+                '/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
@@ -125,7 +125,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
     def test_400_on_submit_feedback_without_is_satisfied(self):
         """Test that the feedback can be PUT once."""
-        uuid = self.feedback.uuid
+        token = self.feedback.token
         reason = 'testen is leuk'
         explanation = 'ook voor de lunch'
 
@@ -137,7 +137,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         with freeze_time(self.t_now):
             response = self.client.put(
-                '/forms/{}/'.format(uuid),
+                '/forms/{}/'.format(token),
                 data=data,
                 format='json',
             )
