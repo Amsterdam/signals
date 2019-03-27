@@ -1,28 +1,18 @@
 from datetime import timedelta
-from unittest import mock
 
-from django.core import mail
 from django.test import override_settings
-from django.urls import include, path
 from django.utils import timezone
 from freezegun import freeze_time
-from rest_framework import routers
-from rest_framework.test import APITestCase
 
-from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.signals import workflow
-from signals.apps.signals.models import (
-    Signal,
-    Status,
-)
 from signals.apps.feedback.routers import feedback_router
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
-from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation, SignalFactory
+from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
+from tests.test import SignalsBaseApiTestCase
 
 # We want to keep these tests confined to the reusable application itself, see:
 # https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration
+
 
 class NameSpace():
     pass
@@ -65,7 +55,6 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
                 submitted_at=timezone.now() - timedelta(days=5),
                 _signal=self.signal,
             )
-
 
     def test_setup(self):
         self.assertEqual(Feedback.objects.count(), 3)

@@ -2,20 +2,11 @@
 Views for feedback handling.
 """
 from datapunt_api.pagination import HALPagination
-from django.views.generic.detail import SingleObjectMixin
 from rest_framework import mixins, viewsets
-from rest_framework.response import Response
-from rest_framework.status import HTTP_410_GONE
 
 from signals.apps.feedback.exceptions import Gone
-from signals.apps.feedback.models import (
-    Feedback,
-    StandardAnswer,
-)
-from signals.apps.feedback.serializers import (
-    FeedbackSerializer,
-    StandardAnswerSerializer,
-)
+from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.feedback.serializers import FeedbackSerializer, StandardAnswerSerializer
 
 
 class StandardAnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -26,7 +17,7 @@ class StandardAnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
 
 class FeedbackViewSet(
-    viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
+        viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
     """View to receive complaint/client feedback."""
     serializer_class = FeedbackSerializer
     queryset = Feedback.objects.all()
@@ -44,7 +35,7 @@ class FeedbackViewSet(
     def retrieve(self, request, *args, **kwargs):
         """Check whether feedback can still be submitted."""
         self._raise_if_too_late_or_filled_out()
-    
+
         return super().retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):

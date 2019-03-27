@@ -1,12 +1,8 @@
-import datetime
-from random import choice
-
-from django.utils import timezone
 import factory
+from django.utils import timezone
 from factory import fuzzy
 
 from signals.apps.feedback.models import Feedback, StandardAnswer
-
 
 REASONS = [
     'Wind uit het oosten.',
@@ -24,7 +20,7 @@ REASONS = [
 class StandardAnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswer
-    
+
     text = fuzzy.FuzzyChoice(REASONS)
     is_visible = fuzzy.FuzzyChoice([True, False])
     is_satisfied = fuzzy.FuzzyChoice([True, False])

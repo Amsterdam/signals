@@ -1,10 +1,11 @@
-from datetime import timedelta
 import uuid
+from datetime import timedelta
 
 from django.contrib.gis.db import models
 from django.utils import timezone
 
-from signals.apps.signals.models import CreatedUpdatedModel, Signal
+from signals.apps.feedback.managers import FeedbackManager
+from signals.apps.signals.models import Signal
 
 FEEDBACK_EXPECTED_WITHIN_N_DAYS = 14  # move to general settings file
 
@@ -15,7 +16,7 @@ class StandardAnswer(models.Model):
     text = models.TextField(max_length=1000)
 
 
-class Feedback(CreatedUpdatedModel):
+class Feedback(models.Model):
     # Bookkeeping
     uuid = models.UUIDField(db_index=True, primary_key=True, default=uuid.uuid4)
     _signal = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='feedback')
@@ -28,6 +29,9 @@ class Feedback(CreatedUpdatedModel):
     text = models.TextField(max_length=1000, null=True, blank=True)
     text_extra = models.TextField(max_length=1000, null=True, blank=True)
 
+    objects = models.Manager()
+    actions = FeedbackManager()
+
     @property
     def is_too_late(self):
         """Feedback still on time"""
@@ -37,4 +41,5 @@ class Feedback(CreatedUpdatedModel):
 
     @property
     def is_filled_out(self):
+        """Feedback form already filled out and submitted."""
         return self.submitted_at is not None
