@@ -163,6 +163,18 @@ class TestSignalManager(TransactionTestCase):
             category_assignment=category_assignment,
             prev_category_assignment=prev_category_assignment)
 
+    def test_update_category_assignment_to_the_same_category(self):
+        signal = factories.SignalFactory.create()
+
+        category_assignment = Signal.actions.update_category_assignment(
+            {
+                'category': signal.category_assignment.category,
+            },
+            signal
+        )
+
+        self.assertIsNone(category_assignment)
+
     @mock.patch('signals.apps.signals.managers.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
         signal = factories.SignalFactory.create()
