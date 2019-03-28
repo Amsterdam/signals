@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.template import loader
 
 from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
 
 
@@ -42,8 +43,10 @@ def create_initial_create_notification_message(signal):
     return message
 
 
-def send_mail_reporter_status_changed_afgehandeld(signal, status):
+def send_mail_reporter_status_changed_afgehandeld(signal, status, feedback):
     """Send a notification e-mail to the reporter about status change of the given `Signal` object.
+
+    Note: this also creates an outstanding request for feedback in SIA database.
 
     :param signal: Signal object
     :param status: Status object
@@ -53,41 +56,50 @@ def send_mail_reporter_status_changed_afgehandeld(signal, status):
     if not signal_is_afgehandeld or not signal.reporter.email:
         return None
 
+    # Render out the txt and HTML emails and send it.
     subject = f'Betreft melding: {signal.id}'
-    txt_message = create_status_change_notification_message(signal, status)
-    html_message = create_status_change_notification_html_message(signal, status)
+    txt_message = create_status_change_notification_message(signal, status, feedback)
+    html_message = create_status_change_notification_html_message(signal, status, feedback)
     to = signal.reporter.email
 
     return send_mail(subject, txt_message, settings.NOREPLY, (to, ), html_message=html_message)
 
 
-def create_status_change_notification_message(signal, status):
+def create_status_change_notification_message(signal, status, feedback):
     """Create e-mail body message about status change of the given `Signal` object.
 
     :param signal: Signal object
     :param status: Status object
     :returns: message (str)
     """
+    positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
     context = {
+        'negative_feedback_url': negative_feedback_url,
+        'positive_feedback_url': positive_feedback_url,
         'signal': signal,
         'status': status,
     }
+
     template = loader.get_template('email/signal_status_changed_afgehandeld.txt')
     message = template.render(context)
     return message
 
 
-def create_status_change_notification_html_message(signal, status):
+def create_status_change_notification_html_message(signal, status, feedback):
     """Create e-mail body message about status change of the given `Signal` object.
 
     :param signal: Signal object
     :param status: Status object
     :returns: message (str)
     """
+    positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
     context = {
+        'negative_feedback_url': negative_feedback_url,
+        'positive_feedback_url': positive_feedback_url,
         'signal': signal,
         'status': status,
     }
+
     template = loader.get_template('email/signal_status_changed_afgehandeld.html')
     message = template.render(context)
     return message

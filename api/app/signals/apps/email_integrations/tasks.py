@@ -6,6 +6,7 @@ from signals.apps.email_integrations.integrations import (
     toezicht_or_nieuw_west,
     vth_nieuw_west
 )
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals.models import Signal, Status
 from signals.celery import app
 
@@ -25,9 +26,11 @@ def send_mail_reporter_status_changed_split(signal_pk, status_pk):
 
 @app.task
 def send_mail_reporter_status_changed(signal_pk, status_pk):
+    # handles afgehandeld case
     signal = Signal.objects.get(pk=signal_pk)
     status = Status.objects.get(pk=status_pk)
-    core.send_mail_reporter_status_changed_afgehandeld(signal, status)
+    feedback = Feedback.actions.request_feedback(signal)
+    core.send_mail_reporter_status_changed_afgehandeld(signal, status, feedback)
 
 
 @app.task

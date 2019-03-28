@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'signals.apps.users',
     'signals.apps.sigmax',
     'signals.apps.dashboards',
+    'signals.apps.feedback',
 
     # Third party
     'corsheaders',

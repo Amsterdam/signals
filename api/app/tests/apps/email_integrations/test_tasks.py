@@ -3,6 +3,7 @@ from unittest import mock
 from django.test import TestCase
 
 from signals.apps.email_integrations import tasks
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals.models import Signal, Status
 from tests.apps.signals.factories import SignalFactory
 
@@ -30,8 +31,9 @@ class TestTasks(TestCase):
 
         tasks.send_mail_reporter_status_changed(signal_pk=signal.id, status_pk=signal.status.id)
 
+        feedback = Feedback.objects.get(_signal=signal)
         mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_called_once_with(
-            signal, signal.status)
+            signal, signal.status, feedback)
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):

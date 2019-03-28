@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.integrations import core
 from signals.apps.signals import workflow
+from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
@@ -42,8 +43,10 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
 
-        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal, status)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+            self.signal, status, feedback)
 
         self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
@@ -51,8 +54,9 @@ class TestCore(TestCase):
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
-        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal,
-                                                                             self.signal.status)
+        feedback = FeedbackFactory.create(_signal=self.signal)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+            signal=self.signal, status=self.signal.status, feedback=feedback)
 
         self.assertEqual(num_of_messages, None)
 
@@ -61,9 +65,10 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal_no_email, state=workflow.AFGEHANDELD)
         self.signal_no_email.status = status
         self.signal_no_email.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
 
-        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal_no_email,
-                                                                             status)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+            self.signal_no_email, status, feedback)
 
         self.assertEqual(num_of_messages, None)
 
@@ -73,8 +78,10 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done.')
         self.signal.status = status
         self.signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
 
-        message = core.create_status_change_notification_message(self.signal, self.signal.status)
+        message = core.create_status_change_notification_message(
+            self.signal, self.signal.status, feedback)
 
         self.assertIn(str(self.signal.id), message)
         self.assertIn(self.signal.text, message)
@@ -87,8 +94,10 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
 
-        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(self.signal, status)
+        num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+            self.signal, status, feedback)
 
         self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
@@ -99,12 +108,14 @@ class TestCore(TestCase):
         self.assertEqual(message.to, ['foo@bar.com', ])
 
         txt_message = core.create_status_change_notification_message(signal=self.signal,
-                                                                     status=status)
+                                                                     status=status,
+                                                                     feedback=feedback)
         self.assertEqual(message.body, txt_message)
 
         content, mime_type = message.alternatives[0]
         html_message = core.create_status_change_notification_html_message(signal=self.signal,
-                                                                           status=status)
+                                                                           status=status,
+                                                                           feedback=feedback)
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
 
