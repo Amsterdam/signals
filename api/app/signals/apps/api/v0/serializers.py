@@ -529,6 +529,13 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
         return internal_data
 
+    def validate(self, attrs):
+        if 'category' in attrs:
+            if attrs['_signal'].category_assignment.category.id == attrs['category'].id:
+                raise ValidationError('Cannot assign the same category twice')
+
+        return super(CategoryHALSerializer, self).validate(attrs=attrs)
+
     def create(self, validated_data):
         validated_data = self.add_user(validated_data)
         validated_data['created_by'] = validated_data.pop('user')

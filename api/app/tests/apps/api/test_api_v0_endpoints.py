@@ -658,6 +658,25 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         note = Note.objects.get(_signal=self.signal)
         self.assertEqual(note.created_by, self.superuser.username)
 
+    def test_update_category_assignment_to_the_same_category(self):
+        url = '/signals/auth/category/'
+        category = self.signal.category_assignment.category
+        data = {
+            '_signal': self.signal.id,
+            'sub_category': '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+                category.parent.slug,
+                category.slug
+            )
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
+        data = response.json()
+        self.assertIn('non_field_errors', data)
+        self.assertIn('Cannot assign the same category twice', data['non_field_errors'])
+
 
 class TestUserLogging(TestAPIEndpointsBase):
     """Check that the API returns who did what and when."""
