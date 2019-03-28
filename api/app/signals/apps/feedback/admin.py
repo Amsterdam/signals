@@ -7,11 +7,11 @@ from signals.apps.feedback.models import Feedback, StandardAnswer
 
 
 class StandardAnswerAdmin(admin.ModelAdmin):
-    pass
+    fields = ('is_satisfied', 'text')
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    fields = ('uuid', '_signal', 'is_satisfied', 'allows_contact', 'text', 'text_extra')
+    fields = ('token', '_signal', 'is_satisfied', 'allows_contact', 'text', 'text_extra')
 
 
 admin.site.register(StandardAnswer, StandardAnswerAdmin)
