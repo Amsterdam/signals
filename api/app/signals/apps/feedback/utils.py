@@ -1,32 +1,42 @@
+import copy
+import logging
 import os
 
 from django.conf import settings
 
+from signals.apps.feedback import app_settings as feedback_settings
 
-class NoFrontendApp(Exception):
+logger = logging.getLogger(__name__)
+
+
+class NoFrontendAppConfigured(Exception):
     pass
 
 
 def get_fe_application_location():
     """Get location of frontend SIA application."""
+    env_fe_mapping = copy.deepcopy(getattr(
+        settings,
+        'FEEDBACK_ENV_FE_MAPPING',
+        feedback_settings.FEEDBACK_ENV_FE_MAPPING
+    ))
+
     environment = os.getenv('ENVIRONMENT', None)
 
-    if 'localhost' in settings.SITE_DOMAIN:
-        raise NoFrontendApp('In testing or development we are not running SIA frontend.')
-
-    if environment == 'ACCEPTANCE':
-        return 'https://acc.meldingen.amsterdam.nl'
-    elif environment == 'PRODUCTION':
-        return 'https://meldingen.amsterdam.nl'
+    try:
+        fe_location = env_fe_mapping[environment]
+    except KeyError:
+        msg = f'ENVIRONMENT environment variable set to unknown value: {environment}'
+        raise NoFrontendAppConfigured(msg)
     else:
-        raise NoFrontendApp(f'ENVIRONMENT variable set to unknown value: {environment}')
+        return fe_location
 
 
 def get_feedback_urls(feedback):
     """Get positive and negative feedback URLs in meldingingen application."""
     try:
         fe_location = get_fe_application_location()
-    except NoFrontendApp:
+    except NoFrontendAppConfigured:
         return 'http://dummy_link/kto/yes/123', 'http://dummy_link/kto/no/123'
 
     positive_feedback_url = f'{fe_location}/kto/ja/{feedback.token}'

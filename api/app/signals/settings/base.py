@@ -456,3 +456,10 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 # SIG-884
 SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 3
+
+# SIG-1017
+FEEDBACK_ENV_FE_MAPPING = {
+    'LOCAL': 'http://dummy_link',
+    'ACCEPTANCE': 'https://acc.meldingen.amsterdam.nl',
+    'PRODUCTION': 'https://meldingen.amsterdam.nl',
+}
