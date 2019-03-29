@@ -1,9 +1,12 @@
 from datetime import datetime
+from unittest import mock
 
+from django.conf import settings
 from django.core import mail
 from django.test import TestCase
 
 from signals.apps.email_integrations.integrations import core
+from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.signals import workflow
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory, StatusFactory
@@ -118,6 +121,35 @@ class TestCore(TestCase):
                                                                            feedback=feedback)
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
+
+    def test_links_in_different_environments(self):
+        """Test that generated links contain the correct host."""
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
+
+        # Check that generated emails contain the correct links for all
+        # configured environments:
+        env_fe_mapping = getattr(settings,
+                                 'FEEDBACK_ENV_FE_MAPPING',
+                                 feedback_settings.FEEDBACK_ENV_FE_MAPPING)
+        self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
+
+        for environment, fe_location in env_fe_mapping.items():
+            local_env = {environment: fe_location}
+
+            with mock.patch.dict('os.environ', local_env):
+                mail.outbox = []
+                num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+                    self.signal, status, feedback)
+
+                self.assertEqual(num_of_messages, 1)
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn('http://dummy_link', message.body)
+                self.assertIn('http://dummy_link', message.alternatives[0][0])
 
 
 class TestSignalSplitEmailFlow(TestCase):

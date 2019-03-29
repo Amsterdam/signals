@@ -5,10 +5,9 @@ from datetime import timedelta
 from django.contrib.gis.db import models
 from django.utils import timezone
 
+from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.managers import FeedbackManager
 from signals.apps.signals.models import Signal
-
-FEEDBACK_EXPECTED_WITHIN_N_DAYS = 14  # move to general settings file
 
 
 def generate_token():
