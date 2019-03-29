@@ -1,11 +1,16 @@
+import copy
 from datetime import timedelta
+from unittest import mock
 
-from django.test import override_settings
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
+from signals.apps.feedback.utils import get_feedback_urls
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
@@ -160,3 +165,31 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
 
     def test_factories(self):
         self.assertEqual(StandardAnswer.objects.count(), 4)
+
+
+class TestUtils(TestCase):
+    def setUp(self):
+        self.feedback = FeedbackFactory()
+
+    def test_link_generation_with_environment_set(self):
+        env_fe_mapping = copy.deepcopy(getattr(
+            settings,
+            'FEEDBACK_ENV_FE_MAPPING',
+            feedback_settings.FEEDBACK_ENV_FE_MAPPING,
+        ))
+
+        for environment, fe_location in env_fe_mapping.items():
+            env = {'ENVIRONMENT': environment}
+            with mock.patch.dict('os.environ', env, clear=True):
+                pos_url, neg_url = get_feedback_urls(self.feedback)
+
+                print(environment, fe_location, pos_url)
+                print(environment, fe_location, neg_url, '\n')
+                self.assertIn(fe_location, pos_url)
+                self.assertIn(fe_location, neg_url)
+
+    def test_link_generation_no_environment_set(self):
+        with mock.patch.dict('os.environ', {}, clear=True):
+            pos_url, neg_url = get_feedback_urls(self.feedback)
+            self.assertEqual('http://dummy_link/kto/yes/123', pos_url)
+            self.assertEqual('http://dummy_link/kto/no/123', neg_url)

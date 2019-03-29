@@ -123,7 +123,7 @@ class TestCore(TestCase):
         self.assertEqual(content, html_message)
 
     def test_links_in_different_environments(self):
-        """Test that generated links contain the correct host."""
+        """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
@@ -138,9 +138,34 @@ class TestCore(TestCase):
         self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
 
         for environment, fe_location in env_fe_mapping.items():
-            local_env = {environment: fe_location}
+            local_env = {'ENVIRONMENT': environment}
 
             with mock.patch.dict('os.environ', local_env):
+                mail.outbox = []
+                num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
+                    self.signal, status, feedback)
+
+                self.assertEqual(num_of_messages, 1)
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn(fe_location, message.body)
+                self.assertIn(fe_location, message.alternatives[0][0])
+
+    def test_links_environment_env_var_not_set(self):
+        """Deals with the case where nothing is overridden and `environment` not set."""
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.signal)
+
+        # Check that generated emails contain the correct links for all
+        # configured environments:
+        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
+        self.assertEqual(len(env_fe_mapping), 1)
+
+        for environment, fe_location in env_fe_mapping.items():
+            with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
                 num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
                     self.signal, status, feedback)

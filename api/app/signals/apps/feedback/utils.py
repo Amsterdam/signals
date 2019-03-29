@@ -24,8 +24,9 @@ def get_fe_application_location():
     environment = os.getenv('ENVIRONMENT', None)
 
     try:
+        environment = environment.upper()
         fe_location = env_fe_mapping[environment]
-    except KeyError:
+    except (AttributeError, KeyError) as e:  # noqa: F841
         msg = f'ENVIRONMENT environment variable set to unknown value: {environment}'
         raise NoFrontendAppConfigured(msg)
     else:
