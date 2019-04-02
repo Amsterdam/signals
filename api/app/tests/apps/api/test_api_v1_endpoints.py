@@ -374,6 +374,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         text_extra = 'TEXT_EXTRA'
 
         self.feedback.is_satisfied = True
+        self.feedback.allows_contact = False
         self.feedback.text = text
         self.feedback.text_extra = text_extra
         self.feedback.submitted_at = self.feedback.created_at + timedelta(days=1)
@@ -394,7 +395,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertIn('Ja, de melder is tevreden', history_entry['description'])
         self.assertIn(f'Waarom: {text}', history_entry['description'])
         self.assertIn(f'Toelichting: {text_extra}', history_entry['description'])
-        self.assertIn('Toestemming contact opnemen: nee', history_entry['description'])
+        self.assertIn('Toestemming contact opnemen: Nee', history_entry['description'])
 
 
 class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

@@ -125,7 +125,7 @@ def _get_description_of_receive_feedback(obj):
     if feedback.text_extra:
         desc += '\nToelichting: {}'.format(feedback.text_extra)
 
-    yes_no = 'ja' if feedback.allows_contact else 'nee'
+    yes_no = 'Ja' if feedback.allows_contact else 'Nee'
     desc += f'\nToestemming contact opnemen: {yes_no}'
 
     return desc
