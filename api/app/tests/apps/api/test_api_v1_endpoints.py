@@ -15,9 +15,11 @@ from signals.apps.api.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Category, History, Signal
 from signals.utils.version import get_version
+from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
@@ -31,7 +33,7 @@ from tests.apps.signals.factories import (
     SignalFactoryValidLocation,
     SignalFactoryWithImage
 )
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], 'signals')
@@ -292,6 +294,108 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         new_entry = data[0]  # most recent status should be first
         self.assertEqual(new_entry['who'], self.user.username)
         self.assertEqual(new_entry['description'], status.text)
+
+
+class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
+    def setUp(self):
+        self.signal = SignalFactoryValidLocation()
+        self.feedback = FeedbackFactory(
+            _signal=self.signal,
+            is_satisfied=None,
+        )
+
+        self.feedback_endpoint = '/signals/v1/public/feedback/forms/{token}'
+        self.history_endpoint = '/signals/v1/private/signals/{id}/history'
+
+    def test_setup(self):
+        self.assertEqual(Signal.objects.count(), 1)
+        self.assertEqual(Feedback.objects.count(), 1)
+
+        self.assertEqual(Feedback.objects.count(), 1)
+        self.assertEqual(self.feedback.is_satisfied, None)
+        self.assertEqual(self.feedback.submitted_at, None)
+
+    def test_url_routes(self):
+        url = reverse('v1:feedback-standard-answers-list')
+        self.assertEqual(url, '/signals/v1/public/feedback/standard_answers/')
+
+        url = reverse('v1:feedback-forms-detail', args=['example_token'])
+        self.assertEqual(url, '/signals/v1/public/feedback/forms/example_token')
+
+    def test_submit_feedback_check_history(self):
+        # get a user privileged to read from API
+        read_user = self.sia_read_user
+        self.client.force_authenticate(user=read_user)
+        history_url = self.history_endpoint.format(id=self.signal.id)
+
+        # check history before submitting feedback
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 4)
+
+        # Note the unhappy flow regarding feedback is tested in the feedback
+        # app. Here we only check that it shows up in the history.
+        url = self.feedback_endpoint.format(token=self.feedback.token)
+        payload = {
+            'is_satisfied': True,
+            'allows_contact': False,
+            'text': 'De zon schijnt.',
+            'text_extra': 'maar niet heus',
+        }
+
+        response = self.client.put(url, data=payload, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 200)
+
+        # check that feedback object in db is updated
+        self.feedback.refresh_from_db()
+        self.assertEqual(self.feedback.is_satisfied, True)
+        self.assertNotEqual(self.feedback.submitted_at, None)
+
+        # check have an entry in the history for the feedback
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 5)
+
+        # check that filtering by RECEIVE_FEEDBACK works
+        response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+
+    def test_history_entry_description_property(self):
+        # equivalent to submitting feedback:
+        text = 'TEXT'
+        text_extra = 'TEXT_EXTRA'
+
+        self.feedback.is_satisfied = True
+        self.feedback.allows_contact = False
+        self.feedback.text = text
+        self.feedback.text_extra = text_extra
+        self.feedback.submitted_at = self.feedback.created_at + timedelta(days=1)
+        self.feedback.save()
+
+        # check the rendering
+        read_user = self.sia_read_user
+        self.client.force_authenticate(user=read_user)
+        history_url = self.history_endpoint.format(id=self.signal.id)
+
+        response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+        history_entry = response_data[0]
+
+        self.assertIn('Ja, de melder is tevreden', history_entry['description'])
+        self.assertIn(f'Waarom: {text}', history_entry['description'])
+        self.assertIn(f'Toelichting: {text_extra}', history_entry['description'])
+        self.assertIn('Toestemming contact opnemen: Nee', history_entry['description'])
 
 
 class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
