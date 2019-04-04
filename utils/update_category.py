@@ -38,7 +38,7 @@ class UpdateCategory:
         print('URL: {}'.format(self.url))
 
     def _filter_by_category(self, category):
-        query_params = urlencode({'category_slug': category, 'page_size': 5})
+        query_params = urlencode({'category_slug': category})
         endpoint = '{url}/v1/private/signals/?{query_params}'.format(url=self.url,
                                                                      query_params=query_params)
         print(endpoint)
