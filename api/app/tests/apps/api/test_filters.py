@@ -9,7 +9,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.v0.serializers import SignalAuthHALSerializer
+from signals.apps.api.v0.serializers import SignalAuthHALSerializerList
 from signals.apps.signals.models import Category, Priority, Signal
 from tests.apps.signals.factories import SignalFactory
 from tests.test import SignalsBaseApiTestCase
@@ -216,7 +216,7 @@ class TestFieldMappingOrderingFilter(TestCase):
         class MyViewSet(GenericViewSet, ListModelMixin):
             queryset = Signal.objects.all()
             pagination_class = LimitOffsetPagination
-            serializer_class = SignalAuthHALSerializer
+            serializer_class = SignalAuthHALSerializerList
             filter_backends = (FieldMappingOrderingFilter, )
             ordering_fields = (
                 'created_at',
@@ -238,7 +238,7 @@ class TestFieldMappingOrderingFilter(TestCase):
         class MyViewSet(GenericViewSet, ListModelMixin):
             queryset = Signal.objects.all()
             pagination_class = LimitOffsetPagination
-            serializer_class = SignalAuthHALSerializer
+            serializer_class = SignalAuthHALSerializerList
             filter_backends = (FieldMappingOrderingFilter, )
             ordering_fields = (
                 'created_at',
@@ -260,7 +260,7 @@ class TestFieldMappingOrderingFilter(TestCase):
         class MyViewSet(GenericViewSet, ListModelMixin):
             queryset = Signal.objects.all()
             pagination_class = LimitOffsetPagination
-            serializer_class = SignalAuthHALSerializer
+            serializer_class = SignalAuthHALSerializerList
             filter_backends = (FieldMappingOrderingFilter, )
             ordering_fields = (
                 'created_at',
@@ -281,7 +281,7 @@ class TestFieldMappingOrderingFilter(TestCase):
         class MyViewSet(GenericViewSet, ListModelMixin):
             queryset = Signal.objects.all()
             pagination_class = LimitOffsetPagination
-            serializer_class = SignalAuthHALSerializer
+            serializer_class = SignalAuthHALSerializerList
             filter_backends = (FieldMappingOrderingFilter, )
             ordering_fields = (
                 'created_at',

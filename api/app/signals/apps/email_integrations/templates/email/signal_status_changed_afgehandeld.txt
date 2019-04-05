@@ -21,13 +21,6 @@ Rubriek: {{ signal.category_assignment.category.parent.name }}
 
 Uw omschrijving: {{ signal.text }}
 
-
-Bent u tevreden met de afhandeling van uw melding?
-
-Ja, ik ben tevreden: {{ positive_feedback_url }}
-Nee, ik ben niet tevreden: {{ negative_feedback_url }}
-
-
 Met vriendelijke groet,
 
 Gemeente Amsterdam

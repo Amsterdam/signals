@@ -27,9 +27,9 @@ from tests.apps.signals.attachment_helpers import (
     add_non_image_attachments,
     small_gif
 )
-from tests.apps.signals.factories import CategoryFactory
+from tests.apps.signals.factories import CategoryFactory, SignalFactoryWithImage
 from tests.apps.users.factories import UserFactory
-from tests.test import SignalsBaseApiTestCase
+from tests.test import SignalsBaseApiTestCase, SuperUserMixin
 
 
 class TestAPIRoot(SignalsBaseApiTestCase):
@@ -775,3 +775,20 @@ class TestUserLogging(TestAPIEndpointsBase):
             self.assertNotEqual(result[field], None)
 
         self.assertEqual(note.created_by, result['created_by'])
+
+
+class TestNoImageUrlsInSignalList(TestAPIEndpointsBase, SuperUserMixin):
+    """We do not want the image urls generated on list endpoints"""
+
+    def setUp(self):
+        self.signal_list_endpoint = '/signals/auth/signal/'
+        self.signal_with_image = SignalFactoryWithImage.create()
+
+    def test_list_endpoint_no_image_url(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.get(self.signal_list_endpoint)
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertEqual(response_data['count'], 1)
+        self.assertNotIn('image', response_data['results'][0])
