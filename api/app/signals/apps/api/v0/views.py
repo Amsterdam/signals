@@ -33,7 +33,8 @@ from signals.apps.api.v0.serializers import (
     LocationHALSerializer,
     NoteHALSerializer,
     PriorityHALSerializer,
-    SignalAuthHALSerializer,
+    SignalAuthHALSerializerDetail,
+    SignalAuthHALSerializerList,
     SignalCreateSerializer,
     SignalStatusOnlyHALSerializer,
     SignalUpdateImageSerializer,
@@ -114,8 +115,8 @@ class SignalViewSet(mixins.CreateModelMixin,
 class SignalAuthViewSet(DatapuntViewSet):
     authentication_classes = (JWTAuthBackend, )
     queryset = Signal.objects.all()
-    serializer_detail_class = SignalAuthHALSerializer
-    serializer_class = SignalAuthHALSerializer
+    serializer_detail_class = SignalAuthHALSerializerDetail
+    serializer_class = SignalAuthHALSerializerList
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filterset_class = SignalFilter
     ordering_fields = (
