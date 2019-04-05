@@ -443,7 +443,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'create_initial.json')
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
-        self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
+        self.create_initial_data['category'] = {'category_url': self.link_test_cat_sub}
 
         self.list_signals_schema = self.load_json_schema(
             os.path.join(
@@ -977,7 +977,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'update_category_assignment.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        data['category']['sub_category'] = self.link_test_cat_sub
+        data['category']['category_url'] = self.link_test_cat_sub
 
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -1008,7 +1008,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'update_category_assignment.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        data['category']['sub_category'] = self.link_test_cat_sub
+        data['category']['category_url'] = self.link_test_cat_sub
 
         Signal.actions.update_category_assignment({'category': self.test_cat_sub},
                                                   self.signal_no_image)
@@ -1120,11 +1120,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 }
             ],
             format='json'
@@ -1178,11 +1178,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 }
             ],
             format='json'
@@ -1283,11 +1283,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 {
                     'text': 'Child #1',
                     'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 }
             ],
             format='json'
@@ -1309,11 +1309,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         split_data = [
             {
                 "text": "Child signal 1",
-                'category': {'sub_category': self.test_cat_sub}
+                'category': {'category_url': self.test_cat_sub}
             },
             {
                 "text": "Child signal 2",
-                'category': {'sub_category': self.test_cat_sub}
+                'category': {'category_url': self.test_cat_sub}
             }
         ]
         Signal.actions.split(split_data, parent_signal)
@@ -1365,11 +1365,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 }
             ],
             format='json'
@@ -1390,11 +1390,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 [
                     {
                         'text': 'Child #1',
-                        'category': {'sub_category': self.link_test_cat_sub}
+                        'category': {'category_url': self.link_test_cat_sub}
                     },
                     {
                         'text': 'Child #2',
-                        'category': {'sub_category': self.link_test_cat_sub}
+                        'category': {'category_url': self.link_test_cat_sub}
                     }
                 ],
                 format='json',
@@ -1434,7 +1434,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
             ],
             format='json'
@@ -1460,19 +1460,19 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #3',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #4',
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
             ],
             format='json'

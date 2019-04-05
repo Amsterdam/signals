@@ -1,6 +1,6 @@
 {
     "category": {
         "text": "Update category test",
-        "sub_category": "http://example.com/placeholder/replace/in/tests"
+        "category_url": "http://example.com/placeholder/replace/in/tests"
     }
 }
