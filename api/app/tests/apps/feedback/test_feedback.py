@@ -152,6 +152,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestStandardAnswers(SignalsBaseApiTestCase):
     def setUp(self):
+        StandardAnswer.objects.all().delete()
         StandardAnswerFactory(is_visible=True, is_satisfied=True)
         StandardAnswerFactory(is_visible=True, is_satisfied=False)
         StandardAnswerFactory(is_visible=False, is_satisfied=True)
