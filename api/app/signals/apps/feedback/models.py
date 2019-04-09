@@ -20,6 +20,14 @@ class StandardAnswer(models.Model):
     is_satisfied = models.BooleanField(default=True)
     text = models.TextField(max_length=1000)
 
+    def __str__(self):
+        pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'
+        return f'{pos_neg} : {self.text}'
+
+    class Meta:
+        verbose_name = 'Standaard antwoord'
+        verbose_name_plural = 'Standaard antwoorden'
+
 
 class Feedback(models.Model):
     # Bookkeeping
