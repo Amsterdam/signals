@@ -7,10 +7,10 @@ from datetime import datetime
 from os import path
 from unittest import mock
 
+import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 
-from signals.apps.feedback.models import Feedback
 from signals.utils import datawarehouse
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
@@ -222,8 +222,10 @@ class TestFeedbackHandling(testcases.TestCase):
         self.signal = SignalFactory.create()
         self.feedback_submitted = FeedbackFactory.create(
             _signal=self.signal,
-            created_at=datetime(2019, 4, 9, 12, 0, 0),
-            submitted_at=datetime(2019, 4, 9, 18, 0, 0),
+            created_at=datetime(2019, 4, 9, 12, 0, tzinfo=pytz.UTC),
+            submitted_at=datetime(2019, 4, 9, 18, 0, 0, tzinfo=pytz.UTC),
+            text='Tevreden want mooi weer',
+            text_extra='Waarom? Daarom!'
         )
         self.feedback_requested = FeedbackFactory.create(
             _signal=self.signal,
@@ -243,11 +245,7 @@ class TestFeedbackHandling(testcases.TestCase):
 
     @mock.patch.dict('os.environ', {'ENVIRONMENT': 'PRODUCTION'}, clear=True)
     def test_environment_set(self):
-        # We want only one entry to show up.
-        self.assertEqual(Feedback.objects.count(), 2)
-        self.assertEqual(Feedback.objects.filter(submitted_at__isnull=False).count(), 1)
-
-        # filename should containt EN
+        # filename should contain ENVRIONMENT
         file_name = datawarehouse._create_kto_feedback_csv(self.csv_tmp_dir)
         self.assertEqual(os.path.split(file_name)[-1], 'kto-feedback-PRODUCTION.csv')
 
@@ -256,3 +254,25 @@ class TestFeedbackHandling(testcases.TestCase):
             reader = csv.reader(f)
 
             self.assertEqual(len(list(reader)), 2)
+
+    @mock.patch.dict('os.environ', {'ENVIRONMENT': 'PRODUCTION'}, clear=True)
+    def test_create_(self):
+        # filename should contain ENVRIONMENT
+        csv_file = datawarehouse._create_kto_feedback_csv(self.csv_tmp_dir)
+        self.assertEqual(os.path.join(self.csv_tmp_dir, 'kto-feedback-PRODUCTION.csv'), csv_file)
+
+        # header and one entry should show up in written file.
+        with open(csv_file, 'r') as f:
+            reader = csv.DictReader(f)
+
+            for i, row in enumerate(reader):
+                self.assertEqual(row['_signal_id'], str(self.feedback_submitted._signal.id))
+                self.assertEqual(row['is_satisfied'], str(self.feedback_submitted.is_satisfied))
+                self.assertEqual(row['allows_contact'], str(self.feedback_submitted.allows_contact))
+                self.assertEqual(row['text_extra'], self.feedback_submitted.text_extra)
+                self.assertEqual(row['created_at'], str(self.feedback_submitted.created_at))
+                self.assertEqual(row['submitted_at'], str(self.feedback_submitted.submitted_at))
+
+                self.assertEqual(row['text'], self.feedback_submitted.text)
+
+            self.assertEqual(i, 0)
