@@ -6,6 +6,7 @@ import tempfile
 from django.conf import settings
 from swift.storage import SwiftStorage
 
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals.models import CategoryAssignment, Location, Reporter, Signal, Status
 
 
@@ -22,6 +23,12 @@ def save_csv_files_datawarehouse():
         csv_files.append(_create_reporters_csv(tmp_dir))
         csv_files.append(_create_category_assignments_csv(tmp_dir))
         csv_files.append(_create_statuses_csv(tmp_dir))
+
+        # KTO feedback if running on acceptance or production
+        try:
+            csv_files.append(_create_kto_feedback_csv(tmp_dir))
+        except EnvironmentError:
+            pass
 
         # Getting the storage backend and save all CSV files.
         storage = _get_storage_backend()
@@ -260,6 +267,47 @@ def _create_statuses_csv(location):
                 json.dumps(status.extra_properties),
                 status._signal_id,
                 status.state,
+            ])
+
+    return csv_file.name
+
+
+def _create_kto_feedback_csv(location):
+    """Create a CSV file with all `Feedback` objects."""
+
+    environment = os.getenv('ENVIRONMENT')
+
+    if environment is None:
+        raise EnvironmentError('ENVIRONMENT env variable not set')
+    elif environment.upper() not in ['PRODUCTION', 'ACCEPTANCE']:
+        raise EnvironmentError('ENVIRONMENT env variable is wrong {}'.format(environment))
+
+    file_name = f'kto-feedback-{environment}.csv'
+
+    with open(os.path.join(location, file_name), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # header
+        writer.writerow([
+            '_signal_id',
+            'is_satisfied',
+            'allows_contact',
+            'text',
+            'text_extra',
+            'created_at',
+            'submitted_at',
+        ])
+
+        # instances
+        for feedback in Feedback.objects.filter(submitted_at__isnull=False):
+            writer.writerow([
+                feedback._signal_id,
+                feedback.is_satisfied,
+                feedback.allows_contact,
+                feedback.text,
+                feedback.text_extra,
+                feedback.created_at,
+                feedback.submitted_at,
             ])
 
     return csv_file.name

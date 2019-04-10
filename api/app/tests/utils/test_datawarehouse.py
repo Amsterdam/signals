@@ -1,14 +1,18 @@
 import csv
 import json
+import os
 import shutil
 import tempfile
+from datetime import datetime
 from os import path
 from unittest import mock
 
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 
+from signals.apps.feedback.models import Feedback
 from signals.utils import datawarehouse
+from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
 
 
@@ -22,6 +26,7 @@ class TestDatawarehouse(testcases.TestCase):
         shutil.rmtree(self.csv_tmp_dir)
         shutil.rmtree(self.file_backend_tmp_dir)
 
+    @mock.patch.dict('os.environ', {}, clear=True)
     @mock.patch('signals.utils.datawarehouse._get_storage_backend')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
@@ -208,3 +213,46 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
                 self.assertEqual(row['state'], status.state)
+
+
+class TestFeedbackHandling(testcases.TestCase):
+    """Test that KTO feedback is properly processed."""
+
+    def setUp(self):
+        self.signal = SignalFactory.create()
+        self.feedback_submitted = FeedbackFactory.create(
+            _signal=self.signal,
+            created_at=datetime(2019, 4, 9, 12, 0, 0),
+            submitted_at=datetime(2019, 4, 9, 18, 0, 0),
+        )
+        self.feedback_requested = FeedbackFactory.create(
+            _signal=self.signal,
+            created_at=datetime(2019, 4, 9, 12, 0, 0),
+        )
+        self.csv_tmp_dir = tempfile.mkdtemp()
+
+    @mock.patch.dict('os.environ', {'ENVIRONMENT': 'BAD_VALUE'}, clear=True)
+    def test_environment_not_properly_set(self):
+        with self.assertRaises(EnvironmentError):
+            datawarehouse._create_kto_feedback_csv('dummy_location')
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    def test_environment_empty(self):
+        with self.assertRaises(EnvironmentError):
+            datawarehouse._create_kto_feedback_csv('dummy_location')
+
+    @mock.patch.dict('os.environ', {'ENVIRONMENT': 'PRODUCTION'}, clear=True)
+    def test_environment_set(self):
+        # We want only one entry to show up.
+        self.assertEqual(Feedback.objects.count(), 2)
+        self.assertEqual(Feedback.objects.filter(submitted_at__isnull=False).count(), 1)
+
+        # filename should containt EN
+        file_name = datawarehouse._create_kto_feedback_csv(self.csv_tmp_dir)
+        self.assertEqual(os.path.split(file_name)[-1], 'kto-feedback-PRODUCTION.csv')
+
+        # header and one entry should show up in written file.
+        with open(file_name, 'r') as f:
+            reader = csv.reader(f)
+
+            self.assertEqual(len(list(reader)), 2)
