@@ -44,4 +44,5 @@ Als er geen directe actie nodig is, dan pakken we uw melding op buiten het vaars
 Bekijk in welke situaties we een wrak weghalen. Boten die vol met water staan, maar nog wél drijven, mogen we bijvoorbeeld niet weghalen.""",  # noqa E501
     Category.HANDLING_REST: """
 Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze gaat behandelen. Heeft u contactgegevens achtergelaten? Dan nemen wij bij onduidelijkheid contact met u op.""",  # noqa E501
+    Category.HANDLING_OND: """Bedankt voor uw melding. Wij nemen deze mee in ons onderzoek.""",
 }

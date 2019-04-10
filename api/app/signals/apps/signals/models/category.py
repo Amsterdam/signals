@@ -15,6 +15,7 @@ class Category(models.Model):
     HANDLING_A3DEVOMC = 'A3DEVOMC'
     HANDLING_WS1EC = 'WS1EC'
     HANDLING_WS2EC = 'WS2EC'
+    HANDLING_OND = 'ONDERMIJNING'
     HANDLING_REST = 'REST'
     HANDLING_CHOICES = (
         (HANDLING_A3DMC, HANDLING_A3DMC),
@@ -29,6 +30,7 @@ class Category(models.Model):
         (HANDLING_WS1EC, HANDLING_WS1EC),
         (HANDLING_WS2EC, HANDLING_WS2EC),
         (HANDLING_REST, HANDLING_REST),
+        (HANDLING_OND, HANDLING_OND),
     )
 
     parent = models.ForeignKey('signals.Category',

@@ -1,6 +1,5 @@
-import json
+# import json
 import logging
-import os
 
 from django.apps import apps
 from django.conf import settings
@@ -9,6 +8,9 @@ from django.db import Error, connection
 from django.http import HttpResponse
 
 from signals.apps.signals.models import Category
+
+# import os
+
 
 logger = logging.getLogger(__name__)
 
@@ -136,34 +138,45 @@ def check_categories(request):
     :return HttpResponse:
     """
 
-    models = {
-        'signals.category': Category,
-    }
+    """
+        SIG-1014 Aanpassen categorieen
 
-    try:
-        _count_categories(Category.objects.filter(parent__isnull=False),
-                          minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
+        Because of the introduction of new categories, and the soft delete of other categories we
+        decided to temporary disabled the code of the health check.
 
-        _count_categories(Category.objects.filter(parent__isnull=True),
-                          minimum_count=settings.HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT)
+        The code will now always return a 200 "Data OK Category"
 
-        fixture_file = os.path.join(
-            os.path.dirname(os.path.dirname(settings.BASE_DIR)),
-            'app/signals/apps/signals/fixtures/categories.json'
-        )
-
-        with open(fixture_file) as f:
-            fixture_data = json.load(f)
-
-        for fixture in fixture_data:
-            model_str = fixture['model']
-            if model_str in models:
-                model = models[model_str]
-                data_to_check = _prepare_data_to_check(data_to_check=fixture)
-                _check_fixture_exists_in_db(model, data_to_check)
-
-    except Exception as e:
-        return HttpResponse(e, content_type='text/plain', status=500)
+        TODO: Refactor the category health check into a proper reusable solution
+    """
+    #
+    # models = {
+    #     'signals.category': Category,
+    # }
+    #
+    # try:
+    #     _count_categories(Category.objects.filter(parent__isnull=False),
+    #                       minimum_count=settings.HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT)
+    #
+    #     _count_categories(Category.objects.filter(parent__isnull=True),
+    #                       minimum_count=settings.HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT)
+    #
+    #     fixture_file = os.path.join(
+    #         os.path.dirname(os.path.dirname(settings.BASE_DIR)),
+    #         'app/signals/apps/signals/fixtures/categories.json'
+    #     )
+    #
+    #     with open(fixture_file) as f:
+    #         fixture_data = json.load(f)
+    #
+    #     for fixture in fixture_data:
+    #         model_str = fixture['model']
+    #         if model_str in models:
+    #             model = models[model_str]
+    #             data_to_check = _prepare_data_to_check(data_to_check=fixture)
+    #             _check_fixture_exists_in_db(model, data_to_check)
+    #
+    # except Exception as e:
+    #     return HttpResponse(e, content_type='text/plain', status=500)
 
     return HttpResponse(
         'Data OK {}'.format(Category.__name__),
