@@ -9,6 +9,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
@@ -22,7 +23,7 @@ from signals.apps.api.v1.serializers import (
     PrivateSplitSignalSerializer,
     SignalIdListSerializer
 )
-from signals.apps.signals.models import History, Signal
+from signals.apps.signals.models import Attachment, History, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -84,10 +85,37 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
                                       viewsets.GenericViewSet):
     serializer_class = PrivateSignalAttachmentSerializer
     pagination_class = None
-    queryset = Signal.objects.all()
+    queryset = Attachment.objects.all()
+
+    lookup_url_kwarg = 'pk'
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
+
+    def _filter_kwargs(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+                'Expected view %s to be called with a URL keyword argument '
+                'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                'attribute on the view correctly.' %
+                (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        return {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+
+    def get_object(self):
+        self.lookup_field = self.lookup_url_kwarg
+
+        obj = get_object_or_404(Signal.objects.all(), **self._filter_kwargs())
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get_queryset(self):
+        self.lookup_field = '_signal_id'
+
+        qs = super(PrivateSignalAttachmentsViewSet, self).get_queryset()
+        return qs.filter(**self._filter_kwargs())
 
 
 class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
