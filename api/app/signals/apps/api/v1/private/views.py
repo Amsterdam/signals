@@ -84,7 +84,7 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
 class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                                       viewsets.GenericViewSet):
     serializer_class = PrivateSignalAttachmentSerializer
-    pagination_class = None
+    pagination_class = HALPagination
     queryset = Attachment.objects.all()
 
     lookup_url_kwarg = 'pk'
