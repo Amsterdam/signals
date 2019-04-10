@@ -2,6 +2,7 @@
 How to run the script
 
     export PYTHONPATH=.
+    export SIGNALS_ENVIRONMENT={CHOICE: dev,acc,prod}
     export SIGNALS_USER=signals.admin@example.com
     export SIGNALS_PASSWORD=insecure
     export CATEGORY={THE OLD CATEGORY THAT NEEDS TO BE REPLACED}
@@ -30,11 +31,12 @@ class UpdateCategory:
         self.environment = environment
 
         print('Environment: {}'.format(environment))
-        if environment.lower() in ['development', 'dev', 'develop']:
+        if environment.lower() == 'dev':
             self.url = 'http://127.0.0.1:8000/signals'
-        else:
-            prefix = 'acc' if environment.lower() in ['acc', 'acceptance'] else ''
-            self.url = 'https://{prefix}api.data.amsterdam.nl/signals'.format(prefix=prefix)
+        elif environment.lower() == 'acc':
+            self.url = 'https://acc.api.data.amsterdam.nl/signals'
+        elif environment.lower() == 'prod':
+            self.url = 'https://api.data.amsterdam.nl/signals'
         print('URL: {}'.format(self.url))
 
     def _filter_by_category(self, category):
@@ -96,14 +98,18 @@ class UpdateCategory:
 
 
 if __name__ == "__main__":
-    acceptance = True
-    email = os.getenv('SIGNALS_USER', 'signals.admin@example.com')
-    password = os.getenv('SIGNALS_PASSWORD', 'insecure')
-    access_token = GetAccessToken().getAccessToken(email, password, acceptance)
-    print(f'Received new Access Token Header: {access_token}')
+    access_token = {}
+    environment = os.getenv('SIGNALS_ENVIRONMENT', 'dev')
 
-    if access_token:
-        action = UpdateCategory(access_token, 'development')
+    if environment.lower() in ['acc', 'prod']:
+        email = os.getenv('SIGNALS_USER', 'signals.admin@example.com')
+        password = os.getenv('SIGNALS_PASSWORD', 'insecure')
+
+        access_token = GetAccessToken().getAccessToken(email, password, environment)
+        print(f'Received new Access Token Header: {access_token}')
+
+    if access_token or environment.lower() == 'dev':
+        action = UpdateCategory(access_token, environment)
 
         old_category = os.getenv('CATEGORY')
         new_category_slug = os.getenv('NEW_CATEGORY_SLUG')

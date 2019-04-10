@@ -141,7 +141,7 @@ def check_categories(request):
     """
         SIG-1014 Aanpassen categorieen
 
-        Because of the introducrtion of new categories, and the soft delete of others Thijs and me
+        Because of the introduction of new categories, and the soft delete of other categories we
         decided to temporary disabled the code of the health check.
 
         The code will now always return a 200 "Data OK Category"

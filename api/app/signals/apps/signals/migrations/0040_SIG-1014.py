@@ -79,6 +79,17 @@ def forward_categories(apps, schema_editor):
         parent__name='Overlast in de openbare ruimte'
     ).update(is_active=False)
 
+    # Fix the departments for "auto-scooter-bromfietswrak"
+    category = category_model.objects.get(slug='auto-scooter-bromfietswrak')
+    category.departments.clear()
+    category.save()
+
+    departments = departments_model.objects.filter(name__in=['ASC', 'THOR'])
+    for department in departments:
+        category.departments.add(department)
+
+    category.save()
+
 
 class Migration(migrations.Migration):
     """
