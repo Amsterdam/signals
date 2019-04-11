@@ -74,12 +74,12 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
+        VERZOEK_TOT_AFHANDELING,
     ],
     BEHANDELING: [
         # AFWACHTING,  # This should be possible?
         BEHANDELING,
         ON_HOLD,
-        VERZOEK_TOT_AFHANDELING,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
@@ -126,7 +126,7 @@ ALLOWED_STATUS_CHANGES = {
     # TODO: Check if correct?
     GESPLITST: [],
     VERZOEK_TOT_AFHANDELING: [
-        BEHANDELING,
+        AFWACHTING,
         AFGEHANDELD,
         GEANNULEERD,
     ],
