@@ -161,18 +161,8 @@
     "operational_date": {
       "type": "null"
     },
-    "image": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "attachments": {
-      "type": "array"
+    "has_attachments": {
+      "type": "boolean"
     },
     "extra_properties": {
       "type": "null"
