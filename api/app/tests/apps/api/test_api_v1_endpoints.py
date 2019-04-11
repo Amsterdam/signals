@@ -1142,8 +1142,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             response = self.client.get(self.detail_endpoint.format(pk=item['id']))
             self.assertEqual(response.status_code, 200)
 
-            # TODO: add more detailed tests using a JSONSchema
-            # TODO: consider naming of 'note' object (is list, so 'notes')?
             response_json = response.json()
             for key in [
                 'status', 'category', 'priority', 'location', 'reporter', 'notes', 'has_attachments'
