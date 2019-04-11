@@ -10,6 +10,7 @@ from swift.storage import SwiftStorage
 from signals.apps.signals import workflow
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
+from signals.apps.signals.search import SignalSearchManager
 
 
 class Signal(CreatedUpdatedModel):
@@ -65,6 +66,7 @@ class Signal(CreatedUpdatedModel):
 
     objects = models.Manager()
     actions = SignalManager()
+    search = SignalSearchManager()
 
     @property
     def image(self):
