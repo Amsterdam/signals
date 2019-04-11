@@ -131,46 +131,9 @@
 		"id": {
 			"type": "integer"
 		},
-		"image": {
-			"anyOf": [
-                {
-                    "type": "string"
-                },
-                {
-                    "type": "null"
-                }
-            ]
-		},
-		"attachments": {
-			"type": "array",
-			"items": [
-				{
-					"type": "object",
-					"properties": {
-						"file": {
-							"type": "string"
-						},
-						"created_at": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							]
-						},
-						"is_image": {
-							"type": "boolean"
-						}
-					},
-					"required": [
-						"file",
-						"created_at",
-						"is_image"
-					]
-				}
-			]
+		"has_attachments":
+		{
+			"type": "boolean"
 		},
 		"location": {
 			"type": "object",
@@ -399,8 +362,7 @@
 		"_display",
 		"category",
 		"id",
-		"image",
-		"attachments",
+		"has_attachments",
 		"location",
 		"status",
 		"reporter",

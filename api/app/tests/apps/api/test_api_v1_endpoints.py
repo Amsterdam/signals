@@ -1145,7 +1145,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             # TODO: add more detailed tests using a JSONSchema
             # TODO: consider naming of 'note' object (is list, so 'notes')?
             response_json = response.json()
-            for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
+            for key in [
+                'status', 'category', 'priority', 'location', 'reporter', 'notes', 'has_attachments'
+            ]:
                 self.assertIn(key, response_json)
 
         self.assertEqual(4, Signal.objects.count())
@@ -1676,8 +1678,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
-    detail_endpoint = list_endpoint + '{}/'
-    attachment_endpoint = detail_endpoint + 'attachments'
+    detail_endpoint = list_endpoint + '{}'
+    attachment_endpoint = detail_endpoint + '/attachments'
     test_host = 'http://testserver'
 
     def setUp(self):
@@ -1724,53 +1726,51 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
         self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
 
-    def test_create_contains_image_and_attachments(self):
+    def test_create_has_attachments_false(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('image' in response.json())
-        self.assertTrue('attachments' in response.json())
-        self.assertIsInstance(response.json()['attachments'], list)
 
-    def test_get_detail_contains_image_and_attachments(self):
+        data = response.json()
+        self.assertFalse(data['has_attachments'])
+
+    def test_has_attachments_true(self):
         non_image_attachments = add_non_image_attachments(self.signal, 1)
         image_attachments = add_image_attachments(self.signal, 2)
         non_image_attachments += add_non_image_attachments(self.signal, 1)
 
-        response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEqual(200, response.status_code)
+        total_attachments = len(non_image_attachments) + len(image_attachments)
 
-        json_item = response.json()['results'][0]
-        self.assertTrue('image' in json_item)
-        self.assertTrue('attachments' in json_item)
-        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEqual(4, len(json_item['attachments']))
+        endpoint = self.detail_endpoint.format(self.signal.pk)
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertTrue(data['has_attachments'])
+
+        attachment_endpoint = data['_links']['sia:attachments']['href']
+
+        response = self.client.get(attachment_endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], total_attachments)
+        self.assertEqual(len(data['results']), total_attachments)
+
+        self.assertFalse(data['results'][0]['is_image'])
+        self.assertEqual(self.test_host + non_image_attachments[0].file.url,
+                         data['results'][0]['location'])
+
+        self.assertTrue(data['results'][1]['is_image'])
         self.assertEqual(self.test_host + image_attachments[0].file.url,
-                         json_item['attachments'][1]['file'])
-        self.assertTrue(json_item['attachments'][2]['is_image'])
+                         data['results'][1]['location'])
+
+        self.assertTrue(data['results'][2]['is_image'])
+        self.assertEqual(self.test_host + image_attachments[1].file.url,
+                         data['results'][2]['location'])
+
+        self.assertFalse(data['results'][3]['is_image'])
         self.assertEqual(self.test_host + non_image_attachments[1].file.url,
-                         json_item['attachments'][3]['file'])
-        self.assertFalse(json_item['attachments'][3]['is_image'])
-
-    def test_get_list_contains_image_and_attachments(self):
-        non_image_attachments = add_non_image_attachments(self.signal, 1)
-        image_attachments = add_image_attachments(self.signal, 2)
-        non_image_attachments += add_non_image_attachments(self.signal, 1)
-
-        response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEqual(200, response.status_code)
-
-        json_item = response.json()['results'][0]
-        self.assertTrue('image' in json_item)
-        self.assertTrue('attachments' in json_item)
-        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEqual(4, len(json_item['attachments']))
-        self.assertEqual(self.test_host + image_attachments[0].file.url,
-                         json_item['attachments'][1]['file'])
-        self.assertTrue(json_item['attachments'][2]['is_image'])
-        self.assertEqual(self.test_host + non_image_attachments[1].file.url,
-                         json_item['attachments'][3]['file'])
-        self.assertFalse(json_item['attachments'][3]['is_image'])
+                         data['results'][3]['location'])
 
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):

@@ -363,7 +363,6 @@ class AddressValidationMixin():
 class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
-    image = serializers.ImageField(read_only=True)
 
     location = _NestedLocationModelSerializer(required=False)
     status = _NestedStatusModelSerializer(required=False)
@@ -371,7 +370,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     reporter = _NestedReporterModelSerializer(required=False)
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
-    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    has_attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
@@ -380,8 +379,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             '_display',
             'category',
             'id',
-            'image',
-            'attachments',
+            'has_attachments',
             'location',
             'status',
             'reporter',
@@ -390,9 +388,11 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         )
         read_only_fields = (
             'id',
-            'image',
-            'attachments',
+            'has_attachments',
         )
+
+    def get_has_attachments(self, obj):
+        return obj.attachments.exists()
 
     def _update_location(self, instance, validated_data):
         """
@@ -478,15 +478,13 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
 
-    image = serializers.ImageField(read_only=True)
-
     location = _NestedLocationModelSerializer()
     status = _NestedStatusModelSerializer(required=False)
     category = _NestedCategoryModelSerializer(source='category_assignment')
     reporter = _NestedReporterModelSerializer()
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
-    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    has_attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
@@ -508,17 +506,18 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'operational_date',
-            'image',
-            'attachments',
+            'has_attachments',
             'extra_properties',
             'notes',
         )
         read_only_fields = (
             'created_at',
             'updated_at',
-            'image',
-            'attachments',
+            'has_attachments',
         )
+
+    def get_has_attachments(self, obj):
+        return obj.attachments.exists()
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
