@@ -1250,12 +1250,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 {
                     'text': 'Child #1',
                     'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 },
                 {
                     'text': 'Child #2',
                     'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_test_cat_sub}
+                    'category': {'category_url': self.link_test_cat_sub}
                 }
             ],
             format='json'

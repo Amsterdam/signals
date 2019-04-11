@@ -258,13 +258,13 @@ class TestSignalManager(TransactionTestCase):
                 {
                     'text': 'child #1',
                     'category': {
-                        'sub_category': sub_cat,
+                        'category_url': sub_cat,
                     }
                 },
                 {
                     'text': 'child #2',
                     'category': {
-                        'sub_category': sub_cat,
+                        'category_url': sub_cat,
                     }
                 }
             ],
