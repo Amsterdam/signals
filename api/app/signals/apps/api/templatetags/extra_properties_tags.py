@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.simple_tag
 def translate_value(value):
     if isinstance(value, bool):
