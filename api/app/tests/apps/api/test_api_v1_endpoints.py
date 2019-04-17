@@ -1491,7 +1491,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         after = timezone.now() - timedelta(minutes=10)
         querystring = urlencode({
-            'category': self.signal_no_image.category_assignment.category.slug,
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
             'after': after.isoformat()
         })
         endpoint = '{}?{}'.format(
@@ -1523,7 +1523,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         after = timezone.now() - timedelta(minutes=10)
         querystring = urlencode({
-            'category': self.signal_no_image.category_assignment.category.slug,
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
             'after': after.isoformat()
         })
         endpoint = '{}?{}'.format(
@@ -1561,7 +1561,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             after = timezone.now() - timedelta(minutes=5)
             before = timezone.now() + timedelta(minutes=5)
             querystring = urlencode({
-                'category': self.signal_no_image.category_assignment.category.slug,
+                'category_slug': self.signal_no_image.category_assignment.category.slug,
                 'after': after.isoformat(),
                 'before': before.isoformat()
             })
