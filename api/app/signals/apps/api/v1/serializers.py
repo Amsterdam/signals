@@ -45,11 +45,15 @@ from signals.apps.signals.models import (
 )
 from signals.apps.signals.models.location import get_address_text
 
+# facilitate debugging
+from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+
 
 class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = _NestedDepartmentSerializer(many=True)
+    handling_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -61,8 +65,11 @@ class CategoryHALSerializer(HALSerializer):
             'handling',
             'departments',
             'is_active',
+            'handling_message',
         )
 
+    def get_handling_message(self, obj):
+        return ALL_AFHANDELING_TEXT[obj.handling]
 
 class ParentCategoryHALSerializer(HALSerializer):
     serializer_url_field = ParentCategoryHyperlinkedIdentityField
@@ -385,6 +392,10 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'reporter',
             'priority',
             'notes',
+            'source',
+            'text',
+            'text_extra',
+            'extra_properties',
         )
         read_only_fields = (
             'id',
