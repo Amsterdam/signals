@@ -135,7 +135,10 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
             rd_coordinates.x + 340.00,
             rd_coordinates.y + 125.00,
         )
-        return super(GeneratePdfView, self).get_context_data(bbox=bbox)
+        return super(GeneratePdfView, self).get_context_data(
+            bbox=bbox,
+            images=self.object.attachments.filter(is_image=True)
+        )
 
 
 class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

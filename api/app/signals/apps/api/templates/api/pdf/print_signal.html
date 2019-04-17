@@ -1,3 +1,5 @@
+{% load extra_properties_tags %}
+
 <!DOCTYPE html>
 <html>
 <head lang="en">
@@ -7,10 +9,11 @@
         * {
             font-family: Avenir Next LT W01 Demi,arial,sans-serif;
             font-weight: normal;
+            font-size: 14px;
         }
 
         .divider {
-            border-bottom: 1px #ec0000 solid;
+            border-bottom: 1px #000 solid;
             width: 100%;
             height: 1px;
         }
@@ -42,25 +45,13 @@
             overflow-wrap: break-word;
         }
 
-        .history {
-            padding-left: 30px;
-            padding-right: 30px;
-        }
-
-        .history .title {
-            font-weight: bold;
-        }
-
         .history .description {
             margin-top: 15px;
             font-style: italic;
         }
 
-        .history .footer {
+        .history .changed {
             color: gray;
-            margin-top: 15px;
-            font-size: 0.6em;
-            text-align: right;
         }
 
         .history .divider {
@@ -68,7 +59,15 @@
         }
 
         h1 {
-            color: #ec0000;
+            color: #000;
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #000;
+            font-size: 1.2em;
+            font-weight: bold;
         }
 
         table {
@@ -106,9 +105,26 @@
         <img src="https://map.data.amsterdam.nl/maps/topografie?request=GetMap&format=image%2Fpng&version=1.1.1&layers=basiskaart&srs=EPSG%3A28992&width=680&height=250&bbox={{ bbox }}" />
     </div>
 
-    <div class="divider">&nbsp;</div>
     <h2>Melding</h2>
     <table class="results" style="page-break-after: always; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        {% if signal.is_child %}
+        <tr>
+            <td>Hoofdmelding</td>
+            <td>: SIA-{{ signal.parent.id }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td style="width: 200px;">Toelichting</td>
+            <td>: {{ signal.text }}</td>
+        </tr>
+        <tr>
+            <td>Datum overlast</td>
+            <td>: {{ signal.incident_date_start|date:"d-m-Y" }}</td>
+        </tr>
+        <tr>
+            <td>Tijdstip overlast</td>
+            <td>: {{ signal.incident_date_start|date:"H:i:s" }}</td>
+        </tr>
         <tr>
             <td>Stadsdeel</td>
             <td>: {{ signal.location.get_stadsdeel_display }}</td>
@@ -118,20 +134,12 @@
             <td>: {{ signal.location.address_text }}</td>
         </tr>
         <tr>
-            <td style="width: 200px;">Datum</td>
+            <td>Datum</td>
             <td>: {{ signal.created_at|date:"d-m-Y" }}</td>
         </tr>
         <tr>
             <td>Tijdstip</td>
             <td>: {{ signal.created_at|date:"H:i:s" }}</td>
-        </tr>
-        <tr>
-            <td>Datum overlast</td>
-            <td>: {{ signal.incident_date_start|date:"d-m-Y" }}</td>
-        </tr>
-        <tr>
-            <td>Tijdstip overlast</td>
-            <td>: {{ signal.incident_date_start|date:"H:i:s" }}</td>
         </tr>
         <tr>
             <td>Hoofdrubriek</td>
@@ -146,60 +154,64 @@
             <td>: {{ signal.priority.get_priority_display }}</td>
         </tr>
         <tr>
-            <td>Toelichting</td>
-            <td>: {{ signal.text }}</td>
-        </tr>
-        <tr>
             <td>Bron</td>
             <td>: {{ signal.source }}</td>
         </tr>
     </table>
 
-    <div class="divider">&nbsp;</div>
-    <h2>Melder</h2>
-    <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
-        <tr>
-            <td style="width: 200px;">E-mail</td>
-            <td>: {{ signal.reporter.email }}</td>
-        </tr>
-        <tr>
-            <td>Telefoonnummer</td>
-            <td>: {{ signal.reporter.phone }}</td>
-        </tr>
-    </table>
-
-    <div class="divider">&nbsp;</div>
-    <h2>Geschiedenis</h2>
-    {% for history in signal.history.all %}
-        <div class="history">
-            <div class="title">{{ history.action }}</div>
-            {% if history.description %}<div class="description">{{ history.description }}</div>{% endif %}
-            <div class="footer">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</div>
-            {% if not forloop.last %}<div class="divider">&nbsp;</div>{% endif %}
-        </div>
-        <br/>
-    {% endfor %}
-
     {% if signal.extra_properties %}
-        <div class="divider">&nbsp;</div>
         <h2>Extra eigenschappen</h2>
-        <table class="table">
+        <table class="table" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
             {% for key, value in signal.extra_properties.items %}
                 <tr>
-                    <td>{{ key }}</td>
-                    <td>{{ value }}</td>
+                    <td style="width: 200px;">{{ key }}</td>
+                    <td>: {% translate_value value %}</td>
                 </tr>
             {% endfor %}
         </table>
     {% endif %}
 
     <div class="divider">&nbsp;</div>
-    <h2>Foto</h2>
-    {% if image_url %}
-        <p><img src="{{ image_url }}" width="800" alt=""></p>
+    <h2>Melder</h2>
+    <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        <tr>
+            <td style="width: 200px;">E-mail</td>
+            <td>: {{ signal.reporter.email|default:"Onbekend" }}</td>
+        </tr>
+        <tr>
+            <td>Telefoonnummer</td>
+            <td>: {{ signal.reporter.phone|default:"Onbekend" }}</td>
+        </tr>
+    </table>
+
+    <div class="divider">&nbsp;</div>
+    <h2>Foto's</h2>
+    {% if images %}
+        {% for image in images %}
+            <p><img src="{{ image.file.url }}" width="800" alt=""></p>
+        {% endfor %}
+        <br/>
     {% else %}
-        <p>Er is geen foto beschikbaar omdat de melder in SIA geen foto heeft meegeleverd.</p>
+        <p>Er zijn geen foto's beschikbaar omdat de melder in SIA geen foto's heeft meegeleverd.</p>
     {% endif %}
+
+    <div class="divider">&nbsp;</div>
+    <h2>Geschiedenis</h2>
+    {% for history in signal.history.all %}
+    <table class="history" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+        <tr>
+            <td class="changed">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</td>
+        </tr>
+        <tr>
+            <td class="title">
+                {{ history.action }}
+                {% if history.description %}
+                    <div class="description">"{{ history.description }}"</div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
 
 </body>
 </html>
