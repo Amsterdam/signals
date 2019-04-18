@@ -106,6 +106,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
             ('sia:attachments',
              dict(href=self.get_url(value, "private-signals-attachments", request, None))),
+            ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
         ])
 
         if value.is_child():
