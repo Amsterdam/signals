@@ -3,7 +3,6 @@ Views that are used exclusively by the V1 API
 """
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -118,8 +117,10 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
         return qs.filter(**self._filter_kwargs())
 
 
-class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
-    object = None
+class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
     queryset = Signal.objects.all()
 
     template_name = 'api/pdf/print_signal.html'
@@ -127,7 +128,6 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
-        self.pdf_filename = 'SIA-{}.pdf'.format(self.object.pk)
         rd_coordinates = self.object.location.get_rd_coordinates()
         bbox = '{},{},{},{}'.format(
             rd_coordinates.x - 340.00,
@@ -135,7 +135,10 @@ class GeneratePdfView(LoginRequiredMixin, SingleObjectMixin, PDFTemplateView):
             rd_coordinates.x + 340.00,
             rd_coordinates.y + 125.00,
         )
-        return super(GeneratePdfView, self).get_context_data(bbox=bbox)
+        return super(GeneratePdfView, self).get_context_data(
+            bbox=bbox,
+            images=self.object.attachments.filter(is_image=True)
+        )
 
 
 class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

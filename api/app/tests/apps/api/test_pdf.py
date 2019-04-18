@@ -1,21 +1,15 @@
-from django.test import Client, TestCase
 from django.urls import reverse
 
-from tests.apps.signals.factories import SignalFactoryValidLocation
-from tests.apps.users.factories import UserFactory
+from tests.apps.signals.factories import SignalFactory
+from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
-class TestPDFView(TestCase):
+class TestPDFView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
-        self.user = UserFactory.create()  # Normal user without any extra permissions.
-        self.user.set_password('test1234')
-        self.user.save()
-
-        self.signal = SignalFactoryValidLocation.create()
-        self.client = Client()
-        self.client.login(username=self.user.username, password='test1234')
+        self.signal = SignalFactory.create()
 
     def test_get_pdf(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(path=reverse(
             'v1:signal-pdf-download',
             kwargs={'pk': self.signal.id})
@@ -25,10 +19,11 @@ class TestPDFView(TestCase):
         self.assertEqual(response.get('Content-Type'), 'application/pdf')
         self.assertEqual(
             response.get('Content-Disposition'),
-            'attachment; SIA-{}.pdf'.format(self.signal.pk)
+            'attachment; filename="SIA-{}.pdf"'.format(self.signal.pk)
         )
 
     def test_get_pdf_signal_does_not_exists(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(path=reverse(
             'v1:signal-pdf-download',
             kwargs={'pk': 999})
@@ -44,4 +39,4 @@ class TestPDFView(TestCase):
             kwargs={'pk': 999})
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 401)
