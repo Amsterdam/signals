@@ -943,6 +943,23 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
 
+    def test_update_status_target_api_SIG1140(self):
+        signal_no_status = SignalFactoryValidLocation.create()
+        self.client.force_authenticate(user=self.superuser)
+
+        detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
+
+        data = {
+            'status': {
+                'state': 'ready to send',
+                'text': 'Te verzenden naar THOR',
+                'target_api': 'sigmax',
+            }
+        }
+        response = self.client.patch(detail_endpoint, data, format='json')
+
+        self.assertEqual(200, response.status_code)
+
     def test_update_status_with_required_text(self):
         """ Status change to 'afgehandeld' (o) requires text. When no text is supplied, a 400 should
         be returned """
@@ -1491,7 +1508,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         after = timezone.now() - timedelta(minutes=10)
         querystring = urlencode({
-            'category': self.signal_no_image.category_assignment.category.slug,
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
             'after': after.isoformat()
         })
         endpoint = '{}?{}'.format(
@@ -1523,7 +1540,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         after = timezone.now() - timedelta(minutes=10)
         querystring = urlencode({
-            'category': self.signal_no_image.category_assignment.category.slug,
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
             'after': after.isoformat()
         })
         endpoint = '{}?{}'.format(
@@ -1561,7 +1578,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             after = timezone.now() - timedelta(minutes=5)
             before = timezone.now() + timedelta(minutes=5)
             querystring = urlencode({
-                'category': self.signal_no_image.category_assignment.category.slug,
+                'category_slug': self.signal_no_image.category_assignment.category.slug,
                 'after': after.isoformat(),
                 'before': before.isoformat()
             })

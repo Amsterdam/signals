@@ -38,7 +38,7 @@ class SignalCategoryRemovedAfterFilter(FilterSet):
     after = filters.IsoDateTimeFilter(field_name='category_assignment__created_at',
                                       lookup_expr='gte')
 
-    category = filters.ModelMultipleChoiceFilter(
+    category_slug = filters.ModelMultipleChoiceFilter(
         method='category_filter',
         queryset=Category.objects.all(),
         to_field_name='slug',

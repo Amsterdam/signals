@@ -205,6 +205,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
             'user',
             'state',
             'state_display',
+            'target_api',
             'extra_properties',
             'created_at',
         )
