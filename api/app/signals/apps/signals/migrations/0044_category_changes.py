@@ -1,5 +1,6 @@
 """Category changes see SIG-1139."""
-from django.db import migrations
+from django.db import migrations, models
+from django.utils.text import slugify
 
 # TODO: finish Excel file, currently at row 89
 # TODO: implement add_categories
@@ -20,13 +21,15 @@ ADD = {
         {
             'name': 'Verkeerssituaties',
             'handling': 'I5DMC',
-            'departments': []
+            'departments': [
+                'STW',
+            ]
         },
         {
             'name': 'Verkeersoverlast',
             'handling': 'I5DMC',
             'departments': [
-                'THOR',
+                'THO',
             ]
         }
     ],
@@ -64,7 +67,16 @@ CHANGE = {
             'handling': 'REST',
         }
     },
-    'overig': {},
+    'overig': {
+        'overig': {
+            'handling': 'I5DMC',
+        },
+        'overige-dienstverlening': {
+            'departments': [
+                'ASC',
+            ]
+        }
+    },
     'overlast-bedrijven-en-horeca': {
         'overig-horecabedrijven': {
             'handling': 'REST',
@@ -100,19 +112,56 @@ CHANGE = {
         'autom-verzinkbare-palen': {
             'handling': 'A3WEC',
         },
+        'overig-wegen-verkeer-straatmeubilair': {
+            'handling': 'REST',
+        },
     },
 }
 
 
+def remove_cca_from_departments(apps, schema_editor):
+    Category = apps.get_model('signals', 'Category')
+    Department = apps.get_model('signals', 'Department')
+
+    cca = Department.objects.get(code='CCA')
+    for category in list(Category.objects.filter(departments__in=[cca])):
+        category.departments.remove(cca)
+        category.save()
+
+
 def add_categories(apps, schema_editor):
     Category = apps.get_model('signals', 'Category')
+    Department = apps.get_model('signals', 'Department')
+
     for main_slug, data in ADD.items():
         if not data:
             continue
 
-        main_category = Category.get(slug=main_slug, parent__is_null=True)
+        main_category = Category.objects.get(slug=main_slug, parent__isnull=True)
         for new_sub_category_data in data:
-            pass  # TODO: implement
+            departments = Department.objects.filter(
+                code__in=new_sub_category_data['departments']
+            )
+
+            cat_qs = Category.objects.filter(
+                parent=main_category,
+                name=new_sub_category_data['name'],
+            )
+
+            assert not cat_qs.exists()
+            assert new_sub_category_data['name']
+            assert slugify(new_sub_category_data['name'])
+
+            new_category = Category(
+                parent=main_category,
+                handling=new_sub_category_data['handling'],
+                name=new_sub_category_data['name'],
+                slug=slugify(new_sub_category_data['name']),
+                is_active=True,
+            )
+            new_category.save()  # crash here
+            new_category.departments.set(departments)
+            new_category.save()
 
 
 def remove_categories(apps, schema_editor):
@@ -121,9 +170,9 @@ def remove_categories(apps, schema_editor):
         if not to_remove:
             continue
 
-        main_category = Category.get(slug=main_slug, parent__is_null=True)
+        main_category = Category.objects.get(slug=main_slug, parent__isnull=True)
         for sub_slug in to_remove:
-            sub_category = Category.get(slug=sub_slug, parent=main_category)
+            sub_category = Category.objects.get(slug=sub_slug, parent=main_category)
             sub_category.is_active = False
             sub_category.save()
 
@@ -134,9 +183,9 @@ def change_categories(apps, schema_editor):
         if not data:
             continue
 
-        main_category = Category.get(slug=main_slug, parent__is_null=True)
+        main_category = Category.objects.get(slug=main_slug, parent__isnull=True)
         for sub_slug, sub_data in data.items():
-            sub_category = Category.get(slug=sub_slug, parent=main_category)
+            sub_category = Category.objects.get(slug=sub_slug, parent=main_category)
 
             # mutate here
             if 'handling' in sub_data:
@@ -151,4 +200,20 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name='category',
+            name='handling',
+            field=models.CharField(
+                choices=[('A3DMC', 'A3DMC'), ('A3DEC', 'A3DEC'), ('A3WMC', 'A3WMC'),
+                         ('A3WEC', 'A3WEC'), ('I5DMC', 'I5DMC'), ('STOPEC', 'STOPEC'),
+                         ('KLOKLICHTZC', 'KLOKLICHTZC'), ('GLADZC', 'GLADZC'),
+                         ('A3DEVOMC', 'A3DEVOMC'), ('WS1EC', 'WS1EC'), ('WS2EC', 'WS2EC'),
+                         ('REST', 'REST'), ('ONDERMIJNING', 'ONDERMIJNING'),
+                         ('WS3EC', 'WS3EC'), ('EMPTY', 'EMPTY')], default='REST',
+                max_length=20),
+        ),
+        migrations.RunPython(remove_cca_from_departments),
+        migrations.RunPython(remove_categories),
+        migrations.RunPython(change_categories),
+        migrations.RunPython(add_categories),
     ]
