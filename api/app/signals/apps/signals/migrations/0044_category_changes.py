@@ -2,8 +2,6 @@
 from django.db import migrations, models
 from django.utils.text import slugify
 
-# TODO: finish Excel file, currently at row 89
-# TODO: implement add_categories
 # TODO: communicate that we do bulk re-assign after acceptation of categories
 # TODO: add new re-assigns to bulk script
 
