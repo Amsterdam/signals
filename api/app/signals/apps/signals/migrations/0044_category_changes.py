@@ -190,8 +190,9 @@ def change_categories(apps, schema_editor):
             # mutate here
             if 'handling' in sub_data:
                 sub_category.handling = sub_data['handling']
-            
+
             sub_category.save()
+
 
 class Migration(migrations.Migration):
 

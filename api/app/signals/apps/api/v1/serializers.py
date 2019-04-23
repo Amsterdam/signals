@@ -29,6 +29,8 @@ from signals.apps.api.v1.fields import (
     PublicSignalAttachmentLinksField,
     PublicSignalLinksField
 )
+# facilitate debugging
+from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
@@ -44,9 +46,6 @@ from signals.apps.signals.models import (
     Status
 )
 from signals.apps.signals.models.location import get_address_text
-
-# facilitate debugging
-from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
 
 
 class CategoryHALSerializer(HALSerializer):
@@ -70,6 +69,7 @@ class CategoryHALSerializer(HALSerializer):
 
     def get_handling_message(self, obj):
         return ALL_AFHANDELING_TEXT[obj.handling]
+
 
 class ParentCategoryHALSerializer(HALSerializer):
     serializer_url_field = ParentCategoryHyperlinkedIdentityField
