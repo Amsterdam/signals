@@ -16,12 +16,12 @@ __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 # `/signals/v1/...` will always have major API version number `1`.
 
 # Application version (Major, minor, patch)
-VERSION = (0, 10, 5)
+VERSION = (0, 10, 6)
 
 # API versions (Major, minor, patch)
 API_VERSIONS = {
     'v0': (0, 3, 0),
-    'v1': (1, 6, 0),
+    'v1': (1, 6, 1),
 }
 
 __version__ = get_version(VERSION)
