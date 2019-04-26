@@ -3,9 +3,13 @@ Bulk cancellation of signals based on CSV of signal ids.
 
 Script is idempotent.
 """
+import argparse
 import csv
+import copy
 import json
 import os
+import time
+import traceback
 from urllib.parse import urlencode
 
 import requests
@@ -14,6 +18,9 @@ from requests.exceptions import RequestException
 from get_signals import GetAccessToken
 
 N_RETRIES = 5
+SLEEP_DELAY = 0.1
+GEANNULEERD = 'a'
+AFGEHANDELD = 'o'
 
 # -- relevant API endpoints --
 DETAIL_ENDPOINT = '{base_url}/signals/v1/private/signals/{signal_id}'
@@ -26,42 +33,64 @@ UPDATE_STATUS = {
     }
 }
 
+MESSAGE = 'Dit betreft een melding die handmatig is overgenomen in Techview ' \
+'en daar is afgehandeld, inclusief afmeldbericht naar de melder. Deze ' \
+'melding is daarom in SIA geannuleerd.'
+
 
 class APIClient():
     def __init__(self, base_url, email, password, environment):
         self.headers = self._get_auth_header(email, password, environment)
+        self.base_url = base_url
 
     def _get_auth_header(self, email, password, environment):
-        return {}  # first for local updates, implement token requests later.
+        if environment == 'dev':
+            return {}
+        elif environment in ['acc', 'prod']:
+            print('Retrieving access token via OAuth2')
+            acceptance = environment == 'acc'
+            headers = GetAccessToken().getAccessToken(email, password, acceptance)
+            assert headers, 'We need to get Authorization headers, but did not.'
+            return headers
+        else:
+            raise ValueError(f'Unknown environment {environment}')
 
-    def _check_status(signal_id):
+    def _check_status(self, signal_id):
         response = requests.get(
-            DETAIL_ENDPOINT.format(self.base_url, signal_id),
+            DETAIL_ENDPOINT.format(base_url=self.base_url, signal_id=signal_id),
             headers=self.headers
         )
         response.raise_for_status()
 
         json_data = response.json()
-        return status
+        state = json_data['status']['state']
+        print(f'Current state SIA-{signal_id} is {state}.')
+        return json_data['status']
 
-    def update_status(signal_id, new_state, message):
+    def update_status(self, signal_id, new_state, message, acceptable_states=None):
+        if acceptable_states is None:
+           acceptable_states = []
+        acceptable_states.append(new_state)  # if we are in desired state, skip
+
         # check status
         current_status = self._check_status(signal_id)
-        if current_status.state == new_state:
+        if current_status['state'] in acceptable_states:
+            print('Already in desired state.')
             return  # already in desired state
 
         # mutate signal status
-        payload = copy.deepcopy{UPDATE_STATUS}
+        print('mutate')
+        payload = copy.deepcopy(UPDATE_STATUS)
         payload['status']['state'] = new_state
         payload['status']['text'] = message
 
         response = requests.patch(
-            DETAIL_ENDPOINT.format(self.base_url, signal_id),
-            data=payload,
+            DETAIL_ENDPOINT.format(base_url=self.base_url, signal_id=signal_id),
+            json=payload,
             headers=self.headers,
-            format='json'
         )
         response.raise_for_status()
+        self._check_status(signal_id)
 
 
 class BulkCancellation():
@@ -94,46 +123,74 @@ class BulkCancellation():
         failed = set()
         succeeded = set()
 
-        for signal_id in signal_ids:
+        for signal_id in self.to_process:
             try:
-                self.api_client.update_status(signal_id, GEANNULEERD, self.message)
+                self.api_client.update_status(
+                    signal_id, GEANNULEERD, self.message, [AFGEHANDELD])
             except RequestException:
                 print(f'Failed to process {signal_id}.')
                 failed.add(signal_id)
             else:
                 succeeded.add(signal_id)
+            time.sleep(SLEEP_DELAY)
 
         self.to_process = self.to_process - succeeded
         self.processed = self.processed | succeeded
 
+    def run(self, n_retries=5):
+        # cancel signals
+        try:
+            for i in range(n_retries):
+                if not self.to_process:
+                    break
 
-    def handle(self, n_retries=5):
-        for i in range(n_retries):
-            if not self.to_process:
-                break
+                self._perform_updates()
+        except (Exception,  KeyboardInterrupt) as e:
+            print('Unhandled exception:')
+            traceback.print_exc()
+        finally:
+            # report failures
+            failed_ids = list(self.to_process)
+            failed_ids.sort()
+            print('\n\nThe following signal ids could not be processed:')
+            for signal_id in failed_ids:
+                print(signal_id)
 
-            self._perform_updates()
+
+def handle_cli():
+    def is_known_env(value):
+        """Check whether environment is known, return environment if known else ValueError."""
+        if value not in ['dev', 'acc', 'prod']:
+            raise ValueError(f'Unknown environment {value}')
+        return value
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'csv_file', type=str, help='CSV file of SIA signal ids (without the SIA- part)'
+    )
+    parser.add_argument(
+        'env', type=is_known_env, help='One of "dev", "prod" or "acc" (without double quotes)'
+    )
+    parser.add_argument(
+        '--email', type=str, help='SIA user email (user name)', nargs='?', default=None
+    )
+    parser.add_argument(
+        '--password', type=str, help='SIA user password', nargs='?', default=None
+    )
+
+    return parser.parse_args()
 
 
+def main():
+    args = handle_cli()
+    api_client = APIClient('http://127.0.0.1:8000', args.email, args.password, args.env)
+
+    bulk_task = BulkCancellation(
+        api_client,
+        args.csv_file,
+        MESSAGE  # hardcoded for now
+    )
+    bulk_task.run()
 
 if __name__ == '__main__':
-    access_token = {}
-    environment = os.getenv('SIGNALS_ENVIRONMENT', 'dev')
-
-    if environment.lower() in ['acc', 'prod']:
-        email = os.getenv('SIGNALS_USER', 'signals.admin@example.com')
-        password = os.getenv('SIGNALS_PASSWORD', 'insecure')
-
-        access_token = GetAccessToken().getAccessToken(email, password, environment)
-        print(f'Received new Access Token Header: {access_token}')
-
-    if access_token or environment.lower() == 'dev':
-        action = UpdateCategory(access_token, environment)
-
-        old_category = os.getenv('CATEGORY')
-        new_category_slug = os.getenv('NEW_CATEGORY_SLUG')
-
-        if old_category and new_category_slug:
-            action.handle(old_category, new_category_slug)
-        else:
-            print('No category and new category set')
+    main()
