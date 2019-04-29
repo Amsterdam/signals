@@ -44,6 +44,7 @@ class APIClient():
         self.base_url = base_url
 
     def _get_auth_header(self, email, password, environment):
+        # TODO: refactor the login script (get_signals.py)
         if environment == 'dev':
             return {}
         elif environment in ['acc', 'prod']:
@@ -152,6 +153,9 @@ class BulkCancellation():
             # report failures
             failed_ids = list(self.to_process)
             failed_ids.sort()
+            print('-' * 40)
+            print('Processed {} signals.'.format(len(self.processed)))
+            print('Failed to process {} signals.'.format(len(self.to_process)))
             print('\n\nThe following signal ids could not be processed:')
             for signal_id in failed_ids:
                 print(signal_id)
@@ -183,7 +187,14 @@ def handle_cli():
 
 def main():
     args = handle_cli()
-    api_client = APIClient('http://127.0.0.1:8000', args.email, args.password, args.env)
+
+    base_url = 'http://127.0.0.1:8000'
+    if args.env == 'acc':
+        base_url = 'https://acc.api.data.amsterdam.nl'
+    elif args.env == 'prod':
+        base_url = 'https://api.data.amsterdam.nl'
+
+    api_client = APIClient(base_url, args.email, args.password, args.env)
 
     bulk_task = BulkCancellation(
         api_client,
