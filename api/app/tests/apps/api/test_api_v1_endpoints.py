@@ -18,6 +18,7 @@ from signals.apps.api.address.validation import (
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Category, History, Signal
+from signals.apps.signals.workflow import STATUS_CHOICES_API
 from signals.utils.version import get_version
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.attachment_helpers import (
@@ -31,7 +32,8 @@ from tests.apps.signals.factories import (
     ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    TextFactory
 )
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -123,6 +125,58 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
         self.assertEqual(data['name'], 'Grofvuil')
         self.assertIn('is_active', data)
+
+    def test_sub_category_detail_no_status_message_templates(self):
+        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
+
+        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
+            slug=sub_category.parent.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+
+        url = data['_links']['sia:status-message-templates']['href']
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(len(data), 0)
+
+    def test_sub_category_detail_status_message_templates(self):
+        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
+
+        text = {}
+        for state in STATUS_CHOICES_API:
+            text[state[0]] = []
+            for x in range(5):
+                text[state[0]].append(
+                    TextFactory.create(category=sub_category, order=x, state=state[0])
+                )
+
+        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
+            slug=sub_category.parent.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+
+        url = data['_links']['sia:status-message-templates']['href']
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(len(data), len(STATUS_CHOICES_API) * 5)
 
 
 class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -1907,3 +1961,126 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
+
+
+class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    endpoint = '/signals/v1/private/status-message-templates/'
+    link_test_cat_sub = None
+
+    def setUp(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.subcategory = CategoryFactory.create()
+
+        self.link_test_cat_sub = reverse(
+            'v1:category-detail', kwargs={
+                'slug': self.subcategory.parent.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+    def test_add_status_messages(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        data = [
+            {
+                'text': 'Test #2',
+                'order': 1,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            },
+            {
+                'text': 'Test #1',
+                'order': 0,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            }
+        ]
+        self.client.post(self.endpoint, data, format='json')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(2, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual('Test #1', response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual('Test #2', response_data[1]['text'])
+
+    def test_change_status_messages(self):
+        message_1 = TextFactory.create(order=0, category=self.subcategory, state='o', text='1')
+        message_2 = TextFactory.create(order=1, category=self.subcategory, state='o', text='2')
+        message_3 = TextFactory.create(order=2, category=self.subcategory, state='o', text='3')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.text, response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual(message_2.text, response_data[1]['text'])
+
+        self.assertEqual(2, response_data[2]['order'])
+        self.assertEqual(message_3.text, response_data[2]['text'])
+
+        data = [
+            {
+                'pk': message_2.pk,
+                'order': 2,
+                'text': 'changed',
+            },
+            {
+                'pk': message_3.pk,
+                'order': 1,
+            }
+        ]
+        response = self.client.patch(self.endpoint, data, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.text, response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual(message_3.text, response_data[1]['text'])
+
+        self.assertEqual(2, response_data[2]['order'])
+        self.assertEqual('changed', response_data[2]['text'])
+
+    def test_delete_status_messages(self):
+        message_1 = TextFactory.create(order=0, category=self.subcategory, state='o', text='1')
+        message_2 = TextFactory.create(order=1, category=self.subcategory, state='o', text='2')
+        message_3 = TextFactory.create(order=2, category=self.subcategory, state='o', text='3')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        data = [{'pk': message_2.pk}, {'pk': message_3.pk}]
+        response = self.client.delete(self.endpoint, data, format='json')
+        self.assertEqual(204, response.status_code)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(1, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.pk, response_data[0]['pk'])

@@ -42,6 +42,14 @@ signal_router_v1.register(
     basename='feedback-forms'
 )
 
+
+signal_router_v1.register(
+    r'private/status-message-templates',
+    v1_private_views.StoreStatusMessageTemplates,
+    basename='private-status-message-templates'
+)
+
+
 # Private split
 signal_router_v1.urls.append(
     path(
@@ -77,6 +85,32 @@ signal_router_v1.urls.append(
         name='category-detail'
     )
 )
+
+# Appending extra routes for status message templates
+signal_router_v1.urls.append(
+    path(
+        'public/terms/categories/<str:slug>/status-message-templates',
+        v1_public_views.ChildCategoryViewSet.as_view({'get': 'status_message_templates'}),
+        name='status_message_templates_main_category'
+    )
+)
+signal_router_v1.urls.append(
+    path(
+        'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>/status-message-templates',
+        v1_public_views.ChildCategoryViewSet.as_view({'get': 'status_message_templates'}),
+        name='status_message_templates'
+    )
+)
+
+# Status message templates are only editable via the private API
+signal_router_v1.urls.append(
+    path(
+        'private/status-message-templates',
+        v1_private_views.StoreStatusMessageTemplates,
+        name='private-status-message-templates'
+    )
+)
+
 
 # PDF
 

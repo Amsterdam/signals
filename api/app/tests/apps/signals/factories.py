@@ -21,9 +21,10 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    Text
 )
-from signals.apps.signals.workflow import GEMELD
+from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
@@ -246,3 +247,13 @@ class NoteFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Note
+
+
+class TextFactory(factory.DjangoModelFactory):
+    text = fuzzy.FuzzyText(length=100)
+    order = None
+    category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory')
+    state = factory.LazyAttribute(lambda o: random.choice(STATUS_CHOICES_API)[0])
+
+    class Meta:
+        model = Text

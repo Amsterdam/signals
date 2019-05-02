@@ -12,9 +12,10 @@ from signals.apps.api.v1.serializers import (
     ParentCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail
+    PublicSignalSerializerDetail,
+    StatusMessageTemplateSerializer
 )
-from signals.apps.signals.models import Category, Signal
+from signals.apps.signals.models import Category, Signal, Text
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
@@ -50,11 +51,26 @@ class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset,
-                                parent__slug=self.kwargs['slug'],
-                                slug=self.kwargs['sub_slug'])
+
+        if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
+            obj = get_object_or_404(queryset,
+                                    parent__slug=self.kwargs['slug'],
+                                    slug=self.kwargs['sub_slug'])
+        else:
+            obj = get_object_or_404(queryset, slug=self.kwargs['slug'])
+
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def status_message_templates(self, *args, **kwargs):
+        text_entries = Text.objects.filter(category=self.get_object())
+
+        state_filter = self.request.query_params.get('state', None)
+        if state_filter:
+            text_entries = text_entries.filter(state=state_filter)
+
+        serializer = StatusMessageTemplateSerializer(text_entries, many=True)
+        return Response(serializer.data)
 
 
 class NamespaceView(APIView):

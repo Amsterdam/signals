@@ -43,9 +43,29 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    Text
 )
 from signals.apps.signals.models.location import get_address_text
+
+
+class StatusMessageTemplateSerializer(serializers.ModelSerializer):
+    category = CategoryHyperlinkedRelatedField(write_only=True, required=True)
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
+
+    class Meta:
+        model = Text
+        fields = (
+            'pk',
+            'order',
+            'state',
+            'state_display',
+            'text',
+            'category',
+        )
+
+    def save(self, **kwargs):
+        return super(StatusMessageTemplateSerializer, self).save(**kwargs)
 
 
 class CategoryHALSerializer(HALSerializer):

@@ -3,11 +3,13 @@ Views that are used exclusively by the V1 API
 """
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
+from django.core.exceptions import ValidationError as CoreValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -20,9 +22,10 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PrivateSplitSignalSerializer,
-    SignalIdListSerializer
+    SignalIdListSerializer,
+    StatusMessageTemplateSerializer
 )
-from signals.apps.signals.models import Attachment, History, Signal
+from signals.apps.signals.models import Attachment, History, Signal, Text
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -153,3 +156,46 @@ class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListMode
     filterset_class = SignalCategoryRemovedAfterFilter
 
     queryset = Signal.objects.only('id').all()
+
+
+class StoreStatusMessageTemplates(mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                                  viewsets.GenericViewSet):
+    serializer_class = StatusMessageTemplateSerializer
+
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
+    queryset = Text.objects.all()
+
+    def get_serializer(self, *args, **kwargs):
+        kwargs['many'] = True if 'many' not in kwargs else kwargs.pop('many')
+        return super(StoreStatusMessageTemplates, self).get_serializer(*args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super(StoreStatusMessageTemplates, self).create(request, *args, **kwargs)
+        except CoreValidationError as e:
+            raise ValidationError(e.message)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+
+        instances = []
+        for data in self.request.data:
+            self.kwargs['pk'] = data['pk']
+            instance = self.get_object()
+
+            serializer = self.get_serializer(instance, data=data, partial=partial, many=False)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+            instances.append(instance)
+
+        serializer = self.get_serializer(instances)
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        self.get_queryset().filter(pk__in=[data['pk'] for data in request.data]).delete()
+        return Response(status=204)
