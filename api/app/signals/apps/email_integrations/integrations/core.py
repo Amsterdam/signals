@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.template import loader
 
 from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
 
@@ -43,7 +44,7 @@ def create_initial_create_notification_message(signal):
     return message
 
 
-def send_mail_reporter_status_changed_afgehandeld(signal, status, feedback):
+def send_mail_reporter_status_changed_afgehandeld(signal, status):
     """Send a notification e-mail to the reporter about status change of the given `Signal` object.
 
     Note: this also creates an outstanding request for feedback in SIA database.
@@ -55,6 +56,9 @@ def send_mail_reporter_status_changed_afgehandeld(signal, status, feedback):
     signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
     if not signal_is_afgehandeld or not signal.reporter.email:
         return None
+
+    # Create the feedback instance
+    feedback = Feedback.actions.request_feedback(signal)
 
     # Render out the txt and HTML emails and send it.
     subject = f'Betreft melding: {signal.id}'
