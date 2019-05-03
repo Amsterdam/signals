@@ -577,30 +577,33 @@ class TestCategory(TestCase):
     def test_slug_only_created_once(self):
         just_a_slug = slugify('just a slug')
 
-        slug_category = Category(slug=just_a_slug, name='This will generate the slug only once')
+        category = Category(slug=just_a_slug, name='This will generate the slug only once')
 
-        slug_category.save()
-        slug_category.refresh_from_db()
+        category.save()
+        category.refresh_from_db()
 
-        slug = slugify(slug_category.name)
+        slug = slugify(category.name)
 
-        self.assertNotEqual(just_a_slug, slug_category.slug)
-        self.assertEqual(slug, slug_category.slug)
-        self.assertEqual('This will generate the slug only once', slug_category.name)
+        self.assertNotEqual(just_a_slug, category.slug)
+        self.assertEqual(slug, category.slug)
+        self.assertEqual('This will generate the slug only once', category.name)
 
-        slug_category.name = 'And now for something completely different'
-        slug_category.save()
-        slug_category.refresh_from_db()
+        category.name = 'And now for something completely different'
+        category.save()
+        category.refresh_from_db()
 
-        self.assertEqual(slug, slug_category.slug)
-        self.assertEqual('And now for something completely different', slug_category.name)
+        self.assertEqual(slug, category.slug)
+        self.assertEqual('And now for something completely different', category.name)
 
-        this_should_not_be_the_slug = slugify(slug_category.name)
-        self.assertNotEqual(this_should_not_be_the_slug, slug_category.slug)
+        this_should_not_be_the_slug = slugify(category.name)
+        self.assertNotEqual(this_should_not_be_the_slug, category.slug)
 
         with self.assertRaises(ValidationError):
-            slug_category.slug = just_a_slug
-            slug_category.save()
+            category.slug = just_a_slug
+            category.save()
+
+        with self.assertRaises(ValidationError):
+            category.save(slug='no-saving-me-please')
 
 
 class TestCategoryDeclarations(TestCase):
