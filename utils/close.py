@@ -70,7 +70,7 @@ class APIClient():
 
     def update_status(self, signal_id, new_state, message, acceptable_states=None):
         if acceptable_states is None:
-           acceptable_states = []
+            acceptable_states = []
         acceptable_states.append(new_state)  # if we are in desired state, skip
 
         # check status
