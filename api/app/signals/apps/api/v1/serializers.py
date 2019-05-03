@@ -253,6 +253,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     category_url = serializers.SerializerMethodField(read_only=True)
+    text = serializers.CharField(required=False)
 
     departments = serializers.SerializerMethodField(
         source='category.departments',
@@ -270,6 +271,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_category',
             'departments',
             'created_by',
+            'text',
         )
         read_only_fields = (
             'created_by',
