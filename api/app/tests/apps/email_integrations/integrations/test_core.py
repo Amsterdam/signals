@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest import mock, skip
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.integrations import core
 from signals.apps.feedback import app_settings as feedback_settings
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory, StatusFactory
@@ -46,21 +47,22 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
-        feedback = FeedbackFactory.create(_signal=self.signal)
 
         num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-            self.signal, status, feedback)
+            self.signal, status)
 
+        self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
-        feedback = FeedbackFactory.create(_signal=self.signal)
         num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-            signal=self.signal, status=self.signal.status, feedback=feedback)
+            signal=self.signal, status=self.signal.status
+        )
 
+        self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(num_of_messages, None)
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_email(self):
@@ -68,15 +70,15 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal_no_email, state=workflow.AFGEHANDELD)
         self.signal_no_email.status = status
         self.signal_no_email.status.save()
-        feedback = FeedbackFactory.create(_signal=self.signal)
 
         num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-            self.signal_no_email, status, feedback)
+            self.signal_no_email, status
+        )
 
+        self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(num_of_messages, None)
 
     def test_create_status_change_notification_message(self):
-
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done.')
         self.signal.status = status
@@ -84,7 +86,8 @@ class TestCore(TestCase):
         feedback = FeedbackFactory.create(_signal=self.signal)
 
         message = core.create_status_change_notification_message(
-            self.signal, self.signal.status, feedback)
+            self.signal, self.signal.status, feedback
+        )
 
         self.assertIn(str(self.signal.id), message)
         self.assertIn(self.signal.text, message)
@@ -97,10 +100,13 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
-        feedback = FeedbackFactory.create(_signal=self.signal)
 
         num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-            self.signal, status, feedback)
+            self.signal, status
+        )
+
+        self.assertEqual(1, Feedback.objects.count())
+        feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
         self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
@@ -122,14 +128,12 @@ class TestCore(TestCase):
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
 
-    @skip('Usabilla links present currently')
     def test_links_in_different_environments(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
-        feedback = FeedbackFactory.create(_signal=self.signal)
 
         # Check that generated emails contain the correct links for all
         # configured environments:
@@ -144,7 +148,8 @@ class TestCore(TestCase):
             with mock.patch.dict('os.environ', local_env):
                 mail.outbox = []
                 num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-                    self.signal, status, feedback)
+                    self.signal, status
+                )
 
                 self.assertEqual(num_of_messages, 1)
                 self.assertEqual(len(mail.outbox), 1)
@@ -152,14 +157,12 @@ class TestCore(TestCase):
                 self.assertIn(fe_location, message.body)
                 self.assertIn(fe_location, message.alternatives[0][0])
 
-    @skip('Usabilla links present currently')
     def test_links_environment_env_var_not_set(self):
         """Deals with the case where nothing is overridden and `environment` not set."""
         # Prepare signal with status change to `AFGEHANDELD`.
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.status.save()
-        feedback = FeedbackFactory.create(_signal=self.signal)
 
         # Check that generated emails contain the correct links for all
         # configured environments:
@@ -170,7 +173,8 @@ class TestCore(TestCase):
             with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
                 num_of_messages = core.send_mail_reporter_status_changed_afgehandeld(
-                    self.signal, status, feedback)
+                    self.signal, status
+                )
 
                 self.assertEqual(num_of_messages, 1)
                 self.assertEqual(len(mail.outbox), 1)
