@@ -13,6 +13,7 @@ class CategoryAssignment(CreatedUpdatedModel):
                                  on_delete=models.CASCADE,
                                  related_name='category_assignments')
     created_by = models.EmailField(null=True, blank=True)
+    text = models.CharField(max_length=10000, null=True, blank=True)
 
     extra_properties = JSONField(null=True)  # TODO: candidate for removal
 

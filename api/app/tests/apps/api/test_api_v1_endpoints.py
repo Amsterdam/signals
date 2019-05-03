@@ -1003,7 +1003,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.signal_no_image.refresh_from_db()
 
         response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
+        response_json = response.json()
+
+        self.assertEqual(len(response_json), 2)
+        self.assertEqual(response_json[0]['description'], data['category']['text'])
 
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
