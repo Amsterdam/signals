@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import LiveServerTestCase, TestCase, TransactionTestCase
 from django.utils import timezone
+from django.utils.text import slugify
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
@@ -572,6 +573,34 @@ class TestCategory(TestCase):
         child_category.parent = self.category
 
         self.assertRaises(ValidationError, child_category.save)
+
+    def test_slug_only_created_once(self):
+        just_a_slug = slugify('just a slug')
+
+        slug_category = Category(slug=just_a_slug, name='This will generate the slug only once')
+
+        slug_category.save()
+        slug_category.refresh_from_db()
+
+        slug = slugify(slug_category.name)
+
+        self.assertNotEqual(just_a_slug, slug_category.slug)
+        self.assertEqual(slug, slug_category.slug)
+        self.assertEqual('This will generate the slug only once', slug_category.name)
+
+        slug_category.name = 'And now for something completely different'
+        slug_category.save()
+        slug_category.refresh_from_db()
+
+        self.assertEqual(slug, slug_category.slug)
+        self.assertEqual('And now for something completely different', slug_category.name)
+
+        this_should_not_be_the_slug = slugify(slug_category.name)
+        self.assertNotEqual(this_should_not_be_the_slug, slug_category.slug)
+
+        with self.assertRaises(ValidationError):
+            slug_category.slug = just_a_slug
+            slug_category.save()
 
 
 class TestCategoryDeclarations(TestCase):

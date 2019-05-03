@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
-from django.utils.text import slugify
+from django_extensions.db.fields import AutoSlugField
 
 
 class Category(models.Model):
@@ -40,8 +40,11 @@ class Category(models.Model):
     parent = models.ForeignKey('signals.Category',
                                related_name='children',
                                on_delete=models.PROTECT,
-                               null=True)
-    slug = models.SlugField()
+                               null=True, blank=True)
+
+    # SIG-1135, the slug is auto populated using the django-extensions "AutoSlugField"
+    slug = AutoSlugField(populate_from=['name', ], blank=False, overwrite=False, editable=False)
+
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
     departments = models.ManyToManyField('signals.Department')
@@ -65,11 +68,16 @@ class Category(models.Model):
     def is_child(self):
         return self.parent is not None
 
-    def _validate(self):
+    def clean(self):
+        super(Category, self).clean()
+
+        if self.pk and self.slug:
+            if not Category.objects.filter(id=self.pk, slug=self.slug).exists():
+                raise ValidationError('Category slug cannot be changed')
+
         if self.is_parent() and self.is_child() or self.is_child() and self.parent.is_child():
             raise ValidationError('Category hierarchy can only go one level deep')
 
     def save(self, *args, **kwargs):
-        self._validate()
-        self.slug = slugify(self.name)
+        self.full_clean()
         super().save(*args, **kwargs)
