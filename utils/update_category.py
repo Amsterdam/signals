@@ -105,7 +105,8 @@ if __name__ == "__main__":
         email = os.getenv('SIGNALS_USER', 'signals.admin@example.com')
         password = os.getenv('SIGNALS_PASSWORD', 'insecure')
 
-        access_token = GetAccessToken().getAccessToken(email, password, environment)
+        acceptance = True if environment.lower() == 'acc' else False
+        access_token = GetAccessToken().getAccessToken(email, password, acceptance)
         print(f'Received new Access Token Header: {access_token}')
 
     if access_token or environment.lower() == 'dev':
