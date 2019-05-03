@@ -76,4 +76,13 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+
+        # Slug must not be changed, it is exposed in API - thus should remain
+        # stable. Check whether we are already saved to DB, if so check that
+        # we are not overwriting the existing slug.
+        if self.pk and self.slug:
+            slug_in_db = Category.objects.values_list('slug', flat=True).get(id=self.pk)
+            if self.slug != slug_in_db:
+                raise ValueError('Category slug must not be changed.')
+
         super().save(*args, **kwargs)

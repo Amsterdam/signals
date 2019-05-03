@@ -598,6 +598,24 @@ class TestCategory(TestCase):
         this_should_not_be_the_slug = slugify(slug_category.name)
         self.assertNotEqual(this_should_not_be_the_slug, slug_category.slug)
 
+    def test_slug_cannot_be_updated(self):
+        just_a_slug = slugify('just a slug')
+
+        slug_category = Category(slug=just_a_slug, name='This will generate the slug only once')
+
+        slug_category.save()
+        slug_category.refresh_from_db()
+
+        slug = slugify(slug_category.name)
+
+        self.assertNotEqual(just_a_slug, slug_category.slug)
+        self.assertEqual(slug, slug_category.slug)
+        self.assertEqual('This will generate the slug only once', slug_category.name)
+
+        with self.assertRaises(ValueError):
+            slug_category.slug = 'this-cannot-be-set'
+            slug_category.save()
+
 
 class TestCategoryDeclarations(TestCase):
 
