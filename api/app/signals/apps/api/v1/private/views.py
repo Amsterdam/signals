@@ -120,6 +120,7 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
 class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
+    pagination_class = None
 
     queryset = Signal.objects.all()
 
