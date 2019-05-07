@@ -15,7 +15,7 @@ from signals.apps.api.v1.serializers import (
     PublicSignalSerializerDetail,
     StatusMessageTemplateSerializer
 )
-from signals.apps.signals.models import Category, Signal, Text
+from signals.apps.signals.models import Category, Signal, StatusMessageTemplate
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
@@ -63,7 +63,7 @@ class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
         return obj
 
     def status_message_templates(self, *args, **kwargs):
-        text_entries = Text.objects.filter(category=self.get_object())
+        text_entries = StatusMessageTemplate.objects.filter(category=self.get_object())
 
         state_filter = self.request.query_params.get('state', None)
         if state_filter:

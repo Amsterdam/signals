@@ -44,7 +44,7 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status,
-    Text
+    StatusMessageTemplate
 )
 from signals.apps.signals.models.location import get_address_text
 
@@ -54,7 +54,7 @@ class StatusMessageTemplateSerializer(serializers.ModelSerializer):
     state_display = serializers.CharField(source='get_state_display', read_only=True)
 
     class Meta:
-        model = Text
+        model = StatusMessageTemplate
         fields = (
             'pk',
             'order',

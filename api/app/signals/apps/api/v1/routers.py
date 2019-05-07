@@ -23,6 +23,7 @@ class SignalsRouterVersion1(routers.DefaultRouter):
                 'post': 'create',
                 'put': 'update',
                 'patch': 'partial_update',
+                'delete': 'destroy',
             },
             name='{basename}-list',
             detail=False,

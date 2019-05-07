@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from signals.apps.signals.models import Category, Text
+from signals.apps.signals.models import Category, StatusMessageTemplate
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):
@@ -19,10 +19,10 @@ class ChildCategoryFilter(admin.SimpleListFilter):
         return queryset.all()
 
 
-class StatusTextTemplatesAdmin(admin.ModelAdmin):
+class StatusMessageTemplatesAdmin(admin.ModelAdmin):
     list_display = ('category', 'state', 'order', 'text',)
     list_display_links = list_display
     list_filter = (ChildCategoryFilter,)
 
 
-admin.site.register(Text, StatusTextTemplatesAdmin)
+admin.site.register(StatusMessageTemplate, StatusMessageTemplatesAdmin)

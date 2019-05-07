@@ -23,7 +23,7 @@ from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.status import Status
-from signals.apps.signals.models.text import Text
+from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
@@ -50,5 +50,5 @@ __all__ = [
     'Reporter',
     'Signal',
     'Status',
-    'Text',
+    'StatusMessageTemplate',
 ]

@@ -33,7 +33,7 @@ from tests.apps.signals.factories import (
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage,
-    TextFactory
+    StatusMessageTemplateFactory
 )
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -156,7 +156,8 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
             text[state[0]] = []
             for x in range(5):
                 text[state[0]].append(
-                    TextFactory.create(category=sub_category, order=x, state=state[0])
+                    StatusMessageTemplateFactory.create(category=sub_category, order=x,
+                                                        state=state[0])
                 )
 
         url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
@@ -2013,9 +2014,12 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual('Test #2', response_data[1]['text'])
 
     def test_change_status_messages(self):
-        message_1 = TextFactory.create(order=0, category=self.subcategory, state='o', text='1')
-        message_2 = TextFactory.create(order=1, category=self.subcategory, state='o', text='2')
-        message_3 = TextFactory.create(order=2, category=self.subcategory, state='o', text='3')
+        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
+                                                        state='o', text='1')
+        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
+                                                        state='o', text='2')
+        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
+                                                        state='o', text='3')
 
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)
@@ -2062,9 +2066,12 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual('changed', response_data[2]['text'])
 
     def test_delete_status_messages(self):
-        message_1 = TextFactory.create(order=0, category=self.subcategory, state='o', text='1')
-        message_2 = TextFactory.create(order=1, category=self.subcategory, state='o', text='2')
-        message_3 = TextFactory.create(order=2, category=self.subcategory, state='o', text='3')
+        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
+                                                        state='o', text='1')
+        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
+                                                        state='o', text='2')
+        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
+                                                        state='o', text='3')
 
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)

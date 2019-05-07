@@ -5,7 +5,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
-class Text(CreatedUpdatedModel):
+class StatusMessageTemplate(CreatedUpdatedModel):
     """
     Standaard afmeld tekst
 
@@ -32,7 +32,7 @@ class Text(CreatedUpdatedModel):
 
     def save(self, *args, **kwargs):
         # The default qs we need to perform our checks
-        qs = Text.objects.filter(category_id=self.category_id, state=self.state)
+        qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
         max_instances = 5  # Max instances we allow per Category/State combination
         if self.pk is None and qs.count() >= max_instances:
@@ -43,4 +43,4 @@ class Text(CreatedUpdatedModel):
             )
 
         # Save the instance
-        super(Text, self).save(*args, **kwargs)
+        super(StatusMessageTemplate, self).save(*args, **kwargs)
