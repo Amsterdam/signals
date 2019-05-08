@@ -1,0 +1,8 @@
+{
+  "id": "extra_bedrijven_vaker",
+  "label": "Gebeurt het vaker?",
+  "answer": {
+    "label": "Ja, het gebeurt vaker: ",
+    "value": false
+  }
+}
