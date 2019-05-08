@@ -13,12 +13,15 @@ How to run the script
 
 import json
 import os
+from time import sleep
 from urllib.parse import urlencode
 
 import requests
 
 from get_signals import GetAccessToken
 
+MESSAGE = 'Omdat er nieuwe categorieën zijn ingevoerd in SIA is deze melding overnieuw ingedeeld.'
+DELAY = 0.1
 
 class UpdateCategory:
     def __init__(self, headers, environment):
@@ -56,7 +59,8 @@ class UpdateCategory:
         endpoint = '{url}/v1/private/signals/{signal_id}'.format(url=self.url, signal_id=signal_id)
         data = json.dumps({
             'category': {
-                'sub_category': new_category_slug
+                'sub_category': new_category_slug,
+                'text': MESSAGE,
             }
         })
 
@@ -75,6 +79,7 @@ class UpdateCategory:
 
         for signal in results:
             if signal['id'] not in self.errors:
+                sleep(DELAY)
                 self._update_category(signal_id=signal['id'], new_category_slug=new_category_slug)
         self._loop(old_category, new_category_slug)
 
