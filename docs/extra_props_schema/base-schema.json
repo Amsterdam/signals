@@ -1,50 +1,48 @@
 {
   "definitions": {},
-  "type": "object",
+  "type": "array",
   "title": "extra_properties structure",
   "description": "extra_properties structure detailed up to answer level.",
-  "required": [
-    "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/klok"
-  ],
-  "properties": {
-    "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/klok": {
-      "type": "array",
-      "title": "Extra property namespace",
-      "items": {
-        "type": "object",
-        "title": "A question-answer response",
-        "required": [
-          "id",
-          "label",
-          "answer",
-          "answer_schema"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Fixed identifier for question",
-            "examples": [
-              "extra_klok_wat"
-            ]
-          },
-          "label": {
-            "type": "string",
-            "title": "The question label",
-            "examples": [
-              "Wat is het probleem?"
-            ]
-          },
-          "answer": {
-            "title": "The answer data"
-          },
-          "answer_schema": {
-            "type": "string",
-            "title": "The answer schema URI",
-            "examples": [
-              "/schemas/some_type.json"
-            ]
-          }
-        }
+  "items": {
+    "type": "object",
+    "title": "A question-answer response",
+    "required": [
+      "id",
+      "category_url",
+      "label",
+      "answer"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "Fixed identifier for question",
+        "examples": [
+          "extra_klok_wat"
+        ]
+      },
+      "label": {
+        "type": "string",
+        "title": "The question label",
+        "examples": [
+          "Wat is het probleem?"
+        ]
+      },
+      "answer": {
+        "title": "The answer data"
+      },
+      "answer_schema": {
+        "type": "string",
+        "title": "The answer schema URI",
+        "examples": [
+          "/schemas/some_type.json"
+        ]
+      },
+      "category_url": {
+        "type": "string",
+        "title": "Extra property namespace",
+        "examples": [
+          "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting"
+        ]
       }
     }
   }

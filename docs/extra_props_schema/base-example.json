@@ -1,0 +1,14 @@
+[
+  {
+    "id": "extra_straatverlichting_gevaarlijk",
+    "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+    "label": "Is de situatie gevaarlijk?",
+    "answer": {}
+  },
+  {
+    "id": "extra_straatverlichting_hoeveel",
+    "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+    "label": "Om hoeveel lichtpunten gaat het?",
+    "answer": {}
+  }
+]
