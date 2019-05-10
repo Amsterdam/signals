@@ -4,6 +4,8 @@ from django.db import models
 from signals.apps.signals import workflow
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
+MAX_INSTANCES = 5  # Max instances we allow per Category/State combination
+
 
 class StatusMessageTemplate(CreatedUpdatedModel):
     """
@@ -29,18 +31,16 @@ class StatusMessageTemplate(CreatedUpdatedModel):
             'state',
             'order',
         )
+        verbose_name = 'Standaard afmeldtekst'
+        verbose_name_plural = 'Standaard afmeldteksten'
 
     def save(self, *args, **kwargs):
         # The default qs we need to perform our checks
         qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
-        max_instances = 5  # Max instances we allow per Category/State combination
-        if self.pk is None and qs.count() >= max_instances:
-            raise ValidationError(
-                'Only {} Text instances are allowed per Category/State combination'.format(
-                    max_instances
-                )
-            )
+        if self.pk is None and qs.count() >= MAX_INSTANCES:
+            msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
+            raise ValidationError(msg.format(MAX_INSTANCES))
 
         # Save the instance
         super(StatusMessageTemplate, self).save(*args, **kwargs)

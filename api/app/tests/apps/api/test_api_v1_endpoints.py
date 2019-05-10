@@ -17,7 +17,7 @@ from signals.apps.api.address.validation import (
 )
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Category, History, Signal
+from signals.apps.signals.models import Attachment, Category, History, Signal, StatusMessageTemplate
 from signals.apps.signals.workflow import STATUS_CHOICES_API
 from signals.utils.version import get_version
 from tests.apps.feedback.factories import FeedbackFactory
@@ -2012,6 +2012,36 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
 
         self.assertEqual(1, response_data[1]['order'])
         self.assertEqual('Test #2', response_data[1]['text'])
+
+    def test_cannot_add_too_many_status_messages(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        template = {
+            'text': 'Standaard afmeld tekst',
+            'category': self.link_test_cat_sub,
+            'state': 'o',
+        }
+
+        # create 10 status message templates (too many for one transition)
+        data = []
+        for i in range(10):
+            smt = copy.deepcopy(template)
+            smt.update({'order': i})
+            data.append(smt)
+
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
+
+        # we now want 0 StatusMessageTemplates in DB
+        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(0, len(response_data))
 
     def test_change_status_messages(self):
         message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,

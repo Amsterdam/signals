@@ -42,20 +42,12 @@ signal_router_v1.register(
     basename='feedback-forms'
 )
 
-
-signal_router_v1.register(
-    r'private/status-message-templates',
-    v1_private_views.StoreStatusMessageTemplates,
-    basename='private-status-message-templates'
-)
-
 # Status message templates are only editable via the private API
 signal_router_v1.register(
     r'private/status-message-templates',
     v1_private_views.StoreStatusMessageTemplates,
     basename='private-status-message-templates'
 )
-
 
 # Private split
 signal_router_v1.urls.append(
