@@ -28,3 +28,10 @@ class CategoryTranslation(CreatedUpdatedModel):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'Zet categorie "{self.old_category.slug}" om naar "{self.new_category.slug}"'
+
+    class Meta:
+        verbose_name = 'categorie omzetting'
+        verbose_name = 'categorie omzettingen'

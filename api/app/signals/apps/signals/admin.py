@@ -8,7 +8,7 @@ from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class CategoryTranslationAdmin(admin.ModelAdmin):
-    fields = ('old_category', 'new_category', 'text')
+    fields = ('old_category', 'new_category', 'text', 'created_by')
     readonly_fields = ('created_by',)
 
     def save_model(self, request, obj, form, change):
