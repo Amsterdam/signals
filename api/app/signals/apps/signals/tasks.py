@@ -1,6 +1,5 @@
 import logging
 
-
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.signal import Signal
 from signals.celery import app
@@ -22,7 +21,6 @@ def task_save_csv_files_datawarehouse():
 
 @app.task
 def translate_category(signal_id):
-    # TODO: Check whether we really want this as a celery task
     signal = Signal.objects.get(pk=signal_id)
 
     current_category = signal.category_assignmen.category

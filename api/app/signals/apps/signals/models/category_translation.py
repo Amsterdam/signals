@@ -7,19 +7,24 @@ Note:
 """
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
+from django.db.models import DO_NOTHING
 
-from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.models.category import Category
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
 class CategoryTranslation(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     text = models.CharField(max_length=10000, null=True, blank=True)
-    old_category = models.ForeignKey(Category, unique=True)
-    new_category = models.ForeignKey(Category)
+    old_category = models.ForeignKey(Category, unique=True, on_delete=DO_NOTHING, related_name='+')
+    new_category = models.ForeignKey(Category, on_delete=DO_NOTHING, related_name='+')
 
     def clean(self):
         if self.old_category == self.new_category:
             raise ValidationError('Cannot have old and new category the same.')
         if not self.new_category.is_active:
             raise ValidationError('New category must be active')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
