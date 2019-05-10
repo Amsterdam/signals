@@ -47,6 +47,22 @@ from signals.apps.signals.models import (
     StatusMessageTemplate
 )
 from signals.apps.signals.models.location import get_address_text
+from signals.apps.signals.models.status_message_template import MAX_INSTANCES
+
+
+class StatusMessageTemplateListSerializer(serializers.ListSerializer):
+    def validate(self, attrs):
+        counter = {}
+        for attr in attrs:
+            key = '{}-{}'.format(attr['category'].pk, attr['state'])
+            if key not in counter:
+                counter[key] = 0
+            counter[key] += 1
+
+        if any([True for x, y in counter.items() if y > MAX_INSTANCES]):
+            msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
+            raise ValidationError(msg.format(MAX_INSTANCES))
+        return super(StatusMessageTemplateListSerializer, self).validate(attrs=attrs)
 
 
 class StatusMessageTemplateSerializer(serializers.ModelSerializer):
@@ -63,6 +79,7 @@ class StatusMessageTemplateSerializer(serializers.ModelSerializer):
             'text',
             'category',
         )
+        list_serializer_class = StatusMessageTemplateListSerializer
 
     def save(self, **kwargs):
         return super(StatusMessageTemplateSerializer, self).save(**kwargs)

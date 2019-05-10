@@ -2031,6 +2031,9 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
             smt.update({'order': i})
             data.append(smt)
 
+        # Make sure we have no status message templates in the db
+        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
+
         response = self.client.post(self.endpoint, data, format='json')
         self.assertEqual(400, response.status_code)
 
