@@ -8,9 +8,10 @@ import csv
 import copy
 import json
 import os
+import pprint
 import time
 import traceback
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import requests
 from requests.exceptions import RequestException
@@ -26,16 +27,14 @@ AFGEHANDELD = 'o'
 DETAIL_ENDPOINT = '{base_url}/signals/v1/private/signals/{signal_id}'
 
 # -- relevant message payloads (use as templates) --
-UPDATE_STATUS = {
-    'status': {
-        'state': 'STATE_PLACEHOLDER',
+UPDATE_CATEGORY = {
+    'category': {
+        'sub_category': 'SUB_CATEGORY_URL_PLACEHOLDER',  # must be URL!
         'text': 'MESSAGE_PLACEHOLDER',
     }
 }
 
-MESSAGE = 'Dit betreft een melding die handmatig is overgenomen in Techview ' \
-'en daar is afgehandeld, inclusief afmeldbericht naar de melder. Deze ' \
-'melding is daarom in SIA geannuleerd.'
+MESSAGE = 'Omdat er nieuwe categorieën zijn ingevoerd in SIA is deze melding overnieuw ingedeeld.'
 
 
 class APIClient():
@@ -93,9 +92,45 @@ class APIClient():
         response.raise_for_status()
         self._check_status(signal_id)
 
+    def _check_category(self, signal_id):
+        """
+        Return current signal category.
+        """
+        response = requests.get(
+            DETAIL_ENDPOINT.format(base_url=self.base_url, signal_id=signal_id),
+            headers=self.headers
+        )
+        response.raise_for_status()
 
-class BulkCancellation():
-    def __init__(self, api_client, filename, message):
+        json_data = response.json()
+        category_url = json_data['category']['category_url']
+        print(f'Current category SIA-{signal_id} is {category_url}')
+        return json_data['category']
+
+    def update_category(self, signal_id, category_url, message):
+        """
+        Move given signal to category with descriptive message in logs.
+        """
+        category_data = self._check_category(signal_id)
+        current_cat_url = urlparse(category_data['category_url']).path
+        if current_cat_url == category_url:
+            return
+
+        payload = copy.deepcopy(UPDATE_CATEGORY)
+        payload['category']['sub_category'] = category_url
+        payload['category']['text'] = message
+        print('mutate')
+        response = requests.patch(
+            DETAIL_ENDPOINT.format(base_url=self.base_url, signal_id=signal_id),
+            json=payload,
+            headers=self.headers,
+        )
+        response.raise_for_status()
+        self._check_category(signal_id)
+
+
+class BulkCategoryAssignment():
+    def __init__(self, api_client, filename, message, new_category_url):
         # Note expects authenticated APIClient instance
         self.api_client = api_client
 
@@ -103,6 +138,7 @@ class BulkCancellation():
         self.processed = set()
 
         self.message = message
+        self.new_category_url = new_category_url
 
     def _parse_csv(self, filename):
         """Parse CSV with signal_ids to update."""
@@ -123,20 +159,24 @@ class BulkCancellation():
         """Loop through all signals to cancel, and try to cancel them once."""
         failed = set()
         succeeded = set()
+        print('vooraf', self.to_process, succeeded)
 
         for signal_id in self.to_process:
             try:
-                self.api_client.update_status(
-                    signal_id, GEANNULEERD, self.message, [AFGEHANDELD])
-            except RequestException:
+                self.api_client.update_category(signal_id, self.new_category_url, self.message)
+            except RequestException as req_e:
                 print(f'Failed to process {signal_id}.')
-                failed.add(signal_id)
+                print(req_e.response.json())
+            except AssertionError:
+                print(f'Hit assertion for {signal_id}.')
             else:
                 succeeded.add(signal_id)
             time.sleep(SLEEP_DELAY)
 
+        print(self.to_process, succeeded)
         self.to_process = self.to_process - succeeded
         self.processed = self.processed | succeeded
+        print(self.to_process)
 
     def run(self, n_retries=5):
         # cancel signals
@@ -168,7 +208,10 @@ def handle_cli():
             raise ValueError(f'Unknown environment {value}')
         return value
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Bulk reassign signals from CSV with signal IDs.",
+        epilog='SIA_EMAIL and SIA_PASSWORD must be set in environment.'
+    )
     parser.add_argument(
         'csv_file', type=str, help='CSV file of SIA signal ids (without the SIA- part)'
     )
@@ -176,17 +219,33 @@ def handle_cli():
         'env', type=is_known_env, help='One of "dev", "prod" or "acc" (without double quotes)'
     )
     parser.add_argument(
-        '--email', type=str, help='SIA user email (user name)', nargs='?', default=None
-    )
-    parser.add_argument(
-        '--password', type=str, help='SIA user password', nargs='?', default=None
+        'url', type=str, help='New category URL. Only PATH please.'
     )
 
     return parser.parse_args()
 
 
+def handle_env():
+    """Grab SIA user email and password from the relevant environment variables."""
+    class NameSpace():
+        pass
+
+    email = os.getenv('SIA_USERNAME')  # SIA usernames are always email addresses !
+    password = os.getenv('SIA_PASSWORD')
+
+    if email is None or password is None:
+        raise EnvironmentError('Either or both of SIA_USERNAME and SIA_PASSWORD not set.')
+
+    ns = NameSpace()
+    ns.email = email
+    ns.password = password
+
+    return ns
+
+
 def main():
     args = handle_cli()
+    env = handle_env()
 
     base_url = 'http://127.0.0.1:8000'
     if args.env == 'acc':
@@ -194,13 +253,15 @@ def main():
     elif args.env == 'prod':
         base_url = 'https://api.data.amsterdam.nl'
 
-    api_client = APIClient(base_url, args.email, args.password, args.env)
+    api_client = APIClient(base_url, env.email, env.password, args.env)
 
-    bulk_task = BulkCancellation(
-        api_client,
-        args.csv_file,
-        MESSAGE  # hardcoded for now
+    bulk_task = BulkCategoryAssignment(
+        api_client=api_client,
+        filename=args.csv_file,
+        message=MESSAGE,
+        new_category_url=args.url,
     )
+    print(bulk_task.to_process)
     bulk_task.run()
 
 if __name__ == '__main__':

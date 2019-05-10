@@ -180,5 +180,6 @@ Global/NetBeans.gitignore
 .vscode/
 .env/
 .mypy_cache/
+notes/
 
 *.pid
