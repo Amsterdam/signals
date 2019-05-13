@@ -24,6 +24,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from tests.apps.signals import factories, valid_locations
 from tests.apps.signals.attachment_helpers import small_gif
 
@@ -83,8 +84,8 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(Priority.objects.count(), 1)
 
         # Check that we sent the correct Django signal
-        patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                            signal_obj=signal)
+        patched_create_initial.send_robust.assert_called_once_with(sender=Signal.actions.__class__,
+                                                                   signal_obj=signal)
 
     @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
     def test_create_initial_with_priority_data(self, patched_create_initial):
@@ -293,7 +294,7 @@ class TestSignalManager(TransactionTestCase):
             status=status,
             prev_status=prev_status)
 
-        self.assertEqual(patched_create_child.send.call_count, 2)
+        self.assertEqual(patched_create_child.send_robust.call_count, 2)
 
 
 class TestSignalModel(TestCase):
@@ -734,3 +735,49 @@ class TestAttachmentModel(LiveServerTestCase):
 
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEqual(200, resp.status_code, "Original file is not reachable")
+
+
+class TestCategoryTranslation(TestCase):
+    def setUp(self):
+        self.category_1 = factories.CategoryFactory.create(is_active=True)
+        self.category_2 = factories.CategoryFactory.create(is_active=True)
+        self.category_not_active = factories.CategoryFactory.create(is_active=False)
+
+    def test_create_translation(self):
+        category_translation = CategoryTranslation.objects.create(
+            old_category=self.category_1,
+            new_category=self.category_2,
+            text='Just a text we want to use',
+            created_by='me@example.com',
+        )
+
+        self.assertEqual(category_translation.old_category, self.category_1)
+        self.assertEqual(category_translation.new_category, self.category_2)
+        self.assertEqual(category_translation.text, 'Just a text we want to use')
+        self.assertEqual(category_translation.created_by, 'me@example.com')
+        self.assertEqual(str(category_translation),
+                         f'Zet categorie "{self.category_1.slug}" om naar "{self.category_2.slug}"')
+
+    def test_create_translation_to_itself(self):
+        with self.assertRaises(ValidationError) as cm:
+            CategoryTranslation.objects.create(
+                old_category=self.category_1,
+                new_category=self.category_1,
+                text='Just a text we want to use',
+                created_by='me@example.com',
+            )
+
+        e = cm.exception
+        self.assertEqual(e.messages[0], 'Cannot have old and new category the same.')
+
+    def test_create_translation_to_inactive_category(self):
+        with self.assertRaises(ValidationError) as cm:
+            CategoryTranslation.objects.create(
+                old_category=self.category_1,
+                new_category=self.category_not_active,
+                text='Just a text we want to use',
+                created_by='me@example.com',
+            )
+
+        e = cm.exception
+        self.assertEqual(e.messages[0], 'New category must be active')

@@ -69,6 +69,7 @@ class SignalManager(models.Manager):
         :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
+
         with transaction.atomic():
             signal = self._create_initial_no_transaction(
                 signal_data=signal_data,
@@ -79,8 +80,8 @@ class SignalManager(models.Manager):
                 priority_data=priority_data
             )
 
-            transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
-                                                              signal_obj=signal))
+            transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,
+                                                                     signal_obj=signal))
 
         return signal
 
@@ -164,8 +165,8 @@ class SignalManager(models.Manager):
                 child_signal.save()
 
                 # Ensure each child signal creation sends a DjangoSignal.
-                transaction.on_commit(lambda: create_child.send(sender=self.__class__,
-                                                                signal_obj=child_signal))
+                transaction.on_commit(lambda: create_child.send_robust(sender=self.__class__,
+                                                                       signal_obj=child_signal))
 
                 # Check if we need to copy the images of the parent
                 if 'reuse_parent_image' in validated_data and validated_data['reuse_parent_image']:
