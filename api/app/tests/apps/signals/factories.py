@@ -216,6 +216,7 @@ class CategoryFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+    is_active = True
 
     class Meta:
         model = Category

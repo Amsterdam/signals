@@ -85,3 +85,19 @@ class TestTaskTranslateCategory(TransactionTestCase):
 
         cats = CategoryAssignment.objects.filter(_signal=signal)
         self.assertEqual(cats.count(), 2)
+
+    def test_translation_skipped_category_not_in_translations(self):
+        signal = Signal.actions.create_initial(
+            signal_data=self.signal_data,
+            location_data=self.location_data,
+            status_data=self.status_data,
+            category_assignment_data=self.category_assignment_data,
+            reporter_data=self.reporter_data,
+            priority_data=self.priority_data,
+        )
+
+        signal.refresh_from_db()
+        self.assertEqual(signal.category_assignment.category, self.test_category_old)
+
+        cats = CategoryAssignment.objects.filter(_signal=signal)
+        self.assertEqual(cats.count(), 1)

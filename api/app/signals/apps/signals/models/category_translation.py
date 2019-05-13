@@ -34,4 +34,4 @@ class CategoryTranslation(CreatedUpdatedModel):
 
     class Meta:
         verbose_name = 'categorie omzetting'
-        verbose_name = 'categorie omzettingen'
+        verbose_name_plural = 'categorie omzettingen'
