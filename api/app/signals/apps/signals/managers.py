@@ -165,8 +165,8 @@ class SignalManager(models.Manager):
                 child_signal.save()
 
                 # Ensure each child signal creation sends a DjangoSignal.
-                transaction.on_commit(lambda: create_child.send(sender=self.__class__,
-                                                                signal_obj=child_signal))
+                transaction.on_commit(lambda: create_child.send_robust(sender=self.__class__,
+                                                                       signal_obj=child_signal))
 
                 # Check if we need to copy the images of the parent
                 if 'reuse_parent_image' in validated_data and validated_data['reuse_parent_image']:

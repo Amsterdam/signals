@@ -294,7 +294,7 @@ class TestSignalManager(TransactionTestCase):
             status=status,
             prev_status=prev_status)
 
-        self.assertEqual(patched_create_child.send.call_count, 2)
+        self.assertEqual(patched_create_child.send_robust.call_count, 2)
 
 
 class TestSignalModel(TestCase):
