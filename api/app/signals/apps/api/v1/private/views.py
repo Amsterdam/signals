@@ -3,13 +3,16 @@ Views that are used exclusively by the V1 API
 """
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
+from django.core.exceptions import ValidationError as CoreValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView
@@ -20,9 +23,10 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PrivateSplitSignalSerializer,
-    SignalIdListSerializer
+    SignalIdListSerializer,
+    StatusMessageTemplateSerializer
 )
-from signals.apps.signals.models import Attachment, History, Signal
+from signals.apps.signals.models import Attachment, History, Signal, StatusMessageTemplate
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -153,3 +157,51 @@ class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListMode
     filterset_class = SignalCategoryRemovedAfterFilter
 
     queryset = Signal.objects.only('id').all()
+
+
+class StoreStatusMessageTemplates(viewsets.GenericViewSet, mixins.CreateModelMixin,
+                                  mixins.DestroyModelMixin, mixins.UpdateModelMixin):
+    serializer_class = StatusMessageTemplateSerializer
+    serializer_detail_class = StatusMessageTemplateSerializer
+
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+    pagination_class = None
+
+    queryset = StatusMessageTemplate.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        many = type(request.data) in [list, tuple]
+
+        serializer = self.get_serializer(data=request.data, many=many)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            self.perform_create(serializer)
+        except CoreValidationError as e:
+            raise ValidationError(e.message)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instances = []
+        for data in self.request.data:
+            self.kwargs['pk'] = data['pk']
+            instance = self.get_object()
+
+            serializer = self.get_serializer(instance, data=data, partial=partial, many=False)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+            instances.append(instance)
+
+        serializer = self.get_serializer(instances, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        self.get_queryset().filter(pk__in=[data['pk'] for data in request.data]).delete()
+        return Response(status=HTTP_204_NO_CONTENT)

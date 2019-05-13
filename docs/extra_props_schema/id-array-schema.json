@@ -1,0 +1,15 @@
+{
+  "definitions": {},
+  "type": "array",
+  "title": "The id-array answer data schema",
+  "items": {
+    "$id": "#/items",
+    "type": "string",
+    "title": "Array of ids",
+    "default": "",
+    "examples": [
+      "003176",
+      "141262"
+    ]
+  }
+}

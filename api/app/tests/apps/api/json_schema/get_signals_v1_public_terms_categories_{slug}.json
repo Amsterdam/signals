@@ -5,7 +5,33 @@
 		"_links": {
 			"type": "object",
 			"properties": {
+				"curies": {
+					"type": "object",
+					"properties": {
+						"name":{
+							"type": "string"
+						},
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"name",
+						"href"
+					]
+				},
 				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"sia:status-message-templates": {
 					"type": "object",
 					"properties": {
 						"href": {
@@ -18,7 +44,9 @@
 				}
 			},
 			"required": [
-				"self"
+				"curies",
+				"self",
+				"sia:status-message-templates"
 			]
 		},
 		"_display": {

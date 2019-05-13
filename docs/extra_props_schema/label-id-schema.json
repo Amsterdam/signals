@@ -1,0 +1,26 @@
+{
+  "definitions": {},
+  "type": "object",
+  "title": "A label id answer (radio button, drop down, confirmation box)",
+  "required": [
+    "id",
+    "label"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "An unique id for this answer combination (unique for this question, not all questions)",
+      "examples": [
+        "meer"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "title": "Client selected value",
+      "default": "",
+      "examples": [
+        "Meer lampen"
+      ]
+    }
+  }
+}
