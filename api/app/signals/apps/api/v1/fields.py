@@ -15,7 +15,12 @@ class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFiel
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('sia:status-message-templates',
+             dict(
+                 href=self.get_url(value, 'status_message_templates_main_category', request, None)
+             )),
         ])
 
         return result
@@ -33,7 +38,10 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('sia:status-message-templates',
+             dict(href=self.get_url(value, 'status_message_templates', request, None))),
         ])
 
         return result

@@ -71,6 +71,7 @@ class SIAPermissions(BasePermission):
         'POST': ['signals.sia_write'],
         'PUT': ['signals.sia_write'],
         'PATCH': ['signals.sia_write'],
+        'DELETE': ['signals.sia_write'],
     }
 
     def get_required_permissions(self, method):
