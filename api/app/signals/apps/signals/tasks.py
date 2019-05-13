@@ -23,9 +23,9 @@ def task_save_csv_files_datawarehouse():
 def translate_category(signal_id):
     signal = Signal.objects.get(pk=signal_id)
 
-    current_category = signal.category_assignmen.category
+    current_category = signal.category_assignment.category
     try:
-        trans = CategoryTranslation.objects.get(old_category=current_category).first()
+        trans = CategoryTranslation.objects.get(old_category=current_category)
     except CategoryTranslation.DoesNotExist:
         return  # no need to perform a category re-assignment
 
@@ -35,4 +35,4 @@ def translate_category(signal_id):
         'created_by': None,  # This wil show as "SIA systeem"
     }
 
-    signal.actions.update_category_assignment(data, signal)
+    Signal.actions.update_category_assignment(data, signal)

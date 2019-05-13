@@ -83,8 +83,8 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(Priority.objects.count(), 1)
 
         # Check that we sent the correct Django signal
-        patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                            signal_obj=signal)
+        patched_create_initial.send_robust.assert_called_once_with(sender=Signal.actions.__class__,
+                                                                   signal_obj=signal)
 
     @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
     def test_create_initial_with_priority_data(self, patched_create_initial):

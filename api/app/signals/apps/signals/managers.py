@@ -69,6 +69,7 @@ class SignalManager(models.Manager):
         :param priority_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
+
         with transaction.atomic():
             signal = self._create_initial_no_transaction(
                 signal_data=signal_data,
@@ -79,8 +80,8 @@ class SignalManager(models.Manager):
                 priority_data=priority_data
             )
 
-            transaction.on_commit(lambda: create_initial.send(sender=self.__class__,
-                                                              signal_obj=signal))
+            transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,
+                                                                     signal_obj=signal))
 
         return signal
 

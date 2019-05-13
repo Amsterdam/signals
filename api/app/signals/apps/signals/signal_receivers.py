@@ -5,10 +5,10 @@ from signals.apps.signals.managers import create_child, create_initial
 
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
-def create_initial_handler(sender, signals_obj, **kwargs):
-    tasks.translate_category(signals_obj)
+def signals_create_initial_handler(sender, signal_obj, **kwargs):
+    tasks.translate_category(signal_obj.id)
 
 
 @receiver(create_child, dispatch_uid='signals_create_child')
-def create_child_handler(sender, signals_obj, **kwargs):
-    tasks.translate_category(signals_obj)
+def create_child_handler(sender, signal_obj, **kwargs):
+    tasks.translate_category(signal_obj.id)

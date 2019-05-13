@@ -1,18 +1,15 @@
 from unittest import mock
 
 from django.contrib.gis.geos import Point
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
-from django.db.models.signals import post_save
-
-from signals.apps.signals.models.signal import Signal
-from signals.apps.signals.models.category_translation import CategoryTranslation
+from signals.apps.signals import tasks, workflow
 from signals.apps.signals.models.category_assignment import CategoryAssignment
-from signals.apps.signals.models.priority import Priority
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.location import STADSDEEL_CENTRUM
-from signals.apps.signals import tasks
-from signals.apps.signals import workflow
+from signals.apps.signals.models.priority import Priority
+from signals.apps.signals.models.signal import Signal
 from tests.apps.signals import factories
 
 
@@ -26,7 +23,7 @@ class TestTaskSaveCSVFilesDatawarehouse(TestCase):
         mocked_save_csv_files_datawarehouse.assert_called_once()
 
 
-class TestTaskTranslateCategory(TestCase):
+class TestTaskTranslateCategory(TransactionTestCase):
     def setUp(self):
         self.test_category_old = factories.CategoryFactory.create()
         self.test_category_old.name = 'old category'
