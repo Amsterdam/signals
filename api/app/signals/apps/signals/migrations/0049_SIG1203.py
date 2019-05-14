@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import migrations
 
 fe_uitvraag_mapping = [
@@ -101,7 +103,11 @@ def _create_question(_id, question, answer, category_url):
 
 
 def _migrate_extra_property(question, answer, signal):
-    current_category = signal.category_assignment.category
+    category_assignment = signal.category_assignment
+    if not category_assignment:
+        return
+
+    current_category = category_assignment.category
     if current_category.parent:
         category_url = CHILD_CATEGORY_URL_PATTERN.format(
             parent_category_url_pattern=PARENT_CATEGORY_URL_PATTERN.format(
@@ -115,6 +121,9 @@ def _migrate_extra_property(question, answer, signal):
         )
 
     mapping = list(filter(lambda o: o['label'] == question, fe_uitvraag_mapping))
+    if not mapping:
+        return
+
     return _create_question(
         mapping[0]['id'],
         question,
@@ -126,7 +135,9 @@ def _migrate_extra_property(question, answer, signal):
 def _migrate(signal):
     new_extra_properties = []
     for question, answer in signal.extra_properties.items():
-        new_extra_properties.append(_migrate_extra_property(question, answer, signal))
+        new_extra_property = _migrate_extra_property(question, answer, signal)
+        if new_extra_property:
+            new_extra_properties.append(new_extra_property)
     return new_extra_properties
 
 
@@ -139,23 +150,10 @@ def forward_func(apps, schema_editor):
             signal.save()
 
 
-def _rollback(extra_properties):
-    new_extra_properties = {}
-    for extra_property in extra_properties:
-        if isinstance(extra_property['answer'], str):
-            new_extra_properties[extra_property['label']] = extra_property['answer']
-        else:
-            new_extra_properties[extra_property['label']] = extra_property['answer']['value']
-    return new_extra_properties
-
-
-def backward_func(apps, schema_editor):
-    signal_model = apps.get_model('signals', 'Signal')
-    qs = signal_model.objects.filter(extra_properties__isnull=False)
-    for signal in qs:
-        if _migrated(signal.extra_properties):
-            signal.extra_properties = _rollback(signal.extra_properties)
-            signal.save()
+now = datetime.datetime.utcnow()
+backup_extra_properties = "CREATE TABLE signals_extra_properties_{} " \
+                          "AS SELECT id, signal_id, extra_properties " \
+                          "FROM signals_signal".format(now.strftime("%Y%m%d"))
 
 
 class Migration(migrations.Migration):
@@ -169,5 +167,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forward_func, backward_func),
+        migrations.RunSQL(backup_extra_properties),  # Create the backup table
+        migrations.RunPython(forward_func),
     ]
