@@ -17,7 +17,7 @@ class TestSignalReceivers(TestCase):
         signal.status = new_status
         signal.save()
 
-        update_status.send(
+        update_status.send_robust(
             sender=self.__class__,
             signal_obj=signal,
             status=new_status,

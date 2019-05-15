@@ -197,10 +197,10 @@ class SignalManager(models.Manager):
                 'created_by': user.email if user else None,
             }, signal=parent_signal)
 
-            transaction.on_commit(lambda: update_status.send(sender=self.__class__,
-                                                             signal_obj=parent_signal,
-                                                             status=status,
-                                                             prev_status=prev_status))
+            transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
+                                                                    signal_obj=parent_signal,
+                                                                    status=status,
+                                                                    prev_status=prev_status))
 
         return signal
 
@@ -217,9 +217,9 @@ class SignalManager(models.Manager):
             attachment.save()
 
             if attachment.is_image:
-                add_image.send(sender=self.__class__, signal_obj=signal)
+                add_image.send_robust(sender=self.__class__, signal_obj=signal)
 
-            add_attachment.send(sender=self.__class__, signal_obj=signal)
+            add_attachment.send_robust(sender=self.__class__, signal_obj=signal)
 
         return attachment
 
@@ -239,10 +239,10 @@ class SignalManager(models.Manager):
             signal.location = location
             signal.save()
 
-            transaction.on_commit(lambda: update_location.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               location=location,
-                                                               prev_location=prev_location))
+            transaction.on_commit(lambda: update_location.send_robust(sender=self.__class__,
+                                                                      signal_obj=signal,
+                                                                      location=location,
+                                                                      prev_location=prev_location))
 
         return location
 
@@ -275,10 +275,10 @@ class SignalManager(models.Manager):
         """
         with transaction.atomic():
             status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
-            transaction.on_commit(lambda: update_status.send(sender=self.__class__,
-                                                             signal_obj=signal,
-                                                             status=status,
-                                                             prev_status=prev_status))
+            transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
+                                                                    signal_obj=signal,
+                                                                    status=status,
+                                                                    prev_status=prev_status))
         return status
 
     def update_category_assignment(self, data, signal):
@@ -302,7 +302,7 @@ class SignalManager(models.Manager):
             signal.category_assignment = category_assignment
             signal.save()
 
-            transaction.on_commit(lambda: update_category_assignment.send(
+            transaction.on_commit(lambda: update_category_assignment.send_robust(
                 sender=self.__class__,
                 signal_obj=signal,
                 category_assignment=category_assignment,
@@ -326,10 +326,10 @@ class SignalManager(models.Manager):
             signal.reporter = reporter
             signal.save()
 
-            transaction.on_commit(lambda: update_reporter.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               reporter=reporter,
-                                                               prev_reporter=prev_reporter))
+            transaction.on_commit(lambda: update_reporter.send_robust(sender=self.__class__,
+                                                                      signal_obj=signal,
+                                                                      reporter=reporter,
+                                                                      prev_reporter=prev_reporter))
 
         return reporter
 
@@ -349,10 +349,10 @@ class SignalManager(models.Manager):
             signal.priority = priority
             signal.save()
 
-            transaction.on_commit(lambda: update_priority.send(sender=self.__class__,
-                                                               signal_obj=signal,
-                                                               priority=priority,
-                                                               prev_priority=prev_priority))
+            transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
+                                                                      signal_obj=signal,
+                                                                      priority=priority,
+                                                                      prev_priority=prev_priority))
 
         return priority
 
@@ -368,9 +368,9 @@ class SignalManager(models.Manager):
         # signals upon creation of a Note.
         with transaction.atomic():
             note = Note.objects.create(**data, _signal_id=signal.id)
-            transaction.on_commit(lambda: create_note.send(sender=self.__class__,
-                                                           signal_obj=signal,
-                                                           note=note))
+            transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
+                                                                  signal_obj=signal,
+                                                                  note=note))
             signal.save()
 
         return note
