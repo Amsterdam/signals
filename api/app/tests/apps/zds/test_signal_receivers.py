@@ -13,7 +13,7 @@ class TestSignalReceivers(TestCase):
     def test_create_initial_handler(self, mocked_tasks):
         signal = SignalFactory.create()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -28,7 +28,7 @@ class TestSignalReceivers(TestCase):
     def test_create_initial_handler_with_image(self, mocked_tasks):
         signal = SignalFactoryWithImage.create()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -48,7 +48,7 @@ class TestSignalReceivers(TestCase):
         signal.status = new_status
         signal.save()
 
-        update_status.send(
+        update_status.send_robust(
             sender=self.__class__,
             signal_obj=signal,
             status=new_status,
@@ -65,7 +65,7 @@ class TestSignalReceivers(TestCase):
         signal.status = new_status
         signal.save()
 
-        update_status.send(
+        update_status.send_robust(
             sender=self.__class__,
             signal_obj=signal,
             status=new_status,
@@ -77,7 +77,7 @@ class TestSignalReceivers(TestCase):
         signal = SignalFactoryWithImage.create()
         CaseSignalFactory(signal=signal)
 
-        add_image.send(
+        add_image.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -88,7 +88,7 @@ class TestSignalReceivers(TestCase):
     def test_add_image_handler_no_case(self):
         signal = SignalFactoryWithImage.create()
 
-        add_image.send(
+        add_image.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )

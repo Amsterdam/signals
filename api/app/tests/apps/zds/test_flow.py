@@ -22,7 +22,7 @@ class TestFlows(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -38,7 +38,7 @@ class TestFlows(ZDSMockMixin, TestCase):
 
         signal = SignalFactory()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -56,7 +56,7 @@ class TestFlows(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )
@@ -70,7 +70,7 @@ class TestFlows(ZDSMockMixin, TestCase):
 
         signal = SignalFactoryWithImage()
 
-        create_initial.send(
+        create_initial.send_robust(
             sender=self.__class__,
             signal_obj=signal,
         )

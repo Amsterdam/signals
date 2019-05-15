@@ -49,7 +49,7 @@ class TestReopen(TransactionTestCase):
             Signal.actions.update_status(new_status_data, self.signal)
 
         self.assertEqual(self.signal.status.state, HAPPY_REOPEN_SCENARIO[-1])
-        self.assertEqual(patched_udate_status_signal.send.call_count, 8)
+        self.assertEqual(patched_udate_status_signal.send_robust.call_count, 8)
         self.assertEqual(Status.objects.filter(state=workflow.HEROPEND).count(), 2)
 
     @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
@@ -62,5 +62,5 @@ class TestReopen(TransactionTestCase):
                 Signal.actions.update_status(new_status_data, self.signal)
 
         self.assertEqual(self.signal.status.state, workflow.BEHANDELING)
-        self.assertEqual(patched_udate_status_signal.send.call_count, 4)
+        self.assertEqual(patched_udate_status_signal.send_robust.call_count, 4)
         self.assertEqual(Status.objects.filter(state=workflow.HEROPEND).count(), 0)

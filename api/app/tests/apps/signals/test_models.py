@@ -112,7 +112,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.locations.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_location.send.assert_called_once_with(
+        patched_update_location.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             location=location,
@@ -139,7 +139,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.statuses.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_status.send.assert_called_once_with(
+        patched_update_status.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             status=status,
@@ -159,7 +159,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_category_assignment.send.assert_called_once_with(
+        patched_update_category_assignment.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             category_assignment=category_assignment,
@@ -189,7 +189,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.reporter, reporter)
         self.assertEqual(signal.reporters.count(), 2)
 
-        patched_update_reporter.send.assert_called_once_with(
+        patched_update_reporter.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             reporter=reporter,
@@ -207,7 +207,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.priority, priority)
         self.assertEqual(signal.priorities.count(), 2)
 
-        patched_update_priority.send.assert_called_once_with(
+        patched_update_priority.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             priority=priority,
@@ -230,7 +230,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertNotEqual(old_updated_at, new_updated_at)
 
         # check that the relevant Django signal fired
-        patched_create_note.send.assert_called_once_with(
+        patched_create_note.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             note=note)
@@ -288,7 +288,7 @@ class TestSignalManager(TransactionTestCase):
         prev_status = parent_signal_statusses[0]
         status = parent_signal_statusses[1]
 
-        patched_update_status.send.assert_called_with(
+        patched_update_status.send_robust.assert_called_with(
             sender=Signal.actions.__class__,
             signal_obj=parent_signal,
             status=status,
