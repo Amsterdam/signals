@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 
 
 class CreateModelMixin(mixins.CreateModelMixin):
-    def perform_update(self, serializer):
+    def perform_create(self, serializer):
         try:
             return super(CreateModelMixin, self).perform_create(serializer=serializer)
         except DjangoValidationError as e:
