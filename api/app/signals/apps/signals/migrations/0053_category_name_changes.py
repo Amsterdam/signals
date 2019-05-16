@@ -84,7 +84,7 @@ REQUESTED_CHANGES = [
     ('Put / riolering verstopt',                   'put-riolering-verstopt',                  'Put / riolering verstopt',                  ),  # noqa: 501
     ('Speelplaats',                                'speelplaats',                             'Speelplaats',                               ),  # noqa: 501
     ('Sportvoorziening',                           'sportvoorziening',                        'Sportvoorziening',                          ),  # noqa: 501
-    ('Stadsplattegronden',                         'stadsplattegronden',                      'stadsplattegronden',                        ),  # noqa: 501
+    ('Stadsplattegronden',                         'stadsplattegronden',                      'Stadsplattegronden',                        ),  # noqa: 501
     ('Straatmeubilair',                            'straatmeubilair',                         'Straatmeubilair',                           ),  # noqa: 501
     ('Verdeelkasten / bekabeling',                 'verdeelkasten-bekabeling',                'Verdeelkasten / bekabeling',                ),  # noqa: 501
     ('Verkeersbord, verkeersafzetting',            'verkeersbord-verkeersafzetting',          'Verkeersbord, verkeersafzetting',           ),  # noqa: 501
