@@ -7,13 +7,14 @@ from django.core.exceptions import ValidationError as CoreValidationError
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
+from signals.apps.api import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView
 from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter, SignalFilter

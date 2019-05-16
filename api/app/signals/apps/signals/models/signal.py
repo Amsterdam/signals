@@ -172,9 +172,9 @@ class Signal(CreatedUpdatedModel):
             # The parent of this Signal cannot be a child of another Signal
             raise ValidationError('A child of a child is not allowed')
 
-        if (self.is_child() and
+        if (self.pk is None and self.is_child() and
                 self.siblings.count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
-            # we are a child and our parent already has the max number of children
+            # we are a new child and our parent already has the max number of children
             raise ValidationError('Maximum number of children reached for the parent Signal')
 
         if self.children.exists() and self.status.state != workflow.GESPLITST:

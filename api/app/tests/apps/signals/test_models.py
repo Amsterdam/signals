@@ -376,11 +376,8 @@ class TestSignalModel(TestCase):
         signal_parent = factories.SignalFactory.create()
         factories.SignalFactory.create_batch(3, parent=signal_parent)
 
-        signal = factories.SignalFactory.create()
-        signal.parent = signal_parent
-
         with self.assertRaises(ValidationError) as cm:
-            signal.save()
+            factories.SignalFactory.create(parent=signal_parent)
 
         e = cm.exception
         self.assertEqual(e.message, 'Maximum number of children reached for the parent Signal')
