@@ -4,6 +4,7 @@ import os
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from django.utils.http import urlencode
@@ -1747,6 +1748,36 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         )
         self.assertIn('52', response_data[0]['description'])  # no string compares on floats
         self.assertIn('Locatie is gepind op de kaart', response_data[0]['description'])
+
+    @patch("signals.apps.api.v1.serializers.PrivateSignalSerializerList.create")
+    def test_post_django_validation_error_to_drf_validation_error(self, mock):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        mock.side_effect = ValidationError('this is a test')
+
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(1, len(response.json()))
+        self.assertEqual('this is a test', response.json()[0])
+
+    @patch("signals.apps.api.v1.serializers.PrivateSignalSerializerDetail.update")
+    def test_patch_django_validation_error_to_drf_validation_error(self, mock):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_status.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        mock.side_effect = ValidationError('this is a test')
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(1, len(response.json()))
+        self.assertEqual('this is a test', response.json()[0])
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
