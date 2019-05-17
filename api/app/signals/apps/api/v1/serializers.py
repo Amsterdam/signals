@@ -450,25 +450,25 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         Update the location of a Signal using the action manager
         """
         if 'location' in validated_data:
-            location_data = validated_data.pop('location')
+            location_data = validated_data['location']
             location_data['created_by'] = self.context['request'].user.email
 
-            Signal.actions.update_location(location_data, instance)
+            # Signal.actions.update_multiple(validated_data, instance)
 
     def _update_status(self, instance, validated_data):
         """
         Update the status of a Signal using the action manager
         """
         if 'status' in validated_data:
-            status_data = validated_data.pop('status')
+            status_data = validated_data['status']
             status_data['created_by'] = self.context['request'].user.email
 
-            try:
-                # Catch core validation exception raised when updating the status. Throw DRF
-                # ValidationError instead.
-                Signal.actions.update_status(status_data, instance)
-            except core_exceptions.ValidationError as e:
-                raise ValidationError(e)
+            # try:
+            #     # Catch core validation exception raised when updating the status. Throw DRF
+            #     # ValidationError instead.
+            #     Signal.actions.update_multiple(validated_data, instance)
+            # except core_exceptions.ValidationError as e:
+            #     raise ValidationError(e)
 
     def _update_category_assignment(self, instance: Signal, validated_data):
         """
@@ -477,7 +477,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         category_assignment_data = validated_data['category_assignment']
         category_assignment_data['created_by'] = self.context['request'].user.email
 
-        Signal.actions.update_category_assignment(category_assignment_data, instance)
+        # Signal.actions.update_multiple(validated_data, instance)
 
     def _update_priority(self, instance, validated_data):
         """
@@ -486,7 +486,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         priority_data = validated_data['priority']
         priority_data['created_by'] = self.context['request'].user.email
 
-        Signal.actions.update_priority(priority_data, instance)
+        # Signal.actions.update_multiple(validated_data, instance)
 
     def _update_notes(self, instance, validated_data):
         """
@@ -499,7 +499,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             note_data = validated_data['notes'][0]
             note_data['created_by'] = self.context['request'].user.email
 
-            Signal.actions.create_note(note_data, instance)
+            # Signal.actions.update_multiple(validated_data, instance)
 
     def update(self, instance, validated_data):
         """
@@ -522,6 +522,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         if 'notes' in validated_data:
             self._update_notes(instance, validated_data)
 
+        instance = Signal.actions.update_multiple(validated_data, instance)
         return instance
 
 

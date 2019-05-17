@@ -404,6 +404,9 @@ class SignalManager(models.Manager):
     def update_multiple(self, data, signal):
         """
         Perform one atomic update on multiple properties of `Signal` object.
+
+        Note, this updates:
+        - CategoryAssignment, Location, Priority, Note, Status
         """
         from .models import CategoryAssignment, Location, Priority, Note, Status
 
@@ -416,12 +419,10 @@ class SignalManager(models.Manager):
 
         with transaction.atomic():
             to_send = []
-
             sender = self.__class__
-            if 'location' in data:
-                prev_location = signal.location
-                location = self._update_location_no_transaction(data['location'], signal)
 
+            if 'location' in data:
+                location, prev_location = self._update_location_no_transaction(data['location'], signal)
                 to_send.append((update_location, {
                     'sender': sender,
                     'signal_obj': signal,
@@ -429,5 +430,52 @@ class SignalManager(models.Manager):
                     'prev_location': prev_location
                 }))
 
+            if 'status' in data:
+                prev_status, status = self._update_status_no_transaction(data['status'], signal)
+                to_send.append((update_status, {
+                    'sender': sender,
+                    'signal_obj': signal,
+                    'status': status,
+                    'prev_status': prev_status
+                }))
 
+            if 'category_assignment' in data:
+                # Only update if category actually changes (TODO: remove when we
+                # add consistency checks to API -- i.e. when we check that only
+                # the latest version of a Signal can be mutated.)
+                if signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
+                    prev_category_assignment, category_assignment = \
+                        self._update_category_assignment_no_transaction(
+                            data['category_assignment'], signal)
+
+                    to_send.append((update_category_assignment, {
+                        'sender': sender,
+                        'signal_obj': signal,
+                        'category_assignment': category_assignment,
+                        'prev_category_assignment': prev_category_assignment
+                    }))
+            
+            if 'priority' in data:
+                priority, prev_priority = \
+                    self._update_priority_no_transaction(data['priority'], signal)
+                to_send.append((update_priority, {
+                    'sender': sender,
+                    'signal_obj': signal,
+                    'priority': priority,
+                    'prev_priority': prev_priority
+                }))
+
+            if 'notes' in data:
+                # The 0 index is there because we only allow one note to be
+                # added per PATCH.
+                note = self._create_note_no_transaction(data['notes'][0], signal)
+                to_send.append((create_note, {
+                    'sender': sender,
+                    'signal_obj': signal,
+                    'note': note
+                }))
+
+            # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
+
+        return signal
