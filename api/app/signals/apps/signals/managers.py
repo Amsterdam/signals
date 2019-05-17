@@ -223,6 +223,19 @@ class SignalManager(models.Manager):
 
         return attachment
 
+    def _update_location_no_transaction(self, data, signal):
+        """
+        TBD
+        """
+        from .models import Location
+
+        prev_location = signal.location
+        location = Location.objects.create(**data, _signal_id=signal.id)
+        signal.location = location
+        signal.save()
+
+        return location, prev_location
+
     def update_location(self, data, signal):
         """Update (create new) `Location` object for given `Signal` object.
 
@@ -230,15 +243,8 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Location object
         """
-        from .models import Location
-
         with transaction.atomic():
-            prev_location = signal.location
-
-            location = Location.objects.create(**data, _signal_id=signal.id)
-            signal.location = location
-            signal.save()
-
+            location, prev_location = self._update_location_no_transaction(data, signal)
             transaction.on_commit(lambda: update_location.send_robust(sender=self.__class__,
                                                                       signal_obj=signal,
                                                                       location=location,
@@ -281,6 +287,19 @@ class SignalManager(models.Manager):
                                                                     prev_status=prev_status))
         return status
 
+    def _update_category_assignment_no_transaction(self, data, signal):
+        """
+        TBD
+        """
+        from .models import CategoryAssignment
+
+        prev_category_assignment = signal.category_assignment
+        category_assignment = CategoryAssignment.objects.create(**data, _signal_id=signal.id)
+        signal.category_assignment = category_assignment
+        signal.save()
+
+        return category_assignment, prev_category_assignment
+
     def update_category_assignment(self, data, signal):
         """Update (create new) `CategoryAssignment` object for given `Signal` object.
 
@@ -288,7 +307,6 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Category object
         """
-        from .models import CategoryAssignment
 
         if signal.category_assignment is not None \
                 and signal.category_assignment.category.id == data['category'].id:
@@ -296,12 +314,8 @@ class SignalManager(models.Manager):
             return
 
         with transaction.atomic():
-            prev_category_assignment = signal.category_assignment
-
-            category_assignment = CategoryAssignment.objects.create(**data, _signal_id=signal.id)
-            signal.category_assignment = category_assignment
-            signal.save()
-
+            category_assignment, prev_category_assignment = \
+                self._update_category_assignment_no_transaction(data, signal)
             transaction.on_commit(lambda: update_category_assignment.send_robust(
                 sender=self.__class__,
                 signal_obj=signal,
@@ -333,6 +347,20 @@ class SignalManager(models.Manager):
 
         return reporter
 
+    def _update_priority_no_transaction(self, data, signal):
+        """
+        TBD
+        """
+        from .models import Priority
+
+        prev_priority = signal.priority
+
+        priority = Priority.objects.create(**data, _signal_id=signal.id)
+        signal.priority = priority
+        signal.save()
+
+        return priority, prev_priority
+
     def update_priority(self, data, signal):
         """Update (create new) `Priority` object for given `Signal` object.
 
@@ -340,15 +368,8 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Priority object
         """
-        from .models import Priority
-
         with transaction.atomic():
-            prev_priority = signal.priority
-
-            priority = Priority.objects.create(**data, _signal_id=signal.id)
-            signal.priority = priority
-            signal.save()
-
+            priority, prev_priority = self._update_priority_no_transaction(self, data, signal)
             transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
                                                                       signal_obj=signal,
                                                                       priority=priority,
@@ -356,21 +377,56 @@ class SignalManager(models.Manager):
 
         return priority
 
+    def _create_note_no_transaction(self, data, signal):
+        from .models import Note
+
+        note = Note.objects.create(**data, _signal_id=signal.id)
+        return note
+
     def create_note(self, data, signal):
         """Create a new `Note` object for a given `Signal` object.
 
         :param data: deserialized data dict
         :returns: Note object
         """
-        from .models import Note
 
         # Added for completeness of the internal API, and firing of Django
         # signals upon creation of a Note.
         with transaction.atomic():
-            note = Note.objects.create(**data, _signal_id=signal.id)
+            note = self._create_note_no_transaction(data, signal)
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
                                                                   signal_obj=signal,
                                                                   note=note))
             signal.save()
 
         return note
+
+    def update_multiple(self, data, signal):
+        """
+        Perform one atomic update on multiple properties of `Signal` object.
+        """
+        from .models import CategoryAssignment, Location, Priority, Note, Status
+
+        def send_signals(to_send):
+            """
+            Helper function, sends properly instantiated Django Signals.
+            """
+            for django_signal, kwargs in to_send:
+                django_signal.send_robust(**kwargs)
+
+        with transaction.atomic():
+            to_send = []
+
+            sender = self.__class__
+            if 'location' in data:
+                prev_location = signal.location
+                location = self._update_location_no_transaction(data['location'], signal)
+
+                to_send.append((update_location, {
+                    'sender': sender,
+                    'signal_obj': signal,
+                    'location': location,
+                    'prev_location': prev_location
+                }))
+
+            transaction.on_commit(lambda: send_signals(to_send))
