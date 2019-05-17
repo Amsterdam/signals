@@ -369,7 +369,7 @@ class SignalManager(models.Manager):
         :returns: Priority object
         """
         with transaction.atomic():
-            priority, prev_priority = self._update_priority_no_transaction(self, data, signal)
+            priority, prev_priority = self._update_priority_no_transaction(data, signal)
             transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
                                                                       signal_obj=signal,
                                                                       priority=priority,
@@ -428,5 +428,6 @@ class SignalManager(models.Manager):
                     'location': location,
                     'prev_location': prev_location
                 }))
+
 
             transaction.on_commit(lambda: send_signals(to_send))
