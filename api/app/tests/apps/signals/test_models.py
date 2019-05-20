@@ -504,6 +504,13 @@ class TestStatusModel(TestCase):
         self.assertIn('target_api', error.exception.error_dict)
 
     def test_state_afgehandeld_text_required_valid(self):
+        new_status = Status(_signal=self.signal, state=workflow.BEHANDELING, text='Working on it.')
+        new_status.full_clean()
+        new_status.save()
+
+        self.signal.status = new_status
+        self.signal.save()
+
         new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done with it.')
         new_status.full_clean()
         new_status.save()

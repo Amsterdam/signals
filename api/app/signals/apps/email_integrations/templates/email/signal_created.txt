@@ -1,37 +1,22 @@
-Bedankt!
-
-Uw melding ({{ signal.id }}):
-
-{{ signal.text }}
+Bedankt voor uw melding
+Meldingnummer {{ signal.sia_id }}
 
 Wat doen we met uw melding?
 
 {{ afhandelings_text }}
 
-*** Details van uw melding ***
+Informatie over uw melding
 
-{% if signal.location.address_text %}
-Hier is het : {{ signal.location.address_text }}
-{% endif %}
+Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
+Locatie: {{ signal.location.address_text }}
+Categorie: {{ signal.category_assignment.category.name }}
 
-Tijdstip : {{ signal.incident_date_start|date:"DATETIME_FORMAT" }}
-{% if signal.text_extra %}
+Uw omschrijving:
+{{ signal.text }}
 
-{{ signal.text_extra }}
-{% endif %}
-{% if signal.extra_properties %}
+Meer weten?
+Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
 
-{% for key, value in signal.extra_properties.items %}
-{{ key }} - {{ value }}
-{% endfor %}
-{% endif %}
+Met vriendelijke groet,
 
-Uw e-mailadres : {{ signal.reporter.email  }}
-
-{% if signal.reporter.phone %}
-Uw (mobiele) telefoon : {{ signal.reporter.phone }}
-{% endif %}
-
-******************************
-
-Als u vragen hebt, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.id }}.
+Gemeente Amsterdam

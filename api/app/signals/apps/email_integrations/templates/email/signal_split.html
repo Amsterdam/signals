@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding is gesplitst</title>
+</head>
+<body>
+    <p>
+        <h1>Uw melding is gesplitst</h1>
+        <h2>Meldingnummer {{ signal.sia_id }}</h2>
+    </p>
+
+    <p>
+        <b>Wat hebben we gedaan met uw melding?</b><br/>
+        Uw melding bevatte verschillende onderwerpen. Om zo snel mogelijk een deel van de situatie op te kunnen lossen hebben we daarom deze melding opgesplitst in de volgende deelmeldingen:<br/>
+        <br/>
+        <ul>
+        {% for child_signal in signal.children.all %}
+            <li>Melding {{ child_signal.sia_id }} (categorie: {{ child_signal.category_assignment.category.name }})</li>
+        {% endfor %}
+        </ul>
+        <br/>
+        U krijgt voor elke deelmelding een apart bericht over de afhandeling. De originele melding is nu administratief afgesloten.
+    </p>
+
+    <p>
+        <b>Informatie over uw originele melding</b>
+        <br/>
+        Gemeld op: <i>{{ signal.created_at|date:"DATETIME_FORMAT" }}</i><br/>
+        Locatie: <i>{{ signal.location.address_text }}</i><br/>
+        Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
+        <br>
+        Uw omschrijving:<br/>
+        <i>{{ signal.text }}</i>
+    </p>
+
+    <p>
+        <b>Meer weten?</b>
+        Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
+    </p>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        Gemeente Amsterdam
+    </p>
+</body>
+</html>

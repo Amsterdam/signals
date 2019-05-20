@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bedankt voor uw melding {{ signal.sia_id }}</title>
+</head>
+<body>
+    <p>
+        <h1>Bedankt voor uw melding</h1>
+        <h2>Meldingnummer {{ signal.sia_id }}</h2>
+    </p>
+
+    <p>
+        <b>Wat doen we met uw melding?</b><br/>
+        {{ afhandelings_text }}
+    </p>
+
+    <p>
+        <b>Informatie over uw melding</b>
+        <br/>
+        Gemeld op: <i>{{ signal.created_at|date:"DATETIME_FORMAT" }}</i><br/>
+        Locatie: <i>{{ signal.location.address_text }}</i><br/>
+        Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
+        <br>
+        Uw omschrijving:<br/>
+        <i>{{ signal.text }}</i>
+    </p>
+
+    <p>
+        <b>Meer weten?</b><br/>
+        Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: <b>{{ signal.sia_id }}</b>.
+    </p>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        Gemeente Amsterdam
+    </p>
+</body>
+</html>

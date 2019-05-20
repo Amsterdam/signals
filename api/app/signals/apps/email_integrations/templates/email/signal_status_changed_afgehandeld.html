@@ -2,31 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.</title>
+    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.sia_id }} is afgehandeld.</title>
 </head>
 <body>
     <p>
-        Geachte melder,
+        {% if signal.is_child %}
+            <h1>Een deel van uw melding is afgehandeld</h1>
+        {% else %}
+            <h1>Uw melding is afgehandeld</h1>
+        {% endif %}
+        <h2>Meldingnummer {{ signal.sia_id }}</h2>
     </p>
 
     <p>
-        Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.
-        <br/><br/>
-        {% if status.text %}
-        De volgende toelichting is daarbij gegeven:<br/>
-        {{ status.text }}<br/><br/>
+        {% if signal.is_child %}
+        Wat hebben we gedaan met uw deelmelding?<br/>
+        Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.<br/>
+        <br/>
+        Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.<br/>
+        {% else %}
+        Wat hebben we gedaan met uw melding?<br/>
+        Wij hebben uw melding zojuist afgehandeld.<br/>
         {% endif %}
-        Hieronder staat de samenvatting van het door u ingevulde formulier.
-        <br/><br/>
-        Samenvatting melding: {{ signal.id }}
         <br/>
-        Adres: {{ signal.location.address_text }}
+        <i>{{ signal.status.text }}</i>
+    </p>
+
+    <p>
+        <b>Informatie over uw melding</b>
         <br/>
-        Stadsdeel: {{ signal.location.get_stadsdeel_display }}
-        <br/>
-        Rubriek: {{ signal.category_assignment.category.parent.name }}
-        <br/>
-        Uw omschrijving: {{ signal.text }}
+        Gemeld op: <i>{{ signal.created_at|date:"DATETIME_FORMAT" }}</i><br/>
+        Locatie: <i>{{ signal.location.address_text }}</i><br/>
+        Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
+        <br>
+        Uw omschrijving:<br/>
+        <i>{{ signal.text }}</i>
     </p>
 
     <p>
@@ -43,6 +53,11 @@
                 </td>
             </tr>
         </table>
+    </p>
+
+    <p>
+        <b>Meer weten?</b><br/>
+        Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: <b>{{ signal.sia_id }}</b>.
     </p>
 
     <p>
