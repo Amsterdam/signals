@@ -3,8 +3,10 @@ Test and document the behavior of the Signal instance updates via patches.
 """
 import os
 import unittest
+from unittest import mock
 from urllib.parse import urlparse
 
+from django.core.exceptions import ValidationError
 from rest_framework.reverse import reverse
 
 from signals.apps.signals import workflow
@@ -70,7 +72,10 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'category': {
                 'sub_category': self.link_test_cat_sub,
                 'text': 'TEST CATEGORY ASSIGNMENT UPDATE',
-            }
+            },
+            'notes': [{
+                'text': 'TEST NOTE BODY',
+            }]
         }
 
     def test_update_status_and_category(self):
@@ -92,7 +97,11 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             response_data['category']['category_url'], self.payload['category']['sub_category'])
         self.assertEqual(response_data['category']['text'], self.payload['category']['text'])
 
-    def test_update_status_and_failed_category(self):
+    @mock.patch(
+        'signals.apps.signals.managers.SignalManager._update_category_assignment_no_transaction',
+        autospec=True
+    )
+    def test_update_status_and_failed_category(self, mocked):
         self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
 
@@ -104,7 +113,8 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         category_url_before = response_data['category']['category_url']
 
         # Update signal instance (use invalid category assignment data)
-        self.payload['category']['sub_category'] = 'THIS IS NO SUB CATEGORY URL'
+        mocked.side_effect = ValidationError('Something, something, error!')
+        self.payload['category']['sub_category'] = self.link_test_cat_sub
         response = self.client.patch(detail_endpoint, data=self.payload, format='json')
         self.assertEqual(response.status_code, 400)
 
@@ -118,7 +128,9 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertUrlPathMatch(response_data['category']['category_url'], category_url_before)
         self.assertEqual(response_data['status']['state'], status_before)
 
-    def test_update_category_and_failed_status(self):
+    @mock.patch('signals.apps.signals.managers.SignalManager._update_status_no_transaction',
+                autospec=True)
+    def test_update_category_and_failed_status(self, mocked):
         self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
 
@@ -130,7 +142,8 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         category_url_before = response_data['category']['category_url']
 
         # Update signal instance (use invalid status data)
-        self.payload['status']['state'] = 'NOT STATE AT ALL !'
+        mocked.side_effect = ValidationError('Something, something, error!')
+        self.payload['status']['state'] = workflow.BEHANDELING
         response = self.client.patch(detail_endpoint, data=self.payload, format='json')
         self.assertEqual(response.status_code, 400)
 
@@ -144,7 +157,9 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertUrlPathMatch(response_data['category']['category_url'], category_url_before)
         self.assertEqual(response_data['status']['state'], status_before)
 
-    def test_partial_fail_no_django_signals_fired(self):
+    @mock.patch('signals.apps.signals.managers.SignalManager._create_note_no_transaction',
+                autospec=True)
+    def test_partial_fail_no_django_signals_fired(self, mocked):
         # Receiver for Django signals involved in PATCHes to SIA Signal instances
         fake_receiver = unittest.mock.MagicMock()
 
@@ -158,8 +173,8 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
 
-        # Update signal instance (use invalid category assignment data)
-        self.payload['category']['sub_category'] = 'THIS IS NO SUB CATEGORY URL'
+        mocked.side_effect = ValidationError('Something, something, error!')
+        self.payload['category']['sub_category'] = self.link_test_cat_sub
         response = self.client.patch(detail_endpoint, data=self.payload, format='json')
         self.assertEqual(response.status_code, 400)
 

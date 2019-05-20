@@ -5,7 +5,6 @@ import copy
 from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
-from django.core import exceptions as core_exceptions
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -445,85 +444,27 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
-    def _update_location(self, instance, validated_data):
-        """
-        Update the location of a Signal using the action manager
-        """
-        if 'location' in validated_data:
-            location_data = validated_data['location']
-            location_data['created_by'] = self.context['request'].user.email
-
-            # Signal.actions.update_multiple(validated_data, instance)
-
-    def _update_status(self, instance, validated_data):
-        """
-        Update the status of a Signal using the action manager
-        """
-        if 'status' in validated_data:
-            status_data = validated_data['status']
-            status_data['created_by'] = self.context['request'].user.email
-
-            # try:
-            #     # Catch core validation exception raised when updating the status. Throw DRF
-            #     # ValidationError instead.
-            #     Signal.actions.update_multiple(validated_data, instance)
-            # except core_exceptions.ValidationError as e:
-            #     raise ValidationError(e)
-
-    def _update_category_assignment(self, instance: Signal, validated_data):
-        """
-        Update the category assignment of a Signal using the action manager
-        """
-        category_assignment_data = validated_data['category_assignment']
-        category_assignment_data['created_by'] = self.context['request'].user.email
-
-        # Signal.actions.update_multiple(validated_data, instance)
-
-    def _update_priority(self, instance, validated_data):
-        """
-        Update the priority of a Signal using the action manager
-        """
-        priority_data = validated_data['priority']
-        priority_data['created_by'] = self.context['request'].user.email
-
-        # Signal.actions.update_multiple(validated_data, instance)
-
-    def _update_notes(self, instance, validated_data):
-        """
-        Not really updating notes, we are only adding new notes
-
-        Note: For now we only allow the creation of only one note through the API, it still needs
-              to be provided as a list though :(
-        """
-        if 'notes' in validated_data and len(validated_data['notes']) > 0:
-            note_data = validated_data['notes'][0]
-            note_data['created_by'] = self.context['request'].user.email
-
-            # Signal.actions.update_multiple(validated_data, instance)
-
     def update(self, instance, validated_data):
         """
         Perform update on nested models.
 
-        Note: Reporter cannot be updated via the API.
+        Note:
+        - Reporter cannot be updated via the API.
+        - Atomic update (all fail/succeed), django signals on full success (see
+          underlying update_multiple method of actions SignalManager).
         """
-        if 'location' in validated_data:
-            self._update_location(instance, validated_data)
+        user_email = self.context['request'].user.email
 
-        if 'status' in validated_data:
-            self._update_status(instance, validated_data)
+        for _property in ['location', 'status', 'category_assignment', 'priority']:
+            if _property in validated_data:
+                data = validated_data[_property]
+                data['created_by'] = user_email
 
-        if 'category_assignment' in validated_data:
-            self._update_category_assignment(instance, validated_data)
+        if 'notes' in validated_data and validated_data['notes']:
+            note_data = validated_data['notes'][0]
+            note_data['created_by'] = user_email
 
-        if 'priority' in validated_data:
-            self._update_priority(instance, validated_data)
-
-        if 'notes' in validated_data:
-            self._update_notes(instance, validated_data)
-
-        instance = Signal.actions.update_multiple(validated_data, instance)
-        return instance
+        return Signal.actions.update_multiple(validated_data, instance)
 
 
 class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):

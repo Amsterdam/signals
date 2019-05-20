@@ -17,6 +17,16 @@ update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_p
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
 
 
+def send_signals(to_send):
+    """
+    Helper function, sends properly instantiated Django Signals.
+
+    :param to_send: list of tuples of django signal definition and keyword arguments
+    """
+    for django_signal, kwargs in to_send:
+        django_signal.send_robust(**kwargs)
+
+
 class SignalManager(models.Manager):
 
     def _create_initial_no_transaction(self, signal_data, location_data, status_data,
@@ -407,22 +417,17 @@ class SignalManager(models.Manager):
 
         Note, this updates:
         - CategoryAssignment, Location, Priority, Note, Status
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Updated Signal object
         """
-        from .models import CategoryAssignment, Location, Priority, Note, Status
-
-        def send_signals(to_send):
-            """
-            Helper function, sends properly instantiated Django Signals.
-            """
-            for django_signal, kwargs in to_send:
-                django_signal.send_robust(**kwargs)
 
         with transaction.atomic():
             to_send = []
             sender = self.__class__
 
             if 'location' in data:
-                location, prev_location = self._update_location_no_transaction(data['location'], signal)
+                location, prev_location = self._update_location_no_transaction(data['location'], signal)  # noqa: E501
                 to_send.append((update_location, {
                     'sender': sender,
                     'signal_obj': signal,
@@ -454,7 +459,7 @@ class SignalManager(models.Manager):
                         'category_assignment': category_assignment,
                         'prev_category_assignment': prev_category_assignment
                     }))
-            
+
             if 'priority' in data:
                 priority, prev_priority = \
                     self._update_priority_no_transaction(data['priority'], signal)
@@ -478,4 +483,5 @@ class SignalManager(models.Manager):
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
+        signal.refresh_from_db()
         return signal
