@@ -1876,6 +1876,41 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertEqual(self.test_host + non_image_attachments[1].file.url,
                          data['results'][3]['location'])
 
+    def test_patch_multiple_response_most_recent(self):
+        """
+        Signal returned from detail endpoint after PATCH must be up to date.
+        """
+        detail_endpoint = self.detail_endpoint.format(self.signal.id)
+        response = self.client.get(detail_endpoint)
+        self.assetEqual(response.staus_code, 200)
+        response_data = response.json()
+
+        cat_url_before = response_data['category']['category_url']
+        state_before = response_data['status']['state']
+
+        SOME_MESSAGE_A = 'SOME MESSAGE A'
+        SOME_MESSAGE_B = 'SOME MESSAGE B'
+        payload = {
+            'status': {
+                'state': workflow.BEHANDELING,  # StatusFactory always uses workflow.GEMELD
+                'text': SOME_MESSAGE_A,
+            },
+            'category': {
+                'sub_category': self.link_test_cat_sub,
+                'text': SOME_MESSAGE_B,
+            }
+        }
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.patch(detail_endpoint, data=payload, format='json')
+        self.assetEqual(response.staus_code, 200)
+        response_data = response.json()
+
+        self.assertNotEqual(cat_url_before, response_data['category']['category_url'])
+        self.assertEqual(SOME_MESSAGE_B, response.data['category']['text'])
+        self.assertNotEqual(state_before, response_data['status']['state'])
+        self.assertEqual(SOME_MESSAGE_A, response.data['status']['text'])
+
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     list_endpoint = "/signals/v1/public/signals/"
