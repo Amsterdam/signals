@@ -1882,7 +1882,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         """
         detail_endpoint = self.detail_endpoint.format(self.signal.id)
         response = self.client.get(detail_endpoint)
-        self.assetEqual(response.staus_code, 200)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
         cat_url_before = response_data['category']['category_url']
@@ -1903,7 +1903,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.patch(detail_endpoint, data=payload, format='json')
-        self.assetEqual(response.staus_code, 200)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
         self.assertNotEqual(cat_url_before, response_data['category']['category_url'])
