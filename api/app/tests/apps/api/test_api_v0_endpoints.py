@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import skip
 from unittest.mock import patch
 
 from django.conf import settings
@@ -497,6 +498,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.status.state, result['state'])
         self.assertEqual(self.signal.status.user, self.superuser.username)
 
+    @skip('This transition became valid because re-categorization and status change to GEMELD')
     def test_post_status_invalid_transition(self):
         # Prepare current state.
         self.signal.status.state = workflow.AFWACHTING
