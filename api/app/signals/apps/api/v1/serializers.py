@@ -522,6 +522,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         if 'notes' in validated_data:
             self._update_notes(instance, validated_data)
 
+        instance.refresh_from_db()
         return instance
 
 
