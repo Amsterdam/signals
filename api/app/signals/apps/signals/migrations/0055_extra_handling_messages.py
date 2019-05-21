@@ -1,6 +1,5 @@
 """Category changes see SIG-1255."""
-from django.db import migrations, models
-from django.utils.text import slugify
+from django.db import migrations
 
 CHANGE = {
     'overlast-in-de-openbare-ruimte': {
