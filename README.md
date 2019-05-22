@@ -211,5 +211,3 @@ Then import the file with :
 `docker exec -it signals python manage.py create_users /tmp/users.csv`
 
 This should create users in the CSV file. It does NOT overwrite passwords.
-
-test
