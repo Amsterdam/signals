@@ -92,6 +92,7 @@ class APIClient():
         )
         response.raise_for_status()
         self._check_status(signal_id)
+        print('')
 
 
 class BulkCancellation():
@@ -107,8 +108,8 @@ class BulkCancellation():
     def _parse_csv(self, filename):
         """Parse CSV with signal_ids to update."""
         signal_ids = []
-        with open(filename, 'r') as f:
-            reader = csv.reader(f)
+        with open(filename, 'r', encoding='cp1252') as f:
+            reader = csv.reader(f, delimiter=';')
 
             for row in reader:
                 try:
