@@ -32,7 +32,7 @@ class SignalManager(models.Manager):
     def _create_initial_no_transaction(self, signal_data, location_data, status_data,
                                        category_assignment_data, reporter_data, priority_data=None):
         """Create a new `Signal` object with all related objects.
-            If a transaction is needed use create_initial
+            If a transaction is needed use SignalManager.create_initial
 
         :param signal_data: deserialized data dict
         :param location_data: deserialized data dict
@@ -234,8 +234,12 @@ class SignalManager(models.Manager):
         return attachment
 
     def _update_location_no_transaction(self, data, signal):
-        """
-        TBD
+        """Update (create new) `Location` object for given `Signal` object.
+            If a transaction is needed use SignalManager.update_location
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Location object
         """
         from .models import Location
 
@@ -263,8 +267,8 @@ class SignalManager(models.Manager):
         return location
 
     def _update_status_no_transaction(self, data, signal):
-        """ Update (create new) `Status` object for given `Signal` object.
-            If a transaction is needed use update status
+        """Update (create new) `Status` object for given `Signal` object.
+            If a transaction is needed use SignalManager.update_status
 
         :param data: deserialized data dict
         :param signal: Signal object
@@ -283,7 +287,7 @@ class SignalManager(models.Manager):
         return status, prev_status
 
     def update_status(self, data, signal):
-        """ Add a transaction to the _update_status_no_transaction
+        """Update (create new) `Status` object for given `Signal` object.
 
         :param data: deserialized data dict
         :param signal: Signal object
@@ -298,8 +302,12 @@ class SignalManager(models.Manager):
         return status
 
     def _update_category_assignment_no_transaction(self, data, signal):
-        """
-        TBD
+        """Update (create new) `CategoryAssignment` object for given `Signal` object.
+            If a transaction is needed use SignalManager.update_category_assignment
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Category object
         """
         from .models import CategoryAssignment
 
@@ -358,8 +366,12 @@ class SignalManager(models.Manager):
         return reporter
 
     def _update_priority_no_transaction(self, data, signal):
-        """
-        TBD
+        """Update (create new) `Priority` object for given `Signal` object.
+           If a transaction is needed use SignalManager.update_priority
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Priority object
         """
         from .models import Priority
 
@@ -388,6 +400,12 @@ class SignalManager(models.Manager):
         return priority
 
     def _create_note_no_transaction(self, data, signal):
+        """Create a new `Note` object for a given `Signal` object.
+           If a transaction is needed use SignalManager.create_note
+
+        :param data: deserialized data dict
+        :returns: Note object
+        """
         from .models import Note
 
         note = Note.objects.create(**data, _signal_id=signal.id)
