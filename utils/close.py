@@ -168,25 +168,41 @@ def handle_cli():
             raise ValueError(f'Unknown environment {value}')
         return value
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Bulk closure of signals from CSV with signal IDs.',
+        epilog='SIA_EMAIL and SIA_PASSWORD must be set in environment.'
+    )
     parser.add_argument(
         'csv_file', type=str, help='CSV file of SIA signal ids (without the SIA- part)'
     )
     parser.add_argument(
         'env', type=is_known_env, help='One of "dev", "prod" or "acc" (without double quotes)'
     )
-    parser.add_argument(
-        '--email', type=str, help='SIA user email (user name)', nargs='?', default=None
-    )
-    parser.add_argument(
-        '--password', type=str, help='SIA user password', nargs='?', default=None
-    )
 
     return parser.parse_args()
 
 
+def handle_env():
+    """Grab SIA user email and password from the relevant environment variables."""
+    class NameSpace():
+        pass
+
+    email = os.getenv('SIA_USERNAME')  # SIA usernames are always email addresses !
+    password = os.getenv('SIA_PASSWORD')
+
+    if email is None or password is None:
+        raise EnvironmentError('Either or both of SIA_USERNAME and SIA_PASSWORD not set.')
+
+    ns = NameSpace()
+    ns.email = email
+    ns.password = password
+
+    return ns
+
+
 def main():
     args = handle_cli()
+    env = handle_env()
 
     base_url = 'http://127.0.0.1:8000'
     if args.env == 'acc':
@@ -194,7 +210,7 @@ def main():
     elif args.env == 'prod':
         base_url = 'https://api.data.amsterdam.nl'
 
-    api_client = APIClient(base_url, args.email, args.password, args.env)
+    api_client = APIClient(base_url, env.email, env.password, args.env)
 
     bulk_task = BulkCancellation(
         api_client,
