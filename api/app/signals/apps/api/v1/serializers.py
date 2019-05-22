@@ -464,7 +464,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             note_data = validated_data['notes'][0]
             note_data['created_by'] = user_email
 
-        return Signal.actions.update_multiple(validated_data, instance)
+        signal = Signal.actions.update_multiple(validated_data, instance)
+        return signal
 
 
 class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):

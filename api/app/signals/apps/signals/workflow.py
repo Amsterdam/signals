@@ -68,6 +68,7 @@ ALLOWED_STATUS_CHANGES = {
         GESPLITST,
     ],
     AFWACHTING: [
+        GEMELD,  # SIG-1264
         AFWACHTING,
         BEHANDELING,
         ON_HOLD,
@@ -78,6 +79,7 @@ ALLOWED_STATUS_CHANGES = {
     ],
     BEHANDELING: [
         # AFWACHTING,  # This should be possible?
+        GEMELD,  # SIG-1264
         BEHANDELING,
         ON_HOLD,
         AFGEHANDELD,
@@ -85,6 +87,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
     ],
     ON_HOLD: [
+        GEMELD,  # SIG-1264
         AFWACHTING,
         BEHANDELING,
         ON_HOLD,
@@ -126,6 +129,7 @@ ALLOWED_STATUS_CHANGES = {
     # TODO: Check if correct?
     GESPLITST: [],
     VERZOEK_TOT_AFHANDELING: [
+        GEMELD,  # SIG-1264
         AFWACHTING,
         AFGEHANDELD,
         GEANNULEERD,
