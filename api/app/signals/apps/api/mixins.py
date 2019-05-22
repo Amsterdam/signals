@@ -3,12 +3,23 @@ from rest_framework import mixins
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 
+def convert_validation_error(error):
+    """
+    Convert a Django ValidationError to a DRF ValidationError.
+    """
+    # TODO: handle Django ValidationError properties other than message
+    if hasattr(error, 'message'):
+        return DRFValidationError(error.message)
+    else:
+        return DRFValidationError('Validation error on underlying data.')
+
+
 class CreateModelMixin(mixins.CreateModelMixin):
     def perform_create(self, serializer):
         try:
             return super(CreateModelMixin, self).perform_create(serializer=serializer)
         except DjangoValidationError as e:
-            raise DRFValidationError(e.message)
+            raise convert_validation_error(e)
 
 
 class ListModelMixin(mixins.ListModelMixin):
@@ -24,7 +35,7 @@ class DestroyModelMixin(mixins.DestroyModelMixin):
         try:
             instance.delete()
         except DjangoValidationError as e:
-            raise DRFValidationError(e.message)
+            raise convert_validation_error(e)
 
 
 class UpdateModelMixin(mixins.UpdateModelMixin):
@@ -32,4 +43,4 @@ class UpdateModelMixin(mixins.UpdateModelMixin):
         try:
             return super(UpdateModelMixin, self).perform_update(serializer=serializer)
         except DjangoValidationError as e:
-            raise DRFValidationError(e.message)
+            raise convert_validation_error(e)
