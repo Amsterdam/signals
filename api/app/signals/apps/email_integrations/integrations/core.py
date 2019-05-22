@@ -136,28 +136,28 @@ def create_status_change_notification_split(signal, status):
     return txt_message, html_message
 
 
-def send_mail_reporter_status_changed_in_behandeling(signal, status):
-    signal_in_behandeling = status.state == workflow.ON_HOLD
+def send_mail_reporter_status_changed_ingepland(signal, status):
+    signal_in_behandeling = status.state == workflow.INGEPLAND
     if not signal_in_behandeling or not signal.reporter.email:
         return None
 
     subject = f'Betreft melding: {signal.id}'
-    txt_message, html_message = create_status_changed_in_behandeling_message(signal, status)
+    txt_message, html_message = create_status_changed_ingepland_message(signal, status)
     to = signal.reporter.email
 
     return send_mail(subject, txt_message, settings.NOREPLY, (to,), html_message=html_message)
 
 
-def create_status_changed_in_behandeling_message(signal, status):
+def create_status_changed_ingepland_message(signal, status):
     context = {
         'signal': signal,
         'status': status,
     }
 
-    template = loader.get_template('email/signal_status_changed_in_behandeling.txt')
+    template = loader.get_template('email/signal_status_changed_ingepland.txt')
     txt_message = template.render(context)
 
-    template = loader.get_template('email/signal_status_changed_in_behandeling.html')
+    template = loader.get_template('email/signal_status_changed_ingepland.html')
     html_message = template.render(context)
 
     return txt_message, html_message

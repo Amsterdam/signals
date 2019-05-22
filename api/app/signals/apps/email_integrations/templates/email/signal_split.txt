@@ -13,13 +13,13 @@ U krijgt voor elke deelmelding een apart bericht over de afhandeling. De origine
 Informatie over uw orginele melding
 
 Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
-Locatie: {{ signal.location.address_text }}
+{% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
 Categorie: {{ signal.category_assignment.category.name }}
 
 Uw omschrijving:
 {{ signal.text }}
 
->Meer weten?
+Meer weten?
 Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
 
 Met vriendelijke groet,

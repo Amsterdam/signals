@@ -15,7 +15,7 @@ om zoveel mogelijk overlast te voorkomen.
 Informatie over uw melding
 
 Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
-Locatie: {{ signal.location.address_text }}
+{% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
 Categorie: {{ signal.category_assignment.category.name }}
 
 Uw omschrijving:

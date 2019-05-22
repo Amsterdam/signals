@@ -69,6 +69,13 @@ class TestReopen(TransactionTestCase):
 class TestTransistion(TransactionTestCase):
     @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
     def test_to_allowed_states(self, patched_update_status_signal):
+        """
+        Checks if a signal in a state can reach all allowed states that are configured in the
+        workflow.ALLOWED_STATUS_CHANGES
+
+        :param patched_update_status_signal:
+        :return:
+        """
         call_counter = 0
 
         for current_state in workflow.ALLOWED_STATUS_CHANGES:
@@ -92,13 +99,20 @@ class TestTransistion(TransactionTestCase):
 
     @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
     def test_not_allowed_states(self, patched_update_status_signal):
+        """
+        Checks if a signal in a state can NOT reach all not allowed states. Calculated from the
+        configured workflow.ALLOWED_STATUS_CHANGES
+
+        :param patched_update_status_signal:
+        :return:
+        """
         all_states = workflow.ALLOWED_STATUS_CHANGES.keys()
         status_choices_dict = dict(workflow.STATUS_CHOICES)
 
         for current_state in workflow.ALLOWED_STATUS_CHANGES:
             allowed_states = workflow.ALLOWED_STATUS_CHANGES[current_state]
-            no_allowed_states = all_states - allowed_states
-            for not_allowed_state in no_allowed_states:
+            not_allowed_states = all_states - allowed_states
+            for not_allowed_state in not_allowed_states:
                 with self.assertRaises(ValidationError) as ve:
                     signal = factories.SignalFactory.create(status__state=current_state)
 

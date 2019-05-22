@@ -32,7 +32,7 @@
         <b>Informatie over uw melding</b>
         <br/>
         Gemeld op: <i>{{ signal.created_at|date:"DATETIME_FORMAT" }}</i><br/>
-        Locatie: <i>{{ signal.location.address_text }}</i><br/>
+        {% if signal.location %}Locatie: <i>{{ signal.location.address_text }}</i><br/>{% endif %}
         Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
         <br>
         Uw omschrijving:<br/>

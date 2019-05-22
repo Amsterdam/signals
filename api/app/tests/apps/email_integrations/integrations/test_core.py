@@ -212,13 +212,13 @@ class TestCore(TestCase):
         self.assertIn(self.child_signal.status.text, html_message)
         self.assertIn('Op 10 oktober 2018 heeft u', html_message)
 
-    def test_create_status_changed_in_behandeling_message(self):
-        # Prepare signal with status change to `ON_HOLD`.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, text='Done.')
+    def test_create_status_changed_ingepland_message(self):
+        # Prepare signal with status change to `INGEPLAND`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.INGEPLAND, text='Done.')
         self.signal.status = status
         self.signal.status.save()
 
-        txt_message, html_message = core.create_status_changed_in_behandeling_message(
+        txt_message, html_message = core.create_status_changed_ingepland_message(
             self.signal, self.signal.status
         )
 
