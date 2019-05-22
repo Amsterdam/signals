@@ -80,6 +80,9 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
     ],
+    ON_HOLD: [
+        INGEPLAND,
+    ],
     TE_VERZENDEN: [
         VERZONDEN,
         VERZENDEN_MISLUKT,
@@ -90,6 +93,10 @@ ALLOWED_STATUS_CHANGES = {
     VERZENDEN_MISLUKT: [
         GEMELD,
         TE_VERZENDEN,
+    ],
+    AFGEHANDELD_EXTERN: [
+        AFGEHANDELD,
+        GEANNULEERD,
     ],
     AFGEHANDELD: [
         HEROPEND,
