@@ -1,32 +1,45 @@
-Geachte melder,
+{% if signal.is_child %}
+Een deel van uw melding is afgehandeld
+{% else %}
+Uw melding is afgehandeld
+{% endif %}
+Meldingnummer {{ signal.sia_id }}
 
-Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.
+{% if signal.is_child %}
+Wat hebben we gedaan met uw deelmelding?
+Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.
 
-{% if status.text %}
-De volgende toelichting is daarbij gegeven:
-{{ status.text }}
+Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.
+{% else %}
+Wat hebben we gedaan met uw melding?
+Wij hebben uw melding zojuist afgehandeld.
 {% endif %}
 
+{{ signal.status.text }}
+{% if signal.is_child %}
 
-Hieronder staat de samenvatting van het door u ingevulde formulier.
+Als u van de andere deelmelding(en) nog geen bericht heeft gehad, kunt u die binnenkort verwachten.
+{%  endif %}
 
-
-Samenvatting melding: {{ signal.id }}
-
-Adres: {{ signal.location.address_text }}
-
-Stadsdeel: {{ signal.location.get_stadsdeel_display }}
-
-Rubriek: {{ signal.category_assignment.category.parent.name }}
-
-Uw omschrijving: {{ signal.text }}
-
-
-Bent u tevreden met de afhandeling van uw melding?
+Bent u tevreden met de afhandeling van deze deelmelding?
 
 Ja, ik ben tevreden: {{ positive_feedback_url }}
 Nee, ik ben niet tevreden: {{ negative_feedback_url }}
 
+Door uw reactie op de afhandeling, kunnen wij onze dienstverlening in de toekomst verbeteren. Uw reactie wordt daarom erg gewaardeerd.
+
+Informatie over uw deelmelding
+
+Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
+{% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
+Categorie: {{ signal.category_assignment.category.name }}
+
+Uw {% if signal.is_child %}(gedeeltelijke) {% endif %}omschrijving:
+
+{{ signal.text }}
+
+Meer weten?
+Als u vragen heeft over deze deelmelding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
 
 Met vriendelijke groet,
 

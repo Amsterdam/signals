@@ -1,0 +1,32 @@
+Uw melding is ingepland
+Meldingnummer {{ signal.sia_id }}
+
+Wat hebben we gedaan met uw melding?
+Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.sia_id }} ingediend.
+De werkzaamheden voor deze melding moeten wij inplannen.
+
+{{ signal.status.text }}
+
+U krijgt opnieuw een bericht wanneer de melding is afgehandeld.
+
+Waarom inplannen?
+Niet alle werkzaamheden kunnen direct uitgevoerd worden door de gemeente. Dit komt bijvoorbeeld
+door het inkopen van materialen, seizoensinvloeden of het gebundeld uitvoeren van werkzaamheden
+om zoveel mogelijk overlast te voorkomen.
+
+Informatie over uw melding
+
+Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
+{% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
+Categorie: {{ signal.category_assignment.category.name }}
+
+Uw omschrijving:
+{{ signal.text }}
+
+Meer weten?
+Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur).
+Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam

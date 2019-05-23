@@ -1,9 +1,9 @@
-from datetime import datetime
 from unittest import mock
 
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
+from freezegun import freeze_time
 
 from signals.apps.email_integrations.integrations import core
 from signals.apps.feedback import app_settings as feedback_settings
@@ -15,10 +15,13 @@ from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 class TestCore(TestCase):
 
+    @freeze_time('2018-10-10T10:00+00:00')
     def setUp(self):
         self.signal = SignalFactory.create(reporter__email='foo@bar.com')
-        self.signal.incident_date_start = datetime(2018, 10, 10, 12, 0, 0)
         self.signal_no_email = SignalFactory.create(reporter__email='')
+        self.parent_signal = SignalFactory.create(reporter__email='foo@bar.com')
+        self.child_signal = SignalFactory.create(reporter__email='foo@bar.com',
+                                                 parent=self.parent_signal)
 
     def test_send_mail_reporter_created(self):
         num_of_messages = core.send_mail_reporter_created(self.signal)
@@ -36,11 +39,13 @@ class TestCore(TestCase):
         self.assertEqual(num_of_messages, None)
 
     def test_create_initial_create_notification_message(self):
-        message = core.create_initial_create_notification_message(self.signal)
+        txt_message, html_message = core.create_initial_create_notification_message(self.signal)
 
-        self.assertIn(str(self.signal.id), message)
-        self.assertIn(self.signal.text, message)
-        self.assertIn(self.signal.reporter.email, message)
+        self.assertIn(str(self.signal.id), txt_message)
+        self.assertIn(self.signal.text, txt_message)
+
+        self.assertIn(str(self.signal.id), html_message)
+        self.assertIn(self.signal.text, html_message)
 
     def test_send_mail_reporter_status_changed_afgehandeld(self):
         # Prepare signal with status change to `AFGEHANDELD`.
@@ -85,13 +90,17 @@ class TestCore(TestCase):
         self.signal.status.save()
         feedback = FeedbackFactory.create(_signal=self.signal)
 
-        message = core.create_status_change_notification_message(
+        txt_message, html_message = core.create_status_change_notification_message(
             self.signal, self.signal.status, feedback
         )
 
-        self.assertIn(str(self.signal.id), message)
-        self.assertIn(self.signal.text, message)
-        self.assertIn(self.signal.status.text, message)
+        self.assertIn(str(self.signal.id), txt_message)
+        self.assertIn(self.signal.text, txt_message)
+        self.assertIn(self.signal.status.text, txt_message)
+
+        self.assertIn(str(self.signal.id), html_message)
+        self.assertIn(self.signal.text, html_message)
+        self.assertIn(self.signal.status.text, html_message)
 
     def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
         mail.outbox = []
@@ -116,15 +125,14 @@ class TestCore(TestCase):
         self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(message.to, ['foo@bar.com', ])
 
-        txt_message = core.create_status_change_notification_message(signal=self.signal,
-                                                                     status=status,
-                                                                     feedback=feedback)
+        txt_message, html_message = core.create_status_change_notification_message(
+            signal=self.signal,
+            status=status,
+            feedback=feedback
+        )
         self.assertEqual(message.body, txt_message)
 
         content, mime_type = message.alternatives[0]
-        html_message = core.create_status_change_notification_html_message(signal=self.signal,
-                                                                           status=status,
-                                                                           feedback=feedback)
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
 
@@ -182,6 +190,46 @@ class TestCore(TestCase):
                 self.assertIn('http://dummy_link', message.body)
                 self.assertIn('http://dummy_link', message.alternatives[0][0])
 
+    def test_create_status_change_notification_message_child_signal(self):
+        # Prepare signal with status change to `AFGEHANDELD`.
+        status = StatusFactory.create(_signal=self.child_signal, state=workflow.AFGEHANDELD,
+                                      text='Done.')
+        self.child_signal.status = status
+        self.child_signal.status.save()
+        feedback = FeedbackFactory.create(_signal=self.child_signal)
+
+        txt_message, html_message = core.create_status_change_notification_message(
+            self.child_signal, self.child_signal.status, feedback
+        )
+
+        self.assertIn(str(self.child_signal.id), txt_message)
+        self.assertIn(self.child_signal.text, txt_message)
+        self.assertIn(self.child_signal.status.text, txt_message)
+        self.assertIn('Op 10 oktober 2018 heeft u', txt_message)
+
+        self.assertIn(str(self.child_signal.id), html_message)
+        self.assertIn(self.child_signal.text, html_message)
+        self.assertIn(self.child_signal.status.text, html_message)
+        self.assertIn('Op 10 oktober 2018 heeft u', html_message)
+
+    def test_create_status_changed_ingepland_message(self):
+        # Prepare signal with status change to `INGEPLAND`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.INGEPLAND, text='Done.')
+        self.signal.status = status
+        self.signal.status.save()
+
+        txt_message, html_message = core.create_status_changed_ingepland_message(
+            self.signal, self.signal.status
+        )
+
+        self.assertIn(str(self.signal.id), txt_message)
+        self.assertIn(self.signal.text, txt_message)
+        self.assertIn('Op 10 oktober 2018 heeft u', txt_message)
+
+        self.assertIn(str(self.signal.id), html_message)
+        self.assertIn(self.signal.text, html_message)
+        self.assertIn('Op 10 oktober 2018 heeft u', html_message)
+
 
 class TestSignalSplitEmailFlow(TestCase):
     def setUp(self):
@@ -222,8 +270,9 @@ class TestSignalSplitEmailFlow(TestCase):
 
     def test_create_status_change_notification_split(self):
         """Resolution GESPLITST email must contain references to relevant signals."""
-        txt_message = core.create_status_change_notification_split(
+        txt_message, html_message = core.create_status_change_notification_split(
             self.parent_signal, self.parent_signal.status)
 
         for signal in [self.parent_signal, self.child_signal_1, self.child_signal_2]:
             self.assertIn(str(signal.id), txt_message)
+            self.assertIn(str(signal.id), html_message)
