@@ -15,9 +15,11 @@ Wat hebben we gedaan met uw melding?
 Wij hebben uw melding zojuist afgehandeld.
 {% endif %}
 
-{{ status.text }}
+{{ signal.status.text }}
+{% if signal.is_child %}
 
 Als u van de andere deelmelding(en) nog geen bericht heeft gehad, kunt u die binnenkort verwachten.
+{%  endif %}
 
 Bent u tevreden met de afhandeling van deze deelmelding?
 
@@ -32,7 +34,7 @@ Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
 {% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
 Categorie: {{ signal.category_assignment.category.name }}
 
-Uw (gedeeltelijke) omschrijving:
+Uw {% if signal.is_child %}(gedeeltelijke) {% endif %}omschrijving:
 
 {{ signal.text }}
 
