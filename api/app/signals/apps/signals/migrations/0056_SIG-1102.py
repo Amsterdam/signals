@@ -24,17 +24,6 @@ def migrate_on_hold(apps, schema_editor):
         signal.save()
 
 
-def rollback_ingepland(apps, schema_editor):
-    """
-    Not implemented!!!
-
-    :param apps:
-    :param schema_editor:
-    :return:
-    """
-    return
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -60,5 +49,5 @@ class Migration(migrations.Migration):
                                             'Melding is afgehandeld in extern systeem')],
                                    default='m', help_text='Melding status', max_length=20),
         ),
-        migrations.RunPython(migrate_on_hold, rollback_ingepland),
+        migrations.RunPython(migrate_on_hold),
     ]

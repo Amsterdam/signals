@@ -63,6 +63,7 @@ ALLOWED_STATUS_CHANGES = {
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264
+        AFWACHTING,
         INGEPLAND,
         VERZOEK_TOT_AFHANDELING,
         AFGEHANDELD,
@@ -70,12 +71,14 @@ ALLOWED_STATUS_CHANGES = {
     BEHANDELING: [
         GEMELD,  # SIG-1264
         INGEPLAND,
+        BEHANDELING,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
     ],
     INGEPLAND: [
         GEMELD,  # SIG-1264
+        INGEPLAND,
         BEHANDELING,
         AFGEHANDELD,
         GEANNULEERD,
@@ -99,14 +102,16 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,
     ],
     AFGEHANDELD: [
+        AFGEHANDELD,
         HEROPEND,
     ],
     GEANNULEERD: [
+        GEANNULEERD,
         HEROPEND,
     ],
     HEROPEND: [
+        HEROPEND,
         BEHANDELING,
-        # INGEPLAND,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
@@ -114,6 +119,7 @@ ALLOWED_STATUS_CHANGES = {
     GESPLITST: [],
     VERZOEK_TOT_AFHANDELING: [
         GEMELD,  # SIG-1264
+        VERZOEK_TOT_AFHANDELING,
         AFWACHTING,
         AFGEHANDELD,
         GEANNULEERD,
