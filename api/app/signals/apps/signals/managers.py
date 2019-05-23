@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
@@ -326,7 +327,9 @@ class SignalManager(models.Manager):
         :returns: Category object
         """
 
-        if signal.category_assignment is not None \
+        if 'category' not in data:
+            raise ValidationError('Category not found in data')
+        elif signal.category_assignment is not None \
                 and signal.category_assignment.category.id == data['category'].id:
             # New category is the same as the old category. Skip
             return
@@ -466,7 +469,9 @@ class SignalManager(models.Manager):
                 # Only update if category actually changes (TODO: remove when we
                 # add consistency checks to API -- i.e. when we check that only
                 # the latest version of a Signal can be mutated.)
-                if signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
+                if 'category' not in data['category_assignment']:
+                    raise ValidationError('Category not found in data')
+                elif signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
                     prev_category_assignment, category_assignment = \
                         self._update_category_assignment_no_transaction(
                             data['category_assignment'], signal)
