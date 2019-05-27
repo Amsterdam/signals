@@ -457,7 +457,7 @@ class SignalManager(models.Manager):
                 }))
 
             if 'status' in data:
-                prev_status, status = self._update_status_no_transaction(data['status'], signal)
+                status, prev_status = self._update_status_no_transaction(data['status'], signal)
                 to_send.append((update_status, {
                     'sender': sender,
                     'signal_obj': signal,
@@ -472,7 +472,7 @@ class SignalManager(models.Manager):
                 if 'category' not in data['category_assignment']:
                     raise ValidationError('Category not found in data')
                 elif signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
-                    prev_category_assignment, category_assignment = \
+                    category_assignment, prev_category_assignment = \
                         self._update_category_assignment_no_transaction(
                             data['category_assignment'], signal)
 
