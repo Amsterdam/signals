@@ -5,7 +5,7 @@ Wat hebben we gedaan met uw melding?
 Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.sia_id }} ingediend.
 De werkzaamheden voor deze melding moeten wij inplannen.
 
-{{ signal.status.text }}
+{{ status.text }}
 
 U krijgt opnieuw een bericht wanneer de melding is afgehandeld.
 

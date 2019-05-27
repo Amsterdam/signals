@@ -15,7 +15,7 @@ Wat hebben we gedaan met uw melding?
 Wij hebben uw melding zojuist afgehandeld.
 {% endif %}
 
-{{ signal.status.text }}
+{{ status.text }}
 {% if signal.is_child %}
 
 Als u van de andere deelmelding(en) nog geen bericht heeft gehad, kunt u die binnenkort verwachten.
