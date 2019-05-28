@@ -60,6 +60,7 @@ ALLOWED_STATUS_CHANGES = {
         AFWACHTING,
         BEHANDELING,
         TE_VERZENDEN,
+        AFGEHANDELD,  # SIG-1294
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264
