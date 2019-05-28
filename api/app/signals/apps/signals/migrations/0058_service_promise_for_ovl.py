@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 CHANGE = {
     'wegen-verkeer-straatmeubilair': {
         'lantaarnpaal-straatverlichting': {
