@@ -14,7 +14,7 @@
         <b>Wat hebben we gedaan met uw melding?</b><br/>
         Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.sia_id }} ingediend. De werkzaamheden voor deze melding moeten wij inplannen.<br/>
         <br/>
-        <i>{{ status.text }}</i><br/>
+        <i>{{ status.text|linebreaksbr }}</i><br/>
         <br/>
         U krijgt opnieuw een bericht wanneer de melding is afgehandeld.
     </p>
@@ -32,7 +32,7 @@
         Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
         <br>
         Uw omschrijving:<br/>
-        <i>{{ signal.text }}</i>
+        <i>{{ signal.text|linebreaksbr }}</i>
     </p>
 
     <p>
