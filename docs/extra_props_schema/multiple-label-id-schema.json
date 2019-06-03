@@ -1,0 +1,29 @@
+{
+  "definitions": {},
+  "type": "array",
+  "title": "Multiple label id answers (checkbox)",
+  "items": {
+    "type": "object",
+    "title": "A, answer with a label and id",
+    "required": [
+      "id",
+      "label"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "title": "An unique id for this answer combination (unique for this question, not all questions)",
+        "examples": [
+          "overdag"
+        ]
+      },
+      "label": {
+        "type": "string",
+        "title": "Client selected value",
+        "examples": [
+          "Brandt overdag"
+        ]
+      }
+    }
+  }
+}

@@ -11,7 +11,6 @@ from signals.apps.signals.models import (
     Buurt,
     Category,
     Location,
-    MainCategory,
     Priority,
     Signal,
     Status
@@ -101,7 +100,7 @@ class SignalFilter(FilterSet):
     status__state = filters.MultipleChoiceFilter(choices=status_choices)
     # TODO: these filter (category__main, category__sub) should be removed
     category__main = filters.ModelMultipleChoiceFilter(
-        queryset=MainCategory.objects.all(),
+        queryset=Category.objects.filter(parent__isnull=True),
         to_field_name='name',
         field_name='category_assignment__category__parent__name')
     category__sub = filters.ModelMultipleChoiceFilter(
@@ -110,7 +109,7 @@ class SignalFilter(FilterSet):
         field_name='category_assignment__category__name')
     # category__main and category__sub filters will be replaced with main_slug and sub_slug
     main_slug = filters.ModelMultipleChoiceFilter(
-        queryset=MainCategory.objects.all().select_related(),
+        queryset=Category.objects.filter(parent__isnull=True).select_related(),
         to_field_name='slug',
         field_name='category_assignment__category__parent__slug',
     )

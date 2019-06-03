@@ -96,6 +96,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         result = [
             {"name": "Afval", "count": 7},
+            {"name": "Ondermijning", "count": 0},
             {"name": "Openbaar groen en water", "count": 0},
             {"name": "Overig", "count": 0},
             {"name": "Overlast Bedrijven en Horeca", "count": 0},
@@ -116,6 +117,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         result = [
             {"name": "Afval", "count": 0},
+            {"name": "Ondermijning", "count": 0},
             {"name": "Openbaar groen en water", "count": 0},
             {"name": "Overig", "count": 0},
             {"name": "Overlast Bedrijven en Horeca", "count": 0},
@@ -183,7 +185,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         self.assertEqual(4, len(json_data.keys()))
         self.assertEqual(24, len(json_data["hour"]))
-        self.assertEqual(9, len(json_data["category"]))
+        self.assertEqual(10, len(json_data["category"]))
         self.assertEqual(5, len(json_data["status"]))
         self.assertEqual(10, json_data["hour"][-1]["count"])
 

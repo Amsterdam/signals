@@ -42,7 +42,10 @@ def update_location_handler(sender, signal_obj, location, prev_location, **kwarg
 def update_status_handler(sender, signal_obj, status, prev_status, **kwargs):
     tasks.send_mail_reporter_status_changed.delay(signal_pk=signal_obj.id, status_pk=status.id)
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
-    tasks.send_mail_reporter_status_changed_split(signal_pk=signal_obj.id, status_pk=status.id)
+    tasks.send_mail_reporter_status_changed_split.delay(signal_pk=signal_obj.id,
+                                                        status_pk=status.id)
+    tasks.send_mail_reporter_status_changed_ingepland.delay(signal_pk=signal_obj.id,
+                                                            status_pk=status.id)
 
 
 @receiver(update_category_assignment, dispatch_uid='email_integrations_update_category_assignment')

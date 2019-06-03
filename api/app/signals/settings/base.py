@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'signals.apps.users',
     'signals.apps.sigmax',
     'signals.apps.dashboards',
+    'signals.apps.feedback',
 
     # Third party
     'corsheaders',
@@ -187,8 +188,6 @@ DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
-HEALTH_MODEL_SUB_CATEGORY = 'signals.Category'
-HEALTH_MODEL_MAIN_CATEGORY = 'signals.MainCategory'
 HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT = 76
 HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT = 9
 
@@ -457,3 +456,10 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 # SIG-884
 SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 3
+
+# SIG-1017
+FEEDBACK_ENV_FE_MAPPING = {
+    'LOCAL': 'http://dummy_link',
+    'ACCEPTANCE': 'https://acc.meldingen.amsterdam.nl',
+    'PRODUCTION': 'https://meldingen.amsterdam.nl',
+}

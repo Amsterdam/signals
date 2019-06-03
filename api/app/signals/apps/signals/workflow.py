@@ -13,8 +13,9 @@ ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
 GESPLITST = 's'
-
 HEROPEND = 'reopened'
+VERZOEK_TOT_AFHANDELING = 'closure requested'
+INGEPLAND = 'ingepland'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
@@ -29,11 +30,13 @@ STATUS_CHOICES_API = (
     (AFWACHTING, 'In afwachting van behandeling'),
     (BEHANDELING, 'In behandeling'),
     (ON_HOLD, 'On hold'),
+    (INGEPLAND, 'Ingepland'),
     (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
     (HEROPEND, 'Heropend'),
     (GESPLITST, 'Gesplitst'),
+    (VERZOEK_TOT_AFHANDELING, 'Verzoek tot afhandeling'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -47,46 +50,45 @@ STATUS_CHOICES_APP = (
 # All allowed choices, used for the model `Status`.
 STATUS_CHOICES = STATUS_CHOICES_API + STATUS_CHOICES_APP
 
-# TODO, Should changing to "your self" be possible. Currently it's used to update the text field
-# with notes to other users.
 ALLOWED_STATUS_CHANGES = {
     LEEG: [
         GEMELD
     ],
     GEMELD: [
-        GEMELD,
+        GEMELD,  # SIG-1264
+        GESPLITST,
         AFWACHTING,
         BEHANDELING,
-        ON_HOLD,
-        AFGEHANDELD,
-        GEANNULEERD,
         TE_VERZENDEN,
-        GESPLITST,
+        AFGEHANDELD,  # SIG-1294
     ],
     AFWACHTING: [
+        GEMELD,  # SIG-1264
         AFWACHTING,
-        BEHANDELING,
-        ON_HOLD,
+        INGEPLAND,
+        VERZOEK_TOT_AFHANDELING,
         AFGEHANDELD,
-        GEANNULEERD,
-        TE_VERZENDEN,
+        TE_VERZENDEN,  # SIG-1293
+        BEHANDELING,  # SIG-1295
     ],
     BEHANDELING: [
-        # AFWACHTING,  # This should be possible?
+        GEMELD,  # SIG-1264
+        INGEPLAND,
         BEHANDELING,
-        ON_HOLD,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
     ],
-    ON_HOLD: [
-        GEMELD,  # Should this be possible?
-        AFWACHTING,
+    INGEPLAND: [
+        GEMELD,  # SIG-1264
+        INGEPLAND,
         BEHANDELING,
-        ON_HOLD,
         AFGEHANDELD,
         GEANNULEERD,
-        TE_VERZENDEN,
+        VERZOEK_TOT_AFHANDELING,  # SIG-1293
+    ],
+    ON_HOLD: [
+        INGEPLAND,
     ],
     TE_VERZENDEN: [
         VERZONDEN,
@@ -102,23 +104,29 @@ ALLOWED_STATUS_CHANGES = {
     AFGEHANDELD_EXTERN: [
         AFGEHANDELD,
         GEANNULEERD,
+        BEHANDELING,  # SIG-1293
     ],
     AFGEHANDELD: [
+        AFGEHANDELD,
         HEROPEND,
     ],
     GEANNULEERD: [
+        GEANNULEERD,
         HEROPEND,
     ],
-    # TODO: Check assumption that HEROPEND has equivalent role to GEMELD. Note
-    # that this leads to many new transitions in the workflow state machine.
     HEROPEND: [
-        AFWACHTING,
+        HEROPEND,
         BEHANDELING,
-        ON_HOLD,
         AFGEHANDELD,
         GEANNULEERD,
         TE_VERZENDEN,
     ],
-    # TODO: Check if correct?
     GESPLITST: [],
+    VERZOEK_TOT_AFHANDELING: [
+        GEMELD,  # SIG-1264
+        VERZOEK_TOT_AFHANDELING,
+        AFWACHTING,
+        AFGEHANDELD,
+        GEANNULEERD,
+    ],
 }

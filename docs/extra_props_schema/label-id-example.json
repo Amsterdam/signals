@@ -1,0 +1,8 @@
+{
+  "id": "extra_straatverlichting_hoeveel",
+  "label": "Gaat uw melding over één of over meer lampen?",
+  "answer": {
+    "id": "meer",
+    "label": "Meer lampen"
+  }
+}

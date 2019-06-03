@@ -25,7 +25,7 @@ class TestSignalReceivers(TestCase):
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_create_initial_handler(self, mocked_tasks, zds_tasks):
         signal = SignalFactory.create()
-        create_initial.send(sender=self.__class__, signal_obj=signal)
+        create_initial.send_robust(sender=self.__class__, signal_obj=signal)
 
         mocked_tasks.send_mail_reporter_created.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
@@ -44,10 +44,10 @@ class TestSignalReceivers(TestCase):
 
         signal = SignalFactory.create()
 
-        update_location.send(sender=self.__class__,
-                             signal_obj=signal,
-                             location=new_location,
-                             prev_location=prev_location)
+        update_location.send_robust(sender=self.__class__,
+                                    signal_obj=signal,
+                                    location=new_location,
+                                    prev_location=prev_location)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
@@ -59,10 +59,10 @@ class TestSignalReceivers(TestCase):
         signal.status = new_status
         signal.save()
 
-        update_status.send(sender=self.__class__,
-                           signal_obj=signal,
-                           status=new_status,
-                           prev_status=prev_status)
+        update_status.send_robust(sender=self.__class__,
+                                  signal_obj=signal,
+                                  status=new_status,
+                                  prev_status=prev_status)
 
         mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
             signal_pk=signal.id,
@@ -77,10 +77,10 @@ class TestSignalReceivers(TestCase):
         signal.category_assignment = new_category_assignment
         signal.save()
 
-        update_category_assignment.send(sender=self.__class__,
-                                        signal_obj=signal,
-                                        category_assignment=new_category_assignment,
-                                        prev_category_assignment=prev_category_assignment)
+        update_category_assignment.send_robust(sender=self.__class__,
+                                               signal_obj=signal,
+                                               category_assignment=new_category_assignment,
+                                               prev_category_assignment=prev_category_assignment)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
@@ -93,17 +93,17 @@ class TestSignalReceivers(TestCase):
         signal.reporter = new_reporter
         signal.save()
 
-        update_reporter.send(sender=self.__class__,
-                             signal_obj=signal,
-                             reporter=new_reporter,
-                             prev_reporter=prev_reporter)
+        update_reporter.send_robust(sender=self.__class__,
+                                    signal_obj=signal,
+                                    reporter=new_reporter,
+                                    prev_reporter=prev_reporter)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_create_child_handler(self, mocked_tasks):
         signal = SignalFactory.create()
-        create_child.send(sender=self.__class__, signal_obj=signal)
+        create_child.send_robust(sender=self.__class__, signal_obj=signal)
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)

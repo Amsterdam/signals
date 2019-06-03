@@ -9,13 +9,18 @@ from rest_framework.reverse import reverse
 from signals.apps.signals.models import Attachment, Category, Signal
 
 
-class MainCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     lookup_field = 'slug'
 
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('sia:status-message-templates',
+             dict(
+                 href=self.get_url(value, 'status_message_templates_main_category', request, None)
+             )),
         ])
 
         return result
@@ -33,7 +38,10 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('sia:status-message-templates',
+             dict(href=self.get_url(value, 'status_message_templates', request, None))),
         ])
 
         return result
@@ -55,11 +63,17 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
         return value
 
-    def get_url(self, obj, view_name, request, format):
-        url_kwargs = {
-            'slug': obj.parent.slug,
-            'sub_slug': obj.slug,
-        }
+    def get_url(self, obj: Category, view_name, request, format):
+
+        if obj.is_child():
+            url_kwargs = {
+                'slug': obj.parent.slug,
+                'sub_slug': obj.slug,
+            }
+        else:
+            url_kwargs = {
+                'slug': obj.slug,
+            }
 
         # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
         # version 1. Afterwards we revert back to the origional API version from the request.
@@ -100,6 +114,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
             ('sia:attachments',
              dict(href=self.get_url(value, "private-signals-attachments", request, None))),
+            ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
         ])
 
         if value.is_child():

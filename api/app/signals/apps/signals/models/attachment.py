@@ -5,10 +5,15 @@ from django.contrib.gis.db import models
 from imagekit import ImageSpec
 from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
+from PIL import ImageFile
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
+
+# Allow truncated image to be loaded:
+# https://github.com/matthewwithanm/django-imagekit/issues/482
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class Attachment(CreatedUpdatedModel):

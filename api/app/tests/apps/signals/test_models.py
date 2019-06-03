@@ -9,20 +9,22 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import LiveServerTestCase, TestCase, TransactionTestCase
 from django.utils import timezone
+from django.utils.text import slugify
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     Attachment,
+    Category,
     CategoryAssignment,
     Location,
     Note,
     Priority,
     Reporter,
     Signal,
-    Status,
-    get_address_text
+    Status
 )
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from tests.apps.signals import factories, valid_locations
 from tests.apps.signals.attachment_helpers import small_gif
 
@@ -82,8 +84,8 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(Priority.objects.count(), 1)
 
         # Check that we sent the correct Django signal
-        patched_create_initial.send.assert_called_once_with(sender=Signal.actions.__class__,
-                                                            signal_obj=signal)
+        patched_create_initial.send_robust.assert_called_once_with(sender=Signal.actions.__class__,
+                                                                   signal_obj=signal)
 
     @mock.patch('signals.apps.signals.managers.create_initial', autospec=True)
     def test_create_initial_with_priority_data(self, patched_create_initial):
@@ -110,7 +112,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.locations.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_location.send.assert_called_once_with(
+        patched_update_location.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             location=location,
@@ -137,7 +139,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.statuses.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_status.send.assert_called_once_with(
+        patched_update_status.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             status=status,
@@ -157,11 +159,23 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.categories.count(), 2)
 
         # Check that we sent the correct Django signal
-        patched_update_category_assignment.send.assert_called_once_with(
+        patched_update_category_assignment.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             category_assignment=category_assignment,
             prev_category_assignment=prev_category_assignment)
+
+    def test_update_category_assignment_to_the_same_category(self):
+        signal = factories.SignalFactory.create()
+
+        category_assignment = Signal.actions.update_category_assignment(
+            {
+                'category': signal.category_assignment.category,
+            },
+            signal
+        )
+
+        self.assertIsNone(category_assignment)
 
     @mock.patch('signals.apps.signals.managers.update_reporter', autospec=True)
     def test_update_reporter(self, patched_update_reporter):
@@ -175,7 +189,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.reporter, reporter)
         self.assertEqual(signal.reporters.count(), 2)
 
-        patched_update_reporter.send.assert_called_once_with(
+        patched_update_reporter.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             reporter=reporter,
@@ -193,7 +207,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(signal.priority, priority)
         self.assertEqual(signal.priorities.count(), 2)
 
-        patched_update_priority.send.assert_called_once_with(
+        patched_update_priority.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             priority=priority,
@@ -216,7 +230,7 @@ class TestSignalManager(TransactionTestCase):
         self.assertNotEqual(old_updated_at, new_updated_at)
 
         # check that the relevant Django signal fired
-        patched_create_note.send.assert_called_once_with(
+        patched_create_note.send_robust.assert_called_once_with(
             sender=Signal.actions.__class__,
             signal_obj=signal,
             note=note)
@@ -274,13 +288,13 @@ class TestSignalManager(TransactionTestCase):
         prev_status = parent_signal_statusses[0]
         status = parent_signal_statusses[1]
 
-        patched_update_status.send.assert_called_with(
+        patched_update_status.send_robust.assert_called_with(
             sender=Signal.actions.__class__,
             signal_obj=parent_signal,
             status=status,
             prev_status=prev_status)
 
-        self.assertEqual(patched_create_child.send.call_count, 2)
+        self.assertEqual(patched_create_child.send_robust.call_count, 2)
 
 
 class TestSignalModel(TestCase):
@@ -362,11 +376,8 @@ class TestSignalModel(TestCase):
         signal_parent = factories.SignalFactory.create()
         factories.SignalFactory.create_batch(3, parent=signal_parent)
 
-        signal = factories.SignalFactory.create()
-        signal.parent = signal_parent
-
         with self.assertRaises(ValidationError) as cm:
-            signal.save()
+            factories.SignalFactory.create(parent=signal_parent)
 
         e = cm.exception
         self.assertEqual(e.message, 'Maximum number of children reached for the parent Signal')
@@ -385,7 +396,65 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'The status of a parent Signal can only be "gesplitst"')
 
-    # End test for SIG-884
+    def test_siblings_property(self):
+        """ Siblings property should return siblings, not self """
+        brother = factories.SignalFactory.create()
+        sister = factories.SignalFactory.create()
+        parent = factories.SignalFactory.create()
+
+        brother.parent = parent
+        brother.save()
+        sister.parent = parent
+        sister.save()
+
+        self.assertEqual(1, brother.siblings.count())
+        self.assertTrue(sister in brother.siblings)
+
+        self.assertEqual(1, sister.siblings.count())
+        self.assertTrue(brother in sister.siblings)
+
+        sistah = factories.SignalFactory.create()
+        sistah.parent = parent
+        sistah.save()
+
+        brother.refresh_from_db()
+        self.assertEqual(2, brother.siblings.count())
+        self.assertTrue(sister in brother.siblings)
+        self.assertTrue(sistah in brother.siblings)
+
+    def test_siblings_property_without_siblings(self):
+        """ Should return an empty queryset. Not None """
+        signal = factories.SignalFactory.create()
+        self.assertEqual(0, signal.siblings.count())
+
+    def test_to_str(self):
+        signal = factories.SignalFactory.create()
+        status = factories.StatusFactory.create(_signal=signal)
+
+        location_data = {
+            "geometrie": Point(4.9, 52.4),
+            "buurt_code": "ABCD",
+        }
+
+        Signal.actions.update_location(location_data, signal)
+
+        state = status.state
+        signal.refresh_from_db()
+
+        self.assertEqual('{} - {} - {} - {}'.format(
+            signal.id,
+            state,
+            "ABCD",
+            signal.created_at
+        ), signal.__str__())
+
+    @mock.patch("uuid.uuid4")
+    def test_uuid_assignment(self, mocked_uuid4):
+        """ UUID should be assigned on construction of Signal """
+
+        signal = Signal(signal_id=None)
+        self.assertIsNotNone(signal.signal_id)
+        mocked_uuid4.assert_called_once()
 
 
 class TestStatusModel(TestCase):
@@ -435,6 +504,13 @@ class TestStatusModel(TestCase):
         self.assertIn('target_api', error.exception.error_dict)
 
     def test_state_afgehandeld_text_required_valid(self):
+        new_status = Status(_signal=self.signal, state=workflow.BEHANDELING, text='Working on it.')
+        new_status.full_clean()
+        new_status.save()
+
+        self.signal.status = new_status
+        self.signal.save()
+
         new_status = Status(_signal=self.signal, state=workflow.AFGEHANDELD, text='Done with it.')
         new_status.full_clean()
         new_status.save()
@@ -449,10 +525,96 @@ class TestStatusModel(TestCase):
         self.assertIn('text', error.exception.error_dict)
 
 
+class TestCategory(TestCase):
+
+    def setUp(self):
+        self.category = factories.ParentCategoryFactory(name='Parent category')
+
+    def test_is_parent(self):
+        self.assertFalse(self.category.is_parent())
+
+        child_category = factories.CategoryFactory(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        self.category.refresh_from_db()
+        self.assertTrue(self.category.is_parent())
+
+    def test_is_child(self):
+        category = factories.CategoryFactory(name='Child category', parent=None)
+        self.assertFalse(category.is_child())
+
+        category.parent = self.category
+        category.save()
+
+        self.assertTrue(category.is_child())
+
+    def test_category_two_deep(self):
+        child_category = Category(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        self.category.refresh_from_db()
+        self.assertEqual(1, self.category.children.count())
+
+    def test_category_three_deep_as_grandchild(self):
+        child_category = Category(name='Child category')
+        child_category.parent = self.category
+        child_category.save()
+
+        grand_child_category = Category(name='Grandchild category')
+        grand_child_category.parent = child_category
+
+        self.assertRaises(ValidationError, grand_child_category.save)
+
+    def test_category_three_deep_as_child(self):
+        child_category = Category(name='Child category')
+        child_category.save()
+
+        grand_child_category = Category(name='Grandchild category')
+        grand_child_category.parent = child_category
+        grand_child_category.save()
+
+        child_category.parent = self.category
+
+        self.assertRaises(ValidationError, child_category.save)
+
+    def test_slug_only_created_once(self):
+        just_a_slug = slugify('just a slug')
+
+        category = Category(slug=just_a_slug, name='This will generate the slug only once')
+
+        category.save()
+        category.refresh_from_db()
+
+        slug = slugify(category.name)
+
+        self.assertNotEqual(just_a_slug, category.slug)
+        self.assertEqual(slug, category.slug)
+        self.assertEqual('This will generate the slug only once', category.name)
+
+        category.name = 'And now for something completely different'
+        category.save()
+        category.refresh_from_db()
+
+        self.assertEqual(slug, category.slug)
+        self.assertEqual('And now for something completely different', category.name)
+
+        this_should_not_be_the_slug = slugify(category.name)
+        self.assertNotEqual(this_should_not_be_the_slug, category.slug)
+
+        with self.assertRaises(ValidationError):
+            category.slug = just_a_slug
+            category.save()
+
+        with self.assertRaises(ValidationError):
+            category.save(slug='no-saving-me-please')
+
+
 class TestCategoryDeclarations(TestCase):
 
     def test_main_category_string(self):
-        main_category = factories.MainCategoryFactory.create(name='First category')
+        main_category = factories.ParentCategoryFactory.create(name='First category')
 
         self.assertEqual(str(main_category), 'First category')
 
@@ -478,17 +640,11 @@ class GetAddressTextTest(TestCase):
 
     def test_full_address_text(self):
         correct = 'Amstel 1 1011PN Amsterdam'
-        address_text = get_address_text(self.location)
-
-        self.assertEqual(correct, address_text)
-        self.assertEqual(self.signal.location.address_text, address_text)
+        self.assertEqual(self.location.address_text, correct)
 
     def test_short_address_text(self):
         correct = 'Amstel 1'
-        address_text = get_address_text(self.location, short=True)
-
-        self.assertEqual(address_text, correct)
-        self.assertEqual(self.signal.location.short_address_text, correct)
+        self.assertEqual(self.location.short_address_text, correct)
 
     def test_full_address_with_toevoeging(self):
         address = {
@@ -500,9 +656,10 @@ class GetAddressTextTest(TestCase):
             'woonplaats': 'Amsterdam',
         }
         self.location.address = address
+        self.location.save()
 
         correct = 'Sesamstraat 1A-achter 9999ZZ Amsterdam'
-        self.assertEqual(get_address_text(self.location, short=False), correct)
+        self.assertEqual(self.location.address_text, correct)
 
 
 class TestAttachmentModel(LiveServerTestCase):
@@ -582,3 +739,49 @@ class TestAttachmentModel(LiveServerTestCase):
 
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEqual(200, resp.status_code, "Original file is not reachable")
+
+
+class TestCategoryTranslation(TestCase):
+    def setUp(self):
+        self.category_1 = factories.CategoryFactory.create(is_active=True)
+        self.category_2 = factories.CategoryFactory.create(is_active=True)
+        self.category_not_active = factories.CategoryFactory.create(is_active=False)
+
+    def test_create_translation(self):
+        category_translation = CategoryTranslation.objects.create(
+            old_category=self.category_1,
+            new_category=self.category_2,
+            text='Just a text we want to use',
+            created_by='me@example.com',
+        )
+
+        self.assertEqual(category_translation.old_category, self.category_1)
+        self.assertEqual(category_translation.new_category, self.category_2)
+        self.assertEqual(category_translation.text, 'Just a text we want to use')
+        self.assertEqual(category_translation.created_by, 'me@example.com')
+        self.assertEqual(str(category_translation),
+                         f'Zet categorie "{self.category_1.slug}" om naar "{self.category_2.slug}"')
+
+    def test_create_translation_to_itself(self):
+        with self.assertRaises(ValidationError) as cm:
+            CategoryTranslation.objects.create(
+                old_category=self.category_1,
+                new_category=self.category_1,
+                text='Just a text we want to use',
+                created_by='me@example.com',
+            )
+
+        e = cm.exception
+        self.assertEqual(e.messages[0], 'Cannot have old and new category the same.')
+
+    def test_create_translation_to_inactive_category(self):
+        with self.assertRaises(ValidationError) as cm:
+            CategoryTranslation.objects.create(
+                old_category=self.category_1,
+                new_category=self.category_not_active,
+                text='Just a text we want to use',
+                created_by='me@example.com',
+            )
+
+        e = cm.exception
+        self.assertEqual(e.messages[0], 'New category must be active')

@@ -36,6 +36,8 @@ class History(models.Model):
             return 'Categorie gewijzigd naar: {}'.format(self.extra)
         elif self.what == 'CREATE_NOTE' or self.what == 'UPDATE_LOCATION':
             return self.extra
+        elif self.what == 'RECEIVE_FEEDBACK':
+            return 'Feedback van melder ontvangen'
         return 'Actie onbekend.'
 
     class Meta:

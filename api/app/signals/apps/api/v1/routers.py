@@ -20,7 +20,10 @@ class SignalsRouterVersion1(routers.DefaultRouter):
             url=r'^{prefix}/$',
             mapping={
                 'get': 'list',
-                'post': 'create'
+                'post': 'create',
+                'put': 'update',
+                'patch': 'partial_update',
+                'delete': 'destroy',
             },
             name='{basename}-list',
             detail=False,

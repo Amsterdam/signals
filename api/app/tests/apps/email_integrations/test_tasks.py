@@ -31,7 +31,8 @@ class TestTasks(TestCase):
         tasks.send_mail_reporter_status_changed(signal_pk=signal.id, status_pk=signal.status.id)
 
         mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_called_once_with(
-            signal, signal.status)
+            signal, signal.status
+        )
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):

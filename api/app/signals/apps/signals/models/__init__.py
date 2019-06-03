@@ -1,6 +1,6 @@
 from signals.apps.signals.models.attachment import Attachment
 from signals.apps.signals.models.buurt import Buurt
-from signals.apps.signals.models.category import Category, MainCategory
+from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.history import History
@@ -24,13 +24,13 @@ from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.stadsdeel import Stadsdeel
 from signals.apps.signals.models.status import Status
+from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
     'Attachment',
     'Buurt',
     'Category',
-    'MainCategory',
     'CategoryAssignment',
     'Department',
     'History',
@@ -52,4 +52,5 @@ __all__ = [
     'Signal',
     'Stadsdeel',
     'Status',
+    'StatusMessageTemplate',
 ]

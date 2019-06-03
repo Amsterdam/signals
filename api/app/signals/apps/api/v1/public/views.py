@@ -9,12 +9,13 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.v1.serializers import (
     CategoryHALSerializer,
-    MainCategoryHALSerializer,
+    ParentCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail
+    PublicSignalSerializerDetail,
+    StatusMessageTemplateSerializer
 )
-from signals.apps.signals.models import Category, MainCategory, Signal
+from signals.apps.signals.models import Category, Signal, StatusMessageTemplate
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
@@ -28,7 +29,6 @@ class PublicSignalGenericViewSet(GenericViewSet):
 
 class PublicSignalViewSet(CreateModelMixin, DetailSerializerMixin, RetrieveModelMixin,
                           PublicSignalGenericViewSet):
-
     serializer_class = PublicSignalCreateSerializer
     serializer_detail_class = PublicSignalSerializerDetail
 
@@ -37,25 +37,40 @@ class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSe
     serializer_class = PublicSignalAttachmentSerializer
 
 
-class MainCategoryViewSet(DatapuntViewSet):
-    queryset = MainCategory.objects.all()
-    serializer_detail_class = MainCategoryHALSerializer
-    serializer_class = MainCategoryHALSerializer
+class ParentCategoryViewSet(DatapuntViewSet):
+    queryset = Category.objects.filter(parent__isnull=True)
+    serializer_detail_class = ParentCategoryHALSerializer
+    serializer_class = ParentCategoryHALSerializer
     lookup_field = 'slug'
 
 
-class CategoryViewSet(RetrieveModelMixin, GenericViewSet):
+class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryHALSerializer
     pagination_class = HALPagination
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset,
-                                parent__slug=self.kwargs['slug'],
-                                slug=self.kwargs['sub_slug'])
+
+        if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
+            obj = get_object_or_404(queryset,
+                                    parent__slug=self.kwargs['slug'],
+                                    slug=self.kwargs['sub_slug'])
+        else:
+            obj = get_object_or_404(queryset, slug=self.kwargs['slug'])
+
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def status_message_templates(self, *args, **kwargs):
+        text_entries = StatusMessageTemplate.objects.filter(category=self.get_object())
+
+        state_filter = self.request.query_params.get('state', None)
+        if state_filter:
+            text_entries = text_entries.filter(state=state_filter)
+
+        serializer = StatusMessageTemplateSerializer(text_entries, many=True)
+        return Response(serializer.data)
 
 
 class NamespaceView(APIView):
@@ -65,5 +80,6 @@ class NamespaceView(APIView):
 
     TODO: Implement HAL standard for curies in the future
     """
+
     def get(self, request):
         return Response()

@@ -17,14 +17,14 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Department,
     Location,
-    MainCategory,
     Note,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    StatusMessageTemplate
 )
-from signals.apps.signals.workflow import GEMELD
+from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
@@ -111,7 +111,7 @@ class LocationFactory(factory.DjangoModelFactory):
     class Meta:
         model = Location
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', locations=None)
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', location=None)
 
     buurt_code = fuzzy.FuzzyText(length=4)
     stadsdeel = fuzzy.FuzzyChoice(choices=(s[0] for s in STADSDELEN))
@@ -202,20 +202,21 @@ class PriorityFactory(factory.DjangoModelFactory):
 #
 
 
-class MainCategoryFactory(factory.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Main category {}'.format(n))
+class ParentCategoryFactory(factory.DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Parent category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
 
     class Meta:
-        model = MainCategory
+        model = Category
         django_get_or_create = ('slug', )
 
 
 class CategoryFactory(factory.DjangoModelFactory):
-    parent = factory.SubFactory('tests.apps.signals.factories.MainCategoryFactory')
+    parent = factory.SubFactory('tests.apps.signals.factories.ParentCategoryFactory')
     name = factory.Sequence(lambda n: 'Category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+    is_active = True
 
     class Meta:
         model = Category
@@ -247,3 +248,13 @@ class NoteFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Note
+
+
+class StatusMessageTemplateFactory(factory.DjangoModelFactory):
+    text = fuzzy.FuzzyText(length=100)
+    order = None
+    category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory')
+    state = factory.LazyAttribute(lambda o: random.choice(STATUS_CHOICES_API)[0])
+
+    class Meta:
+        model = StatusMessageTemplate

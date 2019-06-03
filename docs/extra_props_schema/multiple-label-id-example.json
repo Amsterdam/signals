@@ -1,0 +1,14 @@
+{
+  "id": "extra_straatverlichting_wat",
+  "label": "Wat is het probleem?",
+  "answer": [
+    {
+      "id": "overdag",
+      "label": "Brandt overdag"
+    },
+    {
+      "id": "lichthinder",
+      "label": "Geeft lichthinder (schijnt bijvoorbeeld in de slaapkamer)"
+    }
+  ]
+}

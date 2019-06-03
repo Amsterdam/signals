@@ -5,7 +5,6 @@ import copy
 from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
-from django.urls import resolve
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -21,7 +20,7 @@ from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
     CategoryHyperlinkedRelatedField,
-    MainCategoryHyperlinkedIdentityField,
+    ParentCategoryHyperlinkedIdentityField,
     PrivateSignalAttachmentLinksField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
@@ -29,6 +28,9 @@ from signals.apps.api.v1.fields import (
     PublicSignalAttachmentLinksField,
     PublicSignalLinksField
 )
+# facilitate debugging
+from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.address.gebieden import AddressGebieden
 from signals.apps.signals.models import (
@@ -37,19 +39,57 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     History,
     Location,
-    MainCategory,
     Note,
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    StatusMessageTemplate
 )
+from signals.apps.signals.models.location import get_address_text
+from signals.apps.signals.models.status_message_template import MAX_INSTANCES
+
+
+class StatusMessageTemplateListSerializer(serializers.ListSerializer):
+    def validate(self, attrs):
+        counter = {}
+        for attr in attrs:
+            key = '{}-{}'.format(attr['category'].pk, attr['state'])
+            if key not in counter:
+                counter[key] = 0
+            counter[key] += 1
+
+        if any([True for x, y in counter.items() if y > MAX_INSTANCES]):
+            msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
+            raise ValidationError(msg.format(MAX_INSTANCES))
+        return super(StatusMessageTemplateListSerializer, self).validate(attrs=attrs)
+
+
+class StatusMessageTemplateSerializer(serializers.ModelSerializer):
+    category = CategoryHyperlinkedRelatedField(write_only=True, required=True)
+    state_display = serializers.CharField(source='get_state_display', read_only=True)
+
+    class Meta:
+        model = StatusMessageTemplate
+        fields = (
+            'pk',
+            'order',
+            'state',
+            'state_display',
+            'text',
+            'category',
+        )
+        list_serializer_class = StatusMessageTemplateListSerializer
+
+    def save(self, **kwargs):
+        return super(StatusMessageTemplateSerializer, self).save(**kwargs)
 
 
 class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = _NestedDepartmentSerializer(many=True)
+    handling_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -61,16 +101,20 @@ class CategoryHALSerializer(HALSerializer):
             'handling',
             'departments',
             'is_active',
+            'handling_message',
         )
 
+    def get_handling_message(self, obj):
+        return ALL_AFHANDELING_TEXT[obj.handling]
 
-class MainCategoryHALSerializer(HALSerializer):
-    serializer_url_field = MainCategoryHyperlinkedIdentityField
+
+class ParentCategoryHALSerializer(HALSerializer):
+    serializer_url_field = ParentCategoryHyperlinkedIdentityField
     _display = DisplayField()
-    sub_categories = CategoryHALSerializer(many=True, source='categories')
+    sub_categories = CategoryHALSerializer(many=True, source='children')
 
     class Meta:
-        model = MainCategory
+        model = Category
         fields = (
             '_links',
             '_display',
@@ -82,15 +126,73 @@ class MainCategoryHALSerializer(HALSerializer):
 
 # -- /private API serializers --
 
+def _get_description_of_update_location(obj):
+    """Given a history entry for update location create descriptive text."""
+    # Retrieve relevant location update object
+    location_id = int(obj.identifier.strip('UPDATE_LOCATION_'))
+    location = Location.objects.get(id=location_id)
+
+    # Craft a message for UI
+    desc = 'Stadsdeel: {}\n'.format(
+        location.get_stadsdeel_display()) if location.stadsdeel else ''
+
+    # Deal with address text or coordinates
+    if location.address and isinstance(location.address, dict):
+        field_prefixes = (
+            ('openbare_ruimte', ''),
+            ('huisnummer', ' '),
+            ('huisletter', ''),
+            ('huisnummer_toevoeging', '-'),
+            ('woonplaats', '\n')
+        )
+        desc += get_address_text(location, field_prefixes)
+    else:
+        desc += 'Locatie is gepind op de kaart\n{}, {}'.format(
+            location.geometrie[0],
+            location.geometrie[1],
+        )
+
+    return desc
+
+
+def _get_description_of_receive_feedback(obj):
+    """Given a history entry for submission of feedback create descriptive text."""
+    # Retrieve relevant location update object
+    feedback_id = obj.identifier.strip('RECEIVE_FEEDBACK_')
+    feedback = Feedback.objects.get(token=feedback_id)
+
+    # Craft a message for UI
+    desc = 'Ja, de melder is tevreden\n' if feedback.is_satisfied else \
+        'Nee, de melder is ontevreden\n'
+    desc += 'Waarom: {}'.format(feedback.text)
+
+    if feedback.text_extra:
+        desc += '\nToelichting: {}'.format(feedback.text_extra)
+
+    yes_no = 'Ja' if feedback.allows_contact else 'Nee'
+    desc += f'\nToestemming contact opnemen: {yes_no}'
+
+    return desc
+
+
 class HistoryHalSerializer(HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     who = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     def get_who(self, obj):
         """Generate string to show in UI, missing users are set to default."""
         if obj.who is None:
             return 'SIA systeem'
         return obj.who
+
+    def get_description(self, obj):
+        if obj.what == 'UPDATE_LOCATION':
+            return _get_description_of_update_location(obj)
+        elif obj.what == 'RECEIVE_FEEDBACK':
+            return _get_description_of_receive_feedback(obj)
+        else:
+            return obj.description
 
     class Meta:
         model = History
@@ -140,6 +242,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
             'user',
             'state',
             'state_display',
+            'target_api',
             'extra_properties',
             'created_at',
         )
@@ -187,6 +290,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
     category_url = serializers.SerializerMethodField(read_only=True)
+    text = serializers.CharField(required=False)
 
     departments = serializers.SerializerMethodField(
         source='category.departments',
@@ -204,6 +308,7 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
             'sub_category',
             'departments',
             'created_by',
+            'text',
         )
         read_only_fields = (
             'created_by',
@@ -323,7 +428,6 @@ class AddressValidationMixin():
 class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
-    image = serializers.ImageField(read_only=True)
 
     location = _NestedLocationModelSerializer(required=False)
     status = _NestedStatusModelSerializer(required=False)
@@ -331,7 +435,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     reporter = _NestedReporterModelSerializer(required=False)
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
-    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    has_attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
@@ -340,100 +444,52 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             '_display',
             'category',
             'id',
-            'image',
-            'attachments',
+            'has_attachments',
             'location',
             'status',
             'reporter',
             'priority',
             'notes',
+            'source',
+            'text',
+            'text_extra',
+            'extra_properties',
         )
         read_only_fields = (
             'id',
-            'image',
-            'attachments',
+            'has_attachments',
         )
 
-    def _update_location(self, instance, validated_data):
-        """
-        Update the location of a Signal using the action manager
-        """
-        if 'location' in validated_data:
-            location_data = validated_data.pop('location')
-            location_data['created_by'] = self.context['request'].user.email
-
-            Signal.actions.update_location(location_data, instance)
-
-    def _update_status(self, instance, validated_data):
-        """
-        Update the status of a Signal using the action manager
-        """
-        if 'status' in validated_data:
-            status_data = validated_data.pop('status')
-            status_data['created_by'] = self.context['request'].user.email
-
-            Signal.actions.update_status(status_data, instance)
-
-    def _update_category_assignment(self, instance: Signal, validated_data):
-        """
-        Update the category assignment of a Signal using the action manager
-        """
-        category_assignment_data = validated_data['category_assignment']
-        category_assignment_data['created_by'] = self.context['request'].user.email
-
-        Signal.actions.update_category_assignment(category_assignment_data, instance)
-
-    def _update_priority(self, instance, validated_data):
-        """
-        Update the priority of a Signal using the action manager
-        """
-        priority_data = validated_data['priority']
-        priority_data['created_by'] = self.context['request'].user.email
-
-        Signal.actions.update_priority(priority_data, instance)
-
-    def _update_notes(self, instance, validated_data):
-        """
-        Not really updating notes, we are only adding new notes
-
-        Note: For now we only allow the creation of only one note through the API, it still needs
-              to be provided as a list though :(
-        """
-        if 'notes' in validated_data and len(validated_data['notes']) > 0:
-            note_data = validated_data['notes'][0]
-            note_data['created_by'] = self.context['request'].user.email
-
-            Signal.actions.create_note(note_data, instance)
+    def get_has_attachments(self, obj):
+        return obj.attachments.exists()
 
     def update(self, instance, validated_data):
         """
         Perform update on nested models.
 
-        Note: Reporter cannot be updated via the API.
+        Note:
+        - Reporter cannot be updated via the API.
+        - Atomic update (all fail/succeed), django signals on full success (see
+          underlying update_multiple method of actions SignalManager).
         """
-        if 'location' in validated_data:
-            self._update_location(instance, validated_data)
+        user_email = self.context['request'].user.email
 
-        if 'status' in validated_data:
-            self._update_status(instance, validated_data)
+        for _property in ['location', 'status', 'category_assignment', 'priority']:
+            if _property in validated_data:
+                data = validated_data[_property]
+                data['created_by'] = user_email
 
-        if 'category_assignment' in validated_data:
-            self._update_category_assignment(instance, validated_data)
+        if 'notes' in validated_data and validated_data['notes']:
+            note_data = validated_data['notes'][0]
+            note_data['created_by'] = user_email
 
-        if 'priority' in validated_data:
-            self._update_priority(instance, validated_data)
-
-        if 'notes' in validated_data:
-            self._update_notes(instance, validated_data)
-
-        return instance
+        signal = Signal.actions.update_multiple(validated_data, instance)
+        return signal
 
 
 class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
-
-    image = serializers.ImageField(read_only=True)
 
     location = _NestedLocationModelSerializer()
     status = _NestedStatusModelSerializer(required=False)
@@ -441,7 +497,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     reporter = _NestedReporterModelSerializer()
     priority = _NestedPriorityModelSerializer(required=False)
     notes = _NestedNoteModelSerializer(many=True, required=False)
-    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    has_attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
@@ -463,17 +519,18 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'operational_date',
-            'image',
-            'attachments',
+            'has_attachments',
             'extra_properties',
             'notes',
         )
         read_only_fields = (
             'created_at',
             'updated_at',
-            'image',
-            'attachments',
+            'has_attachments',
         )
+
+    def get_has_attachments(self, obj):
+        return obj.attachments.exists()
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
@@ -538,6 +595,8 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         return self.to_internal_value(data)
 
     def to_internal_value(self, data):
+        from signals.apps.api.v1.urls import category_from_url
+
         potential_parent_signal = self.context['view'].get_object()
 
         if potential_parent_signal.status.state == workflow.GESPLITST:
@@ -558,21 +617,11 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         if errors:
             raise ValidationError(errors)
 
-        # TODO: find a cleaner solution to the sub category handling.
         output = {"children": copy.deepcopy(self.initial_data)}
 
         for item in output["children"]:
-            category_url = item['category']['sub_category']
-
-            from urllib.parse import urlparse
-            path = (urlparse(category_url)).path
-
-            view, args, kwargs = resolve(path)  # noqa
-            category = Category.objects.get(
-                slug=kwargs['sub_slug'],  # Check the urls.py for why!
-                parent__slug=kwargs['slug'],
-            )
-            item['category']['sub_category'] = category
+            item['category']['sub_category'] = category_from_url(
+                item['category']['sub_category'])
 
         return output
 
@@ -589,8 +638,9 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         }
 
     def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data["children"],
-                                      signal=self.context['view'].get_object())
+        signal = Signal.actions.split(split_data=validated_data['children'],
+                                      signal=self.context['view'].get_object(),
+                                      user=self.context['request'].user)
 
         return signal
 
@@ -722,3 +772,11 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer, AddressValidatio
         signal = Signal.actions.create_initial(
             validated_data, location_data, status_data, category_assignment_data, reporter_data)
         return signal
+
+
+class SignalIdListSerializer(HALSerializer):
+    class Meta:
+        model = Signal
+        fields = (
+            'id',
+        )

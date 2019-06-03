@@ -2,55 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.</title>
+    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.sia_id }} is afgehandeld.</title>
 </head>
 <body>
     <p>
-        Geachte melder,
-    </p>
-
-    <p>
-        Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.id }} is afgehandeld.
-        <br/><br/>
-        {% if status.text %}
-        De volgende toelichting is daarbij gegeven:<br/>
-        {{ status.text }}<br/><br/>
+        {% if signal.is_child %}
+            <h1>Een deel van uw melding is afgehandeld</h1>
+        {% else %}
+            <h1>Uw melding is afgehandeld</h1>
         {% endif %}
-        Hieronder staat de samenvatting van het door u ingevulde formulier.
-        <br/><br/>
-        Samenvatting melding: {{ signal.id }}
-        <br/>
-        Adres: {{ signal.location.address_text }}
-        <br/>
-        Stadsdeel: {{ signal.location.get_stadsdeel_display }}
-        <br/>
-        Rubriek: {{ signal.category_assignment.category.parent.name }}
-        <br/>
-        Uw omschrijving: {{ signal.text }}
+        <h2>Meldingnummer {{ signal.sia_id }}</h2>
     </p>
 
     <p>
-        <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;meldingid={{ signal.id }}' style='color:#000; text-decoration:none;'><b>Wat vindt u van de afhandeling van uw melding?</b></a>
+        {% if signal.is_child %}
+        Wat hebben we gedaan met uw deelmelding?<br/>
+        Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.<br/>
+        <br/>
+        Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.<br/>
+        {% else %}
+        Wat hebben we gedaan met uw melding?<br/>
+        Wij hebben uw melding zojuist afgehandeld.<br/>
+        {% endif %}
+        <br/>
+        <i>{{ status.text|linebreaksbr }}</i><br/>
+        {% if signal.is_child %}
+        <br/>
+        Als u van de andere deelmelding(en) nog geen bericht heeft gehad, kunt u die binnenkort verwachten.<br/>
+        {%  endif %}
+    </p>
+
+    <p>
+        <b>Bent u tevreden met de afhandeling van uw melding?</b>
         <table style='border-collapse: collapse; border-spacing: 0px;' cellpadding='0' cellspacing='0'>
             <tr>
                 <td>
-                    <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;mood=1&amp;meldingid={{ signal.id }}' style='display: block; width: 22px; height: 20px; max-height: 20px; border: 0px;color:#007CB1'> <img src="https://d6tizftlrpuof.cloudfront.net/themes/prod/b1af4ee31535f5f354182794194f36dd" alt='1' border='0' style='display: block;'/></a>
+                     <a href="{{ positive_feedback_url }}">Ja, ik ben tevreden.</a>
                 </td>
+            </tr>
+            <tr>
                 <td>
-                    <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;mood=2&amp;meldingid={{ signal.id }}' style='display: block; width: 22px; height: 20px; max-height: 20px; border: 0px;color:#007CB1'> <img src="https://d6tizftlrpuof.cloudfront.net/themes/prod/b1af4ee31535f5f354182794194f36dd" alt='2' border='0' style='display: block;'/></a>
-                </td>
-                <td>
-                    <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;mood=3&amp;meldingid={{ signal.id }}' style='display: block; width: 22px; height: 20px; max-height: 20px; border: 0px;color:#007CB1'> <img src="https://d6tizftlrpuof.cloudfront.net/themes/prod/b1af4ee31535f5f354182794194f36dd" alt='3' border='0' style='display: block;'/></a>
-                </td>
-                <td>
-                    <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;mood=4&amp;meldingid={{ signal.id }}' style='display: block; width: 22px; height: 20px; max-height: 20px; border: 0px;color:#007CB1'> <img src="https://d6tizftlrpuof.cloudfront.net/themes/prod/b1af4ee31535f5f354182794194f36dd" alt='4' border='0' style='display: block;'/></a>
-                </td>
-                <td>
-                    <a href='https://feedback.usabilla.com/index.html?id=16252e95a8b0&amp;group=b7b43321052c&amp;mood=5&amp;meldingid={{ signal.id }}' style='display: block; width: 22px; height: 20px; max-height: 20px; border: 0px;color:#007CB1'> <img src="https://d6tizftlrpuof.cloudfront.net/themes/prod/b1af4ee31535f5f354182794194f36dd" alt='5' border='0' style='display: block;'/></a>
+                    <a href="{{ negative_feedback_url }}">Nee, ik ben niet tevreden.</a>
                 </td>
             </tr>
         </table>
-        <img src="http://w.usabilla.com/a/t?m=e&amp;b=16252e95a8b0&amp;g=b7b43321052c" width="0" height="0" border="0"/>
+    </p>
+
+    <p>
+        <b>Informatie over uw melding</b>
+        <br/>
+        Gemeld op: <i>{{ signal.created_at|date:"DATETIME_FORMAT" }}</i><br/>
+        {% if signal.location %}Locatie: <i>{{ signal.location.address_text }}</i><br/>{% endif %}
+        Categorie: <i>{{ signal.category_assignment.category.name }}</i><br/>
+        <br>
+        Uw {% if signal.is_child %}(gedeeltelijke) {% endif %}omschrijving:<br/>
+        <i>{{ signal.text|linebreaksbr }}</i>
+    </p>
+
+    <p>
+        <b>Meer weten?</b><br/>
+        Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: <b>{{ signal.sia_id }}</b>.
     </p>
 
     <p>

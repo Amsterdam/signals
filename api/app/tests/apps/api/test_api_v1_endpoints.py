@@ -1,11 +1,14 @@
 import copy
 import json
 import os
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from django.utils.http import urlencode
+from freezegun import freeze_time
 from rest_framework.reverse import reverse
 
 from signals import API_VERSIONS
@@ -13,9 +16,12 @@ from signals.apps.api.address.validation import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Category, History, MainCategory, Signal
+from signals.apps.signals.models import Attachment, Category, History, Signal, StatusMessageTemplate
+from signals.apps.signals.workflow import STATUS_CHOICES_API
 from signals.utils.version import get_version
+from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
@@ -23,13 +29,19 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
-    MainCategoryFactory,
     NoteFactory,
+    ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    StatusMessageTemplateFactory
 )
-from tests.test import SIAReadWriteUserMixin, SIAWriteUserMixin, SignalsBaseApiTestCase
+from tests.test import (
+    SIAReadUserMixin,
+    SIAReadWriteUserMixin,
+    SIAWriteUserMixin,
+    SignalsBaseApiTestCase
+)
 
 THIS_DIR = os.path.dirname(__file__)
 SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], 'signals')
@@ -72,8 +84,8 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         super(TestCategoryTermsEndpoints, self).setUp()
 
     def test_category_list(self):
-        # Asserting that we've 9 `MainCategory` objects loaded from the json fixture.
-        self.assertEqual(MainCategory.objects.count(), 9)
+        # Asserting that we've 9 parent categories loaded from the json fixture.
+        self.assertEqual(Category.objects.filter(parent__isnull=True).count(), 10)
 
         url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
@@ -84,12 +96,12 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.list_categories_schema, data)
 
-        self.assertEqual(len(data['results']), 9)
+        self.assertEqual(len(data['results']), 10)
 
     def test_category_detail(self):
-        # Asserting that we've 13 sub categories for our main category "Afval".
-        main_category = MainCategoryFactory.create(name='Afval')
-        self.assertEqual(main_category.categories.count(), 13)
+        # Asserting that we've 13 sub categories for our parent category "Afval".
+        main_category = ParentCategoryFactory.create(name='Afval')
+        self.assertEqual(main_category.children.count(), 16)
 
         url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
         response = self.client.get(url)
@@ -101,7 +113,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         self.assertJsonSchema(self.retrieve_category_schema, data)
 
         self.assertEqual(data['name'], 'Afval')
-        self.assertEqual(len(data['sub_categories']), 13)
+        self.assertEqual(len(data['sub_categories']), 16)
 
     def test_sub_category_detail(self):
         sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
@@ -119,6 +131,59 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
         self.assertEqual(data['name'], 'Grofvuil')
         self.assertIn('is_active', data)
+
+    def test_sub_category_detail_no_status_message_templates(self):
+        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
+
+        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
+            slug=sub_category.parent.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+
+        url = data['_links']['sia:status-message-templates']['href']
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(len(data), 0)
+
+    def test_sub_category_detail_status_message_templates(self):
+        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
+
+        text = {}
+        for state in STATUS_CHOICES_API:
+            text[state[0]] = []
+            for x in range(5):
+                text[state[0]].append(
+                    StatusMessageTemplateFactory.create(category=sub_category, order=x,
+                                                        state=state[0])
+                )
+
+        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
+            slug=sub_category.parent.slug,
+            sub_slug=sub_category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+
+        url = data['_links']['sia:status-message-templates']['href']
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(len(data), len(STATUS_CHOICES_API) * 5)
 
 
 class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -272,7 +337,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         status = Signal.actions.update_status(
             {
                 'text': 'DIT IS EEN TEST',
-                'state': workflow.AFGEHANDELD,
+                'state': workflow.BEHANDELING,
                 'user': self.user,
             },
             self.signal
@@ -290,6 +355,108 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         new_entry = data[0]  # most recent status should be first
         self.assertEqual(new_entry['who'], self.user.username)
         self.assertEqual(new_entry['description'], status.text)
+
+
+class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
+    def setUp(self):
+        self.signal = SignalFactoryValidLocation()
+        self.feedback = FeedbackFactory(
+            _signal=self.signal,
+            is_satisfied=None,
+        )
+
+        self.feedback_endpoint = '/signals/v1/public/feedback/forms/{token}'
+        self.history_endpoint = '/signals/v1/private/signals/{id}/history'
+
+    def test_setup(self):
+        self.assertEqual(Signal.objects.count(), 1)
+        self.assertEqual(Feedback.objects.count(), 1)
+
+        self.assertEqual(Feedback.objects.count(), 1)
+        self.assertEqual(self.feedback.is_satisfied, None)
+        self.assertEqual(self.feedback.submitted_at, None)
+
+    def test_url_routes(self):
+        url = reverse('v1:feedback-standard-answers-list')
+        self.assertEqual(url, '/signals/v1/public/feedback/standard_answers/')
+
+        url = reverse('v1:feedback-forms-detail', args=['example_token'])
+        self.assertEqual(url, '/signals/v1/public/feedback/forms/example_token')
+
+    def test_submit_feedback_check_history(self):
+        # get a user privileged to read from API
+        read_user = self.sia_read_user
+        self.client.force_authenticate(user=read_user)
+        history_url = self.history_endpoint.format(id=self.signal.id)
+
+        # check history before submitting feedback
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 4)
+
+        # Note the unhappy flow regarding feedback is tested in the feedback
+        # app. Here we only check that it shows up in the history.
+        url = self.feedback_endpoint.format(token=self.feedback.token)
+        payload = {
+            'is_satisfied': True,
+            'allows_contact': False,
+            'text': 'De zon schijnt.',
+            'text_extra': 'maar niet heus',
+        }
+
+        response = self.client.put(url, data=payload, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 200)
+
+        # check that feedback object in db is updated
+        self.feedback.refresh_from_db()
+        self.assertEqual(self.feedback.is_satisfied, True)
+        self.assertNotEqual(self.feedback.submitted_at, None)
+
+        # check have an entry in the history for the feedback
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 5)
+
+        # check that filtering by RECEIVE_FEEDBACK works
+        response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+
+    def test_history_entry_description_property(self):
+        # equivalent to submitting feedback:
+        text = 'TEXT'
+        text_extra = 'TEXT_EXTRA'
+
+        self.feedback.is_satisfied = True
+        self.feedback.allows_contact = False
+        self.feedback.text = text
+        self.feedback.text_extra = text_extra
+        self.feedback.submitted_at = self.feedback.created_at + timedelta(days=1)
+        self.feedback.save()
+
+        # check the rendering
+        read_user = self.sia_read_user
+        self.client.force_authenticate(user=read_user)
+        history_url = self.history_endpoint.format(id=self.signal.id)
+
+        response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+        history_entry = response_data[0]
+
+        self.assertIn('Ja, de melder is tevreden', history_entry['description'])
+        self.assertIn(f'Waarom: {text}', history_entry['description'])
+        self.assertIn(f'Toelichting: {text_extra}', history_entry['description'])
+        self.assertIn('Toestemming contact opnemen: Nee', history_entry['description'])
 
 
 class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -311,11 +478,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
         self.split_endpoint = '/signals/v1/private/signals/{pk}/split'
+        self.removed_from_category_endpoint = '/signals/v1/private/signals/category/removed'
 
         # Create a special pair of sub and main categories for testing (insulate our tests
         # from future changes in categories).
         # TODO: add to factories.
-        self.test_cat_main = MainCategory(name='testmain')
+        self.test_cat_main = Category(name='testmain')
         self.test_cat_main.save()
         self.test_cat_sub = Category(
             parent=self.test_cat_main,
@@ -824,8 +992,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # The only status that is allowed is "GEMELD" so check with a diferrent state
         data = {'status': {'text': 'Test status update', 'state': 'b'}}
-        with self.assertRaises(ValidationError):
-            self.client.patch(detail_endpoint, data, format='json')
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
 
         # check that the Status is there
         response = self.client.get(history_endpoint)
@@ -835,6 +1003,40 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # JSONSchema validation
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_status_target_api_SIG1140(self):
+        signal_no_status = SignalFactoryValidLocation.create()
+        self.client.force_authenticate(user=self.superuser)
+
+        detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
+
+        data = {
+            'status': {
+                'state': 'ready to send',
+                'text': 'Te verzenden naar THOR',
+                'target_api': 'sigmax',
+            }
+        }
+        response = self.client.patch(detail_endpoint, data, format='json')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_update_status_with_required_text(self):
+        """ Status change to 'afgehandeld' (o) requires text. When no text is supplied, a 400 should
+        be returned """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        fixture_file = os.path.join(THIS_DIR, 'update_status.json')
+
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        data["status"]["state"] = "o"
+        del data["status"]["text"]
+
+        response = self.client.patch(self.detail_endpoint.format(pk=self.signal_no_image.id), data,
+                                     format='json')
+        self.assertEqual(400, response.status_code)
 
     def test_update_category_assignment(self):
         # Partial update to update the location, all interaction via API.
@@ -862,7 +1064,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.signal_no_image.refresh_from_db()
 
         response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
+        response_json = response.json()
+
+        self.assertEqual(len(response_json), 2)
+        self.assertEqual(response_json[0]['description'], data['category']['text'])
 
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
@@ -1018,14 +1223,17 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             response = self.client.get(self.detail_endpoint.format(pk=item['id']))
             self.assertEqual(response.status_code, 200)
 
-            # TODO: add more detailed tests using a JSONSchema
-            # TODO: consider naming of 'note' object (is list, so 'notes')?
             response_json = response.json()
-            for key in ['status', 'category', 'priority', 'location', 'reporter', 'notes', 'image']:
+            for key in [
+                'status', 'category', 'priority', 'location', 'reporter', 'notes', 'has_attachments'
+            ]:
                 self.assertIn(key, response_json)
 
         self.assertEqual(4, Signal.objects.count())
+
+        self.signal_no_image.refresh_from_db()
         self.assertEqual(2, len(self.signal_no_image.children.all()))
+        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
 
     def test_split_children_must_inherit_these_properties(self):
         """When a signal is split its children must inherit certain properties."""
@@ -1102,6 +1310,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 self.test_cat_main.slug
             )
 
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images(self):
         # Split the signal, take note of the returned children
 
@@ -1140,6 +1351,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
             self.assertEqual(md5_parent_image, md5_child_image)
 
+        self.signal_with_image.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
+
     def test_split_children_must_inherit_parent_images_for_1st_child(self):
         # Split the signal, take note of the returned children
 
@@ -1168,6 +1382,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         child_signal_2 = self.signal_with_image.children.last()
         self.assertEqual(child_signal_2.image, '')
+
+        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
 
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()
@@ -1351,11 +1567,263 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(Signal.objects.count(), 2)
 
+    def test_removed_from_category(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=10)
+        querystring = urlencode({
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        # The category has not been changed over the last 10 minutes
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        # Change the category
+        new_category = CategoryFactory.create()
+        Signal.actions.update_category_assignment({'category': new_category}, self.signal_no_image)
+
+        # Now we should get the signal_no_image in the response because we changed the category
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['id'], self.signal_no_image.id)
+
+    def test_removed_from_category_but_reassigned(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=10)
+        querystring = urlencode({
+            'category_slug': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        # The category has not been changed over the last 10 minutes
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        # Change the category
+        prev_category = self.signal_no_image.category_assignment.category
+        new_category = CategoryFactory.create()
+        Signal.actions.update_category_assignment({'category': new_category},
+                                                  self.signal_no_image)
+        Signal.actions.update_category_assignment({'category': prev_category},
+                                                  self.signal_no_image)
+
+        # Still should not get the signal_no_image in the response because we changed the category
+        # back to the original category
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+    def test_removed_from_category_date_range(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        with freeze_time(timezone.now() - timedelta(minutes=5)):
+            after = timezone.now() - timedelta(minutes=5)
+            before = timezone.now() + timedelta(minutes=5)
+            querystring = urlencode({
+                'category_slug': self.signal_no_image.category_assignment.category.slug,
+                'after': after.isoformat(),
+                'before': before.isoformat()
+            })
+            endpoint = '{}?{}'.format(
+                self.removed_from_category_endpoint,
+                querystring
+            )
+
+            # Change the category
+            new_category = CategoryFactory.create()
+            Signal.actions.update_category_assignment({'category': new_category},
+                                                      self.signal_no_image)
+
+            # Now we should get the signal_no_image in the response because we changed the category
+            response = self.client.get(endpoint, format='json')
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+            self.assertEqual(data['count'], 1)
+            self.assertEqual(data['results'][0]['id'], self.signal_no_image.id)
+
+    def test_removed_from_category_out_of_date_range(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        after = timezone.now() - timedelta(minutes=5)
+        before = timezone.now() + timedelta(minutes=5)
+        querystring = urlencode({
+            'category': self.signal_no_image.category_assignment.category.slug,
+            'after': after.isoformat(),
+            'before': before.isoformat()
+        })
+        endpoint = '{}?{}'.format(
+            self.removed_from_category_endpoint,
+            querystring
+        )
+
+        with freeze_time(timezone.now() - timedelta(minutes=10)):
+            # Change the category
+            new_category = CategoryFactory.create()
+            Signal.actions.update_category_assignment({'category': new_category},
+                                                      self.signal_no_image)
+
+            # Now we should get the signal_no_image in the response because we changed the category
+            response = self.client.get(endpoint, format='json')
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+            self.assertEqual(data['count'], 0)
+
+    def test_update_location_renders_correctly_in_history(self):
+        """Test that location updates have correct description field in history.
+
+        Valid addresses in SIA have:
+        - coordinates and address
+        - only cooordinates
+
+        Furthermore locations without stadsdeel property should render as well.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+
+        # Prepare the data for the 3 types of Location updates
+        update_location_json = os.path.join(THIS_DIR, 'update_location.json')
+        with open(update_location_json, 'r') as f:
+            data_with_address = json.load(f)
+        data_no_address = copy.deepcopy(data_with_address)
+        data_no_address['location']['address'] = {}
+        data_no_address_no_stadsdeel = copy.deepcopy(data_no_address)
+        data_no_address_no_stadsdeel['location']['stadsdeel'] = None
+
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+        # Test full location (address and coordinates) case:
+        response = self.client.patch(detail_endpoint, data=data_with_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        self.assertEqual(
+            'Stadsdeel: Centrum\nDe Ruijterkade 36A\nAmsterdam',
+            response_data[0]['description']
+        )
+
+        # Test no address case:
+        response = self.client.patch(detail_endpoint, data=data_no_address, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 3)
+        self.assertIn(
+            'Stadsdeel: Centrum',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+
+        # Test no address and no address
+        response = self.client.patch(
+            detail_endpoint, data=data_no_address_no_stadsdeel, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
+        response_data = response.json()
+        self.assertEqual(len(response_data), 4)
+        self.assertNotIn(
+            'Stadsdeel:',
+            response_data[0]['description']
+        )
+        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
+        self.assertIn('Locatie is gepind op de kaart', response_data[0]['description'])
+
+    @patch("signals.apps.api.v1.serializers.PrivateSignalSerializerList.create")
+    def test_post_django_validation_error_to_drf_validation_error(self, mock):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        mock.side_effect = ValidationError('this is a test')
+
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(1, len(response.json()))
+        self.assertEqual('this is a test', response.json()[0])
+
+    @patch("signals.apps.api.v1.serializers.PrivateSignalSerializerDetail.update")
+    def test_patch_django_validation_error_to_drf_validation_error(self, mock):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        pk = self.signal_no_image.id
+        detail_endpoint = self.detail_endpoint.format(pk=pk)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'update_status.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        mock.side_effect = ValidationError('this is a test')
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(1, len(response.json()))
+        self.assertEqual('this is a test', response.json()[0])
+
+    def test_patch_multiple_response_most_recent(self):
+        """
+        Signal returned from detail endpoint after PATCH must be up to date.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+        response = self.client.get(detail_endpoint)
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        cat_url_before = response_data['category']['category_url']
+        state_before = response_data['status']['state']
+
+        SOME_MESSAGE_A = 'SOME MESSAGE A'
+        SOME_MESSAGE_B = 'SOME MESSAGE B'
+        payload = {
+            'status': {
+                'state': workflow.BEHANDELING,  # StatusFactory always uses workflow.GEMELD
+                'text': SOME_MESSAGE_A,
+            },
+            'category': {
+                'sub_category': self.link_test_cat_sub,
+                'text': SOME_MESSAGE_B,
+            }
+        }
+
+        response = self.client.patch(detail_endpoint, data=payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        self.assertNotEqual(cat_url_before, response_data['category']['category_url'])
+        self.assertEqual(SOME_MESSAGE_B, response.data['category']['text'])
+        self.assertNotEqual(state_before, response_data['status']['state'])
+        self.assertEqual(SOME_MESSAGE_A, response.data['status']['text'])
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
-    detail_endpoint = list_endpoint + '{}/'
-    attachment_endpoint = detail_endpoint + 'attachments'
+    detail_endpoint = list_endpoint + '{}'
+    attachment_endpoint = detail_endpoint + '/attachments'
     test_host = 'http://testserver'
 
     def setUp(self):
@@ -1402,53 +1870,51 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
         self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
 
-    def test_create_contains_image_and_attachments(self):
+    def test_create_has_attachments_false(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('image' in response.json())
-        self.assertTrue('attachments' in response.json())
-        self.assertIsInstance(response.json()['attachments'], list)
 
-    def test_get_detail_contains_image_and_attachments(self):
+        data = response.json()
+        self.assertFalse(data['has_attachments'])
+
+    def test_has_attachments_true(self):
         non_image_attachments = add_non_image_attachments(self.signal, 1)
         image_attachments = add_image_attachments(self.signal, 2)
         non_image_attachments += add_non_image_attachments(self.signal, 1)
 
-        response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEqual(200, response.status_code)
+        total_attachments = len(non_image_attachments) + len(image_attachments)
 
-        json_item = response.json()['results'][0]
-        self.assertTrue('image' in json_item)
-        self.assertTrue('attachments' in json_item)
-        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEqual(4, len(json_item['attachments']))
+        endpoint = self.detail_endpoint.format(self.signal.pk)
+        response = self.client.get(endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertTrue(data['has_attachments'])
+
+        attachment_endpoint = data['_links']['sia:attachments']['href']
+
+        response = self.client.get(attachment_endpoint, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], total_attachments)
+        self.assertEqual(len(data['results']), total_attachments)
+
+        self.assertFalse(data['results'][0]['is_image'])
+        self.assertEqual(self.test_host + non_image_attachments[0].file.url,
+                         data['results'][0]['location'])
+
+        self.assertTrue(data['results'][1]['is_image'])
         self.assertEqual(self.test_host + image_attachments[0].file.url,
-                         json_item['attachments'][1]['file'])
-        self.assertTrue(json_item['attachments'][2]['is_image'])
+                         data['results'][1]['location'])
+
+        self.assertTrue(data['results'][2]['is_image'])
+        self.assertEqual(self.test_host + image_attachments[1].file.url,
+                         data['results'][2]['location'])
+
+        self.assertFalse(data['results'][3]['is_image'])
         self.assertEqual(self.test_host + non_image_attachments[1].file.url,
-                         json_item['attachments'][3]['file'])
-        self.assertFalse(json_item['attachments'][3]['is_image'])
-
-    def test_get_list_contains_image_and_attachments(self):
-        non_image_attachments = add_non_image_attachments(self.signal, 1)
-        image_attachments = add_image_attachments(self.signal, 2)
-        non_image_attachments += add_non_image_attachments(self.signal, 1)
-
-        response = self.client.get(self.list_endpoint, self.create_initial_data)
-        self.assertEqual(200, response.status_code)
-
-        json_item = response.json()['results'][0]
-        self.assertTrue('image' in json_item)
-        self.assertTrue('attachments' in json_item)
-        self.assertEqual(self.test_host + image_attachments[0].file.url, json_item['image'])
-        self.assertEqual(4, len(json_item['attachments']))
-        self.assertEqual(self.test_host + image_attachments[0].file.url,
-                         json_item['attachments'][1]['file'])
-        self.assertTrue(json_item['attachments'][2]['is_image'])
-        self.assertEqual(self.test_host + non_image_attachments[1].file.url,
-                         json_item['attachments'][3]['file'])
-        self.assertFalse(json_item['attachments'][3]['is_image'])
+                         data['results'][3]['location'])
 
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):
@@ -1633,3 +2099,165 @@ class TestGebieden(SignalsBaseApiTestCase, SIAWriteUserMixin):
         self.assertEquals(self.gebied_response["buurt"]["code"], signal.location.buurt_code)
         self.assertEquals(self.gebied_response["stadsdeel"]["code"], signal.location.stadsdeel)
         self.assertEquals(self.gebied_response, signal.location.extra_properties['gebieden'])
+
+
+class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    endpoint = '/signals/v1/private/status-message-templates/'
+    link_test_cat_sub = None
+
+    def setUp(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        self.subcategory = CategoryFactory.create()
+
+        self.link_test_cat_sub = reverse(
+            'v1:category-detail', kwargs={
+                'slug': self.subcategory.parent.slug,
+                'sub_slug': self.subcategory.slug,
+            }
+        )
+
+    def test_add_status_messages(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        data = [
+            {
+                'text': 'Test #2',
+                'order': 1,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            },
+            {
+                'text': 'Test #1',
+                'order': 0,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            }
+        ]
+        self.client.post(self.endpoint, data, format='json')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(2, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual('Test #1', response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual('Test #2', response_data[1]['text'])
+
+    def test_cannot_add_too_many_status_messages(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        template = {
+            'text': 'Standaard afmeld tekst',
+            'category': self.link_test_cat_sub,
+            'state': 'o',
+        }
+
+        # create 10 status message templates (too many for one transition)
+        data = []
+        for i in range(10):
+            smt = copy.deepcopy(template)
+            smt.update({'order': i})
+            data.append(smt)
+
+        # Make sure we have no status message templates in the db
+        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
+
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
+
+        # we now want 0 StatusMessageTemplates in DB
+        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(0, len(response_data))
+
+    def test_change_status_messages(self):
+        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
+                                                        state='o', text='1')
+        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
+                                                        state='o', text='2')
+        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
+                                                        state='o', text='3')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.text, response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual(message_2.text, response_data[1]['text'])
+
+        self.assertEqual(2, response_data[2]['order'])
+        self.assertEqual(message_3.text, response_data[2]['text'])
+
+        data = [
+            {
+                'pk': message_2.pk,
+                'order': 2,
+                'text': 'changed',
+            },
+            {
+                'pk': message_3.pk,
+                'order': 1,
+            }
+        ]
+        response = self.client.patch(self.endpoint, data, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.text, response_data[0]['text'])
+
+        self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual(message_3.text, response_data[1]['text'])
+
+        self.assertEqual(2, response_data[2]['order'])
+        self.assertEqual('changed', response_data[2]['text'])
+
+    def test_delete_status_messages(self):
+        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
+                                                        state='o', text='1')
+        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
+                                                        state='o', text='2')
+        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
+                                                        state='o', text='3')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(3, len(response_data))
+
+        data = [{'pk': message_2.pk}, {'pk': message_3.pk}]
+        response = self.client.delete(self.endpoint, data, format='json')
+        self.assertEqual(204, response.status_code)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(1, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.pk, response_data[0]['pk'])

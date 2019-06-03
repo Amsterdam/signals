@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import skip
 from unittest.mock import patch
 
 from django.conf import settings
@@ -27,9 +28,9 @@ from tests.apps.signals.attachment_helpers import (
     add_non_image_attachments,
     small_gif
 )
-from tests.apps.signals.factories import CategoryFactory
+from tests.apps.signals.factories import CategoryFactory, SignalFactoryWithImage
 from tests.apps.users.factories import UserFactory
-from tests.test import SignalsBaseApiTestCase
+from tests.test import SignalsBaseApiTestCase, SuperUserMixin
 
 
 class TestAPIRoot(SignalsBaseApiTestCase):
@@ -497,6 +498,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertEqual(self.signal.status.state, result['state'])
         self.assertEqual(self.signal.status.user, self.superuser.username)
 
+    @skip('This transition became valid because re-categorization and status change to GEMELD')
     def test_post_status_invalid_transition(self):
         # Prepare current state.
         self.signal.status.state = workflow.AFWACHTING
@@ -658,6 +660,25 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         note = Note.objects.get(_signal=self.signal)
         self.assertEqual(note.created_by, self.superuser.username)
 
+    def test_update_category_assignment_to_the_same_category(self):
+        url = '/signals/auth/category/'
+        category = self.signal.category_assignment.category
+        data = {
+            '_signal': self.signal.id,
+            'sub_category': '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+                category.parent.slug,
+                category.slug
+            )
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+
+        data = response.json()
+        self.assertIn('non_field_errors', data)
+        self.assertIn('Cannot assign the same category twice', data['non_field_errors'])
+
 
 class TestUserLogging(TestAPIEndpointsBase):
     """Check that the API returns who did what and when."""
@@ -756,3 +777,20 @@ class TestUserLogging(TestAPIEndpointsBase):
             self.assertNotEqual(result[field], None)
 
         self.assertEqual(note.created_by, result['created_by'])
+
+
+class TestNoImageUrlsInSignalList(TestAPIEndpointsBase, SuperUserMixin):
+    """We do not want the image urls generated on list endpoints"""
+
+    def setUp(self):
+        self.signal_list_endpoint = '/signals/auth/signal/'
+        self.signal_with_image = SignalFactoryWithImage.create()
+
+    def test_list_endpoint_no_image_url(self):
+        self.client.force_authenticate(self.superuser)
+        response = self.client.get(self.signal_list_endpoint)
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertEqual(response_data['count'], 1)
+        self.assertNotIn('image', response_data['results'][0])

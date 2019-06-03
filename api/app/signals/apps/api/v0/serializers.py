@@ -332,8 +332,64 @@ class SignalStatusOnlyHALSerializer(HALSerializer):
 # Auth serializers
 #
 
-class SignalAuthHALSerializer(HALSerializer):
-    """Read-only serializer for `Signal` object."""
+class SignalAuthHALSerializerList(HALSerializer):
+    """Read-only serializer for lists of `Signal` objects."""
+    _display = DisplayField()
+    id = serializers.IntegerField(label='ID', read_only=True)
+    signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
+    location = _NestedLocationModelSerializer(read_only=True)
+    reporter = _NestedReporterModelSerializer(read_only=True)
+    status = _NestedStatusModelSerializer(read_only=True)
+    category = _NestedCategoryModelSerializer(source='category_assignment', read_only=True)
+    priority = _NestedPriorityModelSerializer(read_only=True)
+    notes_count = serializers.SerializerMethodField()
+
+    parent_id = serializers.IntegerField(read_only=True)
+    child_ids = serializers.SerializerMethodField(read_only=True)
+
+    serializer_url_field = SignalLinksField
+
+    def get_notes_count(self, obj):
+        return obj.notes.count()
+
+    class Meta(object):
+        model = Signal
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'signal_id',
+            'source',
+            'text',
+            'text_extra',
+            'status',
+            'location',
+            'category',
+            'reporter',
+            'priority',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
+            'operational_date',
+            'extra_properties',
+            'notes_count',
+            'parent_id',
+            'child_ids',
+        )
+        read_only_fields = (
+            'id',
+            'signal_id',
+            'created_at',
+            'updated_at',
+        )
+
+    def get_child_ids(self, obj):
+        return obj.children.values_list('id', flat=True)
+
+
+class SignalAuthHALSerializerDetail(HALSerializer):
+    """Read-only serializer for single `Signal` object."""
     _display = DisplayField()
     id = serializers.IntegerField(label='ID', read_only=True)
     signal_id = serializers.CharField(label='SIGNAL_ID', read_only=True)
@@ -528,6 +584,13 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
                 internal_data['category'] = category
 
         return internal_data
+
+    def validate(self, attrs):
+        if 'category' in attrs:
+            if attrs['_signal'].category_assignment.category.id == attrs['category'].id:
+                raise ValidationError('Cannot assign the same category twice')
+
+        return super(CategoryHALSerializer, self).validate(attrs=attrs)
 
     def create(self, validated_data):
         validated_data = self.add_user(validated_data)
