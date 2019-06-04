@@ -61,6 +61,7 @@ ALLOWED_STATUS_CHANGES = {
         BEHANDELING,
         TE_VERZENDEN,
         AFGEHANDELD,  # SIG-1294
+        GEANNULEERD,  # Op verzoek via mail van Arvid Smits
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264
