@@ -128,6 +128,14 @@ signal_router_v1.urls.append(
     )
 )
 
+signal_router_v1.urls.append(
+    path(
+        'public/category/predict',
+        v1_public_views.MLPredictCategoryView.as_view({'get': 'retrieve'}),
+        name='ml-predict-category'
+    )
+)
+
 urlpatterns = [
     path('v1/', include(signal_router_v1.urls)),
 ]

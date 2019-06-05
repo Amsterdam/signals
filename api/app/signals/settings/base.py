@@ -463,3 +463,5 @@ FEEDBACK_ENV_FE_MAPPING = {
     'ACCEPTANCE': 'https://acc.meldingen.amsterdam.nl',
     'PRODUCTION': 'https://meldingen.amsterdam.nl',
 }
+
+ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
