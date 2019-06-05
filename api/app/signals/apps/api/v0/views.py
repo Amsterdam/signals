@@ -13,7 +13,7 @@ from django.conf import settings
 from django.urls import resolve
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.exceptions import ValidationError, APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.settings import api_settings
@@ -46,8 +46,15 @@ from signals.apps.api.v0.serializers import (
     SignalUpdateImageSerializer,
     StatusHALSerializer
 )
-from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, \
-    Status, Category
+from signals.apps.signals.models import (
+    Category,
+    CategoryAssignment,
+    Location,
+    Note,
+    Priority,
+    Signal,
+    Status
+)
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
