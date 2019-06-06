@@ -12,7 +12,7 @@ from tests.test import SignalsBaseApiTestCase
 
 class TestMlPredictCategory(SignalsBaseApiTestCase):
     test_host = 'http://testserver'
-    endpoint = '/signals/v1/public/category/predict'
+    endpoint = '/signals/v1/public/category/prediction'
 
     def setUp(self):
         self.test_parentcategory_overig = Category.objects.get(

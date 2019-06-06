@@ -17,7 +17,7 @@ signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, basename='note
 
 signal_router_v0.urls.append(
     path(
-        'category/predict',
+        'category/prediction',
         v0_views.MlPredictCategoryView.as_view(),
         name='ml-tool-predict-proxy'
     )
