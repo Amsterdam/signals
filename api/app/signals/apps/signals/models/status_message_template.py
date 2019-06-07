@@ -17,6 +17,7 @@ class StatusMessageTemplate(CreatedUpdatedModel):
     category = models.ForeignKey(to='Category', related_name='+', on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=20, choices=workflow.STATUS_CHOICES)
 
+    title = models.CharField(max_length=255)
     text = models.TextField()
     order = models.PositiveIntegerField(default=0, db_index=True)
 

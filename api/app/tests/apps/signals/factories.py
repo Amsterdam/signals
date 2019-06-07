@@ -251,6 +251,7 @@ class NoteFactory(factory.DjangoModelFactory):
 
 
 class StatusMessageTemplateFactory(factory.DjangoModelFactory):
+    title = fuzzy.FuzzyText(length=100)
     text = fuzzy.FuzzyText(length=100)
     order = None
     category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory')

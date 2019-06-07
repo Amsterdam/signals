@@ -2053,12 +2053,14 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
 
         data = [
             {
+                'title': 'test titel',
                 'text': 'Test #2',
                 'order': 1,
                 'category': self.link_test_cat_sub,
                 'state': 'o',
             },
             {
+                'title': 'nog een titel',
                 'text': 'Test #1',
                 'order': 0,
                 'category': self.link_test_cat_sub,
@@ -2078,6 +2080,28 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
 
         self.assertEqual(1, response_data[1]['order'])
         self.assertEqual('Test #2', response_data[1]['text'])
+
+    def test_add_status_messages_title_required(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        data = [
+            {
+                'text': 'Test #2',
+                'order': 1,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            },
+            {
+                'text': 'Test #1',
+                'order': 0,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            }
+        ]
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
 
     def test_cannot_add_too_many_status_messages(self):
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
