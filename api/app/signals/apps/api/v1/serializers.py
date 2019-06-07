@@ -56,7 +56,7 @@ class StatusMessageTemplateListSerializer(serializers.ListSerializer):
             key = '{}-{}'.format(attr['category'].pk, attr['state'])
             counter[key] += 1
 
-        if any([True for x, y in counter.items() if y > MAX_INSTANCES]):
+        if any(True for x, y in counter.items() if y > MAX_INSTANCES):
             msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
             raise ValidationError(msg.format(MAX_INSTANCES))
         return super(StatusMessageTemplateListSerializer, self).validate(attrs=attrs)
