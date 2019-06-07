@@ -2067,7 +2067,8 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
                 'state': 'o',
             }
         ]
-        self.client.post(self.endpoint, data, format='json')
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(201, response.status_code)
 
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)
@@ -2094,6 +2095,30 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
                 'state': 'o',
             },
             {
+                'text': 'Test #1',
+                'order': 0,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            }
+        ]
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
+
+    def test_add_status_messages_no_empty_title(self):
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+        data = [
+            {
+                'title': '',
+                'text': 'Test #2',
+                'order': 1,
+                'category': self.link_test_cat_sub,
+                'state': 'o',
+            },
+            {
+                'title': '',
                 'text': 'Test #1',
                 'order': 0,
                 'category': self.link_test_cat_sub,
