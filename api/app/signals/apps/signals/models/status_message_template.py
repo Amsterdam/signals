@@ -37,6 +37,7 @@ class StatusMessageTemplate(CreatedUpdatedModel):
 
     def save(self, *args, **kwargs):
         # The default qs we need to perform our checks
+        self.full_clean()
         qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
         if self.pk is None and qs.count() >= MAX_INSTANCES:
