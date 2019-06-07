@@ -33,7 +33,7 @@ class ChildCategoryFilter(admin.SimpleListFilter):
 
 
 class StatusMessageTemplatesAdmin(admin.ModelAdmin):
-    list_display = ('category', 'state', 'order', 'text',)
+    list_display = ('title', 'category', 'state', 'order', 'text',)
     list_display_links = list_display
     list_filter = (ChildCategoryFilter,)
 

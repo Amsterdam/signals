@@ -2,7 +2,7 @@
 Serializsers that are used exclusively by the V1 API
 """
 import copy
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
@@ -51,14 +51,12 @@ from signals.apps.signals.models.status_message_template import MAX_INSTANCES
 
 class StatusMessageTemplateListSerializer(serializers.ListSerializer):
     def validate(self, attrs):
-        counter = {}
+        counter = defaultdict(int)
         for attr in attrs:
             key = '{}-{}'.format(attr['category'].pk, attr['state'])
-            if key not in counter:
-                counter[key] = 0
             counter[key] += 1
 
-        if any([True for x, y in counter.items() if y > MAX_INSTANCES]):
+        if any(True for x, y in counter.items() if y > MAX_INSTANCES):
             msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
             raise ValidationError(msg.format(MAX_INSTANCES))
         return super(StatusMessageTemplateListSerializer, self).validate(attrs=attrs)
@@ -75,6 +73,7 @@ class StatusMessageTemplateSerializer(serializers.ModelSerializer):
             'order',
             'state',
             'state_display',
+            'title',
             'text',
             'category',
         )

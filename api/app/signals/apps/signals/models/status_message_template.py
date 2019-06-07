@@ -17,6 +17,7 @@ class StatusMessageTemplate(CreatedUpdatedModel):
     category = models.ForeignKey(to='Category', related_name='+', on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=20, choices=workflow.STATUS_CHOICES)
 
+    title = models.CharField(max_length=255, blank=False, null=False)
     text = models.TextField()
     order = models.PositiveIntegerField(default=0, db_index=True)
 
@@ -36,6 +37,7 @@ class StatusMessageTemplate(CreatedUpdatedModel):
 
     def save(self, *args, **kwargs):
         # The default qs we need to perform our checks
+        self.full_clean()
         qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
         if self.pk is None and qs.count() >= MAX_INSTANCES:
