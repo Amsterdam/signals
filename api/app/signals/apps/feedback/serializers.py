@@ -44,15 +44,19 @@ class FeedbackSerializer(serializers.ModelSerializer):
             except StandardAnswer.DoesNotExist:
                 reopen = True
             else:
-                reopen = sa.reopens_when_unhappy
+                if not sa.is_satisfied:
+                    reopen = sa.reopens_when_unhappy
 
         # Reopen the Signal (melding) if need be.
         if reopen:
             signal = Signal.objects.get(pk=instance._signal_id)
-            payload = {
-                'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
-                'state': workflow.VERZOEK_TOT_HEROPENEN,
-            }
-            Signal.actions.update_status(payload, signal)
+
+            # Only allow a request to reopen when in state workflow.AFGEHANDELD
+            if signal.status.state == workflow.AFGEHANDELD:
+                payload = {
+                    'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
+                    'state': workflow.VERZOEK_TOT_HEROPENEN,
+                }
+                Signal.actions.update_status(payload, signal)
 
         return super().update(instance, validated_data)

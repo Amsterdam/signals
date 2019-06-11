@@ -11,8 +11,8 @@ from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
 from signals.apps.feedback.utils import get_feedback_urls
-from signals.apps.signals.models import Signal
 from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
@@ -70,7 +70,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             is_satisfied=False,
             reopens_when_unhappy=True,
         )
-    
+
         self.sa_no_sideeffect = StandardAnswerFactory.create(
             text='Ik ben niet blij. Blah, blah.',
             is_satisfied=False,
@@ -184,7 +184,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
 
-    def test_reopen_requested_on_unsatisfied_standard_answer(self):
+    def test_reopen_requested_on_unsatisfied_custom_answer(self):
         """All custom unsatisfied answers (in feedback) lead to "reopen requested" state."""
         token = self.feedback.token
         data = {
@@ -202,7 +202,88 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(response.status_code, 200)
 
         self.signal.refresh_from_db()
+        self.assertEqual(self.signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
+
+    def test_no_reopen_requested_on_unsatisfied_and_known_feedback(self):
+        """Some negative feedback is explicitly marked not to trigger reopen requested."""
+        token = self.feedback.token
+        data = {
+            'allows_contact': False,
+            'text': self.sa_no_sideeffect.text,
+            'is_satisfied': False,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
+
+    def test_no_reopen_requested_when_not_in_state_afgehandeld(self):
+        """Only request reopen from AFGEHANDELD state."""
+        with freeze_time(self.t_now):
+            # Reopen the test signal (so it is no longer in AFGEHANDELD).
+            payload = {
+                'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
+                'state': workflow.HEROPEND,
+            }
+            Signal.actions.update_status(payload, self.signal)
+
+            # Send feedback that potentially reopens a signal (should not happen in this test).
+            token = self.feedback.token
+            data = {
+                'allows_contact': False,
+                'text': self.sa_reopens.text,
+                'is_satisfied': False,
+            }
+
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        # Assert that nothing happened.
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.status.state, workflow.HEROPEND)
+
+    def test_no_reopen_requested_on_positive_feedback(self):
+        """Positive feedback should never request a reopen"""
+        # Create a positive feedback StandardAnswer that could possibly lead to
+        # the status reopen requested.
+        sa_positive = StandardAnswerFactory.create(
+            text='Ik ben blij met de afhandeling.',
+            is_satisfied=True,
+            reopens_when_unhappy=True,
+        )
+        status_id_before = self.signal.status.id
+
+        with freeze_time(self.t_now):
+            # Send feedback that potentially reopens a signal (should not happen in this test).
+            token = self.feedback.token
+            data = {
+                'allows_contact': False,
+                'text': sa_positive.text,
+                'is_satisfied': True,  # should not be able to override, refactor into separate test
+            }
+
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        # Assert that nothing happened.
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
+        self.assertEqual(status_id_before, self.signal.status.id)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
