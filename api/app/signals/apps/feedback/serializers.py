@@ -28,6 +28,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
         }
 
     def update(self, instance, validated_data):
+        # TODO: consider whether using a StandardAnswer while overriding the
+        # is_satisfied field should be considered an error condition and return
+        # an HTTP 400.
         validated_data['submitted_at'] = timezone.now()
 
         # Check whether the relevant Signal instance should possibly be
