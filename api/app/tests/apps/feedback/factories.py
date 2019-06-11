@@ -21,7 +21,7 @@ class StandardAnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswer
 
-    text = fuzzy.FuzzyChoice(REASONS)
+    text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
     is_visible = fuzzy.FuzzyChoice([True, False])
     is_satisfied = fuzzy.FuzzyChoice([True, False])
 
@@ -36,5 +36,5 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
 
     is_satisfied = fuzzy.FuzzyChoice([True, False])
     allows_contact = fuzzy.FuzzyChoice([True, False])
-    text = fuzzy.FuzzyChoice(REASONS)
+    text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
     text_extra = fuzzy.FuzzyChoice([None, 'Daarom is waarom.'])

@@ -7,7 +7,7 @@ from signals.apps.feedback.models import StandardAnswer
 
 
 class StandardAnswerAdmin(admin.ModelAdmin):
-    fields = ('is_satisfied', 'text', 'is_visible')
+    fields = ('is_satisfied', 'text', 'is_visible', 'reopen_when_unhappy')
 
 
 admin.site.register(StandardAnswer, StandardAnswerAdmin)

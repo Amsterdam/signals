@@ -18,7 +18,8 @@ def generate_token():
 class StandardAnswer(models.Model):
     is_visible = models.BooleanField(default=True)
     is_satisfied = models.BooleanField(default=True)
-    text = models.TextField(max_length=1000)
+    reopens_when_unhappy = models.BooleanField(default=False)
+    text = models.TextField(max_length=1000, unique=True)
 
     def __str__(self):
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'

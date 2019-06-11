@@ -11,6 +11,8 @@ from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
 from signals.apps.feedback.utils import get_feedback_urls
+from signals.apps.signals.models import Signal
+from signals.apps.signals import workflow
 from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
@@ -41,6 +43,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.reporter = ReporterFactory()
             self.signal = SignalFactoryValidLocation(
                 reporter=self.reporter,
+                status__state=workflow.AFGEHANDELD,
             )
 
         with freeze_time(self.t_now):
@@ -60,6 +63,19 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
                 submitted_at=timezone.now() - timedelta(days=5),
                 _signal=self.signal,
             )
+
+        # Setup a standard answer that triggers a request to reopen.
+        self.sa_reopens = StandardAnswerFactory.create(
+            text='Ik ben niet blij met de afhandeling, duurde te lang.',
+            is_satisfied=False,
+            reopens_when_unhappy=True,
+        )
+    
+        self.sa_no_sideeffect = StandardAnswerFactory.create(
+            text='Ik ben niet blij. Blah, blah.',
+            is_satisfied=False,
+            reopens_when_unhappy=False,
+        )
 
     def test_setup(self):
         self.assertEqual(Feedback.objects.count(), 3)
@@ -147,6 +163,46 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
                 format='json',
             )
             self.assertEqual(response.status_code, 400)
+
+    def test_reopen_requested_on_unsatisfied_standard_answer(self):
+        """Certain standard answers (in feedback) lead to "reopen requested" state."""
+        token = self.feedback.token
+        data = {
+            'allows_contact': False,
+            'text': self.sa_reopens.text,
+            'is_satisfied': False,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
+
+    def test_reopen_requested_on_unsatisfied_standard_answer(self):
+        """All custom unsatisfied answers (in feedback) lead to "reopen requested" state."""
+        token = self.feedback.token
+        data = {
+            'allows_contact': False,
+            'text': 'MEH, probleem niet opgelost.',
+            'is_satisfied': False,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
