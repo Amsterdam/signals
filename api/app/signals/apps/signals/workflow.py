@@ -16,6 +16,7 @@ GESPLITST = 's'
 HEROPEND = 'reopened'
 VERZOEK_TOT_AFHANDELING = 'closure requested'
 INGEPLAND = 'ingepland'
+VERZOEK_TOT_HEROPENEN = 'reopen requested'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
@@ -45,6 +46,7 @@ STATUS_CHOICES_APP = (
     (VERZONDEN, 'Verzonden naar extern systeem'),
     (VERZENDEN_MISLUKT, 'Verzending naar extern systeem mislukt'),
     (AFGEHANDELD_EXTERN, 'Melding is afgehandeld in extern systeem'),
+    (VERZOEK_TOT_HEROPENEN, 'Verzoek tot heropenen'),
 )
 
 # All allowed choices, used for the model `Status`.
@@ -110,6 +112,7 @@ ALLOWED_STATUS_CHANGES = {
     AFGEHANDELD: [
         AFGEHANDELD,
         HEROPEND,
+        VERZOEK_TOT_HEROPENEN,
     ],
     GEANNULEERD: [
         GEANNULEERD,
@@ -130,4 +133,9 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
     ],
+    VERZOEK_TOT_HEROPENEN: [
+        AFGEHANDELD,
+        HEROPEND,
+        GEANNULEERD,
+    ]
 }
