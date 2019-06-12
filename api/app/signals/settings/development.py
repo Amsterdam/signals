@@ -22,6 +22,16 @@ TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
 
+
+def show_toolbar(request):
+    return True
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+}
+
+
 try:
     from signals.settings.local import *  # noqa
 except ImportError:
