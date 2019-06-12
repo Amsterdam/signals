@@ -128,6 +128,16 @@ signal_router_v1.urls.append(
     )
 )
 
+# V1 disabled for now
+#
+# signal_router_v1.urls.append(
+#     path(
+#         'public/category/prediction',
+#         v1_public_views.MLPredictCategoryView.as_view({'get': 'retrieve'}),
+#         name='ml-predict-category'
+#     )
+# )
+
 urlpatterns = [
     path('v1/', include(signal_router_v1.urls)),
 ]

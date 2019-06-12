@@ -15,6 +15,14 @@ signal_router_v0.register(r'auth/location', v0_views.LocationAuthViewSet, basena
 signal_router_v0.register(r'auth/priority', v0_views.PriorityAuthViewSet, basename='priority-auth')
 signal_router_v0.register(r'auth/note', v0_views.NoteAuthViewSet, basename='note-auth')
 
+signal_router_v0.urls.append(
+    path(
+        'category/prediction',
+        v0_views.MlPredictCategoryView.as_view(),
+        name='ml-tool-predict-proxy'
+    )
+)
+
 urlpatterns = [
     # AP Version 0
     path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),

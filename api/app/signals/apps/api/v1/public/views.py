@@ -1,5 +1,13 @@
+import json
+from urllib.parse import urlparse
+
+import requests
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
+from django.conf import settings
+from django.http import Http404
+from django.urls import resolve
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
@@ -16,6 +24,7 @@ from signals.apps.api.v1.serializers import (
     StatusMessageTemplateSerializer
 )
 from signals.apps.signals.models import Category, Signal, StatusMessageTemplate
+from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
@@ -83,3 +92,37 @@ class NamespaceView(APIView):
 
     def get(self, request):
         return Response()
+
+
+class MLPredictCategoryView(RetrieveModelMixin, GenericViewSet):
+    queryset = Category.objects.none()
+    serializer_class = CategoryHALSerializer
+    pagination_class = None
+    endpoint = '{}/predict'.format(settings.ML_TOOL_ENDPOINT)
+
+    def _ml_predict(self):
+        if 'text' not in self.request.data:
+            raise ValidationError('Invalid request')
+        text = self.request.data['text']
+
+        response = requests.post(self.endpoint, data=json.dumps({'text': text}))
+        if response.status_code == 200:
+            return response.json()['subrubriek'][0][0]
+        elif 500 <= response.status_code < 600:
+            raise APIException
+        else:
+            raise Http404
+
+    def get_object(self):
+        prediction = self._ml_predict()
+        slug = resolve(urlparse(prediction).path).kwargs['sub_slug'] if prediction else 'overig'
+
+        try:
+            # check if we need to translate the prediction by the ML tool
+            translation = CategoryTranslation.objects.get(old_category__slug=slug)
+            obj = translation.new_category
+        except CategoryTranslation.DoesNotExist:
+            obj = get_object_or_404(Category, slug=slug, is_active=True, parent__isnull=False)
+
+        self.check_object_permissions(self.request, obj)
+        return obj

@@ -1,18 +1,24 @@
 """
 Views that are used exclusively by the V0 API
 """
-
+import json
 import logging
 import re
+from urllib.parse import urlparse
 
+import requests
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
+from django.urls import resolve
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
+from rest_framework.views import APIView
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.generics.filters import (
@@ -40,7 +46,16 @@ from signals.apps.api.v0.serializers import (
     SignalUpdateImageSerializer,
     StatusHALSerializer
 )
-from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
+from signals.apps.signals.models import (
+    Category,
+    CategoryAssignment,
+    Location,
+    Note,
+    Priority,
+    Signal,
+    Status
+)
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
@@ -203,3 +218,59 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
     permission_classes = (NotePermission, )
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = ('_signal__id', )
+
+
+class MlPredictCategoryView(APIView):
+    def _translate_category_url(self, url, request):
+        resolved = resolve(urlparse(url).path)
+        if 'sub_slug' in resolved.kwargs:
+            category = Category.objects.get(slug=resolved.kwargs['sub_slug'],
+                                            parent__slug=resolved.kwargs['slug'])
+        else:
+            category = Category.objects.get(slug=resolved.kwargs['slug'])
+
+        try:
+            category_translation = CategoryTranslation.objects.get(old_category=category)
+            category = category_translation.new_category
+        except CategoryTranslation.DoesNotExist:
+            pass
+
+        if category.is_child():
+            kwargs = {'slug': category.parent.slug, 'sub_slug': category.slug}
+        else:
+            kwargs = {'slug': category.slug}
+
+        return reverse('v1:category-detail', kwargs=kwargs, request=request)
+
+    def _ml_predict(self, text):
+        endpoint = '{}/predict'.format(settings.ML_TOOL_ENDPOINT)
+        response = requests.post(endpoint, data=json.dumps({'text': text}))
+        if response.status_code == 200:
+            return response.json()
+
+    def post(self, request, *args, **kwargs):
+        if 'text' not in request.data:
+            raise ValidationError('Invalid request')
+        text = request.data['text']
+
+        # Default empty response
+        data = {'hoofdrubriek': [], 'subrubriek': []}
+
+        response_json = self._ml_predict(text=text)
+        if response_json:
+
+            main_category, main_score = (response_json['hoofdrubriek'][0][0],
+                                         response_json['hoofdrubriek'][1][0])
+            main_url = self._translate_category_url(main_category, request)
+
+            sub_category, sub_score = (response_json['subrubriek'][0][0],
+                                       response_json['subrubriek'][1][0])
+            sub_url = self._translate_category_url(sub_category, request)
+
+            data['hoofdrubriek'].append([main_url])
+            data['hoofdrubriek'].append([main_score])
+
+            data['subrubriek'].append([sub_url])
+            data['subrubriek'].append([sub_score])
+
+        return Response(data)
