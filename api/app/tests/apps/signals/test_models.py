@@ -279,6 +279,8 @@ class TestSignalManager(TransactionTestCase):
         self.assertEqual(CategoryAssignment.objects.count(), 3)
         self.assertEqual(Priority.objects.count(), 3)
 
+        parent_signal.refresh_from_db()
+
         self.assertTrue(parent_signal.is_parent())
         self.assertFalse(parent_signal.is_child())
         self.assertEqual(parent_signal.children.count(), 2)
