@@ -1,3 +1,4 @@
+from unittest import skip
 from unittest.mock import patch
 
 from django.http import Http404
@@ -62,6 +63,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
             created_by='someone@example.com',
         )
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
     def test_predict(self, patched):
         patched.return_value = self.link_test_subcategory
@@ -75,6 +77,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory)
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
     def test_predict_translated(self, patched):
         patched.return_value = self.link_test_subcategory_translated
@@ -89,6 +92,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
         # This should be the translated category URL
         self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory)
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
     def test_predict_overig(self, patched):
         patched.return_value = self.link_test_subcategory_overig
@@ -102,6 +106,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory_overig)
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
     def test_predict_overig_none(self, patched):
         patched.return_value = None
@@ -115,6 +120,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory_overig)
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict',
            side_effect=Http404)
     def test_predict_404(self, patched):
@@ -123,6 +129,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    @skip('V1 Disabled')
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict',
            side_effect=APIException)
     def test_predict_httpresponseservererror(self, patched):
@@ -131,6 +138,7 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 500)
 
+    @skip('V1 Disabled')
     def test_predict_invalid_request(self):
         data = {}
         response = self.client.get(self.endpoint, data=data, format='json')
