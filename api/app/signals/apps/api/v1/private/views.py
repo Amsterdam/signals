@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from signals.apps.api import mixins
-from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView
 from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter, SignalFilter
 from signals.apps.api.v1.serializers import (
@@ -166,7 +166,7 @@ class StoreStatusMessageTemplates(viewsets.GenericViewSet, mixins.CreateModelMix
     serializer_detail_class = StatusMessageTemplateSerializer
 
     authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SIAPermissions,)
+    permission_classes = (SIAPermissions & ModelWritePermissions,)
     pagination_class = None
 
     queryset = StatusMessageTemplate.objects.all()
