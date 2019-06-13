@@ -1,3 +1,6 @@
+"""
+Disable 4 categories see SIG-1279 and SIG-1280.
+"""
 from django.db import migrations
 
 # Disable categories
@@ -26,7 +29,7 @@ def remove_categories(apps, schema_editor):
             sub_category.save()
 
 
-# Activate the automatic category translation 
+# Activate the automatic category translation
 TO_TRANSLATE = [
     ('lichthinder', 'lantaarnpaal-straatverlichting'),
     ('verdeelkasten-bekabeling', 'lantaarnpaal-straatverlichting'),
