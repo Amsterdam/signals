@@ -22,6 +22,9 @@ class StatusMessageTemplate(CreatedUpdatedModel):
     order = models.PositiveIntegerField(default=0, db_index=True)
 
     class Meta:
+        permissions = (
+            ('sia_statusmessagetemplate_write', 'Can write StatusMessageTemplates to SIA'),
+        )
         index_together = (
             'category',
             'state',
