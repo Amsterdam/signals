@@ -110,8 +110,8 @@ class SignalManager(models.Manager):
         from signals.apps.signals import workflow
 
         loop_counter = 0
-        parent_signal = signal
         with transaction.atomic():
+            parent_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)
             for validated_data in split_data:
                 loop_counter += 1
 

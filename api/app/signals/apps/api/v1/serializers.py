@@ -5,6 +5,7 @@ import copy
 from collections import OrderedDict, defaultdict
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.db import OperationalError
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -618,9 +619,12 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         }
 
     def create(self, validated_data):
-        signal = Signal.actions.split(split_data=validated_data['children'],
-                                      signal=self.context['view'].get_object(),
-                                      user=self.context['request'].user)
+        try:
+            signal = Signal.actions.split(split_data=validated_data['children'],
+                                          signal=self.context['view'].get_object(),
+                                          user=self.context['request'].user)
+        except OperationalError:
+            raise ValidationError('Could not perform split')
 
         return signal
 
