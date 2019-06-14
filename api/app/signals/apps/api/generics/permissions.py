@@ -1,5 +1,5 @@
 from rest_framework import exceptions
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, DjangoModelPermissions
 
 
 class StatusPermission(BasePermission):
@@ -85,3 +85,22 @@ class SIAPermissions(BasePermission):
             perms = self.get_required_permissions(method=request.method)
             return request.user.has_perms(perms)
         return False
+
+
+class ModelWritePermissions(DjangoModelPermissions):
+    """
+    We want to have a binary write permission instead of separate add, change, delete permissions
+
+    To use this permission A binary write permission must be added to the Meta of the model using
+    the following notation:
+        - sia_%(model_name)s_write
+    """
+    perms_map = {
+        'GET': ['signals.sia_read'],
+        'OPTIONS': [],
+        'HEAD': [],
+        'POST': ['%(app_label)s.sia_%(model_name)s_write'],
+        'PUT': ['%(app_label)s.sia_%(model_name)s_write'],
+        'PATCH': ['%(app_label)s.sia_%(model_name)s_write'],
+        'DELETE': ['%(app_label)s.sia_%(model_name)s_write'],
+    }

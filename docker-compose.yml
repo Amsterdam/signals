@@ -89,7 +89,9 @@ services:
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
-    command: uwsgi --py-auto-reload=1
+    command: bash -c "
+      python /app/manage.py collectstatic --noinput &&
+      uwsgi --py-auto-reload=1"
 
   import:
     build: ./import

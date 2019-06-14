@@ -62,6 +62,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
         AFGEHANDELD,  # SIG-1294
         GEANNULEERD,  # Op verzoek via mail van Arvid Smits
+        INGEPLAND,  # SIG-1327
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264

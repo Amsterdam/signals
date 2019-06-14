@@ -4,6 +4,7 @@ import os
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -2046,6 +2047,11 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
             }
         )
 
+        statusmessagetemplate_write_permission = Permission.objects.get(
+            codename='sia_statusmessagetemplate_write'
+        )
+        self.sia_read_write_user.user_permissions.add(statusmessagetemplate_write_permission)
+
     def test_add_status_messages(self):
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)
@@ -2239,3 +2245,21 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
 
         self.assertEqual(0, response_data[0]['order'])
         self.assertEqual(message_1.pk, response_data[0]['pk'])
+
+    def test_not_allowed(self):
+        self.client.force_authenticate(user=self.user)
+
+        data = [
+            {
+                'pk': 1,
+                'order': 1,
+            },
+            {
+                'pk': 2,
+                'order': 2,
+            }
+        ]
+        response = self.client.patch(self.endpoint, data, format='json')
+        self.assertEqual(403, response.status_code)
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
