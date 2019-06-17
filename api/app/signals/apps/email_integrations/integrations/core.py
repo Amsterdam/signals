@@ -161,3 +161,30 @@ def create_status_changed_ingepland_message(signal, status):
     html_message = template.render(context)
 
     return txt_message, html_message
+
+
+def send_mail_reporter_status_changed_heropend(signal, status):
+    signal_heropend = status.state == workflow.HEROPEND
+    if not signal_heropend or not signal.reporter.email:
+        return None
+
+    subject = f'Betreft melding: {signal.id}'
+    txt_message, html_message = create_status_changed_heropend_message(signal, status)
+    to = signal.reporter.email
+
+    return send_mail(subject, txt_message, settings.NOREPLY, (to,), html_message=html_message)
+
+
+def create_status_changed_heropend_message(signal, status):
+    context = {
+        'signal': signal,
+        'status': status,
+    }
+
+    template = loader.get_template('email/signal_status_changed_heropend.txt')
+    txt_message = template.render(context)
+
+    template = loader.get_template('email/signal_status_changed_heropend.html')
+    html_message = template.render(context)
+
+    return txt_message, html_message

@@ -1,0 +1,22 @@
+Uw melding is opnieuw geopend
+Meldingnummer {{ signal.sia_id }}
+
+Waarom hebben wij uw melding opnieuw geopend?
+{{ status.text }}
+
+Informatie over uw melding
+
+Gemeld op: {{ signal.created_at|date:"DATETIME_FORMAT" }}
+{% if signal.location %}Locatie: {{ signal.location.address_text }}{% endif %}
+Categorie: {{ signal.category_assignment.category.name }}
+
+Uw omschrijving:
+{{ signal.text }}
+
+Meer weten?
+Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur).
+Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
+
+Met vriendelijke groet,
+
+Gemeente Amsterdam

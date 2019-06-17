@@ -35,6 +35,17 @@ class TestTasks(TestCase):
         )
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
+    def test_send_mail_reporter_status_changed_heropend(self, mocked_core):
+        signal = SignalFactory.create()
+
+        tasks.send_mail_reporter_status_changed_heropend(
+            signal_pk=signal.id, status_pk=signal.status.id)
+
+        mocked_core.send_mail_reporter_status_changed_heropend.assert_called_once_with(
+            signal, signal.status
+        )
+
+    @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_core):
         SignalFactory.create(id=1)
 
@@ -42,6 +53,15 @@ class TestTasks(TestCase):
             tasks.send_mail_reporter_status_changed(signal_pk=1, status_pk=999)
 
         mocked_core.send_mail_reporter_status_changed_afgehandeld.assert_not_called()
+
+    @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
+    def test_send_mail_reporter_status_changed_heropend_status_not_found(self, mocked_core):
+        SignalFactory.create(id=1)
+
+        with self.assertRaises(Status.DoesNotExist):
+            tasks.send_mail_reporter_status_changed_heropend(signal_pk=1, status_pk=999)
+
+        mocked_core.send_mail_reporter_status_changed_heropend.assert_not_called()
 
     @mock.patch('signals.apps.email_integrations.tasks.core', autospec=True)
     def test_send_mail_reporter_status_changed_split(self, mocked_core):
