@@ -1,5 +1,5 @@
 # Signalen Informatie Voorziening API V1
-**Ter goedkeuring / commentaar is welkom**
+**Dit betreft een oud ontwerp document, wordt up to date gebracht**
 
 De Signalen Informatie Voorziening (SIA) is na een kort ontwikkel proces live
 gegaan in de zomer van 2018. De SIA applicatie bestaat uit twee delen, een 
