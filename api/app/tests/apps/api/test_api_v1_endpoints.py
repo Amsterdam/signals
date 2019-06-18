@@ -2088,52 +2088,6 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(1, response_data[1]['order'])
         self.assertEqual('Test #2', response_data[1]['text'])
 
-    def test_add_status_messages_title_required(self):
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, len(response.json()))
-
-        data = [
-            {
-                'text': 'Test #2',
-                'order': 1,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            },
-            {
-                'text': 'Test #1',
-                'order': 0,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            }
-        ]
-        response = self.client.post(self.endpoint, data, format='json')
-        self.assertEqual(400, response.status_code)
-
-    def test_add_status_messages_no_empty_title(self):
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, len(response.json()))
-
-        data = [
-            {
-                'title': '',
-                'text': 'Test #2',
-                'order': 1,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            },
-            {
-                'title': '',
-                'text': 'Test #1',
-                'order': 0,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            }
-        ]
-        response = self.client.post(self.endpoint, data, format='json')
-        self.assertEqual(400, response.status_code)
-
     def test_cannot_add_too_many_status_messages(self):
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)
@@ -2169,11 +2123,11 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
 
     def test_change_status_messages(self):
         message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
-                                                        state='o', text='1')
+                                                        state='o', text='1', title='title1')
         message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
-                                                        state='o', text='2')
+                                                        state='o', text='2', title='title2')
         message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
-                                                        state='o', text='3')
+                                                        state='o', text='3', title='title3')
 
         response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
         self.assertEqual(200, response.status_code)
@@ -2182,12 +2136,15 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(3, len(response_data))
 
         self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.title, response_data[0]['title'])
         self.assertEqual(message_1.text, response_data[0]['text'])
 
         self.assertEqual(1, response_data[1]['order'])
+        self.assertEqual(message_2.title, response_data[1]['title'])
         self.assertEqual(message_2.text, response_data[1]['text'])
 
         self.assertEqual(2, response_data[2]['order'])
+        self.assertEqual(message_3.title, response_data[2]['title'])
         self.assertEqual(message_3.text, response_data[2]['text'])
 
         data = [
@@ -2263,3 +2220,37 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(403, response.status_code)
 
         self.client.force_authenticate(user=self.sia_read_write_user)
+
+    def test_change_status_messages_text_and_title_can_be_blank_or_empty(self):
+        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
+                                                        state='o', text='1')
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(1, len(response_data))
+
+        self.assertEqual(0, response_data[0]['order'])
+        self.assertEqual(message_1.text, response_data[0]['text'])
+
+        data = [
+            {
+                'pk': message_1.pk,
+                'order': 1,
+                'title': '',
+                'text': None,
+            }
+        ]
+        response = self.client.patch(self.endpoint, data, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(1, len(response_data))
+
+        self.assertEqual(1, response_data[0]['order'])
+        self.assertEqual('', response_data[0]['title'])
+        self.assertIsNone(response_data[0]['text'])

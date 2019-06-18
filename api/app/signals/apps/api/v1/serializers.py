@@ -80,9 +80,6 @@ class StatusMessageTemplateSerializer(serializers.ModelSerializer):
         )
         list_serializer_class = StatusMessageTemplateListSerializer
 
-    def save(self, **kwargs):
-        return super(StatusMessageTemplateSerializer, self).save(**kwargs)
-
 
 class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
