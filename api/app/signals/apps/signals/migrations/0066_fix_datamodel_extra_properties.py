@@ -1,26 +1,17 @@
 """
 SIG-1361
 """
-import pprint
-
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
-
 from django.db import migrations
+from jsonschema import Draft7Validator
+from jsonschema.exceptions import ValidationError
 
 STRAATVERLICHTING_URL = '/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting'  # noqa: 501
 RELEVANT_QUESTION_ID = 'extra_straatverlichting_niet_op_kaart_nummer'
 RELEVANT_QUESTION_LABEL = 'Selecteer het lichtpunt waar het om gaat'
 
-
-def migrate_data(apps, schema_editor):
-    """
-    Migrate the extra properties where lantarn numbers are in incorrect data format.
-    """
-    Signal = apps.get_model('signals', 'Signal')
-
-    # JSON Schema that targets the old-style QA entries in database
-    json_schema = {
+# The following JSON schema matches "bad" question/answer entries in the
+# extra_properties field for Signals concerning streetlights.
+SCHEMA_BAD_ENTRIES = {
         '$schema': 'http://json-schema.org/schema#',
         'type': 'object',
         'properties': {
@@ -51,24 +42,32 @@ def migrate_data(apps, schema_editor):
         }
     }
 
-    straatverlichting = (Signal.objects
-        .filter(category_assignment__category__slug='lantaarnpaal-straatverlichting')
-        .filter(extra_properties__isnull=False)
+
+def migrate_data(apps, schema_editor):
+    """
+    Migrate the extra properties where lantarn numbers are in incorrect data format.
+    """
+    Signal = apps.get_model('signals', 'Signal')
+    schema_validator = Draft7Validator(schema=SCHEMA_BAD_ENTRIES)
+
+    straatverlichting = (
+        Signal.objects.filter(
+            category_assignment__category__slug='lantaarnpaal-straatverlichting'
+        ).filter(
+            extra_properties__isnull=False
+        )
     )
 
-    matching_signals = set()
     for signal in straatverlichting:
         mutated_properties = []  # will contain mutated copy of extra_properties
         selected_lights = []
 
         for qa_entry in signal.extra_properties:
             try:
-                validate(instance=qa_entry, schema=json_schema)
+                schema_validator.validate(qa_entry)
             except ValidationError:
                 mutated_properties.append(qa_entry)
                 continue
-            
-            matching_signals.add(signal.id)
 
             if (qa_entry['category_url'] == STRAATVERLICHTING_URL and
                     qa_entry['id'] == RELEVANT_QUESTION_ID):
@@ -86,14 +85,8 @@ def migrate_data(apps, schema_editor):
                 }
                 mutated_properties.append(new_qa_entry)
 
-                # print('\n\nMATCHED!', signal.id)
-                # pprint.pprint(mutated_properties)
-                # print('\n Versus')
-                # pprint.pprint(signal.extra_properties)
-
         signal.extra_properties = mutated_properties
         signal.save()
-    # print('MATCHED SIGNALS', len(matching_signals))
 
 
 class Migration(migrations.Migration):
