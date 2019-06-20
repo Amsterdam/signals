@@ -43,10 +43,23 @@ signal_router_v1.register(
 )
 
 # Status message templates are only editable via the private API
-signal_router_v1.register(
-    r'private/status-message-templates',
-    v1_private_views.StoreStatusMessageTemplates,
-    basename='private-status-message-templates'
+signal_router_v1.urls.append(
+    path(
+        'private/terms/categories/<str:slug>/sub_categories/<str:sub_slug>/status-message-templates',  # noqa
+        v1_private_views.StatusMessageTemplatesViewSet.as_view({
+            'get': 'retrieve', 'post': 'create'
+         }),
+        name='private-status-message-templates-child'
+    )
+)
+signal_router_v1.urls.append(
+    path(
+        'private/terms/categories/<str:slug>/status-message-templates',
+        v1_private_views.StatusMessageTemplatesViewSet.as_view({
+            'get': 'retrieve', 'post': 'update'
+        }),
+        name='private-status-message-templates-parent'
+    )
 )
 
 # Private split
@@ -82,22 +95,6 @@ signal_router_v1.urls.append(
         'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
         v1_public_views.ChildCategoryViewSet.as_view({'get': 'retrieve'}),
         name='category-detail'
-    )
-)
-
-# Appending extra routes for status message templates
-signal_router_v1.urls.append(
-    path(
-        'public/terms/categories/<str:slug>/status-message-templates',
-        v1_public_views.ChildCategoryViewSet.as_view({'get': 'status_message_templates'}),
-        name='status_message_templates_main_category'
-    )
-)
-signal_router_v1.urls.append(
-    path(
-        'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>/status-message-templates',
-        v1_public_views.ChildCategoryViewSet.as_view({'get': 'status_message_templates'}),
-        name='status_message_templates'
     )
 )
 

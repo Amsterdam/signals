@@ -253,7 +253,7 @@ class NoteFactory(factory.DjangoModelFactory):
 class StatusMessageTemplateFactory(factory.DjangoModelFactory):
     title = fuzzy.FuzzyText(length=100)
     text = fuzzy.FuzzyText(length=100)
-    order = None
+    order = 0
     category = factory.SubFactory('tests.apps.signals.factories.CategoryFactory')
     state = factory.LazyAttribute(lambda o: random.choice(STATUS_CHOICES_API)[0])
 
