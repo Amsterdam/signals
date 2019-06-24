@@ -2,7 +2,7 @@
 Serializsers that are used exclusively by the V1 API
 """
 import copy
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.db import OperationalError
@@ -47,38 +47,84 @@ from signals.apps.signals.models import (
     StatusMessageTemplate
 )
 from signals.apps.signals.models.location import get_address_text
-from signals.apps.signals.models.status_message_template import MAX_INSTANCES
+from signals.apps.signals.workflow import STATUS_CHOICES_API
 
 
-class StatusMessageTemplateListSerializer(serializers.ListSerializer):
-    def validate(self, attrs):
-        counter = defaultdict(int)
-        for attr in attrs:
-            key = '{}-{}'.format(attr['category'].pk, attr['state'])
-            counter[key] += 1
+class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
+    def _get_states(self, representation):
+        return list(OrderedDict.fromkeys([item['state'] for item in representation]))
 
-        if any(True for x, y in counter.items() if y > MAX_INSTANCES):
-            msg = 'Only {} StatusMessageTemplate instances allowed per Category/State combination'
-            raise ValidationError(msg.format(MAX_INSTANCES))
-        return super(StatusMessageTemplateListSerializer, self).validate(attrs=attrs)
+    def _transform_state(self, state, representation):
+        state_representation = OrderedDict(state=state, templates=[])
+        for item in filter(lambda i: i['state'] == state, representation):
+            state_representation['templates'].append(item['templates'])
+        return state_representation
+
+    def _transform_representation(self, representation):
+        return [
+            self._transform_state(state, representation)
+            for state in self._get_states(representation)
+        ]
+
+    def to_representation(self, data):
+        representation = super(StateStatusMessageTemplateListSerializer, self).to_representation(
+            data=data
+        )
+        return self._transform_representation(representation)
+
+    def to_internal_value(self, data):
+        status_template_messages = []
+        for item in data:
+            status_template_message = {
+                'state': item['state'],
+                'category': self.context['category'],
+            }
+
+            if len(item['templates']):
+                for order, template in enumerate(item['templates']):
+                    status_template_message_copy = copy.copy(status_template_message)
+                    status_template_message_copy.update({
+                        'title': template['title'],
+                        'text': template['text'],
+                        'order': order,
+                    })
+                    status_template_messages.append(status_template_message_copy)
+            else:
+                status_template_messages.append(status_template_message)
+        return status_template_messages
+
+    def save(self, **kwargs):
+        # Delete all status templates for each state we are adding, because we do a overwrite of
+        # the complete set
+        valid_states = [valid_data['state'] for valid_data in self.validated_data]
+        StatusMessageTemplate.objects.filter(state__in=valid_states,
+                                             category=self.context['category']).delete()
+
+        # Actual creation of the status message templates
+        for valid_data in self.validated_data:
+            # If there is no title and no text we cannot add the template
+            if 'title' in valid_data and 'text' in valid_data:
+                StatusMessageTemplate.objects.create(**valid_data)
 
 
-class StatusMessageTemplateSerializer(serializers.ModelSerializer):
-    category = CategoryHyperlinkedRelatedField(write_only=True, required=True)
-    state_display = serializers.CharField(source='get_state_display', read_only=True)
+class StateStatusMessageTemplateSerializer(serializers.Serializer):
+    state = serializers.ChoiceField(choices=STATUS_CHOICES_API, required=True)
+    templates = serializers.SerializerMethodField(method_name='get_template')
 
     class Meta:
-        model = StatusMessageTemplate
-        fields = (
-            'pk',
-            'order',
-            'state',
-            'state_display',
-            'title',
-            'text',
-            'category',
-        )
-        list_serializer_class = StatusMessageTemplateListSerializer
+        list_serializer_class = StateStatusMessageTemplateListSerializer
+
+    def get_template(self, obj):
+        # See StateStatusMessageTemplateListSerializer to know how the templates are rendered in
+        # lists. This serializer is always called with `many=True`
+        return {
+            'title': obj.title,
+            'text': obj.text,
+        }
+
+    def validate(self, attrs):
+        attrs.update({'category': self.context['category'].pk})
+        return super(StateStatusMessageTemplateSerializer, self).validate(attrs)
 
 
 class CategoryHALSerializer(HALSerializer):

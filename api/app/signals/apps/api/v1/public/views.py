@@ -20,10 +20,9 @@ from signals.apps.api.v1.serializers import (
     ParentCategoryHALSerializer,
     PublicSignalAttachmentSerializer,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail,
-    StatusMessageTemplateSerializer
+    PublicSignalSerializerDetail
 )
-from signals.apps.signals.models import Category, Signal, StatusMessageTemplate
+from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
@@ -70,16 +69,6 @@ class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
 
         self.check_object_permissions(self.request, obj)
         return obj
-
-    def status_message_templates(self, *args, **kwargs):
-        text_entries = StatusMessageTemplate.objects.filter(category=self.get_object())
-
-        state_filter = self.request.query_params.get('state', None)
-        if state_filter:
-            text_entries = text_entries.filter(state=state_filter)
-
-        serializer = StatusMessageTemplateSerializer(text_entries, many=True)
-        return Response(serializer.data)
 
 
 class NamespaceView(APIView):

@@ -4,7 +4,6 @@ import os
 from datetime import timedelta
 from unittest.mock import patch
 
-from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -19,8 +18,7 @@ from signals.apps.api.address.validation import (
 )
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Category, History, Signal, StatusMessageTemplate
-from signals.apps.signals.workflow import STATUS_CHOICES_API
+from signals.apps.signals.models import Attachment, Category, History, Signal
 from signals.utils.version import get_version
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.attachment_helpers import (
@@ -34,8 +32,7 @@ from tests.apps.signals.factories import (
     ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage,
-    StatusMessageTemplateFactory
+    SignalFactoryWithImage
 )
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -127,59 +124,6 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
         self.assertEqual(data['name'], 'Grofvuil')
         self.assertIn('is_active', data)
-
-    def test_sub_category_detail_no_status_message_templates(self):
-        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
-
-        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
-            slug=sub_category.parent.slug,
-            sub_slug=sub_category.slug)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-
-        # JSONSchema validation
-        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
-
-        url = data['_links']['sia:status-message-templates']['href']
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-
-        self.assertEqual(len(data), 0)
-
-    def test_sub_category_detail_status_message_templates(self):
-        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
-
-        text = {}
-        for state in STATUS_CHOICES_API:
-            text[state[0]] = []
-            for x in range(5):
-                text[state[0]].append(
-                    StatusMessageTemplateFactory.create(category=sub_category, order=x,
-                                                        state=state[0])
-                )
-
-        url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
-            slug=sub_category.parent.slug,
-            sub_slug=sub_category.slug)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-
-        # JSONSchema validation
-        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
-
-        url = data['_links']['sia:status-message-templates']['href']
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-
-        self.assertEqual(len(data), len(STATUS_CHOICES_API) * 5)
 
 
 class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -2029,228 +1973,3 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
-
-
-class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
-    endpoint = '/signals/v1/private/status-message-templates/'
-    link_test_cat_sub = None
-
-    def setUp(self):
-        self.client.force_authenticate(user=self.sia_read_write_user)
-
-        self.subcategory = CategoryFactory.create()
-
-        self.link_test_cat_sub = reverse(
-            'v1:category-detail', kwargs={
-                'slug': self.subcategory.parent.slug,
-                'sub_slug': self.subcategory.slug,
-            }
-        )
-
-        statusmessagetemplate_write_permission = Permission.objects.get(
-            codename='sia_statusmessagetemplate_write'
-        )
-        self.sia_read_write_user.user_permissions.add(statusmessagetemplate_write_permission)
-
-    def test_add_status_messages(self):
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, len(response.json()))
-
-        data = [
-            {
-                'title': 'test titel',
-                'text': 'Test #2',
-                'order': 1,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            },
-            {
-                'title': 'nog een titel',
-                'text': 'Test #1',
-                'order': 0,
-                'category': self.link_test_cat_sub,
-                'state': 'o',
-            }
-        ]
-        response = self.client.post(self.endpoint, data, format='json')
-        self.assertEqual(201, response.status_code)
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(2, len(response_data))
-
-        self.assertEqual(0, response_data[0]['order'])
-        self.assertEqual('Test #1', response_data[0]['text'])
-
-        self.assertEqual(1, response_data[1]['order'])
-        self.assertEqual('Test #2', response_data[1]['text'])
-
-    def test_cannot_add_too_many_status_messages(self):
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, len(response.json()))
-
-        template = {
-            'text': 'Standaard afmeld tekst',
-            'category': self.link_test_cat_sub,
-            'state': 'o',
-        }
-
-        # create 10 status message templates (too many for one transition)
-        data = []
-        for i in range(10):
-            smt = copy.deepcopy(template)
-            smt.update({'order': i})
-            data.append(smt)
-
-        # Make sure we have no status message templates in the db
-        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
-
-        response = self.client.post(self.endpoint, data, format='json')
-        self.assertEqual(400, response.status_code)
-
-        # we now want 0 StatusMessageTemplates in DB
-        self.assertEqual(StatusMessageTemplate.objects.count(), 0)
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(0, len(response_data))
-
-    def test_change_status_messages(self):
-        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
-                                                        state='o', text='1', title='title1')
-        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
-                                                        state='o', text='2', title='title2')
-        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
-                                                        state='o', text='3', title='title3')
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(3, len(response_data))
-
-        self.assertEqual(0, response_data[0]['order'])
-        self.assertEqual(message_1.title, response_data[0]['title'])
-        self.assertEqual(message_1.text, response_data[0]['text'])
-
-        self.assertEqual(1, response_data[1]['order'])
-        self.assertEqual(message_2.title, response_data[1]['title'])
-        self.assertEqual(message_2.text, response_data[1]['text'])
-
-        self.assertEqual(2, response_data[2]['order'])
-        self.assertEqual(message_3.title, response_data[2]['title'])
-        self.assertEqual(message_3.text, response_data[2]['text'])
-
-        data = [
-            {
-                'pk': message_2.pk,
-                'order': 2,
-                'text': 'changed',
-            },
-            {
-                'pk': message_3.pk,
-                'order': 1,
-            }
-        ]
-        response = self.client.patch(self.endpoint, data, format='json')
-        self.assertEqual(200, response.status_code)
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(3, len(response_data))
-
-        self.assertEqual(0, response_data[0]['order'])
-        self.assertEqual(message_1.text, response_data[0]['text'])
-
-        self.assertEqual(1, response_data[1]['order'])
-        self.assertEqual(message_3.text, response_data[1]['text'])
-
-        self.assertEqual(2, response_data[2]['order'])
-        self.assertEqual('changed', response_data[2]['text'])
-
-    def test_delete_status_messages(self):
-        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
-                                                        state='o', text='1')
-        message_2 = StatusMessageTemplateFactory.create(order=1, category=self.subcategory,
-                                                        state='o', text='2')
-        message_3 = StatusMessageTemplateFactory.create(order=2, category=self.subcategory,
-                                                        state='o', text='3')
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(3, len(response_data))
-
-        data = [{'pk': message_2.pk}, {'pk': message_3.pk}]
-        response = self.client.delete(self.endpoint, data, format='json')
-        self.assertEqual(204, response.status_code)
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(1, len(response_data))
-
-        self.assertEqual(0, response_data[0]['order'])
-        self.assertEqual(message_1.pk, response_data[0]['pk'])
-
-    def test_not_allowed(self):
-        self.client.force_authenticate(user=self.user)
-
-        data = [
-            {
-                'pk': 1,
-                'order': 1,
-            },
-            {
-                'pk': 2,
-                'order': 2,
-            }
-        ]
-        response = self.client.patch(self.endpoint, data, format='json')
-        self.assertEqual(403, response.status_code)
-
-        self.client.force_authenticate(user=self.sia_read_write_user)
-
-    def test_change_status_messages_text_and_title_can_be_blank_or_empty(self):
-        message_1 = StatusMessageTemplateFactory.create(order=0, category=self.subcategory,
-                                                        state='o', text='1')
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(1, len(response_data))
-
-        self.assertEqual(0, response_data[0]['order'])
-        self.assertEqual(message_1.text, response_data[0]['text'])
-
-        data = [
-            {
-                'pk': message_1.pk,
-                'order': 1,
-                'title': '',
-                'text': None,
-            }
-        ]
-        response = self.client.patch(self.endpoint, data, format='json')
-        self.assertEqual(200, response.status_code)
-
-        response = self.client.get('{}/status-message-templates'.format(self.link_test_cat_sub))
-        self.assertEqual(200, response.status_code)
-
-        response_data = response.json()
-        self.assertEqual(1, len(response_data))
-
-        self.assertEqual(1, response_data[0]['order'])
-        self.assertEqual('', response_data[0]['title'])
-        self.assertIsNone(response_data[0]['text'])

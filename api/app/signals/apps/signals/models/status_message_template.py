@@ -14,7 +14,8 @@ class StatusMessageTemplate(CreatedUpdatedModel):
     Voor een categorie in een status zijn er X afmeld teksten
     """
 
-    category = models.ForeignKey(to='Category', related_name='+', on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(to='Category', related_name='status_message_templates',
+                                 on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=20, choices=workflow.STATUS_CHOICES)
 
     title = models.CharField(max_length=255, blank=True, null=True)

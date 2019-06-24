@@ -30,23 +30,11 @@
 					"required": [
 						"href"
 					]
-				},
-				"sia:status-message-templates": {
-					"type": "object",
-					"properties": {
-						"href": {
-							"type": "string"
-						}
-					},
-					"required": [
-						"href"
-					]
 				}
 			},
 			"required": [
 				"curies",
-				"self",
-				"sia:status-message-templates"
+				"self"
 			]
 		},
 		"_display": {
