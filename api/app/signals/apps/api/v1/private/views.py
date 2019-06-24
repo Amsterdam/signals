@@ -189,8 +189,7 @@ class StatusMessageTemplatesViewSet(mixins.RetrieveModelMixin, mixins.CreateMode
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        many = isinstance(request.data, list)
-        serializer = self.get_serializer(data=request.data, many=many)
+        serializer = self.get_serializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 

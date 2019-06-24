@@ -6,7 +6,6 @@ from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
-    link_test_cat_sub = None
     link_cat_sub_templates = None
 
     def setUp(self):
@@ -18,12 +17,6 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.subcategory = CategoryFactory.create()
-        self.link_test_cat_sub = reverse(
-            'v1:category-detail', kwargs={
-                'slug': self.subcategory.parent.slug,
-                'sub_slug': self.subcategory.slug,
-            }
-        )
         self.link_cat_sub_templates = reverse(
             'v1:private-status-message-templates-child', kwargs={
                 'slug': self.subcategory.parent.slug,

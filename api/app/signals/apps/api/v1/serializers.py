@@ -50,7 +50,7 @@ from signals.apps.signals.models.location import get_address_text
 from signals.apps.signals.workflow import STATUS_CHOICES_API
 
 
-class StateStatusMessageTemplateLisSerializer(serializers.ListSerializer):
+class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
     def _get_states(self, representation):
         return list(OrderedDict.fromkeys([item['state'] for item in representation]))
 
@@ -67,7 +67,7 @@ class StateStatusMessageTemplateLisSerializer(serializers.ListSerializer):
         ]
 
     def to_representation(self, data):
-        representation = super(StateStatusMessageTemplateLisSerializer, self).to_representation(
+        representation = super(StateStatusMessageTemplateListSerializer, self).to_representation(
             data=data
         )
         return self._transform_representation(representation)
@@ -81,8 +81,7 @@ class StateStatusMessageTemplateLisSerializer(serializers.ListSerializer):
             }
 
             if len(item['templates']):
-                order = 0
-                for template in item['templates']:
+                for order, template in enumerate(item['templates']):
                     status_template_message_copy = copy.copy(status_template_message)
                     status_template_message_copy.update({
                         'title': template['title'],
@@ -114,7 +113,7 @@ class StateStatusMessageTemplateSerializer(serializers.Serializer):
     templates = serializers.SerializerMethodField()
 
     class Meta:
-        list_serializer_class = StateStatusMessageTemplateLisSerializer
+        list_serializer_class = StateStatusMessageTemplateListSerializer
 
     def get_templates(self, obj):
         return {
@@ -125,10 +124,6 @@ class StateStatusMessageTemplateSerializer(serializers.Serializer):
     def validate(self, attrs):
         attrs.update({'category': self.context['category'].pk})
         return super(StateStatusMessageTemplateSerializer, self).validate(attrs)
-
-    def save(self, **kwargs):
-        kwargs
-        return None
 
 
 class CategoryHALSerializer(HALSerializer):
