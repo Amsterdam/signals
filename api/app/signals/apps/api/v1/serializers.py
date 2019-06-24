@@ -89,7 +89,6 @@ class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
                         'order': order,
                     })
                     status_template_messages.append(status_template_message_copy)
-                    order += 1
             else:
                 status_template_messages.append(status_template_message)
         return status_template_messages
