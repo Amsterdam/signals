@@ -109,12 +109,14 @@ class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
 
 class StateStatusMessageTemplateSerializer(serializers.Serializer):
     state = serializers.ChoiceField(choices=STATUS_CHOICES_API, required=True)
-    templates = serializers.SerializerMethodField()
+    templates = serializers.SerializerMethodField(method_name='get_template')
 
     class Meta:
         list_serializer_class = StateStatusMessageTemplateListSerializer
 
-    def get_templates(self, obj):
+    def get_template(self, obj):
+        # See StateStatusMessageTemplateListSerializer to know how the templates are rendered in
+        # lists. This serializer is always called with `many=True`
         return {
             'title': obj.title,
             'text': obj.text,
