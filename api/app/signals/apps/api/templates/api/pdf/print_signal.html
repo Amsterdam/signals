@@ -9,7 +9,7 @@
         * {
             font-family: Avenir Next LT W01 Demi,arial,sans-serif;
             font-weight: normal;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .divider {
@@ -91,7 +91,7 @@
                 </td>
                 <td width="60%">
                     <p>
-                        <span>{% now "l, j F Y" %}</span>
+                        <span>{% now "l, j F Y H:i" %}</span>
                     </p>
                 </td>
             </tr>
@@ -118,12 +118,8 @@
             <td>: {{ signal.text }}</td>
         </tr>
         <tr>
-            <td>Datum overlast</td>
-            <td>: {{ signal.incident_date_start|date:"d-m-Y" }}</td>
-        </tr>
-        <tr>
-            <td>Tijdstip overlast</td>
-            <td>: {{ signal.incident_date_start|date:"H:i:s" }}</td>
+            <td>Overlast</td>
+            <td>: {{ signal.incident_date_start|date:"d-m-Y" }} {{ signal.incident_date_start|date:"H:i" }}</td>
         </tr>
         <tr>
             <td>Stadsdeel</td>
@@ -134,19 +130,15 @@
             <td>: {{ signal.location.address_text }}</td>
         </tr>
         <tr>
-            <td>Datum</td>
-            <td>: {{ signal.created_at|date:"d-m-Y" }}</td>
+            <td>Gemeld op</td>
+            <td>: {{ signal.created_at|date:"d-m-Y" }} {{ signal.created_at|date:"H:i" }}</td>
         </tr>
         <tr>
-            <td>Tijdstip</td>
-            <td>: {{ signal.created_at|date:"H:i:s" }}</td>
-        </tr>
-        <tr>
-            <td>Hoofdrubriek</td>
+            <td>Hoofdcategorie</td>
             <td>: {{ signal.category_assignment.category.parent.name }}</td>
         </tr>
         <tr>
-            <td>Subrubriek</td>
+            <td>Subcategorie</td>
             <td>: {{ signal.category_assignment.category.name }}</td>
         </tr>
         <tr>
@@ -200,13 +192,11 @@
     {% for history in signal.history.all %}
     <table class="history" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
         <tr>
-            <td class="changed">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</td>
-        </tr>
-        <tr>
-            <td class="title">
-                {{ history.action }}
+            <td class="changed" style="width: 200px; vertical-align:top">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</td>
+            <td class="title" style="vertical-align:top">
+                {{ history.action }}<br>
                 {% if history.description %}
-                    <div class="description">"{{ history.description }}"</div>
+                    "{{ history.description }}"
                 {% endif %}
             </td>
         </tr>
