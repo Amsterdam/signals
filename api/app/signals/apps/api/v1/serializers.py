@@ -478,6 +478,10 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'text',
             'text_extra',
             'extra_properties',
+            'created_at',
+            'updated_at',
+            'incident_date_start',
+            'incident_date_end',
         )
         read_only_fields = (
             'id',
