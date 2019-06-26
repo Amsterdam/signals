@@ -64,10 +64,11 @@ class TestSignalReceivers(TestCase):
                                   status=new_status,
                                   prev_status=prev_status)
 
-        mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
-            signal_pk=signal.id,
-            status_pk=new_status.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
+        mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
+            signal_pk=signal.id, status_pk=new_status.id)
+        mocked_tasks.send_mail_reporter_status_changed_heropend.delay.assert_called_once_with(
+            signal_pk=signal.pk, status_pk=new_status.id)
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
     def test_update_category_assignment_handler(self, mocked_tasks):
