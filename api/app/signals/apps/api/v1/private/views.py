@@ -140,7 +140,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         )
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
-            images=self.object.attachments.filter(is_image=True)
+            images=self.object.attachments.filter(is_image=True),
         )
 
 
