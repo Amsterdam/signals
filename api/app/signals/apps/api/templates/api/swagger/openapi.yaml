@@ -79,7 +79,7 @@ paths:
         '200':
           description: List of signals
         '401':
-          description: Unauthorized, may be caused by expired token.
+          description: Not authenticated, may be caused by expired token.
       security:
       - OAuth2:
         - SIG/ALL
@@ -112,7 +112,7 @@ paths:
         '200':
           description: Detailed signal instance information.
         '401':
-          description: Unauthorized, may be caused by expired token.
+          description: Not authenticated, may be caused by expired token.
       security:
       - OAuth2:
         - SIG/ALL
@@ -127,7 +127,9 @@ paths:
             type: integer
       responses:
         '401':
-          description: Unauthorized, may be caused by expired token.
+          description: Not authenticated, may be caused by expired token.
+        '404':
+          description: Signal not found.
       security:
       - OAuth2:
         - SIG/ALL
@@ -152,13 +154,83 @@ paths:
         '200':
           description: List of history entries for given signal instance.
         '401':
-          description: Unauthorized, may be caused by expired token.
+          description: Not authenticated, may be caused by expired token.
+        '404':
+          description: Signal not found.
       security:
       - OAuth2:
         - SIG/ALL
+  /signals/v1/private/signals/{id}/pdf:
+    get:
+      description: Download a PDF summarizing this signals.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal whose PDF is to be downloaded.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: PDF downloaded successfully.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
+  /signals/v1/private/signals/{id}/split:
+    get:
+      description: Get split-off children of this signal.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal whose children are to be retrieved.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Object with URL references to the original signal en its children.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to view split signals.
+        '404':
+          description: Signal not found.
+    post:
+      description: >-
+        On a valid post to this endpoint a signal is split. This means its
+        status changes to 'split' (GESPLITS) after which it can no longer be
+        updated. Simultaneously a number of child signals are created.
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal that is to be split.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Signal was successful split.
+        '412':
+          description: >-
+            Precondition failed, signal is itself a child or already a parent.
+        '400':
+          description: >- 
+            Bad request. Also returned when a split into too many children is
+            attempted.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
+
   /signals/v1/public/terms/categories:
     get:
-      description: Categories known to SIA.
+      description: Categories known to SIA. **May be changed**
       responses:
         '200':
           description: List of all main categories with embedded sub categories.
@@ -166,6 +238,7 @@ paths:
     get:
       description: >-
         Information about a specific main category and its sub categories.
+        **May be changed**
       responses:
         '200':
           description: Detailed information.
@@ -178,7 +251,7 @@ paths:
             type: string
   /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
-      description: Information about a specific sub category.
+      description: Information about a specific sub category.  **May be changed**
       responses:
         '200':
           description: Detailed information.
@@ -202,10 +275,32 @@ paths:
         '200':
           description: User information including permissions.
         '401':
-          description: Unauthorized, may be caused by expired token.
+          description: Not authenticated, may be caused by expired token.
       security:
       - OAuth2:
         - SIG/ALL
+  
+  /signals/v1/private/signals/category/removed:
+    get:
+      description: >-
+        Signals that dropped from a certain category are listed here.
+        **URL may be changed**
+      parameters:
+        - name: after
+          in: query
+          description: Timestamp after which dropped signals are to found.
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: Timestamp before which dropped signals are to found.
+          schema:
+            type: string
+        - name: category_slug
+          in: query
+          description: Slug for the category.
+          schema:
+            type: string
 
 components:
   schemas:
@@ -378,6 +473,8 @@ components:
         - o
         - a
         - s
+        - reopened
+        - ingepland
         - "ready to send"
         - "sent"
         - "send failed"
