@@ -2,7 +2,7 @@ version: '3.0'
 services:
 
   database:
-    image: amsterdam/postgres
+    image: amsterdam/postgres11
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: signals
