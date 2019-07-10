@@ -14,7 +14,7 @@
                 {% endfor %}
                 </td>
             {% else %}
-            <td>:&nbsp;{% firstof extra_property.answer.value extra_property.answer.answer extra_property.answer '-' %}</td>
+            <td>:&nbsp;{% firstof extra_property.answer.label extra_property.answer.value extra_property.answer.answer extra_property.answer '-' %}</td>
             {% endif %}
         </tr>
     {%  endfor %}
