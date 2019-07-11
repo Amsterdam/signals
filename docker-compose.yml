@@ -2,7 +2,7 @@ version: '2.0'
 services:
 
   database:
-    image: amsterdam/postgres
+    image: amsterdam/postgres11
     ports:
       - "5409:5432"
     environment:

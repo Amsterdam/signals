@@ -31,11 +31,11 @@ node {
 
     stage("Build dockers") {
         tryStep "build", {
-            def api = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/signals:${env.BUILD_NUMBER}", "api")
+            def api = docker.build("repo.data.amsterdam.nl/datapunt/signals:${env.BUILD_NUMBER}", "api")
             api.push()
             api.push("acceptance")
 
-            def importer = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/signals_importer:${env.BUILD_NUMBER}", "import")
+            def importer = docker.build("repo.data.amsterdam.nl/datapunt/signals_importer:${env.BUILD_NUMBER}", "import")
             importer.push()
             importer.push("acceptance")
         }
@@ -49,7 +49,7 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals:${env.BUILD_NUMBER}")
+                def image = docker.image("repo.data.amsterdam.nl/datapunt/signals:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
             }
@@ -77,12 +77,12 @@ if (BRANCH == "master") {
     node {
         stage('Push production image') {
             tryStep "image tagging", {
-                def api = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals:${env.BUILD_NUMBER}")
+                def api = docker.image("repo.data.amsterdam.nl/datapunt/signals:${env.BUILD_NUMBER}")
                 api.pull()
                 api.push("production")
                 api.push("latest")
 
-                def importer = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/signals_importer:${env.BUILD_NUMBER}")
+                def importer = docker.image("repo.data.amsterdam.nl/datapunt/signals_importer:${env.BUILD_NUMBER}")
                 importer.pull()
                 importer.push("production")
                 importer.push("latest")
