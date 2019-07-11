@@ -218,7 +218,7 @@ paths:
           description: >-
             Precondition failed, signal is itself a child or already a parent.
         '400':
-          description: >- 
+          description: >-
             Bad request. Also returned when a split into too many children is
             attempted.
         '401':
@@ -279,7 +279,7 @@ paths:
       security:
       - OAuth2:
         - SIG/ALL
-  
+
   /signals/v1/private/signals/category/removed:
     get:
       description: >-
