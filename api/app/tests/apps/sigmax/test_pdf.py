@@ -61,7 +61,9 @@ class TestPDF(TestCase):
             self.assertIn(value, html)
 
         # Uploaded photo.
-        self.assertIn('<img src="http://localhost:8000{}'.format(signal.image_crop.url), html)
+        images = signal.attachments.filter(is_image=True)
+        for image in images:
+            self.assertIn('<img src="{}'.format(image.file.url), html)
 
     @mock.patch('signals.apps.sigmax.pdf._render_html')
     @mock.patch('signals.apps.sigmax.pdf.weasyprint')

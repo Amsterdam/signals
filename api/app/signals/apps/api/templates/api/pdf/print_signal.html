@@ -84,7 +84,7 @@
             <tr>
                 <td width="40%">
                   <p style="text-align: left;">
-                    <span>Geprint door {% if not view.request.user.is_anonymous %}{{ view.request.user.username }}{% else %}John Doe{% endif %}</span>
+                    <span>Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}SIA Systeem{% endif %}</span>
                   </p>
                 </td>
                 <td width="60%">
