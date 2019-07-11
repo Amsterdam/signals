@@ -11,9 +11,17 @@ from tests.apps.signals import factories
 class TestPDF(TestCase):
 
     def test_render_html(self):
-        extra_properties_data = {
-            'Extra vraag': 'Extra antwoord'
-        }
+        extra_properties_data = [
+            {
+                "id": "extra_straatverlichting",
+                "label": "Is de situatie gevaarlijk?",
+                "answer": {
+                    "id": "niet_gevaarlijk",
+                    "label": "Niet gevaarlijk"
+                },
+                "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting"  # noqa
+            },
+        ]
         signal = factories.SignalFactoryWithImage.create(
             incident_date_start=timezone.now(),
             extra_properties=extra_properties_data,
@@ -56,9 +64,8 @@ class TestPDF(TestCase):
             self.assertIn(status.user, html)
 
         # Extra properties
-        for key, value in extra_properties_data.items():
-            self.assertIn(key, html)
-            self.assertIn(value, html)
+        self.assertIn('Is de situatie gevaarlijk?', html)
+        self.assertIn('Niet gevaarlijk', html)
 
         # Uploaded photo.
         images = signal.attachments.filter(is_image=True)
