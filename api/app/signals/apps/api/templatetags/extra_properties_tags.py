@@ -7,6 +7,11 @@ register = template.Library()
 def translate_value(value):
     if isinstance(value, bool):
         return 'Ja' if value else 'Nee'
-    if value is None:
+    if not value:
         return '-'
     return value
+
+
+@register.filter
+def is_a_list(value):
+    return isinstance(value, (list, tuple))

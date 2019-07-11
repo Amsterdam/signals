@@ -1,0 +1,22 @@
+{% load extra_properties_tags %}
+
+{% if signal.extra_properties %}
+    <h2>Extra eigenschappen</h2>
+
+    <table class="table" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+    {% for extra_property in signal.extra_properties %}
+        <tr>
+            <td style="width: 200px;">{{ extra_property.label }}</td>
+            {% if extra_property.answer|is_a_list %}
+                <td>:&nbsp;
+                {% for answer in extra_property.answer %}
+                    {% firstof answer.label answer.value answer.answer answer '-' %}{% if not forloop.last %},&nbsp;{% endif %}
+                {% endfor %}
+                </td>
+            {% else %}
+            <td>:&nbsp;{% firstof extra_property.answer.label extra_property.answer.value extra_property.answer.answer extra_property.answer '-' %}</td>
+            {% endif %}
+        </tr>
+    {%  endfor %}
+    </table>
+{% endif %}
