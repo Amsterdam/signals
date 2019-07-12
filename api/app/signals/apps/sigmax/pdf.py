@@ -6,6 +6,7 @@ import logging
 
 import weasyprint
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from signals.apps.signals.models import Signal
 
@@ -20,11 +21,21 @@ def _render_html(signal: Signal):
     :param signal: Signal object
     :returns: HTML str
     """
+    rd_coordinates = signal.location.get_rd_coordinates()
+    bbox = '{},{},{},{}'.format(
+        rd_coordinates.x - 340.00,
+        rd_coordinates.y - 125.00,
+        rd_coordinates.x + 340.00,
+        rd_coordinates.y + 125.00,
+    )
     context = {
         'signal': signal,
-        'image_url': signal.get_fqdn_image_crop_url()
+        'now': timezone.datetime.now(),
+        'bbox': bbox,
+        'images': signal.attachments.filter(is_image=True),
+        'user': None,
     }
-    return render_to_string('sigmax/pdf_template.html', context=context)
+    return render_to_string('api/pdf/print_signal.html', context=context)
 
 
 def _generate_pdf(signal: Signal):
