@@ -51,7 +51,7 @@ def _get_jpg_data_url(attachment: Attachment):
     resized = image.resize(size=(width, height), resample=Image.LANCZOS)
 
     buffer = BytesIO()
-    resized.save(buffer, format='JPG')
+    resized.save(buffer, format='JPEG')
 
     return 'data:image/jpg;base64,' + base64.b64encode(buffer.getvalue()).decode('utf-8')
 
