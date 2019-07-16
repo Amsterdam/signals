@@ -48,7 +48,7 @@ def _get_jpg_data_url(attachment: Attachment):
         width = int((MAX_SIZE / image.height) * image.width)
         height = MAX_SIZE
 
-    resized = image.resize(size=(width, height), resample=Image.LANCZOS)
+    resized = image.resize(size=(width, height), resample=Image.LANCZOS).convert('RGB')
 
     buffer = BytesIO()
     resized.save(buffer, format='JPEG')
