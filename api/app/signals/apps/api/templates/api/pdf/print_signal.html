@@ -170,7 +170,16 @@
         {% for image in images %}
             <p><img src="{{ image.file.url }}" style="width:680px" alt=""></p>
         {% endfor %}
-        <br/>
+        <br>
+    {% elif jpg_data_urls %}  {# HOTFIX SIG-1473 #}
+        {% for data_url in jpg_data_urls %}
+            {% if data_url %}
+                <p><img src="{{ data_url|safe }}" style="width:680px" alt=""></p>
+            {% else %}
+                <p>Image not available</p>
+            {% endif %}
+        {% endfor %}
+        <br>
     {% else %}
         <p>Er zijn geen foto's beschikbaar omdat de melder in SIA geen foto's heeft meegeleverd.</p>
     {% endif %}

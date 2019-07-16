@@ -67,10 +67,10 @@ class TestPDF(TestCase):
         self.assertIn('Is de situatie gevaarlijk?', html)
         self.assertIn('Niet gevaarlijk', html)
 
-        # Uploaded photo.
-        images = signal.attachments.filter(is_image=True)
-        for image in images:
-            self.assertIn('<img src="{}'.format(image.file.url), html)
+        # # Uploaded photo.
+        # images = signal.attachments.filter(is_image=True)
+        # for image in images:
+        #     self.assertIn('<img src="{}'.format(image.file.url), html)
 
     @mock.patch('signals.apps.sigmax.pdf._render_html')
     @mock.patch('signals.apps.sigmax.pdf.weasyprint')
