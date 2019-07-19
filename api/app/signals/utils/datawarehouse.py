@@ -87,7 +87,7 @@ def _create_signals_csv(location):
             'status_id',
         ])
 
-        # Writing all `Signal` objects to the CSV file.        
+        # Writing all `Signal` objects to the CSV file.
         batch_no = 0
         batch = Signal.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
