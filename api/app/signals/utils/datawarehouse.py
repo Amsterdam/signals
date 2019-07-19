@@ -9,6 +9,8 @@ from swift.storage import SwiftStorage
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals.models import CategoryAssignment, Location, Reporter, Signal, Status
 
+BATCH_SIZE = 1000
+
 
 def save_csv_files_datawarehouse():
     """Create CSV files for Datawarehouse and save them on the storage backend.
@@ -85,28 +87,35 @@ def _create_signals_csv(location):
             'status_id',
         ])
 
-        # Writing all `Signal` objects to the CSV file.
-        for signal in Signal.objects.all():
-            writer.writerow([
-                signal.pk,
-                signal.signal_id,
-                signal.source,
-                signal.text,
-                signal.text_extra,
-                signal.incident_date_start,
-                signal.incident_date_end,
-                signal.created_at,
-                signal.updated_at,
-                signal.operational_date,
-                signal.expire_date,
-                signal.image,
-                signal.upload,
-                json.dumps(signal.extra_properties),
-                signal.category_assignment_id,
-                signal.location_id,
-                signal.reporter_id,
-                signal.status_id,
-            ])
+        # Writing all `Signal` objects to the CSV file.        
+        batch_no = 0
+        batch = Signal.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
+
+        while batch:
+            for signal in batch:
+                writer.writerow([
+                    signal.pk,
+                    signal.signal_id,
+                    signal.source,
+                    signal.text,
+                    signal.text_extra,
+                    signal.incident_date_start,
+                    signal.incident_date_end,
+                    signal.created_at,
+                    signal.updated_at,
+                    signal.operational_date,
+                    signal.expire_date,
+                    signal.image,
+                    signal.upload,
+                    json.dumps(signal.extra_properties),
+                    signal.category_assignment_id,
+                    signal.location_id,
+                    signal.reporter_id,
+                    signal.status_id,
+                ])
+
+            batch_no += 1
+            batch = Signal.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
     return csv_file.name
 
@@ -136,20 +145,27 @@ def _create_locations_csv(location):
         ])
 
         # Writing all `Location` objects to the CSV file.
-        for location_obj in Location.objects.all():
-            writer.writerow([
-                location_obj.pk,
-                location_obj.geometrie.x,
-                location_obj.geometrie.y,
-                location_obj.get_stadsdeel_display(),
-                location_obj.buurt_code,
-                json.dumps(location_obj.address),
-                location_obj.address_text,
-                location_obj.created_at,
-                location_obj.updated_at,
-                json.dumps(location_obj.extra_properties),
-                location_obj._signal_id,
-            ])
+        batch_no = 0
+        batch = Location.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
+
+        while batch:
+            for location_obj in batch:
+                writer.writerow([
+                    location_obj.pk,
+                    location_obj.geometrie.x,
+                    location_obj.geometrie.y,
+                    location_obj.get_stadsdeel_display(),
+                    location_obj.buurt_code,
+                    json.dumps(location_obj.address),
+                    location_obj.address_text,
+                    location_obj.created_at,
+                    location_obj.updated_at,
+                    json.dumps(location_obj.extra_properties),
+                    location_obj._signal_id,
+                ])
+
+            batch_no += 1
+            batch = Location.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
     return csv_file.name
 
@@ -176,17 +192,24 @@ def _create_reporters_csv(location):
         ])
 
         # Writing all `Reporter` objects to the CSV file.
-        for reporter in Reporter.objects.all():
-            writer.writerow([
-                reporter.pk,
-                reporter.email,
-                reporter.phone,
-                reporter.remove_at,
-                reporter.created_at,
-                reporter.updated_at,
-                json.dumps(reporter.extra_properties),
-                reporter._signal_id,
-            ])
+        batch_no = 0
+        batch = Reporter.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
+
+        while batch:
+            for reporter in batch:
+                writer.writerow([
+                    reporter.pk,
+                    reporter.email,
+                    reporter.phone,
+                    reporter.remove_at,
+                    reporter.created_at,
+                    reporter.updated_at,
+                    json.dumps(reporter.extra_properties),
+                    reporter._signal_id,
+                ])
+
+            batch_no += 1
+            batch = Reporter.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
     return csv_file.name
 
@@ -213,18 +236,26 @@ def _create_category_assignments_csv(location):
         ])
 
         # Writing all `CategoryAssignment` objects to the CSV file.
-        for category_assignment in CategoryAssignment.objects.all():
-            writer.writerow([
-                category_assignment.pk,
-                category_assignment.category.parent.name,
-                category_assignment.category.name,
-                ', '.join(category_assignment.category.departments.values_list(
-                    'name', flat=True)),
-                category_assignment.created_at,
-                category_assignment.updated_at,
-                json.dumps(category_assignment.extra_properties),
-                category_assignment._signal_id,
-            ])
+        batch_no = 0
+        batch = CategoryAssignment.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
+
+        while batch:
+            for category_assignment in batch:
+                writer.writerow([
+                    category_assignment.pk,
+                    category_assignment.category.parent.name,
+                    category_assignment.category.name,
+                    ', '.join(category_assignment.category.departments.values_list(
+                        'name', flat=True)),
+                    category_assignment.created_at,
+                    category_assignment.updated_at,
+                    json.dumps(category_assignment.extra_properties),
+                    category_assignment._signal_id,
+                ])
+
+            batch_no += 1
+            batch = CategoryAssignment.objects.all()[
+                batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
     return csv_file.name
 
@@ -254,20 +285,27 @@ def _create_statuses_csv(location):
         ])
 
         # Writing all `Status` objects to the CSV file.
-        for status in Status.objects.all():
-            writer.writerow([
-                status.pk,
-                status.text,
-                status.user,
-                status.target_api,
-                status.get_state_display(),
-                status.extern,
-                status.created_at,
-                status.updated_at,
-                json.dumps(status.extra_properties),
-                status._signal_id,
-                status.state,
-            ])
+        batch_no = 0
+        batch = Status.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
+
+        while batch:
+            for status in batch:
+                writer.writerow([
+                    status.pk,
+                    status.text,
+                    status.user,
+                    status.target_api,
+                    status.get_state_display(),
+                    status.extern,
+                    status.created_at,
+                    status.updated_at,
+                    json.dumps(status.extra_properties),
+                    status._signal_id,
+                    status.state,
+                ])
+
+            batch_no += 1
+            batch = Status.objects.all()[batch_no * BATCH_SIZE: (batch_no + 1) * BATCH_SIZE]
 
     return csv_file.name
 
@@ -300,6 +338,7 @@ def _create_kto_feedback_csv(location):
 
         # instances
         for feedback in Feedback.objects.filter(submitted_at__isnull=False):
+
             writer.writerow([
                 feedback._signal_id,
                 feedback.is_satisfied,

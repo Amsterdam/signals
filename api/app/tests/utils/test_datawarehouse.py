@@ -11,6 +11,7 @@ import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 
+from signals.apps.signals.models import Signal
 from signals.utils import datawarehouse
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
@@ -213,6 +214,18 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
                 self.assertEqual(row['state'], status.state)
+
+    def test_batching(self):
+        n_signals = 2500
+        for i in range(n_signals):
+            SignalFactory.create()
+
+        self.assertEqual(Signal.objects.count(), n_signals)
+
+        csv_file = datawarehouse._create_signals_csv(self.csv_tmp_dir)
+        with open(csv_file) as opened_csv_file:
+            reader = csv.DictReader(opened_csv_file)
+            self.assertEqual(len(list(reader)), n_signals)
 
 
 class TestFeedbackHandling(testcases.TestCase):
