@@ -1,7 +1,7 @@
 import logging
 
 # from signals.apps.sigmax import outgoing as sigmax
-from signals.apps.sigmax import outgoing
+from signals.apps.sigmax.stuf_protocol import outgoing
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal, Status
 from signals.celery import app

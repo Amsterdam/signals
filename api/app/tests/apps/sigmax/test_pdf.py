@@ -3,7 +3,7 @@ from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 
-from signals.apps.sigmax.pdf import _generate_pdf, _render_html
+from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf, _render_html
 from signals.apps.signals import workflow
 from tests.apps.signals import factories
 
@@ -72,8 +72,8 @@ class TestPDF(TestCase):
         # for image in images:
         #     self.assertIn('<img src="{}'.format(image.file.url), html)
 
-    @mock.patch('signals.apps.sigmax.pdf._render_html')
-    @mock.patch('signals.apps.sigmax.pdf.weasyprint')
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.pdf._render_html')
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.pdf.weasyprint')
     def test_generate_pdf(self, mocked_weasyprint, mocked_render_html):
         fake_pdf = b'abc'
         mocked_rendered_html = mock.Mock()

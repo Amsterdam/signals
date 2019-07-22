@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from lxml import etree
 
 from signals.apps.sigmax.models import CityControlRoundtrip
-from signals.apps.sigmax.pdf import _generate_pdf
+from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_NIEUWWEST,

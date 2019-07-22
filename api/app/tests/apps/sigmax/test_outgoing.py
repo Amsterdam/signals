@@ -13,9 +13,9 @@ from django.utils import timezone
 from lxml import etree
 from xmlunittest import XmlTestMixin
 
-from signals.apps.sigmax import outgoing
+from signals.apps.sigmax.stuf_protocol import outgoing
 from signals.apps.sigmax.models import CityControlRoundtrip
-from signals.apps.sigmax.outgoing import (
+from signals.apps.sigmax.stuf_protocol.outgoing import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
     SIGMAX_STADSDEEL_MAPPING,
     SigmaxException,
@@ -46,9 +46,9 @@ class TestHandle(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
 
-    @mock.patch('signals.apps.sigmax.outgoing.MAX_ROUND_TRIPS', 2)
-    @mock.patch('signals.apps.sigmax.outgoing.send_creeerZaak_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.MAX_ROUND_TRIPS', 2)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_creeerZaak_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
     def test_too_many(self,
                       patched_send_voegZaakdocumentToe_Lk01,
                       patched_send_creeerZaak_Lk01,):
@@ -60,8 +60,8 @@ class TestHandle(TestCase):
             handle(self.signal)
         patched_send_voegZaakdocumentToe_Lk01.assert_not_called()
 
-    @mock.patch('signals.apps.sigmax.outgoing.send_creeerZaak_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_creeerZaak_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
     def test_success_message(self,
                              patched_send_voegZaakdocumentToe_Lk01,
                              patched_send_creeerZaak_Lk01):
@@ -157,7 +157,7 @@ class TestGenerateOmschrijving(TestCase):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
     @mock.patch(
-        'signals.apps.sigmax.outgoing._generate_sequence_number', autospec=True, return_value='02')
+        'signals.apps.sigmax.stuf_protocol.outgoing._generate_sequence_number', autospec=True, return_value='02')
     def test_generate_omschrijving_urgent(self, patched):
         stadsdeel = self.signal.location.stadsdeel
 
@@ -171,7 +171,7 @@ class TestGenerateOmschrijving(TestCase):
         patched.assert_called_once_with(self.signal)
 
     @mock.patch(
-        'signals.apps.sigmax.outgoing._generate_sequence_number', autospec=True, return_value='04')
+        'signals.apps.sigmax.stuf_protocol.outgoing._generate_sequence_number', autospec=True, return_value='04')
     def test_generate_omschrijving_no_stadsdeel_urgent(self, patched):
         # test that we get SD-- as part of the omschrijving when stadsdeel is missing
         self.signal.location.stadsdeel = None
@@ -389,7 +389,7 @@ class TestSendStufMessage(TestCase):
         SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
         SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
     )
-    @mock.patch('signals.apps.sigmax.outgoing._stuf_response_ok', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing._stuf_response_ok', autospec=True)
     @mock.patch('requests.post', autospec=True)
     def test_send_message(self, mocked_request_post, mocked_stuf_response_ok):
         mocked_request_post.return_value.status_code = 200

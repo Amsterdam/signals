@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from lxml import etree
 
-from signals.apps.sigmax.views import (
+from signals.apps.sigmax.stuf_protocol.incoming import (
     ACTUALISEER_ZAAK_STATUS_SOAPACTION,
     _parse_actualiseerZaakstatus_Lk01,
     _parse_zaak_identificatie
