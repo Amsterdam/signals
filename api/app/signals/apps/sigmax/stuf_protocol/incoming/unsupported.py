@@ -1,3 +1,7 @@
+"""
+Send StUF protocol error message on reception of unsupported SOAP actions.
+"""
+
 import logging
 
 from django.shortcuts import render
@@ -5,7 +9,7 @@ from django.shortcuts import render
 logger = logging.getLogger(__name__)
 
 
-def handle_unknown_soap_action(request):
+def handle_unsupported_soap_action(request):
     """
     Requests with unknown/unsupported SOAPActions are handled here
     """

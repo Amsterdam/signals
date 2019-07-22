@@ -1,3 +1,7 @@
+"""
+Support for actualiseerZaakstatus_Lk01 messages from CityControl.
+"""
+
 import logging
 import re
 

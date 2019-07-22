@@ -60,10 +60,10 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
     @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.views.handle_unknown_soap_action', autospec=True)
-    def test_soap_action_routing(self, handle_unknown, handle_known):
+    @mock.patch('signals.apps.sigmax.views.handle_unsupported_soap_action', autospec=True)
+    def test_soap_action_routing(self, handle_unsupported, handle_known):
         """Check that correct function is called based on SOAPAction header"""
-        handle_unknown.return_value = HttpResponse('Required by view function')
+        handle_unsupported.return_value = HttpResponse('Required by view function')
         handle_known.return_value = HttpResponse('Required by view function')
 
         # authenticate
@@ -73,25 +73,25 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
                          content_type='text/xml')
         handle_known.assert_called_once()
-        handle_unknown.assert_not_called()
+        handle_unsupported.assert_not_called()
         handle_known.reset_mock()
-        handle_unknown.reset_mock()
+        handle_unsupported.reset_mock()
 
-        # check that something else is send to handle_unknown_soap_action
-        wrong_action = 'http://example.com/unknown'
+        # check that something else is send to handle_unsupported_soap_action
+        wrong_action = 'http://example.com/unsupported'
         self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', HTTP_SOAPACTION=wrong_action,
                          content_type='text/xml')
 
         handle_known.assert_not_called()
-        handle_unknown.assert_called_once()
+        handle_unsupported.assert_called_once()
 
     def test_wrong_soapaction_results_in_fo03(self):
-        """Check that we send a StUF Fo03 when we receive an unknown SOAPAction"""
+        """Check that we send a StUF Fo03 when we receive an unsupported SOAPAction"""
         # authenticate
         self.client.force_authenticate(user=self.superuser)
 
         # Check that wrong action is replied to with XML, StUF Fo03, status 500, utf-8 encoding.
-        wrong_action = 'http://example.com/unknown'
+        wrong_action = 'http://example.com/unsupported'
         response = self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>',
                                     HTTP_SOAPACTION=wrong_action, content_type='text/xml')
 
