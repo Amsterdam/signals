@@ -1,6 +1,5 @@
 """
-Handle sending a signal to sigmax.
-Retry logic ao are handled by Celery.
+Support for creeerZaak_Lk01 messages to send to CityControl.
 """
 import logging
 import os
@@ -8,7 +7,6 @@ from datetime import timedelta
 
 from django.template.loader import render_to_string
 
-from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.stuf_protocol.outgoing.stuf import _send_stuf_message
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -25,8 +23,7 @@ from signals.apps.signals.models import (
 logger = logging.getLogger(__name__)
 
 
-CREEER_ZAAK_SOAPACTION = \
-    '"http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01"'
+CREEER_ZAAK = '"http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01"'
 
 SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
                              'https://acc.api.data.amsterdam.nl')
@@ -44,14 +41,9 @@ SIGMAX_STADSDEEL_MAPPING = {
     STADSDEEL_WESTPOORT: 'SDWP',  # not part of spec, but present in our data model
 }
 
-MAX_ROUND_TRIPS = 99
 
-
-def _generate_omschrijving(signal):
+def _generate_omschrijving(signal, seq_no):
     """Generate brief descriptive text for list view in CityControl"""
-    # We need sequence number to show in CityControl list view
-    sequence_number = _generate_sequence_number(signal)
-
     # Note: we do not mention main or category here (too many characters)
     is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
 
@@ -62,17 +54,11 @@ def _generate_omschrijving(signal):
 
     return 'SIA-{}.{} {} {} {}'.format(
         signal.id,
-        sequence_number,
+        seq_no,
         is_urgent,
         stadsdeel_code_sigmax,
         signal.location.short_address_text,
     )
-
-
-def _generate_sequence_number(signal):
-    """Generate a sequence number for external identifier in CityControl."""
-    roundtrip_count = CityControlRoundtrip.objects.filter(_signal=signal).count()
-    return '{0:02d}'.format(roundtrip_count + 1)  # start counting at one
 
 
 def _address_matches_sigmax_expectation(address_dict):
@@ -110,7 +96,7 @@ def _address_matches_sigmax_expectation(address_dict):
     return True
 
 
-def _generate_creeerZaak_Lk01(signal):
+def _generate_creeerZaak_Lk01(signal, seq_no):
     """Generate XML for Sigmax creeerZaak_Lk01
 
     SIGMAX will be set up to receive Signals (meldingen) that have no address but do have
@@ -122,23 +108,22 @@ def _generate_creeerZaak_Lk01(signal):
     }
     incident_date_end = (
         signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))
-    sequence_number = _generate_sequence_number(signal)
 
     return render_to_string('sigmax/creeerZaak_Lk01.xml', context={
         'address_matches_sigmax_expectation':
             _address_matches_sigmax_expectation(signal.location.address),
         'signal': signal,
-        'sequence_number': sequence_number,
+        'sequence_number': seq_no,
         'incident_date_end': signal.incident_date_end or incident_date_end,
         'x': str(signal.location.geometrie.x),
         'y': str(signal.location.geometrie.y),
-        'omschrijving': _generate_omschrijving(signal),
+        'omschrijving': _generate_omschrijving(signal, seq_no),
     })
 
 
-def send_creeerZaak_Lk01(signal):
-    soap_action = CREEER_ZAAK_SOAPACTION
-    msg = _generate_creeerZaak_Lk01(signal)
+def send_creeerZaak_Lk01(signal, seq_no):
+    soap_action = CREEER_ZAAK
+    msg = _generate_creeerZaak_Lk01(signal, seq_no)
     response = _send_stuf_message(msg, soap_action)
 
     logger.info('Sent %s', soap_action)

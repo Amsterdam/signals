@@ -16,14 +16,13 @@ from xmlunittest import XmlTestMixin
 from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.stuf_protocol import outgoing
 from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
-from signals.apps.sigmax.stuf_protocol.outgoing import handle
+from signals.apps.sigmax.stuf_protocol.outgoing import _generate_sequence_number, handle
 from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
     SIGMAX_STADSDEEL_MAPPING,
     _address_matches_sigmax_expectation,
     _generate_creeerZaak_Lk01,
-    _generate_omschrijving,
-    _generate_sequence_number
+    _generate_omschrijving
 )
 from signals.apps.sigmax.stuf_protocol.outgoing.voegZaakdocumentToe_Lk01 import (
     _generate_voegZaakdocumentToe_Lk01
@@ -83,12 +82,12 @@ class TestOutgoing(TestCase, XmlTestMixin):
         location = Point(4.1234, 52.1234)
         signal = SignalFactory.create(incident_date_end=None, location__geometrie=location)
 
-        xml_message = _generate_creeerZaak_Lk01(signal)
-        sequence_number = _generate_sequence_number(signal)
+        seq_no = _generate_sequence_number(signal)
+        xml_message = _generate_creeerZaak_Lk01(signal, seq_no)
 
         self.assertXmlDocument(xml_message)
         self.assertIn(
-            f'<StUF:referentienummer>{signal.sia_id}.{sequence_number}</StUF:referentienummer>',
+            f'<StUF:referentienummer>{signal.sia_id}.{seq_no}</StUF:referentienummer>',
             xml_message)
         self.assertIn(
             '<StUF:tijdstipBericht>{}</StUF:tijdstipBericht>'.format(
@@ -115,7 +114,8 @@ class TestOutgoing(TestCase, XmlTestMixin):
         signal = SignalFactory.create(incident_date_end=None,
                                       priority__priority=Priority.PRIORITY_HIGH)
 
-        xml_message = _generate_creeerZaak_Lk01(signal)
+        seq_no = _generate_sequence_number(signal)
+        xml_message = _generate_creeerZaak_Lk01(signal, seq_no)
 
         self.assertXmlDocument(xml_message)
         incident_date_end = signal.created_at + timedelta(days=1)
@@ -129,7 +129,8 @@ class TestOutgoing(TestCase, XmlTestMixin):
         signal = SignalFactory.create(incident_date_end=None,
                                       priority__priority=Priority.PRIORITY_NORMAL)
 
-        xml_message = _generate_creeerZaak_Lk01(signal)
+        seq_no = _generate_sequence_number(signal)
+        xml_message = _generate_creeerZaak_Lk01(signal, seq_no)
 
         self.assertXmlDocument(xml_message)
         incident_date_end = signal.created_at + timedelta(days=3)
@@ -140,19 +141,20 @@ class TestOutgoing(TestCase, XmlTestMixin):
 
     def test_generate_voegZaakdocumentToe_Lk01(self):
         signal = SignalFactoryValidLocation.create()
-        xml_message = _generate_voegZaakdocumentToe_Lk01(signal)
-        sequence_number = _generate_sequence_number(signal)
+        seq_no = _generate_sequence_number(signal)
+        xml_message = _generate_voegZaakdocumentToe_Lk01(signal, seq_no)
         self.assertXmlDocument(xml_message)
 
         self.assertIn(
-            f'<ZKN:identificatie>{signal.sia_id}.{sequence_number}</ZKN:identificatie>',
+            f'<ZKN:identificatie>{signal.sia_id}.{seq_no}</ZKN:identificatie>',
             xml_message
         )
 
     def test_generate_voegZaakdocumentToe_Lk01_escaping(self):
         poison = SignalFactoryValidLocation.create()
         poison.text = '<poison>tastes nice</poison>'
-        xml_message = _generate_voegZaakdocumentToe_Lk01(poison)
+        seq_no = '02'
+        xml_message = _generate_voegZaakdocumentToe_Lk01(poison, seq_no)
         self.assertTrue('<poison>' not in xml_message)
 
 
@@ -160,12 +162,7 @@ class TestGenerateOmschrijving(TestCase):
     def setUp(self):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
-    @mock.patch(
-        'signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01._generate_sequence_number',
-        autospec=True,
-        return_value='02'
-    )
-    def test_generate_omschrijving_urgent(self, patched):
+    def test_generate_omschrijving_urgent(self):
         stadsdeel = self.signal.location.stadsdeel
 
         correct = 'SIA-{}.02 URGENT {} {}'.format(
@@ -174,15 +171,10 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.location.short_address_text
         )
 
-        self.assertEqual(_generate_omschrijving(self.signal), correct)
-        patched.assert_called_once_with(self.signal)
+        seq_no = '02'
+        self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
 
-    @mock.patch(
-        'signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01._generate_sequence_number',
-        autospec=True,
-        return_value='04'
-    )
-    def test_generate_omschrijving_no_stadsdeel_urgent(self, patched):
+    def test_generate_omschrijving_no_stadsdeel_urgent(self):
         # test that we get SD-- as part of the omschrijving when stadsdeel is missing
         self.signal.location.stadsdeel = None
         self.signal.location.save()
@@ -192,8 +184,8 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.location.short_address_text
         )
 
-        self.assertEqual(_generate_omschrijving(self.signal), correct)
-        patched.assert_called_once_with(self.signal)
+        seq_no = '04'
+        self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
 
 
 class TestAddressMatchesSigmaxExpectation(TestCase):
@@ -274,21 +266,21 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
     def setUp(self):
         self.signal: Signal = SignalFactoryValidLocation.create()
+        self.seq_no = _generate_sequence_number(self.signal)
 
     def test_is_xml(self):
-        msg = _generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal, self.seq_no)
         self.assertXmlDocument(msg)
 
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        msg = _generate_creeerZaak_Lk01(poison)
+        msg = _generate_creeerZaak_Lk01(poison, self.seq_no)
         self.assertTrue('<poison>' not in msg)
 
     def test_propagate_signal_properties_to_message_full_address(self):
-        msg = _generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal, self.seq_no)
         current_tz = timezone.get_current_timezone()
-        sequence_number = _generate_sequence_number(self.signal)
 
         # first test that we have obtained valid XML
         root = etree.fromstring(msg)
@@ -299,11 +291,11 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
         need_to_find = dict([
             (
                 '{http://www.egem.nl/StUF/StUF0301}referentienummer',
-                f'{self.signal.sia_id}.{sequence_number}'
+                f'{self.signal.sia_id}.{self.seq_no}'
             ),
             (
                 '{http://www.egem.nl/StUF/sector/zkn/0310}identificatie',
-                f'{self.signal.sia_id}.{sequence_number}'
+                f'{self.signal.sia_id}.{self.seq_no}'
             ),
             (
                 '{http://www.egem.nl/StUF/sector/bg/0310}gor.openbareRuimteNaam',
@@ -352,7 +344,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
         self.signal.location.address = None
         self.signal.save()
 
-        msg = _generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal, self.seq_no)
         root = self.assertXmlDocument(msg)
 
         namespaces = {'zaak': 'http://www.egem.nl/StUF/sector/zkn/0310'}
@@ -364,10 +356,11 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def setUp(self):
         self.signal: Signal = SignalFactoryValidLocation.create()
+        self.seq_no = _generate_sequence_number(self.signal)
 
     def test_is_xml(self):
         signal = self.signal
-        xml = _generate_voegZaakdocumentToe_Lk01(signal)
+        xml = _generate_voegZaakdocumentToe_Lk01(signal, self.seq_no)
         try:
             etree.fromstring(xml)
         except Exception:
@@ -376,7 +369,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        xml = _generate_voegZaakdocumentToe_Lk01(poison)
+        xml = _generate_voegZaakdocumentToe_Lk01(poison, self.seq_no)
         self.assertTrue('<poison>' not in xml)
 
 
