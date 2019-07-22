@@ -7,11 +7,11 @@ import logging
 from django.shortcuts import render
 from rest_framework.views import APIView
 
-from signals.apps.sigmax.stuf_protocol.incoming import (
-    ACTUALISEER_ZAAK_STATUS_SOAPACTION,
-    _handle_actualiseerZaakstatus_Lk01,
-    _handle_unknown_soap_action,
+from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 import (
+    ACTUALISEER_ZAAK_STATUS,
+    handle_actualiseerZaakstatus_Lk01
 )
+from signals.apps.sigmax.stuf_protocol.incoming.unknown import handle_unknown_soap_action
 from signals.auth.backend import JWTAuthBackend
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class CityControlReceiver(APIView):
                 content_type='text/xml; charset=utf-8',
                 status=500)
 
-        if request.META['HTTP_SOAPACTION'] == ACTUALISEER_ZAAK_STATUS_SOAPACTION:
-            return _handle_actualiseerZaakstatus_Lk01(request)
+        if request.META['HTTP_SOAPACTION'] == ACTUALISEER_ZAAK_STATUS:
+            return handle_actualiseerZaakstatus_Lk01(request)
         else:
-            return _handle_unknown_soap_action(request)
+            return handle_unknown_soap_action(request)

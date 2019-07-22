@@ -1,0 +1,2 @@
+class SigmaxException(Exception):
+    pass

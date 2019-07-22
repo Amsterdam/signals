@@ -6,8 +6,8 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from lxml import etree
 
-from signals.apps.sigmax.stuf_protocol.incoming import (
-    ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 import (
+    ACTUALISEER_ZAAK_STATUS,
     _parse_actualiseerZaakstatus_Lk01,
     _parse_zaak_identificatie
 )
@@ -59,8 +59,8 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
-    @mock.patch('signals.apps.sigmax.views._handle_actualiseerZaakstatus_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.views._handle_unknown_soap_action', autospec=True)
+    @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.views.handle_unknown_soap_action', autospec=True)
     def test_soap_action_routing(self, handle_unknown, handle_known):
         """Check that correct function is called based on SOAPAction header"""
         handle_unknown.return_value = HttpResponse('Required by view function')
@@ -70,14 +70,14 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.superuser)
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
-        self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+        self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
                          content_type='text/xml')
         handle_known.assert_called_once()
         handle_unknown.assert_not_called()
         handle_known.reset_mock()
         handle_unknown.reset_mock()
 
-        # check that something else is send to _handle_unknown_soap_action
+        # check that something else is send to handle_unknown_soap_action
         wrong_action = 'http://example.com/unknown'
         self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', HTTP_SOAPACTION=wrong_action,
                          content_type='text/xml')
@@ -122,7 +122,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -145,7 +145,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -177,7 +177,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -224,7 +224,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -270,7 +270,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 

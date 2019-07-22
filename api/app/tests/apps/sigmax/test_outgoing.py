@@ -13,18 +13,20 @@ from django.utils import timezone
 from lxml import etree
 from xmlunittest import XmlTestMixin
 
-from signals.apps.sigmax.stuf_protocol import outgoing
 from signals.apps.sigmax.models import CityControlRoundtrip
-from signals.apps.sigmax.stuf_protocol.outgoing import (
+from signals.apps.sigmax.stuf_protocol import outgoing
+from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
+from signals.apps.sigmax.stuf_protocol.outgoing import handle
+from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     SIGMAX_REQUIRED_ADDRESS_FIELDS,
     SIGMAX_STADSDEEL_MAPPING,
-    SigmaxException,
     _address_matches_sigmax_expectation,
     _generate_creeerZaak_Lk01,
     _generate_omschrijving,
-    _generate_sequence_number,
-    _generate_voegZaakdocumentToe_Lk01,
-    handle
+    _generate_sequence_number
+)
+from signals.apps.sigmax.stuf_protocol.outgoing.voegZaakdocumentToe_Lk01 import (
+    _generate_voegZaakdocumentToe_Lk01
 )
 from signals.apps.signals.models import Priority, Signal
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
@@ -48,7 +50,8 @@ class TestHandle(TestCase):
 
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.MAX_ROUND_TRIPS', 2)
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_creeerZaak_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    @mock.patch(
+        'signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
     def test_too_many(self,
                       patched_send_voegZaakdocumentToe_Lk01,
                       patched_send_creeerZaak_Lk01,):
@@ -61,7 +64,8 @@ class TestHandle(TestCase):
         patched_send_voegZaakdocumentToe_Lk01.assert_not_called()
 
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_creeerZaak_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
+    @mock.patch(
+        'signals.apps.sigmax.stuf_protocol.outgoing.send_voegZaakdocumentToe_Lk01', autospec=True)
     def test_success_message(self,
                              patched_send_voegZaakdocumentToe_Lk01,
                              patched_send_creeerZaak_Lk01):
@@ -157,7 +161,10 @@ class TestGenerateOmschrijving(TestCase):
         self.signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_HIGH)
 
     @mock.patch(
-        'signals.apps.sigmax.stuf_protocol.outgoing._generate_sequence_number', autospec=True, return_value='02')
+        'signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01._generate_sequence_number',
+        autospec=True,
+        return_value='02'
+    )
     def test_generate_omschrijving_urgent(self, patched):
         stadsdeel = self.signal.location.stadsdeel
 
@@ -171,7 +178,10 @@ class TestGenerateOmschrijving(TestCase):
         patched.assert_called_once_with(self.signal)
 
     @mock.patch(
-        'signals.apps.sigmax.stuf_protocol.outgoing._generate_sequence_number', autospec=True, return_value='04')
+        'signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01._generate_sequence_number',
+        autospec=True,
+        return_value='04'
+    )
     def test_generate_omschrijving_no_stadsdeel_urgent(self, patched):
         # test that we get SD-- as part of the omschrijving when stadsdeel is missing
         self.signal.location.stadsdeel = None
@@ -266,19 +276,19 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
         self.signal: Signal = SignalFactoryValidLocation.create()
 
     def test_is_xml(self):
-        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal)
         self.assertXmlDocument(msg)
 
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        msg = outgoing._generate_creeerZaak_Lk01(poison)
+        msg = _generate_creeerZaak_Lk01(poison)
         self.assertTrue('<poison>' not in msg)
 
     def test_propagate_signal_properties_to_message_full_address(self):
-        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal)
         current_tz = timezone.get_current_timezone()
-        sequence_number = outgoing._generate_sequence_number(self.signal)
+        sequence_number = _generate_sequence_number(self.signal)
 
         # first test that we have obtained valid XML
         root = etree.fromstring(msg)
@@ -342,7 +352,7 @@ class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
         self.signal.location.address = None
         self.signal.save()
 
-        msg = outgoing._generate_creeerZaak_Lk01(self.signal)
+        msg = _generate_creeerZaak_Lk01(self.signal)
         root = self.assertXmlDocument(msg)
 
         namespaces = {'zaak': 'http://www.egem.nl/StUF/sector/zkn/0310'}
@@ -357,7 +367,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
 
     def test_is_xml(self):
         signal = self.signal
-        xml = outgoing._generate_voegZaakdocumentToe_Lk01(signal)
+        xml = _generate_voegZaakdocumentToe_Lk01(signal)
         try:
             etree.fromstring(xml)
         except Exception:
@@ -366,7 +376,7 @@ class TestVoegZaakDocumentToeLk01Message(TestCase):
     def test_escaping(self):
         poison: Signal = self.signal
         poison.text = '<poison>tastes nice</poison>'
-        xml = outgoing._generate_voegZaakdocumentToe_Lk01(poison)
+        xml = _generate_voegZaakdocumentToe_Lk01(poison)
         self.assertTrue('<poison>' not in xml)
 
 
@@ -383,13 +393,13 @@ class TestSendStufMessage(TestCase):
         with mock.patch.dict('os.environ', env_override):
             with self.assertRaises(outgoing.SigmaxException):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-                outgoing._send_stuf_message('TEST BERICHT', action)
+                outgoing.stuf._send_stuf_message('TEST BERICHT', action)
 
     @override_settings(
         SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
         SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
     )
-    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing._stuf_response_ok', autospec=True)
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.stuf._stuf_response_ok', autospec=True)
     @mock.patch('requests.post', autospec=True)
     def test_send_message(self, mocked_request_post, mocked_stuf_response_ok):
         mocked_request_post.return_value.status_code = 200
@@ -398,7 +408,7 @@ class TestSendStufMessage(TestCase):
 
         message = 'TEST BERICHT'
         action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
-        outgoing._send_stuf_message(message, action)
+        outgoing.stuf._send_stuf_message(message, action)
 
         # Check that headers are set correctly when sending an STUF message.
         args, kwargs = mocked_request_post.call_args
@@ -432,7 +442,7 @@ class TestStufResponseOk(TestCase):
         fake_response = mock.MagicMock()
         fake_response.text = test_xml
 
-        self.assertEqual(outgoing._stuf_response_ok(fake_response), True)
+        self.assertEqual(outgoing.stuf._stuf_response_ok(fake_response), True)
 
     def test_Fo03(self):
         test_xml_file = os.path.join(DATA_DIR, 'example-fo03.xml')
@@ -442,4 +452,4 @@ class TestStufResponseOk(TestCase):
         fake_response = mock.MagicMock()
         fake_response.text = test_xml
 
-        self.assertEqual(outgoing._stuf_response_ok(fake_response), False)
+        self.assertEqual(outgoing.stuf._stuf_response_ok(fake_response), False)
