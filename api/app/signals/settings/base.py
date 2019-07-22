@@ -1,7 +1,5 @@
 import os
 
-from celery.schedules import crontab
-
 from signals import API_VERSIONS
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
@@ -11,6 +9,9 @@ from signals.settings.settings_databases import (
     get_docker_host,
     in_docker
 )
+
+# from celery.schedules import crontab
+
 
 # ---
 # To enable the ZDS integration in all environments activate the following
@@ -232,13 +233,16 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_BEAT_SCHEDULE = {
+
+CELERY_BEAT_SCHEDULE = {}
+# SIG-1456
+# CELERY_BEAT_SCHEDULE = {
 #    'save-csv-files-datawarehouse': {
 #        'task': 'signals.apps.signals.tasks'
 #                '.task_save_csv_files_datawarehouse',
 #        'schedule': crontab(hour=4),
 #    },
-}
+# }
 
 # E-mail settings for SMTP (SendGrid)
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
