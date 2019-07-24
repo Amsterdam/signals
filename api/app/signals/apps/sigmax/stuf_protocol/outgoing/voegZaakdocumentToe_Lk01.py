@@ -14,8 +14,7 @@ from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf
 logger = logging.getLogger(__name__)
 
 
-VOEG_ZAAKDOCUMENT_TOE_SOAPACTION = \
-    '"http://www.egem.nl/StUF/sector/zkn/0310/VoegZaakdocumentToe_Lk01"'
+VOEG_ZAAKDOCUMENT_TOE = '"http://www.egem.nl/StUF/sector/zkn/0310/VoegZaakdocumentToe_Lk01"'
 
 
 def _generate_voegZaakdocumentToe_Lk01(signal, seq_no):
@@ -35,7 +34,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal, seq_no):
 
 
 def send_voegZaakdocumentToe_Lk01(signal, seq_no):
-    soap_action = VOEG_ZAAKDOCUMENT_TOE_SOAPACTION
+    soap_action = VOEG_ZAAKDOCUMENT_TOE
     msg = _generate_voegZaakdocumentToe_Lk01(signal, seq_no)
     response = _send_stuf_message(msg, soap_action)
 
