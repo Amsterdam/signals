@@ -16,7 +16,6 @@ from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
 
-REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
 SOAP_ENDPOINT = '/signals/sigmax/soap'
 
 

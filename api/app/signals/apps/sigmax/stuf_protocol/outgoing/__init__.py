@@ -3,8 +3,8 @@ Send a signal (melding) to CityControl/Sigmax.
 """
 import logging
 
-from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.app_settings import MAX_ROUND_TRIPS
+from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
 from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import send_creeerZaak_Lk01
 from signals.apps.sigmax.stuf_protocol.outgoing.voegZaakdocumentToe_Lk01 import (
