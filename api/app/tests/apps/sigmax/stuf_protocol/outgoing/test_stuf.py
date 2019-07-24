@@ -8,6 +8,7 @@ from unittest import mock
 from django.test import TestCase, override_settings
 
 from signals.apps.sigmax.stuf_protocol import outgoing
+from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class TestSendStufMessage(TestCase):
         env_override = {'SIGMAX_AUTH_TOKEN': '', 'SIGMAX_SERVER': ''}
 
         with mock.patch.dict('os.environ', env_override):
-            with self.assertRaises(outgoing.SigmaxException):
+            with self.assertRaises(SigmaxException):
                 action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
                 outgoing.stuf._send_stuf_message('TEST BERICHT', action)
 

@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from lxml import etree
 
 from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 import (
-    ACTUALISEER_ZAAK_STATUS,
+    ACTUALISEER_ZAAK_STATUS
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal

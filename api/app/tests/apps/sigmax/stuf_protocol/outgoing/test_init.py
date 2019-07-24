@@ -7,7 +7,7 @@ from unittest import mock
 from django.test import TestCase
 
 from signals.apps.sigmax.models import CityControlRoundtrip
-from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
+from signals.apps.sigmax.stuf_protocol.exceptions import SentTooManyTimesError
 from signals.apps.sigmax.stuf_protocol.outgoing import handle
 from tests.apps.signals.factories import SignalFactory
 
@@ -29,7 +29,7 @@ class TestHandle(TestCase):
         CityControlRoundtrip.objects.create(_signal=self.signal)
         CityControlRoundtrip.objects.create(_signal=self.signal)
 
-        with self.assertRaises(SigmaxException):
+        with self.assertRaises(SentTooManyTimesError):
             handle(self.signal)
         patched_send_voegZaakdocumentToe_Lk01.assert_not_called()
 
@@ -39,6 +39,10 @@ class TestHandle(TestCase):
     def test_success_message(self,
                              patched_send_voegZaakdocumentToe_Lk01,
                              patched_send_creeerZaak_Lk01):
+        success_response = mock.Mock()
+        success_response.status_code = 200
+        patched_send_creeerZaak_Lk01.return_value = success_response
+
         success_message = handle(self.signal)
         self.assertIn(
             '{}.01'.format(self.signal.sia_id),
