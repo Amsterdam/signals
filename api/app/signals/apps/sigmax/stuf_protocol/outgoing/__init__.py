@@ -1,10 +1,10 @@
 """
-Handle sending a signal to sigmax.
-Retry logic ao are handled by Celery.
+Send a signal (melding) to CityControl/Sigmax.
 """
 import logging
 
 from signals.apps.sigmax.models import CityControlRoundtrip
+from signals.apps.sigmax.app_settings import MAX_ROUND_TRIPS
 from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
 from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import send_creeerZaak_Lk01
 from signals.apps.sigmax.stuf_protocol.outgoing.voegZaakdocumentToe_Lk01 import (
@@ -14,12 +14,15 @@ from signals.apps.signals.models import Signal
 
 logger = logging.getLogger(__name__)
 
-MAX_ROUND_TRIPS = 99
-
 
 def _generate_sequence_number(signal):
     """Generate a sequence number for external identifier in CityControl."""
     roundtrip_count = CityControlRoundtrip.objects.filter(_signal=signal).count()
+
+    if not roundtrip_count < MAX_ROUND_TRIPS:  # check not sent too often
+        msg = f'Signal SIA-{signal.sia_id} was sent to SigmaxCityControl too often.'
+        raise SigmaxException(msg)
+
     return '{0:02d}'.format(roundtrip_count + 1)  # start counting at one
 
 
@@ -27,13 +30,6 @@ def handle(signal: Signal) -> None:
     """
     Create a case (zaak) in Sigmax/CityControl, attach extra info in PDF
     """
-    # Refuse to send a `Signal` to CityControl if we have done so too many times
-    # already.
-    roundtrip_count = CityControlRoundtrip.objects.filter(_signal=signal).count()
-    if not roundtrip_count < MAX_ROUND_TRIPS:
-        raise SigmaxException(
-            'Signal SIA-{} was sent to SigmaxCityControl too often.'.format(signal.sia_id))
-
     # We have to increment the sequence number in the CityControl external
     # identifier (e.g. the 01 in SIA-123.01). To do so we keep track of the
     # number of times an issue is sent to CityControl.
