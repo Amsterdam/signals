@@ -1,11 +1,5 @@
 import logging
 
-from signals.apps.sigmax.stuf_protocol.exceptions import (
-    CreeerZaakLk01Error,
-    SentTooManyTimesError,
-    VoegZaakDocumentToeLk01Error
-)
-# from signals.apps.sigmax import outgoing as sigmax
 from signals.apps.sigmax.stuf_protocol.outgoing import handle
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal, Status
@@ -35,30 +29,4 @@ def push_to_sigmax(pk):
         return None
 
     if is_signal_applicable(signal):
-        try:
-            success_message = handle(signal)
-        except SentTooManyTimesError:
-            signal.actions.update_status({
-                'state': workflow.VERZENDEN_MISLUKT,
-                'text': 'Verzending van melding naar THOR is mislukt. '
-                        'Melding is te vaak verzonden.',
-            }, signal=signal)
-            raise  # Fail task in Celery.
-        except CreeerZaakLk01Error:
-            signal.actions.update_status({
-                'state': workflow.VERZENDEN_MISLUKT,
-                'text': 'Verzending van melding naar THOR is mislukt.',
-            }, signal=signal)
-            raise  # Fail task in Celery.
-        except VoegZaakDocumentToeLk01Error:
-            # TODO: propagate information on the SIA ID/SEQUENCE NUMBER.
-            signal.actions.update_status({
-                'state': workflow.VERZONDEN,
-                'text': 'Verzending van melding naar THOR is gelukt. '
-                        'Let op: waarschijnlijk is de PDF niet verzonden naar CityControl.'
-            }, signal=signal)
-        else:
-            Signal.actions.update_status({
-                'state': workflow.VERZONDEN,
-                'text': success_message,
-            }, signal=signal)
+        handle(signal)

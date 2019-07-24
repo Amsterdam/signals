@@ -9,6 +9,8 @@ from django.test import TestCase
 from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.sigmax.stuf_protocol.exceptions import SentTooManyTimesError
 from signals.apps.sigmax.stuf_protocol.outgoing import handle
+from signals.apps.signals import workflow
+from signals.apps.signals.models import Status
 from tests.apps.signals.factories import SignalFactory
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class TestHandle(TestCase):
     def setUp(self):
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(status__state=workflow.TE_VERZENDEN)
 
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.MAX_ROUND_TRIPS', 2)
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.send_creeerZaak_Lk01', autospec=True)
@@ -43,8 +45,11 @@ class TestHandle(TestCase):
         success_response.status_code = 200
         patched_send_creeerZaak_Lk01.return_value = success_response
 
-        success_message = handle(self.signal)
+        handle(self.signal)
+        self.signal.refresh_from_db()
+
+        last_status = Status.objects.filter(_signal=self.signal).order_by('id').last()
         self.assertIn(
-            '{}.01'.format(self.signal.sia_id),
-            success_message
+             f'Verzending van melding naar THOR is gelukt onder nummer {self.signal.sia_id}.01.',  # noqa
+             last_status.text,
         )
