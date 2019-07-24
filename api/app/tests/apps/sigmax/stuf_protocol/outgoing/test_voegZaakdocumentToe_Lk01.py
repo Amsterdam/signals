@@ -2,7 +2,6 @@
 Test suite for Sigmax message generation.
 """
 import logging
-import os
 
 from django.test import TestCase
 from lxml import etree
@@ -16,12 +15,6 @@ from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 
 logger = logging.getLogger(__name__)
-
-# REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
-# DATA_DIR = os.path.join(
-#     os.path.dirname(os.path.abspath(__file__)),
-#     'data'
-# )
 
 
 class TestGenerateVoegZaakDocumentToe_LK01(TestCase, XmlTestMixin):
