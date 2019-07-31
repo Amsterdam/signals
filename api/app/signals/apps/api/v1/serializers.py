@@ -27,7 +27,8 @@ from signals.apps.api.v1.fields import (
     PrivateSignalLinksFieldWithArchives,
     PrivateSignalSplitLinksField,
     PublicSignalAttachmentLinksField,
-    PublicSignalLinksField
+    PublicSignalLinksField,
+    UserFilterLinksField
 )
 # facilitate debugging
 from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
@@ -37,6 +38,7 @@ from signals.apps.signals.models import (
     Attachment,
     Category,
     CategoryAssignment,
+    Filter,
     History,
     Location,
     Note,
@@ -811,3 +813,32 @@ class SignalIdListSerializer(HALSerializer):
         fields = (
             'id',
         )
+
+
+class UserFilterSerializer(HALSerializer):
+    serializer_url_field = UserFilterLinksField
+    _display = DisplayField()
+
+    class Meta:
+        model = Filter
+        fields = (
+            '_links',
+            '_display',
+            'name',
+            'created_at',
+            'options',
+        )
+
+    def validate(self, attrs):
+        from signals.apps.api.v1.filters import SignalFilter
+        signal_filter = SignalFilter(data=attrs['options'], queryset=Signal.objects.none())
+        if not signal_filter.is_valid():
+            raise ValidationError(signal_filter.errors)
+
+        return super(UserFilterSerializer, self).validate(attrs)
+
+    def create(self, validated_data):
+        validated_data.update({
+            'created_by': self.context['request'].user.email
+        })
+        return super(UserFilterSerializer, self).create(validated_data=validated_data)

@@ -1,13 +1,11 @@
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet, filters
 
-from signals.apps.api.generics.filters import IntegerFilter, status_choices
-from signals.apps.signals.models import Category
+from signals.apps.api.generics.filters import buurt_choices, status_choices
+from signals.apps.signals.models import STADSDELEN, Category, Priority
 
 
 class SignalFilter(FilterSet):
-    id = IntegerFilter()
-
     created_before = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
     created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
 
@@ -29,6 +27,22 @@ class SignalFilter(FilterSet):
         to_field_name='slug',
         field_name='category_assignment__category__slug',
     )
+
+    priority = filters.ChoiceFilter(field_name='priority__priority',
+                                    choices=Priority.PRIORITY_CHOICES)
+
+    stadsdeel = filters.MultipleChoiceFilter(field_name='location__stadsdeel',
+                                             choices=STADSDELEN)
+    buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code',
+                                              choices=buurt_choices)
+    address_text = filters.CharFilter(field_name='location__address_text',
+                                      lookup_expr='icontains')
+
+    incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
+    incident_date_before = filters.DateFilter(field_name='incident_date_start',
+                                              lookup_expr='date__gte')
+    incident_date_after = filters.DateFilter(field_name='incident_date_start',
+                                             lookup_expr='date__lte')
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):

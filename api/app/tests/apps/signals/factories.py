@@ -16,6 +16,7 @@ from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
     Department,
+    Filter,
     Location,
     Note,
     Priority,
@@ -259,3 +260,10 @@ class StatusMessageTemplateFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = StatusMessageTemplate
+
+
+class FilterFactory(factory.DjangoModelFactory):
+    name = fuzzy.FuzzyText(length=100)
+
+    class Meta:
+        model = Filter

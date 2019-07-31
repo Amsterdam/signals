@@ -187,3 +187,21 @@ class PrivateSignalSplitLinksField(serializers.HyperlinkedIdentityField):
         ])
 
         return result
+
+
+class UserFilterLinksField(serializers.HyperlinkedIdentityField):
+    def to_representation(self, filter):
+        request = self.context.get('request')
+
+        filter_uri = self.reverse('v1:private-signals-list', request=request)
+        url_safe_options = filter.url_safe_options()
+        if url_safe_options:
+            filter_uri = '{}?{}'.format(filter_uri, url_safe_options)
+
+        result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
+            ('self', dict(href=self.get_url(filter, 'v1:user-filters-detail', request, None))),
+            ('sia:filter', dict(href=filter_uri)),
+        ])
+
+        return result
