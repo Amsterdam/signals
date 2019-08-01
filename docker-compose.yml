@@ -87,9 +87,11 @@ services:
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
+      - DWH_MEDIA_ROOT=/dwh_media
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
+      - ./dwh_media:/dwh_media
     command: bash -c "
       python /app/manage.py collectstatic --noinput &&
       uwsgi --py-auto-reload=1"

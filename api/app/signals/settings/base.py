@@ -187,6 +187,8 @@ DWH_SWIFT_TENANT_ID = os.getenv('DWH_SWIFT_TENANT_ID')
 DWH_SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
 DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 
+DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
+
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
