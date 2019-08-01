@@ -269,7 +269,6 @@ class MlPredictCategoryView(APIView):
 
         # Default empty response
         data = {'hoofdrubriek': [], 'subrubriek': []}
-
         response = self._get_prediction_from_mltool(text=text)
         if response.status_code == 200:
             response_data = response.json()
