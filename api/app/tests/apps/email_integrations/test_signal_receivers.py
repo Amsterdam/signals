@@ -30,7 +30,6 @@ class TestSignalReceivers(TestCase):
         mocked_tasks.send_mail_reporter_created.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
-        mocked_tasks.send_mail_handhaving_or_oost.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_toezicht_or_nieuw_west.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_vth_nieuw_west.delay.assert_called_once_with(pk=signal.id)
 
@@ -108,6 +107,5 @@ class TestSignalReceivers(TestCase):
 
         mocked_tasks.send_mail_apptimize.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=signal.id)
-        mocked_tasks.send_mail_handhaving_or_oost.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_toezicht_or_nieuw_west.delay.assert_called_once_with(pk=signal.id)
         mocked_tasks.send_mail_vth_nieuw_west.delay.assert_called_once_with(pk=signal.id)
