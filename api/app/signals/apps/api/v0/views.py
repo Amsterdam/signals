@@ -55,7 +55,6 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
-from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
@@ -221,32 +220,47 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 
 class MlPredictCategoryView(APIView):
-    def _translate_category_url(self, url, request):
-        resolved = resolve(urlparse(url).path)
-        if 'sub_slug' in resolved.kwargs:
-            category = Category.objects.get(slug=resolved.kwargs['sub_slug'],
-                                            parent__slug=resolved.kwargs['slug'])
-        else:
-            category = Category.objects.get(slug=resolved.kwargs['slug'])
 
+    def _slug_from_category_url(self, category_url):
+        resolved = resolve(urlparse(category_url).path)
+        if resolved and resolved.kwargs:
+            if 'sub_slug' in resolved.kwargs:
+                return resolved.kwargs['sub_slug']
+            elif 'slug' in resolved.kwargs:
+                return resolved.kwargs['slug']
+
+    def _get_category(self, category_slug):
         try:
-            category_translation = CategoryTranslation.objects.get(old_category=category)
-            category = category_translation.new_category
-        except CategoryTranslation.DoesNotExist:
-            pass
-
-        if category.is_child():
-            kwargs = {'slug': category.parent.slug, 'sub_slug': category.slug}
+            category = Category.objects.get(slug=category_slug)
+        except Category.DoesNotExist:
+            return
         else:
-            kwargs = {'slug': category.slug}
+            if category.is_translated():
+                return category.translated_to()
+            return category
 
-        return reverse('v1:category-detail', kwargs=kwargs, request=request)
+    def _translate_category_url(self, category_url):
+        category_slug = self._slug_from_category_url(category_url)
+        category = self._get_category(category_slug)
+        if category and category.is_child():
+            return reverse(
+                'v1:category-detail',
+                kwargs={'slug': category.parent.slug, 'sub_slug': category.slug},
+                request=self.request
+            )
+        elif category:
+            return reverse(
+                'v1:category-detail',
+                kwargs={'slug': category.slug},
+                request=self.request
+            )
+        return category_url
 
-    def _ml_predict(self, text):
-        endpoint = '{}/predict'.format(settings.ML_TOOL_ENDPOINT)
-        response = requests.post(endpoint, data=json.dumps({'text': text}))
-        if response.status_code == 200:
-            return response.json()
+    def _get_prediction_from_mltool(self, text):
+        return requests.post(
+            '{}/predict'.format(settings.ML_TOOL_ENDPOINT),
+            data=json.dumps({'text': text})
+        )
 
     def post(self, request, *args, **kwargs):
         if 'text' not in request.data:
@@ -256,21 +270,11 @@ class MlPredictCategoryView(APIView):
         # Default empty response
         data = {'hoofdrubriek': [], 'subrubriek': []}
 
-        response_json = self._ml_predict(text=text)
-        if response_json:
-
-            main_category, main_score = (response_json['hoofdrubriek'][0][0],
-                                         response_json['hoofdrubriek'][1][0])
-            main_url = self._translate_category_url(main_category, request)
-
-            sub_category, sub_score = (response_json['subrubriek'][0][0],
-                                       response_json['subrubriek'][1][0])
-            sub_url = self._translate_category_url(sub_category, request)
-
-            data['hoofdrubriek'].append([main_url])
-            data['hoofdrubriek'].append([main_score])
-
-            data['subrubriek'].append([sub_url])
-            data['subrubriek'].append([sub_score])
+        response = self._get_prediction_from_mltool(text=text)
+        if response.status_code == 200:
+            response_data = response.json()
+            for key in data.keys():
+                data[key].append([self._translate_category_url(response_data[key][0][0])])
+                data[key].append([response_data[key][1][0]])
 
         return Response(data)

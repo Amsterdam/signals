@@ -16,7 +16,8 @@ from signals.apps.signals.models.mixins import CreatedUpdatedModel
 class CategoryTranslation(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     text = models.CharField(max_length=10000, null=True, blank=True)
-    old_category = models.ForeignKey(Category, unique=True, on_delete=DO_NOTHING, related_name='+')
+    old_category = models.ForeignKey(Category, unique=True, on_delete=DO_NOTHING,
+                                     related_name='translations')
     new_category = models.ForeignKey(Category, on_delete=DO_NOTHING, related_name='+')
 
     def clean(self):

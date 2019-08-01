@@ -83,3 +83,15 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def is_translated(self):
+        return all([not self.is_active,
+                    self.translations.filter(new_category__is_active=True).exists()])
+
+    def translated_to(self):
+        if self.is_translated():
+            return self.translations.filter(
+                new_category__is_active=True
+            ).order_by(
+                '-created_at'
+            ).first().new_category

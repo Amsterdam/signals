@@ -22,7 +22,7 @@ TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
 
-ML_TOOL_ENDPOINT = 'https://acc.api.data.amsterdam.nl/signals_mltool'
+# ML_TOOL_ENDPOINT = 'https://acc.api.data.amsterdam.nl/signals_mltool'
 
 try:
     from signals.settings.local import *  # noqa
