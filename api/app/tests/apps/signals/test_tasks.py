@@ -1,26 +1,14 @@
-from unittest import mock
-
 from django.contrib.gis.geos import Point
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from django.utils import timezone
 
-from signals.apps.signals import tasks, workflow
+from signals.apps.signals import workflow
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.location import STADSDEEL_CENTRUM
 from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.signal import Signal
 from tests.apps.signals import factories
-
-
-class TestTaskSaveCSVFilesDatawarehouse(TestCase):
-
-    @mock.patch('signals.apps.signals.tasks.save_csv_files_datawarehouse')
-    def test_task_save_csv_files_datawarehouse(
-            self, mocked_save_csv_files_datawarehouse):
-        tasks.task_save_csv_files_datawarehouse()
-
-        mocked_save_csv_files_datawarehouse.assert_called_once()
 
 
 class TestTaskTranslateCategory(TransactionTestCase):

@@ -11,8 +11,7 @@ import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 
-from signals.apps.signals.models import Signal
-from signals.utils import datawarehouse
+from signals.apps.reporting.csv import datawarehouse
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
 
@@ -28,7 +27,7 @@ class TestDatawarehouse(testcases.TestCase):
         shutil.rmtree(self.file_backend_tmp_dir)
 
     @mock.patch.dict('os.environ', {}, clear=True)
-    @mock.patch('signals.utils.datawarehouse._get_storage_backend')
+    @mock.patch('signals.apps.reporting.csv.datawarehouse._get_storage_backend')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
         # In this test case we don't want to make usage of the remote Object
@@ -69,7 +68,8 @@ class TestDatawarehouse(testcases.TestCase):
         DWH_SWIFT_REGION_NAME='dwh_region_name',
         DWH_SWIFT_CONTAINER_NAME='dwh_container_name'
     )
-    @mock.patch('signals.utils.datawarehouse.SwiftStorage', autospec=True)
+    @mock.patch.dict(os.environ, {'SWIFT_ENABLED': 'true'})
+    @mock.patch('signals.apps.reporting.csv.datawarehouse.SwiftStorage', autospec=True)
     def test_get_storage_backend(self, mocked_swift_storage):
         mocked_swift_storage_instance = mock.Mock()
         mocked_swift_storage.return_value = mocked_swift_storage_instance
@@ -214,18 +214,6 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['updated_at'], str(status.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
                 self.assertEqual(row['state'], status.state)
-
-    def test_batching(self):
-        n_signals = 2500
-        for i in range(n_signals):
-            SignalFactory.create()
-
-        self.assertEqual(Signal.objects.count(), n_signals)
-
-        csv_file = datawarehouse._create_signals_csv(self.csv_tmp_dir)
-        with open(csv_file) as opened_csv_file:
-            reader = csv.DictReader(opened_csv_file)
-            self.assertEqual(len(list(reader)), n_signals)
 
 
 class TestFeedbackHandling(testcases.TestCase):
