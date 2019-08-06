@@ -1,0 +1,45 @@
+{
+    "text": "test1",
+    "text_extra": "test_extra",
+    "status": {
+        "text": "24",
+        "user": "bart@b.nl",
+        "target_api": "sigma",
+        "state": "m",
+        "extern": false,
+        "extra_properties": {}
+    },
+    "location": {
+        "geometrie": {
+            "type": "Point",
+            "coordinates": [
+                4.898466,
+                52.361585
+            ]
+        },
+        "stadsdeel": "A",
+        "buurt_code": "aaa1",
+        "address": {},
+        "extra_properties": {}
+    },
+    "category": {
+        "main": "Afval",
+        "sub": "Veeg- / zwerfvuil"
+    },
+    "reporter": {
+        "id": 9,
+        "email": "a@b.nl",
+        "phone": "0123456789",
+        "remove_at": null,
+        "created_at": "2018-06-18T13:30:47.766420Z",
+        "updated_at": "2018-06-18T13:30:47.795622Z",
+        "extra_properties": {}
+    },
+    "created_at": "2018-06-18T13:30:47.604472Z",
+    "updated_at": null,
+    "incident_date_start": "2018-06-18T13:30:47.604438Z",
+    "incident_date_end": null,
+    "operational_date": null,
+    "image": null,
+    "upload": null
+}

@@ -7,7 +7,6 @@ from unittest import mock
 from urllib.parse import urlparse
 
 from django.core.exceptions import ValidationError
-from rest_framework.reverse import reverse
 
 from signals.apps.signals import workflow
 from signals.apps.signals.managers import (
@@ -56,11 +55,8 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             handling=Category.HANDLING_REST,
         )
 
-        self.link_test_cat_sub = reverse(
-            'v1:category-detail', kwargs={
-                'slug': self.test_cat_main.slug,
-                'sub_slug': self.test_cat_sub.slug,
-            }
+        self.link_test_cat_sub = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+            self.test_cat_sub.parent.slug, self.test_cat_sub.slug
         )
 
         # Payload for signal PATCH requests

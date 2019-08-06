@@ -418,7 +418,7 @@ class _NestedAttachmentModelSerializer(serializers.ModelSerializer):
         )
 
 
-class AddressValidationMixin():
+class AddressValidationMixin:
     def validate_location(self, location_data):
         """Validate location data used in creation and update of Signal instances"""
         # Validate address, but only if it is present in input. SIA must also

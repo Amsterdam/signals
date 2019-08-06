@@ -153,10 +153,10 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 class TestStandardAnswers(SignalsBaseApiTestCase):
     def setUp(self):
         StandardAnswer.objects.all().delete()
-        StandardAnswerFactory(is_visible=True, is_satisfied=True)
-        StandardAnswerFactory(is_visible=True, is_satisfied=False)
-        StandardAnswerFactory(is_visible=False, is_satisfied=True)
-        StandardAnswerFactory(is_visible=False, is_satisfied=False)
+        self.standard_answer_1 = StandardAnswerFactory(is_visible=True, is_satisfied=True)
+        self.standard_answer_2 = StandardAnswerFactory(is_visible=True, is_satisfied=False)
+        self.standard_answer_3 = StandardAnswerFactory(is_visible=False, is_satisfied=True)
+        self.standard_answer_4 = StandardAnswerFactory(is_visible=False, is_satisfied=False)
 
     def test_setup(self):
         response = self.client.get('/standard_answers/')
@@ -166,6 +166,11 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
 
     def test_factories(self):
         self.assertEqual(StandardAnswer.objects.count(), 4)
+
+        self.assertIn('POSITIEF ', str(self.standard_answer_1))
+        self.assertIn('NEGATIEF ', str(self.standard_answer_2))
+        self.assertIn('POSITIEF ', str(self.standard_answer_3))
+        self.assertIn('NEGATIEF ', str(self.standard_answer_4))
 
 
 class TestUtils(TestCase):

@@ -65,7 +65,7 @@ signal_router_v1.urls.append(
     path(
         'private/terms/categories/<str:slug>/status-message-templates',
         v1_private_views.StatusMessageTemplatesViewSet.as_view({
-            'get': 'retrieve', 'post': 'update'
+            'get': 'retrieve', 'post': 'create'
         }),
         name='private-status-message-templates-parent'
     )

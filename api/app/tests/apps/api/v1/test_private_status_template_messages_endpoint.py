@@ -1,5 +1,4 @@
 from django.contrib.auth.models import Permission
-from rest_framework.reverse import reverse
 
 from tests.apps.signals.factories import CategoryFactory, StatusMessageTemplateFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
@@ -17,11 +16,12 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.subcategory = CategoryFactory.create()
-        self.link_cat_sub_templates = reverse(
-            'v1:private-status-message-templates-child', kwargs={
-                'slug': self.subcategory.parent.slug,
-                'sub_slug': self.subcategory.slug,
-            }
+        self.link_cat_sub_templates = '/signals/v1/private/terms/categories/{}/sub_categories/{}/status-message-templates'.format(  # noqa
+            self.subcategory.parent.slug, self.subcategory.slug
+        )
+
+        self.link_cat_parent_templates = '/signals/v1/private/terms/categories/{}/status-message-templates'.format(  # noqa
+            self.subcategory.parent.slug
         )
 
     def test_get_no_status_message_templates(self):
@@ -118,3 +118,23 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(1, len(response_data))
         self.assertEqual('o', response_data[0]['state'])
         self.assertEqual(1, len(response_data[0]['templates']))
+
+    def test_get_no_status_message_templates_parent(self):
+        response = self.client.get(self.link_cat_parent_templates)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json()))
+
+    def test_get_status_message_templates_parent(self):
+        templates = StatusMessageTemplateFactory.create_batch(
+            5,
+            category=self.subcategory.parent,
+            state='m'
+        )
+
+        response = self.client.get(self.link_cat_parent_templates)
+        self.assertEqual(200, response.status_code)
+
+        response_json = response.json()
+        self.assertEqual(1, len(response_json))
+        self.assertEqual(len(templates), len(response_json[0]['templates']))
