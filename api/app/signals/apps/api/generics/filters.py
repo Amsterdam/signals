@@ -59,6 +59,10 @@ class IntegerFilter(filters.Filter):
 
 
 class SignalFilter(FilterSet):
+    """
+    !!! This is the filter used in the V0 version of the API. V0 will be deprecated soon !!!
+    - V1 filters can be found in signals/apps/api/v1/filters.py
+    """
     id = IntegerFilter()
     in_bbox = filters.CharFilter(method='in_bbox_filter', label='bbox')
     geo = filters.CharFilter(method="locatie_filter", label='x,y,r')
