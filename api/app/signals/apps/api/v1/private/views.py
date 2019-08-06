@@ -3,7 +3,6 @@ Views that are used exclusively by the V1 API
 """
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
-from django.db.models import Q
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,7 +25,14 @@ from signals.apps.api.v1.serializers import (
     StateStatusMessageTemplateSerializer,
     UserFilterSerializer
 )
-from signals.apps.signals.models import Attachment, Category, History, Signal, StatusMessageTemplate
+from signals.apps.signals.models import (
+    Attachment,
+    Category,
+    Filter,
+    History,
+    Signal,
+    StatusMessageTemplate
+)
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -213,7 +219,4 @@ class UserFilterViewSet(mixins.RetrieveModelMixin,
     serializer_class = UserFilterSerializer
 
     def get_queryset(self):
-        from signals.apps.signals.models import Filter
-        return Filter.objects.filter(
-            Q(created_by=self.request.user.username) | Q(created_by__isnull=True)
-        )
+        return Filter.objects.filter(created_by=self.request.user.username)

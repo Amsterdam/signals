@@ -5,7 +5,7 @@ from tests.apps.signals.factories import FilterFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
-class TestMlPredictCategory(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     test_host = 'http://testserver'
     endpoint = '/signals/v1/user/filters/'
 
