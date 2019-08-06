@@ -23,15 +23,15 @@ from signals.apps.api.v1.serializers import (
     PrivateSplitSignalSerializer,
     SignalIdListSerializer,
     StateStatusMessageTemplateSerializer,
-    UserFilterSerializer
+    StoredSignalFilterSerializer
 )
 from signals.apps.signals.models import (
     Attachment,
     Category,
-    Filter,
     History,
     Signal,
-    StatusMessageTemplate
+    StatusMessageTemplate,
+    StoredSignalFilter
 )
 from signals.auth.backend import JWTAuthBackend
 
@@ -205,18 +205,14 @@ class StatusMessageTemplatesViewSet(mixins.RetrieveModelMixin, mixins.CreateMode
         return self.retrieve(request, *args, **kwargs)
 
 
-class UserFilterViewSet(mixins.RetrieveModelMixin,
-                        mixins.ListModelMixin,
-                        mixins.CreateModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+class StoredSignalFilterViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                                mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                                mixins.DestroyModelMixin, viewsets.GenericViewSet):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
     pagination_class = HALPagination
-
-    serializer_class = UserFilterSerializer
+    serializer_class = StoredSignalFilterSerializer
 
     def get_queryset(self):
-        return Filter.objects.filter(created_by=self.request.user.username)
+        return StoredSignalFilter.objects.filter(created_by=self.request.user.username)

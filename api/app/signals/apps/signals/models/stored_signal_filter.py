@@ -9,7 +9,7 @@ from signals.apps.signals.models.mixins import CreatedUpdatedModel
 logger = logging.getLogger(__name__)
 
 
-class Filter(CreatedUpdatedModel):
+class StoredSignalFilter(CreatedUpdatedModel):
     name = models.CharField(max_length=10000)
     created_by = models.EmailField(null=True, blank=True)
     options = JSONField(default=dict)

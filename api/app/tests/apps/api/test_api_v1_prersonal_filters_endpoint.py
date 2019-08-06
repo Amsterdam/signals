@@ -1,13 +1,13 @@
 import json
 
-from signals.apps.signals.models import Filter
-from tests.apps.signals.factories import FilterFactory
+from signals.apps.signals.models import StoredSignalFilter
+from tests.apps.signals.factories import StoredSignalFilterFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
-class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     test_host = 'http://testserver'
-    endpoint = '/signals/v1/user/filters/'
+    endpoint = '/signals/v1/private/me/filters/'
 
     def setUp(self):
         # Forcing authentication
@@ -22,8 +22,8 @@ class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(0, len(data['results']))
 
     def test_no_filters_for_current_user(self):
-        FilterFactory.create_batch(5, created_by=self.user)
-        self.assertEqual(5, Filter.objects.count())
+        StoredSignalFilterFactory.create_batch(5, created_by=self.user)
+        self.assertEqual(5, StoredSignalFilter.objects.count())
 
         response = self.client.get(self.endpoint)
         self.assertEqual(200, response.status_code)
@@ -33,8 +33,8 @@ class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(0, len(data['results']))
 
     def test_filters_for_current_user(self):
-        FilterFactory.create_batch(5, created_by=self.sia_read_write_user)
-        self.assertEqual(5, Filter.objects.count())
+        StoredSignalFilterFactory.create_batch(5, created_by=self.sia_read_write_user)
+        self.assertEqual(5, StoredSignalFilter.objects.count())
 
         response = self.client.get(self.endpoint)
         self.assertEqual(response.status_code, 200)
@@ -64,7 +64,9 @@ class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('i', response_data['options']['status'])
 
     def test_update_filter(self):
-        sia_read_write_user_filter = FilterFactory.create(created_by=self.sia_read_write_user)
+        sia_read_write_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_write_user
+        )
         uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
 
         response = self.client.get(uri)
@@ -89,28 +91,30 @@ class TestPersonalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('i', response_data['options']['status'])
 
     def test_delete_filter(self):
-        sia_read_write_user_filter = FilterFactory.create(created_by=self.sia_read_write_user)
+        sia_read_write_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_write_user
+        )
 
         uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
         response = self.client.delete(uri)
         self.assertEqual(204, response.status_code)
 
     def test_get_not_my_filter(self):
-        user_filter = FilterFactory.create(created_by=self.user)
+        user_filter = StoredSignalFilterFactory.create(created_by=self.user)
 
         uri = '{}{}'.format(self.endpoint, user_filter.id)
         response = self.client.get(uri)
         self.assertEqual(404, response.status_code)
 
     def test_update_not_my_filter(self):
-        user_filter = FilterFactory.create(created_by=self.user)
+        user_filter = StoredSignalFilterFactory.create(created_by=self.user)
 
         uri = '{}{}'.format(self.endpoint, user_filter.id)
         response = self.client.put(uri, data={'name': 'this_is_not_allowed_for_the_current_user'})
         self.assertEqual(404, response.status_code)
 
     def test_delete_not_my_filter(self):
-        user_filter = FilterFactory.create(created_by=self.user)
+        user_filter = StoredSignalFilterFactory.create(created_by=self.user)
 
         uri = '{}{}'.format(self.endpoint, user_filter.id)
         response = self.client.delete(uri)

@@ -3,7 +3,10 @@ from urllib.parse import urlparse
 from django.urls import include, path, resolve
 
 from signals.apps.api.v1.private import views as v1_private_views
-from signals.apps.api.v1.private.views import SignalCategoryRemovedAfterViewSet, UserFilterViewSet
+from signals.apps.api.v1.private.views import (
+    SignalCategoryRemovedAfterViewSet,
+    StoredSignalFilterViewSet
+)
 from signals.apps.api.v1.public import views as v1_public_views
 from signals.apps.api.v1.routers import SignalsRouterVersion1
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
@@ -43,9 +46,9 @@ signal_router_v1.register(
 )
 
 signal_router_v1.register(
-    r'user/filters',
-    UserFilterViewSet,
-    basename='user-filters'
+    r'private/me/filters',
+    StoredSignalFilterViewSet,
+    basename='stored-signal-filters'
 )
 
 # Status message templates are only editable via the private API

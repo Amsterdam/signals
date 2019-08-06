@@ -16,14 +16,14 @@ from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
     Department,
-    Filter,
     Location,
     Note,
     Priority,
     Reporter,
     Signal,
     Status,
-    StatusMessageTemplate
+    StatusMessageTemplate,
+    StoredSignalFilter
 )
 from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -262,8 +262,8 @@ class StatusMessageTemplateFactory(factory.DjangoModelFactory):
         model = StatusMessageTemplate
 
 
-class FilterFactory(factory.DjangoModelFactory):
+class StoredSignalFilterFactory(factory.DjangoModelFactory):
     name = fuzzy.FuzzyText(length=100)
 
     class Meta:
-        model = Filter
+        model = StoredSignalFilter
