@@ -9,7 +9,6 @@ SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
 
 
 class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
-    """Test whether the endpoints in V1 API """
     endpoints = [
         '/signals/v1/private/signals/',
     ]
