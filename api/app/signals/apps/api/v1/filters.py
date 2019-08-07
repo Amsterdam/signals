@@ -6,6 +6,8 @@ from signals.apps.signals.models import STADSDELEN, Category, Priority
 
 
 class SignalFilter(FilterSet):
+    id = filters.NumberFilter()
+
     created_before = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
     created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
 
