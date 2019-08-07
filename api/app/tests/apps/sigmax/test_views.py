@@ -1,22 +1,21 @@
+"""
+Test reception of StUF SOAP requests.
+"""
+
 from unittest import mock
 
-import lxml
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.test import TestCase
 from lxml import etree
 
-from signals.apps.sigmax.views import (
-    ACTUALISEER_ZAAK_STATUS_SOAPACTION,
-    _parse_actualiseerZaakstatus_Lk01,
-    _parse_zaak_identificatie
+from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 import (
+    ACTUALISEER_ZAAK_STATUS
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
 
-REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
 SOAP_ENDPOINT = '/signals/sigmax/soap'
 
 
@@ -59,39 +58,39 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
-    @mock.patch('signals.apps.sigmax.views._handle_actualiseerZaakstatus_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.views._handle_unknown_soap_action', autospec=True)
-    def test_soap_action_routing(self, handle_unknown, handle_known):
+    @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.views.handle_unsupported_soap_action', autospec=True)
+    def test_soap_action_routing(self, handle_unsupported, handle_known):
         """Check that correct function is called based on SOAPAction header"""
-        handle_unknown.return_value = HttpResponse('Required by view function')
+        handle_unsupported.return_value = HttpResponse('Required by view function')
         handle_known.return_value = HttpResponse('Required by view function')
 
         # authenticate
         self.client.force_authenticate(user=self.superuser)
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
-        self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+        self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
                          content_type='text/xml')
         handle_known.assert_called_once()
-        handle_unknown.assert_not_called()
+        handle_unsupported.assert_not_called()
         handle_known.reset_mock()
-        handle_unknown.reset_mock()
+        handle_unsupported.reset_mock()
 
-        # check that something else is send to _handle_unknown_soap_action
-        wrong_action = 'http://example.com/unknown'
+        # check that something else is send to handle_unsupported_soap_action
+        wrong_action = 'http://example.com/unsupported'
         self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>', HTTP_SOAPACTION=wrong_action,
                          content_type='text/xml')
 
         handle_known.assert_not_called()
-        handle_unknown.assert_called_once()
+        handle_unsupported.assert_called_once()
 
     def test_wrong_soapaction_results_in_fo03(self):
-        """Check that we send a StUF Fo03 when we receive an unknown SOAPAction"""
+        """Check that we send a StUF Fo03 when we receive an unsupported SOAPAction"""
         # authenticate
         self.client.force_authenticate(user=self.superuser)
 
         # Check that wrong action is replied to with XML, StUF Fo03, status 500, utf-8 encoding.
-        wrong_action = 'http://example.com/unknown'
+        wrong_action = 'http://example.com/unsupported'
         response = self.client.post(SOAP_ENDPOINT, data='<a>DOES NOT MATTER</a>',
                                     HTTP_SOAPACTION=wrong_action, content_type='text/xml')
 
@@ -122,7 +121,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -145,7 +144,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
 
         # call our SOAP endpoint
         response = self.client.post(
-            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            SOAP_ENDPOINT, data=incoming_msg, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -177,7 +176,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -224,7 +223,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -270,7 +269,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         response = self.client.post(
             SOAP_ENDPOINT,
             data=incoming_msg,
-            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS_SOAPACTION,
+            HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
             content_type='text/xml',
         )
 
@@ -291,87 +290,3 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         })
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD_EXTERN)
-
-
-class TestProcessTestActualiseerZaakStatus(TestCase):
-    def test_reject_not_xml(self):
-        test_msg = b'THIS IS NOT XML'
-        with self.assertRaises(lxml.etree.XMLSyntaxError):
-            _parse_actualiseerZaakstatus_Lk01(test_msg)
-
-    def test_extract_properties(self):
-        signal = SignalFactoryValidLocation()
-
-        test_context = {
-            'signal': signal,
-            'resultaat_toelichting': 'Het probleem is opgelost',
-            'resultaat_datum': '2018101111485276',
-            'sequence_number': 20,
-        }
-        test_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', test_context)
-        msg_content = _parse_actualiseerZaakstatus_Lk01(test_msg.encode('utf8'))
-
-        # test uses knowledge of test XML message content
-        self.assertEqual(msg_content['zaak_id'], str(signal.sia_id) + '.20')  # TODO clean-up
-        self.assertEqual(msg_content['datum_afgehandeld'], test_context['resultaat_datum'])
-        self.assertEqual(msg_content['resultaat'], 'Er is gehandhaafd')
-        self.assertEqual(msg_content['reden'], test_context['resultaat_toelichting'])
-
-
-class TestParseZaakIdentificatie(TestCase):
-    def test_correct_zaak_identificatie(self):
-        # Test backwards compatibility
-        self.assertEqual(_parse_zaak_identificatie('SIA-111'), (111, None))
-
-        # Test new style
-        self.assertEqual(_parse_zaak_identificatie('SIA-123.01'), (123, 1))
-        self.assertEqual(_parse_zaak_identificatie('SIA-99.05'), (99, 5))
-
-        # Accept extra white space before and/or after SIA id and sequence number
-        self.assertEqual(_parse_zaak_identificatie('SIA-99.05  '), (99, 5))
-        self.assertEqual(_parse_zaak_identificatie('  SIA-99.05  '), (99, 5))
-        self.assertEqual(_parse_zaak_identificatie('  SIA-99.05'), (99, 5))
-
-    def test_wrong_zaak_identificatie(self):
-        should_fail = [
-            # Do not accept 0 padding in SIA id
-            'SIA-0',
-            'SIA-0.01',
-            'SIA-01',
-            'SIA-01.01',
-
-            # Do not accept 0 as a sequence number
-            'SIA-1.00',
-
-            # Too high sequence number (max two digits)
-            'SIA-1.100',
-
-            # SIA id must be present
-            'SIA-.01',
-
-            # Do not accept whitespace inside the SIA id and sequence number
-            'SIA- 123',
-            'SIA- 123.01',
-            'SIA-123. 01',
-            'SIA-123 .01',
-
-            # Miscellaneous misspellings
-            'SII-111',
-            'SIA-99.05.02',
-            'SIA-99.05 .02',
-            'SIA-99.O5',
-        ]
-        for wrong_zaak_identificatie in should_fail:
-            with self.assertRaises(ValueError):
-                _parse_zaak_identificatie(wrong_zaak_identificatie)
-
-    def test_empty_zaak_identificatie(self):
-        with self.assertRaises(ValueError):
-            _parse_zaak_identificatie('')
-
-        with self.assertRaises(ValueError):
-            _parse_zaak_identificatie('SIA-')
-
-    def test_incorrect_type(self):
-        with self.assertRaises(ValueError):
-            _parse_zaak_identificatie(None)
