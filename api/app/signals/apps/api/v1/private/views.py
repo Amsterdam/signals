@@ -12,6 +12,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from signals.apps.api import mixins
+from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView
 from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter, SignalFilter
@@ -63,8 +64,32 @@ class PrivateSignalViewSet(DatapuntViewSet,
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filterset_class = SignalFilter
+
+    ordering = ('-created_at', )
+    ordering_fields = (
+        'id',
+        'created_at',
+        'updated_at',
+        'stadsdeel',
+        'sub_category',
+        'main_category',
+        'status',
+        'priority',
+        'address',
+    )
+    ordering_field_mappings = {
+        'id': 'id',
+        'created_at': 'created_at',
+        'updated_at': 'updated_at',
+        'stadsdeel': 'location__stadsdeel',
+        'sub_category': 'category_assignment__category__slug',
+        'main_category': 'category_assignment__category__parent__slug',
+        'status': 'status__state',
+        'priority': 'priority__priority',
+        'address': 'location__address_text',
+    }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
