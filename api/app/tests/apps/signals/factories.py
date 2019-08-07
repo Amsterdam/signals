@@ -22,7 +22,8 @@ from signals.apps.signals.models import (
     Reporter,
     Signal,
     Status,
-    StatusMessageTemplate
+    StatusMessageTemplate,
+    StoredSignalFilter
 )
 from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -259,3 +260,10 @@ class StatusMessageTemplateFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = StatusMessageTemplate
+
+
+class StoredSignalFilterFactory(factory.DjangoModelFactory):
+    name = fuzzy.FuzzyText(length=100)
+
+    class Meta:
+        model = StoredSignalFilter

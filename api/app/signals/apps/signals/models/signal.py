@@ -55,7 +55,7 @@ class Signal(CreatedUpdatedModel):
     expire_date = models.DateTimeField(null=True)
 
     # file will be saved to MEDIA_ROOT/uploads/2015/01/30
-    upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)
+    upload = ArrayField(models.FileField(upload_to='uploads/%Y/%m/%d/'), null=True)  # TODO: remove
 
     extra_properties = JSONField(null=True)
 

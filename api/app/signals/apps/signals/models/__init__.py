@@ -24,6 +24,7 @@ from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.status import Status
 from signals.apps.signals.models.status_message_template import StatusMessageTemplate
+from signals.apps.signals.models.stored_signal_filter import StoredSignalFilter
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
@@ -51,4 +52,5 @@ __all__ = [
     'Signal',
     'Status',
     'StatusMessageTemplate',
+    'StoredSignalFilter',
 ]

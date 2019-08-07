@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'signals.apps.sigmax',
     'signals.apps.dashboards',
     'signals.apps.feedback',
+    'signals.apps.reporting',
 
     # Third party
     'corsheaders',
@@ -186,6 +187,8 @@ DWH_SWIFT_TENANT_ID = os.getenv('DWH_SWIFT_TENANT_ID')
 DWH_SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
 DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
 
+DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
+
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
@@ -260,8 +263,6 @@ EMAIL_FLEX_HORECA_WEEKDAYS = os.getenv(
     'EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7')  # friday, saterday, sunday
 EMAIL_FLEX_HORECA_END_TIME = os.getenv(
     'EMAIL_FLEX_HORECA_END_TIME', '04:00')  # 04:00 o'clock
-EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_HANDHAVING_OR_OOST_INTEGRATION_ADDRESS', None)
 EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
     'EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None)
 EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(

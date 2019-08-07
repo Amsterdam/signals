@@ -2,7 +2,6 @@ from signals.apps.email_integrations.integrations import (
     apptimize,
     core,
     flex_horeca,
-    handhaving_or_oost,
     toezicht_or_nieuw_west,
     vth_nieuw_west
 )
@@ -54,12 +53,6 @@ def send_mail_apptimize(pk):
 def send_mail_flex_horeca(pk):
     signal = Signal.objects.get(pk=pk)
     flex_horeca.send_mail(signal)
-
-
-@app.task
-def send_mail_handhaving_or_oost(pk):
-    signal = Signal.objects.get(pk=pk)
-    handhaving_or_oost.send_mail(signal)
 
 
 @app.task

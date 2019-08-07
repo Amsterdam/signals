@@ -90,14 +90,6 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals({})
         self.assertEqual(len(self.signals), len(result_ids))
 
-    def test_filter_id(self):
-        """ Filtering on id should return one signal """
-        id = self.signals[0].id
-        result_ids = self._request_filter_signals({"id": id})
-
-        self.assertEqual(1, len(result_ids))
-        self.assertListEqual([id], result_ids)
-
     def test_filter_updated_after(self):
         """ Test updated_after """
         now = datetime.now()

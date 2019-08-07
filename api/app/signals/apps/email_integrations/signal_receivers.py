@@ -16,7 +16,6 @@ def create_initial_handler(sender, signal_obj, **kwargs):
     tasks.send_mail_reporter_created.delay(pk=signal_obj.id)
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
     tasks.send_mail_flex_horeca.delay(pk=signal_obj.id)
-    tasks.send_mail_handhaving_or_oost.delay(pk=signal_obj.id)
     tasks.send_mail_toezicht_or_nieuw_west.delay(pk=signal_obj.id)
     tasks.send_mail_vth_nieuw_west.delay(pk=signal_obj.id)
 
@@ -28,7 +27,6 @@ def create_child_handler(sender, signal_obj, **kwargs):
     # get an email when a child signal is created).
     tasks.send_mail_apptimize.delay(pk=signal_obj.id)
     tasks.send_mail_flex_horeca.delay(pk=signal_obj.id)
-    tasks.send_mail_handhaving_or_oost.delay(pk=signal_obj.id)
     tasks.send_mail_toezicht_or_nieuw_west.delay(pk=signal_obj.id)
     tasks.send_mail_vth_nieuw_west.delay(pk=signal_obj.id)
 

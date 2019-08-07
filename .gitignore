@@ -182,4 +182,7 @@ Global/NetBeans.gitignore
 .mypy_cache/
 notes/
 
+# bind mount should be ignored
+dwh_media/
+
 *.pid
