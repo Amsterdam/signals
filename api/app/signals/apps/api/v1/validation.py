@@ -1,6 +1,7 @@
 from django.conf import settings
 from requests import get
 from requests.exceptions import RequestException
+from rest_framework.exceptions import ValidationError
 
 
 class AddressValidationUnavailableException(Exception):
@@ -75,3 +76,36 @@ class AddressValidation:
             result[bag_key] = address[atlas_key]
 
         return result
+
+
+class AddressValidationMixin():
+    def validate_location(self, location_data):
+        """Validate location data used in creation and update of Signal instances"""
+        # Validate address, but only if it is present in input. SIA must also
+        # accept location data without address but with coordinates.
+        if 'geometrie' not in location_data:
+            raise ValidationError('Coordinate data must be present')
+        if 'address' in location_data and location_data['address']:
+            try:
+                address_validation = AddressValidation()
+                validated_address = address_validation.validate_address_dict(
+                    location_data["address"])
+
+                # Set suggested address from AddressValidation as address and save original address
+                # in extra_properties, to correct possible spelling mistakes in original address.
+                if ("extra_properties" not in location_data or
+                        location_data['extra_properties'] is None):
+                    location_data["extra_properties"] = {}
+
+                location_data["extra_properties"]["original_address"] = location_data["address"]
+                location_data["address"] = validated_address
+                location_data["bag_validated"] = True
+
+            except AddressValidationUnavailableException:
+                # Ignore it when the address validation is unavailable. Just save the unvalidated
+                # location.
+                pass
+            except NoResultsException:
+                raise ValidationError({"location": "Niet-bestaand adres."})
+
+        return location_data

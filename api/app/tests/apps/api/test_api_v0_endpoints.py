@@ -239,7 +239,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             "Reporter is missing _signal field?"
         )
 
-    @patch("signals.apps.api.address.validation.AddressValidation.validate_address_dict")
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict")
     def test_post_signal_with_bag_validated(self, validate_address_dict):
         """ Tests that the bag_validated field cannot be set manually and that the address
             validation is NOT called on the v0 endpoint """
