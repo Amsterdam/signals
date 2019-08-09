@@ -1,7 +1,8 @@
-from django.conf import settings
 from requests import get
 from requests.exceptions import RequestException
 from rest_framework.exceptions import ValidationError
+
+from signals.apps.api.app_settings import SIGNALS_API_ATLAS_SEARCH_URL
 
 
 class AddressValidationUnavailableException(Exception):
@@ -13,7 +14,7 @@ class NoResultsException(Exception):
 
 
 class AddressValidation:
-    ATLAS_SEARCH_URL = settings.DATAPUNT_API_URL + 'atlas/search'
+    ATLAS_SEARCH_URL = SIGNALS_API_ATLAS_SEARCH_URL
 
     def validate_address_string(self, address: str) -> dict:
         results = self._search_atlas(address)
