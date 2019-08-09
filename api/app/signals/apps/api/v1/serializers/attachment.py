@@ -2,6 +2,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
 from signals.apps.api.v1.fields import (
     PrivateSignalAttachmentLinksField,
     PublicSignalAttachmentLinksField
@@ -45,8 +46,9 @@ class SignalAttachmentSerializer(HALSerializer):
         return attachment
 
     def validate_file(self, file):
-        if file.size > 8388608:  # 8MB = 8*1024*1024
-            raise ValidationError("Bestand mag maximaal 8Mb groot zijn.")
+        if file.size > SIGNALS_API_MAX_UPLOAD_SIZE:
+            msg = f'Bestand mag maximaal {SIGNALS_API_MAX_UPLOAD_SIZE} bytes groot zijn.'
+            raise ValidationError(msg)
         return file
 
 

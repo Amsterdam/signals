@@ -1,3 +1,6 @@
+"""
+ViewSet that returns `signals.Signal` instance dropped out of a category.
+"""
 from datapunt_api.rest import HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets

@@ -1,4 +1,3 @@
-
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
@@ -7,7 +6,7 @@ from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
     ParentCategoryHyperlinkedIdentityField
 )
-from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT
+from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT  # TODO: move to a model
 from signals.apps.signals.models import Category
 
 

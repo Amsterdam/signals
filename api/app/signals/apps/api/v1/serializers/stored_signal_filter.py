@@ -2,6 +2,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.v1.fields import StoredSignalFilterLinksField
+from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.signals.models import Signal, StoredSignalFilter
 
 
@@ -20,7 +21,6 @@ class StoredSignalFilterSerializer(HALSerializer):
         )
 
     def validate(self, attrs):
-        from signals.apps.api.v1.filters import SignalFilter
         signal_filter = SignalFilter(data=attrs['options'], queryset=Signal.objects.none())
         if not signal_filter.is_valid():
             raise ValidationError(signal_filter.errors)

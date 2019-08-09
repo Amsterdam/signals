@@ -1,3 +1,6 @@
+"""
+V1 API Serializers.
+"""
 from signals.apps.api.v1.serializers.attachment import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer,

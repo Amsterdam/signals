@@ -7,7 +7,6 @@ from signals.apps.api.v1.fields import (
     PrivateSignalLinksFieldWithArchives,
     PublicSignalLinksField
 )
-# refactor
 from signals.apps.api.v1.serializers.nested import (
     _NestedAttachmentModelSerializer,
     _NestedCategoryModelSerializer,
@@ -193,6 +192,9 @@ class PublicSignalSerializerDetail(HALSerializer):
 
 
 class PublicSignalCreateSerializer(serializers.ModelSerializer):
+    """
+    This serializer allows anonymous users to report `signals.Signals`.
+    """
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     status = _NestedStatusModelSerializer(required=False)

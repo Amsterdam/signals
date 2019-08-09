@@ -1,3 +1,6 @@
+"""
+V1 API ViewSet.
+"""
 from signals.apps.api.v1.views.attachment import (
     PrivateSignalAttachmentsViewSet,
     PublicSignalAttachmentsViewSet

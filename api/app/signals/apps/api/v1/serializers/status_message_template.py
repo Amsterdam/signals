@@ -1,6 +1,3 @@
-"""
-Serializers that are used exclusively by the V1 API
-"""
 import copy
 from collections import OrderedDict
 

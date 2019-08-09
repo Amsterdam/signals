@@ -1,3 +1,6 @@
+"""
+ViewSet that splits `api.Signal` instances in several children.
+"""
 from rest_framework import viewsets
 
 from signals.apps.api import mixins

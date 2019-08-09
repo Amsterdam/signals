@@ -1,3 +1,6 @@
+"""
+Serializer splits `api.Signal` instances in several children.
+"""
 import copy
 from collections import OrderedDict
 
