@@ -59,13 +59,9 @@ class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
-
-        if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
-            obj = get_object_or_404(queryset,
-                                    parent__slug=self.kwargs['slug'],
-                                    slug=self.kwargs['sub_slug'])
-        else:
-            obj = get_object_or_404(queryset, slug=self.kwargs['slug'])
+        obj = get_object_or_404(queryset,
+                                parent__slug=self.kwargs['slug'],
+                                slug=self.kwargs['sub_slug'])
 
         self.check_object_permissions(self.request, obj)
         return obj

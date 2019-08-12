@@ -2,7 +2,6 @@ import json
 import os
 from unittest import mock
 
-from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from rest_framework import serializers
@@ -41,16 +40,7 @@ class TestLocationSerializer(SignalsBaseApiTestCase):
     fixtures = ['categories.json', ]
 
     def _get_fixture(self):
-        path = os.path.join(
-            settings.BASE_DIR,
-            '..',
-            'tests',
-            'apps',
-            'api',
-            'request_data',
-            'signal_post.json'
-        )
-
+        path = os.path.join(os.path.dirname(__file__), 'request_data', 'signal_post.json')
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())
 

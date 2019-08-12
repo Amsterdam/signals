@@ -47,65 +47,48 @@ def check_data(request):
         content_type='text/plain',
         status=200)
 
-
-def _get_model(health_model):
-    """
-    Will return the health_model if it exists
-
-    :param health_model:
-    :return:
-    """
-    try:
-        health_check_model = apps.get_model(health_model)
-    except LookupError:
-        raise ImproperlyConfigured(
-            "{} doesn't resolve to useable model".format(health_model)
-        )
-    return health_check_model
-
-
-def _count_categories(health_objects, minimum_count=1):
-    """
-    Simple count to check if there are at least 'minimum_count' of objects in the table
-
-    :param health_objects:
-    :param minimum_count:
-    :return:
-    """
-    if health_objects.count() < minimum_count:
-        error_msg = 'Too few items in the database'
-        logger.error(error_msg)
-        raise Exception(error_msg)
-
-
-def _check_fixture_exists_in_db(health_model, data_to_check):
-    """
-    Will check if the data_to_check exists in the database using the health_model
-
-    :param health_model:
-    :param data_to_check:
-    :return:
-    """
-    try:
-        health_model.objects.get(**data_to_check)
-    except health_model.DoesNotExist:
-        error_msg = '{} data does not match fixture data'.format(health_model.__class__)
-        logger.error(error_msg)
-        raise Exception(error_msg)
-
-
-def _prepare_data_to_check(data_to_check):
-    """
-    Prepare the data from the fixture so that we can check if it exists in the database
-
-    :param data_to_check:
-    :return prepared_data_to_check:
-    """
-    prepared_data_to_check = data_to_check['fields'].copy()
-    for key in data_to_check['fields'].keys():
-        if isinstance(prepared_data_to_check[key], list):
-            prepared_data_to_check.pop(key)
-    return prepared_data_to_check
+# def _count_categories(health_objects, minimum_count=1):
+#     """
+#     Simple count to check if there are at least 'minimum_count' of objects in the table
+#
+#     :param health_objects:
+#     :param minimum_count:
+#     :return:
+#     """
+#     if health_objects.count() < minimum_count:
+#         error_msg = 'Too few items in the database'
+#         logger.error(error_msg)
+#         raise Exception(error_msg)
+#
+#
+# def _check_fixture_exists_in_db(health_model, data_to_check):
+#     """
+#     Will check if the data_to_check exists in the database using the health_model
+#
+#     :param health_model:
+#     :param data_to_check:
+#     :return:
+#     """
+#     try:
+#         health_model.objects.get(**data_to_check)
+#     except health_model.DoesNotExist:
+#         error_msg = '{} data does not match fixture data'.format(health_model.__class__)
+#         logger.error(error_msg)
+#         raise Exception(error_msg)
+#
+#
+# def _prepare_data_to_check(data_to_check):
+#     """
+#     Prepare the data from the fixture so that we can check if it exists in the database
+#
+#     :param data_to_check:
+#     :return prepared_data_to_check:
+#     """
+#     prepared_data_to_check = data_to_check['fields'].copy()
+#     for key in data_to_check['fields'].keys():
+#         if isinstance(prepared_data_to_check[key], list):
+#             prepared_data_to_check.pop(key)
+#     return prepared_data_to_check
 
 
 def check_categories(request):

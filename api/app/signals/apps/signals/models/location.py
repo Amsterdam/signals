@@ -4,7 +4,6 @@ from django.contrib.gis.db import models
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import JSONField
 
-from signals.apps.signals.models.buurt import Buurt
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 STADSDEEL_CENTRUM = 'A'
@@ -34,10 +33,6 @@ _ADDRESS_FIELD_PREFIXES = (
     ('postcode', ' '),
     ('woonplaats', ' ')
 )
-
-
-def get_buurt_code_choices():
-    return Buurt.objects.values_list('vollcode', 'naam')
 
 
 def get_address_text(location, field_prefixes=_ADDRESS_FIELD_PREFIXES):

@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from django.http import Http404
 from rest_framework.exceptions import APIException
-from rest_framework.reverse import reverse
 
 from signals.apps.signals.models import Category
 from signals.apps.signals.models.category_translation import CategoryTranslation
@@ -25,36 +24,23 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
             slug='overig',
             parent__isnull=False,
         )
-        self.link_test_subcategory_overig = '{}{}'.format(
-            self.test_host,
-            reverse(
-                'v1:category-detail', kwargs={
-                    'slug': self.test_subcategory_overig.parent.slug,
-                    'sub_slug': self.test_subcategory_overig.slug,
-                }
-            )
+        overig_category_url = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+            self.test_subcategory_overig.parent.slug, self.test_subcategory_overig.slug
         )
+        self.link_test_subcategory_overig = '{}{}'.format(self.test_host, overig_category_url)
 
         self.test_subcategory = CategoryFactory.create()
-        self.link_test_subcategory = '{}{}'.format(
-            self.test_host,
-            reverse(
-                'v1:category-detail', kwargs={
-                    'slug': self.test_subcategory.parent.slug,
-                    'sub_slug': self.test_subcategory.slug,
-                }
-            )
+        test_category_url = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+            self.test_subcategory.parent.slug, self.test_subcategory.slug
         )
+        self.link_test_subcategory = '{}{}'.format(self.test_host, test_category_url)
 
         self.test_subcategory_translated = CategoryFactory.create()
+        translated_test_category_url = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(  # noqa
+            self.test_subcategory_translated.parent.slug, self.test_subcategory_translated.slug
+        )
         self.link_test_subcategory_translated = '{}{}'.format(
-            self.test_host,
-            reverse(
-                'v1:category-detail', kwargs={
-                    'slug': self.test_subcategory.parent.slug,
-                    'sub_slug': self.test_subcategory.slug,
-                }
-            )
+            self.test_host, translated_test_category_url
         )
         self.link_test_subcategory_translation = CategoryTranslation.objects.create(
             old_category=self.test_subcategory_translated,
