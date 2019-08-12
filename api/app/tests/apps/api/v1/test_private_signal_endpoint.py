@@ -10,9 +10,7 @@ from django.utils import timezone
 from django.utils.http import urlencode
 from freezegun import freeze_time
 
-from signals import API_VERSIONS
 from signals.apps.api.v1.validation import AddressValidationUnavailableException, NoResultsException
-from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Signal
 from tests.apps.signals.attachment_helpers import (
