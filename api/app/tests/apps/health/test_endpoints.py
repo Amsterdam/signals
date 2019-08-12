@@ -1,5 +1,6 @@
 from unittest import mock, skip
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db import Error
 from django.test import TestCase, override_settings
 
@@ -46,6 +47,11 @@ class TestHealthEndpoints(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'Data OK Category')
+
+    @override_settings(HEALTH_MODEL='signals.THIS_MODEL_DOES_NOT_EXISTS')
+    def test_status_data_lookup_error(self):
+        with self.assertRaises(ImproperlyConfigured):
+            self.client.get('/status/data')
 
     @skip('SIG-1014 This test must be refactored when the new category health check is in place')
     @override_settings(HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT=99999)

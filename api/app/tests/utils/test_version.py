@@ -16,3 +16,9 @@ class TestVersion(TestCase):
         version_str = get_version(version)
 
         self.assertEqual(version_str, '1.3')
+
+    def test_version(self):
+        version_str = get_version()
+
+        self.assertTrue(isinstance(version_str, str))
+        self.assertTrue(len(version_str))

@@ -22,7 +22,8 @@ from signals.apps.signals.models import (
     Priority,
     Reporter,
     Signal,
-    Status
+    Status,
+    StatusMessageTemplate
 )
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from tests.apps.signals import factories, valid_locations
@@ -787,3 +788,18 @@ class TestCategoryTranslation(TestCase):
 
         e = cm.exception
         self.assertEqual(e.messages[0], 'New category must be active')
+
+
+class TestStatusMessageTemplate(TestCase):
+    def setUp(self):
+        self.category = factories.CategoryFactory.create(is_active=True)
+
+    def test_save_too_many_instances(self):
+        factories.StatusMessageTemplateFactory.create_batch(5, category=self.category, state='m')
+        with self.assertRaises(ValidationError):
+            StatusMessageTemplate.objects.create(
+                category=self.category, state='m', title='title', text='text', order=999
+            )
+
+        qs = StatusMessageTemplate.objects.filter(category=self.category, state='m')
+        self.assertEqual(qs.count(), 5)

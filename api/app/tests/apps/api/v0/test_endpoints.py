@@ -3,7 +3,6 @@ import os
 from unittest import skip
 from unittest.mock import patch
 
-from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -140,8 +139,7 @@ class TestAPIEndpointsBase(SignalsBaseApiTestCase):
 
     def _get_fixture(self, name):
         filename = self.fixture_files[name]
-        path = os.path.join(settings.BASE_DIR, '..', 'tests', 'apps', 'api', 'request_data',
-                            filename)
+        path = os.path.join(os.path.dirname(__file__), 'request_data', filename)
 
         with open(path) as fixture_file:
             postjson = json.loads(fixture_file.read())

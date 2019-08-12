@@ -15,7 +15,7 @@
             "postcode": "1012AA",
             "woonplaats": "Amsterdam"
         },
-        "extra_properties": {},
+        "extra_properties": null,
         "stadsdeel": "A",
         "buurt_code": "A01a"
     }

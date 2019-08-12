@@ -11,22 +11,27 @@ class UserMeView(APIView):
     authentication_classes = (JWTAuthBackend, )
 
     def get(self, request):
-        data = {}
-        user = request.user
-        if user:
-            data['username'] = user.username
-            data['email'] = user.email
-            data['is_staff'] = user.is_staff is True
-            data['is_superuser'] = user.is_superuser is True
-            groups = []
-            departments = []
-            for g in request.user.groups.all():
-                match = re.match(r"^dep_(\w+)$", g.name)
-                if match:
-                    departments.append(match.group(1))
-                else:
-                    groups.append(g.name)
-            data['groups'] = groups
-            data['departments'] = departments
-            data['permissions'] = [p for p in user.get_all_permissions() if p.startswith('signals')]
+        data = {
+            'username': request.user.username,
+            'email': request.user.email,
+            'is_staff': request.user.is_staff is True,
+            'is_superuser': request.user.is_superuser is True,
+            'permissions': [
+                permission
+                for permission in request.user.get_all_permissions()
+                if permission.startswith('signals')
+            ],
+        }
+
+        groups = []
+        departments = []
+        for group in request.user.groups.all():
+            match = re.match(r"^dep_(\w+)$", group.name)
+            if match:
+                departments.append(match.group(1))
+            else:
+                groups.append(group.name)
+        data['groups'] = groups
+        data['departments'] = departments
+
         return JsonResponse(data)
