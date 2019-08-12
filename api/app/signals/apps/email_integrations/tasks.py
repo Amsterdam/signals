@@ -1,5 +1,4 @@
 from signals.apps.email_integrations.integrations import (
-    apptimize,
     core,
     flex_horeca,
     toezicht_or_nieuw_west,
@@ -41,12 +40,6 @@ def send_mail_reporter_status_changed_heropend(signal_pk, status_pk):
     signal = Signal.objects.get(pk=signal_pk)
     status = Status.objects.get(pk=status_pk)
     core.send_mail_reporter_status_changed_heropend(signal, status)
-
-
-@app.task
-def send_mail_apptimize(pk):
-    signal = Signal.objects.get(pk=pk)
-    apptimize.send_mail(signal)
 
 
 @app.task
