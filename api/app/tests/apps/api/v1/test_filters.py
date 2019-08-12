@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from random import shuffle
 
+from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
+from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
     CategoryFactory,
@@ -228,3 +230,118 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals(params)
         self.assertEqual(self.states.count(ON_HOLD) + self.states.count(BEHANDELING),
                          len(result_ids))
+
+    def test_filter_feedback_not_received(self):
+        feedback = FeedbackFactory.create(
+            _signal=self.signals[0]
+        )
+
+        params = {'feedback': 'not_received'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback._signal_id, result_ids[0])
+
+    def test_filter_feedback_positive_feedback(self):
+        feedback = FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=True,
+            submitted_at=timezone.now()
+        )
+
+        params = {'feedback': 'satisfied'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback._signal_id, result_ids[0])
+
+    def test_filter_feedback_negative_feedback(self):
+        feedback = FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=False,
+            submitted_at=timezone.now()
+        )
+
+        params = {'feedback': 'not_satisfied'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback._signal_id, result_ids[0])
+
+    def test_filter_feedback_multiple_last_positive(self):
+        now = timezone.now()
+
+        FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=False,
+            submitted_at=now - timedelta(days=1)
+        )
+
+        feedback_positive = FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=True,
+            submitted_at=now
+        )
+
+        params = {'feedback': 'not_satisfied'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(0, len(result_ids))
+
+        params = {'feedback': 'satisfied'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback_positive._signal_id, result_ids[0])
+
+    def test_filter_feedback_multiple_negative(self):
+        now = timezone.now()
+
+        FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=True,
+            submitted_at=now - timedelta(days=1)
+        )
+
+        feedback_negative = FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=False,
+            submitted_at=now
+        )
+
+        params = {'feedback': 'satisfied'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+        params = {'feedback': 'not_satisfied'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback_negative._signal_id, result_ids[0])
+
+    def test_filter_feedback_multiple_latest_not_received(self):
+        now = timezone.now()
+
+        FeedbackFactory.create(
+            _signal=self.signals[0],
+            is_satisfied=True,
+            submitted_at=now - timedelta(days=1)
+        )
+
+        feedback_negative = FeedbackFactory.create(
+            _signal=self.signals[0]
+        )
+
+        params = {'feedback': 'not_satisfied'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+        params = {'feedback': 'satisfied'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+        params = {'feedback': 'not_received'}
+        result_ids = self._request_filter_signals(params)
+
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual(feedback_negative._signal_id, result_ids[0])
