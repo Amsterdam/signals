@@ -1,8 +1,14 @@
-from django.db.models import Q
+from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.generics.filters import buurt_choices, status_choices
 from signals.apps.signals.models import STADSDELEN, Category, Priority
+
+feedback_choices = (
+    ('satisfied', 'satisfied'),
+    ('not_satisfied', 'not_satisfied'),
+    ('not_received', 'not_received'),
+)
 
 
 class SignalFilter(FilterSet):
@@ -45,6 +51,33 @@ class SignalFilter(FilterSet):
                                               lookup_expr='date__gte')
     incident_date_after = filters.DateFilter(field_name='incident_date_start',
                                              lookup_expr='date__lte')
+
+    feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
+
+    def feedback_filter(self, queryset, name, value):
+        # Only signals that have feedback
+        queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
+
+        if value in ['satisfied', 'not_satisfied']:
+            is_satisfied = True if value == 'satisfied' else False
+            queryset = queryset.annotate(
+                feedback_max_created_at=Max('feedback__created_at'),
+                feedback_max_submitted_at=Max('feedback__submitted_at')
+            ).filter(
+                feedback__is_satisfied=is_satisfied,
+                feedback__submitted_at__isnull=False,
+                feedback__created_at=F('feedback_max_created_at'),
+                feedback__submitted_at=F('feedback_max_submitted_at')
+            )
+        elif value == 'not_received':
+            queryset = queryset.annotate(
+                feedback_max_created_at=Max('feedback__created_at')
+            ).filter(
+                feedback__submitted_at__isnull=True,
+                feedback__created_at=F('feedback_max_created_at')
+            )
+
+        return queryset
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):
