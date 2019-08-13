@@ -63,6 +63,23 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
 
+        def test_create_filter_missing_options_no_500(self):
+            data = {
+                'name': 'MISSING OPTIONS SHOULD ALSO WORK',
+                'options': json.dumps({
+                    'status': [
+                        'i',
+                    ]
+                }),
+            }
+
+            response = self.client.post(self.endpoint, data, fornat='json')
+            self.assertEqual(400, response.status_code)
+
+            response_data = response.json()
+            self.assertEqual(
+                response_data['reason'], 'No filters specified, "options" object missing.')
+
     def test_update_filter(self):
         sia_read_write_user_filter = StoredSignalFilterFactory.create(
             created_by=self.sia_read_write_user
