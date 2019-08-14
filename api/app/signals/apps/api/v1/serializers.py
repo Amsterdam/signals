@@ -831,6 +831,8 @@ class StoredSignalFilterSerializer(HALSerializer):
 
     def validate(self, attrs):
         from signals.apps.api.v1.filters import SignalFilter
+        if 'options' not in attrs:
+            raise ValidationError('No filters specified, "options" object missing.')
         signal_filter = SignalFilter(data=attrs['options'], queryset=Signal.objects.none())
         if not signal_filter.is_valid():
             raise ValidationError(signal_filter.errors)
