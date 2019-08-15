@@ -23,7 +23,6 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
-    ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
@@ -80,9 +79,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.split_endpoint = '/signals/v1/private/signals/{pk}/split'
         self.removed_from_category_endpoint = '/signals/v1/private/signals/category/removed'
 
-        self.maincategory = ParentCategoryFactory.create(slug='parent-category')
-        self.subcategory = CategoryFactory.create(slug='child-category', parent=self.maincategory)
-
+        self.subcategory = CategoryFactory.create()
         self.link_subcategory = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
             self.subcategory.parent.slug, self.subcategory.slug
         )
@@ -91,7 +88,11 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
-        self.create_initial_data['category'] = {'sub_category': self.link_subcategory}
+
+        # Add a generated category
+        self.create_initial_data['category'] = {
+            'sub_category': self.link_subcategory,
+        }
 
         self.list_signals_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals.json')

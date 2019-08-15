@@ -15,8 +15,12 @@ from django.contrib.auth.models import Permission
 from django.utils.http import urlencode
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Category
-from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from tests.apps.signals.factories import (
+    CategoryFactory,
+    ParentCategoryFactory,
+    SignalFactory,
+    SignalFactoryValidLocation
+)
 from tests.apps.users.factories import UserFactory
 from tests.test import SignalsBaseApiTestCase
 
@@ -77,10 +81,9 @@ class TestTechtekFlow(SignalsBaseApiTestCase):
             '{server}/signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}'
 
         # Fill test database with some signals to demonstrate filtering.
-        techtek_sub_cat = Category.objects.get(
-            parent__slug=TECHTEK_MAIN_SLUG,
-            slug=TECHTEK_SUB_SLUG,
-        )
+        techtek_parent_category = ParentCategoryFactory.create(slug=TECHTEK_MAIN_SLUG)
+        techtek_sub_cat = CategoryFactory.create(slug=TECHTEK_SUB_SLUG,
+                                                 parent=techtek_parent_category)
 
         self._techtek_signal_1 = SignalFactoryValidLocation(
             category_assignment__category=techtek_sub_cat,
@@ -93,10 +96,8 @@ class TestTechtekFlow(SignalsBaseApiTestCase):
             status__state=workflow.AFGEHANDELD,
         )
 
-        other_cat = Category.objects.get(
-            parent__slug=NOT_TECHTEK_MAIN_SLUG,
-            slug=NOT_TECHTEK_SUB_SLUG,
-        )
+        other_parent_cat = ParentCategoryFactory.create(slug=NOT_TECHTEK_MAIN_SLUG)
+        other_cat = CategoryFactory.create(slug=NOT_TECHTEK_SUB_SLUG, parent=other_parent_cat)
         self._signal = SignalFactory(
             category_assignment__category=other_cat,
             text='Er ligt een accu in de sloot.',
