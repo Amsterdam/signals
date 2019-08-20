@@ -2,13 +2,21 @@ from urllib.parse import urlparse
 
 from django.urls import include, path, resolve
 
-from signals.apps.api.v1.private import views as v1_private_views
-from signals.apps.api.v1.private.views import (
+from signals.apps.api.v1.routers import SignalsRouterVersion1
+from signals.apps.api.v1.views import (
+    ChildCategoryViewSet,
+    GeneratePdfView,
+    NamespaceView,
+    ParentCategoryViewSet,
+    PrivateSignalAttachmentsViewSet,
+    PrivateSignalSplitViewSet,
+    PrivateSignalViewSet,
+    PublicSignalAttachmentsViewSet,
+    PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
+    StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
-from signals.apps.api.v1.public import views as v1_public_views
-from signals.apps.api.v1.routers import SignalsRouterVersion1
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.signals.models import Category
 
@@ -17,19 +25,19 @@ signal_router_v1 = SignalsRouterVersion1()
 
 signal_router_v1.register(
     r'public/terms/categories',
-    v1_public_views.ParentCategoryViewSet,
+    ParentCategoryViewSet,
     basename='category'
 )
 
 signal_router_v1.register(
     r'private/signals',
-    v1_private_views.PrivateSignalViewSet,
+    PrivateSignalViewSet,
     basename='private-signals'
 )
 
 signal_router_v1.register(
     r'public/signals',
-    v1_public_views.PublicSignalViewSet,
+    PublicSignalViewSet,
     basename='public-signals'
 )
 
@@ -55,7 +63,7 @@ signal_router_v1.register(
 signal_router_v1.urls.append(
     path(
         'private/terms/categories/<str:slug>/sub_categories/<str:sub_slug>/status-message-templates',  # noqa
-        v1_private_views.StatusMessageTemplatesViewSet.as_view({
+        StatusMessageTemplatesViewSet.as_view({
             'get': 'retrieve', 'post': 'create'
          }),
         name='private-status-message-templates-child'
@@ -64,7 +72,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'private/terms/categories/<str:slug>/status-message-templates',
-        v1_private_views.StatusMessageTemplatesViewSet.as_view({
+        StatusMessageTemplatesViewSet.as_view({
             'get': 'retrieve', 'post': 'create'
         }),
         name='private-status-message-templates-parent'
@@ -75,7 +83,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'private/signals/<int:pk>/split',
-        v1_private_views.PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
+        PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
         name='private-signals-split'
     )
 )
@@ -84,7 +92,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'private/signals/<int:pk>/attachments',
-        v1_private_views.PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
+        PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
         name='private-signals-attachments'
     )
 )
@@ -93,7 +101,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'public/signals/<str:signal_id>/attachments',
-        v1_public_views.PublicSignalAttachmentsViewSet.as_view({'post': 'create'}),
+        PublicSignalAttachmentsViewSet.as_view({'post': 'create'}),
         name='public-signals-attachments'
     )
 )
@@ -102,7 +110,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'public/terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
-        v1_public_views.ChildCategoryViewSet.as_view({'get': 'retrieve'}),
+        ChildCategoryViewSet.as_view({'get': 'retrieve'}),
         name='category-detail'
     )
 )
@@ -113,7 +121,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'private/signals/<int:pk>/pdf',
-        v1_private_views.GeneratePdfView.as_view(),
+        GeneratePdfView.as_view(),
         name='signal-pdf-download'
     )
 )
@@ -121,7 +129,7 @@ signal_router_v1.urls.append(
 signal_router_v1.urls.append(
     path(
         'relations',
-        v1_public_views.NamespaceView.as_view(),
+        NamespaceView.as_view(),
         name='signal-namespace'
     )
 )

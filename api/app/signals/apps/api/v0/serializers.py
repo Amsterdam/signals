@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
 from signals.apps.api.generics.mixins import AddExtrasMixin
 from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.api.v0.fields import (
@@ -64,8 +65,9 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
 
         image = self.initial_data.get('image', False)
         if image:
-            if image.size > 8388608:  # 8MB = 8*1024*1024
-                raise ValidationError("Foto mag maximaal 8Mb groot zijn.")
+            if image.size > SIGNALS_API_MAX_UPLOAD_SIZE:
+                msg = f'Bestand mag maximaal {SIGNALS_API_MAX_UPLOAD_SIZE} bytes groot zijn.'
+                raise ValidationError(msg)
         else:
             raise ValidationError("Foto is een verplicht veld.")
 
