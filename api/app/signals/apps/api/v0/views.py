@@ -1,21 +1,15 @@
 """
 Views that are used exclusively by the V0 API
 """
-import json
 import logging
 import re
-from urllib.parse import urlparse
 
-import requests
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.conf import settings
-from django.urls import resolve
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.settings import api_settings
 from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.views import APIView
@@ -34,6 +28,8 @@ from signals.apps.api.generics.permissions import (
     PriorityPermission,
     StatusPermission
 )
+from signals.apps.api.ml_tool.proxy.client import MLToolClient
+from signals.apps.api.ml_tool.utils import translate_prediction_category_url
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
@@ -46,15 +42,7 @@ from signals.apps.api.v0.serializers import (
     SignalUpdateImageSerializer,
     StatusHALSerializer
 )
-from signals.apps.signals.models import (
-    Category,
-    CategoryAssignment,
-    Location,
-    Note,
-    Priority,
-    Signal,
-    Status
-)
+from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
@@ -220,60 +208,21 @@ class NoteAuthViewSet(mixins.CreateModelMixin, DatapuntViewSet):
 
 
 class MlPredictCategoryView(APIView):
-
-    def _slug_from_category_url(self, category_url):
-        resolved = resolve(urlparse(category_url).path)
-        if resolved and resolved.kwargs:
-            if 'sub_slug' in resolved.kwargs:
-                return resolved.kwargs['sub_slug']
-            elif 'slug' in resolved.kwargs:
-                return resolved.kwargs['slug']
-
-    def _get_category(self, category_slug):
-        try:
-            category = Category.objects.get(slug=category_slug)
-        except Category.DoesNotExist:
-            return
-        else:
-            if category.is_translated():
-                return category.translated_to()
-            return category
-
-    def _translate_category_url(self, category_url):
-        category_slug = self._slug_from_category_url(category_url)
-        category = self._get_category(category_slug)
-        if category and category.is_child():
-            return reverse(
-                'v1:category-detail',
-                kwargs={'slug': category.parent.slug, 'sub_slug': category.slug},
-                request=self.request
-            )
-        elif category:
-            return reverse(
-                'v1:category-detail',
-                kwargs={'slug': category.slug},
-                request=self.request
-            )
-        return category_url
-
-    def _get_prediction_from_mltool(self, text):
-        return requests.post(
-            '{}/predict'.format(settings.ML_TOOL_ENDPOINT),
-            data=json.dumps({'text': text})
-        )
+    ml_tool_client = MLToolClient()
 
     def post(self, request, *args, **kwargs):
-        if 'text' not in request.data:
-            raise ValidationError('Invalid request')
-        text = request.data['text']
-
         # Default empty response
         data = {'hoofdrubriek': [], 'subrubriek': []}
-        response = self._get_prediction_from_mltool(text=text)
+
+        response = self.ml_tool_client.predict(text=request.data['text'])
         if response.status_code == 200:
             response_data = response.json()
             for key in data.keys():
-                data[key].append([self._translate_category_url(response_data[key][0][0])])
+                category_url, translated = translate_prediction_category_url(
+                    category_url=response_data[key][0][0], request=self.request
+                )
+
+                data[key].append([category_url])
                 data[key].append([response_data[key][1][0]])
 
         return Response(data)
