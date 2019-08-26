@@ -8,6 +8,7 @@ from signals.apps.api.v1.fields.attachment import (
 from signals.apps.api.v1.fields.category import (
     CategoryHyperlinkedIdentityField,
     CategoryHyperlinkedRelatedField,
+    LegacyCategoryHyperlinkedRelatedField,
     ParentCategoryHyperlinkedIdentityField
 )
 from signals.apps.api.v1.fields.note import NoteHyperlinkedIdentityField
@@ -23,6 +24,7 @@ __all__ = [
     'ParentCategoryHyperlinkedIdentityField',
     'CategoryHyperlinkedIdentityField',
     'CategoryHyperlinkedRelatedField',
+    'LegacyCategoryHyperlinkedRelatedField',
     'NoteHyperlinkedIdentityField',
     'PrivateSignalLinksFieldWithArchives',
     'PrivateSignalLinksField',
