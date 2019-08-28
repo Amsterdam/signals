@@ -12,8 +12,9 @@ def get_category_from_prediction(category_url):
         return category_url, False
 
     slug = resolved.kwargs['sub_slug'] if 'sub_slug' in resolved.kwargs else resolved.kwargs['slug']
+    parent_isnull = False if 'sub_slug' in resolved.kwargs else True
 
-    category = Category.objects.get(slug=slug)
+    category = Category.objects.get(slug=slug, parent__isnull=parent_isnull)
     if category.is_translated():
         return category.translated_to()
     return category

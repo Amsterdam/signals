@@ -13,7 +13,6 @@ class MLToolClient:
     endpoint = '{}/predict'.format(settings.ML_TOOL_ENDPOINT)
     predict_validators = [
         validators.MinLengthValidator(limit_value=1),
-        validators.ProhibitNullCharactersValidator()
     ]
 
     def predict(self, text):

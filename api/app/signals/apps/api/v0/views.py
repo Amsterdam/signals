@@ -231,7 +231,8 @@ class MlPredictCategoryView(APIView):
                 )
 
                 if not translated:
-                    default_category = Category.objects.get(slug='overig', parent__isnull=True)
+                    # When we cannot translate we return the 'overig-overig' category url
+                    default_category = Category.objects.get(slug='overig', parent__isnull=False)
                     category_url = url_from_category(default_category, request=self.request)
 
                 data[key].append([category_url])
