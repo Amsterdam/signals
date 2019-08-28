@@ -22,7 +22,7 @@ from signals.apps.signals.models.note import Note
 from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.signal import Signal
-from signals.apps.signals.models.sla import ServiceLevelAgreement
+from signals.apps.signals.models.slo import ServiceLevelObjective
 from signals.apps.signals.models.status import Status
 from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 from signals.apps.signals.models.stored_signal_filter import StoredSignalFilter
@@ -51,7 +51,7 @@ __all__ = [
     'Priority',
     'Reporter',
     'Signal',
-    'ServiceLevelAgreement',
+    'ServiceLevelObjective',
     'Status',
     'StatusMessageTemplate',
     'StoredSignalFilter',
