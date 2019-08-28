@@ -29,7 +29,7 @@ from signals.apps.api.generics.permissions import (
     StatusPermission
 )
 from signals.apps.api.ml_tool.proxy.client import MLToolClient
-from signals.apps.api.ml_tool.utils import translate_prediction_category_url
+from signals.apps.api.ml_tool.utils import translate_prediction_category_url, url_from_category
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
@@ -42,7 +42,15 @@ from signals.apps.api.v0.serializers import (
     SignalUpdateImageSerializer,
     StatusHALSerializer
 )
-from signals.apps.signals.models import CategoryAssignment, Location, Note, Priority, Signal, Status
+from signals.apps.signals.models import (
+    Category,
+    CategoryAssignment,
+    Location,
+    Note,
+    Priority,
+    Signal,
+    Status
+)
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import NoUserRateThrottle
 
@@ -221,6 +229,10 @@ class MlPredictCategoryView(APIView):
                 category_url, translated = translate_prediction_category_url(
                     category_url=response_data[key][0][0], request=self.request
                 )
+
+                if not translated:
+                    default_category = Category.objects.get(slug='overig', parent__isnull=True)
+                    category_url = url_from_category(default_category, request=self.request)
 
                 data[key].append([category_url])
                 data[key].append([response_data[key][1][0]])

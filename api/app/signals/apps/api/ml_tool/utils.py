@@ -25,11 +25,12 @@ def translate_prediction_category_url(category_url, request=None):
     except Category.DoesNotExist:
         return category_url, False
 
-    if category.is_child():
-        translated = reverse('v1:category-detail',
-                             kwargs={'slug': category.parent.slug, 'sub_slug': category.slug},
-                             request=request)
-    else:
-        translated = reverse('v1:category-detail', kwargs={'slug': category.slug}, request=request)
+    return url_from_category(category, request=request), True
 
-    return translated, True
+
+def url_from_category(category, request=None):
+    if category.is_child():
+        kwargs = {'slug': category.parent.slug, 'sub_slug': category.slug}
+    else:
+        kwargs = {'slug': category.slug}
+    return reverse('v1:category-detail', kwargs=kwargs, request=request)

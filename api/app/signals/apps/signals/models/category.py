@@ -85,8 +85,8 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def is_translated(self):
-        return all([not self.is_active,
-                    self.translations.filter(new_category__is_active=True).exists()])
+        return (not self.is_active
+                and self.translations.filter(new_category__is_active=True).exists())
 
     def translated_to(self):
         if self.is_translated():
