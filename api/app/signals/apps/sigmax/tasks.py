@@ -1,4 +1,8 @@
 import logging
+from datetime import timedelta
+
+from django.conf import settings
+from django.utils import timezone
 
 from signals.apps.sigmax.stuf_protocol.outgoing import handle
 from signals.apps.signals import workflow
@@ -30,3 +34,19 @@ def push_to_sigmax(pk):
 
     if is_signal_applicable(signal):
         handle(signal)
+
+
+@app.task
+def fail_stuck_sending_signals():
+    before = timezone.now() - timedelta(minutes=settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES)
+    stuck_signals = Signal.objects.filter(status__state=workflow.TE_VERZENDEN,
+                                          status__target_api=Status.TARGET_API_SIGMAX,
+                                          status__updated_at__lte=before)
+
+    for signal in stuck_signals:
+        Signal.actions.update_status(data={
+            'state': workflow.VERZENDEN_MISLUKT,
+            'text': 'Melding stond langer dan {} minuten op TE_VERZENDEN. Mislukt'.format(
+                settings.SIGMAX_SEND_FAIL_TIMEOUT_MINUTES
+            )
+        }, signal=signal)
