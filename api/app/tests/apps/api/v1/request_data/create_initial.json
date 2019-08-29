@@ -38,5 +38,6 @@
     "incident_date_end": null,
     "operational_date": null,
     "image": null,
-    "upload": null
+    "upload": null,
+    "source": "online"
 }

@@ -90,6 +90,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.create_initial_data['category'] = {
             'sub_category': self.link_subcategory,
         }
+        self.create_initial_data['source'] = 'valid-source'
 
         self.list_signals_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals.json')
@@ -1271,6 +1272,15 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertNotEqual(state_before, response_data['status']['state'])
         self.assertEqual(SOME_MESSAGE_A, response.data['status']['text'])
 
+    def test_create_with_invalid_source_user(self):
+        data = self.create_initial_data
+        data['source'] = 'online'
+        response = self.client.post(self.list_endpoint, data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.json()['source'][0],
+                         'Invalid source given for authenticated user')
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
@@ -1284,6 +1294,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
+        self.create_initial_data['source'] = 'valid-source'
 
         self.client.force_authenticate(user=self.sia_read_write_user)
 

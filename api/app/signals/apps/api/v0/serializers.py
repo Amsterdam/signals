@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
 from signals.apps.api.generics.mixins import AddExtrasMixin
-from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
+from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin, SignalSourceValidator
 from signals.apps.api.v0.fields import (
     CategoryLinksField,
     PriorityLinksField,
@@ -260,6 +260,7 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'label': 'ID'},
             'signal_id': {'label': 'SIGNAL_ID'},
+            'source': {'validators': [SignalSourceValidator()]},
         }
 
     def create(self, validated_data):

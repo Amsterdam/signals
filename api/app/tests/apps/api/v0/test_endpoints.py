@@ -196,6 +196,8 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
 
     def test_post_signal_with_json(self):
         postjson = self._get_fixture('post_signal')
+        postjson['source'] = 'online'
+
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
@@ -236,6 +238,16 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
         )
+
+    def test_post_signal_with_json_invalid_status(self):
+        postjson = self._get_fixture('post_signal')
+        postjson['source'] = 'invalid-source'
+
+        self.client.logout()
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
     @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict")
     def test_post_signal_with_bag_validated(self, validate_address_dict):
