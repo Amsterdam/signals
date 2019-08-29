@@ -1,4 +1,28 @@
+import datetime
+import pprint
+
 from django.contrib.gis.db import models
+
+
+def get_interval_isoweek(isoyear, isoweek):
+    """Get Monday 00:00:00 hours at start of ISO week and the next."""
+    monday = f'{isoyear} {isoweek} 1'  # First Monday in ISO week notation
+    begin_date = datetime.datetime.strptime(monday, '%G %V %u').date()  # Python >= 3.6
+
+    begin = datetime.datetime.combine(begin_date, datetime.datetime.min.time())
+    end = begin + datetime.timedelta(days=7)
+
+    return begin, end
+
+
+def get_interval_month(year, month):
+    """Derive appropriate begin and end of interval for monthly reports."""
+    begin = datetime.datetime(year, month, 1, 0, 0, 0)
+    if month == 12:
+        end = datetime.datetime(year + 1, 1, 1, 0, 0, 0)
+    else:
+        end = datetime.datetime(year, month, 1, 0, 0, 0)
+    return begin, end
 
 
 class ReportDefinition(models.Model):
@@ -33,3 +57,41 @@ class ReportDefinition(models.Model):
     interval = models.CharField(max_length=255, choices=INTERVAL_CHOICES)
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES)
     area = models.CharField(max_length=255, choices=AREA_CHOICES)
+
+    def _get_interval(self, *args, **kwargs):
+        """Derive begin and end of interval for report."""
+        if self.interval == ReportDefinition.WEEK:
+            try:
+                isoyear = kwargs['isoyear']
+                isoweek = kwargs['isoweek']
+            except KeyError:
+                msg = 'WEEKly reports need "isoyear" and "isoweek" parameters.'
+                raise ValueError(msg)
+            else:
+                # TODO: add exception checking for bad inputs
+                begin, end = get_interval_isoweek(isoyear, isoweek)
+        else:
+            raise NotImplementedError('Only WEEK interval is supported')
+
+        return begin, end
+
+    def _join_indicators(self, raw_indicators):
+        """Join Indicator output."""
+        pass
+
+    def derive(self, *args, **kwargs):
+        """Derive report."""
+        begin, end = self._get_interval(*args, **kwargs)
+
+        # No support for category or area granularity choices, currently.
+        category = None
+        area = None
+
+        # Perform raw calculations / queries to derive the indicators needed for
+        # this report.
+        raw_results = {}
+        for report_indicator in list(self.indicators.all()):
+            raw_indicator_output = report_indicator.derive(begin, end, category, area)
+            raw_results[report_indicator.code] = raw_indicator_output
+
+        pprint.pprint(raw_results)

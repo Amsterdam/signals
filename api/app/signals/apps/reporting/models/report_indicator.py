@@ -14,7 +14,11 @@ KNOWN_INDICATORS = list(INDICATOR_ROUTES.keys())
 
 class ReportIndicator(models.Model):
     report = models.ForeignKey(
-        'reporting.ReportDefinition', null=False, on_delete=models.CASCADE)
+        'reporting.ReportDefinition',
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='indicators'
+    )
     code = models.CharField(max_length=16)
 
     def clean(self):
@@ -25,3 +29,8 @@ class ReportIndicator(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(ReportIndicator, self).save(*args, **kwargs)
+
+    def derive(self, begin, end, category, area):
+        # TODO: check that we are saved to DB (else possibly invalid indicator code)
+        indicator = INDICATOR_ROUTES[self.code]
+        return indicator().derive(begin, end, category, area)
