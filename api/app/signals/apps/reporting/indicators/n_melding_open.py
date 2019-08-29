@@ -9,8 +9,8 @@ from django.db import connection
 # support parametrized intervals and always group by sub category.
 SQL = """
 select
-    parent_cat.slug as main_slug,
-    cat.slug as sub_slug,
+    cat.id as category_id,
+    cat.parent_id as parent_category_id,
     count(*) as N_MELDING_OPEN
 from
     (select
@@ -42,9 +42,9 @@ where
     with_lead.signal_id != with_lead.next_signal_id
 and
     with_lead.state not in ('o', 'a', 's')
-group by
-    cat.slug,
-    parent_cat.slug;
+and
+    cat.parent_id is not null
+group by cat.id;
 """
 
 
