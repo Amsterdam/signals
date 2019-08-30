@@ -38,12 +38,9 @@ inner join public.signals_category as cat
     on cas.category_id = cat.id
 inner join public.signals_category as parent_cat
     on parent_cat.id = cat.parent_id
-where
-    with_lead.signal_id != with_lead.next_signal_id
-and
-    with_lead.state not in ('o', 'a', 's')
-and
-    cat.parent_id is not null
+where with_lead.signal_id != with_lead.next_signal_id
+    and with_lead.state not in ('o', 'a', 's')
+    and cat.parent_id is not null
 group by cat.id;
 """
 

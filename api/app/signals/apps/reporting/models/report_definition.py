@@ -1,3 +1,4 @@
+import copy
 import datetime
 import pprint
 
@@ -77,7 +78,30 @@ class ReportDefinition(models.Model):
 
     def _join_indicators(self, raw_indicators):
         """Join Indicator output."""
-        pass
+        # Current implementation only supports joining on (sub-)category
+        index = set()
+        empty = {}
+        for code, raw_indicator in raw_indicators.items():
+            index |= set(row[0] for row in raw_indicator)
+            empty[code] = None
+
+        # join data on index variable
+        data_dict = {}
+        for key in index:
+            data_dict[key] = copy.copy(empty)
+
+        for code, raw_indicator in raw_indicators.items():
+            for row in raw_indicator:
+                category_id, parent_category_id, value = row
+                data_dict[category_id][code] = value
+
+        # create a list of dictionaries
+        data = []
+        for key, indicators in data_dict.items():
+            indicators['CATEGORY_ID'] = key
+            data.append(indicators)
+
+        return data
 
     def derive(self, *args, **kwargs):
         """Derive report."""
@@ -95,3 +119,6 @@ class ReportDefinition(models.Model):
             raw_results[report_indicator.code] = raw_indicator_output
 
         pprint.pprint(raw_results)
+        pprint.pprint((self._join_indicators(raw_results)))
+
+        full_report = self._join_indicators(raw_results)

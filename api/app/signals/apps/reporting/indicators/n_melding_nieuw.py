@@ -4,8 +4,8 @@ from django.db import connection
 
 SQL = """
 select
-    cat.id as cat_id,
-    cat.parent_id as parent_cat_id,
+    cat.id as category_id,
+    cat.parent_id as parent_category_id,
     count(*) as N_MELDING_NIEUW
 from public.signals_signal as sig
     inner join public.signals_categoryassignment as cas
