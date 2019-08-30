@@ -18,10 +18,12 @@ from signals.apps.api.v1.views import (
     StoredSignalFilterViewSet
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
+from signals.apps.reporting.views import ReportViewSet
 from signals.apps.signals.models import Category
 
 # API Version 1
 signal_router_v1 = SignalsRouterVersion1()
+
 
 signal_router_v1.register(
     r'public/terms/categories',
@@ -33,6 +35,12 @@ signal_router_v1.register(
     r'private/signals',
     PrivateSignalViewSet,
     basename='private-signals'
+)
+
+signal_router_v1.register(
+    r'private/reports',
+    ReportViewSet,
+    basename='private-reports'
 )
 
 signal_router_v1.register(

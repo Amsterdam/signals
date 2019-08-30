@@ -119,6 +119,6 @@ class ReportDefinition(models.Model):
             raw_results[report_indicator.code] = raw_indicator_output
 
         full_report = self._join_indicators(raw_results)
-        pprint.pprint(full_report)
+        # pprint.pprint(full_report)
 
         return full_report
