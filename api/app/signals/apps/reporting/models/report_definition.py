@@ -118,7 +118,7 @@ class ReportDefinition(models.Model):
             raw_indicator_output = report_indicator.derive(begin, end, category, area)
             raw_results[report_indicator.code] = raw_indicator_output
 
-        pprint.pprint(raw_results)
-        pprint.pprint((self._join_indicators(raw_results)))
-
         full_report = self._join_indicators(raw_results)
+        pprint.pprint(full_report)
+
+        return full_report

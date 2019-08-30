@@ -1,5 +1,6 @@
 from signals.apps.reporting.indicators.n_melding_nieuw import NMeldingNieuw
 from signals.apps.reporting.indicators.n_melding_open import NMeldingOpen
+from signals.apps.reporting.indicators.categorie_naam import CategorieNaam
 
 
 def derive_routes(indicators):
@@ -13,4 +14,5 @@ def derive_routes(indicators):
 INDICATOR_ROUTES = derive_routes([
     NMeldingNieuw,
     NMeldingOpen,
+    CategorieNaam,
 ])
