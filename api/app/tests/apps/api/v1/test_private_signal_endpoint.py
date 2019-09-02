@@ -85,11 +85,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
         with open(fixture_file, 'r') as f:
             self.create_initial_data = json.load(f)
-
-        # Add a generated category
-        self.create_initial_data['category'] = {
-            'sub_category': self.link_subcategory,
-        }
+        self.create_initial_data['category'] = {'category_url': self.link_subcategory}
 
         self.list_signals_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals.json')
@@ -166,6 +162,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Create initial Signal, check that it reached the database.
         signal_count = Signal.objects.count()
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
@@ -574,7 +571,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_category_assignment.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        data['category']['sub_category'] = self.link_subcategory
+
+        del(data['category']['sub_category'])
+        data['category']['category_url'] = self.link_subcategory
 
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -606,7 +605,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_category_assignment.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        data['category']['sub_category'] = self.link_subcategory
+        del(data['category']['sub_category'])
+        data['category']['category_url'] = self.link_subcategory
 
         Signal.actions.update_category_assignment({'category': self.subcategory},
                                                   self.signal_no_image)
@@ -703,7 +703,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             [
                 {
                     'text': 'Child #1',
-                    'category': {'sub_category': self.link_subcategory}
+                    'category': {'category_url': self.link_subcategory}
                 },
                 {
                     'text': 'Child #2',
@@ -954,7 +954,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                     },
                     {
                         'text': 'Child #2',
-                        'category': {'sub_category': self.link_subcategory}
+                        'category': {'category_url': self.link_subcategory}
                     }
                 ],
                 format='json',
@@ -1012,7 +1012,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory}
+                    'category': {'category_url': self.link_subcategory}
                 },
                 {
                     'text': 'Child #3',
@@ -1020,7 +1020,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 },
                 {
                     'text': 'Child #4',
-                    'category': {'sub_category': self.link_subcategory}
+                    'category': {'category_url': self.link_subcategory}
                 },
             ],
             format='json'

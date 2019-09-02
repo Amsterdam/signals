@@ -3,6 +3,10 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from signals.apps.api.generics.relations import (
+    ParameterisedHyperLinkedIdentityField,
+    ParameterisedHyperlinkedRelatedField
+)
 from signals.apps.signals.models import Category
 
 
@@ -19,26 +23,28 @@ class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFiel
         return result
 
 
-class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
-
-    def get_url(self, obj, view_name, request, format):
-        url_kwargs = {
-            'slug': obj.parent.slug,
-            'sub_slug': obj.slug,
-        }
-        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+class CategoryHyperlinkedIdentityField(ParameterisedHyperLinkedIdentityField):
+    lookup_fields = (('parent.slug', 'slug'), ('slug', 'sub_slug'),)
 
     def to_representation(self, value):
         request = self.context.get('request')
+        hyperlink = super(ParameterisedHyperlinkedRelatedField, self).to_representation(value=value)
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('self', {'href': hyperlink})
         ])
 
         return result
 
 
-class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
+class CategoryHyperlinkedRelatedField(ParameterisedHyperlinkedRelatedField):
+    lookup_fields = (('parent.slug', 'slug'), ('slug', 'sub_slug'),)
+
+    view_name = 'category-detail'
+    queryset = Category.objects.all()
+
+
+class LegacyCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'category-detail'
     queryset = Category.objects.all()
 
