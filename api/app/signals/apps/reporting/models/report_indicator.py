@@ -19,7 +19,7 @@ class ReportIndicator(models.Model):
         on_delete=models.CASCADE,
         related_name='indicators'
     )
-    code = models.CharField(max_length=16)
+    code = models.CharField(max_length=32)
 
     def clean(self):
         if self.code not in KNOWN_INDICATORS:

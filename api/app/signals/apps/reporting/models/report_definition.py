@@ -59,22 +59,39 @@ class ReportDefinition(models.Model):
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES)
     area = models.CharField(max_length=255, choices=AREA_CHOICES)
 
-    def _get_interval(self, *args, **kwargs):
-        """Derive begin and end of interval for report."""
+    def _get_interval_parameters(self, *args, **kwargs):
         if self.interval == ReportDefinition.WEEK:
             try:
-                isoyear = kwargs['isoyear']
-                isoweek = kwargs['isoweek']
+                isoyear = int(kwargs['isoyear'])
+                isoweek = int(kwargs['isoweek'])
             except KeyError:
                 msg = 'WEEKly reports need "isoyear" and "isoweek" parameters.'
                 raise ValueError(msg)
+            except ValueError:
+                msg = 'For WEEKly report "isoyear" and "isoweek" must be integer.'
             else:
-                # TODO: add exception checking for bad inputs
-                begin, end = get_interval_isoweek(isoyear, isoweek)
+                interval_parameters = {'isoyear': isoyear, 'isoweek': isoweek}
+        else:
+            raise NotImplementedError('Only WEEK interval is supported')
+        return interval_parameters
+
+    def _get_interval(self, interval_parameters):
+        """Derive begin and end of interval for report."""
+        if self.interval == ReportDefinition.WEEK:
+            begin, end = get_interval_isoweek(**interval_parameters)
         else:
             raise NotImplementedError('Only WEEK interval is supported')
 
         return begin, end
+
+    def _add_interval(self, report_data, interval_parameters):
+        interval_data = {
+            k.upper(): v for k, v in interval_parameters.items()
+        }
+
+        for entry in report_data:
+            entry.update(interval_data)
+        return report_data
 
     def _join_indicators(self, raw_indicators):
         """Join Indicator output."""
@@ -105,7 +122,8 @@ class ReportDefinition(models.Model):
 
     def derive(self, *args, **kwargs):
         """Derive report."""
-        begin, end = self._get_interval(*args, **kwargs)
+        interval_parameters = self._get_interval_parameters(*args, **kwargs)
+        begin, end = self._get_interval(interval_parameters)
 
         # No support for category or area granularity choices, currently.
         category = None
@@ -118,7 +136,8 @@ class ReportDefinition(models.Model):
             raw_indicator_output = report_indicator.derive(begin, end, category, area)
             raw_results[report_indicator.code] = raw_indicator_output
 
-        full_report = self._join_indicators(raw_results)
+        report_data = self._join_indicators(raw_results)
+        full_report = self._add_interval(report_data, interval_parameters)
         # pprint.pprint(full_report)
 
         return full_report

@@ -27,7 +27,7 @@ group by cat.id;
 
 
 class PMeldingTevreden:
-    code = "P_MELDING_TEVRED"
+    code = "P_MELDING_TEVREDEN"
     description = "Percentage van ontvangen feedback van tevreden melders."
 
     sql = SQL

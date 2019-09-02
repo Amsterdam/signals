@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                     serialize=False,
                     verbose_name='ID'
                 )),
-                ('code', models.CharField(max_length=16)),
+                ('code', models.CharField(max_length=32)),
                 ('report', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
                     related_name='indicators',
