@@ -5,6 +5,7 @@ from django.urls import include, path, resolve
 from signals.apps.api.v1.routers import SignalsRouterVersion1
 from signals.apps.api.v1.views import (
     ChildCategoryViewSet,
+    CountStoredSignalFilterViewSet,
     GeneratePdfView,
     NamespaceView,
     ParentCategoryViewSet,
@@ -57,6 +58,12 @@ signal_router_v1.register(
     r'private/me/filters',
     StoredSignalFilterViewSet,
     basename='stored-signal-filters'
+)
+
+signal_router_v1.register(
+    r'private/me/filters/count',
+    CountStoredSignalFilterViewSet,
+    basename='count-stored-signal-filters'
 )
 
 # Status message templates are only editable via the private API

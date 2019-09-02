@@ -12,7 +12,10 @@ from signals.apps.api.v1.views.pdf import GeneratePdfView
 from signals.apps.api.v1.views.signal import PrivateSignalViewSet, PublicSignalViewSet
 from signals.apps.api.v1.views.signal_split import PrivateSignalSplitViewSet
 from signals.apps.api.v1.views.status_message_template import StatusMessageTemplatesViewSet
-from signals.apps.api.v1.views.stored_signal_filter import StoredSignalFilterViewSet
+from signals.apps.api.v1.views.stored_signal_filter import (
+    CountStoredSignalFilterViewSet,
+    StoredSignalFilterViewSet
+)
 
 __all__ = (
     'PublicSignalAttachmentsViewSet',
@@ -27,4 +30,5 @@ __all__ = (
     'PrivateSignalSplitViewSet',
     'StatusMessageTemplatesViewSet',
     'StoredSignalFilterViewSet',
+    'CountStoredSignalFilterViewSet',
 )

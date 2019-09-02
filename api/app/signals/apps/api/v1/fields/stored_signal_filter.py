@@ -12,10 +12,15 @@ class StoredSignalFilterLinksField(serializers.HyperlinkedIdentityField):
         if url_safe_options:
             filter_url = '{}?{}'.format(filter_url, url_safe_options)
 
+        filter_count_url = self.reverse('v1:count-stored-signal-filters-detail',
+                                        kwargs={'pk': stored_signal_filter.pk},
+                                        request=request)
+
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(stored_signal_filter, 'v1:stored-signal-filters-detail', request, None))),  # noqa
             ('sia:filter', dict(href=filter_url)),
+            ('sia:filter-count', dict(href=filter_count_url)),
         ])
 
         return result

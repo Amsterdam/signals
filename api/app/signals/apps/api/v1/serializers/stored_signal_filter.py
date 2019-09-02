@@ -1,5 +1,8 @@
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField
+from rest_framework.serializers import ModelSerializer
 
 from signals.apps.api.v1.fields import StoredSignalFilterLinksField
 from signals.apps.api.v1.filters import SignalFilter
@@ -15,6 +18,7 @@ class StoredSignalFilterSerializer(HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'name',
             'created_at',
             'options',
@@ -34,3 +38,24 @@ class StoredSignalFilterSerializer(HALSerializer):
             'created_by': self.context['request'].user.email
         })
         return super(StoredSignalFilterSerializer, self).create(validated_data=validated_data)
+
+
+class CountStoredSignalFilterSerializer(ModelSerializer):
+    count = SerializerMethodField()
+    counted_at = SerializerMethodField()
+
+    class Meta:
+        model = StoredSignalFilter
+        fields = (
+            'id',
+            'count',
+            'counted_at',
+        )
+
+    def get_count(self, obj):
+        signal_filter = SignalFilter(data=obj.options, queryset=Signal.objects.all())
+        if signal_filter.is_valid():
+            return signal_filter.filter_queryset(signal_filter.queryset).count()
+
+    def get_counted_at(self, obj):
+        return timezone.now()

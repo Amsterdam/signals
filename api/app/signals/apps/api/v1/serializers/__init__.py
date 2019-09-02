@@ -23,7 +23,10 @@ from signals.apps.api.v1.serializers.status_message_template import (
     StateStatusMessageTemplateListSerializer,
     StateStatusMessageTemplateSerializer
 )
-from signals.apps.api.v1.serializers.stored_signal_filter import StoredSignalFilterSerializer
+from signals.apps.api.v1.serializers.stored_signal_filter import (
+    CountStoredSignalFilterSerializer,
+    StoredSignalFilterSerializer
+)
 
 __all__ = [
     'PublicSignalAttachmentSerializer',
@@ -41,4 +44,5 @@ __all__ = [
     'PrivateSplitSignalSerializer',
     'SignalIdListSerializer',
     'StoredSignalFilterSerializer',
+    'CountStoredSignalFilterSerializer',
 ]
