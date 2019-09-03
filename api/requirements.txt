@@ -42,6 +42,8 @@ djangorestframework-gis==0.14
 djangorestframework-xml==1.4.0
 drf-amsterdam==0.3.1
 drf-extensions==0.4.0
+elasticsearch==6.3.1
+elasticsearch-dsl==6.3.1
 entrypoints==0.3
 execnet==1.5.0
 factory-boy==2.11.1

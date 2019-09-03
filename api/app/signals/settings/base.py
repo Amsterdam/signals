@@ -71,6 +71,9 @@ INSTALLED_APPS = [
     'signals.apps.feedback',
     'signals.apps.reporting',
 
+    # WIP
+    'signals.apps.search',
+
     # Third party
     'corsheaders',
     'datapunt_api',
@@ -236,12 +239,19 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
+# SIG-1456
+# CELERY_BEAT_SCHEDULE = {
+#    'save-csv-files-datawarehouse': {
+#        'task': 'signals.apps.signals.tasks'
+#                '.task_save_csv_files_datawarehouse',
+#        'schedule': crontab(hour=4),
+#    },
+#   'rebuild-elastic': {  # Run task every 3rd day of the week at midnight
+#       'task': 'signals.apps.search.tasks.rebuild_index',
+#       'schedule': crontab(minute='00', hour='00', day_of_week='3'),
+#   },
+# }
 CELERY_BEAT_SCHEDULE = {
-    # SIG-1456
-    # 'save-csv-files-datawarehouse': {
-    #     'task': 'signals.apps.signals.tasks.task_save_csv_files_datawarehouse',
-    #     'schedule': crontab(hour=4),
-    # },
     'sigmax-fail-stuck-sending-signals': {
         'task': 'signals.apps.sigmax.tasks.fail_stuck_sending_signals',
         'schedule': crontab(minute='*/15'),
@@ -249,7 +259,7 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # E-mail settings for SMTP (SendGrid)
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'djcelery_email.backends.CeleryEmailBackend')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
@@ -484,3 +494,15 @@ FEEDBACK_ENV_FE_MAPPING = {
 }
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
+
+# Search settings
+SEARCH_SETTINGS = {
+    'PAGE_SIZE': 500,
+    'ELASTIC': {
+        'connections': {
+            'default': {
+                'hosts': os.getenv('ELASTIC_HOST', 'http://127.0.0.1:9200')
+            }
+        }
+    },
+}
