@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError as DjangoCoreValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,15 +14,19 @@ class MlPredictCategoryView(APIView):
         # Default empty response
         data = {'hoofdrubriek': [], 'subrubriek': []}
 
-        response = self.ml_tool_client.predict(text=request.data['text'])
-        if response.status_code == 200:
-            response_data = response.json()
-            for key in data.keys():
-                category_url, translated = translate_prediction_category_url(
-                    category_url=response_data[key][0][0], request=self.request
-                )
+        try:
+            response = self.ml_tool_client.predict(text=request.data['text'])
+        except DjangoCoreValidationError as e:
+            raise ValidationError(e.message, e.code)
+        else:
+            if response.status_code == 200:
+                response_data = response.json()
+                for key in data.keys():
+                    category_url, translated = translate_prediction_category_url(
+                        category_url=response_data[key][0][0], request=self.request
+                    )
 
-                data[key].append([category_url])
-                data[key].append([response_data[key][1][0]])
+                    data[key].append([category_url])
+                    data[key].append([response_data[key][1][0]])
 
         return Response(data)
