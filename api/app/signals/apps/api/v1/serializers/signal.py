@@ -1,7 +1,7 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
+from signals.apps.api.generics.validators import SignalSourceValidator
 from signals.apps.api.v1.fields import (
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
@@ -129,13 +129,16 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'updated_at',
             'has_attachments',
         )
+        extra_kwargs = {
+            'source': {'validators': [SignalSourceValidator()]},
+        }
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         # Set default status
         logged_in_user = self.context['request'].user
@@ -238,11 +241,12 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'label': 'ID'},
             'signal_id': {'label': 'SIGNAL_ID'},
+            'source': {'validators': [SignalSourceValidator()]},
         }
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
