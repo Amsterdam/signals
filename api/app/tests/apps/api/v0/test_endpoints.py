@@ -239,7 +239,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             "Reporter is missing _signal field?"
         )
 
-    def test_post_signal_with_json_invalid_status(self):
+    def test_post_signal_with_json_anonymous_invalid_source(self):
         postjson = self._get_fixture('post_signal')
         postjson['source'] = 'invalid-source'
 

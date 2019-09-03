@@ -138,7 +138,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise serializers.ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         # Set default status
         logged_in_user = self.context['request'].user
@@ -246,7 +246,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise serializers.ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
