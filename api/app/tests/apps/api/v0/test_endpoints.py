@@ -242,6 +242,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             "Reporter is missing _signal field?"
         )
 
+    @skip('SIG-1570 cannot be deployed yet - extra validation disabled')
     def test_post_signal_with_json_anonymous_invalid_source(self):
         postjson = self._get_fixture('post_signal')
         postjson['source'] = 'invalid-source'
