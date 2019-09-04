@@ -15,7 +15,6 @@ class StoredSignalFilter(CreatedUpdatedModel):
     options = JSONField(default=dict)
 
     class Meta:
-        unique_together = ('name', 'created_by')
         ordering = ('-created_at', )
 
     def __str__(self):
