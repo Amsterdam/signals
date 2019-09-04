@@ -43,6 +43,7 @@ group by
 class NMeldingNieuw:
     code = "N_MELDING_NIEUW"
     description = "Aantal nieuwe meldingen in een gegeven periode."
+    no_result = 0
 
     sql = SQL
 

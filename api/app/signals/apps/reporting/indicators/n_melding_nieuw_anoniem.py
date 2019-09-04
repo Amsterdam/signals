@@ -35,8 +35,8 @@ inner join
 inner join
     public.signals_signal as sig
         on sig.id = gauged._signal_id
-where rep.email = ''
-    and rep.phone = ''
+where
+    rep.email = '' and rep.phone = ''
     and sig.created_at >= %(begin)s :: timestamp -- new signals in interval
     and sig.created_at < %(end)s :: timestamp -- new signals in interval
 group by
@@ -47,6 +47,7 @@ group by
 class MMeldingNieuwAnoniem:
     code = "N_MELDING_NIEUW_ANONIEM"
     description = "Aantal nieuwe anonieme meldingen in een gegeven periode."
+    no_result = 0
 
     sql = SQL
 

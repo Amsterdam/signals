@@ -3,8 +3,7 @@ from django.core.exceptions import ValidationError
 
 from signals.apps.reporting.indicators import INDICATOR_ROUTES
 
-# BEFORE (created_at < end)
-# IN (created_at >= begin and created_at < end)
+# Some naming conventions:
 # P_<SOMETHING> percentage of something
 # N_<SOMETHING> count of something
 

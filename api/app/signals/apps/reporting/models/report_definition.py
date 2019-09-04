@@ -4,6 +4,7 @@ import pprint
 
 from django.contrib.gis.db import models
 
+from signals.apps.reporting.indicators import INDICATOR_ROUTES
 
 def get_interval_isoweek(isoyear, isoweek):
     """Get Monday 00:00:00 hours at start of ISO week and the next."""
@@ -100,7 +101,8 @@ class ReportDefinition(models.Model):
         empty = {}
         for code, raw_indicator in raw_indicators.items():
             index |= set(row[0] for row in raw_indicator)
-            empty[code] = None
+            no_result = getattr(INDICATOR_ROUTES[code], 'no_result', None)
+            empty[code] = no_result
 
         # join data on index variable
         data_dict = {}

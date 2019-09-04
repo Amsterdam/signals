@@ -47,6 +47,7 @@ group by
 class MMeldingNieuwNietAnoniem:
     code = "N_MELDING_NIEUW_NIET_ANONIEM"
     description = "Aantal nieuwe niet anonieme meldingen in een gegeven periode."
+    no_result = 0
 
     sql = SQL
 
