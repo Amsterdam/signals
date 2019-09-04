@@ -23,7 +23,7 @@ with gauged as
 select
     gauged.category_id as category_id,
     null,  -- TODO: remove parent category from indicator output
-    count(*) as N_MELDING_NIEUW_NIET_ANONIEM
+    count(*) as N_MELDING_NIEUW
 from
     gauged
 inner join

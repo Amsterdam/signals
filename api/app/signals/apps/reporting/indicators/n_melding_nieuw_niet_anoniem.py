@@ -35,7 +35,8 @@ inner join
 inner join
     public.signals_signal as sig
         on sig.id = gauged._signal_id
-where not (rep.email = '' and rep.phone = '')
+where
+    not (rep.email = '' and rep.phone = '')
     and sig.created_at >= %(begin)s :: timestamp -- new signals in interval
     and sig.created_at < %(end)s :: timestamp -- new signals in interval
 group by
