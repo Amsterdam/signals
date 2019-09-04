@@ -27,22 +27,25 @@ select
 from
     gauged
 inner join
+    public.signals_reporter as rep
+        on rep._signal_id = gauged._signal_id
+inner join
     public.signals_category as cat
         on cat.id = gauged.category_id
 inner join
     public.signals_signal as sig
         on sig.id = gauged._signal_id
-where sig.created_at >= %(begin)s :: timestamp -- new signals in interval
+where not (rep.email = '' and rep.phone = '')
+    and sig.created_at >= %(begin)s :: timestamp -- new signals in interval
     and sig.created_at < %(end)s :: timestamp -- new signals in interval
-    and cat.parent_id is not null
 group by
     gauged.category_id;
 """
 
 
-class NMeldingNieuw:
-    code = "N_MELDING_NIEUW"
-    description = "Aantal nieuwe meldingen in een gegeven periode."
+class MMeldingNieuwNietAnoniem:
+    code = "N_MELDING_NIEUW_NIET_ANONIEM"
+    description = "Aantal nieuwe niet anonieme meldingen in een gegeven periode."
 
     sql = SQL
 

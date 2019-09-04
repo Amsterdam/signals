@@ -3,7 +3,7 @@
 from django.db import migrations
 
 
-def add_reports(apps, schema_editor):
+def add_report_all(apps, schema_editor):
     ReportDefinition = apps.get_model('reporting', 'ReportDefinition')
     ReportIndicator = apps.get_model('reporting', 'ReportIndicator')
 
@@ -32,6 +32,34 @@ def add_reports(apps, schema_editor):
         new_indicator.save()
 
 
+def add_report_anonymous_signals(apps, schema_editor):
+    ReportDefinition = apps.get_model('reporting', 'ReportDefinition')
+    ReportIndicator = apps.get_model('reporting', 'ReportIndicator')
+
+    # Add one report with all available indicators.
+    new_report = ReportDefinition(
+        name='Wekelijkse telling van wel / niet anonieme meldingen',
+        description='Wekelijkse telling van wel / niet anonieme meldingen',
+        interval='WEEK',
+        category='CATEGORY_SUB',
+        area='AREA_ALL',
+    )
+    new_report.save()
+
+    # Add all indicators
+    for indicator_code in [
+                "CATEGORIE_NAAM",
+                'N_MELDING_NIEUW_ANONIEM',
+                'N_MELDING_NIEUW_NIET_ANONIEM',
+                'N_MELDING_NIEUW',
+            ]:
+        new_indicator = ReportIndicator(
+            report=new_report,
+            code=indicator_code,
+        )
+        new_indicator.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -39,5 +67,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_reports)
+        migrations.RunPython(add_report_all),
+        migrations.RunPython(add_report_anonymous_signals),
     ]
