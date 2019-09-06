@@ -6,6 +6,7 @@ from signals.apps.reporting.indicators.p_melding_tevreden import PMeldingTevrede
 from signals.apps.reporting.indicators.n_melding_nieuw_anoniem import MMeldingNieuwAnoniem
 from signals.apps.reporting.indicators.n_melding_nieuw_niet_anoniem import MMeldingNieuwNietAnoniem
 from signals.apps.reporting.indicators.hoofd_categorie_naam import HoofdCategorieNaam
+from signals.apps.reporting.indicators.p_melding_intake_in_12h import PMeldingIntakeIn12H
 
 
 def derive_routes(indicators):
@@ -25,4 +26,5 @@ INDICATOR_ROUTES = derive_routes([
     MMeldingNieuwAnoniem,
     MMeldingNieuwNietAnoniem,
     HoofdCategorieNaam,
+    PMeldingIntakeIn12H,
 ])

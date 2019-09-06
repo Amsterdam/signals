@@ -7,7 +7,7 @@ select
     gauged_cas.category_id as category_id,
     case
         when count(*) = 0 then 0
-    else round(100 * sum(case when feedback.is_satisfied is true then 1 else 0  end) ::  float / count(*)) :: integer  --  # noqa
+        else round(100 * sum(case when feedback.is_satisfied is true then 1 else 0  end) ::  float / count(*)) :: integer  --  # noqa
     end as P_MELDING_TEVREDEN
 from
     public.feedback_feedback as feedback
