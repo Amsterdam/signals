@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db import connection
 
 SQL = """
-with gauged as
+with gauged_cat as
     (select
         _signal_id,
         category_id
@@ -15,28 +15,27 @@ with gauged as
         from
             public.signals_categoryassignment
         where
-            created_at < %(end)s :: timestamp  -- last category update before end of interval
-        order by
-            "_signal_id" desc) as numbered
+            created_at >= %(begin)s :: timestamp  -- only signals created in this interval
+            and created_at < %(end)s :: timestamp
+        ) as numbered
     where
-        numbered.row_num = 1)
+        numbered.row_num = 1)  -- last category update before end of interval
 select
-    gauged.category_id as category_id,
-    null,  -- TODO: remove parent category from indicator output
+    gauged_cat.category_id as category_id,
     count(*) as N_MELDING_NIEUW
 from
-    gauged
+    gauged_cat
 inner join
     public.signals_category as cat
-        on cat.id = gauged.category_id
+        on cat.id = gauged_cat.category_id
 inner join
     public.signals_signal as sig
-        on sig.id = gauged._signal_id
+        on sig.id = gauged_cat._signal_id
 where sig.created_at >= %(begin)s :: timestamp -- new signals in interval
-    and sig.created_at < %(end)s :: timestamp -- new signals in interval
+    and sig.created_at < %(end)s :: timestamp
     and cat.parent_id is not null
 group by
-    gauged.category_id;
+    gauged_cat.category_id;
 """
 
 
@@ -54,7 +53,13 @@ class NMeldingNieuw:
         assert isinstance(begin, datetime)
         assert isinstance(end, datetime)
 
+        db_query_parameters = {
+            'begin': begin,
+            'end': end,
+            'category': category,
+            'area': area,
+        }
         with connection.cursor() as cursor:
-            cursor.execute(self.sql, {'begin': begin, 'end': end})
+            cursor.execute(self.sql, db_query_parameters)
             result = cursor.fetchall()
         return result

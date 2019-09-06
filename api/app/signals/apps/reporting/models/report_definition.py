@@ -3,8 +3,10 @@ import datetime
 import pprint
 
 from django.contrib.gis.db import models
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.reporting.indicators import INDICATOR_ROUTES
+
 
 def get_interval_isoweek(isoyear, isoweek):
     """Get Monday 00:00:00 hours at start of ISO week and the next."""
@@ -61,19 +63,28 @@ class ReportDefinition(models.Model):
     area = models.CharField(max_length=255, choices=AREA_CHOICES)
 
     def _get_interval_parameters(self, *args, **kwargs):
+        # TODO: move refactor validation (we are using DRF here at Django model
+        # layer).
+        # TODO: implement support for other intervals than weekly.
         if self.interval == ReportDefinition.WEEK:
-            try:
-                isoyear = int(kwargs['isoyear'])
-                isoweek = int(kwargs['isoweek'])
-            except KeyError:
+            isoyear = kwargs.get('isoyear', None)
+            isoweek = kwargs.get('isoweek', None)
+
+            if isoyear is None or isoweek is None:
                 msg = 'WEEKly reports need "isoyear" and "isoweek" parameters.'
-                raise ValueError(msg)
+                raise ValidationError(msg)
+
+            try:
+                isoyear = int(isoyear)
+                isoweek = int(isoweek)
             except ValueError:
                 msg = 'For WEEKly report "isoyear" and "isoweek" must be integer.'
+                raise ValidationError(msg)
             else:
                 interval_parameters = {'isoyear': isoyear, 'isoweek': isoweek}
         else:
             raise NotImplementedError('Only WEEK interval is supported')
+
         return interval_parameters
 
     def _get_interval(self, interval_parameters):
@@ -111,7 +122,7 @@ class ReportDefinition(models.Model):
 
         for code, raw_indicator in raw_indicators.items():
             for row in raw_indicator:
-                category_id, parent_category_id, value = row
+                category_id, value = row
                 data_dict[category_id][code] = value
 
         # create a list of dictionaries

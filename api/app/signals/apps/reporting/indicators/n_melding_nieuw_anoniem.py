@@ -15,14 +15,12 @@ with gauged as
         from
             public.signals_categoryassignment
         where
-            created_at < %(end)s :: timestamp  -- last category update before end of interval
-        order by
-            "_signal_id" desc) as numbered
+            created_at < %(end)s :: timestamp
+        ) as numbered
     where
-        numbered.row_num = 1)
+        numbered.row_num = 1)  -- last category update before end of interval
 select
     gauged.category_id as category_id,
-    null,  -- TODO: remove parent category from indicator output
     count(*) as N_MELDING_NIEUW_ANONIEM
 from
     gauged
@@ -39,6 +37,7 @@ where
     rep.email = '' and rep.phone = ''
     and sig.created_at >= %(begin)s :: timestamp -- new signals in interval
     and sig.created_at < %(end)s :: timestamp -- new signals in interval
+    and cat.parent_id is not null
 group by
     gauged.category_id;
 """
@@ -58,7 +57,13 @@ class MMeldingNieuwAnoniem:
         assert isinstance(begin, datetime)
         assert isinstance(end, datetime)
 
+        db_query_parameters = {
+            'begin': begin,
+            'end': end,
+            'category': category,
+            'area': area,
+        }
         with connection.cursor() as cursor:
-            cursor.execute(self.sql, {'begin': begin, 'end': end})
+            cursor.execute(self.sql, db_query_parameters)
             result = cursor.fetchall()
         return result

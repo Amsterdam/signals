@@ -9,39 +9,44 @@ from django.db import connection
 # support parametrized intervals and always group by sub category.
 SQL = """
 select
-    cat.id as category_id,
-    cat.parent_id as parent_category_id,
-    count(*) as N_MELDING_OPEN
-from
-    (select
-        sorted._signal_id as signal_id,
-        sorted.created_at as created_at,
-        sorted.state as state,
-        lag(sorted._signal_id, 1) over () as next_signal_id
-    from
-        (select
-            id,
+    gauged_cas.category_id as category_id,
+    count(distinct(gauged_status._signal_id)) as N_MELDING_GESLOTEN -- one signal closed twice is counted as 1, hence distinct
+from (
+    select
+        _signal_id,
+        state
+    from (
+        select
             _signal_id,
-            created_at,
-            state
-        from public.signals_status as stat
-        where stat.created_at < %(end)s :: timestamp
-        order by
-            "_signal_id" desc,
-            created_at desc) as sorted
-    ) as with_lead
-inner join public.signals_signal as sig
-    on sig.id = with_lead.signal_id
-inner join public.signals_categoryassignment as cas
-    on sig.category_assignment_id = cas.id
-inner join public.signals_category as cat
-    on cas.category_id = cat.id
-inner join public.signals_category as parent_cat
-    on parent_cat.id = cat.parent_id
-where with_lead.signal_id != with_lead.next_signal_id
-    and with_lead.state not in ('o', 'a', 's')
-    and cat.parent_id is not null
-group by cat.id;
+            state,
+            row_number() over(partition by _signal_id order by created_at desc) as row_num
+        from
+            public.signals_status
+        where
+            state not in ('o', 'a', 's')
+            and created_at >= %(begin)s :: timestamp
+            and created_at < %(end)s :: timestamp) as numbered
+    where
+        numbered.row_num = 1) as gauged_status
+inner join (
+    select
+        _signal_id,
+        category_id
+    from (
+        select
+            _signal_id,
+            category_id,
+            row_number() over(partition by _signal_id order by created_at desc) as row_num
+        from
+            public.signals_categoryassignment
+        where
+            created_at < %(end)s :: timestamp) as numbered
+    where
+        numbered.row_num = 1) as gauged_cas
+    on
+        gauged_status._signal_id = gauged_cas._signal_id
+group by
+    gauged_cas.category_id;
 """
 
 
@@ -58,7 +63,13 @@ class NMeldingOpen:
         assert isinstance(begin, datetime)
         assert isinstance(end, datetime)
 
+        db_query_parameters = {
+            'begin': begin,
+            'end': end,
+            'category': category,
+            'area': area,
+        }
         with connection.cursor() as cursor:
-            cursor.execute(self.sql, {'end': end})
+            cursor.execute(self.sql, db_query_parameters)
             result = cursor.fetchall()
         return result

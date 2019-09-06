@@ -4,25 +4,50 @@ from django.db import connection
 
 SQL = """
 select
-    cat.id as category_id,
-    cat.parent_id as parent_category_id,
-    count(distinct(stat._signal_id)) as N_MELDING_GESLOT
-from public.signals_status as stat
-    inner join public.signals_signal as sig
-        on sig.id = stat."_signal_id"
-    inner join public.signals_categoryassignment as cas
-        on sig.category_assignment_id = cas.id
-    inner join public.signals_category as cat
-        on cat.id = cas.category_id
-where stat.created_at >= %(begin)s :: timestamp
-    and stat.created_at < %(end)s :: timestamp
-    and cat.parent_id is not null
-group by cat.id;
+    gauged_cas.category_id as category_id,
+    count(distinct(gauged_status._signal_id)) as N_MELDING_GESLOTEN -- one signal closed twice is counted as 1, hence distinct
+from (
+    select
+        _signal_id,
+        state
+    from (
+        select
+            _signal_id,
+            state,
+            row_number() over(partition by _signal_id order by created_at desc) as row_num
+        from
+            public.signals_status
+        where
+            state in ('o', 'a')
+            and created_at >= %(begin)s :: timestamp
+            and created_at < %(end)s :: timestamp) as numbered
+    where
+        numbered.row_num = 1) as gauged_status
+inner join (
+    select
+        _signal_id,
+        category_id
+    from (
+        select
+            _signal_id,
+            category_id,
+            row_number() over(partition by _signal_id order by created_at desc) as row_num
+        from
+            public.signals_categoryassignment
+        where
+            created_at < %(end)s :: timestamp) as numbered
+    where
+        numbered.row_num = 1) as gauged_cas
+    on
+        gauged_status._signal_id = gauged_cas._signal_id
+group by
+    gauged_cas.category_id;
 """
+# TODO: add parent category not null where clause
 
 
 class NMeldingGesloten:
-    code = "N_MELDING_GESLOT"
+    code = "N_MELDING_GESLOTEN"
     description = "Aantal meldingen naar afgehandeld, geen dubbeltelling bij heropenen."
 
     sql = SQL
@@ -34,7 +59,13 @@ class NMeldingGesloten:
         assert isinstance(begin, datetime)
         assert isinstance(end, datetime)
 
+        db_query_parameters = {
+            'begin': begin,
+            'end': end,
+            'category': category,
+            'area': area,
+        }
         with connection.cursor() as cursor:
-            cursor.execute(self.sql, {'begin': begin, 'end': end})
+            cursor.execute(self.sql, db_query_parameters)
             result = cursor.fetchall()
         return result

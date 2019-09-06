@@ -5,17 +5,18 @@ from django.db import connection
 SQL = """
 select
     cat.id as category_id,
-    cat.name as CATEGORIE_NAAM
+    main_cat.name as HOOFD_CATEGORIE_NAAM
 from
     public.signals_category as cat
-where
-    cat.parent_id is not null;
+inner join
+    public.signals_category as main_cat
+        on cat.parent_id = main_cat.id;
 """
 
 
-class CategorieNaam:
-    code = "CATEGORIE_NAAM"
-    description = "Categorie naam."
+class HoofdCategorieNaam:
+    code = "HOOFD_CATEGORIE_NAAM"
+    description = "Hoofd categorie naam."
 
     sql = SQL
 

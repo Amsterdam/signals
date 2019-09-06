@@ -20,7 +20,8 @@ def add_report_all(apps, schema_editor):
     # Add all indicators
     for indicator_code in [
                 "CATEGORIE_NAAM",
-                'N_MELDING_GESLOT',
+                "HOOFD_CATEGORIE_NAAM",
+                'N_MELDING_GESLOTEN',
                 'N_MELDING_NIEUW',
                 'N_MELDING_OPEN',
                 'P_MELDING_TEVREDEN',
@@ -49,6 +50,7 @@ def add_report_anonymous_signals(apps, schema_editor):
     # Add all indicators
     for indicator_code in [
                 "CATEGORIE_NAAM",
+                "HOOFD_CATEGORIE_NAAM",
                 'N_MELDING_NIEUW_ANONIEM',
                 'N_MELDING_NIEUW_NIET_ANONIEM',
                 'N_MELDING_NIEUW',
