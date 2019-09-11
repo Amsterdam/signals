@@ -21,7 +21,7 @@ def add_report_all(apps, schema_editor):
     for indicator_code in [
                 "CATEGORIE_NAAM",
                 "HOOFD_CATEGORIE_NAAM",
-                # "P_MELDING_AFGEROND_OP_TIJD",
+                'P_MELDING_BINNEN_TERMIJN',
                 "P_MELDING_INTAKE_IN_12H",
                 'N_MELDING_NIEUW',
                 'N_MELDING_OPEN',
