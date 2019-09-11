@@ -17,7 +17,7 @@ def _to_first_and_last_day_of_the_week(isoweek, isoyear):
     first_day_of_week = timezone.datetime.strptime(
         '{}-W{}-1'.format(isoyear, isoweek), '%G-W%V-%u'
     )
-    last_day_of_week = first_day_of_week + timedelta(days=6, minutes=1439)
+    last_day_of_week = first_day_of_week + timedelta(days=7)
     return first_day_of_week, last_day_of_week
 
 
@@ -33,12 +33,48 @@ def _fix_rows_to_match_header_count(rows, headers):
 
 
 def _create_extra_properties_headers(extra_properties, headers=None):
+    """
+    We want the extra_properties to be in one of the following formats
+
+    [
+        {
+            'id': 'Lorem',
+            'label': 'ipsum',
+            'answer': 'the answer',
+            'category_url': '/signals/v1/public/terms/categories/X/sub_categories/Y'
+        },
+        ...
+    ]
+
+    or
+
+    [
+        {
+            'id': 'Lorem',
+            'label': 'ipsum',
+            'answer': {
+                'value': 'the answer'
+            },
+            'category_url': '/signals/v1/public/terms/categories/X/sub_categories/Y'
+        },
+        ...
+    ]
+
+    The old style extra_properties will be ignored
+
+    {
+        'question_1': 'answer_1',
+        'question_2': 'answer_2',
+        'question_3': 'answer_3',
+        ...
+    }
+    """
     headers = headers or []
 
     if extra_properties:
         for extra_property in extra_properties:
             if isinstance(extra_property, str):
-                continue
+                continue  # old style, we ignore these
 
             if extra_property['id'] not in headers:
                 headers.append(extra_property['id'])
@@ -47,12 +83,48 @@ def _create_extra_properties_headers(extra_properties, headers=None):
 
 
 def _create_extra_properties_row(extra_properties, headers):
+    """
+    We want the extra_properties to be in one of the following formats
+
+    [
+        {
+            'id': 'Lorem',
+            'label': 'ipsum',
+            'answer': 'the answer',
+            'category_url': '/signals/v1/public/terms/categories/X/sub_categories/Y'
+        },
+        ...
+    ]
+
+    or
+
+    [
+        {
+            'id': 'Lorem',
+            'label': 'ipsum',
+            'answer': {
+                'value': 'the answer'
+            },
+            'category_url': '/signals/v1/public/terms/categories/X/sub_categories/Y'
+        },
+        ...
+    ]
+
+    The old style extra_properties will be ignored
+
+    {
+        'question_1': 'answer_1',
+        'question_2': 'answer_2',
+        'question_3': 'answer_3',
+        ...
+    }
+    """
     row = [None] * len(headers)
 
     if extra_properties:
         for extra_property in extra_properties:
             if isinstance(extra_property, str):
-                continue
+                continue  # old style, we ignore these
 
             answer = None
             if isinstance(extra_property['answer'], str):
@@ -128,10 +200,8 @@ def create_csv_per_sub_category(category, location, isoweek, isoyear):
 
     parent_category = _get_horeca_main_category()
     if category.parent_id != parent_category.pk:
-        raise ValidationError(
-            'Function \'create_csv_per_sub_category\' can only work with sub categories from the '
-            '\'horeca\' main category'
-        )
+        raise NotImplementedError(f'Not implemented for categories that do not belong to the main '
+                                  f'category ({parent_category.name})')
 
     first_day_of_week, last_day_of_week = _to_first_and_last_day_of_the_week(isoweek, isoyear)
     rows = _get_csv_rows_per_category(category, created_at__range=(first_day_of_week,

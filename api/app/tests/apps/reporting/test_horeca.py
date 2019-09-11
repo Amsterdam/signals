@@ -22,7 +22,7 @@ class TestHoreca(testcases.TestCase):
         self.assertEqual(first.month, 12)
         self.assertEqual(first.year, 2018)
 
-        self.assertEqual(last.day, 6)
+        self.assertEqual(last.day, 7)
         self.assertEqual(last.month, 1)
         self.assertEqual(last.year, 2019)
 
@@ -155,7 +155,7 @@ class TestHoreca(testcases.TestCase):
             parent_id=main_category.pk
         ).first()
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(NotImplementedError):
             create_csv_per_sub_category(category, '/tmp', 1, 2019)
 
     def test_create_csv_files(self):
