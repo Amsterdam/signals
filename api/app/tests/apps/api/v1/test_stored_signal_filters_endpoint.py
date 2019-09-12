@@ -131,3 +131,25 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         uri = '{}{}'.format(self.endpoint, user_filter.id)
         response = self.client.delete(uri)
         self.assertEqual(404, response.status_code)
+
+    def test_create_filter_refresh(self):
+        data = {
+            'name': 'Created my first filter',
+            'options': json.dumps({
+                'status': [
+                    'i',
+                ]
+            }),
+            'refresh': True,
+        }
+
+        response = self.client.post(self.endpoint, data, fornat='json')
+        self.assertEqual(201, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual('Created my first filter', response_data['name'])
+        self.assertIn('options', response_data)
+        self.assertIn('status', response_data['options'])
+        self.assertEqual(1, len(response_data['options']['status']))
+        self.assertIn('i', response_data['options']['status'])
+        self.assertTrue(response_data['refresh'])
