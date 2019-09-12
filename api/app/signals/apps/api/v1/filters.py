@@ -1,3 +1,6 @@
+from functools import reduce
+from operator import or_
+
 from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
@@ -9,6 +12,14 @@ feedback_choices = (
     ('not_satisfied', 'not_satisfied'),
     ('not_received', 'not_received'),
 )
+
+
+def _get_category_queryset():
+    return Category.objects.all()
+
+
+def _get_parent_category_queryset():
+    return Category.objects.filter(parent__isnull=True)
 
 
 def source_choices():
@@ -28,7 +39,7 @@ class SignalFilter(FilterSet):
     status = filters.MultipleChoiceFilter(field_name='status__state', choices=status_choices)
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
-        queryset=Category.objects.filter(parent__isnull=True),
+        queryset=_get_parent_category_queryset(),
         to_field_name='slug',
         field_name='category_assignment__category__parent__slug',
     )
@@ -36,10 +47,35 @@ class SignalFilter(FilterSet):
     # category_slug, because we will soon be using one type of category, instead of main vs sub
     # categories. This way the naming in the API will remain consistent
     category_slug = filters.ModelMultipleChoiceFilter(
-        queryset=Category.objects.all(),
+        queryset=_get_category_queryset(),
         to_field_name='slug',
-        field_name='category_assignment__category__slug',
+        method='category_slug_filter',
     )
+
+    def category_slug_filter(self, queryset, name, value):
+        """
+        SIG-1608 [BE] filteren op hoofd- en subcategorie in V1 werkt niet goed
+
+        Categories are now selected using an OR statement
+        Also added a check to see if the given categories are child or parent
+
+        :param queryset:
+        :param name:
+        :param value:
+        :return: queryset
+        """
+        if value:
+            query = reduce(
+                or_,
+                (
+                    Q(category_assignment__category_id=category.pk)
+                    if category.is_child() else
+                    Q(category_assignment__category__parent_id=category.pk)
+                    for category in value
+                )
+            )
+            return queryset.filter(query)
+        return queryset
 
     priority = filters.ChoiceFilter(field_name='priority__priority',
                                     choices=Priority.PRIORITY_CHOICES)
