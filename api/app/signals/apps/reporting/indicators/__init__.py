@@ -7,7 +7,10 @@ from signals.apps.reporting.indicators.n_melding_nieuw_anoniem import MMeldingNi
 from signals.apps.reporting.indicators.n_melding_nieuw_niet_anoniem import MMeldingNieuwNietAnoniem
 from signals.apps.reporting.indicators.hoofd_categorie_naam import HoofdCategorieNaam
 from signals.apps.reporting.indicators.p_melding_intake_in_12h import PMeldingIntakeIn12H
-from signals.apps.reporting.indicators.p_melding_binnen_termijn import PMeldingBinnenTermijn
+from signals.apps.reporting.indicators.p_melding_gesloten_binnen_termijn import PMeldingGeslotenBinnenTermijn
+from signals.apps.reporting.indicators.n_melding_open_3sla import NMeldingOpen3SLA
+from signals.apps.reporting.indicators.n_melding_open_1sla import NMeldingOpen1SLA
+from signals.apps.reporting.indicators.n_melding_open_binnen_termijn import NMeldingOpenBinnenTermijn
 
 
 def derive_routes(indicators):
@@ -28,5 +31,8 @@ INDICATOR_ROUTES = derive_routes([
     MMeldingNieuwNietAnoniem,
     HoofdCategorieNaam,
     PMeldingIntakeIn12H,
-    PMeldingBinnenTermijn,
+    PMeldingGeslotenBinnenTermijn,
+    NMeldingOpen3SLA,
+    NMeldingOpen1SLA,
+    NMeldingOpenBinnenTermijn,
 ])

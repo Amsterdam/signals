@@ -49,6 +49,7 @@ group by
 class NMeldingGesloten:
     code = "N_MELDING_GESLOTEN"
     description = "Aantal meldingen naar afgehandeld, geen dubbeltelling bij heropenen."
+    no_result = 0
 
     sql = SQL
 

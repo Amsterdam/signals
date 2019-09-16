@@ -19,14 +19,16 @@ def add_report_all(apps, schema_editor):
 
     # Add all indicators
     for indicator_code in [
-                "CATEGORIE_NAAM",
-                "HOOFD_CATEGORIE_NAAM",
-                'P_MELDING_BINNEN_TERMIJN',
-                "P_MELDING_INTAKE_IN_12H",
+                'CATEGORIE_NAAM',
+                'HOOFD_CATEGORIE_NAAM',
+                'P_MELDING_GESLOTEN_BINNEN_TERMIJ',
+                'P_MELDING_INTAKE_IN_12H',
                 'N_MELDING_NIEUW',
                 'N_MELDING_OPEN',
                 'N_MELDING_GESLOTEN',
-                # "P_MELDING_AFGEROND_3X_SLA",
+                'N_MELDING_OPEN_3SLA',
+                'N_MELDING_OPEN_1SLA',
+                'N_MELDING_OPEN_BINNEN_TERMIJN',
                 'P_MELDING_TEVREDEN',
             ]:
         new_indicator = ReportIndicator(
@@ -53,7 +55,7 @@ def add_report_anonymous_signals(apps, schema_editor):
     # Add all indicators
     for indicator_code in [
                 "CATEGORIE_NAAM",
-                "HOOFD_CATEGORIE_NAAM",
+                'HOOFD_CATEGORIE_NAAM',
                 'N_MELDING_NIEUW_ANONIEM',
                 'N_MELDING_NIEUW_NIET_ANONIEM',
                 'N_MELDING_NIEUW',

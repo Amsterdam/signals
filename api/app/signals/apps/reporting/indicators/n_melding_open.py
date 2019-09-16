@@ -2,11 +2,6 @@ from datetime import datetime
 
 from django.db import connection
 
-# TODO: Investigate JSON straight from Postgres (?)
-
-# Note: it is anticipated that several chunks of SQL will be needed in the
-# general case to support all category and area subdivisions. For now we only
-# support parametrized intervals and always group by sub category.
 SQL = """
 select
     gauged_cas.category_id as category_id,
@@ -24,7 +19,6 @@ from (
             public.signals_status
         where
             state not in ('o', 'a', 's')
-            and created_at >= %(begin)s :: timestamp
             and created_at < %(end)s :: timestamp) as numbered
     where
         numbered.row_num = 1) as gauged_status
