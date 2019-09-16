@@ -345,3 +345,23 @@ class TestFilters(SignalsBaseApiTestCase):
 
         self.assertEqual(1, len(result_ids))
         self.assertEqual(feedback_negative._signal_id, result_ids[0])
+
+    def test_filter_source(self):
+        result_ids = self._request_filter_signals({'source': 'online'})
+        self.assertEqual(len(self.signals), len(result_ids))
+
+    def test_filter_source_multiple_sources(self):
+        acc_signals = SignalFactory.create_batch(5, source='ACC')
+
+        result_ids = self._request_filter_signals({'source': 'online'})
+        self.assertEqual(len(self.signals), len(result_ids))
+
+        result_ids = self._request_filter_signals({'source': 'ACC'})
+        self.assertEqual(len(acc_signals), len(result_ids))
+
+    def test_filter_source_invalid_option(self):
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data={'source': 'invalid'})
+        self.assertEqual(400, resp.status_code)
+        self.assertEqual(resp.json()['source'][0],
+                         'Selecteer een geldige keuze. invalid is geen beschikbare keuze.')
