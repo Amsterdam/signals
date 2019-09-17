@@ -122,7 +122,7 @@ def _set_service_level(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0070_sig-1525'),
+        ('signals', '0072_auto_20190912_1020'),
     ]
 
     operations = [
