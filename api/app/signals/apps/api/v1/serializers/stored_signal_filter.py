@@ -15,9 +15,11 @@ class StoredSignalFilterSerializer(HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'name',
             'created_at',
             'options',
+            'refresh',
         )
 
     def validate(self, attrs):

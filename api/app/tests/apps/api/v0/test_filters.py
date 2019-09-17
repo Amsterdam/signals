@@ -10,8 +10,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.v0.serializers import SignalAuthHALSerializerList
-from signals.apps.signals.models import Category, Priority, Signal
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.models import Priority, Signal
+from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory, SignalFactory
 from tests.test import SignalsBaseApiTestCase
 
 IN_AMSTERDAM = (4.898466, 52.361585)
@@ -305,10 +305,8 @@ class TestFieldMappingOrderingFilter(TestCase):
 
 class TestSubSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
-        # Assumes initial data in form of categories is present. (Possibly generalize this test
-        # by not assuming a set category).
-        self.sub_cat_1 = Category.objects.get(slug='asbest-accu')
-        self.sub_cat_2 = Category.objects.get(slug='oever-kade-steiger')
+        self.sub_cat_1 = CategoryFactory.create()
+        self.sub_cat_2 = CategoryFactory.create()
 
         self.s1 = SignalFactory.create(category_assignment__category=self.sub_cat_1)
         self.s2 = SignalFactory.create(category_assignment__category=self.sub_cat_2)
@@ -353,15 +351,11 @@ class TestSubSlugFilter(SignalsBaseApiTestCase):
 
 class TestMainSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
-        # Assumes initial data in form of categories is present. (Possibly generalize this test
-        # by not assuming a set category).
-        self.main_cat_1 = Category.objects.get(slug='afval')
-        self.main_cat_2 = Category.objects.get(slug='openbaar-groen-en-water')
+        self.main_cat_1 = ParentCategoryFactory.create()
+        self.main_cat_2 = ParentCategoryFactory.create()
 
-        self.s1 = SignalFactory.create(
-            category_assignment__category__parent=self.main_cat_1)
-        self.s2 = SignalFactory.create(
-            category_assignment__category__parent=self.main_cat_2)
+        self.s1 = SignalFactory.create(category_assignment__category__parent=self.main_cat_1)
+        self.s2 = SignalFactory.create(category_assignment__category__parent=self.main_cat_2)
 
         # We are testing the authenticated part of the API, hence:
         self.client.force_authenticate(user=self.superuser)

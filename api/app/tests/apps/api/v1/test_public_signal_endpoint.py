@@ -126,3 +126,11 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
+
+    def test_create_with_invalid_source_user(self):
+        data = self.create_initial_data
+        data['source'] = 'invalid-source'
+        response = self.client.post(self.list_endpoint, data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')

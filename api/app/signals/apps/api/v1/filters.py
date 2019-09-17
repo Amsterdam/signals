@@ -2,13 +2,18 @@ from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.generics.filters import buurt_choices, status_choices
-from signals.apps.signals.models import STADSDELEN, Category, Priority
+from signals.apps.signals.models import STADSDELEN, Category, Priority, Signal
 
 feedback_choices = (
     ('satisfied', 'satisfied'),
     ('not_satisfied', 'not_satisfied'),
     ('not_received', 'not_received'),
 )
+
+
+def source_choices():
+    choices = Signal.objects.order_by('source').values_list('source', flat=True).distinct()
+    return [(choice, f'{choice}') for choice in choices]
 
 
 class SignalFilter(FilterSet):
@@ -51,6 +56,8 @@ class SignalFilter(FilterSet):
                                               lookup_expr='date__gte')
     incident_date_after = filters.DateFilter(field_name='incident_date_start',
                                              lookup_expr='date__lte')
+
+    source = filters.MultipleChoiceFilter(choices=source_choices)
 
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
 
