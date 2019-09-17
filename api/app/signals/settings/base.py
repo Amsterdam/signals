@@ -258,15 +258,23 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
-EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS = os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None)
-EMAIL_FLEX_HORECA_WEEKDAYS = os.getenv(
-    'EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7')  # friday, saterday, sunday
-EMAIL_FLEX_HORECA_END_TIME = os.getenv(
-    'EMAIL_FLEX_HORECA_END_TIME', '04:00')  # 04:00 o'clock
-EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None)
-EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None)
+# Email integration settings
+EMAIL_INTEGRATIONS = dict(
+    FLEX_HORECA=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None), ],
+        APPLICABLE_RULES=dict(
+            WEEKDAYS=os.getenv('EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7'),  # fri, sat, sun
+            END_TIME=os.getenv('EMAIL_FLEX_HORECA_END_TIME', '04:00'),  # 04:00 o'clock
+        )
+    ),
+    TOEZICHT_OR_NIEUW_WEST=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
+    ),
+    VTH_NIEUW_WEST=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
+    ),
+)
+
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
 # Django cache settings
