@@ -11,6 +11,14 @@ feedback_choices = (
 )
 
 
+def _get_child_category_queryset():
+    return Category.objects.filter(parent__isnull=False)
+
+
+def _get_parent_category_queryset():
+    return Category.objects.filter(parent__isnull=True)
+
+
 def source_choices():
     choices = Signal.objects.order_by('source').values_list('source', flat=True).distinct()
     return [(choice, f'{choice}') for choice in choices]
@@ -28,7 +36,7 @@ class SignalFilter(FilterSet):
     status = filters.MultipleChoiceFilter(field_name='status__state', choices=status_choices)
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
-        queryset=Category.objects.filter(parent__isnull=True),
+        queryset=_get_parent_category_queryset(),
         to_field_name='slug',
         field_name='category_assignment__category__parent__slug',
     )
@@ -36,7 +44,7 @@ class SignalFilter(FilterSet):
     # category_slug, because we will soon be using one type of category, instead of main vs sub
     # categories. This way the naming in the API will remain consistent
     category_slug = filters.ModelMultipleChoiceFilter(
-        queryset=Category.objects.all(),
+        queryset=_get_child_category_queryset(),
         to_field_name='slug',
         field_name='category_assignment__category__slug',
     )
@@ -85,6 +93,32 @@ class SignalFilter(FilterSet):
             )
 
         return queryset
+
+    def _categories_filter(self, queryset, main_categories, sub_categories):
+        if not main_categories and not sub_categories:
+            return queryset
+
+        queryset = queryset.filter(
+            Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
+            Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+        )
+        return queryset
+
+    def filter_queryset(self, queryset):
+        main_categories = []
+        sub_categories = []
+
+        for name, value in self.form.cleaned_data.items():
+            if name.lower() == 'maincategory_slug':
+                main_categories = value
+            elif name.lower() == 'category_slug':
+                sub_categories = value
+            else:
+                queryset = self.filters[name].filter(queryset, value)
+
+        return self._categories_filter(queryset=queryset,
+                                       main_categories=main_categories,
+                                       sub_categories=sub_categories)
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):

@@ -9,6 +9,7 @@ from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
     CategoryFactory,
+    ParentCategoryFactory,
     SignalFactory,
     StatusFactory
 )
@@ -365,3 +366,36 @@ class TestFilters(SignalsBaseApiTestCase):
         self.assertEqual(400, resp.status_code)
         self.assertEqual(resp.json()['source'][0],
                          'Selecteer een geldige keuze. invalid is geen beschikbare keuze.')
+
+    def test_filter_maincategory_and_category_slugs(self):
+        maincategory_slugs = [
+            self.sub_categories[2].parent.slug,
+            self.sub_categories[3].parent.slug
+        ]
+
+        category_slugs = [
+            self.sub_categories[0].slug,
+            self.sub_categories[1].slug
+        ]
+
+        params = {
+            'maincategory_slug': maincategory_slugs,
+            'category_slug': category_slugs
+        }
+
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(16, len(result_ids))
+
+    def test_filter_maincategory_and_category_slugs_not_a_unique_slug(self):
+        parent_category = ParentCategoryFactory.create(name='not_unique')
+        category = CategoryFactory.create(name='not_unique', parent=parent_category)
+
+        SignalFactory.create(category_assignment__category=category)
+
+        params = {
+            'maincategory_slug': [parent_category.slug, ],
+            'category_slug': [category.slug, ]
+        }
+
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))
