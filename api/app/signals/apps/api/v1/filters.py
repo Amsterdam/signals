@@ -1,6 +1,3 @@
-from functools import reduce
-from operator import or_
-
 from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
@@ -14,8 +11,8 @@ feedback_choices = (
 )
 
 
-def _get_category_queryset():
-    return Category.objects.all()
+def _get_child_category_queryset():
+    return Category.objects.filter(parent__isnull=False)
 
 
 def _get_parent_category_queryset():
@@ -47,35 +44,10 @@ class SignalFilter(FilterSet):
     # category_slug, because we will soon be using one type of category, instead of main vs sub
     # categories. This way the naming in the API will remain consistent
     category_slug = filters.ModelMultipleChoiceFilter(
-        queryset=_get_category_queryset(),
+        queryset=_get_child_category_queryset(),
         to_field_name='slug',
-        method='category_slug_filter',
+        field_name='category_assignment__category__slug',
     )
-
-    def category_slug_filter(self, queryset, name, value):
-        """
-        SIG-1608 [BE] filteren op hoofd- en subcategorie in V1 werkt niet goed
-
-        Categories are now selected using an OR statement
-        Also added a check to see if the given categories are child or parent
-
-        :param queryset:
-        :param name:
-        :param value:
-        :return: queryset
-        """
-        if value:
-            query = reduce(
-                or_,
-                (
-                    Q(category_assignment__category_id=category.pk)
-                    if category.is_child() else
-                    Q(category_assignment__category__parent_id=category.pk)
-                    for category in value
-                )
-            )
-            return queryset.filter(query)
-        return queryset
 
     priority = filters.ChoiceFilter(field_name='priority__priority',
                                     choices=Priority.PRIORITY_CHOICES)
@@ -121,6 +93,32 @@ class SignalFilter(FilterSet):
             )
 
         return queryset
+
+    def _categories_filter(self, queryset, main_categories, sub_categories):
+        if not main_categories and not sub_categories:
+            return queryset
+
+        queryset = queryset.filter(
+            Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
+            Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+        )
+        return queryset
+
+    def filter_queryset(self, queryset):
+        main_categories = []
+        sub_categories = []
+
+        for name, value in self.form.cleaned_data.items():
+            if name.lower() == 'maincategory_slug':
+                main_categories = value
+            elif name.lower() == 'category_slug':
+                sub_categories = value
+            else:
+                queryset = self.filters[name].filter(queryset, value)
+
+        return self._categories_filter(queryset=queryset,
+                                       main_categories=main_categories,
+                                       sub_categories=sub_categories)
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):
