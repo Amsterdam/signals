@@ -394,6 +394,11 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+        'signals.apps.reporting.management.commands.dump_horeca_csv_files': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
 
         # Log all unhandled exceptions
         'django.request': {
