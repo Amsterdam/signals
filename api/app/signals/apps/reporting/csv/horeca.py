@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import shutil
 import tempfile
 from datetime import timedelta
 
@@ -218,7 +219,7 @@ def create_csv_per_sub_category(category, location, isoweek, isoyear):
     return csv_file.name
 
 
-def create_csv_files(isoweek, isoyear):
+def create_csv_files(isoweek, isoyear, save_in_dir=None):
     category = _get_horeca_main_category()
 
     csv_files = []
@@ -226,11 +227,17 @@ def create_csv_files(isoweek, isoyear):
     # TODO: Change the way we store/serve these csv files in the next ticket. SIG-1547 is only about
     #       generating the CSV files and the content. So for now we store them in a "temporary"
     #       directory
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         for sub_category in category.children.all():
             csv_file = create_csv_per_sub_category(
                 sub_category, tmp_dir, isoweek=isoweek, isoyear=isoyear
             )
             csv_files.append(csv_file)
+
+        if save_in_dir:
+            for csv_file in csv_files:
+                logger.info('Copy file "{}" to "{}"'.format(csv_file, save_in_dir))
+                shutil.copy(csv_file, save_in_dir)
 
     return csv_files
