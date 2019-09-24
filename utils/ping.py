@@ -94,8 +94,9 @@ def main():
     is_authenticated = api_client.ping()
 
     if is_authenticated:
-        print('User {} is successfully authenticated in SIA.'.format(env.email))
-
+        print('User {} is successfully authorized for SIA.'.format(env.email))
+    else:
+        print('User {} is not authorized for SIA'.format(env.email))
 
 if __name__ == '__main__':
     main()
