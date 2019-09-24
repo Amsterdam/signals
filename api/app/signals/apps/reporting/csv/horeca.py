@@ -5,13 +5,29 @@ import shutil
 import tempfile
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
+from signals.apps.reporting.csv.utils import _get_storage_backend
 from signals.apps.signals.models import Category, Signal
 
 logger = logging.getLogger(__name__)
+
+
+def get_swift_parameters():
+    """Get Swift parameters for 'Horeca data levering'"""
+    return {
+        'api_auth_url': settings.HORECA_SWIFT_AUTH_URL,
+        'api_username': settings.HORECA_SWIFT_USERNAME,
+        'api_key': settings.HORECA_SWIFT_PASSWORD,
+        'tenant_name': settings.HORECA_SWIFT_TENANT_NAME,
+        'tenant_id': settings.HORECA_SWIFT_TENANT_ID,
+        'region_name': settings.HORECA_SWIFT_REGION_NAME,
+        'container_name': settings.HORECA_SWIFT_CONTAINER_NAME,
+        'auto_overwrite': True,
+    }
 
 
 def _to_first_and_last_day_of_the_week(isoweek, isoyear):
@@ -239,5 +255,11 @@ def create_csv_files(isoweek, isoyear, save_in_dir=None):
             for csv_file in csv_files:
                 logger.info('Copy file "{}" to "{}"'.format(csv_file, save_in_dir))
                 shutil.copy(csv_file, save_in_dir)
+        elif os.getenv('SWIFT_ENABLED', 'false') == 'true':
+            storage = _get_storage_backend(**get_swift_parameters())
+            for csv_file_path in csv_files:
+                with open(csv_file_path, 'rb') as opened_csv_file:
+                    file_name = os.path.basename(opened_csv_file.name)
+                    storage.save(name=file_name, content=opened_csv_file)
 
     return csv_files

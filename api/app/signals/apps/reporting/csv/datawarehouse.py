@@ -10,12 +10,11 @@ import tempfile
 from pprint import pprint
 
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.db import connection, reset_queries
-from swift.storage import SwiftStorage
 
 from signals.apps.feedback.models import Feedback
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
+from signals.apps.reporting.csv.utils import _get_storage_backend
 from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
@@ -26,6 +25,20 @@ from signals.apps.signals.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_swift_parameters():
+    """Get Swift parameters for Datawarehouse"""
+    return {
+        'api_auth_url': settings.DWH_SWIFT_AUTH_URL,
+        'api_username': settings.DWH_SWIFT_USERNAME,
+        'api_key': settings.DWH_SWIFT_PASSWORD,
+        'tenant_name': settings.DWH_SWIFT_TENANT_NAME,
+        'tenant_id': settings.DWH_SWIFT_TENANT_ID,
+        'region_name': settings.DWH_SWIFT_REGION_NAME,
+        'container_name': settings.DWH_SWIFT_CONTAINER_NAME,
+        'auto_overwrite': True,
+    }
 
 
 # TODO: make it possible to save to local disk.
@@ -52,34 +65,11 @@ def save_csv_files_datawarehouse():
 
         pprint(connection.queries)
         # Getting the storage backend and save all CSV files.
-        storage = _get_storage_backend()
+        storage = _get_storage_backend(**get_swift_parameters())
         for csv_file_path in csv_files:
             with open(csv_file_path, 'rb') as opened_csv_file:
                 file_name = os.path.basename(opened_csv_file.name)
                 storage.save(name=file_name, content=opened_csv_file)
-
-
-def _get_storage_backend():
-    """Return the storage backend (Object Store) specific for Datawarehouse.
-
-    :returns: FileSystemStorage of SwiftStorage instance
-    """
-    # TODO: Refactor this logic, belongs in app_settings and project settings
-
-    if os.getenv('SWIFT_ENABLED', 'false') == 'true':
-        print('Writing to: objectstore')
-        return SwiftStorage(
-            api_auth_url=settings.DWH_SWIFT_AUTH_URL,
-            api_username=settings.DWH_SWIFT_USERNAME,
-            api_key=settings.DWH_SWIFT_PASSWORD,
-            tenant_name=settings.DWH_SWIFT_TENANT_NAME,
-            tenant_id=settings.DWH_SWIFT_TENANT_ID,
-            region_name=settings.DWH_SWIFT_REGION_NAME,
-            container_name=settings.DWH_SWIFT_CONTAINER_NAME,
-            auto_overwrite=True)
-    else:
-        print('Writing to:', settings.DWH_MEDIA_ROOT)
-        return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
 
 
 def _create_signals_csv(location):

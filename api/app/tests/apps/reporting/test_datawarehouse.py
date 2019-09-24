@@ -69,12 +69,12 @@ class TestDatawarehouse(testcases.TestCase):
         DWH_SWIFT_CONTAINER_NAME='dwh_container_name'
     )
     @mock.patch.dict(os.environ, {'SWIFT_ENABLED': 'true'})
-    @mock.patch('signals.apps.reporting.csv.datawarehouse.SwiftStorage', autospec=True)
+    @mock.patch('signals.apps.reporting.csv.utils.SwiftStorage', autospec=True)
     def test_get_storage_backend(self, mocked_swift_storage):
         mocked_swift_storage_instance = mock.Mock()
         mocked_swift_storage.return_value = mocked_swift_storage_instance
 
-        result = datawarehouse._get_storage_backend()
+        result = datawarehouse._get_storage_backend(datawarehouse.get_swift_parameters())
 
         self.assertEqual(result, mocked_swift_storage_instance)
         mocked_swift_storage.assert_called_once_with(
