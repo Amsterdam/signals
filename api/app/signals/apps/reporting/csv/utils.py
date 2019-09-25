@@ -8,7 +8,7 @@ from swift.storage import SwiftStorage
 def _get_storage_backend(swift_parameters):
     """Return the storage backend (Object Store) specific for Horeca data delivery.
 
-    :returns: FileSystemStorage of SwiftStorage instance
+    :returns: FileSystemStorage or SwiftStorage instance
     """
     # TODO: Refactor this logic, belongs in app_settings and project settings
 

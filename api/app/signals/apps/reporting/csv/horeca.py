@@ -256,7 +256,7 @@ def create_csv_files(isoweek, isoyear, save_in_dir=None):
                 logger.info('Copy file "{}" to "{}"'.format(csv_file, save_in_dir))
                 shutil.copy(csv_file, save_in_dir)
         elif os.getenv('SWIFT_ENABLED', 'false') == 'true':
-            storage = _get_storage_backend(**get_swift_parameters())
+            storage = _get_storage_backend(get_swift_parameters())
             for csv_file_path in csv_files:
                 with open(csv_file_path, 'rb') as opened_csv_file:
                     file_name = os.path.basename(opened_csv_file.name)

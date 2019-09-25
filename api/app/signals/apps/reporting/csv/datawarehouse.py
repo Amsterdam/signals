@@ -65,7 +65,7 @@ def save_csv_files_datawarehouse():
 
         pprint(connection.queries)
         # Getting the storage backend and save all CSV files.
-        storage = _get_storage_backend(**get_swift_parameters())
+        storage = _get_storage_backend(get_swift_parameters())
         for csv_file_path in csv_files:
             with open(csv_file_path, 'rb') as opened_csv_file:
                 file_name = os.path.basename(opened_csv_file.name)

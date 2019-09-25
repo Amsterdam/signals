@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.core.exceptions import ValidationError
 from django.test import testcases
 
@@ -11,7 +13,8 @@ from signals.apps.reporting.csv.horeca import (
     create_csv_files,
     create_csv_per_sub_category
 )
-from signals.apps.signals.models import Category
+from signals.apps.signals.models import Category, Signal
+from tests.apps.signals.factories import SignalFactory
 
 
 class TestHoreca(testcases.TestCase):
@@ -162,3 +165,55 @@ class TestHoreca(testcases.TestCase):
         csv_files = create_csv_files(isoweek=1, isoyear=2019)
 
         self.assertGreater(len(csv_files), 0)
+
+    @mock.patch.dict('os.environ', {'SWIFT_ENABLED': 'true'}, clear=True)
+    @mock.patch('signals.apps.reporting.csv.horeca.shutil', autospec=True)
+    @mock.patch('signals.apps.reporting.csv.horeca._get_storage_backend', autospec=True)
+    def test_create_csv_files_local_save(self, patched_get_storage_backend, patched_shutil):
+        # Mock our Storage backend and adapt our shutil module
+        mocked_storage = mock.MagicMock()
+        mocked_storage.save = mock.MagicMock()
+        patched_get_storage_backend.return_value = mocked_storage
+
+        patched_shutil.copy = mock.MagicMock()
+
+        # create a Signal with a horeca sub-category
+        main_category = _get_horeca_main_category()
+        category = Category.objects.filter(
+            parent_id__isnull=False, parent_id=main_category.pk).first()
+
+        SignalFactory.create(category_assignment__category=category)
+        self.assertEqual(Signal.objects.count(), 1)
+
+        # Check that the storage backend is not called, and that shutil.copy is
+        csv_files = create_csv_files(isoweek=1, isoyear=2019, save_in_dir='SOME_DIRECTORY')
+        self.assertEqual(len(csv_files), 7)
+
+        self.assertEqual(len(patched_shutil.copy.call_args_list), 7)
+        mocked_storage.save.assert_not_called()
+
+    @mock.patch.dict('os.environ', {'SWIFT_ENABLED': 'true'}, clear=True)
+    @mock.patch('signals.apps.reporting.csv.horeca.shutil', autospec=True)
+    @mock.patch('signals.apps.reporting.csv.horeca._get_storage_backend', autospec=True)
+    def test_create_csv_files_remote_save(self, patched_get_storage_backend, patched_shutil):
+        # Mock our Storage backend and adapt our shutil module
+        mocked_storage = mock.MagicMock()
+        mocked_storage.save = mock.MagicMock()
+        patched_get_storage_backend.return_value = mocked_storage
+
+        patched_shutil.copy = mock.MagicMock()
+
+        # create a Signal with a horeca sub-category
+        main_category = _get_horeca_main_category()
+        category = Category.objects.filter(
+            parent_id__isnull=False, parent_id=main_category.pk).first()
+
+        SignalFactory.create(category_assignment__category=category)
+        self.assertEqual(Signal.objects.count(), 1)
+
+        # Check that the storage backend is called, and that shutil.copy is not.
+        csv_files = create_csv_files(isoweek=1, isoyear=2019)
+        self.assertEqual(len(csv_files), 7)
+
+        patched_shutil.copy.assert_not_called()
+        self.assertEqual(len(mocked_storage.save.call_args_list), 7)
