@@ -42,9 +42,18 @@ CELERY_BEAT_SCHEDULE = {
 
 
 def show_toolbar(request):
-    return DEBUG
+    return False  # DEBUG
 
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+}
+
+# Search settings
+SEARCH = {
+    'PAGE_SIZE': 500,
+    'CONNECTION': {
+        'URL': 'elasticsearch:9200',
+        'INDEX': 'sia_signals',
+    },
 }

@@ -43,7 +43,6 @@ services:
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
-      - ELASTIC_HOST=elasticsearch:9200
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -60,7 +59,6 @@ services:
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
-      - ELASTIC_HOST=elasticsearch:9200
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -91,7 +89,6 @@ services:
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
-      - ELASTIC_HOST=elasticsearch:9200
       - DWH_MEDIA_ROOT=/dwh_media
     volumes:
       - ./api/app:/app
