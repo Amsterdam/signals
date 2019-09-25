@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Case, When
+
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import Document, Index, Search
 

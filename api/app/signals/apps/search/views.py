@@ -1,6 +1,6 @@
 from datapunt_api.rest import DatapuntViewSet
-from elasticsearch_dsl.query import MultiMatch
 
+from elasticsearch_dsl.query import MultiMatch
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,

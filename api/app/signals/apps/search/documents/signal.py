@@ -2,7 +2,6 @@ import logging
 
 from elasticsearch_dsl import Date, InnerDoc, Integer, Keyword, Nested, Object, Text
 from elasticsearch_dsl.query import Bool
-
 from signals.apps.search.documents.base import DocumentBase
 from signals.apps.signals.models import Signal
 
