@@ -1,7 +1,7 @@
 {% if signal.is_child %}
-Een deel van uw melding is afgehandeld
+Een deel van uw melding is afgesloten
 {% else %}
-Uw melding is afgehandeld
+Uw melding is afgesloten
 {% endif %}
 Meldingnummer {{ signal.sia_id }}
 
