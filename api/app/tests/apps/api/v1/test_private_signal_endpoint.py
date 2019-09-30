@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.utils import timezone
 from django.utils.http import urlencode
 from freezegun import freeze_time
@@ -1282,6 +1283,57 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'][0],
                          'Invalid source given for authenticated user')
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    def test_validate_extra_properties_enabled(self):
+        initial_data = self.create_initial_data
+        initial_data['extra_properties'] = [{
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': {
+                'id': 'test_answer',
+                'value': 'test_value'
+            },
+            'category_url': self.link_subcategory
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': 'test_answer',
+            'category_url': self.link_subcategory
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': ['a', 'b', 'c'],
+            'category_url': self.link_subcategory
+        }]
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(3, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    def test_validate_extra_properties_enabled_invalid_data(self):
+        initial_data = self.create_initial_data
+        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        data = response.json()
+
+        self.assertEqual(400, response.status_code)
+        self.assertIn('extra_properties', data)
+        self.assertEqual(data['extra_properties'][0], 'Invalid input.')
+        self.assertEqual(2, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
+    def test_validate_extra_properties_disabled(self):
+        initial_data = self.create_initial_data
+        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(3, Signal.objects.count())
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

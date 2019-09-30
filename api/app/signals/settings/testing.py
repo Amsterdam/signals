@@ -27,3 +27,7 @@ EMAIL_INTEGRATIONS = dict(
         RECIPIENT_LIST=['test@test.com', ],
     ),
 )
+
+FEATURE_FLAGS = {
+   'API_VALIDATE_EXTRA_PROPERTIES': False,
+}
