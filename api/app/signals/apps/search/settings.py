@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.test.signals import setting_changed
 
-
 DEFAULTS = dict(
     PAGE_SIZE=100,
     CONNECTION=dict(
