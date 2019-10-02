@@ -240,10 +240,11 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BEAT_SCHEDULE = {
-    # 'rebuild-elastic': {  # Run task every 3rd day of the week at midnight
-    #     'task': 'signals.apps.search.tasks.rebuild_index',
-    #     'schedule': crontab(minute='00', hour='00', day_of_week='3'),
-    # },
+    # SIG-1051
+    'rebuild-elastic': {  # Run task every day at 07:00
+        'task': 'signals.apps.search.tasks.rebuild_index',
+        'schedule': crontab(minute='0', hour='7'),
+    },
     # SIG-1456
     # 'save-csv-files-datawarehouse': {
     #     'task': 'signals.apps.signals.tasks'

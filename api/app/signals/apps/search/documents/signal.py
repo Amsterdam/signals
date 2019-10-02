@@ -61,6 +61,9 @@ class SignalDocument(DocumentBase):
     class Index:
         name = 'signals'
         using = 'default'
+        settings = {
+            'number_of_shards': 10
+        }
 
     def get_model(self):
         return Signal
