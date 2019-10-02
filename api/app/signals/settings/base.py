@@ -151,7 +151,7 @@ DATABASES = {
 }
 
 # Internationalization
-LANGUAGE_CODE = 'nl_NL'
+LANGUAGE_CODE = 'nl-NL'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True
