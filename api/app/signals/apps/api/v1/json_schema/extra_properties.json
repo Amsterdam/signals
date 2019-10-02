@@ -1,0 +1,161 @@
+{
+	"definitions": {
+		"answer_string": {
+			"$id": "#/items/properties/answer",
+			"type": "string",
+			"title": "The Answer Schema",
+			"default": "",
+			"examples": [
+				"123"
+			],
+			"pattern": "^(.*)$"
+		},
+		"answer_object": {
+			"$id": "#/items/properties/answer",
+			"type": "object",
+			"title": "The Answer Schema",
+			"required": [
+				"label",
+				"value"
+			],
+			"properties": {
+				"label": {
+					"$id": "#/items/properties/answer/properties/label",
+					"type": "null",
+					"title": "The Label Schema",
+					"default": null,
+					"examples": [
+						null
+					]
+				},
+				"value": {
+					"$id": "#/items/properties/answer/properties/value",
+					"type": "boolean",
+					"title": "The Value Schema",
+					"default": false,
+					"examples": [
+						true
+					]
+				}
+			}
+		},
+		"answer_array_of_objects": {
+			"$id": "#/items/properties/answer",
+			"type": "array",
+			"title": "The Answer Schema",
+			"items": {
+				"$id": "#/items/properties/answer/items",
+				"type": "object",
+				"title": "The Items Schema",
+				"required": [
+					"id",
+					"label"
+				],
+				"properties": {
+					"id": {
+						"$id": "#/items/properties/answer/items/properties/id",
+						"type": "string",
+						"title": "The Id Schema",
+						"default": "",
+						"examples": [
+							"in_tunnel"
+						],
+						"pattern": "^(.*)$"
+					},
+					"label": {
+						"$id": "#/items/properties/answer/items/properties/label",
+						"type": "string",
+						"title": "The Label Schema",
+						"default": "",
+						"examples": [
+							"In een tunnel"
+						],
+						"pattern": "^(.*)$"
+					}
+				}
+			}
+		},
+		"anser_array_of_strings": {
+			"$id": "#/items/properties/answer",
+			"type": "array",
+			"title": "The Answer Schema",
+			"items": {
+				"$id": "#/items/properties/answer/items",
+				"type": "string",
+				"title": "The Items Schema",
+				"default": "",
+				"examples": [
+					"038301",
+					"024024",
+					"158358"
+				],
+				"pattern": "^(.*)$"
+			}
+		}
+	},
+
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://example.com/root.json",
+	"type": "array",
+	"title": "The Root Schema",
+
+	"items": {
+		"$id": "#/items",
+		"type": "object",
+		"title": "The Items Schema",
+		"required": [
+			"id",
+			"label",
+			"answer",
+			"category_url"
+		],
+		"properties": {
+			"id": {
+				"$id": "#/items/properties/id",
+				"type": "string",
+				"title": "The Id Schema",
+				"default": "",
+				"examples": [
+					"extra_verkeerslicht_probleem_bus_tram"
+				],
+				"pattern": "^(.*)$"
+			},
+			"label": {
+				"$id": "#/items/properties/label",
+				"type": "string",
+				"title": "The Label Schema",
+				"default": "",
+				"examples": [
+					"Wat is het probleem?"
+				],
+				"pattern": "^(.*)$"
+			},
+			"answer": {
+				"anyOf": [
+					{
+						"#rel": "#/definitions/answer_string"
+					},
+					{
+						"#rel": "#/definitions/answer_object"
+					},
+					{
+						"#rel": "#/definitions/answer_array_of_objects"
+					},
+					{
+						"#rel": "#/definitions/anser_array_of_strings"
+					}
+				]
+			},
+			"category_url": {
+				"$id": "#/items/properties/category_url",
+				"type": "string",
+				"title": "The Category_url Schema",
+				"default": "",
+				"examples": [
+					"/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/verkeerslicht"
+				],
+				"pattern": "^(.*)$"
+			}
+		}
+	}
+}
