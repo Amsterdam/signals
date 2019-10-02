@@ -301,6 +301,8 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         del data['reporter.remove_at']
         del data['incident_date_end']
         del data['operational_date']
+        del data['updated_at']
+        del data['upload']
 
         response = self.client.post(self.endpoint, data)
 

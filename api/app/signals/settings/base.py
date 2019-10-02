@@ -325,7 +325,7 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'gelf': {
-            'class': 'graypy.GELFHandler',
+            'class': 'graypy.GELFUDPHandler',
             'host': GELF_HOST,
             'port': GELF_PORT,
             'filters': ['static_fields'],
