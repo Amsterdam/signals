@@ -1,7 +1,5 @@
 import os
 
-from celery.schedules import crontab
-
 from signals.settings.base import *  # noqa
 
 from .zds import *  # noqa
@@ -33,7 +31,7 @@ except ImportError:
 
 
 def show_toolbar(request):
-    return False # DEBUG
+    return DEBUG
 
 
 DEBUG_TOOLBAR_CONFIG = {
@@ -47,4 +45,10 @@ SEARCH = {
         'URL': 'elasticsearch:9200',
         'INDEX': 'sia_signals',
     },
+}
+
+FEATURE_FLAGS = {
+    'API_VALIDATE_EXTRA_PROPERTIES': True,
+    'API_SEARCH_ENABLED': True,
+    'SEARCH_BUILD_INDEX': True,
 }

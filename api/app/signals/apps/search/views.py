@@ -1,6 +1,8 @@
 from datapunt_api.rest import DatapuntViewSet
+from django.conf import settings
 from elasticsearch_dsl.query import MultiMatch
 
+from signals.apps.api.generics.exceptions import NotImplementedException
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
@@ -24,6 +26,9 @@ class SearchView(DatapuntViewSet):
     pagination_class = ElasticHALPagination
 
     def get_queryset(self, *args, **kwargs):
+        if not settings.FEATURE_FLAGS.get('API_SEARCH_ENABLED', False):
+            raise NotImplementedException('Not implemented')
+
         if 'q' in self.request.query_params:
             q = self.request.query_params['q']
         else:

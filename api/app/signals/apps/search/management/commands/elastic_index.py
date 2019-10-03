@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management import BaseCommand
 
 from signals.apps.search.documents.signal import SignalDocument
@@ -11,7 +12,12 @@ class Command(BaseCommand):
                             help='Delete all data in the elastic index')
 
     def handle(self, *args, **options):
-        delete = options['delete']
-        if delete:
-            SignalDocument.clear_index()
-        SignalDocument.index_documents()
+        if not settings.FEATURE_FLAGS.get('SEARCH_BUILD_INDEX', False):
+            self.stdout('elastic indexing disabled')
+        else:
+            self.stdout('elastic indexing')
+            delete = options['delete']
+            if delete:
+                SignalDocument.clear_index()
+            SignalDocument.index_documents()
+        self.stdout('done!')
