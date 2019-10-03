@@ -154,7 +154,7 @@ DATABASES = {
 }
 
 # Internationalization
-LANGUAGE_CODE = 'nl_NL'
+LANGUAGE_CODE = 'nl-NL'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True
@@ -247,8 +247,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     # SIG-1456
     # 'save-csv-files-datawarehouse': {
-    #     'task': 'signals.apps.signals.tasks'
-    #             '.task_save_csv_files_datawarehouse',
+    #     'task': 'signals.apps.signals.tasks.task_save_csv_files_datawarehouse',
     #     'schedule': crontab(hour=4),
     # },
     'sigmax-fail-stuck-sending-signals': {
@@ -334,7 +333,7 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'gelf': {
-            'class': 'graypy.GELFHandler',
+            'class': 'graypy.GELFUDPHandler',
             'host': GELF_HOST,
             'port': GELF_PORT,
             'filters': ['static_fields'],
@@ -501,4 +500,8 @@ SEARCH = {
         'URL': 'elastic-index.service.consul:9200',
         'INDEX': 'sia_signals',
     },
+}
+
+FEATURE_FLAGS = {
+   'API_VALIDATE_EXTRA_PROPERTIES': False,
 }
