@@ -15,4 +15,5 @@ class StandardAnswerAdmin(admin.ModelAdmin):
             return 'POSITIEF'
         return 'NEGATIEF'
 
+
 admin.site.register(StandardAnswer, StandardAnswerAdmin)
