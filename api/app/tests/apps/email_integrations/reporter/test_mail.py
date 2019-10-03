@@ -39,13 +39,14 @@ class TestCore(TestCase):
         self.assertEqual(num_of_messages, None)
 
     def test_send_mail_reporter_status_changed_afgehandeld(self):
-        # Prepare signal with status change to `AFGEHANDELD`.
+        # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
+        prev_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
-        self.signal.status.save()
+        self.signal.save()
 
         num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-            self.signal, status)
+            self.signal, status, prev_status)
 
         self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(num_of_messages, 1)
@@ -53,9 +54,29 @@ class TestCore(TestCase):
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
 
-    def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
+    def test_send_no_mail_reporter_status_changed_afgehandeld_after_verzoek_tot_heropenen(self):
+        # Prepare signal with status change from `VERZOEK_TOT_HEROPENEN` to `AFGEHANDELD`.
+        prev_status = StatusFactory.create(_signal=self.signal, state=workflow.VERZOEK_TOT_HEROPENEN)
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.save()
+
         num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-            signal=self.signal, status=self.signal.status
+            self.signal, status, prev_status)
+
+        self.assertEqual(0, Feedback.objects.count())
+        self.assertEqual(num_of_messages, 0)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
+        # Note: SignalFactory always creates a signal with GEMELD status.
+        prev_status = self.signal.status
+        status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
+        self.signal.status = status
+        self.signal.save()
+
+        num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
+            signal=self.signal, status=self.signal.status, prev_status=prev_status
         )
 
         self.assertEqual(0, Feedback.objects.count())
@@ -63,12 +84,13 @@ class TestCore(TestCase):
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_email(self):
         # Prepare signal with status change to `AFGEHANDELD`.
+        prev_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         status = StatusFactory.create(_signal=self.signal_no_email, state=workflow.AFGEHANDELD)
         self.signal_no_email.status = status
-        self.signal_no_email.status.save()
+        self.signal_no_email.save()
 
         num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-            self.signal_no_email, status
+            self.signal_no_email, status, prev_status
         )
 
         self.assertEqual(0, Feedback.objects.count())
@@ -77,13 +99,14 @@ class TestCore(TestCase):
     def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
         mail.outbox = []
 
-        # Prepare signal with status change to `AFGEHANDELD`.
+        # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
+        prev_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
-        self.signal.status.save()
+        self.signal.save()
 
         num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-            self.signal, status
+            self.signal, status, prev_status
         )
 
         self.assertEqual(1, Feedback.objects.count())
@@ -116,9 +139,10 @@ class TestCore(TestCase):
     def test_links_in_different_environments(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
+        prev_status = self.signal.status
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
-        self.signal.status.save()
+        self.signal.save()
 
         # Check that generated emails contain the correct links for all
         # configured environments:
@@ -133,7 +157,7 @@ class TestCore(TestCase):
             with mock.patch.dict('os.environ', local_env):
                 mail.outbox = []
                 num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-                    self.signal, status
+                    self.signal, status, prev_status
                 )
 
                 self.assertEqual(num_of_messages, 1)
@@ -145,9 +169,10 @@ class TestCore(TestCase):
     def test_links_environment_env_var_not_set(self):
         """Deals with the case where nothing is overridden and `environment` not set."""
         # Prepare signal with status change to `AFGEHANDELD`.
+        prev_status = self.signal.status
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
-        self.signal.status.save()
+        self.signal.save()
 
         # Check that generated emails contain the correct links for all
         # configured environments:
@@ -158,7 +183,7 @@ class TestCore(TestCase):
             with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
                 num_of_messages = reporter_mail.send_mail_reporter_status_changed_afgehandeld(
-                    self.signal, status
+                    self.signal, status, prev_status
                 )
 
                 self.assertEqual(num_of_messages, 1)
