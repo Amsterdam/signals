@@ -1,10 +1,11 @@
 import json
 import os
-from unittest import skip
-from unittest.mock import patch
+from unittest import mock, skip
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from signals import API_VERSIONS
@@ -12,6 +13,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     STADSDEEL_OOST,
+    Category,
     CategoryAssignment,
     Location,
     Note,
@@ -20,6 +22,7 @@ from signals.apps.signals.models import (
     Signal,
     Status
 )
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.utils.version import get_version
 from tests.apps.signals import factories
 from tests.apps.signals.attachment_helpers import (
@@ -196,6 +199,8 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
 
     def test_post_signal_with_json(self):
         postjson = self._get_fixture('post_signal')
+        postjson['source'] = 'online'
+
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
@@ -236,6 +241,17 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
             Reporter.objects.filter(signal=s.id).first()._signal.id, s.id,
             "Reporter is missing _signal field?"
         )
+
+    @skip('SIG-1570 cannot be deployed yet - extra validation disabled')
+    def test_post_signal_with_json_anonymous_invalid_source(self):
+        postjson = self._get_fixture('post_signal')
+        postjson['source'] = 'invalid-source'
+
+        self.client.logout()
+
+        response = self.client.post(self.endpoint, postjson, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
     @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict")
     def test_post_signal_with_bag_validated(self, validate_address_dict):
@@ -285,6 +301,8 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         del data['reporter.remove_at']
         del data['incident_date_end']
         del data['operational_date']
+        del data['updated_at']
+        del data['upload']
 
         response = self.client.post(self.endpoint, data)
 
@@ -792,3 +810,90 @@ class TestNoImageUrlsInSignalList(TestAPIEndpointsBase, SuperUserMixin):
         response_data = response.json()
         self.assertEqual(response_data['count'], 1)
         self.assertNotIn('image', response_data['results'][0])
+
+
+class TestMlPredictCategory(SignalsBaseApiTestCase):
+    test_host = 'http://testserver'
+    endpoint = '/signals/category/prediction'
+
+    def setUp(self):
+        self.test_parentcategory_overig = Category.objects.get(
+            slug='overig',
+            parent__isnull=True,
+        )
+        self.test_subcategory_overig = Category.objects.get(
+            parent=self.test_parentcategory_overig,
+            slug='overig',
+            parent__isnull=False,
+        )
+        self.link_test_subcategory_overig = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(  # noqa
+            self.test_host,
+            self.test_subcategory_overig.parent.slug,
+            self.test_subcategory_overig.slug,
+        )
+
+        self.test_subcategory = CategoryFactory.create()
+        self.link_test_subcategory = '{}/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(  # noqa
+            self.test_host,
+            self.test_subcategory.parent.slug,
+            self.test_subcategory.slug,
+        )
+
+        self.test_subcategory_translated = CategoryFactory.create(is_active=False)
+        self.link_test_subcategory_translated = '{}/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(  # noqa
+            self.test_host,
+            self.test_subcategory_translated.parent.slug,
+            self.test_subcategory_translated.slug,
+        )
+
+        self.link_test_subcategory_translation = CategoryTranslation.objects.create(
+            old_category=self.test_subcategory_translated,
+            new_category=self.test_subcategory,
+            text='For testing purposes we translate this category',
+            created_by='someone@example.com',
+        )
+
+    @patch('signals.apps.api.v0.views.MlPredictCategoryView.ml_tool_client.predict')
+    def test_predict(self, patched_ml_tool_client):
+        response = mock.Mock()
+        response.status_code = 200
+        response.json = MagicMock(return_value={
+            'hoofdrubriek': [[self.link_test_subcategory], [0.5]],
+            'subrubriek': [[self.link_test_subcategory], [0.5]]
+        })
+        patched_ml_tool_client.return_value = response
+
+        data = {'text': 'Give me the subcategory'}
+        response = self.client.post(self.endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['subrubriek'][0][0], self.link_test_subcategory)
+
+    @patch('signals.apps.api.v0.views.MlPredictCategoryView.ml_tool_client.predict')
+    def test_predict_translated(self, patched_ml_tool_client):
+        response = mock.Mock()
+        response.status_code = 200
+        response.json = MagicMock(return_value={
+            'hoofdrubriek': [[self.link_test_subcategory_translated], [0.5]],
+            'subrubriek': [[self.link_test_subcategory_translated], [0.5]]
+        })
+        patched_ml_tool_client.return_value = response
+
+        data = {'text': 'Give me the subcategory, because of translations'}
+        response = self.client.post(self.endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['subrubriek'][0][0], self.link_test_subcategory)
+
+    @patch('signals.apps.api.v0.views.MlPredictCategoryView.ml_tool_client.predict',
+           side_effect=ValidationError('error'))
+    def test_predict_validation_error(self, patched_ml_tool_client):
+        data = {'text': 'Give me the subcategory'}
+        response = self.client.post(self.endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()[0], 'error')

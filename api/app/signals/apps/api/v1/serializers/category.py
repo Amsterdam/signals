@@ -6,7 +6,8 @@ from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
     ParentCategoryHyperlinkedIdentityField
 )
-from signals.apps.email_integrations.messages import ALL_AFHANDELING_TEXT  # TODO: move to a model
+from signals.apps.email_integrations.core.messages import \
+    ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
 from signals.apps.signals.models import Category
 
 

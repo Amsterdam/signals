@@ -2,6 +2,7 @@ import json
 import os
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Signal
@@ -26,11 +27,11 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         self.subcategory = CategoryFactory.create()
 
-        link_test_cat_sub = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+        self.link_test_cat_sub = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
             self.subcategory.parent.slug, self.subcategory.slug
         )
 
-        self.create_initial_data['category'] = {'sub_category': link_test_cat_sub}
+        self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
 
         self.retrieve_schema = self.load_json_schema(
             os.path.join(
@@ -126,3 +127,62 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
+
+    def test_create_with_invalid_source_user(self):
+        data = self.create_initial_data
+        data['source'] = 'invalid-source'
+        response = self.client.post(self.list_endpoint, data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    def test_validate_extra_properties_enabled(self):
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = [{
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': {
+                'id': 'test_answer',
+                'value': 'test_value'
+            },
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': 'test_answer',
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': ['a', 'b', 'c'],
+            'category_url': self.link_test_cat_sub
+        }]
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    def test_validate_extra_properties_enabled_invalid_data(self):
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        data = response.json()
+
+        self.assertEqual(400, response.status_code)
+        self.assertIn('extra_properties', data)
+        self.assertEqual(data['extra_properties'][0], 'Invalid input.')
+        self.assertEqual(0, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
+    def test_validate_extra_properties_disabled(self):
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())

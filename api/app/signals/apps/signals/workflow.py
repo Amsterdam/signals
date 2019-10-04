@@ -110,7 +110,6 @@ ALLOWED_STATUS_CHANGES = {
         BEHANDELING,  # SIG-1293
     ],
     AFGEHANDELD: [
-        AFGEHANDELD,
         HEROPEND,
     ],
     GEANNULEERD: [

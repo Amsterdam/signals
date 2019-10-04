@@ -1,5 +1,7 @@
 import os
 
+from celery.schedules import crontab
+
 from signals import API_VERSIONS
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
@@ -9,9 +11,6 @@ from signals.settings.settings_databases import (
     get_docker_host,
     in_docker
 )
-
-# from celery.schedules import crontab
-
 
 # ---
 # To enable the ZDS integration in all environments activate the following
@@ -152,7 +151,7 @@ DATABASES = {
 }
 
 # Internationalization
-LANGUAGE_CODE = 'nl_NL'
+LANGUAGE_CODE = 'nl-NL'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True
@@ -237,15 +236,17 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-CELERY_BEAT_SCHEDULE = {}
-# SIG-1456
-# CELERY_BEAT_SCHEDULE = {
-#    'save-csv-files-datawarehouse': {
-#        'task': 'signals.apps.signals.tasks'
-#                '.task_save_csv_files_datawarehouse',
-#        'schedule': crontab(hour=4),
-#    },
-# }
+CELERY_BEAT_SCHEDULE = {
+    # SIG-1456
+    # 'save-csv-files-datawarehouse': {
+    #     'task': 'signals.apps.signals.tasks.task_save_csv_files_datawarehouse',
+    #     'schedule': crontab(hour=4),
+    # },
+    'sigmax-fail-stuck-sending-signals': {
+        'task': 'signals.apps.sigmax.tasks.fail_stuck_sending_signals',
+        'schedule': crontab(minute='*/15'),
+    }
+}
 
 # E-mail settings for SMTP (SendGrid)
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
@@ -257,15 +258,23 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
 
-EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS = os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None)
-EMAIL_FLEX_HORECA_WEEKDAYS = os.getenv(
-    'EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7')  # friday, saterday, sunday
-EMAIL_FLEX_HORECA_END_TIME = os.getenv(
-    'EMAIL_FLEX_HORECA_END_TIME', '04:00')  # 04:00 o'clock
-EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None)
-EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS = os.getenv(
-    'EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None)
+# Email integration settings
+EMAIL_INTEGRATIONS = dict(
+    FLEX_HORECA=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None), ],
+        APPLICABLE_RULES=dict(
+            WEEKDAYS=os.getenv('EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7'),  # fri, sat, sun
+            END_TIME=os.getenv('EMAIL_FLEX_HORECA_END_TIME', '04:00'),  # 04:00 o'clock
+        )
+    ),
+    TOEZICHT_OR_NIEUW_WEST=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
+    ),
+    VTH_NIEUW_WEST=dict(
+        RECIPIENT_LIST=[os.getenv('EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
+    ),
+)
+
 NOREPLY = 'noreply@meldingen.amsterdam.nl'
 
 # Django cache settings
@@ -316,7 +325,7 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'gelf': {
-            'class': 'graypy.GELFHandler',
+            'class': 'graypy.GELFUDPHandler',
             'host': GELF_HOST,
             'port': GELF_PORT,
             'filters': ['static_fields'],
@@ -382,6 +391,11 @@ LOGGING = {
         },
         'requests.packages.urllib3.connectionpool': {
             'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'signals.apps.reporting.management.commands.dump_horeca_csv_files': {
+            'level': 'DEBUG',
             'handlers': ['console'],
             'propagate': False,
         },
@@ -456,6 +470,7 @@ SWAGGER_SETTINGS = {
 # Sigmax settings
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
+SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
 # SIG-884
 SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
@@ -469,3 +484,7 @@ FEEDBACK_ENV_FE_MAPPING = {
 }
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
+
+FEATURE_FLAGS = {
+   'API_VALIDATE_EXTRA_PROPERTIES': False,
+}

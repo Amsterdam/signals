@@ -96,7 +96,7 @@ class SignalManager(models.Manager):
 
         return signal
 
-    def split(self, split_data, signal, user=None):
+    def split(self, split_data, signal, user=None):  # noqa: C901
         """ Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
             new signals
 
@@ -159,7 +159,12 @@ class SignalManager(models.Manager):
                     })
                     priority = Priority.objects.create(**priority_data)
 
-                category = validated_data['category']['sub_category']
+                if 'category_url' in validated_data['category']:
+                    category = validated_data['category']['category_url']
+                elif 'sub_category' in validated_data['category']:
+                    # Only for backwards compatibility
+                    category = validated_data['category']['sub_category']
+
                 category_assignment_data = {
                     '_signal': child_signal,
                     'category': category,

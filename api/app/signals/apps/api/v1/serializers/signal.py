@@ -1,7 +1,9 @@
+import os
+
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
+from signals.apps.api.generics.validators import SignalSourceValidator
 from signals.apps.api.v1.fields import (
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
@@ -18,6 +20,7 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedStatusModelSerializer
 )
 from signals.apps.api.v1.validation import AddressValidationMixin
+from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Priority, Signal
 
@@ -60,6 +63,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'id',
             'has_attachments',
         )
+        extra_kwargs = {
+            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
+        }
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
@@ -129,13 +135,17 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'updated_at',
             'has_attachments',
         )
+        extra_kwargs = {
+            'source': {'validators': [SignalSourceValidator()]},
+            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
+        }
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         # Set default status
         logged_in_user = self.context['request'].user
@@ -238,11 +248,13 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'label': 'ID'},
             'signal_id': {'label': 'SIGNAL_ID'},
+            'source': {'validators': [SignalSourceValidator()]},
+            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
         }
 
     def create(self, validated_data):
         if validated_data.get('status') is not None:
-            raise ValidationError("Status can not be set on initial creation")
+            raise serializers.ValidationError("Status cannot be set on initial creation")
 
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')

@@ -9,6 +9,7 @@ from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
     CategoryFactory,
+    ParentCategoryFactory,
     SignalFactory,
     StatusFactory
 )
@@ -345,3 +346,56 @@ class TestFilters(SignalsBaseApiTestCase):
 
         self.assertEqual(1, len(result_ids))
         self.assertEqual(feedback_negative._signal_id, result_ids[0])
+
+    def test_filter_source(self):
+        result_ids = self._request_filter_signals({'source': 'online'})
+        self.assertEqual(len(self.signals), len(result_ids))
+
+    def test_filter_source_multiple_sources(self):
+        acc_signals = SignalFactory.create_batch(5, source='ACC')
+
+        result_ids = self._request_filter_signals({'source': 'online'})
+        self.assertEqual(len(self.signals), len(result_ids))
+
+        result_ids = self._request_filter_signals({'source': 'ACC'})
+        self.assertEqual(len(acc_signals), len(result_ids))
+
+    def test_filter_source_invalid_option(self):
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data={'source': 'invalid'})
+        self.assertEqual(400, resp.status_code)
+        self.assertEqual(resp.json()['source'][0],
+                         'Selecteer een geldige keuze. invalid is geen beschikbare keuze.')
+
+    def test_filter_maincategory_and_category_slugs(self):
+        maincategory_slugs = [
+            self.sub_categories[2].parent.slug,
+            self.sub_categories[3].parent.slug
+        ]
+
+        category_slugs = [
+            self.sub_categories[0].slug,
+            self.sub_categories[1].slug
+        ]
+
+        params = {
+            'maincategory_slug': maincategory_slugs,
+            'category_slug': category_slugs
+        }
+
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(16, len(result_ids))
+
+    def test_filter_maincategory_and_category_slugs_not_a_unique_slug(self):
+        parent_category = ParentCategoryFactory.create(name='not_unique')
+        category = CategoryFactory.create(name='not_unique', parent=parent_category)
+
+        SignalFactory.create(category_assignment__category=category)
+
+        params = {
+            'maincategory_slug': [parent_category.slug, ],
+            'category_slug': [category.slug, ]
+        }
+
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))

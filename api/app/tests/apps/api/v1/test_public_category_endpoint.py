@@ -5,12 +5,9 @@ from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
 
 
 class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
-    fixtures = ['categories.json', ]
-
     def setUp(self):
         self.list_categories_schema = self.load_json_schema(
             os.path.join(
@@ -34,12 +31,13 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
             )
         )
 
+        self.parent_category = ParentCategoryFactory.create()
+        CategoryFactory.create_batch(5, parent=self.parent_category)
+        self.parent_category.refresh_from_db()
+
         super(TestCategoryTermsEndpoints, self).setUp()
 
     def test_category_list(self):
-        # Asserting that we've 9 parent categories loaded from the json fixture.
-        self.assertEqual(Category.objects.filter(parent__isnull=True).count(), 10)
-
         url = '/signals/v1/public/terms/categories/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -49,14 +47,10 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.list_categories_schema, data)
 
-        self.assertEqual(len(data['results']), 10)
+        self.assertEqual(len(data['results']), Category.objects.filter(parent__isnull=True).count())
 
     def test_category_detail(self):
-        # Asserting that we've 13 sub categories for our parent category "Afval".
-        main_category = ParentCategoryFactory.create(name='Afval')
-        self.assertEqual(main_category.children.count(), 16)
-
-        url = '/signals/v1/public/terms/categories/{slug}'.format(slug=main_category.slug)
+        url = '/signals/v1/public/terms/categories/{slug}'.format(slug=self.parent_category.slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
@@ -65,11 +59,11 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_category_schema, data)
 
-        self.assertEqual(data['name'], 'Afval')
-        self.assertEqual(len(data['sub_categories']), 16)
+        self.assertEqual(data['name'], self.parent_category.name)
+        self.assertEqual(len(data['sub_categories']), self.parent_category.children.count())
 
     def test_sub_category_detail(self):
-        sub_category = CategoryFactory.create(name='Grofvuil', parent__name='Afval')
+        sub_category = self.parent_category.children.first()
 
         url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
             slug=sub_category.parent.slug,
@@ -82,5 +76,5 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_schema, data)
 
-        self.assertEqual(data['name'], 'Grofvuil')
+        self.assertEqual(data['name'], sub_category.name)
         self.assertIn('is_active', data)

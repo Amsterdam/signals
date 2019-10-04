@@ -13,9 +13,9 @@ class StoredSignalFilter(CreatedUpdatedModel):
     name = models.CharField(max_length=10000)
     created_by = models.EmailField(null=True, blank=True)
     options = JSONField(default=dict)
+    refresh = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('name', 'created_by')
         ordering = ('-created_at', )
 
     def __str__(self):

@@ -20,7 +20,7 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
     def validate(self, data):
         return self.to_internal_value(data)
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data):  # noqa: C901
         from signals.apps.api.v1.urls import category_from_url
 
         potential_parent_signal = self.context['view'].get_object()
@@ -45,9 +45,15 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
 
         output = {"children": copy.deepcopy(self.initial_data)}
 
-        for item in output["children"]:
-            item['category']['sub_category'] = category_from_url(
-                item['category']['sub_category'])
+        for item in output['children']:
+            if 'category_url' in item['category'] and 'sub_category' in item['category']:
+                del (item['category']['sub_category'])
+            if 'category_url' in item['category']:
+                item['category']['category_url'] = category_from_url(
+                    item['category']['category_url'])
+            elif 'sub_category' in item['category']:
+                item['category']['sub_category'] = category_from_url(
+                    item['category']['sub_category'])
 
         return output
 
@@ -56,7 +62,7 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
             raise NotFound("Split signal not found")
 
         links_field = PrivateSignalSplitLinksField(self.context['view'])
-        nss = _NestedSplitSignalSerializer(signal.children.all(), many=True)
+        nss = _NestedSplitSignalSerializer(signal.children.all(), many=True, context=self.context)
 
         return {
             "_links": links_field.to_representation(signal),
