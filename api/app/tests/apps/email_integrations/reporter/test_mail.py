@@ -56,7 +56,9 @@ class TestCore(TestCase):
 
     def test_send_no_mail_reporter_status_changed_afgehandeld_after_verzoek_tot_heropenen(self):
         # Prepare signal with status change from `VERZOEK_TOT_HEROPENEN` to `AFGEHANDELD`.
-        prev_status = StatusFactory.create(_signal=self.signal, state=workflow.VERZOEK_TOT_HEROPENEN)
+        prev_status = StatusFactory.create(
+            _signal=self.signal, state=workflow.VERZOEK_TOT_HEROPENEN
+        )
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.save()
@@ -65,7 +67,7 @@ class TestCore(TestCase):
             self.signal, status, prev_status)
 
         self.assertEqual(0, Feedback.objects.count())
-        self.assertEqual(num_of_messages, 0)
+        self.assertEqual(num_of_messages, None)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
