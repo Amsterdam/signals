@@ -34,9 +34,14 @@ def send_mail_reporter_created(signal):
                             recipient_list=recipient_list, html_message=html_message)
 
 
-def send_mail_reporter_status_changed_afgehandeld(signal, status):
+def send_mail_reporter_status_changed_afgehandeld(signal, status, prev_status):
     signal_is_afgehandeld = status.state == workflow.AFGEHANDELD
     if not signal_is_afgehandeld or not signal.reporter.email:
+        return None
+
+    # SIG-1619 We should not send a mail after request to repoen a "melding" /
+    # Signal was closed, hence:
+    if prev_status.state == workflow.VERZOEK_TOT_HEROPENEN:
         return None
 
     # Create the feedback instance
