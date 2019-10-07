@@ -41,8 +41,7 @@ def send_mail_reporter_status_changed_afgehandeld(signal, status, prev_status):
 
     # SIG-1619 We should not send a mail after request to repoen a "melding" /
     # Signal was closed, hence:
-    prev_status_is_verzoek_tot_heropenen = prev_status.state == workflow.VERZOEK_TOT_HEROPENEN
-    if prev_status_is_verzoek_tot_heropenen:
+    if prev_status.state == workflow.VERZOEK_TOT_HEROPENEN:
         return None
 
     # Create the feedback instance

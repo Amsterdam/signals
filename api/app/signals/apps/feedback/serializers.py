@@ -52,7 +52,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
         # Reopen the Signal (melding) if need be.
         if reopen:
-            signal = Signal.objects.get(pk=instance._signal_id)
+            signal = instance._signal
 
             # Only allow a request to reopen when in state workflow.AFGEHANDELD
             if signal.status.state == workflow.AFGEHANDELD:
