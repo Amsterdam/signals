@@ -1,12 +1,11 @@
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.reporting.models import ReportDefinition
 from signals.apps.reporting.serializers import PrivateReportSerializer
 from signals.auth.backend import JWTAuthBackend
-
-from rest_framework.response import Response
-from rest_framework.decorators import action
 
 
 class ReportViewSet(DatapuntViewSet):

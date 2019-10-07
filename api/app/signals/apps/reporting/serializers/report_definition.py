@@ -4,6 +4,7 @@ from datapunt_api.rest import HALSerializer
 from rest_framework import serializers
 
 from signals.apps.reporting.models import ReportDefinition
+
 # from signals.apps.reporting.serializers.report_indicator import _NestedReportIndicatorSerializer
 
 
