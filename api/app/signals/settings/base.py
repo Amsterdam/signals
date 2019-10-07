@@ -486,5 +486,5 @@ FEEDBACK_ENV_FE_MAPPING = {
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
 
 FEATURE_FLAGS = {
-   'API_VALIDATE_EXTRA_PROPERTIES': False,
+   'API_VALIDATE_EXTRA_PROPERTIES': True,
 }
