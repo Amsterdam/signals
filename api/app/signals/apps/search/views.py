@@ -26,22 +26,22 @@ class SearchView(DatapuntViewSet):
     pagination_class = ElasticHALPagination
 
     def get_queryset(self, *args, **kwargs):
-        if not settings.FEATURE_FLAGS.get('API_SEARCH_ENABLED', False):
-            raise NotImplementedException('Not implemented')
+        if settings.FEATURE_FLAGS.get('API_SEARCH_ENABLED', False):
+            if 'q' in self.request.query_params:
+                q = self.request.query_params['q']
+            else:
+                q = '*'
 
-        if 'q' in self.request.query_params:
-            q = self.request.query_params['q']
+            multi_match = MultiMatch(
+                query=q,
+                fields=[
+                    'text',
+                    'category_assignment.category.name'
+                ]
+            )
+
+            s = SignalDocument.search().query(multi_match)
+            s.execute()
+            return s
         else:
-            q = '*'
-
-        multi_match = MultiMatch(
-            query=q,
-            fields=[
-                'text',
-                'category_assignment.category.name'
-            ]
-        )
-
-        s = SignalDocument.search().query(multi_match)
-        s.execute()
-        return s
+            raise NotImplementedException('Not implemented')

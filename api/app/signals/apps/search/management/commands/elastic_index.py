@@ -12,12 +12,12 @@ class Command(BaseCommand):
                             help='Delete all data in the elastic index')
 
     def handle(self, *args, **options):
-        if not settings.FEATURE_FLAGS.get('SEARCH_BUILD_INDEX', False):
-            self.stdout('elastic indexing disabled')
-        else:
+        if settings.FEATURE_FLAGS.get('SEARCH_BUILD_INDEX', False):
             self.stdout('elastic indexing')
             delete = options['delete']
             if delete:
                 SignalDocument.clear_index()
             SignalDocument.index_documents()
+        else:
+            self.stdout('elastic indexing disabled')
         self.stdout('done!')
