@@ -55,3 +55,6 @@ Pillow
 
 # Date util
 python-dateutil
+
+# Elasticsearch
+elasticsearch-dsl

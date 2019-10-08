@@ -37,3 +37,18 @@ def show_toolbar(request):
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': show_toolbar,
 }
+
+# Search settings
+SEARCH = {
+    'PAGE_SIZE': 500,
+    'CONNECTION': {
+        'URL': 'elasticsearch:9200',
+        'INDEX': 'sia_signals',
+    },
+}
+
+FEATURE_FLAGS = {
+    'API_VALIDATE_EXTRA_PROPERTIES': True,
+    'API_SEARCH_ENABLED': True,
+    'SEARCH_BUILD_INDEX': True,
+}
