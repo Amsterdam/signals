@@ -25,11 +25,9 @@ Als we uw melding niet binnen 5 werkdagen kunnen afhandelen, hoort u - via e-mai
     Category.HANDLING_KLOKLICHTZC: """
 Gevaarlijke situaties zullen wij zo snel mogelijk verhelpen, andere situaties kunnen wat langer duren. Wij kunnen u hier helaas niet altijd van op de hoogte houden.""",  # noqa E501
     Category.HANDLING_GLADZC: """
-Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.
-
-Bij gladheid door sneeuw of bladeren pakken we hoofdwegen en fietsroutes als eerste aan. Andere meldingen behandelen we als de belangrijkste routes zijn gedaan.
-
-U ontvangt geen apart bericht meer over de afhandeling van uw melding.""",  # noqa E501
+Bij gladheid door sneeuw of bladeren pakken we hoofdwegen en fietsroutes als eerste aan. Andere meldingen behandelen we als de belangrijkste routes zijn gedaan.""",  # noqa E501
+    Category.HANDLING_GLAD_OLIE: """
+Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.""",  # noqa E501
     Category.HANDLING_A3DEVOMC: """
 We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.  In Nieuw-West komen we de volgende ophaaldag.
 We houden u op de hoogte via e-mail.""",  # noqa E501
@@ -53,4 +51,5 @@ Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze 
     Category.HANDLING_OND: """Bedankt voor uw melding. Wij nemen deze mee in ons onderzoek.""",
     Category.HANDLING_EMPTY: '',
     Category.HANDLING_LIGHTING: """Het herstellen van problemen met de openbare verlichting lukt doorgaans binnen 5 werkdagen. Bij gevaarlijke situaties wordt de melding meteen opgepakt.""",  # noqa E501
+
 }
