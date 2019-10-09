@@ -2,19 +2,15 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
-from signals.apps.users.views import UserMeView
-
 urlpatterns = [
     path('status/', include('signals.apps.health.urls')),
 
     # The Signals application is routed behind the HAproxy with `/signals/` as path.
     path('signals/', include('signals.apps.api.urls')),
-    path('signals/user/', include('signals.apps.users.urls')),
     path('signals/admin/', admin.site.urls),
 
-    # DEPRECATED url route for `auth/me`. Should be fixed in the frontend before we can remove
-    # this endpoint here.
-    path('signals/auth/me/', UserMeView.as_view()),
+    # The users/roles/permissions endpoint
+    path('signals/', include('signals.apps.users.urls')),
 
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
