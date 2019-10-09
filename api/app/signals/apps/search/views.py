@@ -35,6 +35,7 @@ class SearchView(DatapuntViewSet):
             multi_match = MultiMatch(
                 query=q,
                 fields=[
+                    'id',
                     'text',
                     'category_assignment.category.name'
                 ]
