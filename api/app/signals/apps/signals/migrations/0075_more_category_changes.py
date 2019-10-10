@@ -173,34 +173,6 @@ CHANGES_SIG_1707 = {
 }
 
 
-def change_categories(apps, schema_editor):
-    """
-    Optionally change sub-category name, handling code, department association.
-    """
-    Category = apps.get_model('signals', 'Category')
-    Department = apps.get_model('signals', 'Department')
-    for main_slug, data in CHANGE.items():
-        if not data:
-            continue
-
-        main_category = Category.objects.get(slug=main_slug, parent__isnull=True)
-        for sub_slug, sub_data in data.items():
-            sub_category = Category.objects.get(slug=sub_slug, parent=main_category)
-
-            # mutate here
-            if 'handling' in sub_data:
-                sub_category.handling = sub_data['handling']
-            if 'departments' in sub_data:
-                new_departments = Department.objects.filter(code__in=sub_data['departments'])
-                sub_category.departments.clear()
-                for dep in new_departments:
-                    sub_category.departments.add(dep)
-            if 'name' in sub_data:
-                sub_category.name = sub_data['name']
-
-            sub_category.save()
-
-
 class CategoryMutation:
     NEW_MAIN = 'NEW_MAIN'
     NEW_SUB = 'NEW_SUB'
@@ -214,51 +186,107 @@ class CategoryMutation:
         self._mutation = mutation
         self._type = CategoryMutation.NEW_MAIN
 
+        return self
+
     def new_sub(self, mutation):
         self._mutation = mutation
         self._type = CategoryMutation.NEW_SUB
+
+        return self
 
     def change_sub(self, mutation):
         self._mutation = mutation
         self._type = CategoryMutation.CHANGE_SUB
 
+        return self
+
+    def _parse_slo_code(self, slo_code):
+        """Parse e.g. 21K to mean 21 calendar days or 3W three work days"""
+        n_days = int(slo_code[:-1])
+        assert slo_code[-1] in 'WK'  # work or calendar day
+        use_calendar_days = True if slo_code[-1] == 'K' else False
+
+        return n_days, use_calendar_days
+
     def _add_main_category(self, apps, schema_editor):
         Category = apps.get_model('signals', 'Category')
 
-        for main_slug, main_data in self._mutation.items():
-            exists_already = Category.objects.filter(slug=main_slug).exists()
-            assert not exists_already
+        # Check that the slugs are unique across sub and main category
+        slugs = set(Category.objects.values_list('slug', flat=True))
+        new_slugs = set(self._mutation)
+        assert not (slugs & new_slugs)
 
-            new_main = Category.create(name=main_slug)  # control slug derivation
+        for main_slug, main_data in self._mutation.items():
+            new_main = Category.objects.create(name=main_slug)  # control slug derivation
             new_main.name = main_data['name']  # set actual desired name
             new_main.save()
 
     def _add_sub_category(self, apps, schema_editor):
+        """Add sub category (use in combination with _change_sub_category)"""
         Category = apps.get_model('signals', 'Category')
+
+        # Check that the slugs are unique across sub and main category
+        slugs = set(Category.objects.values_list('slug', flat=True))
+        all_new_slugs = [slug for value in self._mutation.values() for slug in value]
+        new_slugs = set(all_new_slugs)
+
+        assert len(new_slugs) == len(all_new_slugs)  # no double slugs in new data
+        assert not (slugs & new_slugs)  # slugs globally unique
 
         for main_slug, main_data in self._mutation.items():
             main_cat = Category.objects.get(slug=main_slug)
 
             for sub_slug, sub_data in main_data.items():
-                exists_already = Category.objects.filter(slug=sub_slug).exists()
-                assert not exists_already
+                assert 'name' in sub_data  # create sub category with slug, but need name later on
 
-                Category.create(name=sub_slug, parent=main_cat)
+                Category.objects.create(name=sub_slug, parent=main_cat)
 
     def _change_sub_category(self, apps, schema_editor):
         Category = apps.get_model('signals', 'Category')
+        Department = apps.get_model('signals', 'Department')
         ServiceLevelObjective = apps.get_model('signals', 'ServiceLevelObjective')
 
-        # BUSY
+        for main_slug, main_data in self._mutation.items():
+            main_cat = Category.objects.get(slug=main_slug)
+
+            for sub_slug, sub_data in main_data.items():
+                sub_cat = Category.objects.get(slug=sub_slug, parent=main_cat)
+
+                if 'handling' in sub_data:
+                    sub_cat.handling = sub_data['handling']
+                if 'departments' in sub_data:
+                    new_departments = Department.objects.filter(code__in=sub_data['departments'])
+                    sub_cat.departments.clear()
+                    for dep in new_departments:
+                        sub_cat.departments.add(dep)
+                if 'name' in sub_data:
+                    sub_cat.name = sub_data['name']
+                if 'slo' in sub_data:
+                    n_days, use_calendar_days = self._parse_slo_code(sub_data['slo'])
+
+                    ServiceLevelObjective.objects.create(
+                        category=sub_cat,
+                        n_days=n_days,
+                        use_calendar_days=use_calendar_days
+                    )
+
+                sub_cat.save()
 
     def run(self, apps, schema_editor):
-        assert self._mutatation is not None
+        assert self._mutation is not None
         assert self._type is not None
 
         if self._type == CategoryMutation.NEW_MAIN:
-            self._add_main_category(apps, schema_editor) 
+            self._add_main_category(apps, schema_editor)
+        elif self._type == CategoryMutation.NEW_SUB:
+            self._add_sub_category(apps, schema_editor)
+            self._change_sub_category(apps, schema_editor)
+        elif self._type == CategoryMutation.CHANGE_SUB:
+            self._change_sub_category(apps, schema_editor)
 
-        assert False, 'Failing here is ok during development'
+
+def stop_migration(apps, schema_editor):
+    assert False
 
 
 class Migration(migrations.Migration):
@@ -271,5 +299,6 @@ class Migration(migrations.Migration):
         # migrate category model to add new handling message choices
         migrations.RunPython(CategoryMutation().new_main(NEW_SIG_1705).run),
         migrations.RunPython(CategoryMutation().new_sub(NEW_SIG_1706).run),
-        migrations.RunPython(CategoryMutation().change_sub(CHANGES_SIG_1707).run)
+        migrations.RunPython(CategoryMutation().change_sub(CHANGES_SIG_1707).run),
+        migrations.RunPython(stop_migration)
     ]
