@@ -38,6 +38,7 @@ class Category(models.Model):
         (HANDLING_OND, HANDLING_OND),
         (HANDLING_EMPTY, HANDLING_EMPTY),
         (HANDLING_LIGHTING, HANDLING_LIGHTING),
+        (HANDLING_GLAD_OLIE, HANDLING_GLAD_OLIE),
     )
 
     parent = models.ForeignKey('signals.Category',

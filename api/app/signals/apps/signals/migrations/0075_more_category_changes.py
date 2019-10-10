@@ -3,7 +3,7 @@ SIG-1705 new main categories
 SIG-1706 new sub categories
 SIG-1707 rename sub categories
 """
-from django.db import migrations
+from django.db import migrations, models
 
 # Slugs carefully chosen to be unique (globally, across main/sub-categories).
 NEW_SIG_1705 = {
@@ -66,7 +66,7 @@ NEW_SIG_1706 = {
         'boom-noodkap': {
             'name': 'Boom - noodkap',
             'departments': ['STW'],
-            'handling': 'I5DMC',            
+            'handling': 'I5DMC',
             'slo': '5W',
         },
         'boom-illegale-kap': {
@@ -222,7 +222,7 @@ class CategoryMutation:
             new_main.save()
 
     def _add_sub_category(self, apps, schema_editor):
-        """Add sub category (use in combination with _change_sub_category)"""
+        """Add sub category (use with self._change_sub_category below)"""
         Category = apps.get_model('signals', 'Category')
 
         # Check that the slugs are unique across sub and main category
@@ -285,10 +285,6 @@ class CategoryMutation:
             self._change_sub_category(apps, schema_editor)
 
 
-def stop_migration(apps, schema_editor):
-    assert False
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -297,8 +293,34 @@ class Migration(migrations.Migration):
 
     operations = [
         # migrate category model to add new handling message choices
+        migrations.AlterField(
+            model_name='category',
+            name='handling',
+            field=models.CharField(
+                choices=[
+                    ('A3DMC', 'A3DMC'),
+                    ('A3DEC', 'A3DEC'),
+                    ('A3WMC', 'A3WMC'),
+                    ('A3WEC', 'A3WEC'),
+                    ('I5DMC', 'I5DMC'),
+                    ('STOPEC', 'STOPEC'),
+                    ('KLOKLICHTZC', 'KLOKLICHTZC'),
+                    ('GLADZC', 'GLADZC'),
+                    ('A3DEVOMC', 'A3DEVOMC'),
+                    ('WS1EC', 'WS1EC'),
+                    ('WS2EC', 'WS2EC'),
+                    ('WS3EC', 'WS3EC'),
+                    ('REST', 'REST'),
+                    ('ONDERMIJNING', 'ONDERMIJNING'),
+                    ('EMPTY', 'EMPTY'),
+                    ('LIGHTING', 'LIGHTING'),
+                    ('GLAD_OLIE', 'GLAD_OLIE')
+                ],
+                default='REST',
+                max_length=20
+            ),
+        ),
         migrations.RunPython(CategoryMutation().new_main(NEW_SIG_1705).run),
         migrations.RunPython(CategoryMutation().new_sub(NEW_SIG_1706).run),
         migrations.RunPython(CategoryMutation().change_sub(CHANGES_SIG_1707).run),
-        migrations.RunPython(stop_migration)
     ]
