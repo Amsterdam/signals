@@ -2,6 +2,7 @@
 Serializsers that are used exclusively by the V0 API
 """
 import logging
+import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.core.exceptions import ValidationError
@@ -22,6 +23,7 @@ from signals.apps.api.v1.fields import (
     LegacyCategoryHyperlinkedRelatedField,
     NoteHyperlinkedIdentityField
 )
+from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Category,
@@ -263,7 +265,9 @@ class SignalCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'label': 'ID'},
             'signal_id': {'label': 'SIGNAL_ID'},
-            #  'source': {'validators': [SignalSourceValidator()]},
+
+            # Because we want to disable V0 on short term we use the V1 validator for now
+            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'v1', 'json_schema', 'extra_properties.json'))]},  # noqa
         }
 
     def create(self, validated_data):

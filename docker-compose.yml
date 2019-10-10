@@ -1,6 +1,16 @@
 version: '2.0'
 services:
 
+  elasticsearch:
+    image: amsterdam/elasticsearch6
+    shm_size: '512m'
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+
   database:
     image: amsterdam/postgres11
     shm_size: '512m'
@@ -28,15 +38,11 @@ services:
     links:
       - database
       - rabbit
+      - elasticsearch
     environment:
       - DB_NAME=meldingen
       - DB_PASSWORD=insecure
-      - EMAIL_HOST
-      - EMAIL_HOST_PASSWORD
-      - EMAIL_HOST_USER
-      - EMAIL_PORT
-      - EMAIL_USE_SSL
-      - EMAIL_USE_TLS
+      - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
     volumes:
       - ./api/app:/app
@@ -48,15 +54,11 @@ services:
     links:
       - database
       - rabbit
+      - elasticsearch
     environment:
       - DB_NAME=meldingen
       - DB_PASSWORD=insecure
-      - EMAIL_HOST
-      - EMAIL_HOST_PASSWORD
-      - EMAIL_HOST_USER
-      - EMAIL_PORT
-      - EMAIL_USE_SSL
-      - EMAIL_USE_TLS
+      - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
     volumes:
       - ./api/app:/app
@@ -70,6 +72,7 @@ services:
     links:
       - database
       - rabbit
+      - elasticsearch
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure

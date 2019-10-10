@@ -71,6 +71,9 @@ INSTALLED_APPS = [
     'signals.apps.feedback',
     'signals.apps.reporting',
 
+    # WIP
+    'signals.apps.search',
+
     # Third party
     'corsheaders',
     'datapunt_api',
@@ -151,7 +154,7 @@ DATABASES = {
 }
 
 # Internationalization
-LANGUAGE_CODE = 'nl_NL'
+LANGUAGE_CODE = 'nl-NL'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True
@@ -246,6 +249,11 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BEAT_SCHEDULE = {
+    # SIG-1051
+    'rebuild-elastic': {  # Run task every day at 07:00
+        'task': 'signals.apps.search.tasks.rebuild_index',
+        'schedule': crontab(minute='0', hour='7'),
+    },
     # SIG-1456
     # 'save-csv-files-datawarehouse': {
     #     'task': 'signals.apps.signals.tasks.task_save_csv_files_datawarehouse',
@@ -254,11 +262,11 @@ CELERY_BEAT_SCHEDULE = {
     'sigmax-fail-stuck-sending-signals': {
         'task': 'signals.apps.sigmax.tasks.fail_stuck_sending_signals',
         'schedule': crontab(minute='*/15'),
-    }
+    },
 }
 
 # E-mail settings for SMTP (SendGrid)
-EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'djcelery_email.backends.CeleryEmailBackend')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
@@ -334,7 +342,7 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'gelf': {
-            'class': 'graypy.GELFHandler',
+            'class': 'graypy.GELFUDPHandler',
             'host': GELF_HOST,
             'port': GELF_PORT,
             'filters': ['static_fields'],
@@ -493,3 +501,18 @@ FEEDBACK_ENV_FE_MAPPING = {
 }
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
+
+# Search settings
+SEARCH = {
+    'PAGE_SIZE': 500,
+    'CONNECTION': {
+        'URL': 'elastic-index.service.consul:9200',
+        'INDEX': 'sia_signals',
+    },
+}
+
+FEATURE_FLAGS = {
+    'API_VALIDATE_EXTRA_PROPERTIES': True,
+    'API_SEARCH_ENABLED': True,
+    'SEARCH_BUILD_INDEX': True,
+}

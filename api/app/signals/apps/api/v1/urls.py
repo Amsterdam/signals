@@ -18,6 +18,7 @@ from signals.apps.api.v1.views import (
     StoredSignalFilterViewSet
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
+from signals.apps.search.views import SearchView
 from signals.apps.signals.models import Category
 
 # API Version 1
@@ -151,6 +152,14 @@ signal_router_v1.urls.append(
 #         name='ml-predict-category'
 #     )
 # )
+
+signal_router_v1.urls.append(
+    path(
+        'private/search',
+        SearchView.as_view({'get': 'list'}),
+        name='elastic-search'
+    )
+)
 
 urlpatterns = [
     path('v1/', include(signal_router_v1.urls)),

@@ -31,9 +31,15 @@ class TestSignalReceivers(TestCase):
                                   status=new_status,
                                   prev_status=prev_status)
 
-        mocked_tasks.send_mail_reporter_status_changed.delay.assert_called_once_with(
-            signal_pk=self.signal.id, status_pk=new_status.id
+        mocked_tasks.send_mail_reporter_status_changed_afgehandeld.delay.assert_called_once_with(
+            signal_pk=self.signal.id, status_pk=new_status.id, prev_status_pk=prev_status.pk
         )
         mocked_tasks.send_mail_reporter_status_changed_heropend.delay.assert_called_once_with(
-            signal_pk=self.signal.pk, status_pk=new_status.id
+            signal_pk=self.signal.pk, status_pk=new_status.id, prev_status_pk=prev_status.pk
+        )
+        mocked_tasks.send_mail_reporter_status_changed_ingepland.delay.assert_called_once_with(
+            signal_pk=self.signal.pk, status_pk=new_status.id, prev_status_pk=prev_status.pk
+        )
+        mocked_tasks.send_mail_reporter_status_changed_split.delay.assert_called_once_with(
+            signal_pk=self.signal.pk, status_pk=new_status.id, prev_status_pk=prev_status.pk
         )
