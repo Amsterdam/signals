@@ -44,6 +44,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
         self._create_test_signal(ON_HOLD, Category.objects.get(pk=2))
         self._create_test_signal(GEMELD, Category.objects.get(pk=2))
         signal = self._create_test_signal(GEMELD, Category.objects.get(pk=38))
+        self.maxDiff = None
 
         # Test multiple statuses for this object. Only last status should appear in overview
         status_obj = Status.objects.create(state=BEHANDELING, _signal=signal)
@@ -93,9 +94,9 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
     def test_signals_per_category(self):
         signals = self.dashboard_prototype._get_signals_per_category(self.report_start,
                                                                      self.report_end)
-
         result = [
             {"name": "Afval", "count": 7},
+            {"name": "Civiele Constructies", "count": 0},
             {"name": "Ondermijning", "count": 0},
             {"name": "Openbaar groen en water", "count": 0},
             {"name": "Overig", "count": 0},
@@ -104,7 +105,9 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
             {"name": "Overlast op het water", "count": 0},
             {"name": "Overlast van dieren", "count": 0},
             {"name": "Overlast van en door personen of groepen", "count": 1},
+            {"name": "Schoon", "count": 0},
             {"name": "Wegen, verkeer, straatmeubilair", "count": 1},
+            {"name": "Wonen", "count": 0},
         ]
 
         self.assertEqual(result, signals)
@@ -117,6 +120,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         result = [
             {"name": "Afval", "count": 0},
+            {"name": "Civiele Constructies", "count": 0},
             {"name": "Ondermijning", "count": 0},
             {"name": "Openbaar groen en water", "count": 0},
             {"name": "Overig", "count": 0},
@@ -125,7 +129,9 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
             {"name": "Overlast op het water", "count": 0},
             {"name": "Overlast van dieren", "count": 0},
             {"name": "Overlast van en door personen of groepen", "count": 0},
+            {"name": "Schoon", "count": 0},
             {"name": "Wegen, verkeer, straatmeubilair", "count": 0},
+            {"name": "Wonen", "count": 0},
         ]
 
         self.assertEqual(result, signals)
@@ -185,7 +191,7 @@ class TestDashboardPrototype(SignalsBaseApiTestCase):
 
         self.assertEqual(4, len(json_data.keys()))
         self.assertEqual(24, len(json_data["hour"]))
-        self.assertEqual(10, len(json_data["category"]))
+        self.assertEqual(13, len(json_data["category"]))
         self.assertEqual(5, len(json_data["status"]))
         self.assertEqual(10, json_data["hour"][-1]["count"])
 
