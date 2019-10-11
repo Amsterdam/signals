@@ -20,6 +20,7 @@ class Category(models.Model):
     HANDLING_REST = 'REST'
     HANDLING_EMPTY = 'EMPTY'
     HANDLING_LIGHTING = 'LIGHTING'
+    HANDLING_GLAD_OLIE = 'GLAD_OLIE'
     HANDLING_CHOICES = (
         (HANDLING_A3DMC, HANDLING_A3DMC),
         (HANDLING_A3DEC, HANDLING_A3DEC),
@@ -37,6 +38,7 @@ class Category(models.Model):
         (HANDLING_OND, HANDLING_OND),
         (HANDLING_EMPTY, HANDLING_EMPTY),
         (HANDLING_LIGHTING, HANDLING_LIGHTING),
+        (HANDLING_GLAD_OLIE, HANDLING_GLAD_OLIE),
     )
 
     parent = models.ForeignKey('signals.Category',
