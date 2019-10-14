@@ -7,10 +7,12 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.utils import timezone
 
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
 from signals.apps.reporting.csv.utils import _get_storage_backend
+from signals.apps.reporting.models.export import HorecaCSVExport
 from signals.apps.signals.models import Category, Signal
 
 logger = logging.getLogger(__name__)
@@ -236,30 +238,36 @@ def create_csv_per_sub_category(category, location, isoweek, isoyear):
 
 
 def create_csv_files(isoweek, isoyear, save_in_dir=None):
+    """
+    Write ZIP file of "horeca" data to storage.
+
+    Note:
+    - Django storage is configured to write files localy or to "object store".
+    """
     category = _get_horeca_main_category()
-
-    csv_files = []
-
-    # TODO: Change the way we store/serve these csv files in the next ticket. SIG-1547 is only about
-    #       generating the CSV files and the content. So for now we store them in a "temporary"
-    #       directory
+    csv_files = []  # TODO: consider removing these
 
     with tempfile.TemporaryDirectory() as tmp_dir:
+        # Dump data in sub directory of the current temp directory, so that we
+        # can use the current directory to eventually write the zip archive.
+        base_name = f'sia-horeca-{isoyear}-week-{isoweek}'
+        dump_dir = os.path.join(tmp_dir, base_name)
+        os.makedirs(dump_dir)
+
         for sub_category in category.children.all():
             csv_file = create_csv_per_sub_category(
-                sub_category, tmp_dir, isoweek=isoweek, isoyear=isoyear
+                sub_category, dump_dir, isoweek=isoweek, isoyear=isoyear
             )
             csv_files.append(csv_file)
 
-        if save_in_dir:
-            for csv_file in csv_files:
-                logger.info('Copy file "{}" to "{}"'.format(csv_file, save_in_dir))
-                shutil.copy(csv_file, save_in_dir)
-        elif os.getenv('SWIFT_ENABLED', 'false') == 'true':
-            storage = _get_storage_backend(get_swift_parameters())
-            for csv_file_path in csv_files:
-                with open(csv_file_path, 'rb') as opened_csv_file:
-                    file_name = os.path.basename(opened_csv_file.name)
-                    storage.save(name=file_name, content=opened_csv_file)
+        # Create zip file in current temp directory.
+        target_zip = os.path.join(tmp_dir, base_name)
+        actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
+        actual_zip_filename = os.path.basename(actual_zip)
+
+        with open(actual_zip, 'rb') as opened_zip:
+            export_obj = HorecaCSVExport(isoweek=isoweek, isoyear=isoyear)
+            export_obj.uploaded_file.save(actual_zip_filename, File(opened_zip), save=True)
+            export_obj.save()
 
     return csv_files
