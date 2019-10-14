@@ -14,6 +14,11 @@ from signals.auth.backend import JWTAuthBackend
 class UserViewSet(DatapuntViewSetWritable):
     queryset = User.objects.prefetch_related(
         'groups',
+    ).order_by(Lower('username'))
+
+    queryset_detail = User.objects.prefetch_related(
+        'user_permissions',
+        'groups',
         'groups__permissions',
     ).order_by(Lower('username'))
 
