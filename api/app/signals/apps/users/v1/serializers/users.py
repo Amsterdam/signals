@@ -90,5 +90,6 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         )
 
     def create(self, validated_data):
+        self.get_extra_kwargs()
         validated_data['email'] = validated_data['username']  # noqa The email address and username are basically the same. TODO refactor this behaviour in the user model
         return super(UserDetailHALSerializer, self).create(validated_data=validated_data)

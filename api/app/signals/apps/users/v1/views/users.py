@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.users.v1.filters import UserFilter
+from signals.apps.users.v1.filters import UserFilterSet
 from signals.apps.users.v1.serializers.users import UserDetailHALSerializer, UserListHALSerializer
 from signals.auth.backend import JWTAuthBackend
 
@@ -24,7 +24,7 @@ class UserViewSet(DatapuntViewSetWritable):
     serializer_class = UserListHALSerializer
 
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = UserFilter
+    filterset_class = UserFilterSet
 
     # We only allow these methods
     http_method_names = ['get', 'post', 'patch', 'put', 'head', 'options', 'trace']
