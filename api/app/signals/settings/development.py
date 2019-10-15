@@ -52,3 +52,20 @@ FEATURE_FLAGS = {
     'API_SEARCH_ENABLED': True,
     'SEARCH_BUILD_INDEX': True,
 }
+
+# Set console logging to DEBUG
+LOGGING['handlers'].update({  # noqa F405
+    'console': {
+        'level': 'DEBUG',
+        'class': 'logging.StreamHandler',
+        'formatter': 'console',
+    },
+})
+
+# Log queries to the console
+LOGGING['loggers'].update({  # noqa F405
+    'django.db.backends': {
+        'level': 'DEBUG',
+        'handlers': ['console', ],
+    }
+})
