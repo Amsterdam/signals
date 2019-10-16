@@ -3,12 +3,15 @@ import logging
 import os
 import shutil
 import tempfile
+import time
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.utils import timezone
 
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
+from signals.apps.reporting.models.export import HorecaCSVExport
 from signals.apps.signals.models import Category, Signal
 
 logger = logging.getLogger(__name__)
@@ -132,6 +135,8 @@ def _create_extra_properties_row(extra_properties, headers):
                 answer = extra_property['answer']
             elif 'value' in extra_property['answer']:
                 answer = extra_property['answer']['value']
+            elif 'label' in extra_property['label']:
+                answer = extra_property['answer']['label']
             row[headers.index(extra_property['id'])] = answer
 
     return row
@@ -164,9 +169,10 @@ def _get_csv_rows_per_category(category, created_at__range):
             signal.expire_date,
             signal.upload,
             signal.category_assignment_id,
-            signal.location_id,
+            signal.location.stadsdeel if signal.location else None,
+            signal.location.address_text if signal.location else None,
             signal.reporter_id,
-            signal.status_id,
+            signal.status.get_state_display() if signal.status else None,
         ] + _create_extra_properties_row(signal.extra_properties, headers))
 
     headers = [
@@ -183,7 +189,8 @@ def _get_csv_rows_per_category(category, created_at__range):
         'expire_date',
         'upload',
         'category_assignment_id',
-        'location_id',
+        'stadsdeel',
+        'address',
         'reporter_id',
         'status_id',
     ] + headers
@@ -220,24 +227,37 @@ def create_csv_per_sub_category(category, location, isoweek, isoyear):
 
 
 def create_csv_files(isoweek, isoyear, save_in_dir=None):
+    """
+    Write ZIP file of "horeca" data to storage.
+
+    Note:
+    - Django storage is configured to write files localy or to "object store".
+    """
     category = _get_horeca_main_category()
-
-    csv_files = []
-
-    # TODO: Change the way we store/serve these csv files in the next ticket. SIG-1547 is only about
-    #       generating the CSV files and the content. So for now we store them in a "temporary"
-    #       directory
+    csv_files = []  # TODO: consider removing these
 
     with tempfile.TemporaryDirectory() as tmp_dir:
+        # Dump data in sub directory of the current temp directory, so that we
+        # can use the current directory to eventually write the zip archive.
+        base_name = f'sia-horeca-{isoyear}-week-{isoweek}'
+        dump_dir = os.path.join(tmp_dir, base_name)
+        os.makedirs(dump_dir)
+
         for sub_category in category.children.all():
             csv_file = create_csv_per_sub_category(
-                sub_category, tmp_dir, isoweek=isoweek, isoyear=isoyear
+                sub_category, dump_dir, isoweek=isoweek, isoyear=isoyear
             )
             csv_files.append(csv_file)
 
-        if save_in_dir:
-            for csv_file in csv_files:
-                logger.info('Copy file "{}" to "{}"'.format(csv_file, save_in_dir))
-                shutil.copy(csv_file, save_in_dir)
+        # Create zip file in current temp directory.
+        target_zip = os.path.join(tmp_dir, base_name)
+        actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
+        epoch = time.time()
+        target_zip_filename = os.path.basename(actual_zip)[:-4] + f'-{epoch}.zip'
+
+        with open(actual_zip, 'rb') as opened_zip:
+            export_obj = HorecaCSVExport(isoweek=isoweek, isoyear=isoyear)
+            export_obj.uploaded_file.save(target_zip_filename, File(opened_zip), save=True)
+            export_obj.save()
 
     return csv_files
