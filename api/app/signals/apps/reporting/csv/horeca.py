@@ -135,6 +135,8 @@ def _create_extra_properties_row(extra_properties, headers):
                 answer = extra_property['answer']
             elif 'value' in extra_property['answer']:
                 answer = extra_property['answer']['value']
+            elif 'label' in extra_property['label']:
+                answer = extra_property['answer']['label']
             row[headers.index(extra_property['id'])] = answer
 
     return row
@@ -167,9 +169,10 @@ def _get_csv_rows_per_category(category, created_at__range):
             signal.expire_date,
             signal.upload,
             signal.category_assignment_id,
-            signal.location_id,
+            signal.location.stadsdeel if signal.location else None,
+            signal.location.address_text if signal.location else None,
             signal.reporter_id,
-            signal.status_id,
+            signal.status.get_state_display() if signal.status else None,
         ] + _create_extra_properties_row(signal.extra_properties, headers))
 
     headers = [
@@ -186,7 +189,8 @@ def _get_csv_rows_per_category(category, created_at__range):
         'expire_date',
         'upload',
         'category_assignment_id',
-        'location_id',
+        'stadsdeel',
+        'address',
         'reporter_id',
         'status_id',
     ] + headers
