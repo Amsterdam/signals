@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.functions import Lower
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
@@ -18,12 +19,14 @@ class UserViewSet(DatapuntViewSetWritable):
 
     queryset_detail = User.objects.prefetch_related(
         'user_permissions',
+        'user_permissions__content_type',
         'groups',
         'groups__permissions',
+        'groups__permissions__content_type',
     ).order_by(Lower('username'))
 
     authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SIAPermissions,)
+    permission_classes = (SIAPermissions & DjangoModelPermissions,)
 
     serializer_detail_class = UserDetailHALSerializer
     serializer_class = UserListHALSerializer

@@ -1,9 +1,20 @@
+from django.contrib.auth.models import Permission
+
 from tests.apps.users.factories import GroupFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
+        permission = Permission.objects.get(codename='view_user')
+        self.sia_read_write_user.user_permissions.add(permission)
+
+        permission = Permission.objects.get(codename='add_user')
+        self.sia_read_write_user.user_permissions.add(permission)
+
+        permission = Permission.objects.get(codename='change_user')
+        self.sia_read_write_user.user_permissions.add(permission)
+
         self.group_with_permissions = GroupFactory.create(name='This group does have permissions')
         self.group_with_permissions.permissions.add(self.sia_write)
 
@@ -39,7 +50,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertFalse(response_data['is_staff'])
         self.assertFalse(response_data['is_superuser'])
         self.assertEqual(len(response_data['roles']), 0)
-        self.assertEqual(len(response_data['permissions']), 2)
+        self.assertEqual(len(response_data['permissions']), 5)
 
     def test_get_users_not_authenticated(self):
         response = self.client.get('/signals/v1/private/users/')
@@ -129,7 +140,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response_data['first_name'], self.sia_read_write_user.first_name)
         self.assertEqual(response_data['last_name'], self.sia_read_write_user.last_name)
         self.assertFalse(response_data['is_active'])
-        self.assertEqual(len(response_data['permissions']), 2)
+        self.assertEqual(len(response_data['permissions']), 5)
 
     def test_put_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -145,4 +156,4 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.delete('/signals/v1/private/users/{}'.format(
             self.sia_read_write_user.pk
         ))
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 403)

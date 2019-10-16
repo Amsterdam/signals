@@ -11,6 +11,7 @@ from signals.auth.backend import JWTAuthBackend
 class RoleViewSet(DatapuntViewSetWritable):
     queryset = Group.objects.prefetch_related(
         'permissions',
+        'permissions__content_type',
     ).order_by(Lower('name'))
 
     authentication_classes = (JWTAuthBackend,)
