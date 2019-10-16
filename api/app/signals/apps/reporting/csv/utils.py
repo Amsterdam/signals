@@ -13,8 +13,6 @@ def _get_storage_backend(swift_parameters):
     # TODO: Refactor this logic, belongs in app_settings and project settings
 
     if os.getenv('SWIFT_ENABLED', 'false') == 'true':
-        print('Writing to: objectstore')
         return SwiftStorage(**swift_parameters)
     else:
-        print('Writing to:', settings.DWH_MEDIA_ROOT)  # reuse Datawarehouse bind mount
         return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
