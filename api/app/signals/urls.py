@@ -20,7 +20,7 @@ urlpatterns = [
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
 
     path('signals/experimental/dashboards/', include('signals.apps.dashboards.urls')),
-    path('signals/experimental/reporting/', include('signals.apps.reporting.urls'))
+    # path('signals/experimental/reporting/', include('signals.apps.reporting.urls'))
 ]
 
 if 'signals.apps.zds' in settings.INSTALLED_APPS:

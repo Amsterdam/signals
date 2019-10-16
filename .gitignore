@@ -187,3 +187,4 @@ dwh_media/
 
 *.pid
 *.lock
+*.env

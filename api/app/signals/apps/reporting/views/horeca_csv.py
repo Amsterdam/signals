@@ -1,6 +1,5 @@
 from datapunt_api.pagination import HALPagination
-from rest_framework import mixins
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.reporting.models import HorecaCSVExport

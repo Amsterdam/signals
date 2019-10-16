@@ -15,12 +15,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='HorecaCSVExport',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(
+                    auto_created=True,
+                    primary_key=True,
+                    serialize=False,
+                    verbose_name='ID'
+                )),
                 ('created_by', models.EmailField(blank=True, max_length=254, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('isoweek', models.IntegerField()),
                 ('isoyear', models.IntegerField()),
-                ('uploaded_file', models.FileField(storage=django.core.files.storage.FileSystemStorage(location='/dwh_media'), upload_to='exports/%Y')),
+                ('uploaded_file', models.FileField(
+                    storage=django.core.files.storage.FileSystemStorage(location='/dwh_media'),
+                    upload_to='exports/%Y'
+                )),
             ],
         ),
     ]

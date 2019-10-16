@@ -3,33 +3,18 @@ import logging
 import os
 import shutil
 import tempfile
+import time
 from datetime import timedelta
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils import timezone
 
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
-from signals.apps.reporting.csv.utils import _get_storage_backend
 from signals.apps.reporting.models.export import HorecaCSVExport
 from signals.apps.signals.models import Category, Signal
 
 logger = logging.getLogger(__name__)
-
-
-def get_swift_parameters():
-    """Get Swift parameters for 'Horeca data levering'"""
-    return {
-        'api_auth_url': settings.HORECA_SWIFT_AUTH_URL,
-        'api_username': settings.HORECA_SWIFT_USERNAME,
-        'api_key': settings.HORECA_SWIFT_PASSWORD,
-        'tenant_name': settings.HORECA_SWIFT_TENANT_NAME,
-        'tenant_id': settings.HORECA_SWIFT_TENANT_ID,
-        'region_name': settings.HORECA_SWIFT_REGION_NAME,
-        'container_name': settings.HORECA_SWIFT_CONTAINER_NAME,
-        'auto_overwrite': True,
-    }
 
 
 def _to_first_and_last_day_of_the_week(isoweek, isoyear):
@@ -263,11 +248,12 @@ def create_csv_files(isoweek, isoyear, save_in_dir=None):
         # Create zip file in current temp directory.
         target_zip = os.path.join(tmp_dir, base_name)
         actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
-        actual_zip_filename = os.path.basename(actual_zip)
+        epoch = time.time()
+        target_zip_filename = os.path.basename(actual_zip)[:-4] + f'-{epoch}.zip'
 
         with open(actual_zip, 'rb') as opened_zip:
             export_obj = HorecaCSVExport(isoweek=isoweek, isoyear=isoyear)
-            export_obj.uploaded_file.save(actual_zip_filename, File(opened_zip), save=True)
+            export_obj.uploaded_file.save(target_zip_filename, File(opened_zip), save=True)
             export_obj.save()
 
     return csv_files
