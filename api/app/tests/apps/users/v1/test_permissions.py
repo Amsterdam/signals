@@ -1,23 +1,28 @@
+from django.contrib.auth.models import Permission
+
 from tests.test import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
 class TestRolesViews(SIAReadUserMixin, SignalsBaseApiTestCase):
     def test_get_roles(self):
+        permission_count = Permission.objects.count()
+
         self.client.force_authenticate(user=self.sia_read_user)
 
         response = self.client.get('/signals/v1/private/permissions/')
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data['count'], 148)
+        self.assertEqual(data['count'], permission_count)
         self.assertEqual(len(data['results']), 100)
 
-        response = self.client.get(data['_links']['next']['href'])
-        self.assertEqual(response.status_code, 200)
+        if 'href' in data['_links']['next']:
+            response = self.client.get(data['_links']['next']['href'])
+            self.assertEqual(response.status_code, 200)
 
-        data = response.json()
-        self.assertEqual(data['count'], 148)
-        self.assertEqual(len(data['results']), 48)
+            data = response.json()
+            self.assertEqual(data['count'], Permission.objects.count())
+            self.assertEqual(len(data['results']), Permission.objects.count()-100)
 
     def test_get_permission(self):
         self.client.force_authenticate(user=self.sia_read_user)
