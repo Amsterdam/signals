@@ -135,7 +135,7 @@ def _create_extra_properties_row(extra_properties, headers):
                 answer = extra_property['answer']
             elif 'value' in extra_property['answer']:
                 answer = extra_property['answer']['value']
-            elif 'label' in extra_property['label']:
+            elif 'label' in extra_property['answer']:
                 answer = extra_property['answer']['label']
             row[headers.index(extra_property['id'])] = answer
 
