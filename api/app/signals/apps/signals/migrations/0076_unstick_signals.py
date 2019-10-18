@@ -5,7 +5,6 @@ from django.db import migrations
 
 from signals.apps.signals.workflow import GEANNULEERD
 
-
 PROBLEMATIC_SIA_IDS = [
     112099,
     228254,
