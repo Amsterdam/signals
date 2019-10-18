@@ -9,6 +9,7 @@ from signals.apps.api.v1.fields import (
     PrivateSignalLinksFieldWithArchives,
     PublicSignalLinksField
 )
+from signals.apps.api.v1.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.v1.serializers.nested import (
     _NestedAttachmentModelSerializer,
     _NestedCategoryModelSerializer,
@@ -37,6 +38,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     notes = _NestedNoteModelSerializer(many=True, required=False)
     has_attachments = serializers.SerializerMethodField()
 
+    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+
     class Meta:
         model = Signal
         fields = (
@@ -63,9 +66,6 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'id',
             'has_attachments',
         )
-        extra_kwargs = {
-            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
-        }
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
@@ -106,6 +106,8 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     notes = _NestedNoteModelSerializer(many=True, required=False)
     has_attachments = serializers.SerializerMethodField()
 
+    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+
     class Meta:
         model = Signal
         fields = (
@@ -137,7 +139,6 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         )
         extra_kwargs = {
             'source': {'validators': [SignalSourceValidator()]},
-            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
         }
 
     def get_has_attachments(self, obj):
@@ -212,6 +213,8 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
     attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
 
+    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+
     incident_date_start = serializers.DateTimeField()
 
     class Meta(object):
@@ -249,7 +252,6 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'id': {'label': 'ID'},
             'signal_id': {'label': 'SIGNAL_ID'},
             'source': {'validators': [SignalSourceValidator()]},
-            'extra_properties': {'validators': [ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))]},  # noqa
         }
 
     def create(self, validated_data):
