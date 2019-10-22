@@ -17,6 +17,9 @@ Uw omschrijving:
 Meer weten?
 Als u vragen heeft over deze melding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
 
+Wist u dat?
+Het melden van overlast bij de gemeente wordt continu verbeterd. Gebruik bij voorkeur het online meldformulier op meldingen.amsterdam.nl (ook mobiel bruikbaar!). Losse meld-apps van andere leveranciers (zoals Buiten Beter en Verbeter de Buurt) zorgen voor minder bruikbare meldingen.
+
 Met vriendelijke groet,
 
 Gemeente Amsterdam
