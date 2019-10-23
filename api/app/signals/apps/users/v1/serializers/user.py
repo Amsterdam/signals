@@ -6,9 +6,12 @@ from rest_framework import serializers
 
 from signals.apps.api.generics.mixins import WriteOnceMixin
 from signals.apps.users.models import Profile
-from signals.apps.users.v1.serializers.permissions import PermissionSerializer
-from signals.apps.users.v1.serializers.profiles import ProfileDetailSerializer, ProfileSerializer
-from signals.apps.users.v1.serializers.roles import RoleSerializer
+from signals.apps.users.v1.serializers import (
+    PermissionSerializer,
+    ProfileDetailSerializer,
+    ProfileListSerializer,
+    RoleSerializer
+)
 
 
 def _get_groups_queryset():
@@ -26,7 +29,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
         many=True, required=False, read_only=False, write_only=True,
         queryset=_get_groups_queryset(), source='groups'
     )
-    profile = ProfileSerializer(read_only=True)
+    profile = ProfileListSerializer(read_only=True)
 
     class Meta:
         model = User

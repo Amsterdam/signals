@@ -3,8 +3,8 @@ from django.contrib.auth.models import Permission
 from tests.test import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
-class TestRolesViews(SIAReadUserMixin, SignalsBaseApiTestCase):
-    def test_get_roles(self):
+class TestPermissionsViews(SIAReadUserMixin, SignalsBaseApiTestCase):
+    def test_get_permissions(self):
         permission_count = Permission.objects.count()
 
         self.client.force_authenticate(user=self.sia_read_user)

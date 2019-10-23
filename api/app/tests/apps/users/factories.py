@@ -51,12 +51,3 @@ class GroupFactory(factory.DjangoModelFactory):
     name = factory.LazyAttribute(
         lambda o: fake.word()
     )
-
-    @factory.post_generation
-    def permissions(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for permission in extracted:
-                self.permissions.add(permission)

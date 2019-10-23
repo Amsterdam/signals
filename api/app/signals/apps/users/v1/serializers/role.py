@@ -3,7 +3,7 @@ from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-from signals.apps.users.v1.serializers.permissions import PermissionSerializer
+from signals.apps.users.v1.serializers import PermissionSerializer
 
 
 def _get_permissions_queryset():

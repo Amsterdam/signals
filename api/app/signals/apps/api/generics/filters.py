@@ -328,8 +328,8 @@ class OrderingExtraKwargsFilter(filters.OrderingFilter):
         descending = param.startswith('-')
         param = param[1:] if descending else param
         if param in self.extra_kwargs and self.extra_kwargs[param].get('apply', False):
-            # Let's apply functions that we want to use when ordering
-            for func in self.extra_kwargs[param]['apply']:
-                value = func(param).desc() if descending else func(param).asc()
+            # Let's apply the given function that we want to use when ordering
+            func = self.extra_kwargs[param]['apply']
+            value = func(param).desc() if descending else func(param).asc()
 
         return value

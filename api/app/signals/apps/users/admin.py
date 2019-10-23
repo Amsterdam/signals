@@ -21,11 +21,6 @@ class ProfileInline(admin.StackedInline):
 class SignalsUserAdmin(UserAdmin):
     inlines = (ProfileInline, )
 
-    def get_inline_instances(self, request, obj=None):
-        if not obj:
-            return list()
-        return super(SignalsUserAdmin, self).get_inline_instances(request, obj)
-
     actions = ['download_csv']
 
     def download_csv(self, request, queryset):

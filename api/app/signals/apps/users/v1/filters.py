@@ -24,6 +24,6 @@ class UserFilterSet(FilterSet):
             ('is_active', 'active'),
         ),
         extra_kwargs={
-            'username': {'apply': [Lower, ]}  # Will apply the Lower function when ordering
+            'username': {'apply': Lower}  # Will apply the Lower function when ordering
         }
     )

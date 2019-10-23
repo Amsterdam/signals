@@ -3,7 +3,7 @@ from rest_framework import serializers
 from signals.apps.users.models import Profile
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (

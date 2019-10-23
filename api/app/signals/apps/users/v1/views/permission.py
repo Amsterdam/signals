@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission
 from rest_framework.permissions import DjangoModelPermissions
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.users.v1.serializers.permissions import PermissionSerializer
+from signals.apps.users.v1.serializers import PermissionSerializer
 from signals.auth.backend import JWTAuthBackend
 
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.users.v1.filters import UserFilterSet
-from signals.apps.users.v1.serializers.users import UserDetailHALSerializer, UserListHALSerializer
+from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
 from signals.auth.backend import JWTAuthBackend
 
 

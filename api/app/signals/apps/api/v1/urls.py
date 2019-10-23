@@ -20,11 +20,9 @@ from signals.apps.api.v1.views import (
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.signals.models import Category
-# API Version 1
-from signals.apps.users.v1.views import UserViewSet
-from signals.apps.users.v1.views.permissions import PermissionViewSet
-from signals.apps.users.v1.views.roles import RoleViewSet
+from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserViewSet
 
+# API Version 1
 signal_router_v1 = SignalsRouterVersion1()
 
 signal_router_v1.register(
