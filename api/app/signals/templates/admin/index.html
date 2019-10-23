@@ -1,0 +1,23 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div id="content-main">
+    {{block.super}}
+
+    <div id="feature-flags">
+        <div class="module">
+        <table>
+        <caption>
+            FEATURE FLAGS
+        </caption>
+        {% for feature_flag, value in FEATURE_FLAGS.items %}
+            <tr>
+                <th scope="row">{{ feature_flag }}</th>
+                <td>{% if value %}Enabled{% else %}Disabled{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
