@@ -795,11 +795,11 @@ class TestStatusMessageTemplate(TestCase):
         self.category = factories.CategoryFactory.create(is_active=True)
 
     def test_save_too_many_instances(self):
-        factories.StatusMessageTemplateFactory.create_batch(5, category=self.category, state='m')
+        factories.StatusMessageTemplateFactory.create_batch(10, category=self.category, state='m')
         with self.assertRaises(ValidationError):
             StatusMessageTemplate.objects.create(
                 category=self.category, state='m', title='title', text='text', order=999
             )
 
         qs = StatusMessageTemplate.objects.filter(category=self.category, state='m')
-        self.assertEqual(qs.count(), 5)
+        self.assertEqual(qs.count(), 10)
