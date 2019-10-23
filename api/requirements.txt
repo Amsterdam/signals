@@ -82,7 +82,7 @@ oslo.utils==3.41.1
 packaging==19.2
 pbr==5.4.3
 pilkit==2.0
-Pillow==6.2.0
+Pillow==6.2.1
 pluggy==0.13.0
 psycopg2-binary==2.8.3
 py==1.8.0
