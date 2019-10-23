@@ -137,7 +137,7 @@ def get_week_interval(value):
         raise DjangoValidationError(msg)
 
     t_begin = datetime.datetime.combine(begin_date, datetime.datetime.min.time())
-    t_end = t_begin + datetime.timedelta(days=7)
+    t_end = t_begin + relativedelta(days=7)
 
     return t_begin, t_end
 
