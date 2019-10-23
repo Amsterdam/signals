@@ -12,8 +12,8 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError as DjangoValidationError
-from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 
 from signals.apps.signals.models import Category
 
@@ -199,7 +199,7 @@ def get_interval_type(value):
     """
     # Note: we raise a Django validation error if the data does not match one
     # of interval JSON Schemas.
-    for interval_type, schema in SCHEMAS:
+    for interval_type, schema in SCHEMAS.items():
         try:
             validate(instance=value, schema=schema)
         except JSONSchemaValidationError:
@@ -262,7 +262,7 @@ class ExportParametersMixin(models.Model):
     class Meta:
         abstract = True
 
-    report_params = JSONField(validators=[validate_parameters])
+    export_parameters = JSONField(validators=[validate_parameters])
 
     def get_parameters(self):
         """
