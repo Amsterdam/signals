@@ -16,9 +16,9 @@ class SignalExtraPropertiesField(FeatureFlagMixin, JSONField):
         return instance.extra_properties
 
     def to_representation(self, value):
-        value = super(SignalExtraPropertiesField, self).to_representation(value=value)
+        representation = super(SignalExtraPropertiesField, self).to_representation(value=value)
         if not self.feature_enabled():
-            return value
+            return representation
 
         # SIG-1711: Only show extra properties that belong to the currently assigned category or
         #           the parent of the currently assigned category
@@ -26,4 +26,7 @@ class SignalExtraPropertiesField(FeatureFlagMixin, JSONField):
         category_urls = [url_from_category(category), ]
         if category.is_child():
             category_urls.append(url_from_category(category.parent))
-        return filter(lambda x: 'category_url' in x and x['category_url'] in category_urls, value)
+
+        return filter(
+            lambda x: 'category_url' in x and x['category_url'] in category_urls, representation
+        )
