@@ -99,8 +99,8 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         data = {
             'username': 'this is not an email address',
             'is_active': 'not a boolean',
-            'role_ids': [666, ],  # non existing role
-            'permission_ids': [666, ],  # non existing permission
+            'role_ids': [666666, ],  # non existing role
+            'permission_ids': [666666, ],  # non existing permission
         }
 
         response = self.client.post('/signals/v1/private/users/', data=data)
@@ -115,8 +115,8 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(response_data['username'][0], 'Voer een geldig e-mailadres in.')
         self.assertEqual(response_data['is_active'][0], 'Must be a valid boolean.')
-        self.assertEqual(response_data['role_ids'][0], 'Ongeldige pk "666" - object bestaat niet.')
-        self.assertEqual(response_data['permission_ids'][0], 'Ongeldige pk "666" - object bestaat niet.')  # noqa
+        self.assertEqual(response_data['role_ids'][0], 'Ongeldige pk "666666" - object bestaat niet.')  # noqa
+        self.assertEqual(response_data['permission_ids'][0], 'Ongeldige pk "666666" - object bestaat niet.')  # noqa
 
     def test_patch_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)

@@ -12,7 +12,6 @@ Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent
 Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.
 {% else %}
 Wat hebben we gedaan met uw melding?
-Wij hebben uw melding zojuist afgehandeld.
 {% endif %}
 
 {{ status.text }}
