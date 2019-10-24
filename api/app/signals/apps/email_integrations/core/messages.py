@@ -50,6 +50,6 @@ Als er geen directe actie nodig is, dan pakken we uw melding op buiten het vaars
 Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze gaat behandelen. Heeft u contactgegevens achtergelaten? Dan nemen wij bij onduidelijkheid contact met u op.""",  # noqa E501
     Category.HANDLING_OND: """Bedankt voor uw melding. Wij nemen deze mee in ons onderzoek.""",
     Category.HANDLING_EMPTY: '',
-    Category.HANDLING_LIGHTING: """Het herstellen van problemen met de openbare verlichting lukt doorgaans binnen 5 werkdagen. Bij gevaarlijke situaties wordt de melding meteen opgepakt.""",  # noqa E501
+    Category.HANDLING_LIGHTING: """Het herstellen van problemen met de openbare verlichting lukt doorgaans binnen 21 werkdagen. Bij gevaarlijke situaties wordt de melding meteen opgepakt.""",  # noqa E501
 
 }
