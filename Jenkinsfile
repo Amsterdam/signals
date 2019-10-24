@@ -33,11 +33,9 @@ node {
         tryStep "build", {
             def api = docker.build("repo.data.amsterdam.nl/datapunt/signals:${env.BUILD_NUMBER}", "api")
             api.push()
-            api.push("acceptance")
 
             def importer = docker.build("repo.data.amsterdam.nl/datapunt/signals_importer:${env.BUILD_NUMBER}", "import")
             importer.push()
-            importer.push("acceptance")
         }
     }
 }
