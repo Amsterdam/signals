@@ -186,3 +186,70 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': True})
+    def test_filtered_extra_properties(self):
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = [{
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': {
+                'id': 'test_answer',
+                'value': 'test_value'
+            },
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': 'test_answer',
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': ['a', 'b', 'c'],
+            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
+        }]
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
+
+        data = response.json()
+        self.assertEqual(len(data['extra_properties']), 2)
+        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
+        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
+
+    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': False})
+    def test_no_filtered_extra_properties(self):
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = [{
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': {
+                'id': 'test_answer',
+                'value': 'test_value'
+            },
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': 'test_answer',
+            'category_url': self.link_test_cat_sub
+        }, {
+            'id': 'test_id',
+            'label': 'test_label',
+            'answer': ['a', 'b', 'c'],
+            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
+        }]
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
+
+        data = response.json()
+        self.assertEqual(len(data['extra_properties']), 3)
+        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
+        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
+        self.assertEqual(data['extra_properties'][2]['category_url'], 'this/is/a/different/category/we/do/not/want/this/in/the/response') # noqa

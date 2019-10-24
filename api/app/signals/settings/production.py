@@ -11,3 +11,6 @@ CSRF_COOKIE_SECURE = True
 # TODO: remove this override of the base settings when appropriate
 FEATURE_FLAGS['API_SEARCH_ENABLED'] = False  # noqa F405
 FEATURE_FLAGS['SEARCH_BUILD_INDEX'] = False  # noqa F405
+
+# Filter extra properties is not yet enabled for production
+FEATURE_FLAGS['API_FILTER_EXTRA_PROPERTIES'] = False  # noqa F405
