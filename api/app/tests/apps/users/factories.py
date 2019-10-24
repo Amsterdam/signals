@@ -1,6 +1,7 @@
 import factory
 import faker
 from django.conf import settings
+from django.contrib.auth.models import Group
 
 fake = faker.Faker()
 
@@ -40,3 +41,13 @@ class SuperUserFactory(UserFactory):
 
     is_superuser = True
     is_staff = True
+
+
+class GroupFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Group
+        django_get_or_create = ('name',)
+
+    name = factory.LazyAttribute(
+        lambda o: fake.word()
+    )

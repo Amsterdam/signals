@@ -5,9 +5,22 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.translation import gettext as _
+
+from signals.apps.users.models import Profile
+
+
+class ProfileInline(admin.StackedInline):
+    model = Profile
+    can_delete = False
+    verbose_name = _('Profile')
+    verbose_name_plural = _('Profile')
+    fk_name = 'user'
 
 
 class SignalsUserAdmin(UserAdmin):
+    inlines = (ProfileInline, )
+
     actions = ['download_csv']
 
     def download_csv(self, request, queryset):

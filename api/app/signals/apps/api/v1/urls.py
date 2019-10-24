@@ -20,6 +20,7 @@ from signals.apps.api.v1.views import (
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.signals.models import Category
+from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserViewSet
 
 # API Version 1
 signal_router_v1 = SignalsRouterVersion1()
@@ -59,6 +60,11 @@ signal_router_v1.register(
     StoredSignalFilterViewSet,
     basename='stored-signal-filters'
 )
+
+# Users/Roles/Permissions
+signal_router_v1.register(r'private/users', UserViewSet, basename='user')
+signal_router_v1.register(r'private/roles', RoleViewSet, basename='group')
+signal_router_v1.register(r'private/permissions', PermissionViewSet, basename='permission')
 
 # Status message templates are only editable via the private API
 signal_router_v1.urls.append(
