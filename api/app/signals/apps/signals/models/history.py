@@ -1,6 +1,5 @@
 from django.contrib.gis.db import models
 
-from signals.apps.signals.models.priority import Priority  # no circular imports ?
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 
@@ -30,8 +29,9 @@ class History(models.Model):
             return 'Update status naar: {}'.format(
                 dict(STATUS_CHOICES).get(self.extra, 'Onbekend'))
         elif self.what == 'UPDATE_PRIORITY':
-            return 'Prioriteit update naar: {}'.format(
-                dict(Priority.PRIORITY_CHOICES).get(self.extra, 'Onbekend'))
+            # SIG-1727 ad-hoc translation, must match signals.Priority model!
+            translated = {'high': 'Hoog', 'normal': 'Normaal'}.get(self.extra, 'Onbekend')
+            return 'Prioriteit update naar: {}'.format(translated)
         elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
             return 'Categorie gewijzigd naar: {}'.format(self.extra)
         elif self.what == 'CREATE_NOTE' or self.what == 'UPDATE_LOCATION':
