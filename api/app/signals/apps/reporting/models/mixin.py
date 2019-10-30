@@ -24,6 +24,24 @@ ARBITRARY = 'ARBITRARY'
 
 # These schemas allow only one type of interval at a time (so no weekly and
 # daily interval's parameters are allowed to present at once.)
+CATEGORIES_SCHEMA = {
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'main_slug': {'type': 'string'},
+            'sub_slug': {
+                'anyOf': [
+                    {'type': 'string'},
+                    {'type': 'null'},
+                ]
+            },
+        },
+        'required': ['main_slug', 'sub_slug'],
+        'additionalProperties': False,
+    }
+}
+
 SCHEMAS = {
     WEEK: {
         'type': 'object',
@@ -40,7 +58,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'required': ['isoyear', 'isoweek'],
@@ -61,7 +79,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'additionalProperties': False,
@@ -88,7 +106,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'additionalProperties': False,
@@ -100,7 +118,7 @@ SCHEMAS = {
             # TODO: Add date-time format check, for now defer to Python validation.
             'start': {'type': 'string'},
             'end': {'type': 'string'},
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'required': ['start', 'end'],
@@ -217,6 +235,15 @@ INTERVAL_DERIVATIONS = {
     MONTH: get_month_interval,
     ARBITRARY: get_arbitrary_interval,
 }
+
+
+def get_categories(value):
+    """
+    Grab Category model instances from DB.
+    """
+    # TODO: consider representation (IDs or Category model instances)
+    # TODO: optimize
+    raise NotImplementedError('Category parameter not yet supported!')
 
 
 def get_parameters(value):

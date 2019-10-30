@@ -8,6 +8,7 @@ from jsonschema.exceptions import ValidationError as JSONValidationError
 
 from signals.apps.reporting.models.mixin import (
     ARBITRARY,
+    CATEGORIES_SCHEMA,
     DAY,
     MONTH,
     SCHEMAS,
@@ -21,17 +22,23 @@ from signals.apps.reporting.models.mixin import (
     validate_parameters
 )
 
+VALID_CATEGORIES = [
+    {'main_slug': 'main-a', 'sub_slug': 'sub-a'},  # specific sub category
+    {'main_slug': 'main-a', 'sub_slug': None},  # main category main-a
+    {'main_slug': 'main-a', 'sub_slug': '*'},  # all sub categories to main-a
+]
+
 VALID_WEEK = {
     'isoweek': 40,
     'isoyear': 2019,
-    'categories': ['TBD', 'TBD'],
+    'categories': VALID_CATEGORIES,
     'areas': ['TBD', 'TBD'],
 }
 
 VALID_MONTH = {
     'month': 12,
     'year': 2019,
-    'categories': ['TBD', 'TBD'],
+    'categories': VALID_CATEGORIES,
     'areas': ['TBD', 'TBD'],
 }
 
@@ -39,14 +46,14 @@ VALID_DAY = {
     'day': 31,
     'month': 12,
     'year': 2019,
-    'categories': ['TBD', 'TBD'],
+    'categories': VALID_CATEGORIES,
     'areas': ['TBD', 'TBD'],
 }
 
 VALID_ARBITRARY = {
     'start': 'TBD',
     'end': 'TBD',
-    'categories': ['TBD', 'TBD'],
+    'categories': VALID_CATEGORIES,
     'areas': ['TBD', 'TBD'],
 }
 
@@ -69,6 +76,7 @@ class TestSchemas(TestCase):
         self.assertEqual(True, Validator(SCHEMAS[DAY]).is_valid(VALID_DAY))
         self.assertEqual(True, Validator(SCHEMAS[MONTH]).is_valid(VALID_MONTH))
         self.assertEqual(True, Validator(SCHEMAS[WEEK]).is_valid(VALID_WEEK))
+        self.assertEqual(True, Validator(CATEGORIES_SCHEMA).is_valid(VALID_CATEGORIES))
 
     def test_should_fail_missing_parameters(self):
         """Missing parameters should cause JSONSchema validation failure."""
@@ -96,6 +104,12 @@ class TestSchemas(TestCase):
             del data[required]
             self.assertEqual(False, validator.is_valid(data))
 
+        validator = Validator(CATEGORIES_SCHEMA)
+        for required in ['main_slug', 'sub_slug']:
+            data = copy.deepcopy(VALID_CATEGORIES)
+            del data[0][required]
+            self.assertEqual(False, validator.is_valid(data))
+
     def test_should_fail_extra_parameters(self):
         """Extra parameters should cause JSONSchema validation failure."""
         data = copy.deepcopy(VALID_ARBITRARY)
@@ -113,6 +127,10 @@ class TestSchemas(TestCase):
         data = copy.deepcopy(VALID_WEEK)
         data['start'] = 'TBD'
         self.assertEqual(False, Validator(SCHEMAS[WEEK]).is_valid(data))
+
+        data = copy.deepcopy(VALID_CATEGORIES)
+        data[0]['extra'] = 'not_allowed'
+        self.assertEqual(False, Validator(CATEGORIES_SCHEMA).is_valid(data))
 
 
 class TestParameterDerivation(TestCase):
