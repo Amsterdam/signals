@@ -218,7 +218,7 @@ class TestParameterDerivation(DjangoTestCase):
 
         invalid_data = {'isoweek': 60, 'isoyear': 2019}
         with self.assertRaises(DjangoValidationError):
-            get_parameters(invalid_data)
+            t_begin, t_end, categories, areas = get_parameters(invalid_data)
 
         # --
         midnight = datetime.datetime.min.time()
@@ -231,17 +231,17 @@ class TestParameterDerivation(DjangoTestCase):
 
         invalid_data = {'year': 2019, 'month': 13}
         with self.assertRaises(DjangoValidationError):
-            get_parameters(invalid_data)
+            t_begin, t_end, categories, areas = get_parameters(invalid_data)
 
         # -- Check intervals that are to be implemented in future (they raise NotImplementedError)
 
         valid_data_day = {'day': 31, 'month': 12, 'year': 2019}
         with self.assertRaises(NotImplementedError):
-            get_parameters(valid_data_day)
+            t_begin, t_end, categories, areas = get_parameters(valid_data_day)
 
         valid_data_arbitrary = {'start': 'TBD', 'end': 'TBD'}
         with self.assertRaises(NotImplementedError):
-            get_parameters(valid_data_arbitrary)
+            t_begin, t_end, categories, areas = get_parameters(valid_data_arbitrary)
 
     def test_validate_parameters_raise_django_validation_error(self):
         try:
