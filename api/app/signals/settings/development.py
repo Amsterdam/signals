@@ -56,7 +56,7 @@ FEATURE_FLAGS = {
 # Set console logging to DEBUG
 LOGGING['handlers'].update({  # noqa F405
     'console': {
-        'level': 'DEBUG',
+        'level': 'WARNING',
         'class': 'logging.StreamHandler',
         'formatter': 'console',
     },
@@ -65,7 +65,7 @@ LOGGING['handlers'].update({  # noqa F405
 # Log queries to the console
 LOGGING['loggers'].update({  # noqa F405
     'django.db.backends': {
-        'level': 'DEBUG',
+        'level': 'WARNING',
         'handlers': ['console', ],
     }
 })

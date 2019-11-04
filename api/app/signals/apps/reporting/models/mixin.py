@@ -7,6 +7,7 @@ Reports can be parametrized based on the following:
 - one or more areas
 """
 import datetime
+from collections import defaultdict
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.gis.db import models
@@ -24,6 +25,24 @@ ARBITRARY = 'ARBITRARY'
 
 # These schemas allow only one type of interval at a time (so no weekly and
 # daily interval's parameters are allowed to present at once.)
+CATEGORIES_SCHEMA = {
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'properties': {
+            'main_slug': {'type': 'string'},
+            'sub_slug': {
+                'anyOf': [
+                    {'type': 'string'},
+                    {'type': 'null'},
+                ]
+            },
+        },
+        'required': ['main_slug', 'sub_slug'],
+        'additionalProperties': False,
+    }
+}
+
 SCHEMAS = {
     WEEK: {
         'type': 'object',
@@ -40,7 +59,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'required': ['isoyear', 'isoweek'],
@@ -61,7 +80,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'additionalProperties': False,
@@ -88,7 +107,7 @@ SCHEMAS = {
                     {'type': 'number'},
                 ],
             },
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'additionalProperties': False,
@@ -100,7 +119,7 @@ SCHEMAS = {
             # TODO: Add date-time format check, for now defer to Python validation.
             'start': {'type': 'string'},
             'end': {'type': 'string'},
-            'categories': {'type': 'array'},
+            'categories': CATEGORIES_SCHEMA,
             'areas': {'type': 'array'},
         },
         'required': ['start', 'end'],
@@ -122,8 +141,8 @@ def get_week_interval(value):
     try:
         isoweek = int(value['isoweek'])
         isoyear = int(value['isoyear'])
-    except ValueError:
-        msg = f'isoweek={isoweek} and/or isoyear={isoyear} parameters are invalid.'
+    except (ValueError, TypeError):
+        msg = f'"isoweek" and/or "isoyear" parameters are invalid.'
         raise DjangoValidationError(msg)
     except KeyError:
         raise DjangoValidationError('Missing parameter(s) for weekly interval.')
@@ -153,8 +172,8 @@ def get_month_interval(value):
     try:
         month = int(value['month'])
         year = int(value['year'])
-    except ValueError:
-        msg = f'month={month} and/or year={year} parameters are invalid.'
+    except (ValueError, TypeError):
+        msg = f'"month" and/or "year" parameters are invalid.'
         raise DjangoValidationError(msg)
     except KeyError:
         raise DjangoValidationError('Missing parameter(s) for weekly interval.')
@@ -219,6 +238,70 @@ INTERVAL_DERIVATIONS = {
 }
 
 
+def _build_category_indexes():
+    # Create an dictionary of (main_slug, sub_slug) to category_id, to check
+    # whether the requested (main_slug, sub_slug) actually exist in SIA.
+    # Do the same for main_slug to sub categories to deal with (main_slug, '*').
+
+    # Note: Assumes number of Categories is small, and can be loaded into
+    # memory at once.
+    all_categories = list(Category.objects.all())
+    id_to_category = {cat.id: cat for cat in all_categories}
+
+    slugs_to_category_id = {}
+    main_slug_to_category_ids = defaultdict(set)
+
+    for cat in all_categories:
+        if cat.parent_id is None:
+            slugs_to_category_id[(cat.slug, None)] = cat.id  # for (main_slug, None)
+        else:
+            main_cat = id_to_category[cat.parent_id]
+            slugs_to_category_id[(main_cat.slug, cat.slug)] = cat.id  # for (main_slug, sub_slug)
+            main_slug_to_category_ids[main_cat.slug].add(cat.id)  # for (main_slug, '*')
+
+    return id_to_category, slugs_to_category_id, main_slug_to_category_ids
+
+
+def get_categories(value):
+    """
+    Get a Category queryset for requested categories parameter.
+    """
+    if 'categories' not in value:
+        return Category.objects.all()
+
+    # Build indexes to check (main_slug, sub_slug) pairs against
+    id_to_category, slugs_to_category_id, main_slug_to_category_ids = _build_category_indexes()
+
+    # We want to return a queryset of matching categories, we do so with a
+    # id__in ORM query. Loop below checks all requested (main_slug, sub_slug)
+    # pairs for validity even if it starts with ('*', '*').
+    matching_category_ids = set()
+    for entry in value['categories']:
+        main_slug = entry['main_slug']
+        sub_slug = entry['sub_slug']
+
+        if main_slug == '*' and sub_slug == '*':
+            matching_category_ids |= set(id_to_category.keys())
+        elif main_slug != '*' and sub_slug == '*':
+            ids = main_slug_to_category_ids.get(main_slug, None)
+            if ids is None:
+                msg = f"No matching categories for ({main_slug}, '*')."
+                raise DjangoValidationError(msg)
+            matching_category_ids |= ids
+        else:
+            _id = slugs_to_category_id.get((main_slug, sub_slug), None)
+            if _id is None:
+                msg = f'No matching categories for ({main_slug}, {sub_slug}).'
+                raise DjangoValidationError(msg)
+            matching_category_ids.add(_id)
+
+    # Return a queryset of matching IDs (so that filtering for allowed
+    # categories is easy down the line).
+    for x in matching_category_ids:
+        assert type(x) == int
+    return Category.objects.filter(id__in=matching_category_ids)
+
+
 def get_parameters(value):
     """
     Derive export parameters. Raises Django ValidationError on invalid inputs.
@@ -240,7 +323,7 @@ def get_parameters(value):
     # Note: support for categories and areas is not yet implemented. Hence the
     # empty queryset for Category and empty list for the, as yet un-implemented,
     # areas. Excpectation is that the latter will be a Django model as well.
-    categories = Category.objects.none()
+    categories = get_categories(value)
     areas = []
     return t_begin, t_end, categories, areas
 
