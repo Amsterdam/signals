@@ -4,12 +4,14 @@ import os
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.utils import timezone
 from django.utils.http import urlencode
 from freezegun import freeze_time
+from rest_framework import status
 
 from signals.apps.api.v1.validation import AddressValidationUnavailableException, NoResultsException
 from signals.apps.signals import workflow
@@ -21,10 +23,12 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
+    ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
 )
+from tests.apps.users.factories import GroupFactory, UserFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -172,7 +176,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # Check that the actions are logged with the correct user email
         new_url = response.json()['_links']['self']['href']
-        response_json = self.client.get(new_url).json()
+        response = self.client.get(new_url)
+        response_json = response.json()
 
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
@@ -1284,7 +1289,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.json()['source'][0],
                          'Invalid source given for authenticated user')
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled(self):
         initial_data = self.create_initial_data
         initial_data['extra_properties'] = [{
@@ -1312,7 +1316,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(3, Signal.objects.count())
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled_invalid_data(self):
         initial_data = self.create_initial_data
         initial_data['extra_properties'] = {'old_style': 'extra_properties'}
@@ -1324,16 +1327,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('extra_properties', data)
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(2, Signal.objects.count())
-
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
-    def test_validate_extra_properties_disabled(self):
-        initial_data = self.create_initial_data
-        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(3, Signal.objects.count())
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -1421,3 +1414,342 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertFalse(data['results'][3]['is_image'])
         self.assertEqual(self.test_host + non_image_attachments[1].file.url,
                          data['results'][3]['location'])
+
+
+@freeze_time('2019-11-01 12:00:00', tz_offset=1)
+@override_settings(FEATURE_FLAGS=dict(
+    PERMISSION_SIAPERMISSIONS=True,
+    PERMISSION_SPLITPERMISSION=True,
+    PERMISSION_SIGNALCREATEINITIALPERMISSION=True,
+    PERMISSION_SIGNALCREATENOTEPERMISSION=True,
+    PERMISSION_SIGNALCHANGESTATUSPERMISSION=True,
+    PERMISSION_SIGNALCHANGECATEGORYPERMISSION=True,
+))  # Enable all permission feature flags
+class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    list_endpoint = '/signals/v1/private/signals/'
+    detail_endpoint = '/signals/v1/private/signals/{pk}'
+    history_endpoint = '/signals/v1/private/signals/{pk}/history'
+    split_endpoint = '/signals/v1/private/signals/{pk}/split'
+
+    category_url_pattern = '/signals/v1/public/terms/categories/{}'
+    subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
+
+    def setUp(self):
+        self.category = ParentCategoryFactory.create()
+        self.subcategory = CategoryFactory.create(
+            parent=self.category
+        )
+        self.subcategory_2 = CategoryFactory.create(
+            parent=self.category
+        )
+
+        self.signal = SignalFactoryValidLocation.create(
+            category_assignment__category=self.subcategory,
+            reporter=None,
+            incident_date_start=timezone.now(),
+            incident_date_end=timezone.now() + timedelta(hours=1),
+            source='test-api',
+        )
+
+        self.link_category = self.category_url_pattern.format(
+            self.category.slug
+        )
+        self.link_subcategory = self.subcategory_url_pattern.format(
+            self.category.slug, self.subcategory.slug
+        )
+        self.link_subcategory_2 = self.subcategory_url_pattern.format(
+            self.category.slug, self.subcategory_2.slug
+        )
+
+        self.sia_user = UserFactory.create(
+            first_name='SIA-PERMISSION-USER',
+            last_name='User',
+        )
+        self.sia_user.user_permissions.add(self.sia_read)
+        self.sia_user.user_permissions.add(self.sia_write)
+
+        self.create_initial_permission = Permission.objects.get(
+            codename='sia_signal_create_initial'
+        )
+        self.create_note_permission = Permission.objects.get(
+            codename='sia_signal_create_note'
+        )
+        self.change_status_permission = Permission.objects.get(
+            codename='sia_signal_change_status'
+        )
+        self.change_category_permission = Permission.objects.get(
+            codename='sia_signal_change_category'
+        )
+
+        self.test_group = GroupFactory.create(name='Test Group')
+
+        self.test_group.permissions.add(self.create_initial_permission)
+        self.test_group.permissions.add(self.create_note_permission)
+        self.test_group.permissions.add(self.change_category_permission)
+        self.test_group.permissions.add(self.change_status_permission)
+
+    def test_get_endpoints(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        endpoints = (
+            self.list_endpoint,
+            self.detail_endpoint.format(pk=self.signal.pk),
+            self.history_endpoint.format(pk=self.signal.pk),
+        )
+
+        for endpoint in endpoints:
+            response = self.client.get(endpoint)
+            self.assertEqual(response.status_code, 200, msg='{}'.format(endpoint))
+
+    def test_create_initial_forbidden(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        data = {
+            'text': 'Er liggen losse stoeptegels op het trottoir',
+            'category': {
+                'sub_category': self.link_subcategory,
+            },
+            'location': {},
+            'reporter': {},
+            'incident_date_start': timezone.now(),
+            'source': 'test-api',
+        }
+        response = self.client.post(self.list_endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_initial(self):
+        self.sia_user.user_permissions.add(self.create_initial_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        data = {
+            'text': 'Er liggen losse stoeptegels op het trottoir',
+            'category': {
+                'sub_category': self.link_subcategory,
+            },
+            'location': {
+                'geometrie': {
+                    'type': 'Point',
+                    'coordinates': [4.90022563, 52.36768424]
+                },
+            },
+            'reporter': {},
+            'incident_date_start': timezone.now(),
+            'source': 'test-api',
+        }
+        response = self.client.post(self.list_endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_note_forbidden(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {'notes': [{'text': 'This is a text for a note.'}]}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_note(self):
+        self.assertEqual(self.signal.notes.count(), 0)
+
+        self.sia_user.user_permissions.add(self.create_note_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {'notes': [{'text': 'This is a text for a note.'}]}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.notes.count(), 1)
+        self.assertEqual(self.signal.notes.first().created_by, self.sia_user.email)
+
+    def test_change_status_forbidden(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'status': {
+                'text': 'Test status update',
+                'state': 'b'
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_change_status(self):
+        self.sia_user.user_permissions.add(self.change_status_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'status': {
+                'text': 'Test status update',
+                'state': 'b'
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.status.state, 'b')
+        self.assertEqual(self.signal.status.user, self.sia_user.email)
+
+    def test_change_category_forbidden(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_change_category(self):
+        self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
+
+        self.sia_user.user_permissions.add(self.change_category_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory_2.pk)
+        self.assertEqual(self.signal.category_assignment.created_by, self.sia_user.email)
+
+    @patch('signals.apps.api.v1.validation.AddressValidation.validate_address_dict')
+    def test_update_location(self, validate_address_dict):
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'location': {
+                'geometrie': {
+                    'type': 'Point',
+                    'coordinates': [
+                        4.90022563,
+                        52.36768424
+                    ]
+                },
+                'address': {
+                    'openbare_ruimte': 'De Ruijterkade',
+                    'huisnummer': '36',
+                    'huisletter': 'A',
+                    'huisnummer_toevoeging': '',
+                    'postcode': '1012AA',
+                    'woonplaats': 'Amsterdam'
+                },
+                'extra_properties': None,
+                'stadsdeel': 'A',
+                'buurt_code': 'A01a'
+            }
+        }
+
+        validated_address = copy.deepcopy(data['location']['address'])
+        validate_address_dict.return_value = validated_address
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.location.created_by, self.sia_user.email)
+
+    def test_create_initial_role_based_permission(self):
+        self.sia_user.groups.add(self.test_group)
+        self.client.force_authenticate(user=self.sia_user)
+
+        data = {
+            'text': 'Er liggen losse stoeptegels op het trottoir',
+            'category': {
+                'sub_category': self.link_subcategory,
+            },
+            'location': {
+                'geometrie': {
+                    'type': 'Point',
+                    'coordinates': [4.90022563, 52.36768424]
+                },
+            },
+            'reporter': {},
+            'incident_date_start': timezone.now(),
+            'source': 'test-api',
+        }
+        response = self.client.post(self.list_endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_multiple_actions_role_based_permission(self):
+        self.sia_user.groups.add(self.test_group)
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'status': {
+                'text': 'Test status update',
+                'state': 'b'
+            },
+            'notes': [{
+                'text': 'This is a text for a note.'
+            }],
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            },
+            'location': {
+                'geometrie': {
+                    'type': 'Point',
+                    'coordinates': [
+                        4.90022563,
+                        52.36768424
+                    ]
+                },
+                'address': {
+                    'openbare_ruimte': 'De Ruijterkade',
+                    'huisnummer': '36',
+                    'huisletter': 'A',
+                    'huisnummer_toevoeging': '',
+                    'postcode': '1012AA',
+                    'woonplaats': 'Amsterdam'
+                },
+                'extra_properties': None,
+                'stadsdeel': 'A',
+                'buurt_code': 'A01a'
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_change_category_method_not_allowed(self):
+        self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
+
+        self.sia_user.user_permissions.add(self.change_category_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            }
+        }
+        response = self.client.delete(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)

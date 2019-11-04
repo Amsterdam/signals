@@ -1,9 +1,8 @@
-from rest_framework import serializers
-
+from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Priority
 
 
-class _NestedPriorityModelSerializer(serializers.ModelSerializer):
+class _NestedPriorityModelSerializer(SIAModelSerializer):
     class Meta:
         model = Priority
         fields = (
