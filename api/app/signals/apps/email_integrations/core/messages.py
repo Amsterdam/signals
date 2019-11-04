@@ -29,8 +29,7 @@ Bij gladheid door sneeuw of bladeren pakken we hoofdwegen en fietsroutes als eer
     Category.HANDLING_GLAD_OLIE: """
 Gaat het om gladheid door een ongeluk (olie of frituurvet op de weg)? Dan pakken we uw melding zo snel mogelijk op. In ieder geval binnen 3 werkdagen.""",  # noqa E501
     Category.HANDLING_A3DEVOMC: """
-We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken.  In Nieuw-West komen we de volgende ophaaldag.
-We houden u op de hoogte via e-mail.""",  # noqa E501
+We laten u binnen 3 werkdagen weten wat we hebben gedaan. En anders hoort u wanneer wij uw melding kunnen oppakken. We houden u op de hoogte.""",  # noqa E501
     Category.HANDLING_WS1EC: """
 We geven uw melding door aan de handhavers. Als dat mogelijk is ondernemen zij direct actie, maar zij kunnen niet altijd snel genoeg aanwezig zijn.
 
