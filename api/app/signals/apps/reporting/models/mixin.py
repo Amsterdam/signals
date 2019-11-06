@@ -319,8 +319,6 @@ def get_categories(value):
 
     # Return a queryset of matching IDs (so that filtering for allowed
     # categories is easy down the line).
-    for x in matching_category_ids:
-        assert type(x) == int
     return Category.objects.filter(id__in=matching_category_ids)
 
 
