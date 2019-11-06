@@ -187,9 +187,25 @@ class TestParameterDerivation(DjangoTestCase):
                 get_month_interval(invalid_data)
 
     def test_get_day_interval(self):
-        # support is not yet implemented
-        with self.assertRaises(NotImplementedError):
-            get_day_interval(VALID_DAY)
+        """Check parameter handling for weekly intervals"""
+        midnight = datetime.datetime.min.time()
+
+        valid_data = {'year': 2019, 'month': 12, 'day': 31}
+        t_begin, t_end = get_day_interval(valid_data)
+
+        self.assertEqual(t_begin, datetime.datetime.combine(datetime.date(2019, 12, 31), midnight))
+        self.assertEqual(t_end, datetime.datetime.combine(datetime.date(2020, 1, 1), midnight))
+
+        invalid_data_examples = [
+            {'year': 2019},
+            {'year': 2019, 'month': 12},
+            {'year': 2019, 'month': 13, 'day': 31},
+            {'year': 'INVALID', 'month': 12},
+            {'year': 2019, 'month': 12, 'day': None},
+        ]
+        for invalid_data in invalid_data_examples:
+            with self.assertRaises(DjangoValidationError):
+                get_day_interval(invalid_data)
 
     def test_get_areas(self):
         pass  # support is not yet implemented
@@ -216,8 +232,6 @@ class TestParameterDerivation(DjangoTestCase):
             get_parameters(invalid_data)
 
         # --
-        midnight = datetime.datetime.min.time()
-
         valid_data = {'year': 2019, 'month': 12}
         t_begin, t_end, categories, areas = get_parameters(valid_data)
 
@@ -228,11 +242,14 @@ class TestParameterDerivation(DjangoTestCase):
         with self.assertRaises(DjangoValidationError):
             get_parameters(invalid_data)
 
-        # -- Check intervals that are to be implemented in future (they raise NotImplementedError)
-
+        # --
         valid_data_day = {'day': 31, 'month': 12, 'year': 2019}
-        with self.assertRaises(NotImplementedError):
-            get_parameters(valid_data_day)
+        t_begin, t_end, categories, areas = get_parameters(valid_data_day)
+
+        self.assertEqual(t_begin, datetime.datetime.combine(datetime.date(2019, 12, 31), midnight))
+        self.assertEqual(t_end, datetime.datetime.combine(datetime.date(2020, 1, 1), midnight))
+
+        # -- Check intervals that are to be implemented in future (they raise NotImplementedError)
 
         valid_data_arbitrary = {'start': 'TBD', 'end': 'TBD'}
         with self.assertRaises(NotImplementedError):

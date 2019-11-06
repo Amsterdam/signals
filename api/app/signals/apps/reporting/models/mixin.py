@@ -199,7 +199,29 @@ def get_day_interval(value):
     Note: Raises Django ValidationError on incorrect data - this function is
     used both for validation and deriving the relevant interval.
     """
-    raise NotImplementedError('Daily intervals not yet supported')
+    # Data type, and presence checks
+    try:
+        day = int(value['day'])
+        month = int(value['month'])
+        year = int(value['year'])
+    except (ValueError, TypeError):
+        msg = f'"day" and/or "month" and/or "year" parameters are invalid.'
+        raise DjangoValidationError(msg)
+    except KeyError:
+        raise DjangoValidationError('Missing parameter(s) for daily interval.')
+
+    # Value checks
+    try:
+        date = datetime.date(year, month, day)
+    except ValueError:
+        msg = f'day={day} annd/or month={month} and/or year={year} parameters are invalid.'
+        raise DjangoValidationError(msg)
+    next_date = date + relativedelta(days=1)
+
+    t_begin = datetime.datetime.combine(date, datetime.datetime.min.time())
+    t_end = datetime.datetime.combine(next_date, datetime.datetime.min.time())
+
+    return t_begin, t_end
 
 
 def get_arbitrary_interval(value):
