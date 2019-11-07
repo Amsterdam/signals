@@ -6,6 +6,10 @@ Reports can be parametrized based on the following:
 - one or more categories
 - one or more areas
 """
+# TODO:
+# - mark functions as private as needed
+# - refactor the interval handling
+
 import datetime
 from collections import defaultdict
 
@@ -258,6 +262,58 @@ INTERVAL_DERIVATIONS = {
     MONTH: get_month_interval,
     ARBITRARY: get_arbitrary_interval,
 }
+
+
+class Interval:
+    """
+    Interval of time.
+
+    Note:
+    - Supports daily, weekly and monthly intervals
+    - provides both the requested parameters as well as derived quantities (the
+      start and end of the interval as datetime objects)
+    """
+    def __init__(self, t_begin, t_end, interval_type, parameters, desc):
+        self.t_begin = t_begin
+        self.t_end = t_end
+        self._type = interval_type
+        self.parameters = parameters
+        self.desc = desc
+
+    def __str__(self):
+        return self.desc
+
+
+def get_full_interval_info(value):
+    # See what type of interval we are dealing with
+    interval_type = get_interval_type(value)
+    # Check that the parameters are correct, and derive begin and end datetime
+    t_begin, t_end = INTERVAL_DERIVATIONS[interval_type](value)
+
+    # We know we have a valid interval (known type, known begin and end)
+    if interval_type == DAY:
+        relevant_parameters = ['year', 'month', 'day']
+    elif interval_type == WEEK:
+        relevant_parameters = ['isoyear', 'isoweek']
+    elif interval_type == MONTH:
+        relevant_parameters = ['year', 'month']
+    elif interval_type == ARBITRARY:
+        relevant_parameters = ['start', 'end']
+        raise NotImplementedError
+
+    # copy relevant parameters and their values
+    interval_parameters = {key: value[key] for key in relevant_parameters}
+
+    # provide a filename save string for this interval
+    interval_string = '-'.join(value[key] for key in relevant_parameters)
+
+    return Interval(
+        t_begin=t_begin,
+        t_end=t_end,
+        _type=interval_type,
+        parameters=interval_parameters,
+        desc=interval_string,
+    )
 
 
 def _build_category_indexes():

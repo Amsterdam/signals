@@ -3,7 +3,11 @@ from django.conf import settings
 from django.contrib.gis.db import models
 
 from signals.apps.reporting.csv.utils import _get_storage_backend
-from signals.apps.reporting.models.mixin import ExportParametersMixin, get_parameters
+from signals.apps.reporting.models.mixin import (
+    ExportParametersMixin,
+    get_full_interval_parameters,
+    get_parameters,
+)
 from signals.apps.signals.models import Signal
 
 # TODO: consider moving this to a central location (settings?)
@@ -42,13 +46,27 @@ class HorecaCSVExport(models.Model):
 
 
 class CSVExportManager(models.Manager):
+    def _create_rows(self, signals_qs):
+        pass
+
+    def _dump_signals_csv(self, singals_qs, dump_dir, filename):
+        """
+        Write CSV for selected signal instances, only dump current state.
+        """
+        rows = self._create_rows(signals_qs)
+        with open(os.path.join(), 'w') as csv_file:
+            writer = csv_writer(csv_file)
+
     def create_csv_export(self, basename, export_parameters):
         # TODO: implement support for areas
-        t_begin, t_end, categories, _ = get_parameters(export_parameters)
+        interval, categories, _ = get_parameters(export_parameters)
         categories = categories.select_related('parent')
 
-        # TODO: derive zip file name that is appropriate, based on basename and
-        # the currently defined interval (daily, weekly, monthly)
+        # TODO: refactor get_parameters to use get_full_interval_info directly
+        interval = get_full_interval_info(export_parameters)
+
+        # derive zip file name
+        zip_basename = f'{basename}-{interval.desc}'
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             for cat in categories:
@@ -62,12 +80,20 @@ class CSVExportManager(models.Manager):
                     .filter(created_at__gte=t_begin)
                     .filter(created_at__lt=t_end)
                 )
-                # TODO: create CSV in this loop iteration
-            # TODO: create a ZIP file of all the created CSV files
+                # create a per category CSV in temporary directory
+                filename = f'signals-{cat.slug}-{cat.parent.slug}-{interval.desc}.csv'
+                dump_dir = os.path.join(tmp_dir, zip_basename)
+                self._dump_signals_csv(matching_signals, dump_dir, filename)
 
-        csv_export = CSVExport(export_parameters=export_parameters)
-        csv_export.uploaded_file.save(target_zip_filename, File(opened_zip, save=True)
-        csv_export.save()
+            # Zip up all the single-category CSV files.
+            target_zip = os.path.join(tmp_dir, zip_basename)
+            actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
+
+            # upload the ZIP
+            target_zip_filename = os.path.basename(actual_zip)
+            csv_export = CSVExport(export_parameters=export_parameters)
+            csv_export.uploaded_file.save(target_zip_filename, File(opened_zip, save=True)
+            csv_export.save()
 
         return csv_export
 
