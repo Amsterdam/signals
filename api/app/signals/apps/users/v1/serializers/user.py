@@ -62,7 +62,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         queryset=_get_groups_queryset(), source='groups'
     )
     permissions = PermissionSerializer(source='user_permissions', many=True, read_only=True)
-    profile = ProfileDetailSerializer(read_only=True)
+    profile = ProfileDetailSerializer(required=False)
 
     class Meta:
         model = User

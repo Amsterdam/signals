@@ -90,11 +90,6 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(role_data['permissions'][0]['name'], self.sia_write.name)
         self.assertEqual(role_data['permissions'][0]['codename'], self.sia_write.codename)
 
-        self.assertEqual(len(response_data['permissions']), 1)
-        self.assertEqual(response_data['permissions'][0]['id'], self.sia_read.pk)
-        self.assertEqual(response_data['permissions'][0]['name'], self.sia_read.name)
-        self.assertEqual(response_data['permissions'][0]['codename'], self.sia_read.codename)
-
     def test_post_user_profile(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
