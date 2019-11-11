@@ -132,6 +132,9 @@ the SIA backend application, only implements binary permissions, no user groups
 are defined in code. This choice was made to keep as much of the complexity of
 the Amsterdam municipal organisation out of the SIA code base and datamodel.
 
+Related:
+* Detailed description of the [SIA authorization system](sia-authorization.md)
+
 ### External integrations (SIA API)
 Several external systems integrate with SIA. These integrations use the same
 REST API as the back office application and maintenance scripts. Access controls
