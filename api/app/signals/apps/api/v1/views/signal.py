@@ -7,7 +7,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.permissions.base import SignalCreateInitialPermission
+from signals.apps.api.generics.permissions import SignalCreateInitialPermission
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,

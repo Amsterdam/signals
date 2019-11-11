@@ -1,6 +1,7 @@
 from signals.apps.api.generics.permissions.base import (
     ModelWritePermissions,
     SIAPermissions,
+    SignalCreateInitialPermission,
     SplitPermission
 )
 from signals.apps.api.generics.permissions.v0 import (
@@ -21,4 +22,5 @@ __all__ = (
     'SIAPermissions',
     'ModelWritePermissions',
     'SplitPermission',
+    'SignalCreateInitialPermission',
 )
