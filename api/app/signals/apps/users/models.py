@@ -21,6 +21,8 @@ class Profile(CreatedUpdatedModel):
 
     departments = models.ManyToManyField(
         to='signals.Department',
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
