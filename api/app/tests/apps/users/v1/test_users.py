@@ -68,7 +68,6 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'last_name': 'Tester',
             'is_active': True,
             'role_ids': [self.group_with_permissions.pk, ],
-            'permission_ids': [self.sia_read.pk, ],
         }
 
         response = self.client.post('/signals/v1/private/users/', data=data, format='json')
@@ -90,11 +89,6 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(role_data['permissions'][0]['id'], self.sia_write.pk)
         self.assertEqual(role_data['permissions'][0]['name'], self.sia_write.name)
         self.assertEqual(role_data['permissions'][0]['codename'], self.sia_write.codename)
-
-        self.assertEqual(len(response_data['permissions']), 1)
-        self.assertEqual(response_data['permissions'][0]['id'], self.sia_read.pk)
-        self.assertEqual(response_data['permissions'][0]['name'], self.sia_read.name)
-        self.assertEqual(response_data['permissions'][0]['codename'], self.sia_read.codename)
 
     def test_post_user_profile(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -145,23 +139,19 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'username': 'this is not an email address',
             'is_active': 'not a boolean',
             'role_ids': [666666, ],  # non existing role
-            'permission_ids': [666666, ],  # non existing permission
         }
 
         response = self.client.post('/signals/v1/private/users/', data=data, format='json')
         self.assertEqual(response.status_code, 400)
 
         response_data = response.json()
-        self.assertEqual(len(response_data), 4)
+        self.assertEqual(len(response_data), 3)
         self.assertIsNotNone('username', response_data)
         self.assertIsNotNone('is_active', response_data)
         self.assertIsNotNone('role_ids', response_data)
-        self.assertIsNotNone('permission_ids', response_data)
 
         self.assertEqual(response_data['username'][0], 'Voer een geldig e-mailadres in.')
         self.assertEqual(response_data['is_active'][0], 'Must be a valid boolean.')
-        self.assertEqual(response_data['role_ids'][0], 'Ongeldige pk "666666" - object bestaat niet.')  # noqa
-        self.assertEqual(response_data['permission_ids'][0], 'Ongeldige pk "666666" - object bestaat niet.')  # noqa
 
     def test_patch_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)

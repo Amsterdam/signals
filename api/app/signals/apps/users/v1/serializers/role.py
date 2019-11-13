@@ -1,13 +1,14 @@
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, Permission
+from django.db.models import Q
 from rest_framework import serializers
 
 from signals.apps.users.v1.serializers import PermissionSerializer
 
 
 def _get_permissions_queryset():
-    return Permission.objects.all()
+    return Permission.objects.filter(Q(codename__istartswith='sia_') | Q(codename='push_to_sigmax'))
 
 
 class RoleSerializer(HALSerializer):

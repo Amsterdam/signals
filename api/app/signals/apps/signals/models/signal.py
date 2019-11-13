@@ -84,6 +84,13 @@ class Signal(CreatedUpdatedModel):
         permissions = (
             ('sia_read', 'Can read from SIA'),
             ('sia_write', 'Can write to SIA'),
+            ('sia_split', 'Can split a signal into a parent with X children'),
+            ('sia_signal_create_initial', 'Can create new signals'),
+            ('sia_signal_create_note', 'Can create notes for signals'),
+            ('sia_signal_change_status', 'Can change the status of a signal'),
+            ('sia_signal_change_category', 'Can change the category of a signal'),
+            ('sia_signal_export', 'Can export signals'),
+            ('sia_signal_report', 'Can create reports for signals'),
         )
         ordering = ('created_at',)
         indexes = [

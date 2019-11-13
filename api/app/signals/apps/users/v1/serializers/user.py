@@ -62,10 +62,6 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         queryset=_get_groups_queryset(), source='groups'
     )
     permissions = PermissionSerializer(source='user_permissions', many=True, read_only=True)
-    permission_ids = serializers.PrimaryKeyRelatedField(
-        many=True, required=False, read_only=False, write_only=True,
-        queryset=_get_permissions_queryset(), source='user_permissions'
-    )
     profile = ProfileDetailSerializer(required=False)
 
     class Meta:
@@ -84,7 +80,6 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
             'roles',
             'role_ids',
             'permissions',
-            'permission_ids',
             'profile',
         )
         extra_kwargs = {

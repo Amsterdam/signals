@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Status
 
 
-class _NestedStatusModelSerializer(serializers.ModelSerializer):
+class _NestedStatusModelSerializer(SIAModelSerializer):
     state_display = serializers.CharField(source='get_state_display', read_only=True)
 
     class Meta:

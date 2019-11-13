@@ -1,9 +1,8 @@
-from rest_framework import serializers
-
+from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Note
 
 
-class _NestedNoteModelSerializer(serializers.ModelSerializer):
+class _NestedNoteModelSerializer(SIAModelSerializer):
     class Meta:
         model = Note
         fields = (
