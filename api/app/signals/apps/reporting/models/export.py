@@ -1,12 +1,19 @@
-from django.core.files import File
+from collections import OrderedDict
+import copy
+import csv
+import os
+import shutil
+import tempfile
+
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.core.files import File
 
 from signals.apps.reporting.csv.utils import _get_storage_backend
 from signals.apps.reporting.models.mixin import (
     ExportParametersMixin,
-    get_full_interval_parameters,
-    get_parameters,
+    get_full_interval_info,
+    get_parameters
 )
 from signals.apps.signals.models import Signal
 
@@ -45,17 +52,57 @@ class HorecaCSVExport(models.Model):
     uploaded_file = models.FileField(upload_to='exports/%Y', storage=storage)
 
 
-class CSVExportManager(models.Manager):
-    def _create_rows(self, signals_qs):
-        pass
+class SignalsCSVWriter():
+    """Write current state of Signals in a Signals queryset to a CSV file."""
+    def _get_extra_column_names(self, signals_qs):
+        """Iterate over Signals queryset, derive set of extra_proprties column names."""
+        column_names = set()
+        for extra_properties in signals_qs.only('extra_properties').iterator(chunk_size=2000):
+            if not extra_properties:
+                continue
 
-    def _dump_signals_csv(self, singals_qs, dump_dir, filename):
+            for prop in extra_properties:
+                if isinstance(prop, str):
+                    continue  # old style, we ignore these
+                column_names.add(prop['id'])
+
+        return column_names
+
+    def _get_empty_row(self, signals_qs):
+        # Basic column names that derive from Signals model
+        empty = OrderedDict((cn, None) for cn in self.column_names)
+
+        # Extra column names that derive from extra properties
+        extra_column_names = list(self._get_extra_column_names(signals_qs))
+        extra_column_names.sort()
+        empty.update(OrderedDict((cn, None) for cn in extra_column_names))
+
+        return empty
+
+    def writerows(self, signals_qs):
+        empty = self._get_empty_row(signals_qs)
+
+        for signal in signals_qs.iterator(chunk_size=2000):
+            extra = copy.copy(empty)
+            row = {
+                'id': signal.pk,
+                'signal_uuid': signal.signal_id,
+                # more here
+            }
+
+            if not extra_properties:
+
+
+
+class CSVExportManager(models.Manager):
+    def _dump_signals_csv(self, signals_qs, dump_dir, filename):
         """
         Write CSV for selected signal instances, only dump current state.
         """
         rows = self._create_rows(signals_qs)
         with open(os.path.join(), 'w') as csv_file:
-            writer = csv_writer(csv_file)
+            writer = csv.writer(csv_file)
+            writer.writerows(rows)
 
     def create_csv_export(self, basename, export_parameters):
         # TODO: implement support for areas
@@ -77,23 +124,25 @@ class CSVExportManager(models.Manager):
                     Signal.objects
                     .select_related('category_assignment__category')
                     .filter(category_assignment__catgory=cat)
-                    .filter(created_at__gte=t_begin)
-                    .filter(created_at__lt=t_end)
+                    .filter(created_at__gte=interval.t_begin)
+                    .filter(created_at__lt=interval.t_end)
                 )
                 # create a per category CSV in temporary directory
                 filename = f'signals-{cat.slug}-{cat.parent.slug}-{interval.desc}.csv'
                 dump_dir = os.path.join(tmp_dir, zip_basename)
-                self._dump_signals_csv(matching_signals, dump_dir, filename)
-
+                # -->> SignalsCSVWriter -->>
+                self._dump_signals_csv(matching_signals, dump_dir, filename)  # TBD, implement
             # Zip up all the single-category CSV files.
             target_zip = os.path.join(tmp_dir, zip_basename)
             actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
 
             # upload the ZIP
             target_zip_filename = os.path.basename(actual_zip)
-            csv_export = CSVExport(export_parameters=export_parameters)
-            csv_export.uploaded_file.save(target_zip_filename, File(opened_zip, save=True)
-            csv_export.save()
+
+            with open(actual_zip, 'rb') as opened_zip:
+                csv_export = CSVExport(export_parameters=export_parameters)
+                csv_export.uploaded_file.save(target_zip_filename, File(opened_zip, save=True))
+                csv_export.save()
 
         return csv_export
 
