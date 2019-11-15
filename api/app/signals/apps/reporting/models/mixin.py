@@ -291,26 +291,27 @@ def get_full_interval_info(value):
     t_begin, t_end = INTERVAL_DERIVATIONS[interval_type](value)
 
     # We know we have a valid interval (known type, known begin and end)
+    # TODO: implement support for ARBITRARY intervals
     if interval_type == DAY:
         relevant_parameters = ['year', 'month', 'day']
     elif interval_type == WEEK:
         relevant_parameters = ['isoyear', 'isoweek']
     elif interval_type == MONTH:
         relevant_parameters = ['year', 'month']
-    elif interval_type == ARBITRARY:
-        relevant_parameters = ['start', 'end']
-        raise NotImplementedError
 
     # copy relevant parameters and their values
     interval_parameters = {key: value[key] for key in relevant_parameters}
 
     # provide a filename save string for this interval
-    interval_string = '-'.join(value[key] for key in relevant_parameters)
+    interval_string = '{}-{}'.format(
+        interval_type.lower(),
+        '-'.join(str(value[key]) for key in relevant_parameters)
+    )
 
     return Interval(
         t_begin=t_begin,
         t_end=t_end,
-        _type=interval_type,
+        interval_type=interval_type,
         parameters=interval_parameters,
         desc=interval_string,
     )

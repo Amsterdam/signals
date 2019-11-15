@@ -11,6 +11,7 @@ from signals.apps.reporting.models.mixin import (
     ARBITRARY,
     CATEGORIES_SCHEMA,
     DAY,
+    Interval,
     MONTH,
     SCHEMAS,
     WEEK,
@@ -18,6 +19,7 @@ from signals.apps.reporting.models.mixin import (
     get_arbitrary_interval,
     get_categories,
     get_day_interval,
+    get_full_interval_info,
     get_interval_type,
     get_month_interval,
     get_parameters,
@@ -297,3 +299,49 @@ class TestParameterDerivation(DjangoTestCase):
         self.assertEqual(id_to_category[_id], self.test_cat_a)
         self.assertEqual(slugs_to_category_id[('main-a', 'sub-a')], _id)
         self.assertEqual(main_slug_to_category_ids['main-a'], set([_id]))
+
+    def test_get_full_interval_info(self):
+        # Test the creation of Interval instances.
+        # We assume the interval derivation to be correct (see tests above for
+        # the parameter derivation itself).
+        valid_data = {'isoweek': 40, 'isoyear': 2019}
+        interval = get_full_interval_info(valid_data)
+
+        self.assertEqual(interval._type, WEEK)
+        self.assertEqual(interval.parameters, valid_data)
+        self.assertEqual(interval.desc, 'week-2019-40')
+
+        invalid_data = {'isoweek': 60, 'isoyear': 2019}
+        with self.assertRaises(DjangoValidationError):
+            get_parameters(invalid_data)
+
+        # --
+        valid_data = {'year': 2019, 'month': 12}
+        interval = get_full_interval_info(valid_data)
+
+        self.assertEqual(interval._type, MONTH)
+        self.assertEqual(interval.parameters, valid_data)
+        self.assertEqual(interval.desc, 'month-2019-12')
+        # --
+        valid_data_day = {'day': 31, 'month': 12, 'year': 2019}
+        interval = get_full_interval_info(valid_data_day)
+
+        self.assertEqual(interval._type, DAY)
+        self.assertEqual(interval.parameters, valid_data_day)
+        self.assertEqual(interval.desc, 'day-2019-12-31')
+        # --
+        data_arbitrary = {'start': 'TBD', 'end': 'TBD'}
+
+        with self.assertRaises(NotImplementedError):
+            interval = get_full_interval_info(data_arbitrary)
+
+    def test_interval(self):
+        now = datetime.datetime.now()
+        interval = Interval(
+            t_begin=now,
+            t_end=now + datetime.timedelta(hours=1),
+            interval_type=DAY,
+            parameters={'dummy': 'variables', 'please': 'ignore'},
+            desc='ABCD'
+        )
+        self.assertEqual(str(interval), 'ABCD')

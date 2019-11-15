@@ -52,46 +52,95 @@ class HorecaCSVExport(models.Model):
     uploaded_file = models.FileField(upload_to='exports/%Y', storage=storage)
 
 
-class SignalsCSVWriter():
+class SignalCSVWriter:
     """Write current state of Signals in a Signals queryset to a CSV file."""
-    def _get_extra_column_names(self, signals_qs):
-        """Iterate over Signals queryset, derive set of extra_proprties column names."""
-        column_names = set()
-        for extra_properties in signals_qs.only('extra_properties').iterator(chunk_size=2000):
-            if not extra_properties:
+    STANDARD_COLUMN_NAMES = [
+        'id',
+        'signal_uuid',
+        'source',
+        'text',
+        'text_extra',
+        'incident_date_start',
+        'incident_date_end',
+        'created_at',
+        'updated_at',
+        'operational_date',
+        'expire_date',
+        'upload',
+        'category_assignment_id',
+        'stadsdeel',
+        'address',
+        'reporter_id',
+        'status_id',
+    ]
+
+    def __init__(self, opened_file, signals_qs):
+        self.opened_file = opened_file
+        self.signals_qs = signals_qs
+
+    def get_extra_column_names(self):
+        # Make one pass over the queryset, determine extra_properties column names
+        accumulator = set()
+#        for extra_properties in self.signals_qs.only('extra_properties').iterator(chunk_size=2000):
+        for signal in self.signals_qs.iterator(chunk_size=2000):
+            if not signal.extra_properties:
                 continue
 
-            for prop in extra_properties:
+            for prop in signal.extra_properties:
                 if isinstance(prop, str):
                     continue  # old style, we ignore these
-                column_names.add(prop['id'])
+                accumulator.add(prop['id'])
+
+        # Return sorted list of extra properties column names.
+        column_names = list(accumulator)
+        column_names.sort()
 
         return column_names
 
-    def _get_empty_row(self, signals_qs):
-        # Basic column names that derive from Signals model
-        empty = OrderedDict((cn, None) for cn in self.column_names)
-
-        # Extra column names that derive from extra properties
-        extra_column_names = list(self._get_extra_column_names(signals_qs))
-        extra_column_names.sort()
-        empty.update(OrderedDict((cn, None) for cn in extra_column_names))
-
-        return empty
-
-    def writerows(self, signals_qs):
-        empty = self._get_empty_row(signals_qs)
-
-        for signal in signals_qs.iterator(chunk_size=2000):
-            extra = copy.copy(empty)
+    def iterate_queryset(self):
+        for signal in self.signals_qs.iterator(chunk_size=2000):
             row = {
                 'id': signal.pk,
                 'signal_uuid': signal.signal_id,
-                # more here
+                'source': signal.source,
+                'text': signal.text,
+                'text_extra': signal.text_extra,
+                'incident_date_start': signal.incident_date_start,
+                'incident_date_end': signal.incident_date_end,
+                'created_at': signal.created_at,
+                'updated_at': signal.updated_at,
+                'operational_date': signal.operational_date,
+                'expire_date': signal.expire_date,
+                'upload': signal.upload,
+                'category_assignment_id': signal.category_assignment_id,
+                'stadsdeel': signal.location.stadsdeel if signal.location else None,
+                'address': signal.location.address_text if signal.location else None,
+                'reporter_id': signal.reporter_id,
+                'status_id': signal.status.get_state_display() if signal.status else None,
             }
 
-            if not extra_properties:
+            if signal.extra_properties:
+                for extra_property in signal.extra_properties:
+                    if isinstance(extra_property, str):
+                        continue  # old style, we ignore these
 
+                    answer = None
+                    if isinstance(extra_property['answer'], str):
+                        answer = extra_property['answer']
+                    elif 'value' in extra_property['answer']:
+                        answer = extra_property['answer']['value']
+                    elif 'label' in extra_property['answer']:
+                        answer = extra_property['answer']['label']
+
+                    row[extra_property['id']] = answer
+            yield row
+
+    def writerows(self):
+        column_names = copy.deepcopy(__class__.STANDARD_COLUMN_NAMES)
+        column_names.extend(self.get_extra_column_names())
+
+        dw = csv.DictWriter(self.opened_file, column_names, restval='', extrasaction='ignore')
+        dw.writerows(self.iterate_queryset())
 
 
 class CSVExportManager(models.Manager):
@@ -106,7 +155,7 @@ class CSVExportManager(models.Manager):
 
     def create_csv_export(self, basename, export_parameters):
         # TODO: implement support for areas
-        interval, categories, _ = get_parameters(export_parameters)
+        t_begin, t_end, categories, _ = get_parameters(export_parameters)
         categories = categories.select_related('parent')
 
         # TODO: refactor get_parameters to use get_full_interval_info directly
@@ -116,6 +165,9 @@ class CSVExportManager(models.Manager):
         zip_basename = f'{basename}-{interval.desc}'
 
         with tempfile.TemporaryDirectory() as tmp_dir:
+            dump_dir = os.path.join(tmp_dir, zip_basename)
+            os.makedirs(dump_dir)
+
             for cat in categories:
                 if cat.parent is None:
                     pass  # No signals associated only with main categories
@@ -123,15 +175,17 @@ class CSVExportManager(models.Manager):
                 matching_signals = (
                     Signal.objects
                     .select_related('category_assignment__category')
-                    .filter(category_assignment__catgory=cat)
+                    .filter(category_assignment__category=cat)
                     .filter(created_at__gte=interval.t_begin)
                     .filter(created_at__lt=interval.t_end)
                 )
                 # create a per category CSV in temporary directory
                 filename = f'signals-{cat.slug}-{cat.parent.slug}-{interval.desc}.csv'
-                dump_dir = os.path.join(tmp_dir, zip_basename)
-                # -->> SignalsCSVWriter -->>
-                self._dump_signals_csv(matching_signals, dump_dir, filename)  # TBD, implement
+
+                with open(os.path.join(dump_dir, filename), 'w') as f:
+                    writer = SignalCSVWriter(f, matching_signals)
+                    writer.writerows()
+
             # Zip up all the single-category CSV files.
             target_zip = os.path.join(tmp_dir, zip_basename)
             actual_zip = shutil.make_archive(target_zip, format='zip', root_dir=dump_dir)
@@ -141,7 +195,7 @@ class CSVExportManager(models.Manager):
 
             with open(actual_zip, 'rb') as opened_zip:
                 csv_export = CSVExport(export_parameters=export_parameters)
-                csv_export.uploaded_file.save(target_zip_filename, File(opened_zip, save=True))
+                csv_export.uploaded_file.save(target_zip_filename, File(opened_zip), save=True)
                 csv_export.save()
 
         return csv_export
