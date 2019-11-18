@@ -7,7 +7,7 @@ up on by the appropriate municipal services.
 The code for the associated web front-end is available from:
 - https://github.com/Amsterdam/signals-frontend
 
-SIA will replace MORA and is based on a proof of concept (https://github.com/Amsterdam/sia)
+SIA has replaced MORA and is based on a proof of concept (https://github.com/Amsterdam/sia)
 which ran on https://vaarwatermeldingen.amsterdam.nl/
 
 
