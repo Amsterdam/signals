@@ -1,9 +1,8 @@
-from collections import OrderedDict
 import copy
-import csv
 import os
 import shutil
 import tempfile
+from csv import DictWriter
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -139,20 +138,11 @@ class SignalCSVWriter:
         column_names = copy.deepcopy(__class__.STANDARD_COLUMN_NAMES)
         column_names.extend(self.get_extra_column_names())
 
-        dw = csv.DictWriter(self.opened_file, column_names, restval='', extrasaction='ignore')
+        dw = DictWriter(self.opened_file, column_names, restval='', extrasaction='ignore')
         dw.writerows(self.iterate_queryset())
 
 
 class CSVExportManager(models.Manager):
-    def _dump_signals_csv(self, signals_qs, dump_dir, filename):
-        """
-        Write CSV for selected signal instances, only dump current state.
-        """
-        rows = self._create_rows(signals_qs)
-        with open(os.path.join(), 'w') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerows(rows)
-
     def create_csv_export(self, basename, export_parameters):
         # TODO: implement support for areas
         t_begin, t_end, categories, _ = get_parameters(export_parameters)
