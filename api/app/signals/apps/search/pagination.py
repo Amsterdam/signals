@@ -14,6 +14,10 @@ class ElasticPage(Page):
 class ElasticPaginator(Paginator):
     """Paginator for Elasticsearch."""
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super(ElasticPaginator, self).__init__(*args, **kwargs)
+
     def page(self, number):
         number = self.validate_number(number)
         bottom = (number - 1) * self.per_page
@@ -21,7 +25,7 @@ class ElasticPaginator(Paginator):
         if top + self.orphans >= self.count:
             top = self.count
         response = self.object_list[bottom:top].execute()
-        qs = self.object_list.to_queryset(response)
+        qs = self.object_list.to_queryset(response, user=self.user)
         return self._get_page(qs, number, self)
 
     def _get_page(self, *args, **kwargs):
@@ -38,7 +42,7 @@ class ElasticHALPagination(HALPagination):
         if not page_size:
             return None
 
-        paginator = self.django_paginator_class(queryset, page_size)
+        paginator = self.django_paginator_class(queryset, page_size, user=request.user)
         page_number = int(request.query_params.get(self.page_query_param, 1))
         if page_number in self.last_page_strings:
             page_number = paginator.num_pages

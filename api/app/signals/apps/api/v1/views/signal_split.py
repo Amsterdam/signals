@@ -18,3 +18,7 @@ class PrivateSignalSplitViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMix
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SplitPermission,)
+
+    def get_queryset(self):
+        qs = super(PrivateSignalSplitViewSet, self).get_queryset()
+        return qs.filter_for_user(user=self.request.user)

@@ -23,12 +23,13 @@ from tests.apps.signals.attachment_helpers import (
 )
 from tests.apps.signals.factories import (
     CategoryFactory,
+    DepartmentFactory,
     ParentCategoryFactory,
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
 )
-from tests.apps.users.factories import GroupFactory, UserFactory
+from tests.apps.users.factories import GroupFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -1424,6 +1425,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     PERMISSION_SIGNALCREATENOTEPERMISSION=True,
     PERMISSION_SIGNALCHANGESTATUSPERMISSION=True,
     PERMISSION_SIGNALCHANGECATEGORYPERMISSION=True,
+    PERMISSION_DEPARTMENTS=True,
 ))  # Enable all permission feature flags
 class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
@@ -1435,16 +1437,31 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
     subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
 
     def setUp(self):
+        self.department = DepartmentFactory.create(
+            code='TST',
+            name='Department for testing #1',
+            is_intern=False,
+        )
+
         self.category = ParentCategoryFactory.create()
         self.subcategory = CategoryFactory.create(
-            parent=self.category
+            parent=self.category,
+            departments=[self.department],
         )
         self.subcategory_2 = CategoryFactory.create(
-            parent=self.category
+            parent=self.category,
         )
 
         self.signal = SignalFactoryValidLocation.create(
             category_assignment__category=self.subcategory,
+            reporter=None,
+            incident_date_start=timezone.now(),
+            incident_date_end=timezone.now() + timedelta(hours=1),
+            source='test-api',
+        )
+
+        self.signal_2 = SignalFactoryValidLocation.create(
+            category_assignment__category=self.subcategory_2,
             reporter=None,
             incident_date_start=timezone.now(),
             incident_date_end=timezone.now() + timedelta(hours=1),
@@ -1461,12 +1478,9 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
             self.category.slug, self.subcategory_2.slug
         )
 
-        self.sia_user = UserFactory.create(
-            first_name='SIA-PERMISSION-USER',
-            last_name='User',
-        )
-        self.sia_user.user_permissions.add(self.sia_read)
-        self.sia_user.user_permissions.add(self.sia_write)
+        self.sia_user = self.sia_read_write_user
+        self.sia_user.profile.departments.add(self.department)
+        self.sia_user.save()
 
         self.create_initial_permission = Permission.objects.get(
             codename='sia_signal_create_initial'
@@ -1753,3 +1767,68 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.signal.refresh_from_db()
 
         self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
+
+    def test_get_signals(self):
+        self.client.force_authenticate(user=self.sia_user)
+
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertNotEqual(data['count'], Signal.objects.count())
+        self.assertEqual(2, Signal.objects.count())
+
+    def test_change_category_to_other_category_in_other_department(self):
+        self.sia_user.user_permissions.add(self.change_category_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertNotEqual(data['count'], Signal.objects.count())
+        self.assertEqual(2, Signal.objects.count())
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertNotEqual(data['count'], Signal.objects.count())
+        self.assertEqual(2, Signal.objects.count())
+
+    def test_get_signal_not_my_department(self):
+        self.client.force_authenticate(user=self.sia_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
+        response = self.client.get(detail_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_change_signal_not_my_department(self):
+        self.sia_user.user_permissions.add(self.change_category_permission)
+        self.client.force_authenticate(user=self.sia_user)
+
+        data = {
+            'category': {
+                'text': 'Update category test',
+                'sub_category': self.link_subcategory_2
+            }
+        }
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

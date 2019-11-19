@@ -83,6 +83,10 @@ class PrivateSignalViewSet(DatapuntViewSet,
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
+    def get_queryset(self, *args, **kwargs):
+        qs = super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+        return qs.filter_for_user(user=self.request.user)
+
     @action(detail=True)
     def history(self, request, pk=None):
         """History endpoint filterable by action."""
