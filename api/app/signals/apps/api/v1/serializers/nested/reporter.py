@@ -1,9 +1,8 @@
-from rest_framework import serializers
-
+from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Reporter
 
 
-class _NestedReporterModelSerializer(serializers.ModelSerializer):
+class _NestedReporterModelSerializer(SIAModelSerializer):
     class Meta:
         model = Reporter
         fields = (

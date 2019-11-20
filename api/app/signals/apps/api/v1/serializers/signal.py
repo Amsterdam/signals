@@ -3,6 +3,13 @@ import os
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
+from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions.base import (
+    SignalChangeCategoryPermission,
+    SignalChangeStatusPermission,
+    SignalCreateInitialPermission,
+    SignalCreateNotePermission
+)
 from signals.apps.api.generics.validators import SignalSourceValidator
 from signals.apps.api.v1.fields import (
     PrivateSignalLinksField,
@@ -27,18 +34,54 @@ from signals.apps.signals.models import Priority, Signal
 
 
 class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
+    """
+    This serializer is used for the detail endpoint and when updating the instance
+    """
     serializer_url_field = PrivateSignalLinksFieldWithArchives
     _display = DisplayField()
 
-    location = _NestedLocationModelSerializer(required=False)
-    status = _NestedStatusModelSerializer(required=False)
-    category = _NestedCategoryModelSerializer(source='category_assignment', required=False)
-    reporter = _NestedReporterModelSerializer(required=False)
-    priority = _NestedPriorityModelSerializer(required=False)
-    notes = _NestedNoteModelSerializer(many=True, required=False)
+    location = _NestedLocationModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,)
+    )
+
+    status = _NestedStatusModelSerializer(
+        required=False,
+        permission_classes=(SignalChangeStatusPermission,)
+    )
+
+    category = _NestedCategoryModelSerializer(
+        source='category_assignment',
+        required=False,
+        permission_classes=(SignalChangeCategoryPermission,)
+    )
+
+    reporter = _NestedReporterModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,)
+    )
+
+    priority = _NestedPriorityModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,)
+    )
+
+    notes = _NestedNoteModelSerializer(
+        many=True,
+        required=False,
+        permission_classes=(SignalCreateNotePermission,)
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
-    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+    extra_properties = SignalExtraPropertiesField(
+        required=False,
+        validators=[
+            ExtraPropertiesValidator(filename=os.path.join(
+                os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json')
+            )
+        ]
+    )  # noqa
 
     class Meta:
         model = Signal
@@ -95,18 +138,52 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
 
 class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
+    """
+    This serializer is used for the list endpoint and when creating a new instance
+    """
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
 
-    location = _NestedLocationModelSerializer()
-    status = _NestedStatusModelSerializer(required=False)
-    category = _NestedCategoryModelSerializer(source='category_assignment')
-    reporter = _NestedReporterModelSerializer()
-    priority = _NestedPriorityModelSerializer(required=False)
-    notes = _NestedNoteModelSerializer(many=True, required=False)
+    location = _NestedLocationModelSerializer(
+        permission_classes=(SIAPermissions,)
+    )
+
+    status = _NestedStatusModelSerializer(
+        required=False,
+        permission_classes=(SignalCreateInitialPermission,)
+    )
+
+    category = _NestedCategoryModelSerializer(
+        source='category_assignment',
+        permission_classes=(SignalCreateInitialPermission,)
+    )
+
+    reporter = _NestedReporterModelSerializer(
+        permission_classes=(SIAPermissions,)
+    )
+
+    priority = _NestedPriorityModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,)
+    )
+
+    notes = _NestedNoteModelSerializer(
+        many=True,
+        required=False,
+        permission_classes=(SignalCreateInitialPermission,)
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
-    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+    extra_properties = SignalExtraPropertiesField(
+        required=False,
+        validators=[
+            ExtraPropertiesValidator(
+                filename=os.path.join(
+                    os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json')
+            )
+        ]
+    )
 
     class Meta:
         model = Signal
@@ -213,7 +290,16 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
     attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
 
-    extra_properties = SignalExtraPropertiesField(required=False, validators=[ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'))])  # noqa
+    extra_properties = SignalExtraPropertiesField(
+        required=False,
+        validators=[
+            ExtraPropertiesValidator(
+                filename=os.path.join(
+                    os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json'
+                )
+            )
+        ]
+    )
 
     incident_date_start = serializers.DateTimeField()
 

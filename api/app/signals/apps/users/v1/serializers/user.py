@@ -5,7 +5,6 @@ from django.core.validators import EmailValidator
 from rest_framework import serializers
 
 from signals.apps.api.generics.mixins import WriteOnceMixin
-from signals.apps.users.models import Profile
 from signals.apps.users.v1.serializers import (
     PermissionSerializer,
     ProfileDetailSerializer,
@@ -29,7 +28,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
         many=True, required=False, read_only=False, write_only=True,
         queryset=_get_groups_queryset(), source='groups'
     )
-    profile = ProfileListSerializer(read_only=True)
+    profile = ProfileListSerializer(required=False)
 
     class Meta:
         model = User
@@ -63,11 +62,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         queryset=_get_groups_queryset(), source='groups'
     )
     permissions = PermissionSerializer(source='user_permissions', many=True, read_only=True)
-    permission_ids = serializers.PrimaryKeyRelatedField(
-        many=True, required=False, read_only=False, write_only=True,
-        queryset=_get_permissions_queryset(), source='user_permissions'
-    )
-    profile = ProfileDetailSerializer(read_only=True)
+    profile = ProfileDetailSerializer(required=False)
 
     class Meta:
         model = User
@@ -85,7 +80,6 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
             'roles',
             'role_ids',
             'permissions',
-            'permission_ids',
             'profile',
         )
         extra_kwargs = {
@@ -100,11 +94,30 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 
     def create(self, validated_data):
         self.get_extra_kwargs()
+
+        profile_data = validated_data.pop('profile', None)
+
         validated_data['email'] = validated_data['username']  # noqa The email address and username are basically the same. TODO refactor this behaviour in the user model
         instance = super(UserDetailHALSerializer, self).create(validated_data=validated_data)
 
-        # TODO: Refactor this when implementing the profile. This is a basic base implementation
-        Profile.objects.create(user=instance)
+        if profile_data:
+            profile_detail_serializer = ProfileDetailSerializer()
+            profile_detail_serializer.update(instance=instance.profile,
+                                             validated_data=profile_data)
+
         instance.refresh_from_db()
+
+        return instance
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+
+        instance = super(UserDetailHALSerializer, self).update(instance=instance,
+                                                               validated_data=validated_data)
+
+        if profile_data:
+            profile_detail_serializer = ProfileDetailSerializer()
+            profile_detail_serializer.update(instance=instance.profile,
+                                             validated_data=profile_data)
 
         return instance

@@ -27,6 +27,7 @@ class UserViewSet(DatapuntViewSetWritable):
         'groups',
         'groups__permissions',
         'groups__permissions__content_type',
+        'profile__departments',
     ).order_by(Lower('username'))
 
     authentication_classes = (JWTAuthBackend,)

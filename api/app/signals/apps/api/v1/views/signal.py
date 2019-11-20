@@ -7,7 +7,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions import SignalCreateInitialPermission
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
@@ -52,7 +52,7 @@ class PrivateSignalViewSet(DatapuntViewSet,
     pagination_class = HALPagination
 
     authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SIAPermissions,)
+    permission_classes = (SignalCreateInitialPermission,)
 
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filterset_class = SignalFilter
