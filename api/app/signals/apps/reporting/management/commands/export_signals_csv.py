@@ -2,8 +2,8 @@
 Export specified signals to CSV.
 """
 import logging
-import re
 import pprint
+import re
 
 from django.core.management import BaseCommand
 
@@ -14,12 +14,13 @@ logger = logging.getLogger(__name__)
 
 def convert_categories(s):
     """
-    expected input
+    expected input (string containing no spaces)
     [[<main_slug>,<sub_slug>],...]
 
-    output
+    output (Python data structure matching JSONSchema for categories parameter)
     [{"main_slug": <main_slug>, "sub_slug": <sub_slug>}, ...]
     """
+    # Note: validation of the category main/sub slugs is deferred.
     cat_pattern = r'\[(?P<main_slug>[\w-]+),(?P<sub_slug>[\w-]+)\]'
     potential_categories = s.strip()[1:-1]
 
@@ -44,7 +45,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Starting Signals CSV export ...')
-
+        # Create the export_parameters data structure as expected by
+        # signals.apps.reporting.models.mixin.get_parameters
         export_parameters = {}
         for option, value in options.items():
             if option not in ['isoweek', 'isoyear', 'year', 'month', 'day', 'categories']:
@@ -53,10 +55,10 @@ class Command(BaseCommand):
                 export_parameters['categories'] = convert_categories(options['categories'])
             elif value is not None:
                 export_parameters[option] = value
-        s = pprint.pformat(export_parameters)
 
+        # Write the parameters used to our logs (for context).
+        s = pprint.pformat(export_parameters)
         self.stdout.write(s)
 
-        csv_export = CSVExport.objects.create_csv_export(options['basename'], export_parameters)
-
+        CSVExport.objects.create_csv_export(options['basename'], export_parameters)
         self.stdout.write('... done')

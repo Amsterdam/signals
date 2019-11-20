@@ -143,7 +143,7 @@ class SignalCSVWriter:
 
 
 class CSVExportManager(models.Manager):
-    def create_csv_export(self, basename, export_parameters):
+    def create_csv_export(self, basename, export_parameters, username=None):
         # TODO: implement support for areas
         t_begin, t_end, categories, _ = get_parameters(export_parameters)
         categories = categories.select_related('parent')
@@ -184,7 +184,7 @@ class CSVExportManager(models.Manager):
             target_zip_filename = os.path.basename(actual_zip)
 
             with open(actual_zip, 'rb') as opened_zip:
-                csv_export = CSVExport(export_parameters=export_parameters)
+                csv_export = CSVExport(export_parameters=export_parameters, created_by=username)
                 csv_export.uploaded_file.save(target_zip_filename, File(opened_zip), save=True)
                 csv_export.save()
 
