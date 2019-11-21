@@ -1816,7 +1816,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.client.force_authenticate(user=self.sia_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
         response = self.client.get(detail_endpoint)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_change_signal_not_my_department(self):
         self.sia_user.user_permissions.add(self.change_category_permission)
@@ -1831,4 +1831,4 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
         response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
