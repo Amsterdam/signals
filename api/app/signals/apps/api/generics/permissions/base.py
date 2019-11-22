@@ -29,11 +29,14 @@ class SIABasePermission(BasePermission):
         return self.perms_map[method]
 
     def has_permission(self, request, *args, **kwargs):
-        if self._skip_permission_check():
-            return True
+        if request.user:
+            if self._skip_permission_check():
+                return True
 
-        perms = self.get_required_permissions(method=request.method)
-        return request.user.has_perms(perms)
+            perms = self.get_required_permissions(method=request.method)
+            return request.user.has_perms(perms)
+        else:
+            return False
 
 
 class SIAPermissions(SIABasePermission):
