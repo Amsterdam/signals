@@ -123,6 +123,9 @@ class ModelWritePermissions(DjangoModelPermissions):
 
 class SignalViewObjectPermission(DjangoModelPermissions):
     def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser or request.user.has_perm('signals.sia_can_view_all_categories'):  # noqa
+            return True
+
         if settings.FEATURE_FLAGS.get('PERMISSION_DEPARTMENTS', False):
             has_category_read_permission = set(
                 request.user.profile.departments.values_list('pk', flat=True)
