@@ -19,8 +19,8 @@ structure is documented in `/api/README.md`.
 
 
 ## Documentation
-- [Application design](docs/application-design.md) 
-- [API design](docs/api-design.md) 
+- [Application design](docs/application-design.md)
+- [API design](docs/api-design.md)
 
 
 ## Running using Docker for local development
@@ -98,8 +98,8 @@ SIA authorizes users if:
 - there is a known Django user with a matching username
 - that Django user has the correct user Django permissions
 
-NOTE : We should use e-mail addresses always in lowercase because some services 
-are case sensitive, and then it looks like users do not exist. 
+NOTE : We should use e-mail addresses always in lowercase because some services
+are case sensitive, and then it looks like users do not exist.
 
 
 ### Managing SIA users
@@ -112,13 +112,13 @@ Admin with JWT tokens so for now we need to set a password for a staff account.
 
 Since a developer setup may not have a local OAuth2 setup to which SIA can
 connect. To bypass OAuth for local development the `docker-compose.yml` file
-in the project root and the `development.py` Django settings file are 
+in the project root and the `development.py` Django settings file are
 pre-configured to authenticate a special user (configurable see the `TEST_LOGIN`
 setting variable) is authenticated. Make sure that this special user is also
 present in Django (as a superuser).
 
 The default development configuration for SIA uses `signals.admin@example.com`
-as the user name. To add this user to the SIA Django application running 
+as the user name. To add this user to the SIA Django application running
 under `docker-compose`:
 ```
 docker-compose run --rm api python manage.py createsuperuser --username signals.admin@example.com --email signals.admin@example.com
