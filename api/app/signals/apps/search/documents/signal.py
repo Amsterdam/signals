@@ -1,6 +1,6 @@
 import logging
 
-from elasticsearch_dsl import Date, InnerDoc, Integer, Keyword, Nested, Object, Text
+from elasticsearch_dsl import Date, InnerDoc, Keyword, Nested, Object, Text
 from elasticsearch_dsl.query import Bool
 
 from signals.apps.search.documents.base import DocumentBase
@@ -43,7 +43,7 @@ class Reporter(InnerDoc):
 
 class SignalDocument(DocumentBase):
     _display = Keyword()
-    id = Integer()
+    id = Text(analyzer='standard')
     signal_id = Text(analyzer='standard')
     text = Text(analyzer='standard')
     incident_date_start = Date()

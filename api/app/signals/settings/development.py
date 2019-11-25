@@ -47,11 +47,9 @@ SEARCH = {
     },
 }
 
-FEATURE_FLAGS = {
-    'API_VALIDATE_EXTRA_PROPERTIES': True,
-    'API_SEARCH_ENABLED': True,
-    'SEARCH_BUILD_INDEX': True,
-}
+FEATURE_FLAGS['API_VALIDATE_EXTRA_PROPERTIES'] = True  # noqa F405
+FEATURE_FLAGS['API_SEARCH_ENABLED'] = True  # noqa F405
+FEATURE_FLAGS['SEARCH_BUILD_INDEX'] = True  # noqa F405
 
 # Set console logging to DEBUG
 LOGGING['handlers'].update({  # noqa F405

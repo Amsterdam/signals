@@ -10,6 +10,7 @@ from swift.storage import SwiftStorage
 from signals.apps.signals import workflow
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
+from signals.apps.signals.querysets import SignalQuerySet
 
 
 class Signal(CreatedUpdatedModel):
@@ -65,7 +66,7 @@ class Signal(CreatedUpdatedModel):
     parent = models.ForeignKey(to='self', related_name='children', null=True, blank=True,
                                on_delete=models.SET_NULL)
 
-    objects = models.Manager()
+    objects = SignalQuerySet.as_manager()
     actions = SignalManager()
 
     @property

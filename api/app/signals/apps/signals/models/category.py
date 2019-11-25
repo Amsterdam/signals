@@ -59,6 +59,10 @@ class Category(models.Model):
         unique_together = ('parent', 'slug',)
         verbose_name_plural = 'Categories'
 
+        permissions = (
+            ('sia_can_view_all_categories', 'View all categories (this will override the category permission based on the user/department relation)'),  # noqa
+        )
+
     def __str__(self):
         """String representation."""
         return '{name}{parent}'.format(name=self.name,

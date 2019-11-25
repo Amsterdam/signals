@@ -18,7 +18,7 @@ class CustomSearch(Search):
         s._queryset = self._queryset
         return s
 
-    def to_queryset(self, response=None, keep_order=True):
+    def to_queryset(self, response=None, keep_order=True, user=None):
         response = response if response else self._response
 
         pks = [result.id for result in response.hits]
@@ -28,7 +28,7 @@ class CustomSearch(Search):
             preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(pks)])
             qs = qs.order_by(preserved_order)
 
-        return qs
+        return qs.filter_for_user(user=user) if user else qs
 
 
 class DocumentBase(Document):

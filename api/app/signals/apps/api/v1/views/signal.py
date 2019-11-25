@@ -8,6 +8,7 @@ from rest_framework_extensions.mixins import DetailSerializerMixin
 from signals.apps.api import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.permissions import SignalCreateInitialPermission
+from signals.apps.api.generics.permissions.base import SignalViewObjectPermission
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
@@ -27,9 +28,7 @@ class PublicSignalViewSet(CreateModelMixin, DetailSerializerMixin, RetrieveModel
     serializer_detail_class = PublicSignalSerializerDetail
 
 
-class PrivateSignalViewSet(DatapuntViewSet,
-                           mixins.CreateModelMixin,
-                           mixins.UpdateModelMixin):
+class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
     """Viewset for `Signal` objects in V1 private API"""
     queryset = Signal.objects.select_related(
         'location',
@@ -53,6 +52,7 @@ class PrivateSignalViewSet(DatapuntViewSet,
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SignalCreateInitialPermission,)
+    object_permission_classes = (SignalViewObjectPermission, )
 
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
     filterset_class = SignalFilter
@@ -82,6 +82,21 @@ class PrivateSignalViewSet(DatapuntViewSet,
     }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
+
+    def get_queryset(self, *args, **kwargs):
+        if self._is_request_to_detail_endpoint():
+            return super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+        else:
+            qs = super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+            return qs.filter_for_user(user=self.request.user)
+
+    def check_object_permissions(self, request, obj):
+        for permission_class in self.object_permission_classes:
+            permission = permission_class()
+            if not permission.has_object_permission(request, self, obj):
+                self.permission_denied(
+                    request, message=getattr(permission, 'message', None)
+                )
 
     @action(detail=True)
     def history(self, request, pk=None):

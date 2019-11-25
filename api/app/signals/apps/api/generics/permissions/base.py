@@ -119,3 +119,17 @@ class ModelWritePermissions(DjangoModelPermissions):
         'PATCH': ['%(app_label)s.sia_%(model_name)s_write'],
         'DELETE': ['%(app_label)s.sia_%(model_name)s_write'],
     }
+
+
+class SignalViewObjectPermission(DjangoModelPermissions):
+    def has_object_permission(self, request, view, obj):
+        if settings.FEATURE_FLAGS.get('PERMISSION_DEPARTMENTS', False):
+            has_category_read_permission = set(
+                request.user.profile.departments.values_list('pk', flat=True)
+            ).intersection(
+                obj.category_assignment.category.departments.values_list('pk', flat=True)
+            )
+
+            return bool(has_category_read_permission) and request.user.has_perm('signals.sia_read')
+        else:
+            return request.user.has_perm('signals.sia_read')
