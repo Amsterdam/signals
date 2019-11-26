@@ -162,10 +162,9 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['_signal_id'], str(reporter._signal_id))
                 self.assertEqual(row['email'], str(reporter.email))
                 self.assertEqual(row['phone'], str(reporter.phone))
-                self.assertEqual(row['remove_at'], '')
+                self.assertEqual(row['is_anonymized'], 'False')
                 self.assertEqual(row['created_at'], str(reporter.created_at))
                 self.assertEqual(row['updated_at'], str(reporter.updated_at))
-                self.assertEqual(json.loads(row['extra_properties']), None)
 
     def test_create_category_assignments_csv(self):
         signal = SignalFactory.create()

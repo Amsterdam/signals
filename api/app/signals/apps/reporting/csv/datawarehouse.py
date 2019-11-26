@@ -190,7 +190,7 @@ def _create_reporters_csv(location):
             'id',
             'email',
             'phone',
-            'remove_at',
+            'is_anonymized',
             'created_at',
             'updated_at',
             'extra_properties',
@@ -205,10 +205,10 @@ def _create_reporters_csv(location):
                 reporter.pk,
                 reporter.email,
                 reporter.phone,
-                reporter.remove_at,
+                reporter.is_anonymized,
                 reporter.created_at,
                 reporter.updated_at,
-                json.dumps(reporter.extra_properties),  # always empty
+                None,  # always empty
                 reporter._signal_id,
             ])
 

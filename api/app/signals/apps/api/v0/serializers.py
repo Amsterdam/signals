@@ -208,7 +208,6 @@ class _NestedReporterModelSerializer(serializers.ModelSerializer):
         fields = (
             'email',
             'phone',
-            'extra_properties',
         )
 
 

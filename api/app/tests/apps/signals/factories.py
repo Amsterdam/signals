@@ -149,6 +149,7 @@ class ReporterFactory(factory.DjangoModelFactory):
 
     phone = fuzzy.FuzzyText(length=10, chars=string.digits)
     email = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
+    is_anonymized = False
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
