@@ -1,10 +1,19 @@
 import logging
 
+from django.utils import timezone
+
+from signals.apps.signals.models import Reporter
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.signal import Signal
+from signals.apps.signals.workflow import (
+    AFGEHANDELD,
+    GEANNULEERD,
+    GESPLITST,
+    VERZOEK_TOT_AFHANDELING
+)
 from signals.celery import app
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 @app.task
@@ -24,3 +33,35 @@ def translate_category(signal_id):
     }
 
     Signal.actions.update_category_assignment(data, signal)
+
+
+@app.task
+def anonymize_reporters(days=365):
+    created_before = (timezone.now() - timezone.timedelta(days=days))
+    allowed_signal_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
+
+    reporter_ids = Reporter.objects.filter(
+        created_at__lt=created_before,
+        _signal__status__state__in=allowed_signal_states,
+        is_anonymized=False,
+    ).values_list(
+        'pk', flat=True
+    )
+
+    for reporter_id in reporter_ids:
+        anonymize_reporter.delay(reporter_id=reporter_id)
+
+
+@app.task
+def anonymize_reporter(reporter_id):
+    try:
+        reporter = Reporter.objects.get(pk=reporter_id)
+    except Reporter.DoesNotExist:
+        log.warning(f"Reporter with ID #{reporter_id} does not exists")
+    else:
+        reporter.anonymize()
+        message = 'Vanwege de AVG zijn de volgende gegevens van de melder geanonimiseerd: {}'
+        Signal.actions.create_note(data={
+            'text': ', '.join(message),
+            'created_by': None  # This wil show as "SIA systeem"
+        }, signal=reporter.signal)

@@ -27,10 +27,8 @@
     "reporter": {
         "email": "melder@example.com",
         "phone": "0123456789",
-        "remove_at": null,
         "created_at": "2018-06-18T13:30:47.766420Z",
-        "updated_at": "2018-06-18T13:30:47.795622Z",
-        "extra_properties": {}
+        "updated_at": "2018-06-18T13:30:47.795622Z"
     },
     "created_at": "2018-06-18T13:30:47.604472Z",
     "updated_at": null,

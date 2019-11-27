@@ -297,8 +297,6 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         del data['location.extra_properties']
         del data['category']
         del data['reporter']
-        del data['reporter.extra_properties']
-        del data['reporter.remove_at']
         del data['incident_date_end']
         del data['operational_date']
         del data['updated_at']
