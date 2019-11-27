@@ -6,12 +6,12 @@ Uw melding is afgesloten
 Meldingnummer {{ signal.sia_id }}
 
 {% if signal.is_child %}
-Wat hebben we gedaan met uw deelmelding?
+Wat hebben wij kunnen doen met uw deelmelding?
 Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.
 
 Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.
 {% else %}
-Wat hebben we gedaan met uw melding?
+Wat hebben wij kunnen doen met uw melding?
 {% endif %}
 
 {{ status.text }}
