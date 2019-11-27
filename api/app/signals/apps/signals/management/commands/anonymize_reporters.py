@@ -5,9 +5,7 @@ from signals.apps.signals.tasks import anonymize_reporters
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--days',
-                            type=int,
-                            help='')
+        parser.add_argument('--days', type=int, help='')
 
     def handle(self, *args, **options):
         days = options['days'] or 365

@@ -15,7 +15,7 @@ class TestCommand(TransactionTestCase):
         patched_anonymize_reporters.assert_called_once()
 
     @patch('signals.apps.signals.tasks.anonymize_reporters')
-    def test_command_invallid_days(self, patched_anonymize_reporters):
+    def test_command_invalid_days(self, patched_anonymize_reporters):
         out = StringIO()
         err = StringIO()
 
