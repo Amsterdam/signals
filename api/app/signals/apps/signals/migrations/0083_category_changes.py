@@ -22,7 +22,7 @@ def _SIG_1900(apps, schema_editor):
                                          parent__isnull=True)
 
     if not Category.objects.filter(parent=main_category, name='Parkeerautomaten').exists():
-        # Category does not exists
+        # Category does not exist
         department = Department.objects.get(code='VOR')
 
         sub_category = Category.objects.create(parent=main_category,
