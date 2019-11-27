@@ -16,12 +16,12 @@
 
     <p>
         {% if signal.is_child %}
-        Wat hebben we gedaan met uw deelmelding?<br/>
+        Wat hebben wij kunnen doen met uw deelmelding?<br/>
         Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.<br/>
         <br/>
         Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.<br/>
         {% else %}
-        Wat hebben we gedaan met uw melding?<br/>
+        Wat hebben wij kunnen doen met uw melding?<br/>
         {% endif %}
         <br/>
         <i>{{ status.text|linebreaksbr }}</i><br/>
