@@ -82,6 +82,27 @@ This means that you can edit the application source on the host system and see t
 results reflected in the running application immediately, i.e. without rebuilding
 the `api` service.
 
+#### Connecting to the database directly
+After the Signals application is running, find the docker `CONTAINER ID` of the
+PostgreSQL database:
+```
+docker ps
+```
+
+Using the `CONTAINER ID` associated with `signals_database_1`, use
+`docker exec` to start a bash shell in the database context.
+(In this example the id used is `21f3acd89dd7`):
+```
+docker exec -it 21f3acd89dd7 bash
+```
+
+From the shell prompt, connect to the database using the PostgreSQL commandline
+client:
+```
+psql --user=signals --port=5432
+```
+
+You will now be able to explore the database schema and data using SQL.
 
 ## Other topics
 ### Authentication and Authorization
