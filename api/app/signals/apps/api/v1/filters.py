@@ -24,6 +24,18 @@ def source_choices():
     return [(choice, f'{choice}') for choice in choices]
 
 
+def stadsdelen():
+    """
+    Returns all available choices for stadsdelen
+
+    SIG-1938 Added 'null' so that the filter can also filter on signals with a stadsdeel with the
+    value null in the database
+    """
+    return (
+        ('null', 'Niet bepaald'),
+    ) + STADSDELEN
+
+
 class SignalFilter(FilterSet):
     id = filters.NumberFilter()
 
@@ -53,7 +65,7 @@ class SignalFilter(FilterSet):
                                     choices=Priority.PRIORITY_CHOICES)
 
     stadsdeel = filters.MultipleChoiceFilter(field_name='location__stadsdeel',
-                                             choices=STADSDELEN)
+                                             choices=stadsdelen)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code',
                                               choices=buurt_choices)
     address_text = filters.CharFilter(field_name='location__address_text',
