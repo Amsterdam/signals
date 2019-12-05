@@ -43,13 +43,17 @@ def anonymize_reporters(days=365):
     reporter_ids = Reporter.objects.filter(
         created_at__lt=created_before,
         _signal__status__state__in=allowed_signal_states,
-        is_anonymized=False,
+        is_anonymized=False
     ).values_list(
         'pk', flat=True
     )
 
+    reporter_count = reporter_ids.count()
+
     for reporter_id in reporter_ids:
         anonymize_reporter.delay(reporter_id=reporter_id)
+
+    return reporter_count
 
 
 @app.task
@@ -60,8 +64,18 @@ def anonymize_reporter(reporter_id):
         log.warning(f"Reporter with ID #{reporter_id} does not exists")
     else:
         reporter.anonymize()
-        message = 'Vanwege de AVG zijn de volgende gegevens van de melder geanonimiseerd: {}'
+
+        changed = []
+        if reporter.email:
+            changed.append('email')
+        if reporter.phone:
+            changed.append('telefoonnummer')
+        if reporter.is_anonymized:
+            changed.append('anoniem')
+        text = 'Vanwege de AVG zijn de volgende gegevens van de melder ' \
+               'geanonimiseerd: {}'.format(', '.join(changed))
+
         Signal.actions.create_note(data={
-            'text': ', '.join(message),
+            'text': text,
             'created_by': None  # This wil show as "SIA systeem"
         }, signal=reporter.signal)

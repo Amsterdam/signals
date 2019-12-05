@@ -12,4 +12,5 @@ class Command(BaseCommand):
         if days < 365:
             self.stderr.write('days should be 365 or higher')
         else:
-            anonymize_reporters(days=days)
+            reporter_count = anonymize_reporters(days=days)
+            self.stdout.write('Anonymized {} reporter(s)'.format(reporter_count))
