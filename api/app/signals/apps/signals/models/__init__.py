@@ -2,6 +2,7 @@ from signals.apps.signals.models.attachment import Attachment
 from signals.apps.signals.models.buurt import Buurt
 from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
+from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.history import History
 from signals.apps.signals.models.location import (
@@ -33,6 +34,7 @@ __all__ = [
     'Buurt',
     'Category',
     'CategoryAssignment',
+    'CategoryDepartment',
     'Department',
     'History',
     'STADSDEEL_CENTRUM',

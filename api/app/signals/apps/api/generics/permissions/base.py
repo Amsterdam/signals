@@ -128,9 +128,17 @@ class SignalViewObjectPermission(DjangoModelPermissions):
 
         if settings.FEATURE_FLAGS.get('PERMISSION_DEPARTMENTS', False):
             has_category_read_permission = set(
-                request.user.profile.departments.values_list('pk', flat=True)
+                request.user.profile.departments.values_list(
+                    'pk',
+                    flat=True
+                )
             ).intersection(
-                obj.category_assignment.category.departments.values_list('pk', flat=True)
+                obj.category_assignment.category.departments.filter(
+                    categorydepartment__can_view=True
+                ).values_list(
+                    'pk',
+                    flat=True
+                )
             )
 
             return bool(has_category_read_permission) and request.user.has_perm('signals.sia_read')

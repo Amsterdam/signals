@@ -231,7 +231,13 @@ class CategoryFactory(factory.DjangoModelFactory):
 
         if extracted:
             for department in extracted:
-                self.departments.add(department)
+                self.departments.add(
+                    department,
+                    through_defaults={
+                        'is_responsible': True,
+                        'can_view': True
+                    }
+                )
 
 
 class DepartmentFactory(factory.DjangoModelFactory):
