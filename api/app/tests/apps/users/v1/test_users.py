@@ -200,3 +200,19 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             self.sia_read_write_user.pk
         ))
         self.assertEqual(response.status_code, 403)
+
+    def test_get_currently_logged_in_user(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get('/signals/v1/private/me/')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(response_data['id'], self.sia_read_write_user.pk)
+        self.assertEqual(response_data['username'], self.sia_read_write_user.username)
+        self.assertEqual(response_data['email'], self.sia_read_write_user.email)
+        self.assertTrue(response_data['is_active'])
+        self.assertFalse(response_data['is_staff'])
+        self.assertFalse(response_data['is_superuser'])
+        self.assertEqual(len(response_data['roles']), 0)
+        self.assertEqual(len(response_data['permissions']), 5)

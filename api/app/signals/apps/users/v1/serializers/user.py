@@ -1,6 +1,6 @@
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.models import Group, User
 from django.core.validators import EmailValidator
 from rest_framework import serializers
 
@@ -15,10 +15,6 @@ from signals.apps.users.v1.serializers import (
 
 def _get_groups_queryset():
     return Group.objects.all()
-
-
-def _get_permissions_queryset():
-    return Permission.objects.all()
 
 
 class UserListHALSerializer(WriteOnceMixin, HALSerializer):
