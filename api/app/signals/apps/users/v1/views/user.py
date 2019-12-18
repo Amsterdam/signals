@@ -50,3 +50,11 @@ class UserViewSet(DatapuntViewSetWritable):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def me(self, request):
+        """
+        Detail for the currently logged in user
+        """
+        serializer = self.serializer_detail_class(request.user,
+                                                  context=self.get_serializer_context())
+        return Response(serializer.data)

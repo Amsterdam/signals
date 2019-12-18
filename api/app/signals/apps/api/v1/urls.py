@@ -66,6 +66,11 @@ signal_router_v1.register(r'private/users', UserViewSet, basename='user')
 signal_router_v1.register(r'private/roles', RoleViewSet, basename='group')
 signal_router_v1.register(r'private/permissions', PermissionViewSet, basename='permission')
 
+# Currently logged in user detail
+signal_router_v1.urls.append(
+    path('private/me/', UserViewSet.as_view({'get': 'me'}), name='auth-me'),
+)
+
 # Status message templates are only editable via the private API
 signal_router_v1.urls.append(
     path(
