@@ -51,7 +51,9 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255)
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
-    departments = models.ManyToManyField('signals.Department')
+    departments = models.ManyToManyField('signals.Department',
+                                         through='signals.CategoryDepartment',
+                                         through_fields=('category', 'department'))
     is_active = models.BooleanField(default=True)
 
     class Meta:
