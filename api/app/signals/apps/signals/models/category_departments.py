@@ -1,5 +1,4 @@
 from django.contrib.gis.db import models
-from django.core.exceptions import ValidationError
 
 
 class CategoryDepartment(models.Model):
@@ -10,9 +9,6 @@ class CategoryDepartment(models.Model):
     can_view = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        if not self.is_responsible and not self.can_view:
-            raise ValidationError('is_responsible and can_view cannot be set to False both')
-
         if self.is_responsible:
             # If is_responsible is set to True than can_view must also be True
             self.can_view = True

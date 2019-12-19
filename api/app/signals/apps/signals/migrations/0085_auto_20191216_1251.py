@@ -3,6 +3,9 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+# Copy the data from the existing, by Django generated, table into the newly created
+# signals_categorydepartment table. Because the is_responsible and can_view fields did not exists
+# we want the functionality to keep working as it was before hence we set them both to True
 copy_category_departments = """
 INSERT INTO signals_categorydepartment(is_responsible, can_view, category_id, department_id)
 SELECT True, True, category_id, department_id FROM signals_category_departments;
