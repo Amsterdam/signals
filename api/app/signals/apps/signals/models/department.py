@@ -7,6 +7,11 @@ class Department(models.Model):
     is_intern = models.BooleanField(default=True)
 
     class Meta:
+        permissions = (
+            ('sia_department_read', 'Can add/change a department'),
+            ('sia_department_write', 'Can add/change a department'),
+        )
+
         ordering = ('name',)
         indexes = [
             models.Index(fields=['name']),

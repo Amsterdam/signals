@@ -45,4 +45,14 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(related_name='d', through='signals.CategoryDepartment',
                                          to='signals.Department'),
         ),
+        migrations.AlterModelOptions(
+            name='department',
+            options={
+                'ordering': ('name',),
+                'permissions': (
+                    ('sia_department_read', 'Can add/change a department'),
+                    ('sia_department_write', 'Can add/change a department')
+                )
+            },
+        ),
     ]

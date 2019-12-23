@@ -17,6 +17,7 @@ from signals.apps.api.v1.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.signals.models import Category
@@ -65,6 +66,9 @@ signal_router_v1.register(
 signal_router_v1.register(r'private/users', UserViewSet, basename='user')
 signal_router_v1.register(r'private/roles', RoleViewSet, basename='group')
 signal_router_v1.register(r'private/permissions', PermissionViewSet, basename='permission')
+
+# Department
+signal_router_v1.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 
 # Currently logged in user detail
 signal_router_v1.urls.append(
