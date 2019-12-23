@@ -10,6 +10,10 @@ from signals.apps.api.v1.serializers.category import (
     CategoryHALSerializer,
     ParentCategoryHALSerializer
 )
+from signals.apps.api.v1.serializers.departments import (
+    PrivateDepartmentSerializerDetail,
+    PrivateDepartmentSerializerList
+)
 from signals.apps.api.v1.serializers.signal import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
@@ -34,6 +38,8 @@ __all__ = [
     'CategoryHALSerializer',
     'ParentCategoryHALSerializer',
     'HistoryHalSerializer',
+    'PrivateDepartmentSerializerDetail',
+    'PrivateDepartmentSerializerList',
     'PrivateSignalSerializerDetail',
     'PrivateSignalSerializerList',
     'PublicSignalSerializerDetail',
