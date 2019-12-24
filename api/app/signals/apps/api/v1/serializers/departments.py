@@ -14,6 +14,7 @@ class PrivateDepartmentSerializerList(HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'name',
             'code',
             'is_intern',
@@ -58,6 +59,7 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'name',
             'code',
             'is_intern',
