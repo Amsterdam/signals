@@ -1,6 +1,18 @@
+from urllib.parse import urlparse
+
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
+from django.urls import resolve
 from django_extensions.db.fields import AutoSlugField
+
+
+class CategoryManager(models.Manager):
+    def get_from_url(self, url):
+        _, _, kwargs = resolve((urlparse(url)).path)
+        if 'slug' in kwargs and 'sub_slug' in kwargs:
+            return self.get_queryset().get(slug=kwargs['sub_slug'], parent__slug=kwargs['slug'])
+        else:
+            return self.get_queryset().get(slug=kwargs['slug'], parent__isnull=True)
 
 
 class Category(models.Model):
@@ -55,6 +67,8 @@ class Category(models.Model):
                                          through='signals.CategoryDepartment',
                                          through_fields=('category', 'department'))
     is_active = models.BooleanField(default=True)
+
+    objects = CategoryManager()
 
     class Meta:
         ordering = ('name',)

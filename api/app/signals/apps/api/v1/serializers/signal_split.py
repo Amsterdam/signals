@@ -13,7 +13,7 @@ from signals.apps.api.generics.exceptions import PreconditionFailed
 from signals.apps.api.v1.fields import PrivateSignalSplitLinksField
 from signals.apps.api.v1.serializers.nested import _NestedSplitSignalSerializer
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Category, Signal
 
 
 class PrivateSplitSignalSerializer(serializers.Serializer):
@@ -21,8 +21,6 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         return self.to_internal_value(data)
 
     def to_internal_value(self, data):  # noqa: C901
-        from signals.apps.api.v1.urls import category_from_url
-
         potential_parent_signal = self.context['view'].get_object()
 
         if potential_parent_signal.status.state == workflow.GESPLITST:
@@ -46,14 +44,13 @@ class PrivateSplitSignalSerializer(serializers.Serializer):
         output = {"children": copy.deepcopy(self.initial_data)}
 
         for item in output['children']:
+
             if 'category_url' in item['category'] and 'sub_category' in item['category']:
                 del (item['category']['sub_category'])
             if 'category_url' in item['category']:
-                item['category']['category_url'] = category_from_url(
-                    item['category']['category_url'])
+                item['category']['category_url'] = Category.objects.get_from_url(item['category']['category_url'])
             elif 'sub_category' in item['category']:
-                item['category']['sub_category'] = category_from_url(
-                    item['category']['sub_category'])
+                item['category']['sub_category'] = Category.objects.get_from_url(item['category']['sub_category'])
 
         return output
 
