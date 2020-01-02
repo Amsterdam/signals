@@ -7,6 +7,8 @@ from signals.apps.api.v1.views.attachment import (
 )
 from signals.apps.api.v1.views.category import ChildCategoryViewSet, ParentCategoryViewSet
 from signals.apps.api.v1.views.category_removed import SignalCategoryRemovedAfterViewSet
+from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
+# from signals.apps.api.v1.views.ml_tool_proxy import MlPredictCategoryView  # V1 disabled for now
 from signals.apps.api.v1.views.namespace import NamespaceView
 from signals.apps.api.v1.views.pdf import GeneratePdfView
 from signals.apps.api.v1.views.signal import PrivateSignalViewSet, PublicSignalViewSet
@@ -22,8 +24,10 @@ __all__ = (
     'SignalCategoryRemovedAfterViewSet',
     'ChildCategoryViewSet',
     'ParentCategoryViewSet',
+    # 'MlPredictCategoryView',  # V1 disabled for now
     'NamespaceView',
     'GeneratePdfView',
+    'PrivateDepartmentViewSet',
     'PrivateSignalSplitViewSet',
     'StatusMessageTemplatesViewSet',
     'StoredSignalFilterViewSet',
