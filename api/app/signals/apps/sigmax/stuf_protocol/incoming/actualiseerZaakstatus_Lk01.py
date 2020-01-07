@@ -77,6 +77,78 @@ def _parse_zaak_identificatie(zaak_id):
         raise ValueError("Incorrect value for sia_id: {}".format(repr(zaak_id)))
 
 
+def _get_status_text_actualiseerZaakstatus_Lk01(request_data):
+    """
+    Upon reception of new "zaak" status, derive SIA Signal status update text.
+    """
+    resultaat_text = request_data.get('resultaat', '').strip()
+    resultaat_text = resultaat_text if resultaat_text else 'Geen resultaat aangeleverd vanuit THOR'
+    reden_text = request_data.get('reden', '').strip()
+    reden_text = reden_text if reden_text else 'Geen reden aangeleverd vanuit THOR'
+    default_text = 'Melding is afgehandeld door THOR.'
+
+    if not resultaat_text and not default_text:
+        return default_text
+    else:
+        return '{}: {}'.format(resultaat_text, reden_text)
+
+
+def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
+    """
+    Upon reception of a new "zaak" status, we update the Signal status.
+
+    Note: this is the happy flow, only happens when the Signal was in the
+    expected state in SIA --- else see _add_note_actualiseerZaakstatus_Lk01.
+    """
+    status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+    status_data = {
+        'state': workflow.AFGEHANDELD_EXTERN,
+        'text': status_text,
+        'extra_properties': {
+            'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
+            'sigmax_resultaat': request_data['resultaat'],
+            'sigmax_reden': request_data['reden'],
+        }
+    }
+
+    # We let exceptions bubble up (must lead to a error message to CityControl).
+    Signal.actions.update_status(data=status_data, signal=signal)
+
+
+def _add_note_actualiseerZaakstatus_Lk01(signal, request_data):
+    """
+    Upon reception of a new "zaak" status, we add a note to that effect.
+
+    Note: this is the fallback flow, happens when a Signal is not in the
+    expected status within SIA.
+    """
+    status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+
+    note_text = f'Zaak status update ontvangen van CityControl terwijl SIA melding niet in verzonden staat was.\n\n {status_text}' # noqa
+    note_data = {'text': note_text}
+
+    Signal.actions.create_note(note_data, signal)
+
+
+def _get_actualiseerZaakstatus_Bv03(request, bv03_context):
+    return render(
+        request,
+        'sigmax/actualiseerZaakstatus_Bv03.xml',
+        context=bv03_context,
+        content_type='text/xml; charset=utf-8', status=200
+    )
+
+
+def _get_actualiseerZaakstatus_Fo03(request, error_msg):
+    return render(
+        request,
+        'sigmax/actualiseerZaakstatus_Fo03.xml',
+        context={'error_msg': error_msg, },
+        content_type='text/xml; charset=utf-8',
+        status=500
+    )
+
+
 def handle_actualiseerZaakstatus_Lk01(request):  # noqa: C901
     """
     Checks that incoming message has required info, updates Signal if ok.
@@ -89,82 +161,38 @@ def handle_actualiseerZaakstatus_Lk01(request):  # noqa: C901
     request_data = _parse_actualiseerZaakstatus_Lk01(request.body)
     zaak_id = request_data['zaak_id']  # zaak identifier in CityControl
 
-    # Retrieve the relevant Signal, error out if it cannot be found or incoming
-    # zaak identificatie cannot be parsed.
+    # Retrieve the relevant Signal, reply to CityControl with a
+    # actualiseerZaakstatus_Fo03 message.
     try:
         _id, sequence_number = _parse_zaak_identificatie(zaak_id)
         signal = Signal.objects.get(pk=_id)
     except Signal.DoesNotExist:
         error_msg = f'Melding met sia_id {zaak_id} niet gevonden.'
         logger.warning(error_msg, exc_info=True)
-        return render(
-            request,
-            'sigmax/actualiseerZaakstatus_Fo03.xml',
-            context={'error_msg': error_msg, },
-            content_type='text/xml; charset=utf-8',
-            status=500)
+        return _get_actualiseerZaakstatus_Fo03(request, error_msg)
     except ValueError as e:
         error_msg = str(e)
         logger.warning(error_msg, exc_info=True)
-        return render(
-            request,
-            'sigmax/actualiseerZaakstatus_Fo03.xml',
-            context={'error_msg': error_msg, },
-            content_type='text/xml; charset=utf-8',
-            status=500)
+        return _get_actualiseerZaakstatus_Fo03(request, error_msg)
 
-    # update Signal status upon receiving message
-    default_text = 'Melding is afgehandeld door THOR.'
-
-    # We strip whitespace
-    if request_data['resultaat'].strip() and request_data['reden'].strip():
-        status_text = '{}: {}'.format(
-            request_data['resultaat'].strip(),
-            request_data['reden'].strip()
-        )
-    elif request_data['resultaat'].strip():  # only resultaat
-        status_text = '{}: Geen reden aangeleverd vanuit THOR'.format(
-            request_data['resultaat'].strip()
-        )
-    elif request_data['reden'].strip():
-        status_text = 'Geen resultaat aangeleverd vanuit THOR: {}'.format(
-            request_data['reden']
-        )
-    else:
-        status_text = default_text
-
-    status_data = {
-        'state': workflow.AFGEHANDELD_EXTERN,
-        'text': status_text,
-        'extra_properties': {
-            'sigmax_datum_afgehandeld': request_data['datum_afgehandeld'],
-            'sigmax_resultaat': request_data['resultaat'],
-            'sigmax_reden': request_data['reden'],
-        }
-    }
-
+    # Update status according to workflow or add a note to the Signal
+    # that an update was received but not expected.
     try:
-        Signal.actions.update_status(data=status_data, signal=signal)
+        _update_status_actualiseerZaakstatus_Lk01(signal, request_data)
     except ValidationError:
         error_msg = f'Melding met zaak identificatie {zaak_id} en volgnummer {sequence_number} was niet in verzonden staat in SIA.'  # noqa
         logger.warning(error_msg, exc_info=True)
-        return render(
-            request,
-            'sigmax/actualiseerZaakstatus_Fo03.xml',
-            context={'error_msg': error_msg, },
-            content_type='text/xml; charset=utf-8',
-            status=500)
 
+        _add_note_actualiseerZaakstatus_Lk01(signal, request_data)
+        return _get_actualiseerZaakstatus_Fo03(request, error_msg)
+
+    # Happy flow, send a actualiseerZaakstatus_Bv03 to CityControl to confirm
+    # that the update was received and stored in SIA.
     bv03_context = {'signal': signal}
     if sequence_number is not None:
         bv03_context['sequence_number'] = '{0:02d}'.format(sequence_number)
 
-    response = render(
-        request,
-        'sigmax/actualiseerZaakstatus_Bv03.xml',
-        context=bv03_context,
-        content_type='text/xml; charset=utf-8', status=200
-    )
+    response = _get_actualiseerZaakstatus_Bv03(request, bv03_context)
 
     logging.warning('SIA sent the following Bv03 message:', extra={
         'content': response.content.decode('utf-8')
