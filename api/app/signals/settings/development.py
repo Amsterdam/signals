@@ -31,7 +31,7 @@ except ImportError:
 
 
 def show_toolbar(request):
-    return DEBUG
+    return False  # True to enable Django Debug Toolbar (very slow)
 
 
 DEBUG_TOOLBAR_CONFIG = {
