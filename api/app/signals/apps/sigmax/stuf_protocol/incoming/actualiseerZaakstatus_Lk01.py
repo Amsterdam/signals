@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from lxml import etree
 
+from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -115,6 +116,21 @@ def _update_status_actualiseerZaakstatus_Lk01(signal, request_data):
     Signal.actions.update_status(data=status_data, signal=signal)
 
 
+def _add_note_actualiseerZaakstatus_Lk01(signal, request_data):
+    """
+    Upon reception of a new "zaak" status, we add a note to that effect.
+
+    Note: this is the fallback flow, happens when a Signal is not in the
+    expected status within SIA.
+    """
+    status_text = _get_status_text_actualiseerZaakstatus_Lk01(request_data)
+
+    note_text = f'Zaak status update ontvangen van CityControl terwijl SIA melding niet in verzonden staat was.\n\n {status_text}' # noqa
+    note_data = {'text': note_text}
+
+    Signal.actions.create_note(note_data, signal)
+
+
 def _get_actualiseerZaakstatus_Bv03(request, bv03_context):
     return render(
         request,
@@ -132,6 +148,38 @@ def _get_actualiseerZaakstatus_Fo03(request, error_msg):
         content_type='text/xml; charset=utf-8',
         status=500
     )
+
+
+def _increment_roundtrip_count(signal, sequence_number):
+    """
+    Increment the round trip count to at least the received sequence number.
+
+    Note:
+    - we do not want to re-use sequence numbers
+    """
+    if sequence_number is None:
+        return  # old style zaak identificatie, skip
+
+    n_trips = CityControlRoundtrip.objects.filter(_signal=signal).count()
+    delta = sequence_number - n_trips
+
+    if delta > 0:
+        # Case where one or more "zaak" objects were created in CityControl
+        # without it being known to SIA (happens when Bv03 messages upon
+        # creation were not received by SIA, or not sent by CityControl ---
+        # a problem that was observed in our logs).
+        # We want to avoid re-using "zaak identificatie" (and thus sequence
+        # numbers).
+        round_trips = [CityControlRoundtrip(_signal=signal) for i in range(delta)]
+        CityControlRoundtrip.bulk_create(round_trips)
+    elif delta < 0:
+        # Possible when receiving an updates to Signals out of order. Which may
+        # become possible in the future (if we relax the rules around sending)
+        # "zaak" objects to CityControl. TBD
+        pass
+    else:
+        # sequence number as expected, no action required
+        pass
 
 
 def handle_actualiseerZaakstatus_Lk01(request):  # noqa: C901
@@ -168,6 +216,8 @@ def handle_actualiseerZaakstatus_Lk01(request):  # noqa: C901
         error_msg = f'Melding met zaak identificatie {zaak_id} en volgnummer {sequence_number} was niet in verzonden staat in SIA.'  # noqa
         logger.warning(error_msg, exc_info=True)
 
+        _add_note_actualiseerZaakstatus_Lk01(signal, request_data)
+        _increment_roundtrip_count(signal, sequence_number)
         return _get_actualiseerZaakstatus_Fo03(request, error_msg)
 
     # Happy flow, send a actualiseerZaakstatus_Bv03 to CityControl to confirm
