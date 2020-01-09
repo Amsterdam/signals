@@ -191,9 +191,9 @@
         <tr>
             <td class="changed" style="width: 200px; vertical-align:top; overflow-wrap: break-word;">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</td>
             <td class="title" style="vertical-align:top">
-                {{ history.action }}<br>
-                {% if history.description %}
-                    "{{ history.description }}"
+                {{ history.get_action }}<br>
+                {% if history.get_description %}
+                    "{{ history.get_description }}"
                 {% endif %}
             </td>
         </tr>

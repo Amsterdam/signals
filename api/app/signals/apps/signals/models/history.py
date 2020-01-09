@@ -1,5 +1,7 @@
 from django.contrib.gis.db import models
 
+from signals.apps.feedback.models import _get_description_of_receive_feedback
+from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 
@@ -22,8 +24,7 @@ class History(models.Model):
     def delete(self, *args, **kwargs):
         raise NotImplementedError
 
-    @property
-    def action(self):
+    def get_action(self):
         """Generate text for the action field that can serve as title in UI."""
         if self.what == 'UPDATE_STATUS':
             return 'Update status naar: {}'.format(
@@ -39,6 +40,22 @@ class History(models.Model):
         elif self.what == 'RECEIVE_FEEDBACK':
             return 'Feedback van melder ontvangen'
         return 'Actie onbekend.'
+
+    def get_who(self):
+        """Generate string to show in UI, missing users are set to default."""
+        if self.who is None:
+            return 'SIA systeem'
+        return self.who
+
+    def get_description(self):
+        if self.what == 'UPDATE_LOCATION':
+            location_id = int(self.identifier.strip('UPDATE_LOCATION_'))
+            return _get_description_of_update_location(location_id)
+        elif self.what == 'RECEIVE_FEEDBACK':
+            feedback_id = self.identifier.strip('RECEIVE_FEEDBACK_')
+            return _get_description_of_receive_feedback(feedback_id)
+        else:
+            return self.description
 
     class Meta:
         managed = False
