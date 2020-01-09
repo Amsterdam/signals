@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.managers import FeedbackManager
-from signals.apps.signals.models import Signal
 
 
 def generate_token():
@@ -33,7 +32,7 @@ class StandardAnswer(models.Model):
 class Feedback(models.Model):
     # Bookkeeping
     token = models.UUIDField(db_index=True, primary_key=True, default=generate_token)
-    _signal = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='feedback')
+    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, related_name='feedback')
     created_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(editable=False, null=True)
 
@@ -57,3 +56,21 @@ class Feedback(models.Model):
     def is_filled_out(self):
         """Feedback form already filled out and submitted."""
         return self.submitted_at is not None
+
+
+def _get_description_of_receive_feedback(feedback_id):
+    """Given a history entry for submission of feedback create descriptive text."""
+    feedback = Feedback.objects.get(token=feedback_id)
+
+    # Craft a message for UI
+    desc = 'Ja, de melder is tevreden\n' if feedback.is_satisfied else \
+        'Nee, de melder is ontevreden\n'
+    desc += 'Waarom: {}'.format(feedback.text)
+
+    if feedback.text_extra:
+        desc += '\nToelichting: {}'.format(feedback.text_extra)
+
+    yes_no = 'Ja' if feedback.allows_contact else 'Nee'
+    desc += f'\nToestemming contact opnemen: {yes_no}'
+
+    return desc

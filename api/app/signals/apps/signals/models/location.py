@@ -93,3 +93,30 @@ class Location(CreatedUpdatedModel):
             )
         )
         return to_transform
+
+
+def _get_description_of_update_location(location_id):
+    """Get descriptive text for location update history entries."""
+    location = Location.objects.get(id=location_id)
+
+    # Craft a message for UI
+    desc = 'Stadsdeel: {}\n'.format(
+        location.get_stadsdeel_display()) if location.stadsdeel else ''
+
+    # Deal with address text or coordinates
+    if location.address and isinstance(location.address, dict):
+        field_prefixes = (
+            ('openbare_ruimte', ''),
+            ('huisnummer', ' '),
+            ('huisletter', ''),
+            ('huisnummer_toevoeging', '-'),
+            ('woonplaats', '\n')
+        )
+        desc += get_address_text(location, field_prefixes)
+    else:
+        desc += 'Locatie is gepind op de kaart\n{}, {}'.format(
+            location.geometrie[0],
+            location.geometrie[1],
+        )
+
+    return desc
