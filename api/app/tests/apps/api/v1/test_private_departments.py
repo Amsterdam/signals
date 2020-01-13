@@ -31,8 +31,8 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
-        self.assertEqual(data['count'], 19)
-        self.assertEqual(len(data['results']), 19)
+        self.assertEqual(data['count'], 20)
+        self.assertEqual(len(data['results']), 20)
 
     def test_get_detail(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
