@@ -85,3 +85,51 @@ class LegacyCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField)
         return self.get_queryset().get(
             parent__slug=view_kwargs['slug'],
             slug=view_kwargs['sub_slug'])
+
+
+class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+    def _get_public_url(self, obj, request=None):
+        if obj.is_child():
+            kwargs = {'slug': obj.parent.slug, 'sub_slug': obj.slug}
+        else:
+            kwargs = {'slug': obj.slug}
+        return self.reverse('category-detail', kwargs=kwargs, request=request)
+
+    def _get_status_message_templates_url(self, obj, request=None):
+        if obj.is_child():
+            kwargs = {'slug': obj.parent.slug, 'sub_slug': obj.slug}
+            return self.reverse('private-status-message-templates-child', kwargs=kwargs, request=request)
+        else:
+            kwargs = {'slug': obj.slug}
+            return self.reverse('private-status-message-templates-parent', kwargs=kwargs, request=request)
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
+            ('self', dict(
+                href=self.get_url(value, 'private-category-detail', request, None),
+                public=self._get_public_url(obj=value, request=request),
+             )),
+            ('sia:status-message-templates', dict(
+                href=self._get_status_message_templates_url(obj=value, request=request)
+            ))
+        ])
+
+        if value.is_child():
+            result.update({'sia:parent': dict(
+                href=self.get_url(value.parent, 'private-category-detail', request, None),
+                public=self._get_public_url(obj=value.parent, request=request))
+            })
+
+        # if value.is_parent():
+        #     result.update({'sia:children': [
+        #         dict(
+        #             href=self.get_url(child, 'private-category-detail', request, None),
+        #             public=self._get_public_url(obj=child, request=request)
+        #         )
+        #         for child in value.children.all()
+        #     ]})
+
+        return result
