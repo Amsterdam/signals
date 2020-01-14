@@ -46,21 +46,21 @@ def SIG_1830(apps, schema_editor):
                                            name='Onderhuur en adreskwaliteit',
                                            handling='I5DMC')
     ServiceLevelObjective.objects.create(category=sub_category,
-                                         n_days=3,
+                                         n_days=5,
                                          use_calendar_days=False)
 
     sub_category = Category.objects.create(parent=main_category,
                                            name='Leegstand',
                                            handling='I5DMC')
     ServiceLevelObjective.objects.create(category=sub_category,
-                                         n_days=3,
+                                         n_days=5,
                                          use_calendar_days=False)
 
     sub_category = Category.objects.create(parent=main_category,
                                            name='Woningdelen / spookburgers',
                                            handling='I5DMC')
     ServiceLevelObjective.objects.create(category=sub_category,
-                                         n_days=3,
+                                         n_days=5,
                                          use_calendar_days=False)
 
     sub_category_fraude = Category.objects.get(slug='fraude', parent_id=main_category.pk)
