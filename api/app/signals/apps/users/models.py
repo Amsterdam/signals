@@ -16,7 +16,7 @@ class Profile(CreatedUpdatedModel):
         to=User,
         related_name='profile',
         verbose_name=_('profile'),
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
     )
 
     departments = models.ManyToManyField(

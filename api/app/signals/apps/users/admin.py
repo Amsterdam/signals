@@ -65,6 +65,9 @@ class SignalsUserAdmin(UserAdmin):
         self.message_user(request, 'Created summary CSV file: {}'.format(filename))
         return response
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.unregister(User)
 admin.site.register(User, SignalsUserAdmin)
