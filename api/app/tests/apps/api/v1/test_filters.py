@@ -4,6 +4,7 @@ from random import shuffle
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.signals.models import Signal
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
@@ -399,3 +400,60 @@ class TestFilters(SignalsBaseApiTestCase):
 
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))
+
+
+class TestAnonymousFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def test_filter_is_anonymous(self):
+        signal_anonymous = SignalFactory.create(reporter__phone='', reporter__email='')
+        signal_has_email = SignalFactory.create(
+            reporter__phone='', reporter__email='test@example.com')
+        signal_has_phone = SignalFactory.create(
+            reporter__phone='0123456789', reporter__email='')
+        signal_has_both = SignalFactory.create(
+            reporter__phone='0123456789', reporter__email='test@example.com')
+
+        # check we have the correct number of signals
+        self.assertEqual(Signal.objects.count(), 4)
+
+        # some convenience cpo
+        anonymous_signal_ids = set([signal_anonymous.id])
+        non_anonymous_signal_ids = set([
+            signal_has_email.id,
+            signal_has_phone.id,
+            signal_has_both.id,
+        ])
+
+        # Check the actual filter for various spellings of true and false and
+        # completely wrong inputs.
+        for value in ['true', 'True', 'truE']:
+            self.assertEqual(
+                set(self._request_filter_signals({'is_anonymous': value})),
+                anonymous_signal_ids
+            )
+
+        for value in ['false', 'False', 'falsE']:
+            self.assertEqual(
+                set(self._request_filter_signals({'is_anonymous': value})),
+                non_anonymous_signal_ids
+            )
+
+        self.assertEqual(
+            len(set(self._request_filter_signals({'is_anonymous': 'GARBAGE'}))),
+            4
+        )

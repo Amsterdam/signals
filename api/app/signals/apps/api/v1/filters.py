@@ -81,6 +81,8 @@ class SignalFilter(FilterSet):
 
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
 
+    is_anonymous = filters.BooleanFilter(method='is_anonymous_filter')
+
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
         queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
@@ -131,6 +133,11 @@ class SignalFilter(FilterSet):
         return self._categories_filter(queryset=queryset,
                                        main_categories=main_categories,
                                        sub_categories=sub_categories)
+
+    def is_anonymous_filter(self, queryset, name, value):
+        if value:
+            return queryset.filter(reporter__email='', reporter__phone='')
+        return queryset.exclude(reporter__email='', reporter__phone='')
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):
