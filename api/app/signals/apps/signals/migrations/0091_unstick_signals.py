@@ -3,6 +3,8 @@ Fix SIG-2112
 """
 from django.db import migrations
 
+from signals.apps.signals.workflow import AFGEHANDELD_EXTERN
+
 PROBLEMATIC_SIA_IDS = [
     365188
 ]
