@@ -33,4 +33,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(_set_state_afgehandeld_extern),
     ]
