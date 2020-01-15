@@ -491,7 +491,7 @@ components:
 
     priorityChoices:
       type: string
-      enum: ['normal', 'high']
+      enum: ['normal', 'high', 'low']
 
     anonymousChoices:
       type: string
