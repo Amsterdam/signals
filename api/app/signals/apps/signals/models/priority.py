@@ -4,9 +4,11 @@ from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
 class Priority(CreatedUpdatedModel):
+    PRIORITY_LOW = 'low'
     PRIORITY_NORMAL = 'normal'
     PRIORITY_HIGH = 'high'
     PRIORITY_CHOICES = (
+        (PRIORITY_LOW, 'Low'),
         (PRIORITY_NORMAL, 'Normal'),
         (PRIORITY_HIGH, 'High'),
     )
