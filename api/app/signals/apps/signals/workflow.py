@@ -118,6 +118,7 @@ ALLOWED_STATUS_CHANGES = {
     GEANNULEERD: [
         GEANNULEERD,
         HEROPEND,
+        BEHANDELING,  # SIG-2109
     ],
     HEROPEND: [
         HEROPEND,
