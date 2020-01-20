@@ -101,6 +101,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'role_ids': [self.group_with_permissions.pk, ],
             'profile': {
                 'department_ids': [self.departments[0].pk, self.departments[1].pk, ],
+                'note': 'This is a test note'
             }
         }
 
@@ -126,6 +127,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(len(response_data['permissions']), 0)
 
+        self.assertEqual(response_data['profile']['note'], 'This is a test note')
         self.assertEqual(len(response_data['profile']['departments']), 2)
         self.assertIn(response_data['profile']['departments'][0],
                       [self.departments[0].name, self.departments[1].name])
@@ -184,6 +186,33 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                       [self.departments[0].name, self.departments[1].name])
         self.assertIn(response_data['profile']['departments'][1],
                       [self.departments[0].name, self.departments[1].name])
+
+    def test_patch_user_note(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        data = {'profile': {'note': 'note #1'}}
+        response = self.client.patch('/signals/v1/private/users/{}'.format(
+            self.sia_read_write_user.pk
+        ), data=data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        self.sia_read_write_user.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.profile.note, 'note #1')
+
+        response_data = response.json()
+        self.assertEqual(response_data['profile']['note'], 'note #1')
+
+        data = {'profile': {'note': 'note #2'}}
+        response = self.client.patch('/signals/v1/private/users/{}'.format(
+            self.sia_read_write_user.pk
+        ), data=data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        self.sia_read_write_user.refresh_from_db()
+        self.assertEqual(self.sia_read_write_user.profile.note, 'note #2')
+
+        response_data = response.json()
+        self.assertEqual(response_data['profile']['note'], 'note #2')
 
     def test_put_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)

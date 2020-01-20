@@ -20,10 +20,11 @@ class Profile(CreatedUpdatedModel):
     )
 
     departments = models.ManyToManyField(
-        to='signals.Department',
-        null=True,
-        blank=True,
+        to='signals.Department'
     )
+
+    # SIG-2016 Added a note field to the profile
+    note = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username
