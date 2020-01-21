@@ -22,7 +22,7 @@ class PrivateDepartmentSerializerList(HALSerializer):
         )
 
     def get_category_names(self, obj):
-        return list(obj.category_set.values_list('name', flat=True))
+        return list(obj.category_set.filter(is_active=True).values_list('name', flat=True))
 
 
 def _get_categories_queryset():
@@ -50,7 +50,7 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
 class PrivateDepartmentSerializerDetail(HALSerializer):
     _display = DisplayField()
 
-    categories = CategoryDepartmentSerializer(source='categorydepartment_set',
+    categories = CategoryDepartmentSerializer(source='active_categorydepartment_set',
                                               many=True,
                                               required=False)
 
@@ -75,8 +75,8 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
 
     def create(self, validated_data):
         categorydepartment_set_validated_data = None
-        if 'categorydepartment_set' in validated_data:
-            categorydepartment_set_validated_data = validated_data.pop('categorydepartment_set')
+        if 'active_categorydepartment_set' in validated_data:
+            categorydepartment_set_validated_data = validated_data.pop('active_categorydepartment_set')
 
         instance = super(PrivateDepartmentSerializerDetail, self).create(validated_data)
 
@@ -90,10 +90,10 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        if 'categorydepartment_set' in validated_data:
+        if 'active_categorydepartment_set' in validated_data:
             self._save_category_department(
                 instance=instance,
-                validated_data=validated_data.pop('categorydepartment_set')
+                validated_data=validated_data.pop('active_categorydepartment_set')
             )
 
         instance = super(PrivateDepartmentSerializerDetail, self).update(instance, validated_data)
