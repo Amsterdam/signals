@@ -311,6 +311,70 @@ paths:
           schema:
             type: string
 
+  /signals/v1/private/categories/:
+    get:
+      description: List of all categories available in the system
+      responses:
+        '200':
+          description: List of all categories available in the system
+    post:
+      description: Creation of categories is not allowed
+      responses:
+        '405':
+          description: Method not allowed
+
+  /signals/v1/private/categories/{id}:
+    get:
+      description: Retrieves the category matching the given id
+      responses:
+        '200':
+          description: Details of the category matching the given id
+        '401':
+          description: Not authenticated, may be caused by expired token
+        '404':
+          description: Category not found
+    patch:
+      description: >-
+        Will update the following items on a category
+          * name
+          * is_active
+          * description
+          * slo (A new slo will be added to the sla list)
+      parameters:
+        - name: id
+          in: path
+          description: ID of signal that needs to be updated.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Changes are made, returns the current state of the categroy
+        '400':
+          description: >-
+            Bad request. Also returned when a split into too many children is
+            attempted.
+        '401':
+          description: Not authenticated, may be caused by expired token
+        '404':
+          description: Category not found
+      security:
+        - OAuth2:
+            - SIG/ALL
+      requestBody:
+        description: JSON data to update signal
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/privateCategoryPatch'
+    delete:
+      description: Deletion of categories is not allowed
+      responses:
+        '405':
+          description: Method not allowed
+
+
 components:
   schemas:
 
@@ -497,6 +561,28 @@ components:
       type: string
       enum: [true, false]
 
+    privateCategoryPatch:
+      description: JSON data for category updates
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the category
+        description:
+          type: string
+          description: Description of the category
+        is_active:
+          type: boolean
+          description: If the current category is still active
+        slo:
+          type: object
+          properties:
+            n_days:
+              type: integer
+              description: Number of days describing the slo time
+            use_calendar_days:
+              type: boolean
+              description: If the n_days is in calendar days (true) or working days (false)
 
   securitySchemes:
     OAuth2:
