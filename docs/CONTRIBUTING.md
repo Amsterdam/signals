@@ -1,5 +1,7 @@
 # Contributing to the Signals project
 
+**This document is under review** 
+
 ### Want to add a new feature?
 
 * **At the moment we do not accept merge request with new features from anyone other than the core developers!**
