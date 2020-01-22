@@ -58,7 +58,6 @@ class PrivateCategorySLASerializer(serializers.ModelSerializer):
         fields = (
             'n_days',
             'use_calendar_days',
-            'created_at',
         )
 
 
@@ -67,7 +66,7 @@ class PrivateCategorySerializer(HALSerializer):
     _display = DisplayField()
     handling_message = serializers.SerializerMethodField()
     sla = serializers.SerializerMethodField()
-    slo = PrivateCategorySLASerializer(write_only=True)
+    new_sla = PrivateCategorySLASerializer(write_only=True)
 
     class Meta:
         model = Category
@@ -81,7 +80,7 @@ class PrivateCategorySerializer(HALSerializer):
             'description',
             'handling_message',
             'sla',
-            'slo',
+            'new_sla',
         )
         read_only_fields = (
             'id',
@@ -94,12 +93,12 @@ class PrivateCategorySerializer(HALSerializer):
         return ALL_AFHANDELING_TEXT[obj.handling]
 
     def get_sla(self, obj):
-        return PrivateCategorySLASerializer(obj.slo.all().order_by('-created_at'), many=True).data
+        return PrivateCategorySLASerializer(obj.slo.all().order_by('-created_at').first()).data
 
     def update(self, instance, validated_data):
-        slo = validated_data.pop('slo') if 'slo' in validated_data else None
-        if slo:
-            ServiceLevelObjective.objects.create(category=instance, **slo)
+        new_sla = validated_data.pop('new_sla') if 'new_sla' in validated_data else None
+        if new_sla:
+            ServiceLevelObjective.objects.create(category=instance, **new_sla)
             instance.refresh_from_db()
 
         return super(PrivateCategorySerializer, self).update(instance, validated_data)

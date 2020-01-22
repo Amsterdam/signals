@@ -123,13 +123,4 @@ class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFie
                 public=self._get_public_url(obj=value.parent, request=request))
             })
 
-        # if value.is_parent():
-        #     result.update({'sia:children': [
-        #         dict(
-        #             href=self.get_url(child, 'private-category-detail', request, None),
-        #             public=self._get_public_url(obj=child, request=request)
-        #         )
-        #         for child in value.children.all()
-        #     ]})
-
         return result

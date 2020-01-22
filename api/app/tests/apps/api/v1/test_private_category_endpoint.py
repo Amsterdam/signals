@@ -52,13 +52,10 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(data['description'], category.description)
 
         self.assertIn('sla', data)
-        self.assertEqual(len(data['sla']), category.slo.count())
-        slo_count = 0
-        for slo in category.slo.all().order_by('-created_at'):
-            slo_data = data['sla'][slo_count]
-            self.assertEqual(slo_data['n_days'], slo.n_days)
-            self.assertEqual(slo_data['use_calendar_days'], slo.use_calendar_days)
-            slo_count += 1
+        if category.slo.count() > 0:
+            slo = category.slo.all().order_by('-created_at').first()
+            self.assertEqual(data['sla']['n_days'], slo.n_days)
+            self.assertEqual(data['sla']['use_calendar_days'], slo.use_calendar_days)
 
     def test_list_categories(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -120,7 +117,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         data = {
             'name': 'Patched name',
             'description': 'Patched description',
-            'slo': {
+            'new_sla': {
                 'n_days': 5,
                 'use_calendar_days': True
             },
