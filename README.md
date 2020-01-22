@@ -11,6 +11,11 @@ SIA has replaced MORA and is based on a proof of concept (https://github.com/Ams
 which ran on https://vaarwatermeldingen.amsterdam.nl/
 
 
+## Contributing to the project
+
+Do you want to contribute? Take a look at our [contribution guide](docs/CONTRIBUTING.md)
+
+
 ## Project structure
 This project is setup such that it can be built and run using Docker with minimal
 effort. The root directory therefore contains some Docker prerequisites and documentation.

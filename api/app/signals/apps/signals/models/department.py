@@ -20,3 +20,6 @@ class Department(models.Model):
     def __str__(self):
         """String representation."""
         return '{code} ({name})'.format(code=self.code, name=self.name)
+
+    def active_categorydepartment_set(self):
+        return self.categorydepartment_set.filter(category__is_active=True)
