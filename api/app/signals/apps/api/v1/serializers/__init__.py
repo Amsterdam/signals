@@ -8,7 +8,8 @@ from signals.apps.api.v1.serializers.attachment import (
 )
 from signals.apps.api.v1.serializers.category import (
     CategoryHALSerializer,
-    ParentCategoryHALSerializer
+    ParentCategoryHALSerializer,
+    PrivateCategorySerializer
 )
 from signals.apps.api.v1.serializers.departments import (
     PrivateDepartmentSerializerDetail,
@@ -47,4 +48,5 @@ __all__ = [
     'PrivateSplitSignalSerializer',
     'SignalIdListSerializer',
     'StoredSignalFilterSerializer',
+    'PrivateCategorySerializer',
 ]

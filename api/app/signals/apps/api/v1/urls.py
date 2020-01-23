@@ -6,6 +6,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     GeneratePdfView,
     NamespaceView,
     ParentCategoryViewSet,
+    PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
@@ -35,6 +36,7 @@ private_router.register(r'private/users', UserViewSet, basename='user')
 private_router.register(r'private/roles', RoleViewSet, basename='group')
 private_router.register(r'private/permissions', PermissionViewSet, basename='permission')
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
+private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 
 # Combined API
 base_router = SignalsRouterVersion1()

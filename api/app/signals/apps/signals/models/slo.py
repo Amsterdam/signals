@@ -12,5 +12,7 @@ class ServiceLevelObjective(models.Model):
     ]
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='slo')
     n_days = models.IntegerField()
-    use_calendar_days = models.BooleanField(
-        default=False, choices=USE_CALENDAR_DAY_CHOICES)
+    use_calendar_days = models.BooleanField(default=False, choices=USE_CALENDAR_DAY_CHOICES)
+
+    created_at = models.DateTimeField(editable=False, auto_now_add=True, null=True, blank=True)
+    created_by = models.EmailField(null=True, blank=True)

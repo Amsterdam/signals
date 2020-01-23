@@ -68,6 +68,8 @@ class Category(models.Model):
                                          through_fields=('category', 'department'))
     is_active = models.BooleanField(default=True)
 
+    description = models.TextField(null=True, blank=True)
+
     objects = CategoryManager()
 
     class Meta:
@@ -77,6 +79,8 @@ class Category(models.Model):
 
         permissions = (
             ('sia_can_view_all_categories', 'View all categories (this will override the category permission based on the user/department relation)'),  # noqa
+            ('sia_category_read', 'Can read Categories from SIA'),
+            ('sia_category_write', 'Can write Categories to SIA'),
         )
 
     def __str__(self):
