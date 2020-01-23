@@ -18,6 +18,7 @@ class ProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
+            'note',
             'departments',
             'department_ids',
             'created_at',
@@ -38,6 +39,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
+            'note',
             'departments',
             'department_ids',
             'created_at',
