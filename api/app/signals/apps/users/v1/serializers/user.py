@@ -93,7 +93,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 
         profile_data = validated_data.pop('profile', None)
 
-        validated_data['email'] = validated_data['username']  # noqa The email address and username are basically the same. TODO refactor this behaviour in the user model
+        validated_data['email'] = validated_data['username']  # noqa The email address and username are basically the same. TODO refactor this behavior in the user model
         instance = super(UserDetailHALSerializer, self).create(validated_data=validated_data)
 
         if profile_data:
