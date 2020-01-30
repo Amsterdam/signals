@@ -4,7 +4,7 @@ from random import shuffle
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Priority, Signal
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
@@ -400,6 +400,55 @@ class TestFilters(SignalsBaseApiTestCase):
 
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))
+
+
+class TestPriorityFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.priority_low = SignalFactory.create(priority__priority=Priority.PRIORITY_LOW)
+        self.priority_high = SignalFactory.create(priority__priority=Priority.PRIORITY_HIGH)
+        self.priority_normal = SignalFactory.create(priority__priority=Priority.PRIORITY_NORMAL)
+
+    def test_priority_filter_single_value(self):
+        """Test original filter behavior, is used in the wild, must work."""
+        filter_params = {'priority': Priority.PRIORITY_LOW}
+        self.assertEqual(
+            self._request_filter_signals(filter_params),
+            [self.priority_low.id]
+        )
+
+        # test all possibilities
+        for signal in [self.priority_low, self.priority_normal, self.priority_high]:
+            filter_params = {'priority': signal.priority.priority}
+            self.assertEqual(
+                self._request_filter_signals(filter_params),
+                [signal.id]
+            )
+
+    def test_priority_filter_multiple_values(self):
+        """Allow several priority values, see SIG-2187."""
+        filter_params = {'priority': [
+            Priority.PRIORITY_LOW,
+            Priority.PRIORITY_NORMAL,
+            Priority.PRIORITY_HIGH,
+        ]}
+        ids = set(self._request_filter_signals(filter_params))
+        self.assertEqual(len(ids), 3)
 
 
 class TestAnonymousFilter(SignalsBaseApiTestCase):
