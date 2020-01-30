@@ -62,7 +62,7 @@ class SignalFilter(FilterSet):
     )
 
     priority = filters.MultipleChoiceFilter(field_name='priority__priority',
-                                    choices=Priority.PRIORITY_CHOICES)
+                                            choices=Priority.PRIORITY_CHOICES)
 
     stadsdeel = filters.MultipleChoiceFilter(field_name='location__stadsdeel',
                                              choices=stadsdelen)
