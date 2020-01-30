@@ -46,4 +46,6 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
         )
 
     def get_departments(self, obj):
-        return ', '.join(obj.category.departments.values_list('code', flat=True))
+        return ', '.join(
+            obj.category.departments.filter(categorydepartment__is_responsible=True).values_list('code', flat=True)
+        )
