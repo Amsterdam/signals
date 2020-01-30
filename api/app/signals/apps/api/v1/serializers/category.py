@@ -15,7 +15,7 @@ from signals.apps.signals.models import Category, ServiceLevelObjective
 class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
-    departments = _NestedDepartmentSerializer(many=True)
+    departments = serializers.SerializerMethodField()
     handling_message = serializers.SerializerMethodField()
 
     class Meta:
@@ -34,6 +34,12 @@ class CategoryHALSerializer(HALSerializer):
 
     def get_handling_message(self, obj):
         return ALL_AFHANDELING_TEXT[obj.handling]
+
+    def get_departments(self, obj):
+        return _NestedDepartmentSerializer(
+            obj.departments.filter(categorydepartment__is_responsible=True),
+            many=True
+        ).data
 
 
 class ParentCategoryHALSerializer(HALSerializer):
