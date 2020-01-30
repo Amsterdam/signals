@@ -538,7 +538,7 @@ components:
         last_name:
           type: string
         is_active:
-          description: User is active (true) or inactive (false)
+          description: User is active (true) or inactive (false), the default is true
           type: boolean
         role_ids:
           type: array
@@ -559,15 +559,10 @@ components:
               type: string
       required:
         - username
-        - is_active
 
-    userPut:
+    userPatch:
       type: object
       properties:
-        username:
-          description: Username in SIA, will be shown in interface.
-          type: string
-          format: email
         first_name:
           type: string
         last_name:
@@ -592,9 +587,6 @@ components:
             note:
               description: Note on this new user.
               type: string
-      required:
-        - username
-        - is_active
 
     locationInput:
       description: >-
