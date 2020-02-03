@@ -70,9 +70,9 @@ INSTALLED_APPS = [
     'signals.apps.dashboards',
     'signals.apps.feedback',
     'signals.apps.reporting',
-
-    # WIP
     'signals.apps.search',
+
+    'change_log',
 
     # Third party
     'corsheaders',
@@ -101,6 +101,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'authorization_django.authorization_middleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
+    'change_log.middleware.ChangeLoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
