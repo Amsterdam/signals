@@ -107,16 +107,17 @@ paths:
       security:
       - OAuth2:
         - SIG/ALL
+
   /signals/v1/private/signals/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal that
+        required: true
+        schema:
+          type: integer
     get:
       description: Retrieve signal by ID.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal that needs to be retrieved.
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Detailed signal instance information.
@@ -127,13 +128,6 @@ paths:
         - SIG/ALL
     patch:
       description: Partial update to signal.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal that needs to be updated.
-          required: true
-          schema:
-            type: integer
       responses:
         '401':
           description: Not authenticated, may be caused by expired token.
@@ -149,16 +143,17 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/signalPatch'
+
   /signals/v1/private/signals/{id}/history:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal whose history needs to be retrieved.
+        required: true
+        schema:
+          type: integer
     get:
       description: History of signal instance with specified ID.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal whose history needs to be retrieved.
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: List of history entries for given signal instance.
@@ -169,16 +164,17 @@ paths:
       security:
       - OAuth2:
         - SIG/ALL
+
   /signals/v1/private/signals/{id}/pdf:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal whose PDF is to be downloaded.
+        required: true
+        schema:
+          type: integer
     get:
       description: Download a PDF summarizing this signals.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal whose PDF is to be downloaded.
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: PDF downloaded successfully.
@@ -188,16 +184,17 @@ paths:
           description: Forbidden, user not authorized to request signal split.
         '404':
           description: Signal not found.
+
   /signals/v1/private/signals/{id}/split:
+    parameters:
+      - name: id
+        in: path
+        description: ID of (parent) signal
+        required: true
+        schema:
+          type: integer
     get:
       description: Get split-off children of this signal.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal whose children are to be retrieved.
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: >-
@@ -213,13 +210,6 @@ paths:
         On a valid post to this endpoint a signal is split. This means its
         status changes to 'split' (GESPLITS) after which it can no longer be
         updated. Simultaneously a number of child signals are created.
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal that is to be split.
-          required: true
-          schema:
-            type: integer
       responses:
         '201':
           description: Signal was successful split.
@@ -310,6 +300,9 @@ paths:
           description: Slug for the category.
           schema:
             type: string
+      responses:
+        '200':
+          description: List of droppen Signal instances.
 
   /signals/v1/private/categories/:
     get:
@@ -328,6 +321,13 @@ paths:
           description: Method not allowed
 
   /signals/v1/private/categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of category
+        required: true
+        schema:
+          type: integer
     get:
       description: Retrieves the category matching the given id
       responses:
@@ -341,7 +341,6 @@ paths:
           description: Not authenticated, may be caused by expired token
         '404':
           description: Category not found
-
     patch:
       description: >-
         Will update the following items on a category
@@ -349,13 +348,6 @@ paths:
           * is_active
           * description
           * slo (A new slo will be added to the sla list)
-      parameters:
-        - name: id
-          in: path
-          description: ID of signal that needs to be updated.
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Changes are made, returns the current state of the categroy
@@ -428,7 +420,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schema/privateUserDetailResponse'
+                $ref: '#/components/schemas/privateUserDetailResponse'
         '400':
           description: Bad request. Posted new user data did not validate.
         '401':
@@ -437,6 +429,13 @@ paths:
           description: Forbidden.
 
   /signals/v1/private/users/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of users
+        required: true
+        schema:
+          type: integer
     get:
       description: Retrieve user by id.
       responses:
@@ -445,11 +444,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schema/privateUserDetailResponse'
+                $ref: '#/components/schemas/privateUserDetailResponse'
         '401':
-          description:
+          description: Not authenticated, may be caused by expired token.
         '403':
-          description:
+          description: Forbidden.
     patch:
       description: Partial update of user data.
       responses:
