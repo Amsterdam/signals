@@ -3,7 +3,7 @@ from copy import deepcopy
 
 class BaseChangeTracker:
     def __init__(self, instance):
-        self.instance = instance
+        self.instance = instance  # This contains the instance we are tracking
         self.data = {}
 
     def store_state(self):

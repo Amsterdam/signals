@@ -17,6 +17,9 @@ def logs(self):
 
 
 class ChangeLogger:
+    """
+    !!! Bulk operations are not supported by this implementation !!!
+    """
     # The ChangeLoggerMiddleware will place the request on this thread so that we can get the user from it
     thread = threading.local()
 
@@ -30,11 +33,6 @@ class ChangeLogger:
         So this way we can add some functionality to the model without overriding it in some baseclass. This is done
         a lot in the Django ORM. For example the DateField will add the functions 'get_next_by_date' and
         'get_previous_by_date' to the model where these fields are defined.
-
-        :param cls:
-        :param name:
-        :param kwargs:
-        :return:
         """
         self.model = cls
         self.name = name
@@ -53,8 +51,7 @@ class ChangeLogger:
         setattr(instance, '_change_tracker', tracker)
         tracker.store_state()
 
-        if isinstance(instance, self.model):
-            self.patch_save(instance)
+        self.patch_save(instance)
 
     def patch_save(self, instance):
         # We keep the original save because we still call it to store data. We only add the functionality that will
