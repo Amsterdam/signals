@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 
 
 class Department(models.Model):
+    # TODO: consider adding uniqueness constraint to code and name
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=255)
     is_intern = models.BooleanField(default=True)
