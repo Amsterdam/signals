@@ -534,7 +534,7 @@ paths:
         - OAuth2:
           - SIG/ALL
 
-  /signals/v1/private/departments/{id}/:
+  /signals/v1/private/departments/{id}:
     parameters:
       - name: id
         in: path
