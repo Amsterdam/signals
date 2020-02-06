@@ -19,6 +19,10 @@ def logs(self):
 class ChangeLogger:
     """
     !!! Bulk operations are not supported by this implementation !!!
+
+    TODO: Fix ManyToManyRel and ManyToOneRel to be logged,
+          for now we have a workaround. In the serializers of the signal project we add the many to many relations
+          and also call the save method. This way the ChangeLogger will be able to activate the tracker.
     """
     # The ChangeLoggerMiddleware will place the request on this thread so that we can get the user from it
     thread = threading.local()
