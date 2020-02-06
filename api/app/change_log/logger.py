@@ -69,16 +69,18 @@ class ChangeLogger:
             # Call the original save function
             original_save_return = original_save(**kwargs)
 
+            if created:
+                return original_save_return
+
             tracker = getattr(instance, '_change_tracker')
             instance_changed = tracker.instance_changed
-
-            if created or not created and instance_changed:
+            if instance_changed:
                 who = None
-                if hasattr(self.thread, 'request'):
-                    who = self.thread.request.user.email if hasattr(self.thread.request, 'user') else None
+                if hasattr(self.thread, 'request') and hasattr(self.thread.request, 'user'):
+                    who = self.thread.request.user.username if hasattr(self.thread.request.user, 'username') else None
                 Log.objects.create(
                     object=instance,
-                    action='I' if created else 'U',
+                    action='U',
                     who=who,
                     data=json.dumps(tracker.changed_data())
                 )

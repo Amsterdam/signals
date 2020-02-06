@@ -1,6 +1,8 @@
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
@@ -10,6 +12,7 @@ from signals.apps.api.v1.serializers import (
     ParentCategoryHALSerializer,
     PrivateCategorySerializer
 )
+from signals.apps.api.v1.serializers.category import PrivateCategoryHistoryHalSerializer
 from signals.apps.signals.models import Category
 from signals.auth.backend import JWTAuthBackend
 
@@ -48,3 +51,13 @@ class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions,)
+
+    @action(detail=True)
+    def history(self, request, pk=None):
+        """
+        The change log of the selected Category instance
+        This is read-only!
+        """
+        category = self.get_object()
+        serializer = PrivateCategoryHistoryHalSerializer(category.logs, many=True)
+        return Response(serializer.data)

@@ -31,7 +31,11 @@ class BaseChangeTracker:
         for field in self.instance._meta.get_fields():
             if isinstance(field, (models.ManyToManyRel, models.ManyToOneRel)):
                 field_name = field.get_accessor_name()
-                self.data[field_name] = list(getattr(self.instance, field_name).values_list('pk', flat=True))
+                if getattr(self.instance, 'id'):
+                    self.data[field_name] = list(getattr(self.instance, field_name).values_list('pk', flat=True))
+            elif isinstance(field, (models.ManyToManyField)):
+                if getattr(self.instance, 'id'):
+                    self.data[field.name] = list(getattr(self.instance, field.name).values_list('pk', flat=True))
             else:
                 self.data[field.name] = deepcopy(getattr(self.instance, field.name))
 

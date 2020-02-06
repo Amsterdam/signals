@@ -1,6 +1,7 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
+from change_log.models import Log
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
@@ -108,3 +109,59 @@ class PrivateCategorySerializer(HALSerializer):
             instance.refresh_from_db()
 
         return super(PrivateCategorySerializer, self).update(instance, validated_data)
+
+
+class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
+    identifier = serializers.SerializerMethodField()
+    what = serializers.SerializerMethodField()
+    action = serializers.ReadOnlyField(source='get_action_display')
+    description = serializers.SerializerMethodField()
+    _category = serializers.IntegerField(source='object_id', read_only=True)
+
+    class Meta:
+        model = Log
+        fields = (
+            'identifier',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_category',
+        )
+
+    def get_identifier(self, log):
+        return f'{log.get_action_display().upper()}_CATEGORY_{log.id}'
+
+    def get_what(self, log):
+        return log.get_action_display().upper()
+
+    def get_description(self, log):
+        description = []
+        for key, value in log.data.items():
+            if key == 'name':
+                title = f'Naam wijziging'
+            elif key == 'description':
+                title = f'Omschrijvings wijziging'
+            elif key == 'slo':
+                title = f'Service level agreement wijziging'
+
+                sla_list = ServiceLevelObjective.objects.filter(pk__in=value)
+                sla_value = []
+                for sla in sla_list:
+                    if sla.use_calendar_days:
+                        sla_value.append(f'{sla.n_days} weekdagen')
+                    else:
+                        sla_value.append(f'{sla.n_days} werkdagen')
+                value = '\n'.join(sla_value)
+            elif key == 'is_active':
+                title = f'Status wijziging'
+                value = 'Actief' if value else 'Inactief'
+            else:
+                continue  # We do not show other tracked values, so on to the next one
+
+            description.append({
+                'title': title,
+                'text': value
+            })
+        return description

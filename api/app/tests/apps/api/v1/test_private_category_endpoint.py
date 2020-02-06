@@ -162,3 +162,39 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_history_view(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+
+        response = self.client.patch(url, data={'name': 'Patched name'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.patch(url, data={'name': 'Patched name again', 'is_active': False})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        history_url = f'{url}/history'
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED')
+        self.assertEqual(change_log_data['action'], 'Updated')
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertEqual(len(change_log_data['description']), 2)
+        self.assertEqual(change_log_data['description'][0]['title'], 'Naam wijziging')
+        self.assertEqual(change_log_data['description'][0]['text'], 'Patched name again')
+        self.assertEqual(change_log_data['description'][1]['title'], 'Status wijziging')
+        self.assertEqual(change_log_data['description'][1]['text'], 'Inactief')
+
+        change_log_data = response_data[1]
+        self.assertEqual(change_log_data['what'], 'UPDATED')
+        self.assertEqual(change_log_data['action'], 'Updated')
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertEqual(len(change_log_data['description']), 1)
+        self.assertEqual(change_log_data['description'][0]['title'], 'Naam wijziging')
+        self.assertEqual(change_log_data['description'][0]['text'], 'Patched name')
