@@ -1,5 +1,6 @@
 import json
 import threading
+import types
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -63,7 +64,11 @@ class ChangeLogger:
         # add the row in the change_log table
         original_save = instance.save
 
-        def save(**kwargs):
+        who = None
+        if hasattr(self.thread, 'request') and hasattr(self.thread.request, 'user'):
+            who = self.thread.request.user.username if hasattr(self.thread.request.user, 'username') else None
+
+        def save(self, **kwargs):
             # Check to see if the object is inserted or updated
             created = instance.pk is None
 
@@ -76,9 +81,6 @@ class ChangeLogger:
             tracker = getattr(instance, '_change_tracker')
             instance_changed = tracker.instance_changed
             if instance_changed:
-                who = None
-                if hasattr(self.thread, 'request') and hasattr(self.thread.request, 'user'):
-                    who = self.thread.request.user.username if hasattr(self.thread.request.user, 'username') else None
                 Log.objects.create(
                     object=instance,
                     action='U',
@@ -88,4 +90,4 @@ class ChangeLogger:
 
             return original_save_return
 
-        instance.save = save
+        instance.save = types.MethodType(save, instance)

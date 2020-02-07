@@ -31,7 +31,13 @@ class BaseChangeTracker:
 
     def _get_current_value(self, field):
         field_name = self._get_field_name(field=field)
-        if isinstance(field, (models.ManyToManyRel, models.ManyToOneRel, models.ManyToManyField)):
+        if isinstance(field, (models.OneToOneRel)):
+            field_name = field.get_accessor_name()
+            try:
+                self.data[field_name] = getattr(self.instance, field_name).pk
+            except Exception:
+                self.data[field_name] = None
+        elif isinstance(field, (models.ManyToManyRel, models.ManyToOneRel, models.ManyToManyField)):
             return list(getattr(self.instance, field_name).values_list('pk', flat=True))
         return getattr(self.instance, field_name)
 

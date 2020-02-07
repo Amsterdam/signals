@@ -4,7 +4,9 @@ from django.contrib.auth.models import Group, User
 from django.core.validators import EmailValidator
 from rest_framework import serializers
 
+from change_log.models import Log
 from signals.apps.api.generics.mixins import WriteOnceMixin
+from signals.apps.users.v1.fields.user import UserHyperlinkedIdentityField
 from signals.apps.users.v1.serializers import (
     PermissionSerializer,
     ProfileDetailSerializer,
@@ -51,6 +53,7 @@ class UserListHALSerializer(WriteOnceMixin, HALSerializer):
 
 
 class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
+    serializer_url_field = UserHyperlinkedIdentityField
     _display = DisplayField()
     roles = RoleSerializer(source='groups', many=True, read_only=True)
     role_ids = serializers.PrimaryKeyRelatedField(
@@ -107,13 +110,65 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)
-
-        instance = super(UserDetailHALSerializer, self).update(instance=instance,
-                                                               validated_data=validated_data)
-
         if profile_data:
             profile_detail_serializer = ProfileDetailSerializer()
             profile_detail_serializer.update(instance=instance.profile,
                                              validated_data=profile_data)
 
+        groups = validated_data.pop('groups', None)
+        if groups or isinstance(groups, (list, tuple)):
+            instance.groups.set(groups)
+
+        instance = super(UserDetailHALSerializer, self).update(instance=instance,
+                                                               validated_data=validated_data)
+
         return instance
+
+
+class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
+    identifier = serializers.SerializerMethodField()
+    what = serializers.SerializerMethodField()
+    action = serializers.ReadOnlyField(source='get_action_display')
+    description = serializers.SerializerMethodField()
+    _user = serializers.IntegerField(source='object_id', read_only=True)
+
+    class Meta:
+        model = Log
+        fields = (
+            'identifier',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_user',
+        )
+
+    def get_identifier(self, log):
+        return f'{log.get_action_display().upper()}_USER_{log.id}'
+
+    def get_what(self, log):
+        return log.get_action_display().upper()
+
+    def get_description(self, log):
+        key_2_title = {
+            'first_name': 'Voornaam gewijzigd',
+            'last_name': 'Achternaam gewijzigd',
+            'is_active': 'Status wijziging',
+            'groups': 'Rol wijziging',
+        }
+
+        description = []
+        for key, value in log.data.items():
+            if key == 'groups':
+                text = ', '.join(_get_groups_queryset().filter(id__in=value).values_list('name', flat=True))
+            elif key == 'is_active':
+                text = 'Actief' if value else 'Inactief'
+            else:
+                text = value
+
+            description.append({
+                'title': key_2_title[key] if key in key_2_title else key,
+                'text': text
+            })
+        return description
