@@ -84,7 +84,7 @@ def SIG_2170(apps, schema_editor):
     )
 
     # SLO 3 weekdays
-    ServiceLevelObjective.objects.create(category=new_category, n_days=3, use_calendar_days=True)
+    ServiceLevelObjective.objects.create(category=new_category, n_days=3, use_calendar_days=False)
 
     # All departments can view
     new_category.departments.add(*Department.objects.exclude(code='AEG'),
@@ -100,7 +100,7 @@ def SIG_2170(apps, schema_editor):
     )
 
     # SLO 3 weekdays
-    ServiceLevelObjective.objects.create(category=new_category, n_days=3, use_calendar_days=True)
+    ServiceLevelObjective.objects.create(category=new_category, n_days=3, use_calendar_days=False)
 
     # All departments can view
     new_category.departments.add(*Department.objects.exclude(code='AEG'),
