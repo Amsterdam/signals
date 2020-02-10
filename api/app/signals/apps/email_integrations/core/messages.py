@@ -44,11 +44,12 @@ Bekijk in welke situaties we een wrak weghalen. Boten die vol met water staan, m
 We geven uw melding door aan onze handhavers. Zij beoordelen of het nodig is direct actie te ondernemen. Bijvoorbeeld omdat er olie lekt of omdat de situatie gevaar oplevert voor andere boten.
 
 Als er geen directe actie nodig is, dan pakken we uw melding op buiten het vaarseizoen (september - maart).
-""", # noqa 501
+""",  # noqa 501
     Category.HANDLING_REST: """
 Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze gaat behandelen. Heeft u contactgegevens achtergelaten? Dan nemen wij bij onduidelijkheid contact met u op.""",  # noqa E501
     Category.HANDLING_OND: """Bedankt voor uw melding. Wij nemen deze mee in ons onderzoek.""",
     Category.HANDLING_EMPTY: '',
     Category.HANDLING_LIGHTING: """Het herstellen van problemen met de openbare verlichting lukt doorgaans binnen 21 werkdagen. Bij gevaarlijke situaties wordt de melding meteen opgepakt.""",  # noqa E501
-
+    Category.HANDLING_TECHNISCHE_STORING: """Technische storingen worden meestal automatisch gemeld en binnen enkele dagen opgelost. Het beantwoorden van vragen kan tot drie weken duren. We houden u op de hoogte via e-mail.""",  # noqa E501
+    Category.HANDLING_STOPEC3: """Gevaarlijke situaties pakken wij zo snel mogelijk op. We laten u binnen 3 werkdagen weten wat we hebben gedaan. We houden u op de hoogte via e-mail.""",  # noqa E501
 }
