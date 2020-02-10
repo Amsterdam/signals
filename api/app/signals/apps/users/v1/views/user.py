@@ -40,7 +40,7 @@ class UserViewSet(DatapuntViewSetWritable):
     filterset_class = UserFilterSet
 
     # We only allow these methods
-    http_method_names = ['get', 'post', 'patch', 'put', 'head', 'options', 'trace']
+    http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
 
     def create(self, request, *args, **kwargs):
         # If we create a user we want to use the detail serializer

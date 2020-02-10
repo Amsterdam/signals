@@ -1,3 +1,5 @@
+import unittest
+
 from django.contrib.auth.models import Permission
 
 from tests.apps.signals.factories import DepartmentFactory
@@ -214,6 +216,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_data = response.json()
         self.assertEqual(response_data['profile']['note'], 'note #2')
 
+    @unittest.expectedFailure  # SIG-2210 PUT is no longer allowed so this test should fail
     def test_put_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
@@ -245,3 +248,17 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertFalse(response_data['is_superuser'])
         self.assertEqual(len(response_data['roles']), 0)
         self.assertEqual(len(response_data['permissions']), 5)
+
+    def test_put_not_allowed(self):
+        """
+        SIG-2210 [BE] PUT op user detail accepteert leeg object
+
+        At this moment we only implemented the partial update of a user. So we only accept the PATCH and no longer
+        PUT when editing users.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.put('/signals/v1/private/users/{}'.format(
+            self.sia_read_write_user.pk
+        ), data={}, format='json')
+        self.assertEqual(response.status_code, 405)
