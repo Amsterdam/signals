@@ -37,7 +37,9 @@ class SearchView(DatapuntViewSet):
                 fields=[
                     'id',
                     'text',
-                    'category_assignment.category.name'
+                    'category_assignment.category.name',
+                    'reporter.email',  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
+                    'reporter.phone'  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
                 ]
             )
 
