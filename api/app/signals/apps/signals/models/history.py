@@ -31,7 +31,7 @@ class History(models.Model):
                 dict(STATUS_CHOICES).get(self.extra, 'Onbekend'))
         elif self.what == 'UPDATE_PRIORITY':
             # SIG-1727 ad-hoc translation, must match signals.Priority model!
-            translated = {'high': 'Hoog', 'normal': 'Normaal'}.get(self.extra, 'Onbekend')
+            translated = {'high': 'Hoog', 'normal': 'Normaal', 'low': 'Laag'}.get(self.extra, 'Onbekend')
             return 'Prioriteit update naar: {}'.format(translated)
         elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
             return 'Categorie gewijzigd naar: {}'.format(self.extra)
