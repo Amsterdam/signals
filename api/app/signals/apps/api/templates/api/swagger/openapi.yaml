@@ -486,18 +486,6 @@ paths:
       security:
         - OAuth2:
           - SIG/ALL
-    put:
-      description: Update of user data.
-      responses:
-        '200':
-          description: User data successfully updated.
-        '401':
-          description: Not authenticated, may be caused by expired token.
-        '403':
-          description: Forbidden.
-      security:
-        - OAuth2:
-          - SIG/ALL
 
   /signals/v1/private/departments/:
     get:
@@ -994,7 +982,7 @@ components:
               - category_id
       required:
         - name
-        - code  
+        - code
 
     departmentPatch:
       description: JSON data for partial update to department.
