@@ -153,7 +153,7 @@ def _SIG_1708_deactivate_categories(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0085_auto_20191216_1251'),
+        ('signals', '0094_SIG-2170_new_categories'),
     ]
 
     operations = [
