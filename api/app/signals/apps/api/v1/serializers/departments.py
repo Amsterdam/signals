@@ -1,8 +1,20 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
-from signals.apps.api.v1.serializers import CategoryHALSerializer
-from signals.apps.signals.models import Category, CategoryDepartment, Department
+from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
+from signals.apps.api.v1.fields import (
+    CategoryHyperlinkedIdentityField,
+    ParentCategoryHyperlinkedIdentityField,
+    PrivateCategoryHyperlinkedIdentityField
+)
+from signals.apps.email_integrations.core.messages import \
+    ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
+from signals.apps.signals.models import (
+    Category,
+    CategoryDepartment,
+    Department,
+    ServiceLevelObjective
+)
 
 
 class PrivateDepartmentSerializerList(HALSerializer):
@@ -29,8 +41,39 @@ def _get_categories_queryset():
     return Category.objects.filter(is_active=True)
 
 
+class TemporaryCategoryHALSerializer(HALSerializer):
+    serializer_url_field = CategoryHyperlinkedIdentityField
+    _display = DisplayField()
+    departments = serializers.SerializerMethodField()
+    handling_message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'name',
+            'slug',
+            'handling',
+            'departments',
+            'is_active',
+            'description',
+            'handling_message',
+        )
+
+    def get_handling_message(self, obj):
+        return ALL_AFHANDELING_TEXT[obj.handling]
+
+    def get_departments(self, obj):
+        return _NestedDepartmentSerializer(
+            obj.departments.filter(categorydepartment__is_responsible=True),
+            many=True
+        ).data
+
+
 class CategoryDepartmentSerializer(serializers.ModelSerializer):
-    category = CategoryHALSerializer(read_only=True, required=False)
+    category = TemporaryCategoryHALSerializer(read_only=True, required=False)
     category_id = serializers.PrimaryKeyRelatedField(
         required=True, read_only=False, write_only=True,
         queryset=_get_categories_queryset(), source='category'
