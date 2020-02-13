@@ -91,7 +91,7 @@ def _SIG_1708_new_categories(apps, schema_editor):
             category.name = category_data['name']
             category.handling = category_data['handling']
 
-            departments = Department.objects.filter(name__in=category_data['departments'])
+            departments = Department.objects.filter(code__in=category_data['departments'])
             category.departments.add(*departments, through_defaults={'is_responsible': True, 'can_view': True})
 
             n_days = int(category_data['slo'][:-1])
