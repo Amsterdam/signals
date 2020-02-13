@@ -2,19 +2,10 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
-from signals.apps.api.v1.fields import (
-    CategoryHyperlinkedIdentityField,
-    ParentCategoryHyperlinkedIdentityField,
-    PrivateCategoryHyperlinkedIdentityField
-)
+from signals.apps.api.v1.fields import CategoryHyperlinkedIdentityField
 from signals.apps.email_integrations.core.messages import \
     ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
-from signals.apps.signals.models import (
-    Category,
-    CategoryDepartment,
-    Department,
-    ServiceLevelObjective
-)
+from signals.apps.signals.models import Category, CategoryDepartment, Department
 
 
 class PrivateDepartmentSerializerList(HALSerializer):
