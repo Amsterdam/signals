@@ -24,6 +24,9 @@ class StoredSignalFilter(CreatedUpdatedModel):
     def url_safe_options(self):
         query_params = []
         for key, value in self.options.items():
+            if not value:
+                continue
+
             if isinstance(value, (list, tuple)):
                 query_params += [urlencode({key: v}) for v in value]
             else:
