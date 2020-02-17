@@ -52,4 +52,7 @@ Wij bekijken uw melding en zorgen dat het juiste onderdeel van de gemeente deze 
     Category.HANDLING_LIGHTING: """Het herstellen van problemen met de openbare verlichting lukt doorgaans binnen 21 werkdagen. Bij gevaarlijke situaties wordt de melding meteen opgepakt.""",  # noqa E501
     Category.HANDLING_TECHNISCHE_STORING: """Technische storingen worden meestal automatisch gemeld en binnen enkele dagen opgelost. Het beantwoorden van vragen kan tot drie weken duren. We houden u op de hoogte via e-mail.""",  # noqa E501
     Category.HANDLING_STOPEC3: """Gevaarlijke situaties pakken wij zo snel mogelijk op. We laten u binnen 3 werkdagen weten wat we hebben gedaan. We houden u op de hoogte via e-mail.""",  # noqa E501
+
+    Category.HANDLING_URGENTE_MELDINGEN: """Wij beoordelen uw melding. Urgente meldingen pakken we zo snel mogelijk op. Overige meldingen handelen we binnen een week af. We houden u op de hoogte via e-mail.""",  # noqa E501
+    Category.HANDLING_3WGM: """Wij handelen uw melding binnen drie weken af. U ontvangt dan geen apart bericht meer.""",  # noqa E501
 }
