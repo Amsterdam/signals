@@ -1,7 +1,6 @@
 # Bleeding edge Django
 
 # Django packages
-django-braces
 django-celery-beat
 django-celery-email
 django-celery-results
@@ -12,7 +11,6 @@ django-imagekit
 django-rest-swagger
 django-storage-swift
 django-storages
-django_extensions
 
 # Database
 psycopg2-binary
@@ -22,13 +20,10 @@ requests
 
 # REST
 djangorestframework
-djangorestframework-csv
 djangorestframework-gis
-djangorestframework-xml
 
 # Datapunt packages
 datapunt-authorization-django
-datapunt-authorization-levels
 drf_amsterdam
 drf-extensions
 flex
