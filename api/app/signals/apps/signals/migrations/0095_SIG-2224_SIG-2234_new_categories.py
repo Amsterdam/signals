@@ -39,7 +39,7 @@ NEW_CATEGORIES = {
     'wegen-verkeer-straatmeubilair': {
         'omleiding': {  # SIG-2234
             'name': 'Omleiding',
-            'handling': 'A3WEC',
+            'handling': '3WGM',
             'slo': '15K',
             'departments': [
                 'STW',
