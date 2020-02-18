@@ -52,4 +52,4 @@ Pillow
 python-dateutil
 
 # Elasticsearch
-elasticsearch-dsl
+elasticsearch-dsl==6.4.0
