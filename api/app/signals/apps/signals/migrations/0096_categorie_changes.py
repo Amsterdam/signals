@@ -14,7 +14,6 @@ NEW_CATEGORIES = {
                 'slo': '5W',
                 'departments': [
                     'STW',
-                    'VOR',
                 ]
             },
     },
