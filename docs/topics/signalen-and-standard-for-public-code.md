@@ -2,8 +2,8 @@
 
 ## [Code in the open](https://standard.publiccode.net/criteria/code-in-the-open.html)
 
-* Current backlog and bugracking is not public. Some issues referenced in code and commits are not easy to locate, like "SIG-1525". Transition to public bug-tracker?
-* Can the classification system be completely open sourced? How can we address risks and possibilities regarding (of theoretical) leaking of information. Maybe add anonymized MOR datasets or redo the classification algorithm with public available MOR data sets of which there are plenty. Can a basic Commonground version be made?
+* Current backlog and bug-tracking is not public. Some issues referenced in code and commits are not easy to locate, like "SIG-1525". Transition to public bug-tracker?
+* Can the classification system be completely open sourced? How can we address risks and possibilities regarding (of theoretical) leaking of information. Maybe add anonymized MOR datasets or redo the classification algorithm with public available MOR data sets of which there are plenty. Can a basic Common Ground version be made?
 * Citizens are not authenticated. Data is not cleaned up for sharing (privacy purposes). https://github.com/Amsterdam/signals/blob/master/docs/api-design.md#publiek-en-ongeauthenticeerd
 
 ## [Bundle Policy And Source Code](https://standard.publiccode.net/criteria/bundle-policy-and-code.html)
@@ -14,10 +14,10 @@
 
 * There are several dependencies on Amsterdam services. Replicators need this to be configurable.
 * Technical roadmap is not published.
-* [Workflow](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/signals/workflow.py) is currently hardcoded. Names of key states can be found elsewhere, need abstraction plan.
-* Email messages are [hardcoded](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/email_integrations/core/messages.py).
+* [Workflow](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/signals/workflow.py) is currently hard-coded. Names of key states can be found elsewhere, need abstraction plan.
+* Email messages are [hard-coded](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/email_integrations/core/messages.py).
 * Separate UI text from API model classes: [example](signals/api/app/signals/apps/signals/models/history.py).
-* Extended category questions currently live in front-end code, extract and make plugable.
+* Extended category questions currently live in front-end code, extract and make plug-able.
 * Rename or alias "sia" prefixes to something less AMS specific (tiny nitpick).
 
 
