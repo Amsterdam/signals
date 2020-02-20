@@ -51,9 +51,9 @@
 
 ## [Use continuous integration](https://standard.publiccode.net/criteria/continuous-integration.html)
 
-* Tests not currently invoked by Travis or similar public continuous integration.
+* Tests not currently invoked by Travis or similar public continuous integration. (Tests are run in the Datapunt CI)
+* Running tests locally is documented in the [README](https://github.com/Amsterdam/signals/blob/master/README.md#running-the-test-suite-and-style-checks)
 * No clear integration testing or capacity testing.
-* Not clear how to do testing against a local deployment.
 * Code coverage by tests is not published.
 * Ensure test fixtures are separated from production code.
 
@@ -63,10 +63,10 @@
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
 
-* Conforms to the PEP8 style guide, which can be automatically checked; add to Continuous integration.
+* Conforms to the PEP8 style guide, and is automatically checked.
 
 
 ## [Pay attention to codebase maturity](https://standard.publiccode.net/criteria/advertise-maturity.html)
 
-* Migration to current REST API still in progress, unclear how complete.
+* Migration to current REST API still in progress, completion status not currently published.
 * Publish plans/goals of next revision of the REST API.
