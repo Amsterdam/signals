@@ -26,14 +26,12 @@ class Reporter(CreatedUpdatedModel):
 
     def _anonymize_email(self):
         if self.email:
-            if not self.email_anonymized:
-                self.email_anonymized = True
+            self.email_anonymized = True
             self.email = None
 
     def _anonymize_phone(self):
         if self.phone:
-            if not self.phone_anonymized:
-                self.phone_anonymized = True
+            self.phone_anonymized = True
             self.phone = None
 
     def anonymize(self, always_call_save=False):
