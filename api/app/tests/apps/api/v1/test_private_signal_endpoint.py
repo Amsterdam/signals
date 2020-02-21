@@ -618,8 +618,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         del(data['category']['sub_category'])
         data['category']['category_url'] = self.link_subcategory
 
-        Signal.actions.update_category_assignment({'category': self.subcategory},
-                                                  self.signal_no_image)
+        Signal.actions.update_category_assignment({'category': self.subcategory}, self.signal_no_image)
         self.signal_no_image.refresh_from_db()
 
         # Signal is initialised with a known category.
@@ -1095,10 +1094,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Change the category
         prev_category = self.signal_no_image.category_assignment.category
         new_category = CategoryFactory.create()
-        Signal.actions.update_category_assignment({'category': new_category},
-                                                  self.signal_no_image)
-        Signal.actions.update_category_assignment({'category': prev_category},
-                                                  self.signal_no_image)
+
+        Signal.actions.update_category_assignment({'category': new_category}, self.signal_no_image)
+        self.signal_no_image.refresh_from_db()
+
+        Signal.actions.update_category_assignment({'category': prev_category}, self.signal_no_image)
+        self.signal_no_image.refresh_from_db()
 
         # Still should not get the signal_no_image in the response because we changed the category
         # back to the original category

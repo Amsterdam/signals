@@ -224,9 +224,11 @@ class SignalManager(models.Manager):
         return self.add_attachment(image, signal)
 
     def add_attachment(self, file, signal):
-        from .models import Attachment
+        from .models import Attachment, Signal
 
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             attachment = Attachment()
             attachment._signal = signal
             attachment.file = file
@@ -263,7 +265,11 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Location object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             location, prev_location = self._update_location_no_transaction(data, signal)
             transaction.on_commit(lambda: update_location.send_robust(sender=self.__class__,
                                                                       signal_obj=signal,
@@ -299,7 +305,11 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Status object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
             transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
                                                                     signal_obj=signal,
@@ -339,12 +349,16 @@ class SignalManager(models.Manager):
             # New category is the same as the old category. Skip
             return
 
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             category_assignment, prev_category_assignment = \
-                self._update_category_assignment_no_transaction(data, signal)
+                self._update_category_assignment_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: update_category_assignment.send_robust(
                 sender=self.__class__,
-                signal_obj=signal,
+                signal_obj=locked_signal,
                 category_assignment=category_assignment,
                 prev_category_assignment=prev_category_assignment))
 
@@ -357,9 +371,11 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Reporter object
         """
-        from .models import Reporter
+        from .models import Reporter, Signal
 
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             prev_reporter = signal.reporter
 
             reporter = Reporter.objects.create(**data, _signal_id=signal.id)
@@ -398,7 +414,11 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Priority object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             priority, prev_priority = self._update_priority_no_transaction(data, signal)
             transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
                                                                       signal_obj=signal,
@@ -425,10 +445,13 @@ class SignalManager(models.Manager):
         :param data: deserialized data dict
         :returns: Note object
         """
+        from signals.apps.signals.models import Signal
 
         # Added for completeness of the internal API, and firing of Django
         # signals upon creation of a Note.
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             note = self._create_note_no_transaction(data, signal)
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
                                                                   signal_obj=signal,
@@ -447,8 +470,11 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Updated Signal object
         """
+        from signals.apps.signals.models import Signal
 
         with transaction.atomic():
+            signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             to_send = []
             sender = self.__class__
 
