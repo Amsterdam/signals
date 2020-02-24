@@ -48,6 +48,8 @@ class TestReopen(TransactionTestCase):
             new_status_data = {'state': new_state, 'text': 'Dit is een test.'}
             Signal.actions.update_status(new_status_data, self.signal)
 
+        self.signal.refresh_from_db()
+
         self.assertEqual(self.signal.status.state, HAPPY_REOPEN_SCENARIO[-1])
         self.assertEqual(patched_udate_status_signal.send_robust.call_count, 9)
         self.assertEqual(Status.objects.filter(state=workflow.HEROPEND).count(), 2)
@@ -60,6 +62,8 @@ class TestReopen(TransactionTestCase):
             for new_state in UNHAPPY_REOPEN_SCENARIO:
                 new_status_data = {'state': new_state, 'text': 'Dit is een test.'}
                 Signal.actions.update_status(new_status_data, self.signal)
+
+        self.signal.refresh_from_db()
 
         self.assertEqual(self.signal.status.state, workflow.BEHANDELING)
         self.assertEqual(patched_udate_status_signal.send_robust.call_count, 4)
@@ -90,6 +94,7 @@ class TestTransistion(TransactionTestCase):
                     new_status_data.update({'target_api': Status.TARGET_API_SIGMAX})
 
                 Signal.actions.update_status(new_status_data, signal)
+                signal.refresh_from_db()
 
                 self.assertEqual(signal.status.state, allowed_state)
 

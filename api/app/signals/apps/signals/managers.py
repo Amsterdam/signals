@@ -224,18 +224,20 @@ class SignalManager(models.Manager):
         return self.add_attachment(image, signal)
 
     def add_attachment(self, file, signal):
-        from .models import Attachment
+        from .models import Attachment, Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             attachment = Attachment()
-            attachment._signal = signal
+            attachment._signal = locked_signal
             attachment.file = file
             attachment.save()
 
             if attachment.is_image:
-                add_image.send_robust(sender=self.__class__, signal_obj=signal)
+                add_image.send_robust(sender=self.__class__, signal_obj=locked_signal)
 
-            add_attachment.send_robust(sender=self.__class__, signal_obj=signal)
+            add_attachment.send_robust(sender=self.__class__, signal_obj=locked_signal)
 
         return attachment
 
@@ -263,10 +265,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Location object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
-            location, prev_location = self._update_location_no_transaction(data, signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            location, prev_location = self._update_location_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: update_location.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       location=location,
                                                                       prev_location=prev_location))
 
@@ -299,10 +305,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Status object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
-            status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            status, prev_status = self._update_status_no_transaction(data=data, signal=locked_signal)
             transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
-                                                                    signal_obj=signal,
+                                                                    signal_obj=locked_signal,
                                                                     status=status,
                                                                     prev_status=prev_status))
         return status
@@ -339,12 +349,16 @@ class SignalManager(models.Manager):
             # New category is the same as the old category. Skip
             return
 
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             category_assignment, prev_category_assignment = \
-                self._update_category_assignment_no_transaction(data, signal)
+                self._update_category_assignment_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: update_category_assignment.send_robust(
                 sender=self.__class__,
-                signal_obj=signal,
+                signal_obj=locked_signal,
                 category_assignment=category_assignment,
                 prev_category_assignment=prev_category_assignment))
 
@@ -357,17 +371,19 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Reporter object
         """
-        from .models import Reporter
+        from .models import Reporter, Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             prev_reporter = signal.reporter
 
-            reporter = Reporter.objects.create(**data, _signal_id=signal.id)
+            reporter = Reporter.objects.create(**data, _signal_id=locked_signal.id)
             signal.reporter = reporter
             signal.save()
 
             transaction.on_commit(lambda: update_reporter.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       reporter=reporter,
                                                                       prev_reporter=prev_reporter))
 
@@ -398,10 +414,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Priority object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             priority, prev_priority = self._update_priority_no_transaction(data, signal)
             transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       priority=priority,
                                                                       prev_priority=prev_priority))
 
@@ -425,15 +445,18 @@ class SignalManager(models.Manager):
         :param data: deserialized data dict
         :returns: Note object
         """
+        from signals.apps.signals.models import Signal
 
         # Added for completeness of the internal API, and firing of Django
         # signals upon creation of a Note.
         with transaction.atomic():
-            note = self._create_note_no_transaction(data, signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            note = self._create_note_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
-                                                                  signal_obj=signal,
+                                                                  signal_obj=locked_signal,
                                                                   note=note))
-            signal.save()
+            locked_signal.save()
 
         return note
 
@@ -447,25 +470,28 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Updated Signal object
         """
+        from signals.apps.signals.models import Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             to_send = []
             sender = self.__class__
 
             if 'location' in data:
-                location, prev_location = self._update_location_no_transaction(data['location'], signal)  # noqa: E501
+                location, prev_location = self._update_location_no_transaction(data['location'], locked_signal)  # noqa: E501
                 to_send.append((update_location, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'location': location,
                     'prev_location': prev_location
                 }))
 
             if 'status' in data:
-                status, prev_status = self._update_status_no_transaction(data['status'], signal)
+                status, prev_status = self._update_status_no_transaction(data['status'], locked_signal)
                 to_send.append((update_status, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'status': status,
                     'prev_status': prev_status
                 }))
@@ -476,24 +502,24 @@ class SignalManager(models.Manager):
                 # the latest version of a Signal can be mutated.)
                 if 'category' not in data['category_assignment']:
                     raise ValidationError('Category not found in data')
-                elif signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
+                elif locked_signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
                     category_assignment, prev_category_assignment = \
                         self._update_category_assignment_no_transaction(
-                            data['category_assignment'], signal)
+                            data['category_assignment'], locked_signal)
 
                     to_send.append((update_category_assignment, {
                         'sender': sender,
-                        'signal_obj': signal,
+                        'signal_obj': locked_signal,
                         'category_assignment': category_assignment,
                         'prev_category_assignment': prev_category_assignment
                     }))
 
             if 'priority' in data:
                 priority, prev_priority = \
-                    self._update_priority_no_transaction(data['priority'], signal)
+                    self._update_priority_no_transaction(data['priority'], locked_signal)
                 to_send.append((update_priority, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'priority': priority,
                     'prev_priority': prev_priority
                 }))
@@ -501,15 +527,15 @@ class SignalManager(models.Manager):
             if 'notes' in data:
                 # The 0 index is there because we only allow one note to be
                 # added per PATCH.
-                note = self._create_note_no_transaction(data['notes'][0], signal)
+                note = self._create_note_no_transaction(data['notes'][0], locked_signal)
                 to_send.append((create_note, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'note': note
                 }))
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
-        signal.refresh_from_db()
-        return signal
+        locked_signal.refresh_from_db()
+        return locked_signal
