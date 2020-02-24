@@ -20,7 +20,6 @@
 * Extended category questions currently live in front-end code, extract and make plug-able.
 * Will "sia" prefixes be meaningful to replicators? Or will aliasing or renaming something less AMS specific be better?
 
-
 ## [Welcome contributors](https://standard.publiccode.net/criteria/open-to-contributions.html)
 
 * Improve [CONTRIBUTING.md](https://github.com/Amsterdam/signals/blob/master/docs/CONTRIBUTING.md), perhaps with content from Amsterdam's [CONTRIBUTING.md](https://github.com/Amsterdam/amsterdam.github.io/blob/master/CONTRIBUTING.md)
@@ -29,7 +28,6 @@
 
 * Good.
     * Some past commits did not state what they do or why, some just reference an issue, or have "[WIP](https://github.com/Amsterdam/signals/commit/2f9e2f73ee5dc4cdf67d6854d1a7361f6e6aaf9b)" commit messages; developers have become more rigorous.
-
 
 ## [Require review of contributions](https://standard.publiccode.net/criteria/require-review.html)
 
@@ -65,7 +63,6 @@
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
 
 * Conforms to the PEP8 style guide, and is automatically checked.
-
 
 ## [Pay attention to codebase maturity](https://standard.publiccode.net/criteria/advertise-maturity.html)
 
