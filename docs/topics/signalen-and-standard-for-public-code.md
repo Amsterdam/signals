@@ -3,7 +3,7 @@
 ## [Code in the open](https://standard.publiccode.net/criteria/code-in-the-open.html)
 
 * Current backlog and bug-tracking is not public. Some issues referenced in code and commits are not easy to locate, like "SIG-1525". Transition to public bug-tracker?
-* Can the classification system be completely open sourced? How can we address risks and possibilities regarding (of theoretical) leaking of information. Maybe add anonymized MOR datasets or redo the classification algorithm with public available MOR data sets of which there are plenty. Can a basic Common Ground version be made?
+* Can the classification system be completely open sourced? How can we address risks and possibilities regarding (of theoretical) leaking of information. Maybe add anonymized MOR datasets or redo the classification algorithm with public available MOR data sets. Can a basic Common Ground version be made?
 * Citizens are not authenticated. Data is not cleaned up for sharing (privacy purposes). https://github.com/Amsterdam/signals/blob/master/docs/api-design.md#publiek-en-ongeauthenticeerd
 
 ## [Bundle Policy And Source Code](https://standard.publiccode.net/criteria/bundle-policy-and-code.html)
@@ -18,7 +18,7 @@
 * Email messages are [hard-coded](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/email_integrations/core/messages.py).
 * Separate UI text from API model classes: [example](signals/api/app/signals/apps/signals/models/history.py).
 * Extended category questions currently live in front-end code, extract and make plug-able.
-* Rename or alias "sia" prefixes to something less AMS specific (tiny nitpick).
+* Will "sia" prefixes be meaningful to replicators? Or will aliasing or renaming something less AMS specific be better?
 
 
 ## [Welcome contributors](https://standard.publiccode.net/criteria/open-to-contributions.html)
@@ -28,7 +28,7 @@
 ## [Maintain version control](https://standard.publiccode.net/criteria/version-control-and-history.html)
 
 * Good.
-    * Little note: not all commits state what they do or why, some just reference an issue, or have "[WIP](https://github.com/Amsterdam/signals/commit/2f9e2f73ee5dc4cdf67d6854d1a7361f6e6aaf9b)" commit messages.
+    * Some past commits did not state what they do or why, some just reference an issue, or have "[WIP](https://github.com/Amsterdam/signals/commit/2f9e2f73ee5dc4cdf67d6854d1a7361f6e6aaf9b)" commit messages; developers have become more rigorous.
 
 
 ## [Require review of contributions](https://standard.publiccode.net/criteria/require-review.html)
@@ -60,6 +60,7 @@
 ## [Publish with an open license](https://standard.publiccode.net/criteria/open-licenses.html)
 
 * Good.
+    * License: [Mozilla Public License Version 2.0](../../LICENSE)
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
 
