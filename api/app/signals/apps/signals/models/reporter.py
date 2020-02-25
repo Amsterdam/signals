@@ -22,17 +22,17 @@ class Reporter(CreatedUpdatedModel):
 
     @property
     def is_anonymized(self):
-        return self.email_anonymized or self.phone_anonymized
+        """
+        Checks if an anonymous reporter is anonymized?
+        """
+        return self.is_anonymous and (self.email_anonymized or self.phone_anonymized)
 
-    def _anonymize_email(self):
-        if self.email:
-            self.email_anonymized = True
-            self.email = None
-
-    def _anonymize_phone(self):
-        if self.phone:
-            self.phone_anonymized = True
-            self.phone = None
+    @property
+    def is_anonymous(self):
+        """
+        Checks if a reporter is anonymous
+        """
+        return not self.email and not self.phone
 
     def anonymize(self, always_call_save=False):
         call_save = False
