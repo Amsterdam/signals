@@ -162,3 +162,37 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
 
         response = self.client.delete(self.detail_endpoint.format(pk=1))
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_SIG_2287(self):
+        # Connect a parent category to the Department so that we can check the URL generated for this category
+        self.category.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
+
+        # Connect a child category to the Department so that we can check the URL generated for this category
+        self.subcategory.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
+
+        # This should be the link of the parent category
+        expected_parent_url = 'http://testserver/signals/v1/public/terms/categories/{}'.format(self.category.slug)
+
+        # This should be the link of the child category
+        expected_child_url = 'http://testserver/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+            self.category.slug, self.subcategory.slug
+        )
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(self.detail_endpoint.format(pk=self.department.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(len(data['categories']), 2)
+
+        # Check the parent link
+        category_assignment = data['categories'][0]
+        category = category_assignment['category']
+        category_url = category['_links']['self']['href']
+        self.assertEqual(expected_parent_url, category_url)
+
+        # Check the child link
+        category_assignment = data['categories'][1]
+        category = category_assignment['category']
+        category_url = category['_links']['self']['href']
+        self.assertEqual(expected_child_url, category_url)
