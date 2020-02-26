@@ -23,7 +23,8 @@ from signals.apps.signals.models import (
     Signal,
     Status,
     StatusMessageTemplate,
-    StoredSignalFilter
+    StoredSignalFilter,
+    Type
 )
 from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -274,3 +275,11 @@ class StoredSignalFilterFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = StoredSignalFilter
+
+
+class TypeFactory(factory.DjangoModelFactory):
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
+    classification = Type.SIGNAL  # Default type is a "Signal" (Melding in Dutch)
+
+    class Meta:
+        model = Type

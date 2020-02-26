@@ -27,6 +27,7 @@ from signals.apps.signals.models.slo import ServiceLevelObjective
 from signals.apps.signals.models.status import Status
 from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 from signals.apps.signals.models.stored_signal_filter import StoredSignalFilter
+from signals.apps.signals.models.type import Type
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
@@ -57,4 +58,5 @@ __all__ = [
     'Status',
     'StatusMessageTemplate',
     'StoredSignalFilter',
+    'Type',
 ]
