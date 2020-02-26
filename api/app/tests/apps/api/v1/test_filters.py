@@ -506,3 +506,68 @@ class TestAnonymousFilter(SignalsBaseApiTestCase):
             len(set(self._request_filter_signals({'is_anonymous': 'GARBAGE'}))),
             4
         )
+
+
+class TestContactDetailFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.signal_anonymous = SignalFactory.create(reporter__phone='', reporter__email='')
+        self.signal_has_email = SignalFactory.create(
+            reporter__phone='', reporter__email='test@example.com')
+        self.signal_has_phone = SignalFactory.create(
+            reporter__phone='0123456789', reporter__email='')
+        self.signal_has_both = SignalFactory.create(
+            reporter__phone='0123456789', reporter__email='test@example.com')
+
+    def test_filter_none_present(self):
+        filter_params = {'contact_details_present': ['none']}
+        ids = self._request_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(set(ids), set([self.signal_anonymous.id]))
+
+    def test_filter_email_present(self):
+        filter_params = {'contact_details_present': ['email']}
+        ids = self._request_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 2)
+        self.assertEqual(set(ids), set([self.signal_has_email.id, self.signal_has_both.id]))
+
+    def test_filter_phone_present(self):
+        filter_params = {'contact_details_present': ['phone']}
+        ids = self._request_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 2)
+        self.assertEqual(set(ids), set([self.signal_has_phone.id, self.signal_has_both.id]))
+
+    def test_filter_combination(self):
+        filter_params = {'contact_details_present': ['none', 'email', 'phone']}
+        ids = self._request_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 4)
+
+    def test_bad_inputs(self):
+        BAD_INPUTS = [
+            {'contact_details_present': ['GARBAGE']},  # not a choice
+            {'contact_details_present': ['none', 'email', 'GARBAGE']},  # one bad choice
+        ]
+
+        for filter_params in BAD_INPUTS:
+            self.client.force_authenticate(user=self.superuser)
+            response = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+            self.assertEqual(response.status_code, 400)

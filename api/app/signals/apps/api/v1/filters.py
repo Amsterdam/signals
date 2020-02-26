@@ -10,6 +10,12 @@ feedback_choices = (
     ('not_received', 'not_received'),
 )
 
+contact_details_present_choices = (
+    ('none', 'none'),
+    ('email', 'email'),
+    ('phone', 'phone')
+)
+
 
 def _get_child_category_queryset():
     return Category.objects.filter(parent__isnull=False)
@@ -83,6 +89,11 @@ class SignalFilter(FilterSet):
 
     is_anonymous = filters.BooleanFilter(method='is_anonymous_filter')
 
+    contact_details_present = filters.MultipleChoiceFilter(
+        method='contact_details_present_filter',
+        choices=contact_details_present_choices,
+    )
+
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
         queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
@@ -135,9 +146,40 @@ class SignalFilter(FilterSet):
                                        sub_categories=sub_categories)
 
     def is_anonymous_filter(self, queryset, name, value):
+        # TODO: check that this deals with None
         if value:
             return queryset.filter(reporter__email='', reporter__phone='')
         return queryset.exclude(reporter__email='', reporter__phone='')
+
+    def contact_details_present_filter(self, queryset, name, value):
+        # Set-up our Q objects for the individual options.
+        has_no_email = (Q(reporter__email__isnull=True) | Q(reporter__email=''))
+        has_no_phone = (Q(reporter__phone__isnull=True) | Q(reporter__phone=''))
+        is_anonymous = has_no_email & has_no_phone
+
+        q_objects = {
+            'email': ~has_no_email,
+            'phone': ~has_no_phone,
+            'none': is_anonymous,
+        }
+
+        choices = value  # we have a MultipleChoiceFilter ...
+
+        # Deal with all choices selected, or none selected:
+        if choices == len(contact_details_present_choices):
+            # No filters are present, or ... all filters are present. In that
+            # case we want all Signal instances with an email address, or a
+            # phone number, or none of those (according to) the UX design.
+            # This is the same as not filtering, hence in both cases just
+            # return the queryset.
+            return queryset
+
+        # The individual choices have to be combined using logical OR:
+        q_total = q_objects[choices.pop()]
+        while choices:
+            q_total |= q_objects[choices.pop()]
+
+        return queryset.filter(q_total)
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):
