@@ -102,9 +102,9 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
         """
         SIG-2287 [BE] Afdeling geeft categorie zonder main slug terug
 
-        The category was rendered if it was a child category. So when encountering a parent category the link results in
-        a link with the parent category slug as "None". So before rendering the correct serializer we need to check if
-        we have a parent or a child category.
+        The category was rendered as if it was a child category. So when encountering a parent category the link results
+        in a link with the parent category slug as "None". So before rendering the correct serializer we need to check
+        if we have a parent or a child category.
 
         TODO: When refactoring the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
               we also need to take a look at a better solution for this issue.

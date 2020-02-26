@@ -21,8 +21,8 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
 
         self.department = DepartmentFactory.create()
 
-        self.category = ParentCategoryFactory.create()
-        self.subcategory = CategoryFactory.create(parent=self.category)
+        self.maincategory = ParentCategoryFactory.create()
+        self.subcategory = CategoryFactory.create(parent=self.maincategory)
 
     def test_get_list(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -165,17 +165,17 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
 
     def test_SIG_2287(self):
         # Connect a parent category to the Department so that we can check the URL generated for this category
-        self.category.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
+        self.maincategory.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
 
         # Connect a child category to the Department so that we can check the URL generated for this category
         self.subcategory.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
 
         # This should be the link of the parent category
-        expected_parent_url = 'http://testserver/signals/v1/public/terms/categories/{}'.format(self.category.slug)
+        expected_parent_url = 'http://testserver/signals/v1/public/terms/categories/{}'.format(self.maincategory.slug)
 
         # This should be the link of the child category
         expected_child_url = 'http://testserver/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
-            self.category.slug, self.subcategory.slug
+            self.subcategory.parent.slug, self.subcategory.slug
         )
 
         self.client.force_authenticate(user=self.sia_read_write_user)
