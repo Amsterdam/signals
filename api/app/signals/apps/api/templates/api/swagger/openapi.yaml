@@ -75,15 +75,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: is_anonymous
-          in: query
-          description: >-
-            Filter either anonymous or non-anonymous signals. A signal is
-            anonymous in this context if neither email address nor phone
-            number are known for that signal's reporter.
-          schema:
-            $ref: '#/components/schemas/anonymousChoices'
-          required: false
         - name: contact_details_present
           in: query
           description: >-

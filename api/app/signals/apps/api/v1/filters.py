@@ -87,8 +87,6 @@ class SignalFilter(FilterSet):
 
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
 
-    is_anonymous = filters.BooleanFilter(method='is_anonymous_filter')
-
     contact_details_present = filters.MultipleChoiceFilter(
         method='contact_details_present_filter',
         choices=contact_details_present_choices,
@@ -145,12 +143,6 @@ class SignalFilter(FilterSet):
                                        main_categories=main_categories,
                                        sub_categories=sub_categories)
 
-    def is_anonymous_filter(self, queryset, name, value):
-        # TODO: check that this deals with None
-        if value:
-            return queryset.filter(reporter__email='', reporter__phone='')
-        return queryset.exclude(reporter__email='', reporter__phone='')
-
     def contact_details_present_filter(self, queryset, name, value):
         """
         Filter `signals.Signal` instances according to presence of contact details.
@@ -169,7 +161,7 @@ class SignalFilter(FilterSet):
         choices = value  # we have a MultipleChoiceFilter ...
 
         # Deal with all choices selected, or none selected:
-        if choices == len(contact_details_present_choices):
+        if len(choices) == len(contact_details_present_choices):
             # No filters are present, or ... all filters are present. In that
             # case we want all Signal instances with an email address, or a
             # phone number, or none of those (according to) the UX design.
