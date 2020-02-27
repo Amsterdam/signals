@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 from random import shuffle
 
@@ -508,13 +509,15 @@ class TestAnonymousFilter(SignalsBaseApiTestCase):
         )
 
 
-class TestContactDetailFilter(SignalsBaseApiTestCase):
-    LIST_ENDPOINT = '/signals/v1/private/signals/'
+class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
+    SIGNALS_LIST_ENDPOINT = '/signals/v1/private/signals/'
+    STORED_FILTERS_LIST_ENDPOINT = '/signals/v1/private/me/filters/'
+    STORED_FILTERS_DETAIL_ENDPOINT = '/signals/v1/private/me/filters/{pk}'
 
     def _request_filter_signals(self, filter_params: dict):
         """ Does a filter request and returns the signal ID's present in the request """
         self.client.force_authenticate(user=self.superuser)
-        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+        resp = self.client.get(self.SIGNALS_LIST_ENDPOINT, data=filter_params)
 
         self.assertEqual(200, resp.status_code)
 
@@ -534,34 +537,34 @@ class TestContactDetailFilter(SignalsBaseApiTestCase):
         self.signal_has_both = SignalFactory.create(
             reporter__phone='0123456789', reporter__email='test@example.com')
 
-    def test_filter_none_present(self):
+    def test_contact_details_present_none(self):
         filter_params = {'contact_details_present': ['none']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 1)
         self.assertEqual(set(ids), set([self.signal_anonymous.id]))
 
-    def test_filter_email_present(self):
+    def test_contact_details_present_email(self):
         filter_params = {'contact_details_present': ['email']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_email.id, self.signal_has_both.id]))
 
-    def test_filter_phone_present(self):
+    def test_contact_details_present_phone(self):
         filter_params = {'contact_details_present': ['phone']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_phone.id, self.signal_has_both.id]))
 
-    def test_filter_combination(self):
+    def test_contact_details_present_combination(self):
         filter_params = {'contact_details_present': ['none', 'email', 'phone']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 4)
 
-    def test_bad_inputs(self):
+    def test_contact_details_present_bad_inputs(self):
         BAD_INPUTS = [
             {'contact_details_present': ['GARBAGE']},  # not a choice
             {'contact_details_present': ['none', 'email', 'GARBAGE']},  # one bad choice
@@ -569,5 +572,31 @@ class TestContactDetailFilter(SignalsBaseApiTestCase):
 
         for filter_params in BAD_INPUTS:
             self.client.force_authenticate(user=self.superuser)
-            response = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+            response = self.client.get(self.SIGNALS_LIST_ENDPOINT, data=filter_params)
             self.assertEqual(response.status_code, 400)
+
+    def test_contact_details_present_store_and_retrieve(self):
+        filter_name = 'Bewaarde contact details filter.'
+        data = {
+            'name': filter_name,
+            'options': json.dumps({
+                'contact_details_present': ['none', 'email']
+            })
+        }
+
+        # Store our filter for later use
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.post(self.STORED_FILTERS_LIST_ENDPOINT, data, fornat='json')
+        self.assertEqual(201, response.status_code)
+        response_data = response.json()
+        pk = response_data['id']
+
+        # Retrieve our filter and use it to filter signals
+        response = self.client.get(self.STORED_FILTERS_DETAIL_ENDPOINT.format(pk=pk))
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        self.assertEqual(response_data['name'], filter_name)
+        self.assertIn('contact_details_present', response_data['options'])
+        self.assertEqual(
+            set(response_data['options']['contact_details_present']), set(['none', 'email']))

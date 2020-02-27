@@ -84,6 +84,16 @@ paths:
           schema:
             $ref: '#/components/schemas/anonymousChoices'
           required: false
+        - name: contact_details_present
+          in: query
+          description: >-
+            Filter signals according to the presence of contact details, accepts
+            (a combination of) the following values `none` for no contact
+            details, `phone` for the presence of a reporter's phone number, and
+            `email` for the presence of a reporter's email address.
+          schema:
+            $ref: '#/components/schemas/contactDetailsPresentChoices'
+          required: false
       responses:
         '200':
           description: List of signals
@@ -815,6 +825,10 @@ components:
     anonymousChoices:
       type: string
       enum: [true, false]
+
+    contactDetailsPresentChoices:
+      type: string
+      enum: ['none', 'email', 'phone']
 
     privateCategoryResponse:
       description: JSON data describing the category response

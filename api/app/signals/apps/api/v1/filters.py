@@ -152,6 +152,9 @@ class SignalFilter(FilterSet):
         return queryset.exclude(reporter__email='', reporter__phone='')
 
     def contact_details_present_filter(self, queryset, name, value):
+        """
+        Filter `signals.Signal` instances according to presence of contact details.
+        """
         # Set-up our Q objects for the individual options.
         has_no_email = (Q(reporter__email__isnull=True) | Q(reporter__email=''))
         has_no_phone = (Q(reporter__phone__isnull=True) | Q(reporter__phone=''))
