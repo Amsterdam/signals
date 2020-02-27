@@ -2,7 +2,10 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
-from signals.apps.api.v1.fields import CategoryHyperlinkedIdentityField
+from signals.apps.api.v1.fields import (
+    CategoryHyperlinkedIdentityField,
+    ParentCategoryHyperlinkedIdentityField
+)
 from signals.apps.email_integrations.core.messages import \
     ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
 from signals.apps.signals.models import Category, CategoryDepartment, Department
@@ -33,6 +36,9 @@ def _get_categories_queryset():
 
 
 class TemporaryCategoryHALSerializer(HALSerializer):
+    """
+    TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
+    """
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = serializers.SerializerMethodField()
@@ -63,8 +69,20 @@ class TemporaryCategoryHALSerializer(HALSerializer):
         ).data
 
 
+class TemporaryParentCategoryHALSerializer(TemporaryCategoryHALSerializer):
+    """
+    SIG-2287 [BE] Afdeling geeft categorie zonder main slug terug
+
+    Added a TemporaryParentCategoryHALSerializer so that we can override the serializer_url_field to render the correct
+    url for a parent category
+
+    TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
+    """
+    serializer_url_field = ParentCategoryHyperlinkedIdentityField
+
+
 class CategoryDepartmentSerializer(serializers.ModelSerializer):
-    category = TemporaryCategoryHALSerializer(read_only=True, required=False)
+    category = serializers.SerializerMethodField()
     category_id = serializers.PrimaryKeyRelatedField(
         required=True, read_only=False, write_only=True,
         queryset=_get_categories_queryset(), source='category'
@@ -79,6 +97,23 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
             'is_responsible',
             'can_view',
         )
+
+    def get_category(self, obj):
+        """
+        SIG-2287 [BE] Afdeling geeft categorie zonder main slug terug
+
+        The category was rendered as if it was a child category. So when encountering a parent category the link results
+        in a link with the parent category slug as "None". So before rendering the correct serializer we need to check
+        if we have a parent or a child category.
+
+        TODO: When refactoring the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
+              we also need to take a look at a better solution for this issue.
+        """
+        if obj.category.is_parent():
+            serializer_class = TemporaryParentCategoryHALSerializer
+        else:
+            serializer_class = TemporaryCategoryHALSerializer
+        return serializer_class(obj.category, context=self.context).data
 
 
 class PrivateDepartmentSerializerDetail(HALSerializer):
