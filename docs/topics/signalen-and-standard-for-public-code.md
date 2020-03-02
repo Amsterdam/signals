@@ -4,7 +4,6 @@
 
 * Current backlog and bug-tracking is not public. Some issues referenced in code and commits are not easy to locate, like "SIG-1525". Transition to public bug-tracker?
 * Can the classification system be completely open sourced? How can we address risks and possibilities regarding (of theoretical) leaking of information. Maybe add anonymized MOR datasets or redo the classification algorithm with public available MOR data sets. Can a basic Common Ground version be made?
-* Citizens are not authenticated. Data is not cleaned up for sharing (privacy purposes). https://github.com/Amsterdam/signals/blob/master/docs/api-design.md#publiek-en-ongeauthenticeerd
 
 ## [Bundle Policy And Source Code](https://standard.publiccode.net/criteria/bundle-policy-and-code.html)
 
