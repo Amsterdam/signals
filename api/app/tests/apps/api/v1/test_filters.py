@@ -480,37 +480,37 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         self.signal_has_both = SignalFactory.create(
             reporter__phone='0123456789', reporter__email='test@example.com')
 
-    def test_contact_details_present_none(self):
-        filter_params = {'contact_details_present': ['none']}
+    def test_contact_details_none(self):
+        filter_params = {'contact_details': ['none']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 1)
         self.assertEqual(set(ids), set([self.signal_anonymous.id]))
 
-    def test_contact_details_present_email(self):
-        filter_params = {'contact_details_present': ['email']}
+    def test_contact_details_email(self):
+        filter_params = {'contact_details': ['email']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_email.id, self.signal_has_both.id]))
 
-    def test_contact_details_present_phone(self):
-        filter_params = {'contact_details_present': ['phone']}
+    def test_contact_details_phone(self):
+        filter_params = {'contact_details': ['phone']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_phone.id, self.signal_has_both.id]))
 
-    def test_contact_details_present_combination(self):
-        filter_params = {'contact_details_present': ['none', 'email', 'phone']}
+    def test_contact_details_combination(self):
+        filter_params = {'contact_details': ['none', 'email', 'phone']}
         ids = self._request_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 4)
 
-    def test_contact_details_present_bad_inputs(self):
+    def test_contact_details_bad_inputs(self):
         BAD_INPUTS = [
-            {'contact_details_present': ['GARBAGE']},  # not a choice
-            {'contact_details_present': ['none', 'email', 'GARBAGE']},  # one bad choice
+            {'contact_details': ['GARBAGE']},  # not a choice
+            {'contact_details': ['none', 'email', 'GARBAGE']},  # one bad choice
         ]
 
         for filter_params in BAD_INPUTS:
@@ -518,12 +518,12 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
             response = self.client.get(self.SIGNALS_LIST_ENDPOINT, data=filter_params)
             self.assertEqual(response.status_code, 400)
 
-    def test_contact_details_present_store_and_retrieve(self):
+    def test_contact_details_store_and_retrieve(self):
         filter_name = 'Bewaarde contact details filter.'
         data = {
             'name': filter_name,
             'options': json.dumps({
-                'contact_details_present': ['none', 'email']
+                'contact_details': ['none', 'email']
             })
         }
 
@@ -540,6 +540,6 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         response_data = response.json()
 
         self.assertEqual(response_data['name'], filter_name)
-        self.assertIn('contact_details_present', response_data['options'])
+        self.assertIn('contact_details', response_data['options'])
         self.assertEqual(
-            set(response_data['options']['contact_details_present']), set(['none', 'email']))
+            set(response_data['options']['contact_details']), set(['none', 'email']))
