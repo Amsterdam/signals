@@ -147,7 +147,7 @@ class SignalManager(models.Manager):
 
                 reporter_data = {'_signal': child_signal}
                 reporter_data.update({
-                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'is_anonymized']  # noqa
+                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'email_anonymized', 'phone_anonymized']  # noqa
                 })
                 reporter = Reporter.objects.create(**reporter_data)
 
