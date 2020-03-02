@@ -11,6 +11,7 @@ from tests.apps.signals.factories import SignalFactory
 class TestTypeModel(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
+        self.signal.types.all().delete()  # These tests should work without a type set
 
     def test_add_type_system_user(self):
         # No types yet
