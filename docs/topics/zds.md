@@ -1,11 +1,16 @@
-# ZDS 2.0 koppeling
+# ZDS 2.0 integration
 
-Early 2019 a collabration between VNG and SIA resulted in the ZDS 2.0 koppeling.
+Early 2019 the VNG (Vereniging van Nederlandse Gemeentenhe / Dutch association
+of municipalities) cooperated to implement support for the then, prototype,
+Zaak en Document Systeem 2.0. It was shown that ZDS 2.0 could be integrated
+with SIA, and that cooperation between Amsterdam and the VNG was possible and
+productive.
 
-The ZDS implementation is not maintained and got out of date. It was never taken into use on the 
-production environment of SIA. And was ony used as a proof of concept of this collabration.
+Since the conclusion of this project both systems have evolved significantly
+to the effect that the integration no longer works. In particular, the
+integration uses the "zero" version of the SIA API which is no longer
+suppoerted, and therefore the implementation was removed from the master
+branch of SIA.
 
-Therefore we removed the implementation from the master branch. 
-
-We decided to keep te implementation in a separate protected branch for archiving purposes. 
-This branch can be found at https://github.com/Amsterdam/signals/tree/feature/zds
+Results of collaboration are archived on a protected branch in Github:
+https://github.com/Amsterdam/signals/tree/feature/zds
