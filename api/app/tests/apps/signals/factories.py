@@ -279,7 +279,7 @@ class StoredSignalFilterFactory(factory.DjangoModelFactory):
 
 class TypeFactory(factory.DjangoModelFactory):
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
-    classification = Type.SIGNAL  # Default type is a "Signal" (Melding in Dutch)
+    name = Type.SIGNAL  # Default type is a "Signal" (Melding in Dutch)
 
     class Meta:
         model = Type
