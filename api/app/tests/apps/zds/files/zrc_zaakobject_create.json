@@ -1,7 +1,0 @@
-{
-    "url": "http://example.com",
-    "zaak": "http://example.com",
-    "object": "http://example.com",
-    "relatieomschrijving": "string",
-    "type": "VerblijfsObject"
-}

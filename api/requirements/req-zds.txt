@@ -1,4 +1,0 @@
-# Added for ZRC, ZTC, DRC communication
-# DO NOT UPDATE THESE VERSIONS
-gemma-zds-client==0.8.0
-requests-mock==1.5.2
