@@ -75,7 +75,7 @@ paths:
           required: false
           schema:
             type: string
-        - name: contact_details_present
+        - name: contact_details
           in: query
           description: >-
             Filter signals according to the presence of contact details, accepts
@@ -817,7 +817,7 @@ components:
       type: string
       enum: [true, false]
 
-    contactDetailsPresentChoices:
+    contactDetailsChoices:
       type: string
       enum: ['none', 'email', 'phone']
 

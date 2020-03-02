@@ -10,7 +10,7 @@ feedback_choices = (
     ('not_received', 'not_received'),
 )
 
-contact_details_present_choices = (
+contact_details_choices = (
     ('none', 'none'),
     ('email', 'email'),
     ('phone', 'phone')
@@ -87,9 +87,9 @@ class SignalFilter(FilterSet):
 
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
 
-    contact_details_present = filters.MultipleChoiceFilter(
-        method='contact_details_present_filter',
-        choices=contact_details_present_choices,
+    contact_details = filters.MultipleChoiceFilter(
+        method='contact_details_filter',
+        choices=contact_details_choices,
     )
 
     def feedback_filter(self, queryset, name, value):
@@ -143,7 +143,7 @@ class SignalFilter(FilterSet):
                                        main_categories=main_categories,
                                        sub_categories=sub_categories)
 
-    def contact_details_present_filter(self, queryset, name, value):
+    def contact_details_filter(self, queryset, name, value):
         """
         Filter `signals.Signal` instances according to presence of contact details.
         """
@@ -161,7 +161,7 @@ class SignalFilter(FilterSet):
         choices = value  # we have a MultipleChoiceFilter ...
 
         # Deal with all choices selected, or none selected:
-        if len(choices) == len(contact_details_present_choices):
+        if len(choices) == len(contact_details_choices):
             # No filters are present, or ... all filters are present. In that
             # case we want all Signal instances with an email address, or a
             # phone number, or none of those (according to) the UX design.
