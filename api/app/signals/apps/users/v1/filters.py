@@ -12,7 +12,7 @@ def _get_group_queryset():
 class UserFilterSet(FilterSet):
     id = filters.NumberFilter()
     username = filters.CharFilter(lookup_expr='icontains')
-    active = filters.BooleanFilter(field_name='is_active')
+    is_active = filters.BooleanFilter(field_name='is_active')
 
     role = filters.ModelMultipleChoiceFilter(queryset=_get_group_queryset(),
                                              to_field_name='name',
@@ -21,7 +21,7 @@ class UserFilterSet(FilterSet):
     order = OrderingExtraKwargsFilter(
         fields=(
             ('username', 'username'),
-            ('is_active', 'active'),
+            ('is_active', 'is_active'),
         ),
         extra_kwargs={
             'username': {'apply': Lower}  # Will apply the Lower function when ordering

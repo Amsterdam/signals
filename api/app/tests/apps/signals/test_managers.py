@@ -25,6 +25,7 @@ class TestSignalManager(TestCase):
         cat_assignment_create.assert_called_once()
         cat_assignment_create.reset_mock()
 
+        self.signal.refresh_from_db()
         Signal.actions.update_category_assignment({"category": self.category}, self.signal)
 
         # Update with the same category should not create a new assignment

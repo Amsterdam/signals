@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.test import TransactionTestCase
 from django.utils import timezone
 from freezegun import freeze_time
@@ -19,17 +20,19 @@ class TestTaskTranslateCategory(TransactionTestCase):
         signal = SignalFactory.create(status__state=AFGEHANDELD)
         reporter = signal.reporter
 
-        self.assertNotEqual(reporter.email, Reporter.ANONYMOUS_EMAIL)
-        self.assertNotEqual(reporter.phone, Reporter.ANONYMOUS_PHONE)
-        self.assertFalse(reporter.is_anonymized)
+        self.assertIsNotNone(reporter.email)
+        self.assertIsNotNone(reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
 
         anonymize_reporter(reporter_id=reporter.pk)
 
         reporter.refresh_from_db()
 
-        self.assertEqual(reporter.email, Reporter.ANONYMOUS_EMAIL)
-        self.assertEqual(reporter.phone, Reporter.ANONYMOUS_PHONE)
-        self.assertTrue(reporter.is_anonymized)
+        self.assertIsNone(reporter.email)
+        self.assertIsNone(reporter.phone)
+        self.assertTrue(reporter.email_anonymized)
+        self.assertTrue(reporter.phone_anonymized)
 
     def test_anonymize_reporters(self):
         allowed_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
@@ -42,12 +45,13 @@ class TestTaskTranslateCategory(TransactionTestCase):
         anonymize_reporters(days=1)
 
         self.assertEqual(Reporter.objects.count(), 4)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=True).count(), 4)
+        self.assertEqual(Reporter.objects.filter(Q(email_anonymized=True) | Q(phone_anonymized=True)).count(), 4)
 
         for reporter in Reporter.objects.all():
-            self.assertEqual(reporter.email, Reporter.ANONYMOUS_EMAIL)
-            self.assertEqual(reporter.phone, Reporter.ANONYMOUS_PHONE)
-            self.assertTrue(reporter.is_anonymized)
+            self.assertIsNone(reporter.email)
+            self.assertIsNone(reporter.phone)
+            self.assertTrue(reporter.email_anonymized)
+            self.assertTrue(reporter.phone_anonymized)
 
     def test_anonymize_reporters_less_than_x_days_ago(self):
         allowed_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
@@ -60,13 +64,14 @@ class TestTaskTranslateCategory(TransactionTestCase):
         anonymize_reporters(days=2)
 
         self.assertEqual(Reporter.objects.count(), 4)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=True).count(), 0)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=False).count(), 4)
+        self.assertEqual(Reporter.objects.filter(Q(email_anonymized=True) | Q(phone_anonymized=True)).count(), 0)
+        self.assertEqual(Reporter.objects.filter(email_anonymized=False, phone_anonymized=False).count(), 4)
 
         for reporter in Reporter.objects.all():
-            self.assertNotEqual(reporter.email, Reporter.ANONYMOUS_EMAIL)
-            self.assertNotEqual(reporter.phone, Reporter.ANONYMOUS_PHONE)
-            self.assertFalse(reporter.is_anonymized)
+            self.assertIsNotNone(reporter.email)
+            self.assertIsNotNone(reporter.phone)
+            self.assertFalse(reporter.email_anonymized)
+            self.assertFalse(reporter.phone_anonymized)
 
     def test_anonymize_reporters_not_in_correct_state(self):
         with freeze_time(timezone.now() - timezone.timedelta(days=1)):
@@ -77,13 +82,14 @@ class TestTaskTranslateCategory(TransactionTestCase):
         anonymize_reporters(days=1)
 
         self.assertEqual(Reporter.objects.count(), 5)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=True).count(), 0)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=False).count(), 5)
+        self.assertEqual(Reporter.objects.filter(Q(email_anonymized=True) | Q(phone_anonymized=True)).count(), 0)
+        self.assertEqual(Reporter.objects.filter(email_anonymized=False, phone_anonymized=False).count(), 5)
 
         for reporter in Reporter.objects.all():
-            self.assertNotEqual(reporter.email, Reporter.ANONYMOUS_EMAIL)
-            self.assertNotEqual(reporter.phone, Reporter.ANONYMOUS_PHONE)
-            self.assertFalse(reporter.is_anonymized)
+            self.assertIsNotNone(reporter.email)
+            self.assertIsNotNone(reporter.phone)
+            self.assertFalse(reporter.email_anonymized)
+            self.assertFalse(reporter.phone_anonymized)
 
     def test_anonymize_reporters_multiple_cases(self):
         with freeze_time(timezone.now() - timezone.timedelta(days=1)):
@@ -110,7 +116,7 @@ class TestTaskTranslateCategory(TransactionTestCase):
         self.assertEqual(Reporter.objects.count(), 7)
 
         anonymize_reporters(days=2)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=True).count(), 3)
-        self.assertEqual(Reporter.objects.filter(is_anonymized=False).count(), 4)
+        self.assertEqual(Reporter.objects.filter(Q(email_anonymized=True) | Q(phone_anonymized=True)).count(), 3)
+        self.assertEqual(Reporter.objects.filter(email_anonymized=False, phone_anonymized=False).count(), 4)
 
         self.assertEqual(Reporter.objects.count(), 7)

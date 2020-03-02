@@ -108,6 +108,8 @@ class TestSignalManager(TransactionTestCase):
         prev_location = signal.location
         location = Signal.actions.update_location(self.location_data, signal)
 
+        signal.refresh_from_db()
+
         # Check that the signal was updated in db
         self.assertEqual(signal.location, location)
         self.assertEqual(signal.locations.count(), 2)
@@ -134,6 +136,8 @@ class TestSignalManager(TransactionTestCase):
 
         mocked_status_clean.assert_called_once()
 
+        signal.refresh_from_db()
+
         # Check that the signal status is updated
         self.assertEqual(signal.status, status)
         self.assertEqual(signal.status.state, workflow.AFGEHANDELD)
@@ -154,6 +158,8 @@ class TestSignalManager(TransactionTestCase):
         prev_category_assignment = signal.category_assignment
         category_assignment = Signal.actions.update_category_assignment(
             self.category_assignment_data, signal)
+
+        signal.refresh_from_db()
 
         # Check that the signal was updated in db
         self.assertEqual(signal.category_assignment, category_assignment)
@@ -186,6 +192,8 @@ class TestSignalManager(TransactionTestCase):
         prev_reporter = signal.reporter
         reporter = Signal.actions.update_reporter(self.reporter_data, signal)
 
+        signal.refresh_from_db()
+
         # Check that the signal was updated in db
         self.assertEqual(signal.reporter, reporter)
         self.assertEqual(signal.reporters.count(), 2)
@@ -203,6 +211,8 @@ class TestSignalManager(TransactionTestCase):
         # Update the signal
         prev_priority = signal.priority
         priority = Signal.actions.update_priority(self.priority_data, signal)
+
+        signal.refresh_from_db()
 
         # Check that the signal was updated in db
         self.assertEqual(signal.priority, priority)
