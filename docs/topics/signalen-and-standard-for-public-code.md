@@ -7,7 +7,7 @@
 
 ## [Bundle Policy And Source Code](https://standard.publiccode.net/criteria/bundle-policy-and-code.html)
 
-* Making the state machine configurable would enable Signalen to adapt to policy changes within Amsterdam and also enable replicators to customise Signalen for their workflows.
+* Making the business rules and the associated state machine configurable. This would enable SIA to adapt to policy changes within Amsterdam and also makes it easier for replicators to customise SIA for their policy/workflows.
 
 ## [Create reusable and portable code](https://standard.publiccode.net/criteria/reusable-and-portable-codebases.html)
 
@@ -17,7 +17,6 @@
 * Email messages are [hard-coded](https://github.com/Amsterdam/signals/blob/master/api/app/signals/apps/email_integrations/core/messages.py).
 * Separate UI text from API model classes: [example](signals/api/app/signals/apps/signals/models/history.py).
 * Extended category questions currently live in front-end code, extract and make plug-able.
-* Will "sia" prefixes be meaningful to replicators? Or will aliasing or renaming something less AMS specific be better?
 
 ## [Welcome contributors](https://standard.publiccode.net/criteria/open-to-contributions.html)
 
