@@ -194,3 +194,7 @@ class Signal(CreatedUpdatedModel):
     def save(self, *args, **kwargs):
         self._validate()
         super(Signal, self).save(*args, **kwargs)
+
+    @property
+    def type_assignment(self):
+        return self.types.first() if self.types.exists() else None
