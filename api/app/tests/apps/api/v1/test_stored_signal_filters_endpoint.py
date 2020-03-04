@@ -1,4 +1,4 @@
-import json
+import unittest
 
 from signals.apps.signals.models import StoredSignalFilter
 from tests.apps.signals.factories import StoredSignalFilterFactory
@@ -46,14 +46,14 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_create_filter(self):
         data = {
             'name': 'Created my first filter',
-            'options': json.dumps({
+            'options': {
                 'status': [
                     'i',
                 ]
-            }),
+            },
         }
 
-        response = self.client.post(self.endpoint, data, fornat='json')
+        response = self.client.post(self.endpoint, data, format='json')
         self.assertEqual(201, response.status_code)
 
         response_data = response.json()
@@ -68,7 +68,7 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'name': 'MISSING OPTIONS SHOULD ALSO WORK'
         }
 
-        response = self.client.post(self.endpoint, data, fornat='json')
+        response = self.client.post(self.endpoint, data, format='json')
         self.assertEqual(400, response.status_code)
 
         response_data = response.json()
@@ -87,13 +87,13 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('options', response_data)
         self.assertNotIn('status', response_data['options'])
 
-        data = {'options': json.dumps({
+        data = {'options': {
             'status': [
                 'i',
             ]
-        })}
+        }}
 
-        response = self.client.patch(uri, data, fornat='json')
+        response = self.client.patch(uri, data, format='json')
         self.assertEqual(200, response.status_code)
 
         response_data = response.json()
@@ -135,15 +135,15 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_create_filter_refresh(self):
         data = {
             'name': 'Created my first filter',
-            'options': json.dumps({
+            'options': {
                 'status': [
                     'i',
                 ]
-            }),
+            },
             'refresh': True,
         }
 
-        response = self.client.post(self.endpoint, data, fornat='json')
+        response = self.client.post(self.endpoint, data, format='json')
         self.assertEqual(201, response.status_code)
 
         response_data = response.json()
@@ -153,3 +153,67 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
         self.assertTrue(response_data['refresh'])
+
+    @unittest.expectedFailure
+    def test_nonsense_store_and_retrieve(self):
+        """
+        Earlier versions of SIA accepted filters for storing that did not exist
+        in the SignalFilter. This test demonstrates that undesirable behavior
+        and is left here as documentation --- it should fail.
+        """
+        filter_name = 'Dit mag niet opgeslagen worden.'
+        data = {
+            'name': filter_name,
+            'options': {
+                'nonsense': ['none', 'email']
+            }
+        }
+
+        # Store our filter for later use
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(201, response.status_code)
+        response_data = response.json()
+        pk = response_data['id']
+
+        # Retrieve our filter and use it to filter signals
+        response = self.client.get(self.endpoint.format(pk=pk))
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        self.assertEqual(response_data['name'], filter_name)
+        self.assertIn('nonsense', response_data['options'])
+        self.assertEqual(
+            set(response_data['options']['nonsense']), set(['none', 'email']))
+
+    def test_do_not_store_unknown_filters(self):
+        filter_name = 'Dit mag niet opgeslagen worden.'
+        data = {
+            'name': filter_name,
+            'options': {
+                'nonsense': ['none', 'email'],
+                'garbage': 'blah',
+            }
+        }
+
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(400, response.status_code)
+
+        self.assertIn('nonsense', repr(response.json()['options']))
+        self.assertIn('garbage', repr(response.json()['options']))
+
+    def test_create_filter_bad_inputs_no_500(self):
+        BAD_INPUTS = [
+            ['ABC', 'DEF'],
+            'ABCDEF',
+            None,
+            1234,
+        ]
+
+        for bad_input in BAD_INPUTS:
+            data = {
+                'name': 'Dit mag niet opgeslagen worden.',
+                'options': bad_input
+            }
+
+            response = self.client.post(self.endpoint, data, format='json')
+            self.assertEqual(400, response.status_code)
