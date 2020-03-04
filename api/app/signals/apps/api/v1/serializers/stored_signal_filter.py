@@ -25,11 +25,27 @@ class StoredSignalFilterSerializer(HALSerializer):
     def validate(self, attrs):
         if 'options' not in attrs:
             raise ValidationError('No filters specified, "options" object missing.')
-        signal_filter = SignalFilter(data=attrs['options'], queryset=Signal.objects.none())
+
+        return super().validate(attrs)
+
+    def validate_options(self, value):
+        if type(value) != dict:
+            raise ValidationError('Expected an object for "options"')
+
+        signal_filter = SignalFilter(data=value, queryset=Signal.objects.none())
         if not signal_filter.is_valid():
             raise ValidationError(signal_filter.errors)
 
-        return super(StoredSignalFilterSerializer, self).validate(attrs)
+        # Check that we are only accepting filter data for which there are
+        # actual Filter definitions on the SignalFilter FilterSet (SIG-2322).
+        filter_names = set(signal_filter.get_filters())
+        undefined_filters = set(value) - filter_names
+        if undefined_filters:
+            raise ValidationError('FilterSet data to store contains unknown filters {}'.format(
+                repr(list(undefined_filters))
+            ))
+
+        return value
 
     def create(self, validated_data):
         validated_data.update({

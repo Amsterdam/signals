@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta
 from random import shuffle
 
@@ -522,14 +521,15 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         filter_name = 'Bewaarde contact details filter.'
         data = {
             'name': filter_name,
-            'options': json.dumps({
+            'options': {
                 'contact_details': ['none', 'email']
-            })
+            }
         }
 
         # Store our filter for later use
         self.client.force_authenticate(user=self.superuser)
-        response = self.client.post(self.STORED_FILTERS_LIST_ENDPOINT, data, fornat='json')
+        response = self.client.post(self.STORED_FILTERS_LIST_ENDPOINT, data, format='json')
+
         self.assertEqual(201, response.status_code)
         response_data = response.json()
         pk = response_data['id']
