@@ -411,6 +411,11 @@ paths:
           description: Filter active (true) and inactive (false).
           schema:
             type: string
+        - name: "role"
+          in: query
+          description: Filter users by role, accepts one or more role names.
+          schema:
+            type: string
       responses:
         '200':
           description: List of all users.
