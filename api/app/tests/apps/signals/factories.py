@@ -79,6 +79,14 @@ class SignalFactory(factory.DjangoModelFactory):
         self.reporter = self.reporters.last()
         self.priority = self.priorities.last()
 
+    @factory.post_generation
+    def set_default_type(self, create, extracted, **kwargs):
+        """
+        This will add the default Type to the signal for a factory created signal
+        """
+        if create:
+            TypeFactory(_signal=self)  # By default the type is set to "SIG (SIGNAL)"
+
 
 class SignalFactoryWithImage(SignalFactory):
 

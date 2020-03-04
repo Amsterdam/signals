@@ -4,6 +4,7 @@ from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
+
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 create_child = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
@@ -31,7 +32,7 @@ def send_signals(to_send):
 class SignalManager(models.Manager):
 
     def _create_initial_no_transaction(self, signal_data, location_data, status_data,
-                                       category_assignment_data, reporter_data, priority_data=None):
+                                       category_assignment_data, reporter_data, priority_data=None, type_data=None):
         """Create a new `Signal` object with all related objects.
             If a transaction is needed use SignalManager.create_initial
 
@@ -41,9 +42,10 @@ class SignalManager(models.Manager):
         :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
+        :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
-        from .models import Location, Status, CategoryAssignment, Reporter, Priority
+        from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
 
         signal = self.create(**signal_data)
 
@@ -58,6 +60,9 @@ class SignalManager(models.Manager):
         reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
+        type_data = type_data or {}  # If type_data is None a Type is created with the default "SIGNAL" value
+        Type.objects.create(**type_data, _signal_id=signal.pk)
+
         # Set Signal to dependent model instance foreign keys
         signal.location = location
         signal.status = status
@@ -69,7 +74,7 @@ class SignalManager(models.Manager):
         return signal
 
     def create_initial(self, signal_data, location_data, status_data, category_assignment_data,
-                       reporter_data, priority_data=None):
+                       reporter_data, priority_data=None, type_data=None):
         """Create a new `Signal` object with all related objects.
 
         :param signal_data: deserialized data dict
@@ -78,6 +83,7 @@ class SignalManager(models.Manager):
         :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
+        :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
 
@@ -88,7 +94,8 @@ class SignalManager(models.Manager):
                 status_data=status_data,
                 category_assignment_data=category_assignment_data,
                 reporter_data=reporter_data,
-                priority_data=priority_data
+                priority_data=priority_data,
+                type_data=type_data,
             )
 
             transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,
@@ -106,7 +113,7 @@ class SignalManager(models.Manager):
         """
         # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
         from .models import (Attachment, CategoryAssignment, Location, Priority, Reporter,
-                             Signal, Status)
+                             Signal, Status, Type)
         from signals.apps.signals import workflow
 
         loop_counter = 0
@@ -171,6 +178,16 @@ class SignalManager(models.Manager):
                 }
 
                 category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
+
+                if 'type' in validated_data:
+                    type_data = validated_data['type']  # Will create a type with the given name
+                elif parent_signal.type_assignment:
+                    type_data = {'name': parent_signal.type_assignment.name}  # noqa Will copy the type with name from the parent signal
+                else:
+                    type_data = {}  # Will create a default type with name "SIGNAL"
+
+                # Creates the Type for the child signal
+                Type.objects.create(**type_data, _signal_id=child_signal.pk)
 
                 # Deal with forward foreign keys from child signal
                 child_signal.location = location
@@ -460,7 +477,7 @@ class SignalManager(models.Manager):
 
         return note
 
-    def update_multiple(self, data, signal):
+    def update_multiple(self, data, signal):  # noqa: C901
         """
         Perform one atomic update on multiple properties of `Signal` object.
 
@@ -534,8 +551,35 @@ class SignalManager(models.Manager):
                     'note': note
                 }))
 
+            if 'type' in data:
+                self._update_type_no_transaction(data['type'], locked_signal)
+
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
         locked_signal.refresh_from_db()
         return locked_signal
+
+    def _update_type_no_transaction(self, data, signal):
+        """Update (create new) `Type` object for given `Signal` object.
+           If a transaction is needed use SignalManager.update_type
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Type object
+        """
+        from signals.apps.signals.models import Type
+
+        signal_type = Type.objects.create(**data, _signal_id=signal.pk)
+        return signal_type
+
+    def update_type(self, data, signal):
+        """Create a new `Type` object for a given `Signal` object.
+
+        :param data: deserialized data dict
+        :returns: Type object
+        """
+        with transaction.atomic():
+            signal_type = self._update_type_no_transaction(data=data, signal=signal)
+
+        return signal_type
