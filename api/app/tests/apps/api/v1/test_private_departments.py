@@ -189,7 +189,6 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
         category_assignment = data['categories'][0]
         category = category_assignment['category']
         category_url = category['_links']['self']['href']
-        self.assertEqual(expected_parent_url, category_url)
 
         if 'sub_categories' in category_url:
             self.assertEqual(expected_child_url, category_url)
@@ -200,7 +199,6 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
         category_assignment = data['categories'][1]
         category = category_assignment['category']
         category_url = category['_links']['self']['href']
-        self.assertEqual(expected_child_url, category_url)
 
         if 'sub_categories' in category_url:
             self.assertEqual(expected_child_url, category_url)
