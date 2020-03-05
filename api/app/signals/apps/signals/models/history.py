@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.signals.models.location import _get_description_of_update_location
+from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
 
 
@@ -39,6 +40,8 @@ class History(models.Model):
             return self.extra
         elif self.what == 'RECEIVE_FEEDBACK':
             return 'Feedback van melder ontvangen'
+        elif self.what == 'UPDATE_TYPE_ASSIGNMENT':
+            return f'Type update naar: {_history_translated_action(self.extra)}'
         return 'Actie onbekend.'
 
     def get_who(self):

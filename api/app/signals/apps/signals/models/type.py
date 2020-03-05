@@ -25,3 +25,14 @@ class Type(models.Model):
     class Meta:
         ordering = ('_signal', '-created_at', )
         verbose_name_plural = 'Types'
+
+
+def _history_translated_action(name):
+    translated = {
+        Type.SIGNAL: 'Melding',
+        Type.REQUEST: 'Aanvraag',
+        Type.QUESTION: 'Vraag',
+        Type.COMPLAINT: 'Klacht',
+        Type.MAINTENANCE: 'Groot onderhoud',
+    }
+    return translated[name]
