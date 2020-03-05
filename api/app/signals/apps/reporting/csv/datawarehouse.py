@@ -238,7 +238,7 @@ def _create_category_assignments_csv(location):
 
         departments_cache = {
             c.id: ', '.join(
-                [d.name for d in c.departments.all()]
+                [d.name for d in c.departments.filter(categorydepartment__is_responsible=True)]
             ) for c in Category.objects.prefetch_related('departments').all()
         }
 
