@@ -185,14 +185,24 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
         data = response.json()
         self.assertEqual(len(data['categories']), 2)
 
-        # Check the parent link
+        # Check the link
         category_assignment = data['categories'][0]
         category = category_assignment['category']
         category_url = category['_links']['self']['href']
         self.assertEqual(expected_parent_url, category_url)
 
-        # Check the child link
+        if 'sub_categories' in category_url:
+            self.assertEqual(expected_child_url, category_url)
+        else:
+            self.assertEqual(expected_parent_url, category_url)
+
+        # Check the link
         category_assignment = data['categories'][1]
         category = category_assignment['category']
         category_url = category['_links']['self']['href']
         self.assertEqual(expected_child_url, category_url)
+
+        if 'sub_categories' in category_url:
+            self.assertEqual(expected_child_url, category_url)
+        else:
+            self.assertEqual(expected_parent_url, category_url)
