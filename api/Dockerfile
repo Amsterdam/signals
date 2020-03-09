@@ -12,8 +12,8 @@ COPY requirements.txt /requirements.txt
 
 RUN pip install -r /requirements.txt
 
-RUN mkdir -p /static && chown datapunt /static
 RUN mkdir -p /media && chown datapunt /media
+RUN mkdir -p /static && chown datapunt /static
 
 ENV DJANGO_SETTINGS_MODULE=signals.settings.production
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
