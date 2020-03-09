@@ -1,8 +1,12 @@
 from django.urls import include, path
 
+from signals.apps.api.generics.routers import BaseSignalsRouter
 from signals.apps.api.generics.views import SwaggerView
 from signals.apps.api.v0 import views as v0_views
 from signals.apps.api.v0.routers import SignalsRouterVersion0
+
+# Base router
+base_signal_router = BaseSignalsRouter()
 
 # API Version 0
 signal_router_v0 = SignalsRouterVersion0()
@@ -24,8 +28,8 @@ signal_router_v0.urls.append(
 )
 
 urlpatterns = [
-    # AP Version 0
-    path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+    # Because we use NamespaceVersioning we still need to include this as the "v0" namespace
+    path('', include((base_signal_router.urls, 'signals'), namespace='v0')),
 
     # API Version 1
     path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),

@@ -3,9 +3,11 @@ import os
 from unittest import mock
 
 from django.contrib.gis.geos import Point
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.urls import include, path
 from rest_framework import serializers
 
+from signals.apps.api.urls import signal_router_v0
 from signals.apps.api.v0.fields import CategoryLinksField
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
@@ -19,6 +21,20 @@ from tests.test import SignalsBaseApiTestCase
 
 IN_AMSTERDAM = (4.898466, 52.361585)
 OUTSIDE_AMSTERDAM = tuple(reversed(IN_AMSTERDAM))
+
+
+# V0 has been disabled but we still want to test the code, so for the tests we will add the endpoints
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = [
+    path('signals/', include([
+        path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+        path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),
+    ])),
+]
 
 
 class TestNearAmsterdamValidatorMixin(TestCase):
@@ -36,6 +52,7 @@ class TestNearAmsterdamValidatorMixin(TestCase):
 
 
 # TODO: move to endpoint tests (which these are)
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestLocationSerializer(SignalsBaseApiTestCase):
     fixtures = ['categories.json', ]
 

@@ -1,9 +1,25 @@
 from django.contrib.auth.models import Group
+from django.test import override_settings
+from django.urls import path
 from rest_framework import status
 
+from signals.apps.users.v0.views import UserMeView
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
+# V0 has been disabled but we still want to test the code, so for the tests we will add the endpoints
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = [
+    path('signals/auth/me/', UserMeView.as_view()),
+    path('signals/user/auth/me/', UserMeView.as_view()),
+]
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestUserMeView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_get_authenticated_superuser(self):

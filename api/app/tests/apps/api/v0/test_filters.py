@@ -2,13 +2,15 @@ import unittest
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ImproperlyConfigured
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
+from django.urls import include, path
 from django.utils.http import urlencode
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
+from signals.apps.api.urls import signal_router_v0
 from signals.apps.api.v0.serializers import SignalAuthHALSerializerList
 from signals.apps.signals.models import Priority, Signal
 from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory, SignalFactory
@@ -22,6 +24,21 @@ STATUS_ENDPOINT = '/signals/auth/status/'
 LOCATION_ENDPOINT = '/signals/auth/location/'
 
 
+# V0 has been disabled but we still want to test the code, so for the tests we will add the endpoints
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = [
+    path('signals/', include([
+        path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+        path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),
+    ])),
+]
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestFilterBase(SignalsBaseApiTestCase):
 
     def setUp(self):
@@ -44,6 +61,7 @@ class TestFilterBase(SignalsBaseApiTestCase):
         return self.client.get(f'{endpoint}?{urlencode(querystring)}')
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestBboxFilter(TestFilterBase):
 
     def test_match_nothing(self):
@@ -117,6 +135,7 @@ class TestBboxFilter(TestFilterBase):
         self.assertEqual(response.json()['count'], 1)
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestLocatieFilter(TestFilterBase):
 
     def test_match_no_instance(self):
@@ -163,6 +182,7 @@ class TestLocatieFilter(TestFilterBase):
         self.assertEqual(response.json()['count'], 1)
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestPriorityFilter(SignalsBaseApiTestCase):
 
     def setUp(self):
@@ -204,6 +224,7 @@ class TestPriorityFilter(SignalsBaseApiTestCase):
         self.assertEqual(json_response['results'][0]['id'], 5)
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestFieldMappingOrderingFilter(TestCase):
 
     def setUp(self):
@@ -303,6 +324,7 @@ class TestFieldMappingOrderingFilter(TestCase):
                           '`ordering_field_mappings` attribute.'))
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestSubSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
         self.sub_cat_1 = CategoryFactory.create()
@@ -349,6 +371,7 @@ class TestSubSlugFilter(SignalsBaseApiTestCase):
         )
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestMainSlugFilter(SignalsBaseApiTestCase):
     def setUp(self):
         self.main_cat_1 = ParentCategoryFactory.create()
