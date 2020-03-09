@@ -52,11 +52,29 @@ of a departments and categories.
 
 * departments
   - A SIA specific Django model that describes a municipal department and the
-    categories accessible to it. This model furthermore tracks which department
-    is ultimately responsible for a certain category of `Signal` instances.
+    categories accessible to it. Whether a department can access a given
+    category and whether the department is responsible for a given category is
+    modelled as a many-to-many relation with two extra boolean properties 
+    `can_view` and `is_responsible`.
 * categories
   - A SIA specific Django model describing what category a `Signal` instance
-    belongs to.
+    belongs to. In practice the categories in SIA have a correspondence with
+    the departments of the Amsterdam municipality charged with maintaining the
+    public space (they are not general categories that could just be used by
+    another municipality).
+
+
+## Maintaining and Managing SIA Authorizations
+
+The SIA REST API supports the management of users, roles, departments, and
+categories. The SIA backoffice management interface implements the relevant
+endpoints, it however does not support the creation of new categories. Creation
+of a new category generally imply follow-up tasks such as retraining the
+machine learning model that SIA uses and a bulk re-categorization of existing
+`Signal` instances (meldingen in Dutch) to the new category. Since some of
+these tasks are technical in nature and it is possible to "break" SIA by
+misconfiguring it, we do not expose the ability to add new categories in the
+REST API (and the management interface). 
 
 Related:
 * [Django authorization](https://docs.djangoproject.com/en/2.2/topics/auth/)
@@ -65,7 +83,7 @@ Related:
 ## Backend Application Layers
 
 SIA, the Django project, is divided into several Django apps with specific
-responsibilities. The description of the datamodel in terms of Django models is
+responsibilities. The description of the data model in terms of Django models is
 implemented in the `signals.apps.signals` Django app. This application has the
 responsibility of keeping the data consistent, and allows atomic updates to
 several tables associated with `Signal` instances at once. We consider this the
