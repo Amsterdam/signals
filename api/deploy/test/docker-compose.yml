@@ -22,8 +22,6 @@ services:
     links:
     - database:signals
     environment:
-      COVERAGE_FILE: /tmp/.coverage
-      COVERAGE_DEBUG: config,sql
       DATABASE_NAME: signals
       DATABASE_USER: signals
       DATABASE_PASSWORD: insecure
@@ -31,4 +29,5 @@ services:
       DJANGO_SETTINGS_MODULE: signals.settings.testing
     volumes:
     - ./run_tests.sh:/app/run_tests.sh
+    user: root
     command: /app/run_tests.sh
