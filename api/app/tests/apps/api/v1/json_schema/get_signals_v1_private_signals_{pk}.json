@@ -359,12 +359,12 @@
 		"type": {
 			"type": "object",
 			"properties": {
-				"name": {
+				"code": {
 					"type": "string"
 				}
 			},
 			"required": [
-				"name"
+				"code"
 			]
 		}
 	},

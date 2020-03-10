@@ -137,9 +137,10 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
                 data = validated_data[_property]
                 data['created_by'] = user_email
 
-        type_data = validated_data.pop('type_assignment', {'name': 'SIG'})
-        type_data['created_by'] = user_email
-        validated_data['type'] = type_data
+        if 'type_assignment' in validated_data:
+            type_data = validated_data.pop('type_assignment')
+            type_data['created_by'] = user_email
+            validated_data['type'] = type_data
 
         if 'notes' in validated_data and validated_data['notes']:
             note_data = validated_data['notes'][0]

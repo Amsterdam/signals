@@ -330,7 +330,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # provided on creation.
         # Create initial Signal.
         create_initial_data = copy.deepcopy(self.create_initial_data)
-        create_initial_data['type'] = {'name': 'SIG'}
+        create_initial_data['type'] = {'code': 'REQ'}
 
         signal_count = Signal.objects.count()
         response = self.client.post(self.list_endpoint, create_initial_data, format='json')
@@ -341,8 +341,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = response.json()
         pk = response_json['id']
         signal = Signal.objects.get(id=pk)
-        self.assertEqual(signal.type_assignment.name, 'SIG')
-        self.assertEqual(response_json['type']['name'], 'SIG')
+        self.assertEqual(signal.type_assignment.name, 'REQ')
+        self.assertEqual(response_json['type']['code'], 'REQ')
 
         # JSONSchema validation
         new_url = response.json()['_links']['self']['href']
@@ -365,7 +365,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         pk = response_json['id']
         signal = Signal.objects.get(id=pk)
         self.assertEqual(signal.type_assignment.name, 'SIG')
-        self.assertEqual(response_json['type']['name'], 'SIG')
+        self.assertEqual(response_json['type']['code'], 'SIG')
 
         # JSONSchema validation
         new_url = response.json()['_links']['self']['href']
@@ -377,7 +377,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_create_initial_bad_type_400(self, validate_address_dict):
         # Create initial Signal.
         create_initial_data = copy.deepcopy(self.create_initial_data)
-        create_initial_data['type'] = {'name': 'GARBAGE'}
+        create_initial_data['type'] = {'code': 'GARBAGE'}
 
         signal_count = Signal.objects.count()
         response = self.client.post(self.list_endpoint, create_initial_data, format='json')
@@ -808,7 +808,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_type.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        data['type'] = 'GARBAGE'
+        data['type']['code'] = 'GARBAGE'
 
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 400)
