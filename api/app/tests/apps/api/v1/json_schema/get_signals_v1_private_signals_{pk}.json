@@ -355,6 +355,17 @@
 					]
 				}
 			]
+		},
+		"type": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name"
+			]
 		}
 	},
 	"required": [
@@ -367,6 +378,7 @@
 		"status",
 		"reporter",
 		"priority",
-		"notes"
+		"notes",
+		"type"
 	]
 }
