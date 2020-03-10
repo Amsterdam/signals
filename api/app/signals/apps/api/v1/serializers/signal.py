@@ -312,6 +312,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
     attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    type = _NestedTypeModelSerializer(source='type_assignment', read_only=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -339,6 +340,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'reporter',
             'status',
             'priority',
+            'type',
             'created_at',
             'updated_at',
             'incident_date_start',
