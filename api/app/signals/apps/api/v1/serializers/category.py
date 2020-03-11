@@ -114,7 +114,7 @@ class PrivateCategorySerializer(HALSerializer):
 class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
     identifier = serializers.SerializerMethodField()
     what = serializers.SerializerMethodField()
-    action = serializers.ReadOnlyField(source='get_action_display')
+    action = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     _category = serializers.IntegerField(source='object_id', read_only=True)
 
@@ -134,34 +134,32 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
         return f'{log.get_action_display().upper()}_CATEGORY_{log.id}'
 
     def get_what(self, log):
-        return log.get_action_display().upper()
+        return f'{log.get_action_display().upper()}_CATEGORY'
 
-    def get_description(self, log):
-        description = []
+    def get_action(self, log):
+        actions = []
         for key, value in log.data.items():
             if key == 'name':
-                title = f'Naam wijziging'
+                action = f'Naam gewijzigd:\n {value}'
             elif key == 'description':
-                title = f'Omschrijvings wijziging'
+                action = f'Omschrijving gewijzigd:\n {value}'
             elif key == 'slo':
-                title = f'Service level agreement wijziging'
+                try:
+                    sla = ServiceLevelObjective.objects.get(pk=value)
+                except ServiceLevelObjective.DoesNotExist:
+                    continue
 
-                sla_list = ServiceLevelObjective.objects.filter(pk__in=value)
-                sla_value = []
-                for sla in sla_list:
-                    if sla.use_calendar_days:
-                        sla_value.append(f'{sla.n_days} weekdagen')
-                    else:
-                        sla_value.append(f'{sla.n_days} werkdagen')
-                value = '\n'.join(sla_value)
+                if sla.use_calendar_days:
+                    action = f'Service level agreement gewijzigd:\n {sla.n_days} weekdagen'
+                else:
+                    action = f'Service level agreement gewijzigd:\n {sla.n_days} werkdagen'
             elif key == 'is_active':
-                title = f'Status wijziging'
-                value = 'Actief' if value else 'Inactief'
+                action = f'Status gewijzigd:\n {"Actief" if value else "Inactief"}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 
-            description.append({
-                'title': title,
-                'text': value
-            })
-        return description
+            actions.append(action)
+        return f'\n'.join(actions)
+
+    def get_description(self, log):
+        return None  # No description implemented yet
