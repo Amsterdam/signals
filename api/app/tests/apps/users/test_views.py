@@ -68,21 +68,13 @@ class TestUserMeView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(response_data), 2)
 
         change_log_data = response_data[0]
-        self.assertEqual(change_log_data['what'], 'UPDATED')
-        self.assertEqual(change_log_data['action'], 'Updated')
+        self.assertEqual(change_log_data['what'], 'UPDATED_USER')
         self.assertEqual(change_log_data['who'], self.superuser.username)
-        self.assertEqual(len(change_log_data['description']), 2)
-        self.assertEqual(change_log_data['description'][0]['title'], 'Achternaam gewijzigd')
-        self.assertEqual(change_log_data['description'][0]['text'], 'Patched')
-        self.assertEqual(change_log_data['description'][1]['title'], 'Status wijziging')
-        self.assertEqual(change_log_data['description'][1]['text'], 'Inactief')
+        self.assertIn('Achternaam gewijzigd:\n Patched', change_log_data['action'])
+        self.assertIn('Status wijziging:\n Inactief', change_log_data['action'])
 
         change_log_data = response_data[1]
-        self.assertEqual(change_log_data['what'], 'UPDATED')
-        self.assertEqual(change_log_data['action'], 'Updated')
+        self.assertEqual(change_log_data['what'], 'UPDATED_USER')
         self.assertEqual(change_log_data['who'], self.superuser.username)
-        self.assertEqual(len(change_log_data['description']), 2)
-        self.assertEqual(change_log_data['description'][0]['title'], 'Voornaam gewijzigd')
-        self.assertEqual(change_log_data['description'][0]['text'], 'Patched')
-        self.assertEqual(change_log_data['description'][1]['title'], 'Rol wijziging')
-        self.assertEqual(change_log_data['description'][1]['text'], group.name)
+        self.assertIn('Voornaam gewijzigd:\n Patched', change_log_data['action'])
+        self.assertIn(f'Rol wijziging:\n {group.name}', change_log_data['action'])

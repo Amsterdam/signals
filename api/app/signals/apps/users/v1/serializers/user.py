@@ -128,7 +128,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
     identifier = serializers.SerializerMethodField()
     what = serializers.SerializerMethodField()
-    action = serializers.ReadOnlyField(source='get_action_display')
+    action = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     _user = serializers.IntegerField(source='object_id', read_only=True)
 
@@ -148,9 +148,9 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
         return f'{log.get_action_display().upper()}_USER_{log.id}'
 
     def get_what(self, log):
-        return log.get_action_display().upper()
+        return f'{log.get_action_display().upper()}_USER'
 
-    def get_description(self, log):
+    def get_action(self, log):
         key_2_title = {
             'first_name': 'Voornaam gewijzigd',
             'last_name': 'Achternaam gewijzigd',
@@ -158,17 +158,15 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
             'groups': 'Rol wijziging',
         }
 
-        description = []
+        actions = []
         for key, value in log.data.items():
             if key == 'groups':
-                text = ', '.join(_get_groups_queryset().filter(id__in=value).values_list('name', flat=True))
+                value = ', '.join(_get_groups_queryset().filter(id__in=value).values_list('name', flat=True))
             elif key == 'is_active':
-                text = 'Actief' if value else 'Inactief'
-            else:
-                text = value
+                value = 'Actief' if value else 'Inactief'
 
-            description.append({
-                'title': key_2_title[key] if key in key_2_title else key,
-                'text': text
-            })
-        return description
+            actions.append(f'{key_2_title[key]}:\n {value if value else "-"}')
+        return f'\n'.join(actions)
+
+    def get_description(self, log):
+        return None

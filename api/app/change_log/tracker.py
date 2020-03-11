@@ -38,7 +38,9 @@ class BaseChangeTracker:
             except Exception:
                 self.data[field_name] = None
         elif isinstance(field, (models.ManyToManyRel, models.ManyToOneRel, models.ManyToManyField)):
-            return list(getattr(self.instance, field_name).values_list('pk', flat=True))
+            if self.instance.pk:
+                return list(getattr(self.instance, field_name).values_list('pk', flat=True))
+            return None
         return getattr(self.instance, field_name)
 
     def _get_previous_value(self, field):
