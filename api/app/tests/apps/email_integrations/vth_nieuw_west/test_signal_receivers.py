@@ -17,10 +17,9 @@ class TestSignalReceivers(TestCase):
             location__stadsdeel=STADSDEEL_NIEUWWEST
         )
 
-    @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     @mock.patch('signals.apps.email_integrations.vth_nieuw_west.signal_receivers.tasks',
                 autospec=True)
-    def test_create_initial_handler(self, mocked_tasks, zds_tasks):
+    def test_create_initial_handler(self, mocked_tasks):
         create_initial.send_robust(sender=self.__class__, signal_obj=self.signal)
         mocked_tasks.send_mail_vth_nieuw_west.delay.assert_called_once_with(pk=self.signal.id)
 

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
 # Declaring custom Django signals for our `SignalManager`.
+
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 create_child = DjangoSignal(providing_args=['signal_obj'])
 add_image = DjangoSignal(providing_args=['signal_obj'])
@@ -31,7 +32,7 @@ def send_signals(to_send):
 class SignalManager(models.Manager):
 
     def _create_initial_no_transaction(self, signal_data, location_data, status_data,
-                                       category_assignment_data, reporter_data, priority_data=None):
+                                       category_assignment_data, reporter_data, priority_data=None, type_data=None):
         """Create a new `Signal` object with all related objects.
             If a transaction is needed use SignalManager.create_initial
 
@@ -41,9 +42,10 @@ class SignalManager(models.Manager):
         :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
+        :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
-        from .models import Location, Status, CategoryAssignment, Reporter, Priority
+        from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
 
         signal = self.create(**signal_data)
 
@@ -58,6 +60,9 @@ class SignalManager(models.Manager):
         reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
+        type_data = type_data or {}  # If type_data is None a Type is created with the default "SIGNAL" value
+        Type.objects.create(**type_data, _signal_id=signal.pk)
+
         # Set Signal to dependent model instance foreign keys
         signal.location = location
         signal.status = status
@@ -69,7 +74,7 @@ class SignalManager(models.Manager):
         return signal
 
     def create_initial(self, signal_data, location_data, status_data, category_assignment_data,
-                       reporter_data, priority_data=None):
+                       reporter_data, priority_data=None, type_data=None):
         """Create a new `Signal` object with all related objects.
 
         :param signal_data: deserialized data dict
@@ -78,6 +83,7 @@ class SignalManager(models.Manager):
         :param category_assignment_data: deserialized data dict
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
+        :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
 
@@ -88,7 +94,8 @@ class SignalManager(models.Manager):
                 status_data=status_data,
                 category_assignment_data=category_assignment_data,
                 reporter_data=reporter_data,
-                priority_data=priority_data
+                priority_data=priority_data,
+                type_data=type_data,
             )
 
             transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,
@@ -106,7 +113,7 @@ class SignalManager(models.Manager):
         """
         # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
         from .models import (Attachment, CategoryAssignment, Location, Priority, Reporter,
-                             Signal, Status)
+                             Signal, Status, Type)
         from signals.apps.signals import workflow
 
         loop_counter = 0
@@ -147,7 +154,7 @@ class SignalManager(models.Manager):
 
                 reporter_data = {'_signal': child_signal}
                 reporter_data.update({
-                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'is_anonymized']  # noqa
+                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'email_anonymized', 'phone_anonymized']  # noqa
                 })
                 reporter = Reporter.objects.create(**reporter_data)
 
@@ -171,6 +178,16 @@ class SignalManager(models.Manager):
                 }
 
                 category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
+
+                if 'type' in validated_data:
+                    type_data = validated_data['type']  # Will create a type with the given name
+                elif parent_signal.type_assignment:
+                    type_data = {'name': parent_signal.type_assignment.name}  # noqa Will copy the type with name from the parent signal
+                else:
+                    type_data = {}  # Will create a default type with name "SIGNAL"
+
+                # Creates the Type for the child signal
+                Type.objects.create(**type_data, _signal_id=child_signal.pk)
 
                 # Deal with forward foreign keys from child signal
                 child_signal.location = location
@@ -224,18 +241,20 @@ class SignalManager(models.Manager):
         return self.add_attachment(image, signal)
 
     def add_attachment(self, file, signal):
-        from .models import Attachment
+        from .models import Attachment, Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             attachment = Attachment()
-            attachment._signal = signal
+            attachment._signal = locked_signal
             attachment.file = file
             attachment.save()
 
             if attachment.is_image:
-                add_image.send_robust(sender=self.__class__, signal_obj=signal)
+                add_image.send_robust(sender=self.__class__, signal_obj=locked_signal)
 
-            add_attachment.send_robust(sender=self.__class__, signal_obj=signal)
+            add_attachment.send_robust(sender=self.__class__, signal_obj=locked_signal)
 
         return attachment
 
@@ -263,10 +282,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Location object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
-            location, prev_location = self._update_location_no_transaction(data, signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            location, prev_location = self._update_location_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: update_location.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       location=location,
                                                                       prev_location=prev_location))
 
@@ -299,10 +322,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Status object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
-            status, prev_status = self._update_status_no_transaction(data=data, signal=signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            status, prev_status = self._update_status_no_transaction(data=data, signal=locked_signal)
             transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
-                                                                    signal_obj=signal,
+                                                                    signal_obj=locked_signal,
                                                                     status=status,
                                                                     prev_status=prev_status))
         return status
@@ -339,12 +366,16 @@ class SignalManager(models.Manager):
             # New category is the same as the old category. Skip
             return
 
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             category_assignment, prev_category_assignment = \
-                self._update_category_assignment_no_transaction(data, signal)
+                self._update_category_assignment_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: update_category_assignment.send_robust(
                 sender=self.__class__,
-                signal_obj=signal,
+                signal_obj=locked_signal,
                 category_assignment=category_assignment,
                 prev_category_assignment=prev_category_assignment))
 
@@ -357,17 +388,19 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Reporter object
         """
-        from .models import Reporter
+        from .models import Reporter, Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             prev_reporter = signal.reporter
 
-            reporter = Reporter.objects.create(**data, _signal_id=signal.id)
+            reporter = Reporter.objects.create(**data, _signal_id=locked_signal.id)
             signal.reporter = reporter
             signal.save()
 
             transaction.on_commit(lambda: update_reporter.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       reporter=reporter,
                                                                       prev_reporter=prev_reporter))
 
@@ -398,10 +431,14 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Priority object
         """
+        from signals.apps.signals.models import Signal
+
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             priority, prev_priority = self._update_priority_no_transaction(data, signal)
             transaction.on_commit(lambda: update_priority.send_robust(sender=self.__class__,
-                                                                      signal_obj=signal,
+                                                                      signal_obj=locked_signal,
                                                                       priority=priority,
                                                                       prev_priority=prev_priority))
 
@@ -425,19 +462,22 @@ class SignalManager(models.Manager):
         :param data: deserialized data dict
         :returns: Note object
         """
+        from signals.apps.signals.models import Signal
 
         # Added for completeness of the internal API, and firing of Django
         # signals upon creation of a Note.
         with transaction.atomic():
-            note = self._create_note_no_transaction(data, signal)
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
+            note = self._create_note_no_transaction(data, locked_signal)
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
-                                                                  signal_obj=signal,
+                                                                  signal_obj=locked_signal,
                                                                   note=note))
-            signal.save()
+            locked_signal.save()
 
         return note
 
-    def update_multiple(self, data, signal):
+    def update_multiple(self, data, signal):  # noqa: C901
         """
         Perform one atomic update on multiple properties of `Signal` object.
 
@@ -447,25 +487,28 @@ class SignalManager(models.Manager):
         :param signal: Signal object
         :returns: Updated Signal object
         """
+        from signals.apps.signals.models import Signal
 
         with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+
             to_send = []
             sender = self.__class__
 
             if 'location' in data:
-                location, prev_location = self._update_location_no_transaction(data['location'], signal)  # noqa: E501
+                location, prev_location = self._update_location_no_transaction(data['location'], locked_signal)  # noqa: E501
                 to_send.append((update_location, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'location': location,
                     'prev_location': prev_location
                 }))
 
             if 'status' in data:
-                status, prev_status = self._update_status_no_transaction(data['status'], signal)
+                status, prev_status = self._update_status_no_transaction(data['status'], locked_signal)
                 to_send.append((update_status, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'status': status,
                     'prev_status': prev_status
                 }))
@@ -476,24 +519,24 @@ class SignalManager(models.Manager):
                 # the latest version of a Signal can be mutated.)
                 if 'category' not in data['category_assignment']:
                     raise ValidationError('Category not found in data')
-                elif signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
+                elif locked_signal.category_assignment.category.id != data['category_assignment']['category'].id:  # noqa: E501
                     category_assignment, prev_category_assignment = \
                         self._update_category_assignment_no_transaction(
-                            data['category_assignment'], signal)
+                            data['category_assignment'], locked_signal)
 
                     to_send.append((update_category_assignment, {
                         'sender': sender,
-                        'signal_obj': signal,
+                        'signal_obj': locked_signal,
                         'category_assignment': category_assignment,
                         'prev_category_assignment': prev_category_assignment
                     }))
 
             if 'priority' in data:
                 priority, prev_priority = \
-                    self._update_priority_no_transaction(data['priority'], signal)
+                    self._update_priority_no_transaction(data['priority'], locked_signal)
                 to_send.append((update_priority, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'priority': priority,
                     'prev_priority': prev_priority
                 }))
@@ -501,15 +544,42 @@ class SignalManager(models.Manager):
             if 'notes' in data:
                 # The 0 index is there because we only allow one note to be
                 # added per PATCH.
-                note = self._create_note_no_transaction(data['notes'][0], signal)
+                note = self._create_note_no_transaction(data['notes'][0], locked_signal)
                 to_send.append((create_note, {
                     'sender': sender,
-                    'signal_obj': signal,
+                    'signal_obj': locked_signal,
                     'note': note
                 }))
+
+            if 'type' in data:
+                self._update_type_no_transaction(data['type'], locked_signal)
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
-        signal.refresh_from_db()
-        return signal
+        locked_signal.refresh_from_db()
+        return locked_signal
+
+    def _update_type_no_transaction(self, data, signal):
+        """Update (create new) `Type` object for given `Signal` object.
+           If a transaction is needed use SignalManager.update_type
+
+        :param data: deserialized data dict
+        :param signal: Signal object
+        :returns: Type object
+        """
+        from signals.apps.signals.models import Type
+
+        signal_type = Type.objects.create(**data, _signal_id=signal.pk)
+        return signal_type
+
+    def update_type(self, data, signal):
+        """Create a new `Type` object for a given `Signal` object.
+
+        :param data: deserialized data dict
+        :returns: Type object
+        """
+        with transaction.atomic():
+            signal_type = self._update_type_no_transaction(data=data, signal=signal)
+
+        return signal_type

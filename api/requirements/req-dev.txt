@@ -6,6 +6,3 @@ django-debug-toolbar
 
 # Let's also add the testing requirements
 -r req-test.txt
-
-# ZDS packages
--r req-zds.txt

@@ -21,8 +21,8 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
 
         self.department = DepartmentFactory.create()
 
-        self.category = ParentCategoryFactory.create()
-        self.subcategory = CategoryFactory.create(parent=self.category)
+        self.maincategory = ParentCategoryFactory.create()
+        self.subcategory = CategoryFactory.create(parent=self.maincategory)
 
     def test_get_list(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -162,3 +162,47 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
 
         response = self.client.delete(self.detail_endpoint.format(pk=1))
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_SIG_2287(self):
+        # Connect a parent category to the Department so that we can check the URL generated for this category
+        self.maincategory.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
+
+        # Connect a child category to the Department so that we can check the URL generated for this category
+        self.subcategory.departments.add(self.department, through_defaults={'is_responsible': True, 'can_view': True})
+
+        # This should be the link of the parent category
+        expected_parent_url = 'http://testserver/signals/v1/public/terms/categories/{}'.format(self.maincategory.slug)
+
+        # This should be the link of the child category
+        expected_child_url = 'http://testserver/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
+            self.subcategory.parent.slug, self.subcategory.slug
+        )
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(self.detail_endpoint.format(pk=self.department.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(len(data['categories']), 2)
+
+        # Check the link
+        category_assignment = data['categories'][0]
+        category = category_assignment['category']
+        category_url = category['_links']['self']['href']
+        self.assertEqual(expected_parent_url, category_url)
+
+        if 'sub_categories' in category_url:
+            self.assertEqual(expected_child_url, category_url)
+        else:
+            self.assertEqual(expected_parent_url, category_url)
+
+        # Check the link
+        category_assignment = data['categories'][1]
+        category = category_assignment['category']
+        category_url = category['_links']['self']['href']
+        self.assertEqual(expected_child_url, category_url)
+
+        if 'sub_categories' in category_url:
+            self.assertEqual(expected_child_url, category_url)
+        else:
+            self.assertEqual(expected_parent_url, category_url)

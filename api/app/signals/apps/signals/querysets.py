@@ -13,6 +13,6 @@ class SignalQuerySet(QuerySet):
                     category_assignment__category__departments__in=list(
                         user.profile.departments.values_list('pk', flat=True)
                     )
-                )
+                ).distinct()
 
         return self.all()

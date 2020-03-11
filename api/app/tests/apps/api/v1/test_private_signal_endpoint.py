@@ -134,7 +134,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         # SIA currently does 4 updates before Signal is fully in the system
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(response.json()), 5)
 
         # JSONSchema validation
         data = response.json()
@@ -618,8 +618,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         del(data['category']['sub_category'])
         data['category']['category_url'] = self.link_subcategory
 
-        Signal.actions.update_category_assignment({'category': self.subcategory},
-                                                  self.signal_no_image)
+        Signal.actions.update_category_assignment({'category': self.subcategory}, self.signal_no_image)
         self.signal_no_image.refresh_from_db()
 
         # Signal is initialised with a known category.
@@ -1095,10 +1094,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Change the category
         prev_category = self.signal_no_image.category_assignment.category
         new_category = CategoryFactory.create()
-        Signal.actions.update_category_assignment({'category': new_category},
-                                                  self.signal_no_image)
-        Signal.actions.update_category_assignment({'category': prev_category},
-                                                  self.signal_no_image)
+
+        Signal.actions.update_category_assignment({'category': new_category}, self.signal_no_image)
+        self.signal_no_image.refresh_from_db()
+
+        Signal.actions.update_category_assignment({'category': prev_category}, self.signal_no_image)
+        self.signal_no_image.refresh_from_db()
 
         # Still should not get the signal_no_image in the response because we changed the category
         # back to the original category
@@ -1328,6 +1329,71 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('extra_properties', data)
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(2, Signal.objects.count())
+
+    def test_missing_email_or_phone_as_empty_string(self):
+        """
+        For backwards compatibility: missing email or phone properties serialize as empty strings.
+
+        Note: representation of missing values in database was changed from
+        empty strings to null / None. We want to keep the REST API stable,
+        hence this test. (related to SIG-1976)
+        """
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_with_image.id)
+
+        # first check serialization when values are not None
+        self.signal_with_image.reporter.email = 'm.elder@example.com'
+        self.signal_with_image.reporter.phone = '0123456789'
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], 'm.elder@example.com')
+        self.assertEqual(response_json['reporter']['phone'], '0123456789')
+
+        # check rendering of missing email and phone:
+        self.signal_with_image.reporter.email = None
+        self.signal_with_image.reporter.phone = None
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '')
+        self.assertEqual(response_json['reporter']['phone'], '')
+
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_no_reporter(self, validate_address_dict):
+        # Create initial Signal, check that it reached the database.
+        initial_data = copy.deepcopy(self.create_initial_data)
+        initial_data['reporter'] = {}
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+
+        pk = response_json['id']
+        new_signal = Signal.objects.get(id=pk)
+        self.assertEqual(new_signal.reporter.email, None)
+        self.assertEqual(new_signal.reporter.phone, None)
+
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_email_phone_empty_string(self, validate_address_dict):
+        # Create initial Signal, check that it reached the database.
+        initial_data = copy.deepcopy(self.create_initial_data)
+        initial_data['reporter']['email'] = ''
+        initial_data['reporter']['phone'] = ''
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+
+        pk = response_json['id']
+        new_signal = Signal.objects.get(id=pk)
+        self.assertEqual(new_signal.reporter.email, None)
+        self.assertEqual(new_signal.reporter.phone, None)
 
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

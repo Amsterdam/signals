@@ -15,9 +15,8 @@ class TestSignalReceivers(TestCase):
             category_assignment__category__name='Geluidsoverlast muziek'
         )
 
-    @mock.patch('signals.apps.zds.signal_receivers.tasks', autospec=True)
     @mock.patch('signals.apps.email_integrations.flex_horeca.signal_receivers.tasks', autospec=True)
-    def test_create_initial_handler(self, mocked_tasks, zds_tasks):
+    def test_create_initial_handler(self, mocked_tasks):
         create_initial.send_robust(sender=self.__class__, signal_obj=self.signal)
         mocked_tasks.send_mail_flex_horeca.delay.assert_called_once_with(pk=self.signal.id)
 

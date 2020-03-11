@@ -23,7 +23,8 @@ from signals.apps.signals.models import (
     Signal,
     Status,
     StatusMessageTemplate,
-    StoredSignalFilter
+    StoredSignalFilter,
+    Type
 )
 from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES_API
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -77,6 +78,14 @@ class SignalFactory(factory.DjangoModelFactory):
         self.category_assignment = self.category_assignments.last()
         self.reporter = self.reporters.last()
         self.priority = self.priorities.last()
+
+    @factory.post_generation
+    def set_default_type(self, create, extracted, **kwargs):
+        """
+        This will add the default Type to the signal for a factory created signal
+        """
+        if create:
+            TypeFactory(_signal=self)  # By default the type is set to "SIG (SIGNAL)"
 
 
 class SignalFactoryWithImage(SignalFactory):
@@ -147,9 +156,11 @@ class ReporterFactory(factory.DjangoModelFactory):
 
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory', reporter=None)
 
-    phone = fuzzy.FuzzyText(length=10, chars=string.digits)
     email = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
-    is_anonymized = False
+    email_anonymized = False
+
+    phone = fuzzy.FuzzyText(length=10, chars=string.digits)
+    phone_anonymized = False
 
     @factory.post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
@@ -274,3 +285,11 @@ class StoredSignalFilterFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = StoredSignalFilter
+
+
+class TypeFactory(factory.DjangoModelFactory):
+    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
+    name = Type.SIGNAL  # Default type is a "Signal" (Melding in Dutch)
+
+    class Meta:
+        model = Type

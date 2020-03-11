@@ -11,7 +11,6 @@ Structure
     req-base.txt    # Contains all packages needed to run the project (Except for Django)
     req-dev.txt     # Contains all development packages and includes all files needed to run the project locally for development 
     req-test.txt    # Contains all packages for testing
-    req-zds.txt     # Contains all packages for zds
 requirements.txt    # The frozen requirements set for deployment
 ```
 
