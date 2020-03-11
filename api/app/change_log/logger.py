@@ -27,8 +27,9 @@ class ChangeLogger:
     # The ChangeLoggerMiddleware will place the request on this thread so that we can get the user from it
     thread = threading.local()
 
-    def __init__(self, tracker_class=None):
+    def __init__(self, tracker_class=None, track_fields='__all__'):
         self._tracker_class = tracker_class or ChangeTracker
+        self._track_fields = track_fields
 
     def contribute_to_class(self, cls, name, **kwargs):
         """
@@ -51,7 +52,7 @@ class ChangeLogger:
             # Only initialize for instances that are an instance of the model that the logger is declared on
             return
 
-        tracker = self._tracker_class(instance=instance)
+        tracker = self._tracker_class(instance=instance, track_fields=self._track_fields)
         setattr(instance, '_change_tracker', tracker)
         tracker.store_state()
 

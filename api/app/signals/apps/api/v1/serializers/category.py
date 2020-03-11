@@ -144,15 +144,8 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
             elif key == 'description':
                 action = f'Omschrijving gewijzigd:\n {value}'
             elif key == 'slo':
-                try:
-                    sla = ServiceLevelObjective.objects.get(pk=value)
-                except ServiceLevelObjective.DoesNotExist:
-                    continue
-
-                if sla.use_calendar_days:
-                    action = f'Service level agreement gewijzigd:\n {sla.n_days} weekdagen'
-                else:
-                    action = f'Service level agreement gewijzigd:\n {sla.n_days} werkdagen'
+                sla = ServiceLevelObjective.objects.get(pk=value[0])
+                action = f'Service level agreement gewijzigd:\n {sla.n_days} {"week" if sla.use_calendar_days else "werk"}dagen'  # noqa
             elif key == 'is_active':
                 action = f'Status gewijzigd:\n {"Actief" if value else "Inactief"}'
             else:
