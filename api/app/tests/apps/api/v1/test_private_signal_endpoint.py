@@ -343,6 +343,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         signal = Signal.objects.get(id=pk)
         self.assertEqual(signal.type_assignment.name, 'REQ')
         self.assertEqual(response_json['type']['code'], 'REQ')
+        self.assertIn('created_at', response_json['type'])
+        self.assertIn('created_by', response_json['type'])
 
         # JSONSchema validation
         new_url = response.json()['_links']['self']['href']
@@ -366,6 +368,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         signal = Signal.objects.get(id=pk)
         self.assertEqual(signal.type_assignment.name, 'SIG')
         self.assertEqual(response_json['type']['code'], 'SIG')
+        self.assertIn('created_at', response_json['type'])
+        self.assertIn('created_by', response_json['type'])
 
         # JSONSchema validation
         new_url = response.json()['_links']['self']['href']

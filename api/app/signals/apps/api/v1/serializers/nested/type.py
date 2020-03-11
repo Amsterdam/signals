@@ -11,4 +11,6 @@ class _NestedTypeModelSerializer(SIAModelSerializer):
         model = Type
         fields = (
             'code',
+            'created_at',
+            'created_by'
         )

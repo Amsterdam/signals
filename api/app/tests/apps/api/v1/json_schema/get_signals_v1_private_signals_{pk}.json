@@ -361,6 +361,19 @@
 			"properties": {
 				"code": {
 					"type": "string"
+				},
+				"created_at": {
+					"type": "string"
+				},
+				"created_by": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
 				}
 			},
 			"required": [
