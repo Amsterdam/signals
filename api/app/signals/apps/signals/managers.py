@@ -241,20 +241,23 @@ class SignalManager(models.Manager):
         return self.add_attachment(image, signal)
 
     def add_attachment(self, file, signal):
-        from .models import Attachment, Signal
+        from .models import Attachment
 
         with transaction.atomic():
-            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-
+            # Do not take lock, uploads are slow and the lock is not needed for
+            # consistency of the history and the signal itself because there
+            # is no foreign key from Signal to Attachment.
+            # Fixes: SIG-2367 (second and third upload fail because database
+            # is locked while the first upload is taking place).
             attachment = Attachment()
-            attachment._signal = locked_signal
+            attachment._signal = signal
             attachment.file = file
             attachment.save()
 
             if attachment.is_image:
-                add_image.send_robust(sender=self.__class__, signal_obj=locked_signal)
+                add_image.send_robust(sender=self.__class__, signal_obj=signal)
 
-            add_attachment.send_robust(sender=self.__class__, signal_obj=locked_signal)
+            add_attachment.send_robust(sender=self.__class__, signal_obj=signal)
 
         return attachment
 
