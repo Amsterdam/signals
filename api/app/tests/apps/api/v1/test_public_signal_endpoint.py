@@ -72,6 +72,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual("Amstel 1 1011PN Amsterdam", signal.location.address_text)
         self.assertEqual("Luidruchtige vergadering", signal.text)
         self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
+        self.assertEqual('SIG', signal.type_assignment.name)
 
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
@@ -253,3 +254,16 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
         self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
         self.assertEqual(data['extra_properties'][2]['category_url'], 'this/is/a/different/category/we/do/not/want/this/in/the/response') # noqa
+
+    def test_signal_type_cannot_be_posted(self):
+        initial_data = self.create_initial_data.copy()
+
+        initial_data['type'] = {'code', 'REQ'}
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        self.assertEqual(201, response.status_code)
+
+        # Check that both in the API and in the database the new Signal is of
+        # type SIG (the default, even though we tried to set something else).
+        signal = Signal.objects.last()
+        self.assertEqual(signal.type_assignment.name, 'SIG')
+        self.assertEqual(response.json()['type']['code'], 'SIG')

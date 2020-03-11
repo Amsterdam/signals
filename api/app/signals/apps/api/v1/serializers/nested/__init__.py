@@ -13,6 +13,7 @@ from signals.apps.api.v1.serializers.nested.status import (
     _NestedPublicStatusModelSerializer,
     _NestedStatusModelSerializer
 )
+from signals.apps.api.v1.serializers.nested.type import _NestedTypeModelSerializer
 
 __all__ = (
     '_NestedLocationModelSerializer',
@@ -24,4 +25,5 @@ __all__ = (
     '_NestedNoteModelSerializer',
     '_NestedAttachmentModelSerializer',
     '_NestedSplitSignalSerializer',
+    '_NestedTypeModelSerializer',
 )

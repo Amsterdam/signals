@@ -323,6 +323,71 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_with_type(self, validate_address_dict):
+        # Type should be present in serialization of created Signal if it is
+        # provided on creation.
+        # Create initial Signal.
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data['type'] = {'code': 'REQ'}
+
+        signal_count = Signal.objects.count()
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # check that our new signal has a type
+        response_json = response.json()
+        pk = response_json['id']
+        signal = Signal.objects.get(id=pk)
+        self.assertEqual(signal.type_assignment.name, 'REQ')
+        self.assertEqual(response_json['type']['code'], 'REQ')
+        self.assertIn('created_at', response_json['type'])
+        self.assertIn('created_by', response_json['type'])
+
+        # JSONSchema validation
+        new_url = response.json()['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_without_type(self, validate_address_dict):
+        # Type should be present in serialization of created Signal, even if it
+        # was not initially provided.
+        # Create initial Signal.
+        signal_count = Signal.objects.count()
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # check that our new signal has a type
+        response_json = response.json()
+        pk = response_json['id']
+        signal = Signal.objects.get(id=pk)
+        self.assertEqual(signal.type_assignment.name, 'SIG')
+        self.assertEqual(response_json['type']['code'], 'SIG')
+        self.assertIn('created_at', response_json['type'])
+        self.assertIn('created_by', response_json['type'])
+
+        # JSONSchema validation
+        new_url = response.json()['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_bad_type_400(self, validate_address_dict):
+        # Create initial Signal.
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data['type'] = {'code': 'GARBAGE'}
+
+        signal_count = Signal.objects.count()
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Signal.objects.count(), signal_count)
+
     @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict")
     def test_update_location(self, validate_address_dict):
         # Partial update to update the location, all interaction via API.
@@ -698,6 +763,59 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # JSONSchema validation
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_type(self):
+        # Partial update to update the type, all interaction via API.
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+
+        # check that only one Type is in the history
+        querystring = urlencode({'what': 'UPDATE_TYPE_ASSIGNMENT'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_type.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two type assignments is in the history
+        self.signal_no_image.refresh_from_db()
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # check that the correct type
+        self.signal_no_image.refresh_from_db()
+        self.assertEqual(
+            self.signal_no_image.type_assignment.name,
+            'SIG'
+        )
+
+        # JSONSchema validation
+        response_json = response.json()
+        self.assertJsonSchema(self.list_history_schema, response_json)
+
+    def test_update_type_bad_data_400(self):
+        # Partial update to update the type, bad input data
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+
+        # check that only one Type is in the history
+        querystring = urlencode({'what': 'UPDATE_TYPE_ASSIGNMENT'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_type.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        data['type']['code'] = 'GARBAGE'
+
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 400)
 
     def test_put_not_allowed(self):
         # Partial update to update the status, all interaction via API.

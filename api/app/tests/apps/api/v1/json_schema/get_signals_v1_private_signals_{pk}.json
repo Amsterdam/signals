@@ -355,6 +355,30 @@
 					]
 				}
 			]
+		},
+		"type": {
+			"type": "object",
+			"properties": {
+				"code": {
+					"type": "string"
+				},
+				"created_at": {
+					"type": "string"
+				},
+				"created_by": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			},
+			"required": [
+				"code"
+			]
 		}
 	},
 	"required": [
@@ -367,6 +391,7 @@
 		"status",
 		"reporter",
 		"priority",
-		"notes"
+		"notes",
+		"type"
 	]
 }

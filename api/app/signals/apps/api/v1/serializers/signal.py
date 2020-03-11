@@ -25,7 +25,8 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPriorityModelSerializer,
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
-    _NestedStatusModelSerializer
+    _NestedStatusModelSerializer,
+    _NestedTypeModelSerializer
 )
 from signals.apps.api.v1.validation import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
@@ -72,6 +73,12 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SignalCreateNotePermission,)
     )
 
+    type = _NestedTypeModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,),
+        source='type_assignment',
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -96,6 +103,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'reporter',
             'priority',
             'notes',
+            'type',
             'source',
             'text',
             'text_extra',
@@ -128,6 +136,11 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             if _property in validated_data:
                 data = validated_data[_property]
                 data['created_by'] = user_email
+
+        if 'type_assignment' in validated_data:
+            type_data = validated_data.pop('type_assignment')
+            type_data['created_by'] = user_email
+            validated_data['type'] = type_data
 
         if 'notes' in validated_data and validated_data['notes']:
             note_data = validated_data['notes'][0]
@@ -173,6 +186,12 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         permission_classes=(SignalCreateInitialPermission,)
     )
 
+    type = _NestedTypeModelSerializer(
+        required=False,
+        permission_classes=(SIAPermissions,),
+        source='type_assignment',
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -200,6 +219,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'category',
             'reporter',
             'priority',
+            'type',
             'created_at',
             'updated_at',
             'incident_date_start',
@@ -242,11 +262,13 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         category_assignment_data = validated_data.pop('category_assignment')
         category_assignment_data['created_by'] = logged_in_user.email
 
-        # We will use the priority on the incoming message if present.
+        # We will use the priority and signal type on the incoming message if present.
         priority_data = validated_data.pop('priority', {
             'priority': Priority.PRIORITY_NORMAL
         })
         priority_data['created_by'] = logged_in_user.email
+        type_data = validated_data.pop('type_assignment', {})
+        type_data['created_by'] = logged_in_user.email
 
         signal = Signal.actions.create_initial(
             validated_data,
@@ -254,7 +276,8 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             INITIAL_STATUS,
             category_assignment_data,
             reporter_data,
-            priority_data
+            priority_data,
+            type_data
         )
         return signal
 
@@ -289,6 +312,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     category = _NestedCategoryModelSerializer(source='category_assignment')
     priority = _NestedPriorityModelSerializer(required=False, read_only=True)
     attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
+    type = _NestedTypeModelSerializer(source='type_assignment', read_only=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -316,6 +340,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'reporter',
             'status',
             'priority',
+            'type',
             'created_at',
             'updated_at',
             'incident_date_start',
