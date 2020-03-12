@@ -27,8 +27,9 @@ class ChangeLogger:
     # The ChangeLoggerMiddleware will place the request on this thread so that we can get the user from it
     thread = threading.local()
 
-    def __init__(self, tracker_class=None):
+    def __init__(self, tracker_class=None, track_fields='__all__'):
         self._tracker_class = tracker_class or ChangeTracker
+        self._track_fields = track_fields
 
     def contribute_to_class(self, cls, name, **kwargs):
         """
@@ -51,7 +52,7 @@ class ChangeLogger:
             # Only initialize for instances that are an instance of the model that the logger is declared on
             return
 
-        tracker = self._tracker_class(instance=instance)
+        tracker = self._tracker_class(instance=instance, track_fields=self._track_fields)
         setattr(instance, '_change_tracker', tracker)
         tracker.store_state()
 
@@ -69,16 +70,18 @@ class ChangeLogger:
             # Call the original save function
             original_save_return = original_save(**kwargs)
 
+            if created:
+                return original_save_return
+
             tracker = getattr(instance, '_change_tracker')
             instance_changed = tracker.instance_changed
-
-            if created or not created and instance_changed:
+            if instance_changed:
                 who = None
-                if hasattr(self.thread, 'request'):
-                    who = self.thread.request.user.email if hasattr(self.thread.request, 'user') else None
+                if hasattr(self.thread, 'request') and hasattr(self.thread.request, 'user'):
+                    who = self.thread.request.user.username if hasattr(self.thread.request.user, 'username') else None
                 Log.objects.create(
                     object=instance,
-                    action='I' if created else 'U',
+                    action='U',
                     who=who,
                     data=json.dumps(tracker.changed_data())
                 )

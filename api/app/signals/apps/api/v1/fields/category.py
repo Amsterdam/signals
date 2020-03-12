@@ -112,6 +112,7 @@ class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFie
                 href=self.get_url(value, 'private-category-detail', request, None),
                 public=self._get_public_url(obj=value, request=request),
              )),
+            ('archives', dict(href=self.get_url(value, 'private-category-history', request, None))),
             ('sia:status-message-templates', dict(
                 href=self._get_status_message_templates_url(obj=value, request=request)
             ))

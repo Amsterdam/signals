@@ -18,24 +18,12 @@ class TestChangeLog(TestCase):
             test_instance = TestModel(title='The title')
             test_instance.save()
 
-            self.assertEqual(1, test_instance.logs.count())
-
-            log_item = test_instance.logs.first()
-
-            self.assertEqual(test_instance.pk, log_item.object_id)
-            self.assertEqual('I', log_item.action)
-            self.assertEqual(log_item.when, timezone.now())
-            self.assertIsNone(log_item.who)
-
-            self.assertEqual(1, len(log_item.data))
-            self.assertEqual(log_item.data['id'], test_instance.pk)  # side-effect of the test only model
-
         # Update the title
         with freeze_time('2020-02-03T13:00:00'):
             test_instance.title = 'Title changed'
             test_instance.save()
 
-            self.assertEqual(2, test_instance.logs.count())
+            self.assertEqual(1, test_instance.logs.count())
 
             log_item = test_instance.logs.first()
 
@@ -55,7 +43,7 @@ class TestChangeLog(TestCase):
             test_instance.active = False
             test_instance.save()
 
-            self.assertEqual(3, test_instance.logs.count())
+            self.assertEqual(2, test_instance.logs.count())
 
             log_item = test_instance.logs.first()
 

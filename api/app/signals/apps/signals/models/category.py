@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.urls import resolve
 from django_extensions.db.fields import AutoSlugField
 
+from change_log.logger import ChangeLogger
+
 
 class CategoryManager(models.Manager):
     def get_from_url(self, url):
@@ -77,6 +79,8 @@ class Category(models.Model):
     is_active = models.BooleanField(default=True)
 
     description = models.TextField(null=True, blank=True)
+
+    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', ))
 
     objects = CategoryManager()
 

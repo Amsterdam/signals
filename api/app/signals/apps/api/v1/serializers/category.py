@@ -1,6 +1,7 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
+from change_log.models import Log
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
@@ -108,3 +109,50 @@ class PrivateCategorySerializer(HALSerializer):
             instance.refresh_from_db()
 
         return super(PrivateCategorySerializer, self).update(instance, validated_data)
+
+
+class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
+    identifier = serializers.SerializerMethodField()
+    what = serializers.SerializerMethodField()
+    action = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    _category = serializers.IntegerField(source='object_id', read_only=True)
+
+    class Meta:
+        model = Log
+        fields = (
+            'identifier',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_category',
+        )
+
+    def get_identifier(self, log):
+        return f'{log.get_action_display().upper()}_CATEGORY_{log.id}'
+
+    def get_what(self, log):
+        return f'{log.get_action_display().upper()}_CATEGORY'
+
+    def get_action(self, log):
+        actions = []
+        for key, value in log.data.items():
+            if key == 'name':
+                action = f'Naam gewijzigd:\n {value}'
+            elif key == 'description':
+                action = f'Omschrijving gewijzigd:\n {value}'
+            elif key == 'slo':
+                sla = ServiceLevelObjective.objects.get(pk=value[0])
+                action = f'Service level agreement gewijzigd:\n {sla.n_days} {"week" if sla.use_calendar_days else "werk"}dagen'  # noqa
+            elif key == 'is_active':
+                action = f'Status gewijzigd:\n {"Actief" if value else "Inactief"}'
+            else:
+                continue  # We do not show other tracked values, so on to the next one
+
+            actions.append(action)
+        return f'\n'.join(actions)
+
+    def get_description(self, log):
+        return None  # No description implemented yet
