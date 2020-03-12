@@ -29,4 +29,5 @@ services:
       DJANGO_SETTINGS_MODULE: signals.settings.testing
     volumes:
     - ./run_tests.sh:/app/run_tests.sh
+    user: root
     command: /app/run_tests.sh
