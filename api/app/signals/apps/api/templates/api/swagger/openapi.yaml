@@ -596,6 +596,8 @@ components:
           $ref: '#/components/schemas/reporterInput'
         priority:
           $ref: '#/components/schemas/priorityInput'
+        type:
+          $ref: '#/components/schemas/typeInput'
         notes:
           $ref: '#/components/schemas/notesInput'
         incident_date_start:
@@ -630,6 +632,8 @@ components:
           $ref: '#/components/schemas/priorityInput'
         notes:
           $ref: '#/components/schemas/notesInput'
+        type:
+          $ref: '#/components/schemas/typeInput'
 
     userCreate:
       type: object
@@ -774,6 +778,13 @@ components:
         priority:
           $ref: '#/components/schemas/priorityChoices'
 
+    typeInput:
+      description: JSON data for type updates.
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/typeChoices'
+
     notesInput:
       description: JSON data for notes updates.
       type: array
@@ -814,9 +825,21 @@ components:
         - "send failed"
         - "done external"
 
+    contactDetailsPresentChoices:
+      description: Possible values for the `contact_details` filter.
+      type: string
+      enum:
+        - none
+        - phone
+        - email
+
     priorityChoices:
       type: string
       enum: ['normal', 'high', 'low']
+
+    typeChoices:
+      type: string
+      enum: ['SIG', 'REQ', 'QUE', 'COM', 'MAI']
 
     anonymousChoices:
       type: string
