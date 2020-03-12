@@ -8,8 +8,8 @@ class BaseChangeTracker:
 
     TODO: Fix ManyToManyRel and ManyToOneRel to be logged,
           for now we have a workaround. In the serializers of the signal project we add the many to many relations
-          and also call the save method. This way the ChangeLogger will be able to activate the tracker. The tracker
-          needs to store and check the relations on init and save to see if it has changed or not.
+          and also call the save/update methods. This way the ChangeLogger will be able to activate the tracker. The
+          tracker needs to store and check the relations on init and save to see if it has changed or not.
     """
     _track_fields = '__all__'  # By default track all fields
 
