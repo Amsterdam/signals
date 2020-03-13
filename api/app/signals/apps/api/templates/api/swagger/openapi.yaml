@@ -59,7 +59,7 @@ paths:
           in: query
           description: Filter returns only signals with specified status.
           schema:
-            $ref: '#/components/schemas/stateChoices'
+            $ref: '#/components/schemas/StatusStateChoices'
           required: false
         - name: maincategory_slug
           description: Filter returns only signals with matching main category
@@ -83,67 +83,101 @@ paths:
             details, `phone` for the presence of a reporter's phone number, and
             `email` for the presence of a reporter's email address.
           schema:
-            $ref: '#/components/schemas/contactDetailsPresentChoices'
+            type: string
+            enum:
+              - none
+              - phone
+              - email
           required: false
       responses:
         '200':
           description: List of signals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalListGet'
         '401':
           description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
       security:
-      - OAuth2:
-        - SIG/ALL
+        - OAuth2:
+            - SIG/ALL
     post:
-      description: "Create a new signal."
+      description: Creates a new signal
       requestBody:
         description: Serialized signal data.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/signalCreate'
+              $ref: '#/components/schemas/V1PrivateSignalPost'
       responses:
         '201':
-          description: New signal created.
+          description: New signal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalDetailGet'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
       security:
-      - OAuth2:
-        - SIG/ALL
-
+        - OAuth2:
+            - SIG/ALL
   /signals/v1/private/signals/{id}:
     parameters:
       - name: id
         in: path
-        description: ID of signal that
+        description: ID of signal that is requested
         required: true
         schema:
           type: integer
+          example: 1
     get:
       description: Retrieve signal by ID.
       responses:
         '200':
-          description: Detailed signal instance information.
+          description: The requested signal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalDetailGet'
         '401':
           description: Not authenticated, may be caused by expired token.
-      security:
-      - OAuth2:
-        - SIG/ALL
-    patch:
-      description: Partial update to signal.
-      responses:
-        '401':
-          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
         '404':
           description: Signal not found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+    patch:
+      description: Partial update to signal.
       requestBody:
         description: JSON data to update signal.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/signalPatch'
+              $ref: '#/components/schemas/V1PrivateSignalPatch'
+      responses:
+        '200':
+          description: The updated signal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalDetailGet'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+        '404':
+          description: Signal not found.
       security:
-      - OAuth2:
-        - SIG/ALL
+        - OAuth2:
+            - SIG/ALL
 
   /signals/v1/private/signals/{id}/history:
     parameters:
@@ -576,30 +610,327 @@ paths:
 
 components:
   schemas:
+    StatusStateChoices:
+      description: Status string (predefined).
+      type: string
+      enum:
+        - m
+        - i
+        - b
+        - h
+        - o
+        - a
+        - s
+        - reopened
+        - ingepland
+        - ready to send
+        - sent
+        - send failed
+        - done external
 
-    signalCreate:
+    PriorityPriorityChoices:
+      type: string
+      enum:
+        - normal
+        - high
+        - low
+
+    TypeCodeChoices:
+      type: string
+      enum:
+        - SIG
+        - REQ
+        - QUE
+        - COM
+        - MAI
+
+    _NestedLocationRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        stadsdeel:
+          type: string
+        buurt_code:
+          type: string
+        address:
+          type: object
+          properties:
+            openbare_ruimte:
+              type: string
+            huisnummer:
+              type: number
+            huisletter:
+              type: string
+            huisnummer_toevoeging:
+              type: number
+            postcode:
+              type: string
+            woonplaats:
+              type: string
+        geometrie:
+          type: string
+          properties:
+            'type':
+              type: string
+              enum:
+                - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                minItems: 2
+                maxItems: 3
+          required:
+            - coordinates
+            - 'type'
+        extra_properties:
+          type: string
+
+    _NestedLocationResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        stadsdeel:
+          type: string
+          example: "E"
+        buurt_code:
+          type: string
+          example: "E17a"
+        address:
+          type: object
+          properties:
+            postcode:
+              type: string
+              example: "1053KP"
+            huisletter:
+              type: string
+              nullable: true
+              example: ""
+            huisnummer:
+              type: string
+              example: "157"
+            woonplaats:
+              type: string
+              example: "Amsterdam"
+            openbare_ruimte:
+              type: string
+              example: "Bilderdijkstraat"
+            huisnummer_toevoeging:
+              type: string
+              example: "3"
+        address_text:
+          type: string
+          example: "Bilderdijkstraat 157-3 1053KP Amsterdam"
+        geometrie:
+          type: object
+          properties:
+            'type':
+              type: string
+              example: "Point"
+            coordinates:
+              type: array
+              items:
+                type: number
+                minItems: 2
+                maxItems: 3
+              example: [4.87170696258545, 52.36805320057393]
+        extra_properties:
+          type: object
+          example: {}
+
+    _NestedStatusRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        text:
+          type: string
+        state:
+          type: string
+          $ref: '#/components/schemas/StatusStateChoices'
+        target_api:
+          type: string
+          enum:
+            - sigmax
+            - null
+        extra_properties:
+          type: string
+
+    _NestedStatusResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+          example: null
+        state:
+          type: string
+          $ref: '#/components/schemas/StatusStateChoices'
+        target_api:
+          type: string
+          nullable: true
+          example: 'sigmax'
+        extra_properties:
+          type: object
+          example: {}
+        created_by:
+          type: string
+          nullable: true
+          example: 'test@test.com'
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+
+    _NestedCategoryRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        sub_category:
+          type: string
+          format: uri
+        category_url:
+          type: string
+          format: uri
+        text:
+          type: string
+          description: Message to log with category update, will show in logs.
+
+    _NestedCategoryResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        sub:
+          type: string
+          example: "Overlast terrassen"
+        sub_slug:
+          type: string
+          example: "overlast-terrassen"
+        main:
+          type: string
+          example: "Overlast Bedrijven en Horeca"
+        main_slug:
+          type: string
+          example: "overlast-bedrijven-en-horeca"
+        category_url:
+          type: string
+          format: uri
+          example: "http://127.0.0.1:8000/signals/v1/public/terms/categories/overlast-bedrijven-en-horeca/sub_categories/overlast-terrassen"
+        departments:
+          type: string
+          example: "VTH"
+        created_by:
+          type: string
+          nullable: true
+          example: null
+        text:
+          type: string
+          nullable: true
+          example: null
+
+    _NestedReporterRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address of reporter.
+          format: email
+        phone:
+          type: string
+          description: Phone number of reporter.
+
+    _NestedReporterResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+          example: 'test@test.com'
+        phone:
+          type: string
+          nullable: true
+          example: ''
+
+    _NestedPriorityRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        priority:
+          type: string
+          $ref: '#/components/schemas/PriorityPriorityChoices'
+
+    _NestedPriorityResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        priority:
+          type: string
+          $ref: '#/components/schemas/PriorityPriorityChoices'
+        created_by:
+          type: string
+          nullable: true
+          example: 'test@test.com'
+
+    _NestedNoteRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        text:
+          type: string
+
+    _NestedNoteResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        text:
+          type: string
+
+    _NestedTypeRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        code:
+          type: string
+          $ref: '#/components/schemas/TypeCodeChoices'
+
+    _NestedTypeResponseData:
+      description: JSON Data
+      type: object
+      properties:
+        code:
+          type: string
+          $ref: '#/components/schemas/TypeCodeChoices'
+          example: 'SIG'
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        created_by:
+          type: string
+          nullable: true
+          example: 'test@test.com'
+
+    V1PrivateSignalPost:
       type: object
       properties:
         source:
           type: string
         text:
           type: string
-          description: The complaint text.
+          description: The complaint
         text_extra:
           type: string
           nullable: true
         location:
-          $ref: '#/components/schemas/locationInput'
+          $ref: '#/components/schemas/_NestedLocationRequestData'
         category:
-          $ref: '#/components/schemas/categoryInput'
-        reporter:
-          $ref: '#/components/schemas/reporterInput'
+          $ref: '#/components/schemas/_NestedCategoryRequestData'
         priority:
-          $ref: '#/components/schemas/priorityInput'
-        type:
-          $ref: '#/components/schemas/typeInput'
-        notes:
-          $ref: '#/components/schemas/notesInput'
+          $ref: '#/components/schemas/_NestedPriorityRequestData'
+        'type':
+          $ref: '#/components/schemas/_NestedTypeRequestData'
         incident_date_start:
           type: string
           format: date-time
@@ -613,27 +944,242 @@ components:
           nullable: true
         extra_properties:
           type: object
-          additionalProperties: true
+          example: {}
       required:
         - text
         - location
         - incident_date_start
 
-    signalPatch:
+    V1PrivateSignalPatch:
       type: object
       properties:
         location:
-          $ref: '#/components/schemas/locationInput'
+          $ref: '#/components/schemas/_NestedLocationRequestData'
         status:
-          $ref: '#/components/schemas/statusInput'
+          $ref: '#/components/schemas/_NestedStatusRequestData'
         category:
-          $ref: '#/components/schemas/categoryInput'
+          $ref: '#/components/schemas/_NestedCategoryRequestData'
         priority:
-          $ref: '#/components/schemas/priorityInput'
-        notes:
-          $ref: '#/components/schemas/notesInput'
-        type:
-          $ref: '#/components/schemas/typeInput'
+          $ref: '#/components/schemas/_NestedPriorityRequestData'
+        'type':
+          $ref: '#/components/schemas/_NestedTypeRequestData'
+        extra_properties:
+          type: object
+          example: {}
+
+    V1PrivateSignalListGet:
+      description: JSON serialization of paginated list of signals
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+                  example: http://127.0.0.1:8000/signals/v1/private/signals/
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+                  example: http://127.0.0.1:8000/signals/v1/private/signals/?page=2
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 10
+        results:
+          type: array
+          description: A list of signals, paginated
+          items:
+            $ref: '#/components/schemas/V1PrivateSignalDetailList'
+
+    V1PrivateSignalDetailList:
+      description: Detailed JSON serialization of a SIA user.
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of this user in API
+                      type: string
+                      format: uri
+                      example: "http://127.0.0.1:8000/signals/v1/private/signals/1"
+        _display:
+          description: Textual representation of signal for display purposes.
+          type: string
+          example: 1 - m - E17a - 2020-01-01 00:00:00.000000+00:00
+        category:
+          $ref: '#/components/schemas/_NestedCategoryResponseData'
+        id:
+          description: ID of the signal
+          type: integer
+          example: 1
+        has_attachments:
+          type: boolean
+          example: false
+        location:
+          $ref: '#/components/schemas/_NestedLocationResponseData'
+        status:
+          $ref: '#/components/schemas/_NestedStatusResponseData'
+        reporter:
+          $ref: '#/components/schemas/_NestedReporterResponseData'
+        priority:
+          $ref: '#/components/schemas/_NestedPriorityResponseData'
+        'type':
+          $ref: '#/components/schemas/_NestedTypeResponseData'
+        source:
+          type: string
+          example: Telefoon – ASC
+        text:
+          type: string
+          example: Het cafe op de hoek maakt enorme herrie
+        text_extra:
+          type: string
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_start:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_end:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    V1PrivateSignalDetailGet:
+      description: Detailed JSON serialization of a SIA user.
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            curies:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The compact URI (curie) named 'sia'
+                  example: 'sia'
+                href:
+                  type: string
+                  example: "http://127.0.0.1:8000/signals/v1/relations"
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of this user in API
+                      type: string
+                      format: uri
+                      example: "http://127.0.0.1:8000/signals/v1/private/signals/1"
+            archives:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/history"
+            sia:attachments:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/attachments"
+            sia:pdf:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/pdf"
+        _display:
+          description: Textual representation of signal for display purposes.
+          type: string
+          example: 1 - m - E17a - 2020-01-01 00:00:00.000000+00:00
+        category:
+          $ref: '#/components/schemas/_NestedCategoryResponseData'
+        id:
+          description: ID of the signal
+          type: integer
+          example: 1
+        has_attachments:
+          type: boolean
+          example: false
+        location:
+          $ref: '#/components/schemas/_NestedLocationResponseData'
+        status:
+          $ref: '#/components/schemas/_NestedStatusResponseData'
+        reporter:
+          $ref: '#/components/schemas/_NestedReporterResponseData'
+        priority:
+          $ref: '#/components/schemas/_NestedPriorityResponseData'
+        'type':
+          $ref: '#/components/schemas/_NestedTypeResponseData'
+        source:
+          type: string
+          example: Telefoon – ASC
+        text:
+          type: string
+          example: Het cafe op de hoek maakt enorme herrie
+        text_extra:
+          type: string
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_start:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_end:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
 
     userCreate:
       type: object
@@ -696,158 +1242,6 @@ components:
             note:
               description: Note on this new user.
               type: string
-
-    locationInput:
-      description: >-
-        Location data associated with a signal. Provide either
-        only the "geometrie" in EPSG:4326 coordinates [longitude, latitude]
-        or a valid address and the "geometrie" in EPSG:4326 coordinates
-        [longitude, latitude]. Providing only a valid address is not
-        allowed.
-      type: object
-      properties:
-        geometrie:
-          type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - "Point"
-            coordinates:
-              type: array
-              items:
-                type: number
-                minItems: 2
-                maxItems: 3
-          required:
-            - coordinates
-            - type
-        stadsdeel:
-          type: string
-        buurt_code:
-          type: string
-        address:  # Check that this matches the new address validation rules.
-          type: object
-          properties:
-            openbare_ruimte:
-              type: string
-            huisnummer:
-              type: number
-            huisletter:
-              type: string
-            huisnummer_toevoeging:
-              type: number
-            postcode:
-              type: string
-            woonplaats:
-              type: string
-        extra_properties:
-          type: object
-      required:
-          - geometrie
-
-    statusInput:
-      description: JSON status data for status updates.
-      type: object
-      properties:
-        text:
-          type: string
-          description: Message to log with status update, will show in logs.
-        state:
-          $ref: '#/components/schemas/stateChoices'
-      required:
-        - state
-
-    categoryInput:
-      description: JSON category data for category updates.
-      type: object
-      properties:
-        text:
-          type: string
-          description: Message to log with category update, will show in logs.
-        sub_category:
-          type: string
-          format: uri
-      required:
-        - sub_category
-
-    priorityInput:
-      description: JSON data for priority updates.
-      type: object
-      properties:
-        priority:
-          $ref: '#/components/schemas/priorityChoices'
-
-    typeInput:
-      description: JSON data for type updates.
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/typeChoices'
-
-    notesInput:
-      description: JSON data for notes updates.
-      type: array
-      items:
-        type: object
-        properties:
-          text:
-            type: string
-            description: Note text.
-
-    reporterInput:
-      description: Contact information on the reporter of the signal.
-      type: object
-      properties:
-        email:
-          description: Email address of reporter.
-          type: string
-          format: email
-        phone:
-          description: Phone number of reporter.
-          type: string
-
-    stateChoices:
-      description: Status string (predefined).
-      type: string
-      enum:
-        - m
-        - i
-        - b
-        - h
-        - o
-        - a
-        - s
-        - reopened
-        - ingepland
-        - "ready to send"
-        - "sent"
-        - "send failed"
-        - "done external"
-
-    contactDetailsPresentChoices:
-      description: Possible values for the `contact_details` filter.
-      type: string
-      enum:
-        - none
-        - phone
-        - email
-
-    priorityChoices:
-      type: string
-      enum: ['normal', 'high', 'low']
-
-    typeChoices:
-      type: string
-      enum: ['SIG', 'REQ', 'QUE', 'COM', 'MAI']
-
-    anonymousChoices:
-      type: string
-      enum: [true, false]
-
-    contactDetailsChoices:
-      type: string
-      enum: ['none', 'email', 'phone']
 
     privateCategoryResponse:
       description: JSON data describing the category response
@@ -1268,7 +1662,6 @@ components:
         codename:
           description: Codename (technical) of this permission
           type: string
-
 
   securitySchemes:
     OAuth2:
