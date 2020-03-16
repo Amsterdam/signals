@@ -196,7 +196,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertNotEqual(response_json['_display'], str(signal))
 
     def test_get_by_uuid_cannot_access_properties(self):
-        # SIA must not publicly expose operational date or expire_date
+        # SIA must not publicly expose operational date, expire_date and attachments
         signal = SignalFactory.create()
         uuid = signal.signal_id
 
@@ -207,6 +207,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertJsonSchema(self.retrieve_schema, response_json)
         self.assertNotIn('operational_date', response_json)
         self.assertNotIn('expire_date', response_json)
+        self.assertNotIn('attachments', response_json)
 
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
@@ -239,6 +240,14 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
+
+    def test_cannot_access_attachments(self):
+        # SIA must not publicly expose attachments
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
+        self.assertEqual(response.status_code, 405)
 
     def test_create_with_invalid_source_user(self):
         data = self.create_initial_data
