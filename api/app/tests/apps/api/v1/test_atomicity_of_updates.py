@@ -14,7 +14,8 @@ from signals.apps.signals.managers import (
     update_category_assignment,
     update_location,
     update_priority,
-    update_status
+    update_status,
+    update_type
 )
 from signals.apps.signals.models import Category
 from tests.apps.signals import factories
@@ -164,6 +165,7 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         update_category_assignment.connect(fake_receiver)
         update_priority.connect(fake_receiver)
         create_note.connect(fake_receiver)
+        update_type.connect(fake_receiver)
 
         # Perform a PATCH with in,valid category assignment:
         self.client.force_authenticate(user=self.sia_read_write_user)

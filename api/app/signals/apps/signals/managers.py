@@ -17,6 +17,7 @@ update_category_assignment = DjangoSignal(providing_args=['signal_obj',
 update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
 update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
 create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
+update_type = DjangoSignal(providing_args=['signal_obj', 'previous_type', 'type'])
 
 
 def send_signals(to_send):
@@ -555,7 +556,14 @@ class SignalManager(models.Manager):
                 }))
 
             if 'type' in data:
-                self._update_type_no_transaction(data['type'], locked_signal)
+                previous_type = locked_signal.type_assignment
+                signal_type = self._update_type_no_transaction(data['type'], locked_signal)
+                to_send.append((update_type, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'prev_priority': previous_type,
+                    'type': signal_type
+                }))
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
@@ -580,9 +588,14 @@ class SignalManager(models.Manager):
         """Create a new `Type` object for a given `Signal` object.
 
         :param data: deserialized data dict
+        :param signal: Signal object
         :returns: Type object
         """
         with transaction.atomic():
+            previous_type = signal.type_assignment
             signal_type = self._update_type_no_transaction(data=data, signal=signal)
+
+            transaction.on_commit(lambda: update_type.send_robust(sender=self.__class__, signal_obj=signal,
+                                                                  priority=signal_type, prev_priority=previous_type))
 
         return signal_type
