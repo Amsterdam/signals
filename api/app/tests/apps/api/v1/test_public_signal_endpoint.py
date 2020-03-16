@@ -157,6 +157,57 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(200, response.status_code)
         self.assertJsonSchema(self.retrieve_schema, response.json())
 
+    def test_get_by_uuid_access_status(self):
+        # SIA must not publicly expose what step in the resolution process a certain
+        # Signal/melding is
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertEqual(response_json['status']['state'], 'OPEN')
+
+        signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertEqual(response_json['status']['state'], 'CLOSED')
+
+    def test_get_by_uuid__display_is_clean(self):
+        # SIA must not publicly expose what step in the resolution process a certain
+        # Signal/melding is via the _display string.
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        # For backwards compatibility the _display string is not changed, we use the
+        # fact that it is derived from the __str__ representation, to do this check.
+        self.assertNotEqual(response_json['_display'], str(signal))
+
+    def test_get_by_uuid_cannot_access_properties(self):
+        # SIA must not publicly expose operational date or expire_date
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertNotIn('operational_date', response_json)
+        self.assertNotIn('expire_date', response_json)
+
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
         uuid = signal.signal_id
