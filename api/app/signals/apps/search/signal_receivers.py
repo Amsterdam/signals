@@ -7,7 +7,8 @@ from signals.apps.signals.managers import (
     create_initial,
     update_category_assignment,
     update_location,
-    update_priority
+    update_priority,
+    update_type
 )
 
 
@@ -15,7 +16,8 @@ from signals.apps.signals.managers import (
            create_child,
            update_location,
            update_category_assignment,
-           update_priority], dispatch_uid='search_add_to_elastic')
+           update_priority,
+           update_type], dispatch_uid='search_add_to_elastic')
 def add_to_elastic_handler(sender, signal_obj, **kwargs):
     # Add to elastic
     if settings.FEATURE_FLAGS.get('SEARCH_BUILD_INDEX', False):

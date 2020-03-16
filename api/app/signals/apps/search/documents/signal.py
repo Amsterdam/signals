@@ -120,6 +120,9 @@ class SignalDocument(DocumentBase):
             priority={
                 'priority': obj.priority.priority if obj.priority else None,
             },
+            type={
+                'code': obj.type_assignment.name if obj.type_assignment else None,
+            },
             created_at=obj.created_at,
             updated_at=obj.updated_at,
         )
