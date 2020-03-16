@@ -285,7 +285,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
 class PublicSignalSerializerDetail(HALSerializer):
     status = _NestedPublicStatusModelSerializer(required=False)
     serializer_url_field = PublicSignalLinksField
-    _display = DisplayField()
+    _display = serializers.SerializerMethodField(method_name='get__display')
 
     class Meta:
         model = Signal
@@ -300,6 +300,9 @@ class PublicSignalSerializerDetail(HALSerializer):
             'incident_date_end',
             'operational_date',
         )
+
+    def get__display(self, obj):
+        return obj.sia_id
 
 
 class PublicSignalCreateSerializer(serializers.ModelSerializer):
