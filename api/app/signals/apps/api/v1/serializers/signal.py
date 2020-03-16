@@ -298,7 +298,6 @@ class PublicSignalSerializerDetail(HALSerializer):
             'updated_at',
             'incident_date_start',
             'incident_date_end',
-            'operational_date',
         )
 
     def get__display(self, obj):
@@ -348,7 +347,6 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'updated_at',
             'incident_date_start',
             'incident_date_end',
-            'operational_date',
             'image',
             'attachments',
             'extra_properties',
@@ -359,7 +357,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'status',
-            'image'
+            'image',
             'attachments',
         )
         extra_kwargs = {
@@ -371,6 +369,8 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if validated_data.get('status') is not None:
             raise serializers.ValidationError("Status cannot be set on initial creation")
+        if validated_data.get('type') is not None:
+            raise serializers.ValidationError("Type cannot be set on initial creation")
 
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')

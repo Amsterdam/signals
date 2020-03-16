@@ -96,10 +96,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
         response_json = response.json()
-        self.assertEqual(response_json['priority'], Priority.PRIORITY_NORMAL)
+        self.assertEqual(response_json['priority']['priority'], Priority.PRIORITY_NORMAL)
 
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(0, Signal.objects.count())
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
 
     def test_create_with_type(self):
         # must not be able to set type
@@ -109,10 +109,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
         response_json = response.json()
-        self.assertEqual(response_json['type'], Type.SIGNAL)
+        self.assertEqual(response_json['type']['code'], Type.SIGNAL)
 
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(0, Signal.objects.count())
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
 
     def test_create_with_source(self):
         # must not be able to set the source
@@ -124,28 +124,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
-        self.assertEqual(0, Signal.objects.count())
-
-    def test_create_with_operational_date(self):
-        # must not be able to set the operational_date
-        operational_date = '2020-03-22T17:30:00.00+01:00'
-        initial_data = self.create_initial_data.copy()
-        initial_data['operational_date'] = operational_date
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(0, Signal.objects.count())
-
-    def test_create_with_expire_date(self):
-        # must not be able to set the expire_date
-        expire_date = '2020-03-22T17:30:00.00+01:00'
-        initial_data = self.create_initial_data.copy()
-        initial_data['expire_date'] = expire_date
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
     def test_get_by_uuid(self):

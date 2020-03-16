@@ -2,11 +2,11 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.api.app_settings import (
+    SIGNAL_API_STATE_OPEN,
+    SIGNAL_API_STATE_OPEN_DISPLAY,
     SIGNALS_API_CLOSED_STATES,
     SIGNALS_API_STATE_CLOSED,
-    SIGNALS_API_STATE_CLOSED_DISPLAY,
-    SIGNAL_API_STATE_OPEN,
-    SIGNAL_API_STATE_OPEN_DISPLAY
+    SIGNALS_API_STATE_CLOSED_DISPLAY
 )
 from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals import workflow
