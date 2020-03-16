@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from tests.apps.signals.attachment_helpers import small_gif
 from tests.apps.signals.factories import CategoryFactory, SignalFactory
 from tests.test import SignalsBaseApiTestCase
@@ -82,6 +82,66 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             "state": workflow.BEHANDELING,
             "text": "Invalid stuff happening here"
         }
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_priority(self):
+        # must not be able to set priority
+        initial_data = self.create_initial_data.copy()
+        initial_data['priorty'] = {
+            'priority': Priority.PRIORITY_HIGH
+        }
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response_json = response.json()
+        self.assertEqual(response_json['priority'], Priority.PRIORITY_NORMAL)
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_type(self):
+        # must not be able to set type
+        initial_data = self.create_initial_data.copy()
+        initial_data['type'] = {
+            'code': Type.COMPLAINT
+        }
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response_json = response.json()
+        self.assertEqual(response_json['type'], Type.SIGNAL)
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_source(self):
+        # must not be able to set the source
+        bad_source = 'DIT MAG NIET'
+        initial_data = self.create_initial_data.copy()
+        initial_data['source'] = bad_source
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_operational_date(self):
+        # must not be able to set the operational_date
+        operational_date = '2020-03-22T17:30:00.00+01:00'
+        initial_data = self.create_initial_data.copy()
+        initial_data['operational_date'] = operational_date
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_expire_date(self):
+        # must not be able to set the expire_date
+        expire_date = '2020-03-22T17:30:00.00+01:00'
+        initial_data = self.create_initial_data.copy()
+        initial_data['expire_date'] = expire_date
 
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
