@@ -72,6 +72,9 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             },
             'notes': [{
                 'text': 'TEST NOTE BODY',
+            }],
+            'types': [{
+                'code': 'SIG',
             }]
         }
 
