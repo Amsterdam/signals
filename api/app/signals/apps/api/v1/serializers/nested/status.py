@@ -52,12 +52,10 @@ class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
         fields = (
-            'id',
             'state',
             'state_display',
         )
         read_only_fields = (
-            'id',
             'state',
             'state_display',
         )
