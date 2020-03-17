@@ -834,7 +834,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 },
                 {
                     'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory}
+                    'category': {'sub_category': self.link_subcategory},
+                    'type': {'code': 'MAI'}
                 }
             ],
             format='json'
@@ -863,6 +864,43 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.signal_no_image.refresh_from_db()
         self.assertEqual(2, len(self.signal_no_image.children.all()))
         self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
+
+    def test_split_children_type(self):
+        """When a signal is split its children must inherit certain properties."""
+        # Split the signal, take note of the returned children
+        response = self.client.post(
+            self.split_endpoint.format(pk=self.signal_no_image.id),
+            [
+                {
+                    'text': 'Child #1 Request',
+                    'category': {'sub_category': self.link_subcategory},
+                    'type': {'code': 'REQ'}
+                },
+                {
+                    'text': 'Child #2 Maintenance',
+                    'category': {'sub_category': self.link_subcategory},
+                    'type': {'code': 'MAI'}
+                }
+            ],
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        split_json = response.json()
+
+        split_first_child = split_json['children'][0]
+        response = self.client.get(self.detail_endpoint.format(pk=split_first_child['id']))
+        split_first_child_json = response.json()
+
+        # Type should be REQ
+        self.assertEqual(split_first_child_json['type']['code'], 'REQ')
+
+        split_second_child = split_json['children'][1]
+        response = self.client.get(self.detail_endpoint.format(pk=split_second_child['id']))
+        split_second_child_json = response.json()
+
+        # Type should be MAI
+        self.assertEqual(split_second_child_json['type']['code'], 'MAI')
 
     def test_split_children_must_inherit_these_properties(self):
         """When a signal is split its children must inherit certain properties."""
@@ -916,6 +954,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             self.assertEqual(
                 child_json['priority']['priority'],
                 parent_json['priority']['priority']
+            )
+
+            # Type should be inherited
+            self.assertEqual(
+                child_json['type']['code'],
+                parent_json['type']['code']
             )
 
             # Check category assignment
@@ -1005,11 +1049,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         parent_signal = SignalFactory.create()
         split_data = [
             {
-                "text": "Child signal 1",
-                'category': {'sub_category': self.subcategory}
+                'text': 'Child signal 1',
+                'category': {'sub_category': self.subcategory},
+                'type': {'name': 'MAI'}
             },
             {
-                "text": "Child signal 2",
+                'text': 'Child signal 2',
                 'category': {'sub_category': self.subcategory}
             }
         ]
@@ -1027,8 +1072,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         json_response = response.json()
 
         self.assertEqual(2, len(json_response['children']))
-        self.assertEqual("Child signal 1", json_response['children'][0]['text'])
-        self.assertEqual("Child signal 2", json_response['children'][1]['text'])
+        self.assertEqual('Child signal 1', json_response['children'][0]['text'])
+        self.assertEqual('Child signal 2', json_response['children'][1]['text'])
 
         self.assertJsonSchema(self.post_split_schema, json_response)
 

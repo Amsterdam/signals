@@ -182,8 +182,12 @@ class SignalManager(models.Manager):
 
                 if 'type' in validated_data:
                     type_data = validated_data['type']  # Will create a type with the given name
+                    type_data['created_by'] = None  # noqa We also set the other fields to None. Shouldn't this be "user if user else None"?
                 elif parent_signal.type_assignment:
-                    type_data = {'name': parent_signal.type_assignment.name}  # noqa Will copy the type with name from the parent signal
+                    type_data = {
+                        'name': parent_signal.type_assignment.name,   # noqa Will copy the type with name from the parent signal
+                        'created_by': None  # noqa We also set the other fields to None. Shouldn't this be "user if user else None"?
+                    }
                 else:
                     type_data = {}  # Will create a default type with name "SIGNAL"
 
