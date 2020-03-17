@@ -55,10 +55,6 @@ class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
             'state',
             'state_display',
         )
-        read_only_fields = (
-            'state',
-            'state_display',
-        )
 
     def get_public_state(self, obj):
         if obj.state in SIGNALS_API_CLOSED_STATES:
