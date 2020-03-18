@@ -292,6 +292,7 @@ class PublicSignalSerializerDetail(HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'signal_id',
             'status',
             'created_at',

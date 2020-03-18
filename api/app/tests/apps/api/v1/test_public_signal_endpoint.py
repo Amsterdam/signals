@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
@@ -61,9 +62,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_schema, response.json())
         self.assertEqual(1, Signal.objects.count())
-        self.assertTrue('image' in response.json())
-        self.assertTrue('attachments' in response.json())
-        self.assertIsInstance(response.json()['attachments'], list)
 
         signal = Signal.objects.last()
         self.assertEqual(workflow.GEMELD, signal.status.state)
@@ -96,10 +94,13 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
         response_json = response.json()
-        self.assertEqual(response_json['priority']['priority'], Priority.PRIORITY_NORMAL)
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
+
+        pk = response_json['id']
+        signal = Signal.objects.get(pk=pk)
+        self.assertEqual(signal.priority.priority, Priority.PRIORITY_NORMAL)
 
     def test_create_with_type(self):
         # must not be able to set type
@@ -109,10 +110,13 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
         response_json = response.json()
-        self.assertEqual(response_json['type']['code'], Type.SIGNAL)
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
+
+        pk = response_json['id']
+        signal = Signal.objects.get(pk=pk)
+        self.assertEqual(signal.type_assignment.name, Type.SIGNAL)
 
     def test_create_with_source(self):
         # must not be able to set the source
@@ -286,6 +290,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
+    @skip('public serialization no longer contains extra_properties field')
     @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': True})
     def test_filtered_extra_properties(self):
         initial_data = self.create_initial_data.copy()
@@ -319,6 +324,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
         self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
 
+    @skip('public serialization no longer contains extra_properties field')
     @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': False})
     def test_no_filtered_extra_properties(self):
         initial_data = self.create_initial_data.copy()
@@ -364,4 +370,3 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         # type SIG (the default, even though we tried to set something else).
         signal = Signal.objects.last()
         self.assertEqual(signal.type_assignment.name, 'SIG')
-        self.assertEqual(response.json()['type']['code'], 'SIG')
