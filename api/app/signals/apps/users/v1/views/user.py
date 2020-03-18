@@ -3,14 +3,14 @@ from django.contrib.auth import get_user_model
 from django.db.models.functions import Lower
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import action
+# from rest_framework.decorators import action
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.users.v1.filters import UserFilterSet
 from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
-from signals.apps.users.v1.serializers.user import PrivateUserHistoryHalSerializer
+# from signals.apps.users.v1.serializers.user import PrivateUserHistoryHalSerializer
 from signals.auth.backend import JWTAuthBackend
 
 # Get the user model as defined in the settings, defaults to the auth User from Django
@@ -64,12 +64,13 @@ class UserViewSet(DatapuntViewSetWritable):
                                                   context=self.get_serializer_context())
         return Response(serializer.data)
 
-    @action(detail=True)
-    def history(self, request, pk=None):
-        """
-        The change log of the selected User instance
-        This is read-only!
-        """
-        user = self.get_object()
-        serializer = PrivateUserHistoryHalSerializer(user.logs, many=True)
-        return Response(serializer.data)
+    # Disabled this feature, chane_log on User seems to be causing errors when
+    # @action(detail=True)
+    # def history(self, request, pk=None):
+    #     """
+    #     The change log of the selected User instance
+    #     This is read-only!
+    #     """
+    #     user = self.get_object()
+    #     serializer = PrivateUserHistoryHalSerializer(user.logs, many=True)
+    #     return Response(serializer.data)

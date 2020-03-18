@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.contrib.auth.models import Group
 from rest_framework import status
 
@@ -47,6 +49,7 @@ class TestUserMeView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 401)
 
+    @skip('Disabled this feature, chane_log on User seems to be causing errors when')
     def test_history_view(self):
         self.client.force_authenticate(user=self.superuser)
 

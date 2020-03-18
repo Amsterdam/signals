@@ -12,7 +12,7 @@ class UserHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
             ('self', dict(
                 href=self.get_url(value, 'user-detail', request, None),
              )),
-            ('archives', dict(href=self.get_url(value, 'user-history', request, None))),
+            # ('archives', dict(href=self.get_url(value, 'user-history', request, None))),
         ])
 
         return result
