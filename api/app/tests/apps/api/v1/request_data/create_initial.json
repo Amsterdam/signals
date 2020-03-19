@@ -37,5 +37,6 @@
     "operational_date": null,
     "image": null,
     "upload": null,
-    "source": "online"
+    "source": "online",
+    "extra_properties": []
 }

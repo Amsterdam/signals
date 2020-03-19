@@ -292,7 +292,6 @@ class PublicSignalSerializerDetail(HALSerializer):
         fields = (
             '_links',
             '_display',
-            'id',
             'signal_id',
             'status',
             'created_at',
@@ -332,6 +331,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Signal
         fields = (
+            'signal_id',
             'source',
             'text',
             'text_extra',
@@ -341,6 +341,9 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'incident_date_start',
             'incident_date_end',
             'extra_properties',
+        )
+        read_only_fields = (
+            'signal_id',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
