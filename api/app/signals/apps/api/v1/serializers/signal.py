@@ -2,6 +2,7 @@ import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.generics.permissions.base import (
@@ -18,7 +19,6 @@ from signals.apps.api.v1.fields import (
 )
 from signals.apps.api.v1.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.v1.serializers.nested import (
-    _NestedAttachmentModelSerializer,
     _NestedCategoryModelSerializer,
     _NestedLocationModelSerializer,
     _NestedNoteModelSerializer,
@@ -308,14 +308,13 @@ class PublicSignalSerializerDetail(HALSerializer):
 class PublicSignalCreateSerializer(serializers.ModelSerializer):
     """
     This serializer allows anonymous users to report `signals.Signals`.
+
+    Note: this is only used in the creation of new Signal instances, not to
+    create the response body after a succesfull POST.
     """
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
-    status = _NestedStatusModelSerializer(required=False)
     category = _NestedCategoryModelSerializer(source='category_assignment')
-    priority = _NestedPriorityModelSerializer(required=False, read_only=True)
-    attachments = _NestedAttachmentModelSerializer(many=True, read_only=True)
-    type = _NestedTypeModelSerializer(source='type_assignment', read_only=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -333,33 +332,15 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Signal
         fields = (
-            'id',
-            'signal_id',
             'source',
             'text',
             'text_extra',
             'location',
             'category',
             'reporter',
-            'status',
-            'priority',
-            'type',
-            'created_at',
-            'updated_at',
             'incident_date_start',
             'incident_date_end',
-            'image',
-            'attachments',
             'extra_properties',
-        )
-        read_only_fields = (
-            'id',
-            'signal_id',
-            'created_at',
-            'updated_at',
-            'status',
-            'image',
-            'attachments',
         )
         extra_kwargs = {
             'id': {'label': 'ID'},
@@ -367,12 +348,18 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'source': {'validators': [SignalSourceValidator()]},
         }
 
-    def create(self, validated_data):
-        if validated_data.get('status') is not None:
-            raise serializers.ValidationError("Status cannot be set on initial creation")
-        if validated_data.get('type') is not None:
-            raise serializers.ValidationError("Type cannot be set on initial creation")
+    def validate(self, data):
+        """Make sure any extra data is rejected"""
+        present_keys = set(self.initial_data)
+        allowed_keys = set(self.fields)
 
+        if present_keys - allowed_keys:
+            raise ValidationError('Extra properties present: {}'.format(
+                ', '.join(present_keys - allowed_keys)
+            ))
+        return data
+
+    def create(self, validated_data):
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_assignment_data = validated_data.pop('category_assignment')

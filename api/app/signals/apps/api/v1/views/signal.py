@@ -23,17 +23,17 @@ from signals.auth.backend import JWTAuthBackend
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
     def create(self, request):
-        serializer = PublicSignalCreateSerializer(data=request.data, context={'request': request})
+        serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         signal = serializer.save()
 
-        data = PublicSignalSerializerDetail(signal, context={'request': request}).data
+        data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, signal_id):
         signal = Signal.objects.get(signal_id=signal_id)
 
-        data = PublicSignalSerializerDetail(signal, context={'request': request}).data
+        data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
 

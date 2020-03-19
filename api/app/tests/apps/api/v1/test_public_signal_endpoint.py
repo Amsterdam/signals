@@ -1,6 +1,5 @@
 import json
 import os
-from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
@@ -20,7 +19,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     detail_endpoint = list_endpoint + "{uuid}"
     attachment_endpoint = detail_endpoint + "/attachments"
 
-    fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
+    fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial_public.json')
 
     def setUp(self):
         with open(self.fixture_file, 'r') as f:
@@ -56,7 +55,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             )
         )
 
-    def test_create(self):
+    def test_create_nothing_special(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
@@ -93,14 +92,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             'priority': Priority.PRIORITY_HIGH
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
-        response_json = response.json()
 
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        pk = response_json['id']
-        signal = Signal.objects.get(pk=pk)
-        self.assertEqual(signal.priority.priority, Priority.PRIORITY_NORMAL)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
 
     def test_create_with_type(self):
         # must not be able to set type
@@ -109,14 +103,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             'code': Type.COMPLAINT
         }
         response = self.client.post(self.list_endpoint, initial_data, format='json')
-        response_json = response.json()
 
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        pk = response_json['id']
-        signal = Signal.objects.get(pk=pk)
-        self.assertEqual(signal.type_assignment.name, Type.SIGNAL)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
 
     def test_create_with_source(self):
         # must not be able to set the source
@@ -290,83 +279,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    @skip('public serialization no longer contains extra_properties field')
-    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': True})
-    def test_filtered_extra_properties(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = [{
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': {
-                'id': 'test_answer',
-                'value': 'test_value'
-            },
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': 'test_answer',
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': ['a', 'b', 'c'],
-            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
-        }]
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        data = response.json()
-        self.assertEqual(len(data['extra_properties']), 2)
-        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
-
-    @skip('public serialization no longer contains extra_properties field')
-    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': False})
-    def test_no_filtered_extra_properties(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = [{
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': {
-                'id': 'test_answer',
-                'value': 'test_value'
-            },
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': 'test_answer',
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': ['a', 'b', 'c'],
-            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
-        }]
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        data = response.json()
-        self.assertEqual(len(data['extra_properties']), 3)
-        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][2]['category_url'], 'this/is/a/different/category/we/do/not/want/this/in/the/response') # noqa
-
     def test_signal_type_cannot_be_posted(self):
         initial_data = self.create_initial_data.copy()
 
         initial_data['type'] = {'code', 'REQ'}
         response = self.client.post(self.list_endpoint, initial_data, format='json')
-        self.assertEqual(201, response.status_code)
-
-        # Check that both in the API and in the database the new Signal is of
-        # type SIG (the default, even though we tried to set something else).
-        signal = Signal.objects.last()
-        self.assertEqual(signal.type_assignment.name, 'SIG')
+        self.assertEqual(400, response.status_code)
