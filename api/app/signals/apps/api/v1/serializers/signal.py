@@ -350,13 +350,14 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Make sure any extra data is rejected"""
-        present_keys = set(self.initial_data)
-        allowed_keys = set(self.fields)
+        if hasattr(self, 'initial_data'):
+            present_keys = set(self.initial_data)
+            allowed_keys = set(self.fields)
 
-        if present_keys - allowed_keys:
-            raise ValidationError('Extra properties present: {}'.format(
-                ', '.join(present_keys - allowed_keys)
-            ))
+            if present_keys - allowed_keys:
+                raise ValidationError('Extra properties present: {}'.format(
+                    ', '.join(present_keys - allowed_keys)
+                ))
         return data
 
     def create(self, validated_data):
