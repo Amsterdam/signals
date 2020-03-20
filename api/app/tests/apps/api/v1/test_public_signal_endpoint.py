@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from tests.apps.signals.attachment_helpers import small_gif
 from tests.apps.signals.factories import CategoryFactory, SignalFactory
 from tests.test import SignalsBaseApiTestCase
@@ -19,7 +19,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     detail_endpoint = list_endpoint + "{uuid}"
     attachment_endpoint = detail_endpoint + "/attachments"
 
-    fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
+    fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial_public.json')
 
     def setUp(self):
         with open(self.fixture_file, 'r') as f:
@@ -55,15 +55,12 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             )
         )
 
-    def test_create(self):
+    def test_create_nothing_special(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_schema, response.json())
         self.assertEqual(1, Signal.objects.count())
-        self.assertTrue('image' in response.json())
-        self.assertTrue('attachments' in response.json())
-        self.assertIsInstance(response.json()['attachments'], list)
 
         signal = Signal.objects.last()
         self.assertEqual(workflow.GEMELD, signal.status.state)
@@ -88,6 +85,40 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
+    def test_create_with_priority(self):
+        # must not be able to set priority
+        initial_data = self.create_initial_data.copy()
+        initial_data['priorty'] = {
+            'priority': Priority.PRIORITY_HIGH
+        }
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_type(self):
+        # must not be able to set type
+        initial_data = self.create_initial_data.copy()
+        initial_data['type'] = {
+            'code': Type.COMPLAINT
+        }
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+    def test_create_with_source(self):
+        # must not be able to set the source
+        bad_source = 'DIT MAG NIET'
+        initial_data = self.create_initial_data.copy()
+        initial_data['source'] = bad_source
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
+        self.assertEqual(0, Signal.objects.count())
+
     def test_get_by_uuid(self):
         signal = SignalFactory.create()
         uuid = signal.signal_id
@@ -96,6 +127,58 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertJsonSchema(self.retrieve_schema, response.json())
+
+    def test_get_by_uuid_access_status(self):
+        # SIA must not publicly expose what step in the resolution process a certain
+        # Signal/melding is
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertEqual(response_json['status']['state'], 'OPEN')
+
+        signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertEqual(response_json['status']['state'], 'CLOSED')
+
+    def test_get_by_uuid__display_is_clean(self):
+        # SIA must not publicly expose what step in the resolution process a certain
+        # Signal/melding is via the _display string.
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        # For backwards compatibility the _display string is not changed, we use the
+        # fact that it is derived from the __str__ representation, to do this check.
+        self.assertNotEqual(response_json['_display'], str(signal))
+
+    def test_get_by_uuid_cannot_access_properties(self):
+        # SIA must not publicly expose operational date, expire_date and attachments
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response_json = response.json()
+
+        self.assertEqual(200, response.status_code)
+        self.assertJsonSchema(self.retrieve_schema, response_json)
+        self.assertNotIn('operational_date', response_json)
+        self.assertNotIn('expire_date', response_json)
+        self.assertNotIn('attachments', response_json)
 
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
@@ -128,6 +211,14 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("application/msword", attachment.mimetype)
+
+    def test_cannot_access_attachments(self):
+        # SIA must not publicly expose attachments
+        signal = SignalFactory.create()
+        uuid = signal.signal_id
+
+        response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
+        self.assertEqual(response.status_code, 405)
 
     def test_create_with_invalid_source_user(self):
         data = self.create_initial_data
@@ -188,82 +279,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': True})
-    def test_filtered_extra_properties(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = [{
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': {
-                'id': 'test_answer',
-                'value': 'test_value'
-            },
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': 'test_answer',
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': ['a', 'b', 'c'],
-            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
-        }]
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        data = response.json()
-        self.assertEqual(len(data['extra_properties']), 2)
-        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
-
-    @override_settings(FEATURE_FLAGS={'API_FILTER_EXTRA_PROPERTIES': False})
-    def test_no_filtered_extra_properties(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = [{
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': {
-                'id': 'test_answer',
-                'value': 'test_value'
-            },
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': 'test_answer',
-            'category_url': self.link_test_cat_sub
-        }, {
-            'id': 'test_id',
-            'label': 'test_label',
-            'answer': ['a', 'b', 'c'],
-            'category_url': 'this/is/a/different/category/we/do/not/want/this/in/the/response'
-        }]
-
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())
-
-        data = response.json()
-        self.assertEqual(len(data['extra_properties']), 3)
-        self.assertEqual(data['extra_properties'][0]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][1]['category_url'], self.link_test_cat_sub)
-        self.assertEqual(data['extra_properties'][2]['category_url'], 'this/is/a/different/category/we/do/not/want/this/in/the/response') # noqa
-
     def test_signal_type_cannot_be_posted(self):
         initial_data = self.create_initial_data.copy()
 
         initial_data['type'] = {'code', 'REQ'}
         response = self.client.post(self.list_endpoint, initial_data, format='json')
-        self.assertEqual(201, response.status_code)
-
-        # Check that both in the API and in the database the new Signal is of
-        # type SIG (the default, even though we tried to set something else).
-        signal = Signal.objects.last()
-        self.assertEqual(signal.type_assignment.name, 'SIG')
-        self.assertEqual(response.json()['type']['code'], 'SIG')
+        self.assertEqual(400, response.status_code)

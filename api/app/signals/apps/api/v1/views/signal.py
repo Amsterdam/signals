@@ -1,9 +1,8 @@
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
-from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
@@ -22,10 +21,20 @@ from signals.apps.signals.models import History, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
-class PublicSignalViewSet(CreateModelMixin, DetailSerializerMixin, RetrieveModelMixin,
-                          PublicSignalGenericViewSet):
-    serializer_class = PublicSignalCreateSerializer
-    serializer_detail_class = PublicSignalSerializerDetail
+class PublicSignalViewSet(PublicSignalGenericViewSet):
+    def create(self, request):
+        serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        signal = serializer.save()
+
+        data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, signal_id):
+        signal = Signal.objects.get(signal_id=signal_id)
+
+        data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
+        return Response(data)
 
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):

@@ -271,6 +271,47 @@ paths:
       - OAuth2:
         - SIG/ALL
 
+  /signals/v1/public/signals:
+    post:
+      description: Create a new Signal/melding.
+      requestBody:
+        description: Serialized signal data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1PublicSignalPost'
+      responses:
+        '201':
+          description: New signal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PublicSignalDetailGet'
+        '400':
+          description: Bad request, see response body for the reason.
+
+  /signals/v1/public/signals/{signal_id}:
+    get:
+      description: Public data about a Signal/melding.
+      parameters:
+        - name: signal_id
+          in: path
+          description: Public identifier for a Signal/melding
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PublicSignalDetailGet'
+        '404':
+          description: Signal not found
+
+
   /signals/v1/public/terms/categories:
     get:
       description: Categories known to SIA. **May be changed**
@@ -789,9 +830,7 @@ components:
         sub_category:
           type: string
           format: uri
-        category_url:
-          type: string
-          format: uri
+          example: https://api.data.amsterdam.nl/signals/v1/public/terms/categories/overig/sub_categories/overig
         text:
           type: string
           description: Message to log with category update, will show in logs.
@@ -945,6 +984,43 @@ components:
         extra_properties:
           type: object
           example: {}
+      required:
+        - text
+        - location
+        - incident_date_start
+
+    V1PublicSignalPost:
+      type: object
+      properties:
+        source:
+          type: string
+          example: "online"
+        text:
+          type: string
+          description: The complaint
+          example: Er ligt vuilnis op straat.
+        text_extra:
+          type: string
+          nullable: true
+        location:
+          $ref: '#/components/schemas/_NestedLocationRequestData'
+        category:
+          $ref: '#/components/schemas/_NestedCategoryRequestData'
+        reporter:
+          $ref: '#/components/schemas/_NestedReporterRequestData'
+        incident_date_start:
+          description: Start of nuisance or problem.
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_end:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+          nullable: true
+        extra_properties:
+          type: array
+          example: []
       required:
         - text
         - location
@@ -1180,6 +1256,46 @@ components:
           format: date-time
           nullable: true
           example: null
+
+    V1PublicSignalDetailGet:
+      description: Detailed JSON serialization of a SIA Signal.
+      type: object
+      properties:
+        _display:
+          description: Textual representation of signal for display purposes.
+          type: string
+          example: SIA-123
+        signal_id:
+          description: Public identifier for SIA signal, use on public detail endpoint.
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_start:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        incident_date_end:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        status:
+          description: Filtered status of Signal.
+          type: object
+          properties:
+            'state':
+              desciption: Public state code either "OPEN" or "CLOSED".
+              type: string
+            'state_display':
+              desciption: Public state display text.
+              type: string
 
     userCreate:
       type: object
