@@ -1,24 +1,14 @@
 {
   "type": "object",
   "properties": {
-    "_links": {
-      "type": "object",
-      "properties": {
-        "self": {
-          "type": "object",
-          "properties": {
-            "href": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
     "_display": {
       "type": "string"
     },
     "signal_id": {
       "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "status": {
       "type": "object",
@@ -28,10 +18,7 @@
         },
         "state_display": {
           "type": "string"
-        },
-        "id": {
-          "type": "number"
-        }
+        }     
       }
     },
     "created_at": {
@@ -51,16 +38,6 @@
       ]
     },
     "incident_date_end": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "operational_date": {
       "anyOf": [
         {
           "type": "string"

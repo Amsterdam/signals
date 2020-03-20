@@ -4,9 +4,6 @@
     "id": {
       "type": "integer"
     },
-    "signal_id": {
-      "type": "string"
-    },
     "source": {
       "type": "string"
     },
@@ -15,43 +12,6 @@
     },
     "text_extra": {
       "type": "string"
-    },
-    "status": {
-      "type": "object",
-      "properties": {
-        "text": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "user": {
-          "type": "null"
-        },
-        "state": {
-          "type": "string"
-        },
-        "state_display": {
-          "type": "string"
-        },
-        "extra_properties": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object"
-            }
-          ]
-        },
-        "created_at": {
-          "type": "string"
-        }
-      }
     },
     "location": {
       "type": "object",
@@ -157,12 +117,6 @@
     },
     "incident_date_end": {
       "type": "null"
-    },
-    "operational_date": {
-      "type": "null"
-    },
-    "has_attachments": {
-      "type": "boolean"
     },
     "extra_properties": {
       "type": "null"
