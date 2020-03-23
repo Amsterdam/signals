@@ -196,6 +196,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
+        allow_null=True,
         validators=[
             ExtraPropertiesValidator(
                 filename=os.path.join(
@@ -317,6 +318,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
+        allow_null=True,
         validators=[
             ExtraPropertiesValidator(
                 filename=os.path.join(
