@@ -8,8 +8,6 @@ from signals.apps.api.v1.fields import (
     ParentCategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
-from signals.apps.email_integrations.core.messages import \
-    ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
 from signals.apps.signals.models import Category, ServiceLevelObjective
 
 
@@ -17,7 +15,6 @@ class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = serializers.SerializerMethodField()
-    handling_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -32,9 +29,6 @@ class CategoryHALSerializer(HALSerializer):
             'description',
             'handling_message',
         )
-
-    def get_handling_message(self, obj):
-        return ALL_AFHANDELING_TEXT[obj.handling]
 
     def get_departments(self, obj):
         return _NestedDepartmentSerializer(
@@ -71,7 +65,6 @@ class PrivateCategorySLASerializer(serializers.ModelSerializer):
 class PrivateCategorySerializer(HALSerializer):
     serializer_url_field = PrivateCategoryHyperlinkedIdentityField
     _display = DisplayField()
-    handling_message = serializers.SerializerMethodField()
     sla = serializers.SerializerMethodField()
     new_sla = PrivateCategorySLASerializer(write_only=True)
 
@@ -92,12 +85,8 @@ class PrivateCategorySerializer(HALSerializer):
         read_only_fields = (
             'id',
             'slug',
-            'handling_message',
             'sla',
         )
-
-    def get_handling_message(self, obj):
-        return ALL_AFHANDELING_TEXT[obj.handling]
 
     def get_sla(self, obj):
         return PrivateCategorySLASerializer(obj.slo.all().order_by('-created_at').first()).data
@@ -140,14 +129,16 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
         actions = []
         for key, value in log.data.items():
             if key == 'name':
-                action = f'Naam gewijzigd:\n {value}'
+                action = f'Naam wijziging:\n {value}'
             elif key == 'description':
-                action = f'Omschrijving gewijzigd:\n {value}'
+                action = f'Omschrijvings wijziging:\n {value}'
             elif key == 'slo':
                 sla = ServiceLevelObjective.objects.get(pk=value[0])
-                action = f'Service level agreement gewijzigd:\n {sla.n_days} {"week" if sla.use_calendar_days else "werk"}dagen'  # noqa
+                action = f'Service level agreement wijziging:\n {sla.n_days} {"week" if sla.use_calendar_days else "werk"}dagen'  # noqa
             elif key == 'is_active':
-                action = f'Status gewijzigd:\n {"Actief" if value else "Inactief"}'
+                action = f'Status wijziging:\n {"Actief" if value else "Inactief"}'
+            elif key == 'handling_message':
+                action = f'E-mail tekst wijziging:\n {value}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 
