@@ -72,7 +72,12 @@ class Category(models.Model):
     slug = AutoSlugField(populate_from=['name', ], blank=False, overwrite=False, editable=False)
 
     name = models.CharField(max_length=255)
+
+    # SIG-2397 Handling is replaced by a handling_message
+    # Notice: The handling_message will be used in communication (e-mail) to the citizen
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
+    handling_message = models.TextField(null=True, blank=True)  # noqa In the migration will set the message associated by the handling code
+
     departments = models.ManyToManyField('signals.Department',
                                          through='signals.CategoryDepartment',
                                          through_fields=('category', 'department'))
@@ -80,7 +85,7 @@ class Category(models.Model):
 
     description = models.TextField(null=True, blank=True)
 
-    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', ))
+    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message', ))
 
     objects = CategoryManager()
 
