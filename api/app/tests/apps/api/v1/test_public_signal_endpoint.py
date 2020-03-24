@@ -119,6 +119,33 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
         self.assertEqual(0, Signal.objects.count())
 
+    def test_create_extra_properties_missing(self):
+        # "extra_properties" missing <- must be accepted
+        initial_data = self.create_initial_data.copy()
+        del initial_data['extra_properties']
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
+
+    def test_create_extra_properties_null(self):
+        # "extra_properties": null <- must be accepted
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = None
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
+
+    def test_create_extra_properties_empty_object(self):
+        # "extra_properties": {} <- must not be accepted
+        initial_data = self.create_initial_data.copy()
+        initial_data['extra_properties'] = {}
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
     def test_get_by_uuid(self):
         signal = SignalFactory.create()
         uuid = signal.signal_id
