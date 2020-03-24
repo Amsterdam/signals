@@ -1487,6 +1487,9 @@ components:
             use_calendar_days:
               type: boolean
               description: If the n_days is in calendar days (true) or working days (false)
+        handling_message:
+          type: string
+          description: The handling message, used in the e-mail to the reporter
 
     departmentCreate:
       description: JSON data for new department
