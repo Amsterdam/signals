@@ -24,6 +24,7 @@ class TestCore(TestCase):
                                                  parent=self.parent_signal)
 
     def test_send_mail_reporter_created(self):
+        category = self.signal.category_assignment.category
         num_of_messages = reporter_mail.send_mail_reporter_created(self.signal)
 
         self.assertEqual(num_of_messages, 1)
@@ -32,6 +33,23 @@ class TestCore(TestCase):
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
 
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
+        self.assertIn(category.handling_message, mail.outbox[0].body)
+
+    def test_send_mail_reporter_created_custom_handling_message(self):
+        category = self.signal.category_assignment.category
+        category.handling_message = 'This text should end up in the mail to the reporter'
+        category.save()
+        self.signal.refresh_from_db()
+
+        num_of_messages = reporter_mail.send_mail_reporter_created(self.signal)
+
+        self.assertEqual(num_of_messages, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
+
+        self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
+        self.assertIn(category.handling_message, mail.outbox[0].body)
 
     def test_send_mail_reporter_created_no_email(self):
         num_of_messages = reporter_mail.send_mail_reporter_created(self.signal_no_email)

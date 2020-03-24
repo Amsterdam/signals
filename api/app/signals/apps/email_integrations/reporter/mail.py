@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.template import loader
 
-from signals.apps.email_integrations.core.messages import ALL_AFHANDELING_TEXT
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
@@ -20,7 +19,7 @@ def send_mail_reporter_created(signal):
 
     context = {
         'signal': signal,
-        'afhandelings_text': ALL_AFHANDELING_TEXT[signal.category_assignment.category.handling],
+        'afhandelings_text': signal.category_assignment.category.handling_message,
     }
     txt_message = _create_message('email/signal_created.txt', context=context)
     html_message = _create_message('email/signal_created.html', context=context)
