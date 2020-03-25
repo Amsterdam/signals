@@ -50,6 +50,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertIn('is_active', data)
         self.assertEqual(data['is_active'], category.is_active)
         self.assertEqual(data['description'], category.description)
+        self.assertEqual(data['handling_message'], category.handling_message)
 
         self.assertIn('sla', data)
         if category.slo.count() > 0:
@@ -121,6 +122,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
                 'n_days': 5,
                 'use_calendar_days': True
             },
+            'handling_message': 'Patched handling message',
         }
 
         response = self.client.patch(url, data=data, format='json')
@@ -185,11 +187,32 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
         self.assertIsNone(change_log_data['description'])
         self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
-        self.assertIn('Naam gewijzigd:\n Patched name again', change_log_data['action'])
-        self.assertIn('Status gewijzigd:\n Inactief', change_log_data['action'])
+        self.assertIn('Naam wijziging:\n Patched name again', change_log_data['action'])
+        self.assertIn('Status wijziging:\n Inactief', change_log_data['action'])
 
         change_log_data = response_data[1]
         self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
         self.assertIsNone(change_log_data['description'])
         self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
-        self.assertIn('Naam gewijzigd:\n Patched name', change_log_data['action'])
+        self.assertIn('Naam wijziging:\n Patched name', change_log_data['action'])
+
+    def test_history_view_update_handling_message(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+
+        response = self.client.patch(url, data={'handling_message': 'Patched handling message'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        history_url = f'{url}/history'
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
+        self.assertIsNone(change_log_data['description'])
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertIn('E-mail tekst wijziging:\n Patched handling message', change_log_data['action'])

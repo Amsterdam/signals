@@ -6,8 +6,6 @@ from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
     ParentCategoryHyperlinkedIdentityField
 )
-from signals.apps.email_integrations.core.messages import \
-    ALL_AFHANDELING_TEXT  # noqa TODO: move to a model
 from signals.apps.signals.models import Category, CategoryDepartment, Department
 
 
@@ -42,7 +40,6 @@ class TemporaryCategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = serializers.SerializerMethodField()
-    handling_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -58,9 +55,6 @@ class TemporaryCategoryHALSerializer(HALSerializer):
             'description',
             'handling_message',
         )
-
-    def get_handling_message(self, obj):
-        return ALL_AFHANDELING_TEXT[obj.handling]
 
     def get_departments(self, obj):
         return _NestedDepartmentSerializer(
