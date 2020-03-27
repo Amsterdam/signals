@@ -231,7 +231,7 @@ def create_csv_files(isoweek, isoyear, save_in_dir=None):
     Write ZIP file of "horeca" data to storage.
 
     Note:
-    - Django storage is configured to write files localy or to "object store".
+    - Django storage is configured to write files locally or to "object store".
     """
     category = _get_horeca_main_category()
     csv_files = []  # TODO: consider removing these

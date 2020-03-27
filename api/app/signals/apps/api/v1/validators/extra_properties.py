@@ -7,6 +7,8 @@ from rest_framework.exceptions import ValidationError
 
 
 class ExtraPropertiesValidator(object):
+    requires_context = True
+
     def __init__(self, *args, **kwargs):
         self.serializer_field = None
         self.schema = None
@@ -16,7 +18,9 @@ class ExtraPropertiesValidator(object):
             with open(filename) as f:
                 self.schema = json.load(f)
 
-    def __call__(self, value):
+    def __call__(self, value, serializer_field):
+        self.serializer_field = serializer_field
+
         feature_flag = settings.FEATURE_FLAGS.get('API_VALIDATE_EXTRA_PROPERTIES', False)
         if not feature_flag:
             # Feature flag not enabled, validation disabled
@@ -29,6 +33,3 @@ class ExtraPropertiesValidator(object):
             raise ValidationError()
         else:
             return value
-
-    def set_context(self, serializer_field):
-        self.serializer_field = serializer_field
