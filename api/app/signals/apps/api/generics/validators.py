@@ -17,10 +17,14 @@ class NearAmsterdamValidatorMixin:
 
 
 class SignalSourceValidator(object):
+    requires_context = True
+
     def __init__(self, *args, **kwargs):
         self.serializer_field = None
 
-    def __call__(self, value):
+    def __call__(self, value, serializer_field):
+        self.serializer_field = serializer_field
+
         user = self.serializer_field.context['request'].user
 
         # If there is no user only the Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be given as a source
@@ -43,6 +47,3 @@ class SignalSourceValidator(object):
             raise ValidationError('Invalid source given for authenticated user')
 
         return value
-
-    def set_context(self, serializer_field):
-        self.serializer_field = serializer_field
