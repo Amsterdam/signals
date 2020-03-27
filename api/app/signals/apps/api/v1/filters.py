@@ -2,7 +2,7 @@ from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.generics.filters import buurt_choices, status_choices
-from signals.apps.signals.models import STADSDELEN, Category, Priority, Signal
+from signals.apps.signals.models import STADSDELEN, Category, Priority, Signal, Type
 
 feedback_choices = (
     ('satisfied', 'satisfied'),
@@ -92,6 +92,9 @@ class SignalFilter(FilterSet):
         choices=contact_details_choices,
     )
 
+    # SIG-2148 Filter on Signal Type
+    type = filters.MultipleChoiceFilter(method='type_filter', choices=Type.CHOICES)
+
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
         queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
@@ -175,6 +178,14 @@ class SignalFilter(FilterSet):
             q_total |= q_objects[choices.pop()]
 
         return queryset.filter(q_total)
+
+    def type_filter(self, queryset, name, value):
+        return queryset.annotate(
+            type_assignment_id=Max('types__id')
+        ).filter(
+            types__id=F('type_assignment_id'),
+            types__name__in=value
+        )
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):

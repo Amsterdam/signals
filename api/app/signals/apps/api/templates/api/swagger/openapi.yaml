@@ -126,7 +126,20 @@ paths:
           required: false
           schema:
             type: string
-
+        - name: 'type'
+          in: query
+          description: >-
+            Filter signals according to the currently assigned type, accepts
+            (a combination of) the values `SIG` a "Signal/Melding", `REQ` a "Request/Aanvraag", `QUE` a "QuestionVraag", `COM` a "Complaint/Klacht" and `MAI` a "Maintenance/Groot onderhoud"
+          schema:
+            type: string
+            enum:
+              - SIG
+              - REQ
+              - QUE
+              - COM
+              - MAI
+          required: false
       responses:
         '200':
           description: List of signals

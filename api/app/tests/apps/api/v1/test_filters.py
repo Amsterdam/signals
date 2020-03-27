@@ -12,7 +12,8 @@ from tests.apps.signals.factories import (
     CategoryFactory,
     ParentCategoryFactory,
     SignalFactory,
-    StatusFactory
+    StatusFactory,
+    TypeFactory
 )
 from tests.test import SignalsBaseApiTestCase
 
@@ -543,3 +544,62 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         self.assertIn('contact_details', response_data['options'])
         self.assertEqual(
             set(response_data['options']['contact_details']), set(['none', 'email']))
+
+
+class TestTypeFilter(SignalsBaseApiTestCase):
+    SIGNALS_LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def setUp(self):
+        self.signals = {
+            'SIG': SignalFactory.create_batch(5),
+            'REQ': SignalFactory.create_batch(3),
+            'QUE': SignalFactory.create_batch(1),
+            'COM': SignalFactory.create_batch(2),
+            'MAI': SignalFactory.create_batch(4),
+        }
+
+        hours = 1
+        for type_code in self.signals.keys():
+            with freeze_time(timezone.now() + timedelta(hours=hours)):
+                for signal in self.signals[type_code]:
+                    TypeFactory.create(_signal=signal, name=type_code)
+            hours += 1
+
+    def test_filter_single_type(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        for filter_option in self.signals:
+            response = self.client.get(self.SIGNALS_LIST_ENDPOINT, data={'type': [filter_option]})
+
+            self.assertEqual(200, response.status_code)
+
+            response_data = response.json()
+            self.assertEqual(response_data['count'], len(self.signals[filter_option]))
+
+            signal_ids = [signal.id for signal in self.signals[filter_option]]
+            response_ids = [response_item['id'] for response_item in response_data['results']]
+            response_type_codes = [response_item['type']['code'] for response_item in response_data['results']]
+
+            self.assertEqual(len(signal_ids), len(response_ids))
+            self.assertEqual(set(signal_ids), set(response_ids))
+            self.assertEqual(1, len(set(response_type_codes)))
+            self.assertEqual({filter_option}, set(response_type_codes))
+
+    def test_filter_multiple_types(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        type_codes = ['COM', 'REQ']
+        response = self.client.get(self.SIGNALS_LIST_ENDPOINT, data={'type': type_codes})
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(response_data['count'], len(self.signals['COM']) + len(self.signals['REQ']))
+
+        signal_ids = [signal.id for signal in self.signals['COM']] + [signal.id for signal in self.signals['REQ']]
+        response_ids = [response_item['id'] for response_item in response_data['results']]
+        response_type_codes = [response_item['type']['code'] for response_item in response_data['results']]
+
+        self.assertEqual(len(signal_ids), len(response_ids))
+        self.assertEqual(set(signal_ids), set(response_ids))
+        self.assertEqual(2, len(set(response_type_codes)))
+        self.assertEqual(set(type_codes), set(response_type_codes))
