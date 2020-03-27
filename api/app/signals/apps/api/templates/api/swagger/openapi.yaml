@@ -89,6 +89,44 @@ paths:
               - phone
               - email
           required: false
+        - name: priority
+          in: query
+          description: >-
+            Filter signals according to their priority, accepts (a combination
+            of) the following values: `low`, `high` and/or `normal`.
+          required: false
+          schema:
+            type: string
+            enum:
+              - low
+              - normal
+              - high
+        - name: feedback
+          in: query
+          description: >-
+            Filter Signals/meldingen according to wether feedback was received
+            for them. This filter accepts one of the following values:
+            `satisfied` (reporter was satisfied with the resolution),
+            `not_satisfied` (reporter was not satisfied with the resolution),
+            or `not_received` (no feedback was sent by the reporter). Only the
+            newest feedback is taken into account.
+          required: false
+          schema:
+            type: string
+            enum:
+              - satisfied
+              - not_satisfied
+              - not_received
+        - name: source
+          in: query
+          description: >-
+            Filter Signals/meldingen according to their source, accepted values
+            are derived from the database. Source `online` are Signals/meldingen
+            that were created in the public website.
+          required: false
+          schema:
+            type: string
+
       responses:
         '200':
           description: List of signals
@@ -304,6 +342,7 @@ paths:
             format: uuid
       responses:
         '200':
+          description: Public data about a Signal/melding.
           content:
             application/json:
               schema:
@@ -952,6 +991,7 @@ components:
           example: 'test@test.com'
 
     V1PrivateSignalPost:
+      description: JSON data for creation of Signal/melding (private version).
       type: object
       properties:
         source:
@@ -990,6 +1030,7 @@ components:
         - incident_date_start
 
     V1PublicSignalPost:
+      description: JSON data for creation of Signal/melding (public version).
       type: object
       properties:
         source:
@@ -1020,6 +1061,8 @@ components:
           nullable: true
         extra_properties:
           type: array
+          items:
+            type: object
           example: []
       required:
         - text
@@ -1087,7 +1130,7 @@ components:
             $ref: '#/components/schemas/V1PrivateSignalDetailList'
 
     V1PrivateSignalDetailList:
-      description: Detailed JSON serialization of a SIA user.
+      description: Detailed JSON serialization of SIA Signals/meldingen.
       type: object
       properties:
         _links:
@@ -1157,7 +1200,7 @@ components:
           example: null
 
     V1PrivateSignalDetailGet:
-      description: Detailed JSON serialization of a SIA user.
+      description: Detailed JSON serialization of a SIA Signal/melding.
       type: object
       properties:
         _links:
@@ -1290,14 +1333,15 @@ components:
           description: Filtered status of Signal.
           type: object
           properties:
-            'state':
-              desciption: Public state code either "OPEN" or "CLOSED".
+            state:
+              description: Public state code either "OPEN" or "CLOSED".
               type: string
-            'state_display':
-              desciption: Public state display text.
+            state_display:
+              description: Public state display text.
               type: string
 
     userCreate:
+      description: JSON data for user creation
       type: object
       properties:
         username:
@@ -1332,6 +1376,7 @@ components:
         - username
 
     userPatch:
+      description: JSON data for user update
       type: object
       properties:
         first_name:
