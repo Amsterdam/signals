@@ -74,35 +74,32 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
 
-        initial_data = self.create_initial_data.copy()
-        initial_data["status"] = {
+        self.create_initial_data["status"] = {
             "state": workflow.BEHANDELING,
             "text": "Invalid stuff happening here"
         }
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
     def test_create_with_priority(self):
         # must not be able to set priority
-        initial_data = self.create_initial_data.copy()
-        initial_data['priorty'] = {
+        self.create_initial_data['priorty'] = {
             'priority': Priority.PRIORITY_HIGH
         }
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
     def test_create_with_type(self):
         # must not be able to set type
-        initial_data = self.create_initial_data.copy()
-        initial_data['type'] = {
+        self.create_initial_data['type'] = {
             'code': Type.COMPLAINT
         }
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
@@ -110,10 +107,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_create_with_source(self):
         # must not be able to set the source
         bad_source = 'DIT MAG NIET'
-        initial_data = self.create_initial_data.copy()
-        initial_data['source'] = bad_source
+        self.create_initial_data['source'] = bad_source
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
@@ -121,27 +117,24 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_create_extra_properties_missing(self):
         # "extra_properties" missing <- must be accepted
-        initial_data = self.create_initial_data.copy()
-        del initial_data['extra_properties']
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        del self.create_initial_data['extra_properties']
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
     def test_create_extra_properties_null(self):
         # "extra_properties": null <- must be accepted
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = None
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        self.create_initial_data['extra_properties'] = None
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
     def test_create_extra_properties_empty_object(self):
         # "extra_properties": {} <- must not be accepted
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = {}
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        self.create_initial_data['extra_properties'] = {}
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
@@ -248,17 +241,15 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_create_with_invalid_source_user(self):
-        data = self.create_initial_data
-        data['source'] = 'invalid-source'
-        response = self.client.post(self.list_endpoint, data, format='json')
+        self.create_initial_data['source'] = 'invalid-source'
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
     @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = [{
+        self.create_initial_data['extra_properties'] = [{
             'id': 'test_id',
             'label': 'test_label',
             'answer': {
@@ -278,17 +269,16 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             'category_url': self.link_test_cat_sub
         }]
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
     @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled_invalid_data(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+        self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         data = response.json()
 
         self.assertEqual(400, response.status_code)
@@ -298,17 +288,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
     def test_validate_extra_properties_disabled(self):
-        initial_data = self.create_initial_data.copy()
-        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+        self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
-
-    def test_signal_type_cannot_be_posted(self):
-        initial_data = self.create_initial_data.copy()
-
-        initial_data['type'] = {'code', 'REQ'}
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
-        self.assertEqual(400, response.status_code)
