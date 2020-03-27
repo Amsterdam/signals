@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'signals.apps.api',
     'signals.apps.users',
     'signals.apps.sigmax',
-    'signals.apps.dashboards',
     'signals.apps.feedback',
     'signals.apps.reporting',
     'signals.apps.search',
