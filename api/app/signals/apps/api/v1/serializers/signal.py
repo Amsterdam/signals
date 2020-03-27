@@ -1,6 +1,7 @@
 import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -349,7 +350,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Make sure any extra data is rejected"""
-        if hasattr(self, 'initial_data'):
+        if settings.FEATURE_FLAGS['API_DISALLOW_EXTRA_PAYLOAD'] and hasattr(self, 'initial_data'):
             present_keys = set(self.initial_data)
             allowed_keys = set(self.fields)
 

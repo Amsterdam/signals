@@ -71,6 +71,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
         self.assertEqual('SIG', signal.type_assignment.name)
 
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': True})
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
 
@@ -85,6 +86,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': True})
     def test_create_with_priority(self):
         # must not be able to set priority
         initial_data = self.create_initial_data.copy()
@@ -96,6 +98,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': True})
     def test_create_with_type(self):
         # must not be able to set type
         initial_data = self.create_initial_data.copy()
@@ -107,6 +110,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': True})
     def test_create_with_source(self):
         # must not be able to set the source
         bad_source = 'DIT MAG NIET'
@@ -118,6 +122,18 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
         self.assertEqual(0, Signal.objects.count())
+
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': False})
+    def test_temporarily_allow_random_extra_payload(self):
+        # See SIG-2443, frontend was posting extra data
+        initial_data = self.create_initial_data.copy()
+        initial_data['subcategory'] = self.subcategory.slug
+        initial_data['incident_time_minutes'] = 0
+        initial_data['incident_date'] = 'Vandaag'
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, Signal.objects.count())
 
     def test_create_extra_properties_missing(self):
         # "extra_properties" missing <- must be accepted
@@ -255,7 +271,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    @override_settings(FEATURE_FLAGS={
+        'API_VALIDATE_EXTRA_PROPERTIES': True,
+        'API_DISALLOW_EXTRA_PAYLOAD': True,
+    })
     def test_validate_extra_properties_enabled(self):
         initial_data = self.create_initial_data.copy()
         initial_data['extra_properties'] = [{
@@ -283,7 +302,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
+    @override_settings(FEATURE_FLAGS={
+        'API_VALIDATE_EXTRA_PROPERTIES': True,
+        'API_DISALLOW_EXTRA_PAYLOAD': True,
+    })
     def test_validate_extra_properties_enabled_invalid_data(self):
         initial_data = self.create_initial_data.copy()
         initial_data['extra_properties'] = {'old_style': 'extra_properties'}
@@ -296,7 +318,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(0, Signal.objects.count())
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
+    @override_settings(FEATURE_FLAGS={
+        'API_VALIDATE_EXTRA_PROPERTIES': False,
+        'API_DISALLOW_EXTRA_PAYLOAD': True,
+    })
     def test_validate_extra_properties_disabled(self):
         initial_data = self.create_initial_data.copy()
         initial_data['extra_properties'] = {'old_style': 'extra_properties'}
@@ -306,6 +331,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
+    @override_settings(FEATURE_FLAGS={'API_DISALLOW_EXTRA_PAYLOAD': True})
     def test_signal_type_cannot_be_posted(self):
         initial_data = self.create_initial_data.copy()
 

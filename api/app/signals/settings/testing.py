@@ -29,6 +29,7 @@ EMAIL_INTEGRATIONS = dict(
 FEATURE_FLAGS = {
     'API_VALIDATE_EXTRA_PROPERTIES': True,
     'API_SEARCH_ENABLED': False,
+    'API_DISALLOW_EXTRA_PAYLOAD': True,  # See SIG-2443, produces HTTP 400 on POST with extra payload
     'SEARCH_BUILD_INDEX': False,
 
     # Permission feature flags
