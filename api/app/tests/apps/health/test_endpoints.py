@@ -1,4 +1,4 @@
-from unittest import mock, skip
+from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import Error
@@ -52,19 +52,3 @@ class TestHealthEndpoints(TestCase):
     def test_status_data_lookup_error(self):
         with self.assertRaises(ImproperlyConfigured):
             self.client.get('/status/data')
-
-    @skip('SIG-1014 This test must be refactored when the new category health check is in place')
-    @override_settings(HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT=99999)
-    def test_status_data_sub_categories_failed(self):
-        response = self.client.get('/status/data/categories')
-
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, b'Too few items in the database')
-
-    @skip('SIG-1014 This test must be refactored when the new category health check is in place')
-    @override_settings(HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT=99999)
-    def test_status_data_main_categories_failed(self):
-        response = self.client.get('/status/data/categories')
-
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, b'Too few items in the database')

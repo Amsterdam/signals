@@ -190,13 +190,12 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_create_with_status(self):
         """ Tests that an error is returned when we try to set the status """
-        initial_data = self.create_initial_data.copy()
-        initial_data["status"] = {
+        self.create_initial_data["status"] = {
             "state": workflow.BEHANDELING,
             "text": "Invalid stuff happening here"
         }
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
 
@@ -279,9 +278,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_create_initial_try_update_bag_validated(self, validate_address_dict):
         """ Tests that the bag_validated field cannot be set manually, and that the address
         validation is called """
-        data = self.create_initial_data
-        data['location']['bag_validated'] = True
-        response = self.client.post(self.list_endpoint, data, format='json')
+        self.create_initial_data['location']['bag_validated'] = True
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         validate_address_dict.assert_called_once()
 
@@ -329,11 +327,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Type should be present in serialization of created Signal if it is
         # provided on creation.
         # Create initial Signal.
-        create_initial_data = copy.deepcopy(self.create_initial_data)
-        create_initial_data['type'] = {'code': 'REQ'}
+        self.create_initial_data['type'] = {'code': 'REQ'}
 
         signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Signal.objects.count(), signal_count + 1)
 
@@ -380,11 +377,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_bad_type_400(self, validate_address_dict):
         # Create initial Signal.
-        create_initial_data = copy.deepcopy(self.create_initial_data)
-        create_initial_data['type'] = {'code': 'GARBAGE'}
+        self.create_initial_data['type'] = {'code': 'GARBAGE'}
 
         signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Signal.objects.count(), signal_count)
 
@@ -1446,17 +1442,15 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(SOME_MESSAGE_A, response.data['status']['text'])
 
     def test_create_with_invalid_source_user(self):
-        data = self.create_initial_data
-        data['source'] = 'online'
-        response = self.client.post(self.list_endpoint, data, format='json')
+        self.create_initial_data['source'] = 'online'
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json()['source'][0],
                          'Invalid source given for authenticated user')
 
     def test_validate_extra_properties_enabled(self):
-        initial_data = self.create_initial_data
-        initial_data['extra_properties'] = [{
+        self.create_initial_data['extra_properties'] = [{
             'id': 'test_id',
             'label': 'test_label',
             'answer': {
@@ -1476,16 +1470,15 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             'category_url': self.link_subcategory
         }]
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(3, Signal.objects.count())
 
     def test_validate_extra_properties_enabled_invalid_data(self):
-        initial_data = self.create_initial_data
-        initial_data['extra_properties'] = {'old_style': 'extra_properties'}
+        self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         data = response.json()
 
         self.assertEqual(400, response.status_code)
@@ -1527,10 +1520,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_no_reporter(self, validate_address_dict):
         # Create initial Signal, check that it reached the database.
-        initial_data = copy.deepcopy(self.create_initial_data)
-        initial_data['reporter'] = {}
+        self.create_initial_data['reporter'] = {}
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
         response_json = response.json()
@@ -1544,11 +1536,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_email_phone_empty_string(self, validate_address_dict):
         # Create initial Signal, check that it reached the database.
-        initial_data = copy.deepcopy(self.create_initial_data)
-        initial_data['reporter']['email'] = ''
-        initial_data['reporter']['phone'] = ''
+        self.create_initial_data['reporter']['email'] = ''
+        self.create_initial_data['reporter']['phone'] = ''
 
-        response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
         response_json = response.json()
