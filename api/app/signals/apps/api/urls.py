@@ -8,6 +8,15 @@ from signals.apps.api.v0.routers import SignalsRouterVersion0
 # Base router
 base_signal_router = BaseSignalsRouter()
 
+# We want te category prediction proxy to still be working
+base_signal_router.urls.append(
+    path(
+        'category/prediction',
+        v0_views.MlPredictCategoryView.as_view(),
+        name='ml-tool-predict-proxy'
+    )
+)
+
 # API Version 0
 signal_router_v0 = SignalsRouterVersion0()
 signal_router_v0.register(r'signal/image', v0_views.SignalImageUpdateView, basename='signal-img')
