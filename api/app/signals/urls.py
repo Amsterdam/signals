@@ -19,7 +19,6 @@ urlpatterns = [
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
 
-    path('signals/experimental/dashboards/', include('signals.apps.dashboards.urls')),
     # path('signals/experimental/reporting/', include('signals.apps.reporting.urls'))
 ]
 

@@ -91,8 +91,6 @@ the Github project.
 ### Miscellaneous
 * `signals.apps.health` This Django app is used by the Datapunt server
   infrastructure to check the health of SIA.
-* `signals.apps.dashboard` This Django app, currently in prototype state,
-  provides support for Dashboard visualization of SIA data.
 * `signals.utils` This package provides among other things the code that writes
   CSV dumps of a selected subset of SIA data to integrate with other municipal
   systems.
