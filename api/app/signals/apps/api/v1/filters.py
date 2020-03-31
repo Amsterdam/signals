@@ -95,6 +95,10 @@ class SignalFilter(FilterSet):
     # SIG-2148 Filter on Signal Type
     type = filters.MultipleChoiceFilter(method='type_filter', choices=Type.CHOICES)
 
+    note_keyword = filters.CharFilter(
+        method='note_keyword_filter',
+    )
+
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
         queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
@@ -186,6 +190,9 @@ class SignalFilter(FilterSet):
             types__id=F('type_assignment_id'),
             types__name__in=value
         )
+
+    def note_keyword_filter(self, queryset, name, value):
+        return queryset.filter(notes__text__icontains=value).distinct()
 
 
 class SignalCategoryRemovedAfterFilter(FilterSet):
