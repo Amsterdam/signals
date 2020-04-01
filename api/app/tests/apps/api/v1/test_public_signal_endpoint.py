@@ -104,17 +104,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
-    def test_create_with_source(self):
-        # must not be able to set the source
-        bad_source = 'DIT MAG NIET'
-        self.create_initial_data['source'] = bad_source
-
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(response.json()['source'], ['Invalid source given for anonymous user'])
-        self.assertEqual(0, Signal.objects.count())
-
     def test_create_extra_properties_missing(self):
         # "extra_properties" missing <- must be accepted
         del self.create_initial_data['extra_properties']
@@ -239,13 +228,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
         self.assertEqual(response.status_code, 405)
-
-    def test_create_with_invalid_source_user(self):
-        self.create_initial_data['source'] = 'invalid-source'
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
     @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled(self):

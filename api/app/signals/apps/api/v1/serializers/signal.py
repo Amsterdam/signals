@@ -333,7 +333,6 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Signal
         fields = (
-            'source',
             'text',
             'text_extra',
             'location',
@@ -343,9 +342,6 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
             'incident_date_end',
             'extra_properties',
         )
-        extra_kwargs = {
-            'source': {'validators': [SignalSourceValidator()]},
-        }
 
     def validate(self, data):
         """Make sure any extra data is rejected"""
