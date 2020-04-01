@@ -140,6 +140,20 @@ paths:
               - COM
               - MAI
           required: false
+        - name: note_keyword
+          in: query
+          description: >-
+            This filter option is temporary, and will likely be replaced by
+            either proper tagging or extended search using the Elastic Search
+            implementation of SIA.
+            Filter Signals/meldingen according to the presence of a certain
+            keyword in one or more of notes associated with a Signal/melding.
+            Accepts one keyword, will check wether it is present and return the
+            Signals/meldingen where it is present.
+          required: false
+          schema:
+            type: string
+
       responses:
         '200':
           description: List of signals

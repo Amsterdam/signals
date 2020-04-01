@@ -10,6 +10,7 @@ from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
     CategoryAssignmentFactory,
     CategoryFactory,
+    NoteFactory,
     ParentCategoryFactory,
     SignalFactory,
     StatusFactory,
@@ -450,6 +451,47 @@ class TestPriorityFilter(SignalsBaseApiTestCase):
         ]}
         ids = set(self._request_filter_signals(filter_params))
         self.assertEqual(len(ids), 3)
+
+
+class TestNoteKeywordFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.keyword = 'KEYWORD'
+        text_no_keyword = 'blah blah blah'
+        text_with_keyword = f'blah blah blah {self.keyword} blah blah blah'
+
+        self.signal_with_keyword = SignalFactory()
+        NoteFactory(_signal=self.signal_with_keyword, text=text_no_keyword)
+        NoteFactory(_signal=self.signal_with_keyword, text=text_no_keyword)
+        NoteFactory(_signal=self.signal_with_keyword, text=text_with_keyword)
+        NoteFactory(_signal=self.signal_with_keyword, text=text_with_keyword)
+
+        self.signal_no_keyword = SignalFactory()
+        NoteFactory(_signal=self.signal_with_keyword, text=text_no_keyword)
+
+    def test_retrieve_signal_with_keyword(self):
+        filter_params = {'note_keyword': self.keyword}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(ids, [self.signal_with_keyword.id])
+
+        filter_params = {'note_keyword': 'NOT PRESENT'}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(ids, [])
 
 
 class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
