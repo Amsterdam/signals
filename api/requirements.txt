@@ -20,7 +20,7 @@ datapunt-authorization-django==0.3.1
 debtcollector==2.0.0
 defusedxml==0.6.0
 distlib==0.3.0
-Django==2.2.10
+Django==2.2.12
 django-appconf==1.0.3
 django-celery-beat==1.6.0
 django-celery-email==3.0.0
@@ -79,7 +79,7 @@ oslo.utils==4.0.0
 packaging==20.1
 pbr==5.4.4
 pilkit==2.0
-Pillow==7.0.0
+Pillow==7.1.0
 pluggy==0.13.1
 psycopg2-binary==2.8.4
 py==1.8.1
