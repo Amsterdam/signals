@@ -454,12 +454,10 @@ class TestSignalModel(TestCase):
         state = status.state
         signal.refresh_from_db()
 
-        self.assertEqual('{} - {} - {} - {}'.format(
-            signal.id,
-            state,
-            "ABCD",
-            signal.created_at
-        ), signal.__str__())
+        # Fix for bug SIG-2486 Timezones where not consistently showed
+        created_at = signal.created_at.astimezone(timezone.get_current_timezone())
+
+        self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
 
     @mock.patch("uuid.uuid4")
     def test_uuid_assignment(self, mocked_uuid4):

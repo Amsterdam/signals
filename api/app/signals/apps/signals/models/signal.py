@@ -5,6 +5,8 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+from pytz import utc
 from swift.storage import SwiftStorage
 
 from signals.apps.signals import workflow
@@ -108,20 +110,19 @@ class Signal(CreatedUpdatedModel):
         """Identifying string.
         DO NOT expose sensitive stuff here.
         """
-        state = ''
-        buurt_code = ''
 
-        if self.status:
-            state = self.status.state
-        if self.location:
-            buurt_code = self.location.buurt_code
+        # Fix for bug SIG-2486 Timezones where not consistently showed
+        created_at = self.created_at
+        field_timezone = timezone.get_current_timezone() if settings.USE_TZ else None
+        if timezone.is_aware(created_at) and field_timezone:
+            created_at = created_at.astimezone(field_timezone)
+        elif timezone.is_aware(created_at):
+            created_at = timezone.make_naive(created_at, utc)
 
-        return '{} - {} - {} - {}'.format(
-            self.id,
-            state,
-            buurt_code,
-            self.created_at
-        )
+        return f'{self.id} - ' \
+               f'{self.status.state if self.status else ""} - ' \
+               f'{self.location.buurt_code if self.location else ""} - ' \
+               f'{created_at.isoformat()}'
 
     @property
     def sia_id(self):
