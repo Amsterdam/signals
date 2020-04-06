@@ -14,7 +14,8 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail
+    PublicSignalSerializerDetail,
+    SignalGeoSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals.models import History, Signal
@@ -116,4 +117,11 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             history_entries = history_entries.filter(what=what)
 
         serializer = HistoryHalSerializer(history_entries, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def geography(self, request):
+        filtered_qs = self.filter_queryset(self.get_queryset())
+
+        serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)

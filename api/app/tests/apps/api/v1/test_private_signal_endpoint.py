@@ -76,6 +76,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # No URL reversing here, these endpoints are part of the spec (and thus
         # should not change).
         self.list_endpoint = '/signals/v1/private/signals/'
+        self.geo_list_endpoint = '/signals/v1/private/signals/geography'
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
@@ -120,6 +121,13 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # JSONSchema validation
         data = response.json()
         self.assertJsonSchema(self.list_signals_schema, data)
+
+    def test_geo_list_endpoint(self):
+        response = self.client.get(self.geo_list_endpoint)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(len(response.json()['features']), 2)
+        # TODO: add GeoJSON schema check?
 
     def test_detail_endpoint(self):
         response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
