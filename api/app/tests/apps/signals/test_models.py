@@ -454,7 +454,7 @@ class TestSignalModel(TestCase):
         state = status.state
         signal.refresh_from_db()
 
-        # Fix for bug SIG-2486 Timezones where not consistently showed
+        # Fix for bug SIG-2486 Timezones were not consistently shown
         created_at = signal.created_at.astimezone(timezone.get_current_timezone())
 
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())

@@ -111,7 +111,7 @@ class Signal(CreatedUpdatedModel):
         DO NOT expose sensitive stuff here.
         """
 
-        # Fix for bug SIG-2486 Timezones where not consistently showed
+        # Fix for bug SIG-2486 Timezones were not consistently shown
         created_at = self.created_at
         field_timezone = timezone.get_current_timezone() if settings.USE_TZ else None
         if timezone.is_aware(created_at) and field_timezone:
