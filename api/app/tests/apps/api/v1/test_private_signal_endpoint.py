@@ -1549,6 +1549,22 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(new_signal.reporter.email, None)
         self.assertEqual(new_signal.reporter.phone, None)
 
+    def test_detail_endpoint_SIG_2486(self):
+        """
+        The date in the _display value did showed with the correct timestamp as all other dates
+        """
+        response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
+        self.assertEqual(response.status_code, 200)
+
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.retrieve_signal_schema, data)
+
+        created_at = self.signal_no_image.created_at.astimezone(timezone.get_current_timezone())
+        created_at_with_time_zone_str = created_at.isoformat()
+        self.assertIn(created_at_with_time_zone_str, data['_display'])
+        self.assertEqual(created_at_with_time_zone_str, data['created_at'])
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
