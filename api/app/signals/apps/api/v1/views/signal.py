@@ -133,7 +133,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     @action(detail=False)
     def geography(self, request):
         # Makes use of the optimised queryset
-        filtered_qs = self.filter_queryset(self.geography_queryset)
+        filtered_qs = self.filter_queryset(self.geography_queryset.filter_for_user(user=self.request.user))
 
         serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)
