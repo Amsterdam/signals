@@ -191,7 +191,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
-  /signals/v1/private/signals/geography/:
+  /signals/v1/private/signals/geography:
     get:
       description: Signals geography list endpoint
       parameters:
