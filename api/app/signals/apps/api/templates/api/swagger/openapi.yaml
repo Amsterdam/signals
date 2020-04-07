@@ -191,6 +191,159 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+  /signals/v1/private/signals/geography/:
+    get:
+      description: Signals geography list endpoint
+      parameters:
+        - name: "created_before"
+          in: query
+          description: >-
+            Filter returns only signals created before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: "created_after"
+          in: query
+          description: >-
+            Filter returns only signals created after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: "updated_before"
+          in: query
+          description: >-
+            Filter returns only signals updated before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: updated_after
+          in: query
+          description: >-
+            Filter returns only signals updated after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: status
+          in: query
+          description: Filter returns only signals with specified status.
+          schema:
+            $ref: '#/components/schemas/StatusStateChoices'
+          required: false
+        - name: maincategory_slug
+          description: Filter returns only signals with matching main category
+            slug.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category_slug
+          description: >-
+            Filter returns only signals with matching sub category slug.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: contact_details
+          in: query
+          description: >-
+            Filter signals according to the presence of contact details, accepts
+            (a combination of) the following values `none` for no contact
+            details, `phone` for the presence of a reporter's phone number, and
+            `email` for the presence of a reporter's email address.
+          schema:
+            type: string
+            enum:
+              - none
+              - phone
+              - email
+          required: false
+        - name: priority
+          in: query
+          description: >-
+            Filter signals according to their priority, accepts (a combination
+            of) the following values: `low`, `high` and/or `normal`.
+          required: false
+          schema:
+            type: string
+            enum:
+              - low
+              - normal
+              - high
+        - name: feedback
+          in: query
+          description: >-
+            Filter Signals/meldingen according to wether feedback was received
+            for them. This filter accepts one of the following values:
+            `satisfied` (reporter was satisfied with the resolution),
+            `not_satisfied` (reporter was not satisfied with the resolution),
+            or `not_received` (no feedback was sent by the reporter). Only the
+            newest feedback is taken into account.
+          required: false
+          schema:
+            type: string
+            enum:
+              - satisfied
+              - not_satisfied
+              - not_received
+        - name: source
+          in: query
+          description: >-
+            Filter Signals/meldingen according to their source, accepted values
+            are derived from the database. Source `online` are Signals/meldingen
+            that were created in the public website.
+          required: false
+          schema:
+            type: string
+        - name: 'type'
+          in: query
+          description: >-
+            Filter signals according to the currently assigned type, accepts
+            (a combination of) the values `SIG` a "Signal/Melding", `REQ` a "Request/Aanvraag", `QUE` a "QuestionVraag", `COM` a "Complaint/Klacht" and `MAI` a "Maintenance/Groot onderhoud"
+          schema:
+            type: string
+            enum:
+              - SIG
+              - REQ
+              - QUE
+              - COM
+              - MAI
+          required: false
+        - name: note_keyword
+          in: query
+          description: >-
+            This filter option is temporary, and will likely be replaced by
+            either proper tagging or extended search using the Elastic Search
+            implementation of SIA.
+            Filter Signals/meldingen according to the presence of a certain
+            keyword in one or more of notes associated with a Signal/melding.
+            Accepts one keyword, will check wether it is present and return the
+            Signals/meldingen where it is present.
+          required: false
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: List of signals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalListGetGeography'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+      security:
+        - OAuth2:
+            - SIG/ALL
   /signals/v1/private/signals/{id}:
     parameters:
       - name: id
@@ -1222,6 +1375,46 @@ components:
           format: date-time
           nullable: true
           example: null
+
+    V1PrivateSignalListGetGeography:
+      description: Geography
+      type: object
+      properties:
+        'type':
+          type: string
+          example: "FeatureCollection"
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              'type':
+                type: string
+                example: "Feature"
+              geometry:
+                type: object
+                properties:
+                  'type':
+                    type: string
+                    example: "Point"
+                  coordinates:
+                    type: array
+                    items:
+                      type: integer
+                    minItems: 0
+                    maxItems: 2
+                    example: [4.890986949631043, 52.41875227274259]
+              'properties':
+                type: object
+                properties:
+                  id:
+                    description: The ID of the Signal
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2020-01-01T00:00:00+00:00"
 
     V1PrivateSignalDetailGet:
       description: Detailed JSON serialization of a SIA Signal/melding.
