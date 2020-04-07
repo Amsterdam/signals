@@ -20,6 +20,7 @@ from signals.apps.api.v1.serializers.signal import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
+    SignalGeoSerializer,
     SignalIdListSerializer
 )
 from signals.apps.api.v1.serializers.signal_history import HistoryHalSerializer
@@ -46,6 +47,7 @@ __all__ = [
     'PublicSignalSerializerDetail',
     'PublicSignalCreateSerializer',
     'PrivateSplitSignalSerializer',
+    'SignalGeoSerializer',
     'SignalIdListSerializer',
     'StoredSignalFilterSerializer',
     'PrivateCategorySerializer',

@@ -498,6 +498,7 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
     SIGNALS_LIST_ENDPOINT = '/signals/v1/private/signals/'
     STORED_FILTERS_LIST_ENDPOINT = '/signals/v1/private/me/filters/'
     STORED_FILTERS_DETAIL_ENDPOINT = '/signals/v1/private/me/filters/{pk}'
+    GEOGRAPHY_ENDPOINT = '/signals/v1/private/signals/geography'
 
     def _request_filter_signals(self, filter_params: dict):
         """ Does a filter request and returns the signal ID's present in the request """
@@ -510,6 +511,20 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         ids = [res["id"] for res in resp_json["results"]]
 
         self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def _request_geo_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.GEOGRAPHY_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res['properties']['id'] for res in resp_json['features']]
+
+        self.assertEqual(len(resp_json['features']), len(ids))
 
         return ids
 
@@ -529,9 +544,23 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         self.assertEqual(len(ids), 1)
         self.assertEqual(set(ids), set([self.signal_anonymous.id]))
 
+    def test_geo_contact_details_none(self):
+        filter_params = {'contact_details': ['none']}
+        ids = self._request_geo_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(set(ids), set([self.signal_anonymous.id]))
+
     def test_contact_details_email(self):
         filter_params = {'contact_details': ['email']}
         ids = self._request_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 2)
+        self.assertEqual(set(ids), set([self.signal_has_email.id, self.signal_has_both.id]))
+
+    def test_geo_contact_details_email(self):
+        filter_params = {'contact_details': ['email']}
+        ids = self._request_geo_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_email.id, self.signal_has_both.id]))
@@ -543,11 +572,20 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
         self.assertEqual(len(ids), 2)
         self.assertEqual(set(ids), set([self.signal_has_phone.id, self.signal_has_both.id]))
 
+    def test_geo_contact_details_phone(self):
+        filter_params = {'contact_details': ['phone']}
+        ids = self._request_geo_filter_signals(filter_params)
+
+        self.assertEqual(len(ids), 2)
+        self.assertEqual(set(ids), set([self.signal_has_phone.id, self.signal_has_both.id]))
+
     def test_contact_details_combination(self):
         filter_params = {'contact_details': ['none', 'email', 'phone']}
         ids = self._request_filter_signals(filter_params)
+        geo_ids = self._request_geo_filter_signals(filter_params)
 
         self.assertEqual(len(ids), 4)
+        self.assertEqual(len(geo_ids), 4)
 
     def test_contact_details_bad_inputs(self):
         BAD_INPUTS = [
@@ -590,6 +628,7 @@ class TestContactDetailsPresentFilter(SignalsBaseApiTestCase):
 
 class TestTypeFilter(SignalsBaseApiTestCase):
     SIGNALS_LIST_ENDPOINT = '/signals/v1/private/signals/'
+    GEOGRAPHY_ENDPOINT = '/signals/v1/private/signals/geography'
 
     def setUp(self):
         self.signals = {
@@ -627,6 +666,23 @@ class TestTypeFilter(SignalsBaseApiTestCase):
             self.assertEqual(1, len(set(response_type_codes)))
             self.assertEqual({filter_option}, set(response_type_codes))
 
+    def test_filter_geo_single_type(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        for filter_option in self.signals:
+            response = self.client.get(self.GEOGRAPHY_ENDPOINT, data={'type': [filter_option]})
+
+            self.assertEqual(200, response.status_code)
+
+            response_data = response.json()
+            self.assertEqual(len(response_data['features']), len(self.signals[filter_option]))
+
+            signal_ids = [signal.id for signal in self.signals[filter_option]]
+            response_ids = [response_item['properties']['id'] for response_item in response_data['features']]
+
+            self.assertEqual(len(signal_ids), len(response_ids))
+            self.assertEqual(set(signal_ids), set(response_ids))
+
     def test_filter_multiple_types(self):
         self.client.force_authenticate(user=self.superuser)
 
@@ -645,3 +701,19 @@ class TestTypeFilter(SignalsBaseApiTestCase):
         self.assertEqual(set(signal_ids), set(response_ids))
         self.assertEqual(2, len(set(response_type_codes)))
         self.assertEqual(set(type_codes), set(response_type_codes))
+
+    def test_filter_geo_multiple_types(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        type_codes = ['COM', 'REQ']
+        response = self.client.get(self.GEOGRAPHY_ENDPOINT, data={'type': type_codes})
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data['features']), len(self.signals['COM']) + len(self.signals['REQ']))
+
+        signal_ids = [signal.id for signal in self.signals['COM']] + [signal.id for signal in self.signals['REQ']]
+        response_ids = [response_item['properties']['id'] for response_item in response_data['features']]
+
+        self.assertEqual(len(signal_ids), len(response_ids))
+        self.assertEqual(set(signal_ids), set(response_ids))

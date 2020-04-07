@@ -14,7 +14,8 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
-    PublicSignalSerializerDetail
+    PublicSignalSerializerDetail,
+    SignalGeoSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals.models import History, Signal
@@ -52,6 +53,17 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'children',
         'attachments',
         'notes',
+    ).all()
+
+    # Geography queryset to reduce the complexity of the query
+    geography_queryset = Signal.objects.select_related(
+        'location',  # We only need the location for now
+    ).filter(
+        location__isnull=False  # We can only show signals on a map that have a location
+    ).only(  # No need to select anything else than the id, created and the location for now
+        'id',
+        'created_at',
+        'location'
     ).all()
 
     serializer_class = PrivateSignalSerializerList
@@ -116,4 +128,12 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             history_entries = history_entries.filter(what=what)
 
         serializer = HistoryHalSerializer(history_entries, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def geography(self, request):
+        # Makes use of the optimised queryset
+        filtered_qs = self.filter_queryset(self.geography_queryset.filter_for_user(user=self.request.user))
+
+        serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)
