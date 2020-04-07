@@ -55,6 +55,17 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'notes',
     ).all()
 
+    # Geography queryset to reduce the complexity of the query
+    geography_queryset = Signal.objects.select_related(
+        'location',  # We only need the location for now
+    ).filter(
+        location__isnull=False  # We can only show signals on a map that have a location
+    ).only(  # No need to select anything else than the id, created and the location for now
+        'id',
+        'created_at',
+        'location'
+    ).all()
+
     serializer_class = PrivateSignalSerializerList
     serializer_detail_class = PrivateSignalSerializerDetail
 
@@ -121,7 +132,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=False)
     def geography(self, request):
-        filtered_qs = self.filter_queryset(self.get_queryset())
+        # Makes use of the optimised queryset
+        filtered_qs = self.filter_queryset(self.geography_queryset)
 
         serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)
