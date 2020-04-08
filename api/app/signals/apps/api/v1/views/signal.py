@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from signals.apps.api import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
+from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import SignalCreateInitialPermission
 from signals.apps.api.generics.permissions.base import SignalViewObjectPermission
 from signals.apps.api.v1.filters import SignalFilter
@@ -133,7 +134,19 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     @action(detail=False)
     def geography(self, request):
         # Makes use of the optimised queryset
-        filtered_qs = self.filter_queryset(self.geography_queryset.filter_for_user(user=self.request.user))
+        filtered_qs = self.filter_queryset(
+            self.geography_queryset.filter_for_user(
+                user=self.request.user
+            )
+        ).order_by(
+            'id'  # Oldest Signals first
+        )
+
+        paginator = LinkHeaderPagination()
+        page = paginator.paginate_queryset(filtered_qs, self.request, view=self)
+        if page is not None:
+            serializer = SignalGeoSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
         serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)

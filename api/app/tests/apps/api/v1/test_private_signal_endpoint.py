@@ -125,9 +125,45 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_geo_list_endpoint(self):
         response = self.client.get(self.geo_list_endpoint)
         self.assertEqual(response.status_code, 200)
-
         self.assertEqual(len(response.json()['features']), 2)
+
+        # Check headers
+        self.assertTrue(response.has_header('Link'))
+        self.assertTrue(response.has_header('X-Total-Count'))
+        self.assertEqual(response['X-Total-Count'], '2')
+
         # TODO: add GeoJSON schema check?
+
+    def test_geo_list_endpoint_paginated(self):
+        # the first page
+        response = self.client.get(f'{self.geo_list_endpoint}?page_size=1')
+        self.assertEqual(response.status_code, 200)
+
+        # Check headers
+        self.assertTrue(response.has_header('Link'))
+        links = response['Link'].split(',')
+        self.assertEqual(len(links), 1)
+        self.assertIn('rel="next"', links[0])
+        self.assertNotIn('rel="previous"', links[0])
+
+        self.assertTrue(response.has_header('X-Total-Count'))
+        self.assertEqual(response['X-Total-Count'], '2')
+
+        self.assertEqual(len(response.json()['features']), 1)
+
+        # the second page
+        response = self.client.get(links[0].split(';')[0][1:-1])  # The next page
+
+        self.assertTrue(response.has_header('Link'))
+        links = response['Link'].split(',')
+        self.assertEqual(len(links), 1)
+        self.assertNotIn('rel="next"', links[0])
+        self.assertIn('rel="prev"', links[0])
+
+        self.assertTrue(response.has_header('X-Total-Count'))
+        self.assertEqual(response['X-Total-Count'], '2')
+
+        self.assertEqual(len(response.json()['features']), 1)
 
     def test_detail_endpoint(self):
         response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
