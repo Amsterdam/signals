@@ -1,15 +1,15 @@
 """
 Category changes.
 
-SIG-2456, SIG-2458 and SIG-2457.
+SIG-2456, SIG-2458, SIG-2457, and SIG-2508.
 """
 from django.db import migrations
 
-# SIG-2457
+# SIG-2457 and SIG-2508
 NEW_CATEGORIES = {
     'openbaar-groen-en-water': {
         'beplanting': {
-            'name': 'Beplanting',
+            'name': 'Beplanting',  # SIG-2457
             'handling': 'I5DMC',
             'handling_message':
                 "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen "
@@ -19,46 +19,59 @@ NEW_CATEGORIES = {
             'slo': '5W',
         },
         'japanse-duizendknoop': {
-            'name': 'Japanse duizendknoop',
+            'name': 'Japanse duizendknoop',  # SIG-2457
             'handling': 'I5DMC',
             'handling_message':
                 "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen "
                 "weten hoe en wanneer uw melding wordt afgehandeld. Dat doen "
                 "we via e-mail.",
-                'departments': ['V&OR'],
+            'departments': ['V&OR'],
             'slo': '5W',
         },
         'boomziekten-en-plagen': {
-            'name': 'Boom - ziekten en plagen',
+            'name': 'Boom - ziekten en plagen',  # SIG-2457
             'handling': 'I5DMC',
             'handling_message':
                 "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen "
                 "weten hoe en wanneer uw melding wordt afgehandeld. Dat doen "
                 "we via e-mail.",
-                'departments': ['V&OR'],
+            'departments': ['V&OR'],
             'slo': '5W',
         },
         'boom-verzoek-inspectie': {
-            'name': 'Boom - verzoek inspectie',
+            'name': 'Boom - verzoek inspectie',  # SIG-2457
             'handling': 'I5DMC',
             'handling_message':
                 "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen "
                 "weten hoe en wanneer uw melding wordt afgehandeld. Dat doen "
                 "we via e-mail.",
-                'departments': ['V&OR'],
+            'departments': ['V&OR'],
             'slo': '5W',
         },
         'boom-stormschade': {
-            'name': 'Boom - stormschade',
+            'name': 'Boom - stormschade',  # SIG-2457
             'handling': 'I5DMC',
             'handling_message':
                 "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen "
                 "weten hoe en wanneer uw melding wordt afgehandeld. Dat doen "
                 "we via e-mail.",
-                'departments': ['STW'],
+            'departments': ['STW'],
             'slo': '5W',
         },
     },
+    'overlast-in-de-openbare-ruimte': {
+        'markten': {
+            'name': 'Markten',  # SIG-2508
+            'handling': 'HANDLING_MARKTEN',
+            'handling_message':
+                "Wij beoordelen uw melding. Urgente meldingen pakken we zo "
+                "snel mogelijk op. Overige meldingen handelen we binnen drie "
+                "dagen af. Als u een mailadres hebt opgegeven, zullen we u op "
+                "de hoogte houden.",
+            'departments': ['ASC'],
+            'slo': '3W',
+        }
+    }
 }
 
 # SIG-2458
