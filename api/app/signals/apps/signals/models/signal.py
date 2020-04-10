@@ -85,15 +85,15 @@ class Signal(CreatedUpdatedModel):
 
     class Meta:
         permissions = (
-            ('sia_read', 'Can read from SIA'),
-            ('sia_write', 'Can write to SIA'),
-            ('sia_split', 'Can split a signal into a parent with X children'),
-            ('sia_signal_create_initial', 'Can create new signals'),
-            ('sia_signal_create_note', 'Can create notes for signals'),
-            ('sia_signal_change_status', 'Can change the status of a signal'),
-            ('sia_signal_change_category', 'Can change the category of a signal'),
-            ('sia_signal_export', 'Can export signals'),
-            ('sia_signal_report', 'Can create reports for signals'),
+            ('sia_read', 'Leesrechten algemeen'),  # SIG-2192
+            ('sia_write', 'Schrijfrechten algemeen'),  # SIG-2194
+            ('sia_split', 'Splitsen van een melding'),  # SIG-2192
+            ('sia_signal_create_initial', 'Melding aanmaken'),  # SIG-2192
+            ('sia_signal_create_note', 'Notitie toevoegen bij een melding'),  # SIG-2192
+            ('sia_signal_change_status', 'Wijzigen van status van een melding'),  # SIG-2192
+            ('sia_signal_change_category', 'Wijzigen van categorie van een melding'),  # SIG-2192
+            ('sia_signal_export', 'Meldingen exporteren'),  # SIG-2192
+            ('sia_signal_report', 'Rapportage beheren'),  # SIG-2192
         )
         ordering = ('created_at',)
         indexes = [

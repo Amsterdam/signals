@@ -24,7 +24,7 @@ class StatusMessageTemplate(CreatedUpdatedModel):
 
     class Meta:
         permissions = (
-            ('sia_statusmessagetemplate_write', 'Can write StatusMessageTemplates to SIA'),
+            ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),  # SIG-2192
         )
         index_together = (
             'category',
