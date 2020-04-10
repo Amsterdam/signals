@@ -95,9 +95,9 @@ class Category(models.Model):
         verbose_name_plural = 'Categories'
 
         permissions = (
-            ('sia_can_view_all_categories', 'View all categories (this will override the category permission based on the user/department relation)'),  # noqa
-            ('sia_category_read', 'Can read Categories from SIA'),
-            ('sia_category_write', 'Can write Categories to SIA'),
+            ('sia_can_view_all_categories', 'Bekijk all categorieën (overschrijft categorie rechten van afdeling)'),  # noqa SIG-2192
+            ('sia_category_read', 'Inzien van categorieën'),
+            ('sia_category_write', 'Wijzigen van categorieën'),
         )
 
     def __str__(self):

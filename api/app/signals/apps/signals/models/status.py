@@ -35,7 +35,7 @@ class Status(CreatedUpdatedModel):
 
     class Meta:
         permissions = (
-            ('push_to_sigmax', 'Push to Sigmax/CityControl'),
+            ('push_to_sigmax', 'Doorsturen van een melding (THOR)'),  # SIG-2192
         )
         verbose_name_plural = 'Statuses'
         get_latest_by = 'datetime'

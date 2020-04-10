@@ -9,8 +9,8 @@ class Department(models.Model):
 
     class Meta:
         permissions = (
-            ('sia_department_read', 'Can add/change a department'),
-            ('sia_department_write', 'Can add/change a department'),
+            ('sia_department_read', 'Inzien van afdeling instellingen'),  # SIG-2192
+            ('sia_department_write', 'Wijzigen van afdeling instellingen'),  # SIG-2192
         )
 
         ordering = ('name',)
