@@ -1,3 +1,4 @@
+from signals.apps.signals.models.area import Area, AreaProperties, AreaType
 from signals.apps.signals.models.attachment import Attachment
 from signals.apps.signals.models.buurt import Buurt
 from signals.apps.signals.models.category import Category
@@ -31,6 +32,9 @@ from signals.apps.signals.models.type import Type
 
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
+    'Area',
+    'AreaProperties',
+    'AreaType',
     'Attachment',
     'Buurt',
     'Category',

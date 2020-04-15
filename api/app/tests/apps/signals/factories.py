@@ -6,12 +6,15 @@ from datetime import datetime
 
 import factory
 import pytz
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils.text import slugify
 from factory import fuzzy
 
 from signals.apps.signals.models import (
     STADSDELEN,
+    Area,
+    AreaProperties,
+    AreaType,
     Attachment,
     Category,
     CategoryAssignment,
@@ -266,7 +269,7 @@ class DepartmentFactory(factory.DjangoModelFactory):
 
 class NoteFactory(factory.DjangoModelFactory):
     text = fuzzy.FuzzyText(length=100)
-    created_by = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
+    created_by = factory.Sequence(lambda n: 'ambtenaar{}@example.com'.format(n))
     _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
 
     class Meta:
@@ -297,3 +300,51 @@ class TypeFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Type
+
+
+class AreaFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Area
+
+    code = factory.Sequence(lambda n: f'Gebied code {n}')
+    type = factory.SubFactory('tests.apps.signals.factories.AreaTypeFactory')
+
+    properties = factory.RelatedFactory(
+        'tests.apps.signals.factories.AreaPropertiesFactory', 'area')
+
+
+class AreaTypeFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = AreaType
+
+    name = factory.Sequence(lambda n: f'Gebied type {n}')
+    code = factory.Sequence(lambda n: f'gebied-type-code-{n}')
+    description = factory.Sequence(lambda n: f'Omschrijving bij gebied type {n}')
+
+
+def get_random_bbox(bbox=BBOX, n_lon_subdiv=10, n_lat_subdiv=10):
+    # Assumes we are away from the antimeridian (i.e. max_lat > min_lat).
+    min_lon, min_lat, max_lon, max_lat = bbox
+    extent_lon = max_lon - min_lon
+    extent_lat = max_lat - min_lat
+
+    ilon = random.randrange(n_lon_subdiv)
+    ilat = random.randrange(n_lat_subdiv)
+
+    return Polygon.from_bbox((
+        min_lon + (extent_lon / n_lon_subdiv) * ilon,
+        min_lat + (extent_lat / n_lat_subdiv) * ilat,
+        min_lon + (extent_lon / n_lon_subdiv) * (ilon + 1),
+        min_lat + (extent_lat / n_lat_subdiv) * (ilat + 1),
+    ))
+
+
+class AreaPropertiesFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = AreaProperties
+
+    name = fuzzy.FuzzyText(length=100)
+    area = factory.SubFactory('tests.apps.signals.factories.AreaFactory')
+    geometry = MultiPolygon(get_random_bbox(BBOX))
+
+    created_by = factory.Sequence(lambda n: 'ambtenaar{n}@example.com')
