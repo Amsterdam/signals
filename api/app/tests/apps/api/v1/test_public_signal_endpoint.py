@@ -2,7 +2,6 @@ import json
 import os
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
@@ -229,7 +228,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
         self.assertEqual(response.status_code, 405)
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled(self):
         self.create_initial_data['extra_properties'] = [{
             'id': 'test_id',
@@ -256,7 +254,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': True})
     def test_validate_extra_properties_enabled_invalid_data(self):
         self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
 
@@ -267,12 +264,3 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIn('extra_properties', data)
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(0, Signal.objects.count())
-
-    @override_settings(FEATURE_FLAGS={'API_VALIDATE_EXTRA_PROPERTIES': False})
-    def test_validate_extra_properties_disabled(self):
-        self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
-
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual(1, Signal.objects.count())

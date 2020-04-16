@@ -24,19 +24,22 @@ class TestRolesViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data['count'], 2)
-        self.assertEqual(len(data['results']), 2)
+        self.assertEqual(data['count'], 3)
+        self.assertEqual(len(data['results']), 3)
 
         self.assertEqual(data['results'][0]['id'], self.group_no_permissions.pk)
         self.assertEqual(data['results'][0]['name'], self.group_no_permissions.name)
         self.assertEqual(len(data['results'][0]['permissions']), 0)
 
-        self.assertEqual(data['results'][1]['id'], self.group_with_permissions.pk)
-        self.assertEqual(data['results'][1]['name'], self.group_with_permissions.name)
-        self.assertEqual(len(data['results'][1]['permissions']), 1)
-        self.assertEqual(data['results'][1]['permissions'][0]['id'], self.sia_read.pk)
-        self.assertEqual(data['results'][1]['permissions'][0]['name'], self.sia_read.name)
-        self.assertEqual(data['results'][1]['permissions'][0]['codename'], self.sia_read.codename)
+        self.assertEqual(data['results'][1]['id'], self.sia_test_group.pk)
+        self.assertEqual(data['results'][1]['name'], self.sia_test_group.name)
+
+        self.assertEqual(data['results'][2]['id'], self.group_with_permissions.pk)
+        self.assertEqual(data['results'][2]['name'], self.group_with_permissions.name)
+        self.assertEqual(len(data['results'][2]['permissions']), 1)
+        self.assertEqual(data['results'][2]['permissions'][0]['id'], self.sia_read.pk)
+        self.assertEqual(data['results'][2]['permissions'][0]['name'], self.sia_read.name)
+        self.assertEqual(data['results'][2]['permissions'][0]['codename'], self.sia_read.codename)
 
     def test_get_role_no_permissions(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
