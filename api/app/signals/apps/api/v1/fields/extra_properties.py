@@ -1,12 +1,10 @@
+from django.conf import settings
 from rest_framework.fields import JSONField
 
-from signals.apps.api.mixins import FeatureFlagMixin
 from signals.apps.api.ml_tool.utils import url_from_category
 
 
-class SignalExtraPropertiesField(FeatureFlagMixin, JSONField):
-    feature_flag_setting_kwarg = 'API_FILTER_EXTRA_PROPERTIES'
-
+class SignalExtraPropertiesField(JSONField):
     def __init__(self, *args, **kwargs):
         self.instance = None
         super(SignalExtraPropertiesField, self).__init__(*args, **kwargs)
@@ -17,7 +15,7 @@ class SignalExtraPropertiesField(FeatureFlagMixin, JSONField):
 
     def to_representation(self, value):
         representation = super(SignalExtraPropertiesField, self).to_representation(value=value)
-        if not self.feature_enabled():
+        if not settings.FEATURE_FLAGS.get('API_FILTER_EXTRA_PROPERTIES', False):
             return representation
 
         # SIG-1711: Only show extra properties that belong to the currently assigned category or

@@ -37,7 +37,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response_data['id'], self.sia_read_write_user.pk)
         self.assertEqual(response_data['username'], self.sia_read_write_user.username)
         self.assertTrue(response_data['is_active'])
-        self.assertEqual(len(response_data['roles']), 0)
+        self.assertEqual(len(response_data['roles']), 1)
 
     def test_get_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -54,7 +54,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertTrue(response_data['is_active'])
         self.assertFalse(response_data['is_staff'])
         self.assertFalse(response_data['is_superuser'])
-        self.assertEqual(len(response_data['roles']), 0)
+        self.assertEqual(len(response_data['roles']), 1)
         self.assertEqual(len(response_data['permissions']), 5)
 
     def test_get_users_not_authenticated(self):
@@ -246,7 +246,7 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertTrue(response_data['is_active'])
         self.assertFalse(response_data['is_staff'])
         self.assertFalse(response_data['is_superuser'])
-        self.assertEqual(len(response_data['roles']), 0)
+        self.assertEqual(len(response_data['roles']), 1)
         self.assertEqual(len(response_data['permissions']), 5)
 
     def test_put_not_allowed(self):

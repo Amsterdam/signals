@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import mixins
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -45,10 +44,3 @@ class UpdateModelMixin(mixins.UpdateModelMixin):
             return super(UpdateModelMixin, self).perform_update(serializer=serializer)
         except DjangoValidationError as e:
             raise convert_validation_error(e)
-
-
-class FeatureFlagMixin:
-    feature_flag_setting_kwarg = None
-
-    def feature_enabled(self):
-        return settings.FEATURE_FLAGS.get(self.feature_flag_setting_kwarg, False)

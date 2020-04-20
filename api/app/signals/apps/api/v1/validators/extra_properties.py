@@ -1,6 +1,5 @@
 import json
 
-from django.conf import settings
 from jsonschema import ValidationError as JSONSchemaValidationError
 from jsonschema import validate
 from rest_framework.exceptions import ValidationError
@@ -20,11 +19,6 @@ class ExtraPropertiesValidator(object):
 
     def __call__(self, value, serializer_field):
         self.serializer_field = serializer_field
-
-        feature_flag = settings.FEATURE_FLAGS.get('API_VALIDATE_EXTRA_PROPERTIES', False)
-        if not feature_flag:
-            # Feature flag not enabled, validation disabled
-            return value
 
         try:
             validate(instance=value, schema=self.schema)

@@ -1,8 +1,6 @@
 from datapunt_api.rest import DatapuntViewSet
-from django.conf import settings
 from elasticsearch_dsl.query import MultiMatch
 
-from signals.apps.api.generics.exceptions import NotImplementedException
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
@@ -26,25 +24,22 @@ class SearchView(DatapuntViewSet):
     pagination_class = ElasticHALPagination
 
     def get_queryset(self, *args, **kwargs):
-        if settings.FEATURE_FLAGS.get('API_SEARCH_ENABLED', False):
-            if 'q' in self.request.query_params:
-                q = self.request.query_params['q']
-            else:
-                q = '*'
-
-            multi_match = MultiMatch(
-                query=q,
-                fields=[
-                    'id',
-                    'text',
-                    'category_assignment.category.name',
-                    'reporter.email',  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
-                    'reporter.phone'  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
-                ]
-            )
-
-            s = SignalDocument.search().query(multi_match)
-            s.execute()
-            return s
+        if 'q' in self.request.query_params:
+            q = self.request.query_params['q']
         else:
-            raise NotImplementedException('Not implemented')
+            q = '*'
+
+        multi_match = MultiMatch(
+            query=q,
+            fields=[
+                'id',
+                'text',
+                'category_assignment.category.name',
+                'reporter.email',  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
+                'reporter.phone'  # SIG-2058 [BE] email, telefoon aan vrij zoeken toevoegen
+            ]
+        )
+
+        s = SignalDocument.search().query(multi_match)
+        s.execute()
+        return s

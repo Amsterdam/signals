@@ -1,5 +1,7 @@
 import os
 
+from django.contrib.auth.models import Permission
+
 from signals.apps.signals.models import Signal
 from tests.apps.signals.factories import NoteFactory, SignalFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
@@ -22,6 +24,8 @@ class TestPrivateEndpoints(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             reporter__id=1,
             priority__id=1
         )
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
 
         # Forcing authentication
         self.client.force_authenticate(user=self.sia_read_write_user)

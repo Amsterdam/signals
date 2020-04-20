@@ -4,7 +4,25 @@ from django.contrib.auth.models import Permission
 from jsonschema import validate
 from rest_framework.test import APITestCase
 
-from tests.apps.users.factories import SuperUserFactory, UserFactory
+from tests.apps.users.factories import GroupFactory, SuperUserFactory, UserFactory
+
+
+class SIAGroupMixin:
+    _sia_test_group = None
+
+    @property
+    def sia_test_group(self):
+        if self._sia_test_group is None:
+            permissions = Permission.objects.filter(codename__in=(
+                'sia_split',
+                'sia_signal_create_initial',
+                'sia_signal_create_note',
+                'sia_signal_change_status',
+                'sia_signal_change_category'
+            ))
+            self._sia_test_group = GroupFactory.create(name='Test Group')
+            self._sia_test_group.permissions.add(*permissions)
+        return self._sia_test_group
 
 
 class SIAReadPermissionMixin:
@@ -64,7 +82,7 @@ class SIAWriteUserMixin(SIAWritePermissionMixin):
         return user
 
 
-class SIAReadWriteUserMixin(SIAReadPermissionMixin, SIAWritePermissionMixin):
+class SIAReadWriteUserMixin(SIAGroupMixin, SIAReadPermissionMixin, SIAWritePermissionMixin):
     @property
     def sia_read_write_user(self):
         user = UserFactory.create(
@@ -73,6 +91,7 @@ class SIAReadWriteUserMixin(SIAReadPermissionMixin, SIAWritePermissionMixin):
         )
         user.user_permissions.add(self.sia_read)
         user.user_permissions.add(self.sia_write)
+        user.groups.add(self.sia_test_group)
         return user
 
 

@@ -6,6 +6,7 @@ import unittest
 from unittest import mock
 from urllib.parse import urlparse
 
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 
 from signals.apps.signals import workflow
@@ -77,6 +78,8 @@ class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                 'code': 'SIG',
             }]
         }
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
 
     def test_update_status_and_category(self):
         """

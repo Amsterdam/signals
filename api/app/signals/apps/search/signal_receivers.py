@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.dispatch import receiver
 
 from signals.apps.search.tasks import save_to_elastic
@@ -20,5 +19,4 @@ from signals.apps.signals.managers import (
            update_type], dispatch_uid='search_add_to_elastic')
 def add_to_elastic_handler(sender, signal_obj, **kwargs):
     # Add to elastic
-    if settings.FEATURE_FLAGS.get('SEARCH_BUILD_INDEX', False):
-        save_to_elastic.delay(signal_id=signal_obj.id)
+    save_to_elastic.delay(signal_id=signal_obj.id)

@@ -16,11 +16,11 @@ class SIABasePermission(BasePermission):
 
     def _skip_permission_check(self):
         """
-        The feature_flag enables the check
+        The feature flag can be used to disable the permission, by default it is enabled
         So if we need to skip it we need to inverse the feature_flag setting
         """
         flag = 'PERMISSION_{}'.format(self.__class__.__name__.upper())
-        return not settings.FEATURE_FLAGS[flag] if flag in settings.FEATURE_FLAGS else True
+        return not settings.FEATURE_FLAGS[flag] if flag in settings.FEATURE_FLAGS else False
 
     def get_required_permissions(self, method):
         if method not in self.perms_map:
@@ -126,21 +126,18 @@ class SignalViewObjectPermission(DjangoModelPermissions):
         if request.user.is_superuser or request.user.has_perm('signals.sia_can_view_all_categories'):  # noqa
             return True
 
-        if settings.FEATURE_FLAGS.get('PERMISSION_DEPARTMENTS', False):
-            has_category_read_permission = set(
-                request.user.profile.departments.values_list(
-                    'pk',
-                    flat=True
-                )
-            ).intersection(
-                obj.category_assignment.category.departments.filter(
-                    categorydepartment__can_view=True
-                ).values_list(
-                    'pk',
-                    flat=True
-                )
+        has_category_read_permission = set(
+            request.user.profile.departments.values_list(
+                'pk',
+                flat=True
             )
+        ).intersection(
+            obj.category_assignment.category.departments.filter(
+                categorydepartment__can_view=True
+            ).values_list(
+                'pk',
+                flat=True
+            )
+        )
 
-            return bool(has_category_read_permission) and request.user.has_perm('signals.sia_read')
-        else:
-            return request.user.has_perm('signals.sia_read')
+        return bool(has_category_read_permission) and request.user.has_perm('signals.sia_read')

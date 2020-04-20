@@ -7,7 +7,6 @@ from unittest.mock import patch
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.utils import timezone
 from django.utils.http import urlencode
 from freezegun import freeze_time
@@ -29,8 +28,12 @@ from tests.apps.signals.factories import (
     SignalFactoryValidLocation,
     SignalFactoryWithImage
 )
-from tests.apps.users.factories import GroupFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from tests.test import (
+    SIAReadUserMixin,
+    SIAReadWriteUserMixin,
+    SIAWriteUserMixin,
+    SignalsBaseApiTestCase
+)
 
 THIS_DIR = os.path.dirname(__file__)
 SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
@@ -109,6 +112,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.post_split_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema', 'post_signals_v1_private_signals_{pk}_split.json')
         )
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
 
     # -- Read tests --
@@ -1624,6 +1629,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
             self.create_initial_data = json.load(f)
         self.create_initial_data['source'] = 'valid-source'
 
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
 
     def test_image_upload(self):
@@ -1698,16 +1704,8 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 @freeze_time('2019-11-01 12:00:00', tz_offset=1)
-@override_settings(FEATURE_FLAGS=dict(
-    PERMISSION_SIAPERMISSIONS=True,
-    PERMISSION_SPLITPERMISSION=True,
-    PERMISSION_SIGNALCREATEINITIALPERMISSION=True,
-    PERMISSION_SIGNALCREATENOTEPERMISSION=True,
-    PERMISSION_SIGNALCHANGESTATUSPERMISSION=True,
-    PERMISSION_SIGNALCHANGECATEGORYPERMISSION=True,
-    PERMISSION_DEPARTMENTS=True,
-))  # Enable all permission feature flags
-class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, SIAReadWriteUserMixin,
+                                          SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = '/signals/v1/private/signals/{pk}'
     history_endpoint = '/signals/v1/private/signals/{pk}/history'
@@ -1758,32 +1756,10 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
             self.category.slug, self.subcategory_2.slug
         )
 
-        self.sia_user = self.sia_read_write_user
-        self.sia_user.profile.departments.add(self.department)
-        self.sia_user.save()
-
-        self.create_initial_permission = Permission.objects.get(
-            codename='sia_signal_create_initial'
-        )
-        self.create_note_permission = Permission.objects.get(
-            codename='sia_signal_create_note'
-        )
-        self.change_status_permission = Permission.objects.get(
-            codename='sia_signal_change_status'
-        )
-        self.change_category_permission = Permission.objects.get(
-            codename='sia_signal_change_category'
-        )
-
-        self.test_group = GroupFactory.create(name='Test Group')
-
-        self.test_group.permissions.add(self.create_initial_permission)
-        self.test_group.permissions.add(self.create_note_permission)
-        self.test_group.permissions.add(self.change_category_permission)
-        self.test_group.permissions.add(self.change_status_permission)
+        self.sia_read_write_user.profile.departments.add(self.department)
 
     def test_get_endpoints(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         endpoints = (
             self.list_endpoint,
@@ -1796,7 +1772,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
             self.assertEqual(response.status_code, 200, msg='{}'.format(endpoint))
 
     def test_create_initial_forbidden(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_user)
 
         data = {
             'text': 'Er liggen losse stoeptegels op het trottoir',
@@ -1809,12 +1785,10 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
             'source': 'test-api',
         }
         response = self.client.post(self.list_endpoint, data=data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_initial(self):
-        self.sia_user.user_permissions.add(self.create_initial_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         data = {
             'text': 'Er liggen losse stoeptegels op het trottoir',
@@ -1836,7 +1810,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_note_forbidden(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {'notes': [{'text': 'This is a text for a note.'}]}
@@ -1846,8 +1820,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
     def test_create_note(self):
         self.assertEqual(self.signal.notes.count(), 0)
 
-        self.sia_user.user_permissions.add(self.create_note_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {'notes': [{'text': 'This is a text for a note.'}]}
@@ -1857,10 +1830,10 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.signal.refresh_from_db()
 
         self.assertEqual(self.signal.notes.count(), 1)
-        self.assertEqual(self.signal.notes.first().created_by, self.sia_user.email)
+        self.assertEqual(self.signal.notes.first().created_by, self.sia_read_write_user.email)
 
     def test_change_status_forbidden(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -1873,8 +1846,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_change_status(self):
-        self.sia_user.user_permissions.add(self.change_status_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -1889,10 +1861,10 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.signal.refresh_from_db()
 
         self.assertEqual(self.signal.status.state, 'b')
-        self.assertEqual(self.signal.status.user, self.sia_user.email)
+        self.assertEqual(self.signal.status.user, self.sia_read_write_user.email)
 
     def test_change_category_forbidden(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -1907,8 +1879,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
     def test_change_category(self):
         self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
 
-        self.sia_user.user_permissions.add(self.change_category_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -1923,11 +1894,11 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.signal.refresh_from_db()
 
         self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory_2.pk)
-        self.assertEqual(self.signal.category_assignment.created_by, self.sia_user.email)
+        self.assertEqual(self.signal.category_assignment.created_by, self.sia_read_write_user.email)
 
     @patch('signals.apps.api.v1.validation.AddressValidation.validate_address_dict')
     def test_update_location(self, validate_address_dict):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -1961,11 +1932,10 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
 
         self.signal.refresh_from_db()
 
-        self.assertEqual(self.signal.location.created_by, self.sia_user.email)
+        self.assertEqual(self.signal.location.created_by, self.sia_read_write_user.email)
 
     def test_create_initial_role_based_permission(self):
-        self.sia_user.groups.add(self.test_group)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         data = {
             'text': 'Er liggen losse stoeptegels op het trottoir',
@@ -1987,8 +1957,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_multiple_actions_role_based_permission(self):
-        self.sia_user.groups.add(self.test_group)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -2031,8 +2000,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
     def test_change_category_method_not_allowed(self):
         self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
 
-        self.sia_user.user_permissions.add(self.change_category_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
@@ -2049,27 +2017,26 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
         self.assertEqual(self.signal.category_assignment.category.pk, self.subcategory.pk)
 
     def test_get_signals(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         response = self.client.get(self.list_endpoint)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(data['count'], 1)
-        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_read_write_user).count())
         self.assertNotEqual(data['count'], Signal.objects.count())
         self.assertEqual(2, Signal.objects.count())
 
     def test_change_category_to_other_category_in_other_department(self):
-        self.sia_user.user_permissions.add(self.change_category_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         response = self.client.get(self.list_endpoint)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
         self.assertEqual(data['count'], 1)
-        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_read_write_user).count())
         self.assertNotEqual(data['count'], Signal.objects.count())
         self.assertEqual(2, Signal.objects.count())
 
@@ -2088,19 +2055,18 @@ class TestPrivateSignalViewSetPermissions(SIAReadWriteUserMixin, SignalsBaseApiT
 
         data = response.json()
         self.assertEqual(data['count'], 0)
-        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_user).count())
+        self.assertEqual(data['count'], Signal.objects.filter_for_user(user=self.sia_read_write_user).count())
         self.assertNotEqual(data['count'], Signal.objects.count())
         self.assertEqual(2, Signal.objects.count())
 
     def test_get_signal_not_my_department(self):
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
         response = self.client.get(detail_endpoint)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_change_signal_not_my_department(self):
-        self.sia_user.user_permissions.add(self.change_category_permission)
-        self.client.force_authenticate(user=self.sia_user)
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         data = {
             'category': {
