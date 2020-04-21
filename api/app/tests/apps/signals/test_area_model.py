@@ -1,10 +1,9 @@
 import random
-# from tests.apps.signals import factories
 
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import TestCase
-from signals.apps.signals.models import Area, AreaType, AreaHistory
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
+from signals.apps.signals.models import Area, AreaHistory, AreaType
 
 # TODO: Temporary, will be refactored when approach is deemed sound.
 

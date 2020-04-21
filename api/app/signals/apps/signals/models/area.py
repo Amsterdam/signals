@@ -1,5 +1,5 @@
-from django.contrib.gis.db import models
 from django.apps import apps
+from django.contrib.gis.db import models
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
@@ -65,7 +65,7 @@ class HistoryManager(models.Manager):
             tracked_fields = set([f.name for f in tracked_model._meta.get_fields()])
 
             for key, value in data.items():
-                if key in history_fields or key == 'id':
+                if key in history_fields or key == 'id':  # assumption on primary key name
                     continue
                 if key in tracked_fields:
                     setattr(instance, key, value)

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import factory
 import pytz
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.contrib.gis.geos import Point, Polygon
 from django.utils.text import slugify
 from factory import fuzzy
 
