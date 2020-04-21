@@ -12,8 +12,6 @@ from factory import fuzzy
 
 from signals.apps.signals.models import (
     STADSDELEN,
-    Area,
-    AreaProperties,
     AreaType,
     Attachment,
     Category,
@@ -302,17 +300,6 @@ class TypeFactory(factory.DjangoModelFactory):
         model = Type
 
 
-class AreaFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Area
-
-    code = factory.Sequence(lambda n: f'Gebied code {n}')
-    type = factory.SubFactory('tests.apps.signals.factories.AreaTypeFactory')
-
-    properties = factory.RelatedFactory(
-        'tests.apps.signals.factories.AreaPropertiesFactory', 'area')
-
-
 class AreaTypeFactory(factory.DjangoModelFactory):
     class Meta:
         model = AreaType
@@ -337,14 +324,3 @@ def get_random_bbox(bbox=BBOX, n_lon_subdiv=10, n_lat_subdiv=10):
         min_lon + (extent_lon / n_lon_subdiv) * (ilon + 1),
         min_lat + (extent_lat / n_lat_subdiv) * (ilat + 1),
     ))
-
-
-class AreaPropertiesFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = AreaProperties
-
-    name = fuzzy.FuzzyText(length=100)
-    area = factory.SubFactory('tests.apps.signals.factories.AreaFactory')
-    geometry = MultiPolygon(get_random_bbox(BBOX))
-
-    created_by = factory.Sequence(lambda n: 'ambtenaar{n}@example.com')
