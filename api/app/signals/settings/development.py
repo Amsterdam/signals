@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from signals.settings.base import *  # noqa
 
@@ -6,7 +7,34 @@ SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DATAPUNT_AUTHZ['ALWAYS_OK'] = True  # noqa
+
+# Simple JWT supports RSA and PEM notation
+JWT_RSA_KEY = """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7WWwOFhc0R3YwVPCRrRw
+RkSN5VJEv/83DdBa8r7ooK8Pn204ssaQjAJ7kenO0z1Lium7kVOjvPGpVk3RgIAt
+opQxx1Eo4WmYybjpYgmk9pghdgMeKXGdPY90UFuSN2KmpB4jebUxXzhliXV9L75S
+saltCHInW3ytfam9ZQaquwuyxQOvJ4L1Qy8yHXzoca1nL++bZBgw+ILvMyxMU3C5
+HSHNZb3TyW/qP0fr1AIw5r5MWTSoTt+8DuXmjleyEDxpscmeSLKljrl8COuW/Dji
+LLesaDQsfeDlONWoR2TpoW3cDf8/nAH6DxHD/T3gr7ceaIEECCKbe+8KZktBxdDx
+TQIDAQAB
+-----END PUBLIC KEY-----"""
+
+# 'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'RS256',
+    'SIGNING_KEY': None,
+    'VERIFYING_KEY': JWT_RSA_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'email',
+    'USER_ID_CLAIM': 'email',
+    'AUTH_TOKEN_CLASSES': ('signals.auth.backend.JWTBearerTokenVerify',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
 SITE_DOMAIN = 'localhost:8000'
 
 INSTALLED_APPS += [  # noqa

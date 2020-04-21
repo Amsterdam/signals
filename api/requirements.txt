@@ -16,7 +16,7 @@ coreschema==0.0.4
 coverage==5.0.3
 cryptography==2.8
 cssselect2==0.2.2
-datapunt-authorization-django==0.3.1
+djangorestframework-simplejwt==4.4.0 
 debtcollector==2.0.0
 defusedxml==0.6.0
 distlib==0.3.0

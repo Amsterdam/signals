@@ -87,7 +87,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'authorization_django.authorization_middleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
     'change_log.middleware.ChangeLoggerMiddleware',
 ]
@@ -423,6 +422,7 @@ REST_FRAMEWORK = dict(
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
     DEFAULT_AUTHENTICATION_CLASSES=(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'signals.auth.backend.JWTAuthBackend',
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',

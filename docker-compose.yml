@@ -1,5 +1,14 @@
 version: '2.0'
 services:
+  dex:
+    image: quay.io/dexidp/dex:v2.23.0
+    user: root
+    command: serve /config.yaml
+    ports:
+      - 5556:5556
+    volumes:
+      - ./dex/dex.dev.yaml:/config.yaml
+      - ./dex/dex-data:/data
 
   elasticsearch:
     image: amsterdam/elasticsearch6
