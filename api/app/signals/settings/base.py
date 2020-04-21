@@ -17,15 +17,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = False
-ALLOWED_HOSTS = [
-    'api.data.amsterdam.nl',
-    'acc.api.data.amsterdam.nl',
 
-    # Currently this is needed because the deployment process checks the health endpoint with a
-    # request to localhost:port.
-    'localhost',
-    '127.0.0.1',
-]
+# localhost and 127.0.0.1 are allowed because the deployment process checks the health endpoint with a
+# request to localhost:port
+DEFAULT_ALLOWED_HOSTS = 'api.data.amsterdam.nl,acc.api.data.amsterdam.nl,localhost,127.0.0.1'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', DEFAULT_ALLOWED_HOSTS).split(',')
+
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 CORS_ORIGIN_ALLOW_ALL = True
 SITE_ID = 1
