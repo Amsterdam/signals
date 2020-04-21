@@ -82,7 +82,7 @@ if (BRANCH == "master") {
                     def importer = docker.image("datapunt/signals_importer:${env.BUILD_NUMBER}")
                     importer.pull()
                     importer.push("production")
-                    importer.push("latest")`
+                    importer.push("latest")
                 }
             }
         }
