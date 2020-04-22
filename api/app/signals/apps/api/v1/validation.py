@@ -1,8 +1,12 @@
+import logging
+
 from requests import get
 from requests.exceptions import RequestException
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.app_settings import SIGNALS_API_ATLAS_SEARCH_URL
+
+logger = logging.getLogger(__name__)
 
 
 class AddressValidationUnavailableException(Exception):
@@ -79,7 +83,7 @@ class AddressValidation:
         return result
 
 
-class AddressValidationMixin():
+class AddressValidationMixin:
     def validate_location(self, location_data):
         """Validate location data used in creation and update of Signal instances"""
         # Validate address, but only if it is present in input. SIA must also
@@ -104,9 +108,10 @@ class AddressValidationMixin():
 
             except AddressValidationUnavailableException:
                 # Ignore it when the address validation is unavailable. Just save the unvalidated
-                # location.
-                pass
+                # location. Added log a warning.
+                logger.warning("Address validation unavailable", stack_info=True)
             except NoResultsException:
-                raise ValidationError({"location": "Niet-bestaand adres."})
+                # For now we only log a warning and store the address unvalidated in the database
+                logger.warning("Address not found", stack_info=True)
 
         return location_data
