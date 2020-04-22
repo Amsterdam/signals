@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 
 from signals.settings.base import *  # noqa
 
@@ -8,31 +7,25 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Simple JWT supports RSA and PEM notation
-JWT_RSA_KEY = """-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7WWwOFhc0R3YwVPCRrRw
-RkSN5VJEv/83DdBa8r7ooK8Pn204ssaQjAJ7kenO0z1Lium7kVOjvPGpVk3RgIAt
-opQxx1Eo4WmYybjpYgmk9pghdgMeKXGdPY90UFuSN2KmpB4jebUxXzhliXV9L75S
-saltCHInW3ytfam9ZQaquwuyxQOvJ4L1Qy8yHXzoca1nL++bZBgw+ILvMyxMU3C5
-HSHNZb3TyW/qP0fr1AIw5r5MWTSoTt+8DuXmjleyEDxpscmeSLKljrl8COuW/Dji
-LLesaDQsfeDlONWoR2TpoW3cDf8/nAH6DxHD/T3gr7ceaIEECCKbe+8KZktBxdDx
-TQIDAQAB
------END PUBLIC KEY-----"""
+JWKS_TEST_KEY = """
+    {
+        "keys": [
+            {
+                "use": "sig",
+                "kty": "RSA",
+                "kid": "c813e20cba17dea1f1335c67218098cc77b21799",
+                "alg": "RS256",
+                "n": "mQCEhx4HT4tENoQIYzj46cLlb3lkWzT9LUfpPu17nMkPOjRTxxKiMszmjmBdVJd66DzVmN0dR5w634r5tTPXKMmTcOA35rQ1mtanjhTRRPMF12hAmrjzkXCrp72YbbmsKEs3ZyBXN45UTfS50Ci7l3B0HKwvAnArw2LnXQiUzNeu_kSZYkzeywjTiDQe1K3Y-vFqpFKbhoXGHROVM9sZLAVBKA2G5fV2FkTFQeA3Px4N9LuLcY5kAMMpla9A_uMeDC0Q2YbGjBXxTi3ebYtwC5QvQqITV3PbSurmo_-rM2wnq9X8bfOQmukEIdDzAwMPK6MvQ-sKwJP5_5wMwH9vWQ", # noqa: E501
+                "e": "AQAB"
+            }
+        ]
+    }
+"""
 
-# 'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': False,
-    'ALGORITHM': 'RS256',
-    'SIGNING_KEY': None,
-    'VERIFYING_KEY': JWT_RSA_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'email',
-    'USER_ID_CLAIM': 'email',
-    'AUTH_TOKEN_CLASSES': ('signals.auth.backend.JWTBearerTokenVerify',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
+SIGNALS_AUTHZ = {
+    'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
+    'ALWAYS_OK': False,
+    'USER_ID_FIELD': 'email'
 }
 
 SITE_DOMAIN = 'localhost:8000'

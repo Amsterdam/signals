@@ -216,7 +216,7 @@ JWKS_TEST_KEY = """
     }
 """
 
-DATAPUNT_AUTHZ = {
+SIGNALS_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
     'ALWAYS_OK': False,
 }
@@ -422,7 +422,6 @@ REST_FRAMEWORK = dict(
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
     DEFAULT_AUTHENTICATION_CLASSES=(
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'signals.auth.backend.JWTAuthBackend',
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
