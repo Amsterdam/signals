@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from rest_framework import exceptions
-from .tokens import token_data
+
+from .tokens import JWTAccessToken
 
 USER_NOT_AUTHORIZED = "User {} is not authorized"
 USER_DOES_NOT_EXIST = -1
@@ -11,7 +13,8 @@ class JWTAuthBackend():
     """
     Override get user, use caching
     """
-    def get_user(self, user_id):
+    @staticmethod  # noqa: C901
+    def get_user(user_id):
         # Now we know we have a Amsterdam municipal employee (may or may not be allowed acceess)
         # or external user with access to the `signals` application, we retrieve the Django user.
         user = cache.get(user_id)
@@ -36,11 +39,14 @@ class JWTAuthBackend():
     """
     Authenticate. Check if required scope is present and get user_email from JWT token.
     """
-    def authenticate(self, request):
+    @staticmethod  # noqa: C901
+    def authenticate(request):
         authz_header = request.META.get('HTTP_AUTHORIZATION')
-        claims, user_id = token_data(authz_header)
+        claims, user_id = JWTAccessToken.token_data(authz_header)
+        if user_id == "ALWAYS_OK":
+            user_id = settings.TEST_LOGIN
 
-        auth_user = self.get_user(user_id)
+        auth_user = JWTAuthBackend.get_user(user_id)
         # We return only when we have correct scope, and user is known to `signals`.
         # TODO remove default empty scope
         return auth_user, ''

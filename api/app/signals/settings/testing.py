@@ -9,6 +9,10 @@ INSTALLED_APPS += [  # noqa
     'change_log.tests',  # Added so that we can test the chane_log with a "test only" model
 ]
 
+SIGNALS_AUTHZ = {
+    'ALWAYS_OK': True,
+    'USER_ID_FIELD': 'sub'
+}
 # Email integration settings
 EMAIL_INTEGRATIONS = dict(
     FLEX_HORECA=dict(

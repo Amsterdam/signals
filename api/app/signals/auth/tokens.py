@@ -8,34 +8,38 @@ from .errors import AuthorizationHeaderError, AuthzConfigurationError, invalid_r
 from .jwks import get_keyset
 
 
-def decode_token(token=None, algorithm=None):
-    settings = get_settings()
-    try:
-        jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
-    except JWTExpired:
-        raise AuthzConfigurationError('API authz problem: token expired {}'.format(token))
-    except InvalidJWSSignature as e:
-        raise AuthzConfigurationError('API authz problem: invalid signature. {}'.format(e))
-    except ValueError as e:
-        raise AuthzConfigurationError('API authz problem: {}'.format(e))
+class JWTAccessToken():
+    @staticmethod  # noqa: C901
+    def decode_token(token=None):
+        settings = get_settings()
+        try:
+            jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
+        except JWTExpired:
+            raise AuthzConfigurationError('API authz problem: token expired {}'.format(token))
+        except InvalidJWSSignature as e:
+            raise AuthzConfigurationError('API authz problem: invalid signature. {}'.format(e))
+        except ValueError as e:
+            raise AuthzConfigurationError('API authz problem: {}'.format(e))
 
-    return jwt
+        return jwt
 
+    @staticmethod  # noqa: C901
+    def token_data(authz_header):
+        settings = get_settings()
+        if settings['ALWAYS_OK']:
+            return {settings['USER_ID_FIELD']: "ALWAYS_OK"}, "ALWAYS_OK"
+        try:
+            prefix, raw_jwt = authz_header.split()
+        except ValueError:
+            raise AuthorizationHeaderError(invalid_request())
 
-def token_data(authz_header):
-    try:
-        prefix, raw_jwt = authz_header.split()
-    except ValueError:
-        raise AuthorizationHeaderError(invalid_request())
+        if prefix.lower() != 'bearer':
+            raise AuthorizationHeaderError(invalid_request())
 
-    if prefix.lower() != 'bearer':
-        raise AuthorizationHeaderError(invalid_request())
-
-    try:
-        jwt = decode_token(raw_jwt)
-    except JWTMissingKey:
-        raise AuthorizationHeaderError(invalid_request())
-    claims = loads(jwt.claims)
-    settings = get_settings()
-    # token_signature = raw_jwt.split('.')[2]
-    return claims, claims[settings['USER_ID_FIELD']]
+        try:
+            jwt = JWTAccessToken.decode_token(raw_jwt)
+        except JWTMissingKey:
+            raise AuthorizationHeaderError(invalid_request())
+        claims = loads(jwt.claims)
+        # token_signature = raw_jwt.split('.')[2]
+        return claims, claims[settings['USER_ID_FIELD']]
