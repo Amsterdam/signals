@@ -7,7 +7,6 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from signals.auth.backend import JWTAuthBackend
 from signals.auth.config import get_settings
-from signals.auth.errors import AuthorizationHeaderError, AuthzConfigurationError
 from signals.auth.jwks import get_keyset
 from signals.auth.tokens import JWTAccessToken
 from tests.test import SignalsBaseApiTestCase
@@ -29,10 +28,10 @@ class TestBackend(SignalsBaseApiTestCase):
         self.assertEqual(user_id, "test@example.com")
 
     def test_auth_verify_broken_bearer_token(self):
-        with self.assertRaises(AuthorizationHeaderError):
+        with self.assertRaises(AuthenticationFailed):
             decoded_claims, user_id = JWTAccessToken.token_data('incorrect_format', True)
 
-        with self.assertRaises(AuthorizationHeaderError):
+        with self.assertRaises(AuthenticationFailed):
             decoded_claims, user_id = JWTAccessToken.token_data('token xyz', True)
 
     def test_auth_verify_bearer_token_missing_user_id(self):
@@ -58,7 +57,7 @@ class TestBackend(SignalsBaseApiTestCase):
         token.make_signed_token(key)
         bearer = 'Bearer {}make_sig_invalid'.format(token.serialize())
 
-        with self.assertRaises(AuthzConfigurationError) as cm:
+        with self.assertRaises(AuthenticationFailed) as cm:
             decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
         e = cm.exception
         self.assertTrue(str(e).startswith('API authz problem: invalid signature'))
@@ -74,7 +73,7 @@ class TestBackend(SignalsBaseApiTestCase):
         token.make_signed_token(key)
         bearer = 'Bearer {}'.format(token.serialize())
 
-        with self.assertRaises(AuthzConfigurationError) as cm:
+        with self.assertRaises(AuthenticationFailed) as cm:
             decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
         e = cm.exception
         self.assertTrue(str(e).startswith('API authz problem: token expired'))

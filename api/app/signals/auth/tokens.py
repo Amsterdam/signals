@@ -2,9 +2,9 @@ from json import loads
 
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT, JWTExpired, JWTMissingKey
+from rest_framework.exceptions import AuthenticationFailed
 
 from .config import get_settings
-from .errors import AuthorizationHeaderError, AuthzConfigurationError, invalid_request
 from .jwks import get_keyset
 
 
@@ -15,11 +15,11 @@ class JWTAccessToken():
         try:
             jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
         except JWTExpired:
-            raise AuthzConfigurationError('API authz problem: token expired {}'.format(token))
+            raise AuthenticationFailed('API authz problem: token expired {}'.format(token))
         except InvalidJWSSignature as e:
-            raise AuthzConfigurationError('API authz problem: invalid signature. {}'.format(e))
+            raise AuthenticationFailed('API authz problem: invalid signature. {}'.format(e))
         except ValueError as e:
-            raise AuthzConfigurationError('API authz problem: {}'.format(e))
+            raise AuthenticationFailed('API authz problem: {}'.format(e))
 
         return jwt
 
@@ -31,15 +31,15 @@ class JWTAccessToken():
         try:
             prefix, raw_jwt = authz_header.split()
         except ValueError:
-            raise AuthorizationHeaderError(invalid_request())
+            raise AuthenticationFailed('invalid token')
 
         if prefix.lower() != 'bearer':
-            raise AuthorizationHeaderError(invalid_request())
+            raise AuthenticationFailed('invalid token format')
 
         try:
             jwt = JWTAccessToken.decode_token(raw_jwt)
         except JWTMissingKey:
-            raise AuthorizationHeaderError(invalid_request())
+            raise AuthenticationFailed('token key not present')
         claims = loads(jwt.claims)
         # token_signature = raw_jwt.split('.')[2]
         return claims, claims[settings['USER_ID_FIELD']]

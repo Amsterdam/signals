@@ -11,12 +11,12 @@ JWKS_TEST_KEY = """
     {
         "keys": [
             {
-                "use": "sig",
-                "kty": "RSA",
-                "kid": "c813e20cba17dea1f1335c67218098cc77b21799",
-                "alg": "RS256",
-                "n": "mQCEhx4HT4tENoQIYzj46cLlb3lkWzT9LUfpPu17nMkPOjRTxxKiMszmjmBdVJd66DzVmN0dR5w634r5tTPXKMmTcOA35rQ1mtanjhTRRPMF12hAmrjzkXCrp72YbbmsKEs3ZyBXN45UTfS50Ci7l3B0HKwvAnArw2LnXQiUzNeu_kSZYkzeywjTiDQe1K3Y-vFqpFKbhoXGHROVM9sZLAVBKA2G5fV2FkTFQeA3Px4N9LuLcY5kAMMpla9A_uMeDC0Q2YbGjBXxTi3ebYtwC5QvQqITV3PbSurmo_-rM2wnq9X8bfOQmukEIdDzAwMPK6MvQ-sKwJP5_5wMwH9vWQ", # noqa: E501
-                "e": "AQAB"
+            "use": "sig",
+            "kty": "RSA",
+            "kid": "b47e41f2b869ad8b0ff4f7f181d339faa571c0df",
+            "alg": "RS256",
+            "n": "p4HXNA3O0_CRSwMezkzVkNlvBFcTJpabb25GA6bcgsnMjFRc_fpZ7q9WnJh_IOLmmObyvHuZQp4Am7k5Z6oujVi5x8kLQW8jmusg4cn5_B7WlqMxhtfHtg6ipCpfs2-ni0xnHer_79YgntBTYk5XTF3wBnEdGGB5tBYls3CenGG0xExUWYtL_tE7aYnaDIWuINXxuEnCwiitV4W_WMtP-Ql1Ul2BvPziwNcKBKPVUPx3Rix-ZoBI05zuG2mcxD9H0fB_8-ndj23YPLGrD9N-Q7L3ZVa_WRod1PtitPRqa2JdhLSygTUNu-tC85ILbtEsaUnjjc-7M9Fa7rHSqOxYaw", # noqa: E501
+            "e": "AQAB"
             }
         ]
     }
