@@ -44,7 +44,7 @@ class TestBackend(SignalsBaseApiTestCase):
         token.make_signed_token(key)
         bearer = 'Bearer {}'.format(token.serialize())
 
-        with self.assertRaises(KeyError):
+        with self.assertRaises(AuthenticationFailed):
             decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
 
     def test_auth_verify_bearer_token_invalid_signature(self):

@@ -24,6 +24,19 @@ class JWTAccessToken():
         return jwt
 
     @staticmethod  # noqa: C901
+    def decode_claims(raw_claims):
+        settings = get_settings()
+        claims = loads(raw_claims)
+
+        user_id = None
+        try:
+            user_id = claims[settings['USER_ID_FIELD']]
+        except KeyError:
+            raise AuthenticationFailed("Field '{}' missing".format(settings['USER_ID_FIELD']))
+
+        return claims, user_id
+
+    @staticmethod  # noqa: C901
     def token_data(authz_header, skip_always=False):
         settings = get_settings()
         if not skip_always and settings['ALWAYS_OK']:
@@ -40,6 +53,5 @@ class JWTAccessToken():
             jwt = JWTAccessToken.decode_token(raw_jwt)
         except JWTMissingKey:
             raise AuthenticationFailed('token key not present')
-        claims = loads(jwt.claims)
-        # token_signature = raw_jwt.split('.')[2]
-        return claims, claims[settings['USER_ID_FIELD']]
+
+        return JWTAccessToken.decode_claims(jwt.claims)
