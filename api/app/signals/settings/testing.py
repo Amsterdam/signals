@@ -10,6 +10,7 @@ INSTALLED_APPS += [  # noqa
 ]
 
 SIGNALS_AUTHZ = {
+    'JWKS': JWKS_TEST_KEY,  # noqa
     'ALWAYS_OK': True,
     'USER_ID_FIELD': 'sub'
 }

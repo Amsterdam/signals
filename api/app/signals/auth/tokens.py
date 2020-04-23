@@ -24,9 +24,9 @@ class JWTAccessToken():
         return jwt
 
     @staticmethod  # noqa: C901
-    def token_data(authz_header):
+    def token_data(authz_header, skip_always=False):
         settings = get_settings()
-        if settings['ALWAYS_OK']:
+        if not skip_always and settings['ALWAYS_OK']:
             return {settings['USER_ID_FIELD']: "ALWAYS_OK"}, "ALWAYS_OK"
         try:
             prefix, raw_jwt = authz_header.split()

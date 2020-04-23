@@ -1,14 +1,60 @@
 from unittest import skip
 from unittest.mock import patch
 
+from jwcrypto import jwt
 from rest_framework.exceptions import AuthenticationFailed
 
 from signals.auth.backend import JWTAuthBackend
 from signals.auth.config import get_settings
+from signals.auth.errors import AuthzConfigurationError
+from signals.auth.jwks import get_keyset
+from signals.auth.tokens import JWTAccessToken
 from tests.test import SignalsBaseApiTestCase
 
 
 class TestBackend(SignalsBaseApiTestCase):
+    def test_auth_verify_bearer_token(self):
+        settings = get_settings()
+        keyset = get_keyset()
+        kid = "2aedafba-8170-4064-b704-ce92b7c89cc6"
+        key = keyset.get_key(kid)
+
+        token = jwt.JWT(header={"kid": kid, "alg": "ES256"},
+                        claims={settings['USER_ID_FIELD']: "test@example.com"})
+        token.make_signed_token(key)
+        bearer = token.serialize()
+
+        decoded_claims, user_id = JWTAccessToken.token_data('Bearer {}'.format(bearer), True)
+        self.assertEqual(user_id, "test@example.com")
+
+    def test_auth_verify_bearer_token_missing_user_id(self):
+        keyset = get_keyset()
+        kid = "2aedafba-8170-4064-b704-ce92b7c89cc6"
+        key = keyset.get_key(kid)
+
+        token = jwt.JWT(header={"kid": kid, "alg": "ES256"},
+                        claims={'will_not_match': "test@example.com"})
+        token.make_signed_token(key)
+        bearer = 'Bearer {}'.format(token.serialize())
+
+        with self.assertRaises(KeyError):
+            decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
+
+    def test_auth_verify_bearer_token_invalid_signature(self):
+        keyset = get_keyset()
+        kid = "2aedafba-8170-4064-b704-ce92b7c89cc6"
+        key = keyset.get_key(kid)
+
+        token = jwt.JWT(header={"kid": kid, "alg": "ES256"},
+                        claims={'will_not_match': "test@example.com"})
+        token.make_signed_token(key)
+        bearer = 'Bearer {}make_sig_invalid'.format(token.serialize())
+
+        with self.assertRaises(AuthzConfigurationError) as cm:
+            decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
+        e = cm.exception
+        self.assertTrue(str(e).startswith('API authz problem: invalid signature'))
+
     @skip('buggy test')
     @patch('signals.auth.tokens.JWTAccessToken.token_data')
     @patch('rest_framework.request')
