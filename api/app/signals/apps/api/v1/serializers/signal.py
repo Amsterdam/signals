@@ -30,7 +30,7 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer
 )
-from signals.apps.api.v1.validation import AddressValidationMixin
+from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Priority, Signal

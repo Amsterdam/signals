@@ -7,17 +7,86 @@ from django.test import SimpleTestCase
 from requests.exceptions import ConnectionError
 from requests_mock.mocker import Mocker
 
-from signals.apps.api.v1.validation import (
-    AddressValidation,
+from signals.apps.api.v1.validation.address.bag import AddressValidation
+from signals.apps.api.v1.validation.address.base import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.api.v1.validation.address.pdok import PDOKAddressValidation
+
+
+class PDOKTestAddressValidation(SimpleTestCase):
+    PDOK_RESPONSE_JSON = "pdok_result.json"
+    pdok_response = None
+    address_dict = {
+        "openbare_ruimte": "Geuzenkade",
+        "huisnummer": 55,
+        "huisletter": "",
+        "huisnummer_toevoeging": "1",
+        "postcode": "1056KN",
+        "woonplaats": "Amsterdam"
+    }
+
+    def _get_mocked_response(self):
+        if self.pdok_response is None:
+            with open(join(dirname(abspath(__file__)), self.PDOK_RESPONSE_JSON)) as f:
+                self.pdok_response = load(f)
+        return self.pdok_response
+
+    def test_no_results(self):
+        address_validation = PDOKAddressValidation()
+        address_validation._search = MagicMock(return_value=[])
+
+        self.assertRaises(NoResultsException, address_validation.validate_address, self.address_dict)
+
+        address_validation._search.assert_called_with(self.address_dict)
+
+    def test_address_found(self):
+        address_validation = PDOKAddressValidation()
+
+        result = self._get_mocked_response()["response"]["docs"][0]
+
+        address_validation._search = MagicMock(return_value=[result])
+        address_validation._search_result_to_address = MagicMock()
+
+        address_validation.validate_address(self.address_dict)
+
+        address_validation._search.assert_called_with(self.address_dict)
+        address_validation._search_result_to_address.assert_called_with(result)
+
+    def test_search_unavailable(self):
+        address_validation = PDOKAddressValidation()
+
+        with Mocker() as m:
+            m.get(address_validation.address_validation_url, status_code=400)
+            self.assertRaises(AddressValidationUnavailableException, address_validation._search, self.address_dict)
+
+    def test_search_connection_error(self):
+        address_validation = PDOKAddressValidation()
+
+        with Mocker() as m:
+            m.get(address_validation.address_validation_url, exc=ConnectionError)
+            self.assertRaises(AddressValidationUnavailableException, address_validation._search, self.address_dict)
+
+    def test_search_successful_request(self):
+        address_validation = PDOKAddressValidation()
+
+        result = self._get_mocked_response()
+        expected = result["response"]["docs"]
+
+        with Mocker() as m:
+            m.get(address_validation.address_validation_url, text=dumps(result))
+            self.assertEqual(address_validation._search(self.address_dict), expected)
 
 
 class TestAddressValidation(SimpleTestCase):
     ATLAS_RESPONSE_JSON = "atlas_result.json"
     atlas_response = None
     address = "Weesperstraat 113"
+    address_dict = {
+        "openbare_ruimte": "Weesperstraat",
+        "huisnummer": 113,
+    }
 
     def _get_file_path(self, relative_file):
         return join(dirname(abspath(__file__)), relative_file)
@@ -35,42 +104,24 @@ class TestAddressValidation(SimpleTestCase):
     def test_validate_address_string_no_results(self):
         address_validation = AddressValidation()
 
-        address_validation._search_atlas = MagicMock(return_value=[])
+        address_validation._search = MagicMock(return_value=[])
 
-        self.assertRaises(NoResultsException, address_validation.validate_address_string,
-                          self.address)
+        self.assertRaises(NoResultsException, address_validation.validate_address, self.address_dict)
 
-        address_validation._search_atlas.assert_called_with(self.address)
+        address_validation._search.assert_called_with(self.address_dict)
 
     def test_validate_address_string_with_results(self):
         address_validation = AddressValidation()
 
         atlas_first_result = self._get_atlas_response()["results"][0]
 
-        address_validation._search_atlas = MagicMock(return_value=[atlas_first_result])
-        address_validation._atlas_result_to_address = MagicMock()
+        address_validation._search = MagicMock(return_value=[atlas_first_result])
+        address_validation._search_result_to_address = MagicMock()
 
-        address_validation.validate_address_string(self.address)
+        address_validation.validate_address(self.address_dict)
 
-        address_validation._search_atlas.assert_called_with(self.address)
-        address_validation._atlas_result_to_address.assert_called_with(atlas_first_result)
-
-    def test_validate_address_dict(self):
-        address_validation = AddressValidation()
-
-        test_address = {
-            "openbare_ruimte": "Weesperstraat",
-            "huisnummer": 113,
-        }
-
-        # Method is composed of other methods. Just test calling of methods
-        address_validation.validate_address_string = MagicMock(return_value={"bogus": "address"})
-        address_validation._address_dict_to_string = MagicMock(return_value="stringaddress")
-
-        address_validation.validate_address_dict(test_address)
-
-        address_validation._address_dict_to_string.assert_called_with(test_address)
-        address_validation.validate_address_string.assert_called_with("stringaddress")
+        address_validation._search.assert_called_with(self.address_dict)
+        address_validation._search_result_to_address.assert_called_with(atlas_first_result)
 
     def test_address_dict_to_string(self):
         address_validation = AddressValidation()
@@ -111,28 +162,21 @@ class TestAddressValidation(SimpleTestCase):
         ]
 
         for test_case in test_cases:
-            self.assertEqual(test_case[1],
-                             address_validation._address_dict_to_string(test_case[0]))
+            self.assertEqual(test_case[1], address_validation._address_dict_to_string(test_case[0]))
 
     def test_search_atlas_with_unsuccessful_http_code(self):
         address_validation = AddressValidation()
 
         with Mocker() as m:
             m.get(self._get_atlas_search_url(), status_code=400)
-
-            self.assertRaises(AddressValidationUnavailableException,
-                              address_validation._search_atlas,
-                              self.address)
+            self.assertRaises(AddressValidationUnavailableException, address_validation._search, self.address_dict)
 
     def test_search_atlas_with_connection_error(self):
         address_validation = AddressValidation()
 
         with Mocker() as m:
             m.get(self._get_atlas_search_url(), exc=ConnectionError)
-
-            self.assertRaises(AddressValidationUnavailableException,
-                              address_validation._search_atlas,
-                              self.address)
+            self.assertRaises(AddressValidationUnavailableException, address_validation._search, self.address_dict)
 
     def test_search_atlas_successful_request(self):
         address_validation = AddressValidation()
@@ -142,8 +186,7 @@ class TestAddressValidation(SimpleTestCase):
 
         with Mocker() as m:
             m.get(self._get_atlas_search_url(), text=dumps(search_result))
-
-            self.assertEqual(address_validation._search_atlas(self.address), expected)
+            self.assertEqual(address_validation._search(self.address_dict), expected)
 
     def test_atlas_result_to_address(self):
         address_validation = AddressValidation()
@@ -192,6 +235,5 @@ class TestAddressValidation(SimpleTestCase):
         ]
 
         for input_data, expected_result in test_cases:
-            result = address_validation._atlas_result_to_address(input_data)
-
+            result = address_validation._search_result_to_address(input_data)
             self.assertEqual(expected_result, result)
