@@ -33,7 +33,6 @@ from signals.apps.signals.models.type import Type
 # Satisfy Flake8 (otherwise complaints about unused imports):
 __all__ = [
     'Area',
-    'AreaHistory',
     'AreaType',
     'Attachment',
     'Buurt',
