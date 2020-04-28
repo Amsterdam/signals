@@ -1,0 +1,92 @@
+{
+	"response": {
+		"numFound": 1,
+		"start": 0,
+		"maxScore": 21.041628,
+		"docs": [
+			{
+				"bron": "BAG",
+				"woonplaatscode": "3594",
+				"type": "adres",
+				"woonplaatsnaam": "Amsterdam",
+				"wijkcode": "WK036340",
+				"huis_nlt": "58-1",
+				"openbareruimtetype": "Weg",
+				"buurtnaam": "Geuzenhofbuurt",
+				"gemeentecode": "0363",
+				"rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000107724",
+				"weergavenaam": "Geuzenkade 58-1, 1056KN Amsterdam",
+				"suggest": [
+					"Geuzenkade 58-1, 1056KN Amsterdam",
+					"Geuzenkade 58 1, 1056 KN Amsterdam"
+				],
+				"huisnummertoevoeging": "1",
+				"straatnaam_verkort": "Geuzenkd",
+				"id": "adr-cf14ac0c218dcc50dd9ef4e8745d8991",
+				"gekoppeld_perceel": [
+					"STN02-L-1955",
+					"STN02-L-1935",
+					"STN02-L-1916",
+					"STN02-L-1893",
+					"STN02-L-1892"
+				],
+				"gemeentenaam": "Amsterdam",
+				"buurtcode": "BU03634000",
+				"wijknaam": "Geuzenbuurt",
+				"identificatie": "0363010000645435-0363200000107724",
+				"openbareruimte_id": "0363300000003707",
+				"waterschapsnaam": "HH Amstel, Gooi en Vecht",
+				"provinciecode": "PV27",
+				"postcode": "1056KN",
+				"provincienaam": "Noord-Holland",
+				"centroide_ll": "POINT(4.86450674 52.37354473)",
+				"geometrie_ll": "POINT(4.86450674 52.37354473)",
+				"nummeraanduiding_id": "0363200000107724",
+				"waterschapscode": "31",
+				"adresseerbaarobject_id": "0363010000645435",
+				"huisnummer": 58,
+				"provincieafkorting": "NH",
+				"geometrie_rd": "POINT(119405 487425)",
+				"centroide_rd": "POINT(119405 487425)",
+				"straatnaam": "Geuzenkade",
+				"gekoppeld_appartement": [
+					"STN02-L-3120-A-32"
+				],
+				"_version_": 1664194051046375425,
+				"typesortering": 4.0,
+				"sortering": 58.0,
+				"shard": "bag"
+			}
+		]
+	},
+	"highlighting": {
+		"adr-cf14ac0c218dcc50dd9ef4e8745d8991": {
+			"suggest": [
+				"<b>Geuzenkade</b> <b>58</b>-<b>1</b>, <b>1056KN</b> Amsterdam"
+			]
+		},
+		"adr-0fd359434d5f1a1ea224a5284dcb7c6a": {
+			"suggest": [
+				"<b>Geuzenkade</b> <b>58</b>-H, <b>1056KN</b> Amsterdam"
+			]
+		},
+		"adr-1df270cb9d16966a96b07748a319739e": {
+			"suggest": [
+				"<b>Geuzenkade</b> <b>58</b>-2, <b>1056KN</b> Amsterdam"
+			]
+		},
+		"adr-a7f4c4d2c5bee57b76b392a8ea79804a": {
+			"suggest": [
+				"<b>Geuzenkade</b> <b>58</b>-3, <b>1056KN</b> Amsterdam"
+			]
+		}
+	},
+	"spellcheck": {
+		"suggestions": [
+
+		],
+		"collations": [
+
+		]
+	}
+}

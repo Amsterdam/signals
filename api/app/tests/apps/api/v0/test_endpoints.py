@@ -253,8 +253,8 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['source'][0], 'Invalid source given for anonymous user')
 
-    @patch("signals.apps.api.v1.validation.AddressValidation.validate_address_dict")
-    def test_post_signal_with_bag_validated(self, validate_address_dict):
+    @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address")
+    def test_post_signal_with_bag_validated(self, validate_address):
         """ Tests that the bag_validated field cannot be set manually and that the address
             validation is NOT called on the v0 endpoint """
 
@@ -264,7 +264,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         response = self.client.post(self.endpoint, postjson, format='json')
         self.assertEqual(response.status_code, 201)
 
-        validate_address_dict.assert_not_called()
+        validate_address.assert_not_called()
 
         id = response.data['id']
         s = Signal.objects.get(id=id)
