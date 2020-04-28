@@ -5,7 +5,7 @@ from jwcrypto.jwt import JWT, JWTExpired, JWTMissingKey
 from rest_framework.exceptions import AuthenticationFailed
 
 from .config import get_settings
-from .jwks import get_keyset
+from .jwks import check_update_keyset, get_keyset
 
 
 class JWTAccessToken():
@@ -20,7 +20,12 @@ class JWTAccessToken():
             raise AuthenticationFailed('API authz problem: invalid signature. {}'.format(e))
         except ValueError as e:
             raise AuthenticationFailed('API authz problem: {}'.format(e))
-
+        except JWTMissingKey:
+            check_update_keyset()
+            try:
+                jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
+            except JWTMissingKey:
+                raise AuthenticationFailed('token key not present')
         return jwt
 
     @staticmethod  # noqa: C901
@@ -49,9 +54,5 @@ class JWTAccessToken():
         if prefix.lower() != 'bearer':
             raise AuthenticationFailed('invalid token format')
 
-        try:
-            jwt = JWTAccessToken.decode_token(raw_jwt)
-        except JWTMissingKey:
-            raise AuthenticationFailed('token key not present')
-
+        jwt = JWTAccessToken.decode_token(raw_jwt)
         return JWTAccessToken.decode_claims(jwt.claims)

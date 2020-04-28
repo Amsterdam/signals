@@ -13,13 +13,15 @@ _settings_key = 'SIGNALS_AUTHZ'
 # A list of all available settings, with default values
 _available_settings = {
     'JWKS': "",
+    'JWKS_URL': "",
     'ALLOWED_SIGNING_ALGORITHMS': [
         'HS256', 'HS384', 'HS512',
         'ES256', 'ES384', 'ES512',
         'RS256', 'RS384', 'RS512'
     ],
     'USER_ID_FIELD': "",
-    'ALWAYS_OK': False
+    'ALWAYS_OK': False,
+    'MIN_INTERVAL_KEYSET_UPDATE': 30
 }
 
 _settings = {}
@@ -68,5 +70,10 @@ def load_settings():
     # Merge defaults with provided settings
     defaults = _available_settings_keys - user_settings_keys
     user_settings.update({key: _available_settings[key] for key in defaults})
+
+    if not user_settings.get('JWKS') and not user_settings.get('JWKS_URL'):
+        raise AuthzConfigurationError(
+            'Either JWKS or JWKS_URL must be set, or both'
+        )
 
     return types.MappingProxyType(user_settings)
