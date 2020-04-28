@@ -11,7 +11,7 @@ USER_DOES_NOT_EXIST = -1
 
 class JWTAuthBackend():
     """
-    Override get user, use caching
+    Retrieve user from backend and cache the result
     """
     @staticmethod  # noqa: C901
     def get_user(user_id):
@@ -38,6 +38,7 @@ class JWTAuthBackend():
 
     """
     Authenticate. Check if required scope is present and get user_email from JWT token.
+    use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
     """
     @staticmethod  # noqa: C901
     def authenticate(request):
