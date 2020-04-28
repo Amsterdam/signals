@@ -15,7 +15,7 @@ from signals.apps.api.v1.validation.address.base import (
 from signals.apps.api.v1.validation.address.pdok import PDOKAddressValidation
 
 
-class PDOKTestAddressValidation(SimpleTestCase):
+class TestPDOKAddressValidation(SimpleTestCase):
     PDOK_RESPONSE_JSON = "pdok_result.json"
     pdok_response = None
     address_dict = {
@@ -79,7 +79,7 @@ class PDOKTestAddressValidation(SimpleTestCase):
             self.assertEqual(address_validation._search(self.address_dict), expected)
 
 
-class TestAddressValidation(SimpleTestCase):
+class TestBAGAddressValidation(SimpleTestCase):
     ATLAS_RESPONSE_JSON = "atlas_result.json"
     atlas_response = None
     address = "Weesperstraat 113"
