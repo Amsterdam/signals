@@ -10,7 +10,7 @@ from .jwks import check_update_keyset, get_keyset
 
 class JWTAccessToken():
     @staticmethod  # noqa: C901
-    def decode_token(token=None):
+    def decode_token(token=None, missing_key=False):
         settings = get_settings()
         try:
             jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
@@ -21,11 +21,10 @@ class JWTAccessToken():
         except ValueError as e:
             raise AuthenticationFailed('API authz problem: {}'.format(e))
         except JWTMissingKey:
-            check_update_keyset()
-            try:
-                jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
-            except JWTMissingKey:
+            if missing_key:
                 raise AuthenticationFailed('token key not present')
+            check_update_keyset()
+            return JWTAccessToken.decode_token(token=token, missing_key=True)
         return jwt
 
     @staticmethod  # noqa: C901
@@ -54,5 +53,5 @@ class JWTAccessToken():
         if prefix.lower() != 'bearer':
             raise AuthenticationFailed('invalid token format')
 
-        jwt = JWTAccessToken.decode_token(raw_jwt)
+        jwt = JWTAccessToken.decode_token(token=raw_jwt)
         return JWTAccessToken.decode_claims(jwt.claims)
