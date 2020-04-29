@@ -62,6 +62,21 @@ class TestBackend(SignalsBaseApiTestCase):
         e = cm.exception
         self.assertTrue(str(e).startswith('API authz problem: invalid signature'))
 
+    def test_auth_verify_bearer_token_missing_signature(self):
+        keyset = get_keyset()
+        kid = "2aedafba-8170-4064-b704-ce92b7c89cc6"
+        key = keyset.get_key(kid)
+
+        token = jwt.JWT(header={"kid": "wrong_key_id", "alg": "ES256"},
+                        claims={'will_not_match': "test@example.com"})
+        token.make_signed_token(key)
+        bearer = 'Bearer {}'.format(token.serialize())
+
+        with self.assertRaises(AuthenticationFailed) as cm:
+            decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
+        e = cm.exception
+        self.assertTrue(str(e).startswith('token key not present'))
+
     def test_auth_verify_bearer_expired_token(self):
         settings = get_settings()
         keyset = get_keyset()
