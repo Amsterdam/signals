@@ -6,11 +6,13 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     GeneratePdfView,
     NamespaceView,
     ParentCategoryViewSet,
+    PrivateAreasViewSet,
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
+    PublicAreasViewSet,
     PublicSignalAttachmentsViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
@@ -27,6 +29,7 @@ public_router.register(r'public/terms/categories', ParentCategoryViewSet, basena
 public_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
 public_router.register(r'public/feedback/standard_answers', StandardAnswerViewSet, basename='feedback-standard-answers')
 public_router.register(r'public/feedback/forms', FeedbackViewSet, basename='feedback-forms')
+public_router.register(r'public/areas', PublicAreasViewSet, basename='public-areas')
 
 # Private API
 private_router = SignalsRouterVersion1()
@@ -37,6 +40,7 @@ private_router.register(r'private/roles', RoleViewSet, basename='group')
 private_router.register(r'private/permissions', PermissionViewSet, basename='permission')
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
+private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
 
 # Combined API
 base_router = SignalsRouterVersion1()

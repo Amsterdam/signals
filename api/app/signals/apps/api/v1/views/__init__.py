@@ -1,6 +1,7 @@
 """
 V1 API ViewSet.
 """
+from signals.apps.api.v1.views.area import PrivateAreasViewSet, PublicAreasViewSet
 from signals.apps.api.v1.views.attachment import (
     PrivateSignalAttachmentsViewSet,
     PublicSignalAttachmentsViewSet
@@ -36,4 +37,6 @@ __all__ = (
     'PrivateSignalSplitViewSet',
     'StatusMessageTemplatesViewSet',
     'StoredSignalFilterViewSet',
+    'PublicAreasViewSet',
+    'PrivateAreasViewSet',
 )

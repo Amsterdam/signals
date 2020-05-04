@@ -2,7 +2,7 @@ from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.generics.filters import buurt_choices, status_choices
-from signals.apps.signals.models import STADSDELEN, Category, Priority, Signal, Type
+from signals.apps.signals.models import STADSDELEN, AreaType, Category, Priority, Signal, Type
 
 feedback_choices = (
     ('satisfied', 'satisfied'),
@@ -225,3 +225,18 @@ class SignalCategoryRemovedAfterFilter(FilterSet):
             Q(categories__id__in=categories_to_check) &
             ~Q(category_assignment__category_id__in=categories_to_check)
         )
+
+
+def area_type_code_choices():
+    """
+    Helper function to determine available area type codes
+    """
+    return [(area_type.code, area_type.code) for area_type in AreaType.objects.only('code').all()]
+
+
+class AreaFilterSet(FilterSet):
+    """
+    FilterSet used in the V1 API of areas, options to filter on:
+    - type_code
+    """
+    type_code = filters.MultipleChoiceFilter(field_name='_type__code', choices=area_type_code_choices)

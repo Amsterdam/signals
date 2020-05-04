@@ -10,7 +10,7 @@ class LinkHeaderPagination(PageNumberPagination):
         headers = {'X-Total-Count': self.page.paginator.count, 'Link': []}
         next_link = self.get_next_link()
 
-        header_links = []
+        header_links = [f'<{self.request.build_absolute_uri()}>; rel="self"']
         if next_link:
             header_links.append(f'<{next_link}>; rel="next"')
 

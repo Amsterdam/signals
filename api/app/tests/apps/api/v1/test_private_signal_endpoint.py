@@ -151,9 +151,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Check headers
         self.assertTrue(response.has_header('Link'))
         links = response['Link'].split(',')
-        self.assertEqual(len(links), 1)
-        self.assertIn('rel="next"', links[0])
-        self.assertNotIn('rel="previous"', links[0])
+        self.assertEqual(len(links), 2)
+        self.assertIn('rel="self"', links[0])
+        self.assertIn('rel="next"', links[1])
+        self.assertNotIn('rel="previous"', links[1])
 
         self.assertTrue(response.has_header('X-Total-Count'))
         self.assertEqual(response['X-Total-Count'], '2')
@@ -161,13 +162,14 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(response.json()['features']), 1)
 
         # the second page
-        response = self.client.get(links[0].split(';')[0][1:-1])  # The next page
+        response = self.client.get(links[1].split(';')[0][1:-1])  # The next page
 
         self.assertTrue(response.has_header('Link'))
         links = response['Link'].split(',')
-        self.assertEqual(len(links), 1)
-        self.assertNotIn('rel="next"', links[0])
-        self.assertIn('rel="prev"', links[0])
+        self.assertEqual(len(links), 2)
+        self.assertIn('rel="self"', links[0])
+        self.assertNotIn('rel="next"', links[1])
+        self.assertIn('rel="prev"', links[1])
 
         self.assertTrue(response.has_header('X-Total-Count'))
         self.assertEqual(response['X-Total-Count'], '2')
