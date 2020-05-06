@@ -1,5 +1,6 @@
 import logging
 
+from django.db.models import Q
 from django.utils import timezone
 
 from signals.apps.signals.models import Reporter
@@ -41,6 +42,8 @@ def anonymize_reporters(days=365):
     allowed_signal_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
 
     reporter_ids = Reporter.objects.filter(
+        Q(email__isnull=False) & ~Q(email__exact=''),
+        Q(phone__isnull=False) & ~Q(phone__exact=''),
         email_anonymized=False,
         phone_anonymized=False,
         created_at__lt=created_before,
@@ -64,6 +67,10 @@ def anonymize_reporter(reporter_id):
     except Reporter.DoesNotExist:
         log.warning(f"Reporter with ID #{reporter_id} does not exists")
     else:
+        if reporter.is_anonymous:
+            # The reporter is anonymous so no need to anonymize it
+            return
+
         if not reporter.is_anonymized:
             reporter.anonymize()
 
