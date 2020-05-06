@@ -1,6 +1,9 @@
 import requests
 from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
 from django.core.management import BaseCommand
+from django.db import transaction
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from signals.apps.signals.models import Area, AreaType
 
@@ -46,11 +49,23 @@ class APIGebiedenLoader:
         self.list_endpoint = self.GEBIEDEN_URL.format(type_string)
         self.code_field = self.CODE_FIELDS[type_string]
 
-    def iterate_urls(self, url):
+    def _get_session(self):
+        """Create a requests HTTP session with retries."""
+        session = requests.session()
+        session.mount('https', HTTPAdapter(
+            max_retries=Retry(
+                total=5,
+                backoff_factor=1,
+                status_forcelist=[502, 503, 504]
+            )
+        ))
+        return session
+
+    def _iterate_urls(self, requests_session, url):
         """Extract gebied detail urls from Datapunt Gebieden API list endpoints"""
         next_url = url
         while next_url:
-            response = requests.get(next_url)
+            response = requests_session.get(next_url)
             response_json = response.json()
 
             for entry in response_json['results']:
@@ -58,8 +73,8 @@ class APIGebiedenLoader:
 
             next_url = response_json['_links']['next']['href']
 
-    def load_area_detail(self, url):
-        response = requests.get(url)
+    def _load_area_detail(self, requests_session, url):
+        response = requests_session.get(url)
         response_json = response.json()
 
         name = response_json['naam']
@@ -78,8 +93,11 @@ class APIGebiedenLoader:
         )
 
     def load(self):
-        for detail_url in self.iterate_urls(self.list_endpoint):
-            self.load_area_detail(detail_url)
+        requests_session = self._get_session()
+
+        with transaction.atomic():
+            for detail_url in self._iterate_urls(requests_session, self.list_endpoint):
+                self._load_area_detail(requests_session, detail_url)
 
 
 class Command(BaseCommand):
@@ -88,6 +106,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         assert 'type_string' in options
-
         loader = APIGebiedenLoader(options['type_string'])
+
+        self.stdout.write(f'Loading {options["type_string"]} areas from gebieden API...')
         loader.load()
+        self.stdout.write('...done.')
