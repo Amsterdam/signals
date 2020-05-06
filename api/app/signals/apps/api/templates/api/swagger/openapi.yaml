@@ -868,6 +868,131 @@ paths:
       - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/areas/:
+    get:
+      description: Retrieve a list of areas in the database.
+      parameters:
+        - name: "type_code"
+          in: query
+          description: >-
+            Filter returns only areas of a certain type. Can be used to filter on multiple type
+            codes. For example a "buurt" or a "stadsdeel" or combination of these codes.
+          schema:
+            type: string
+            format: string
+          required: false
+      responses:
+        '200':
+          description: List of area data GEOjson
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+                example: 1
+              description: The total areas in the database
+            Links:
+              schema:
+                type: string
+                example: <http://127.0.0.1:8000/signals/v1/private/areas/?page=2>; rel="self",<http://127.0.0.1:8000/signals/v1/private/areas/?page=3>; rel="next",<http://127.0.0.1:8000/signals/v1/private/areas/>; rel="prev"
+              description: The pagination links for GEOjson list endpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreasGEOJsonList'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+  /signals/v1/private/areas/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the selected area
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieve the data for an area.
+      responses:
+        '200':
+          description: Area data GEOjson
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreaGEOJson'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+  /signals/v1/public/areas/:
+    get:
+      description: Retrieve a list of areas in the database.
+      parameters:
+        - name: "type_code"
+          in: query
+          description: >-
+            Filter returns only areas of a certain type. Can be used to filter on multiple type
+            codes. For example a "buurt" or a "stadsdeel" or combination of these codes.
+          schema:
+            type: string
+            format: string
+          required: false
+      responses:
+        '200':
+          description: List of area data GEOjson
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+                example: 1
+              description: The total areas in the database
+            Links:
+              schema:
+                type: string
+                example: <http://127.0.0.1:8000/signals/v1/private/areas/?page=2>; rel="self",<http://127.0.0.1:8000/signals/v1/private/areas/?page=3>; rel="next",<http://127.0.0.1:8000/signals/v1/private/areas/>; rel="prev"
+              description: The pagination links for GEOjson list endpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreasGEOJsonList'
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+  /signals/v1/public/areas/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the selected area
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieve the data for an area.
+      responses:
+        '200':
+          description: Area data GEOjson
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreaGEOJson'
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
 components:
   schemas:
     StatusStateChoices:
@@ -2043,6 +2168,63 @@ components:
         codename:
           description: Codename (technical) of this permission
           type: string
+
+    V1AreasGEOJsonList:
+      description: Area GEOjson list
+      type: object
+      properties:
+        'type':
+          type: string
+          example: "FeatureCollection"
+        features:
+          type: array
+          items:
+            items:
+              $ref: '#/components/schemas/V1AreaGEOJson'
+
+    V1AreaGEOJson:
+      description: Area GEOjson
+      type: object
+      properties:
+        'type':
+          type: string
+          example: "Feature"
+        geometry:
+          type: object
+          properties:
+            'type':
+              type: string
+              example: "MultiPolygon"
+            coordinates:
+              type: array
+              items:
+                type: integer
+              minItems: 0
+              maxItems: 2
+              example: [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
+        'properties':
+          type: object
+          properties:
+            id:
+              description: The ID of the Area
+              type: integer
+              example: 1
+            name:
+              description: The Name of the Area
+              type: string
+              example: Amsterdam
+            'type':
+              type: object
+              properties:
+                name:
+                  description: The Name of the Area type
+                  type: string
+                  example: Gebied
+                code:
+                  description: The code of the Area type
+                  type: string
+                  example: gebied
+
 
   securitySchemes:
     OAuth2:
