@@ -1,0 +1,27 @@
+{
+    "_links": {
+        "self": {
+            "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/?page_size=1"
+        },
+        "next": {
+            "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/?page=2&page_size=1"
+        },
+        "previous": {
+            "href": null
+        }
+    },
+    "count": 8,
+    "results": [
+        {
+            "_links": {
+                "self": {
+                    "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/03630000000016/"
+                }
+            },
+            "_display": "Zuidoost (T)",
+            "code": "T",
+            "naam": "Zuidoost",
+            "dataset": "gebieden"
+        }
+    ]
+}
