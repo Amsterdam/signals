@@ -1,4 +1,5 @@
 from datapunt_api.rest import DatapuntViewSet
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from signals.apps.api.generics.pagination import LinkHeaderPagination
@@ -24,6 +25,9 @@ class PublicAreasViewSet(DatapuntViewSet):
 
     filter_backends = (DjangoFilterBackend, )
     filterset_class = AreaFilterSet
+
+    def retrieve(self, request, *args, **kwargs):
+        raise Http404
 
 
 class PrivateAreasViewSet(PublicAreasViewSet):

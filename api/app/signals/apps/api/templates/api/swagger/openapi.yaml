@@ -870,7 +870,7 @@ paths:
 
   /signals/v1/private/areas/:
     get:
-      description: Retrieve a list of areas in the database.
+      description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
         - name: "type_code"
           in: query
@@ -899,32 +899,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V1AreasGEOJsonList'
-        '401':
-          description: Not authenticated, may be caused by expired token.
-        '403':
-          description: Forbidden.
-        '404':
-          description: Not Found.
-      security:
-        - OAuth2:
-            - SIG/ALL
-  /signals/v1/private/areas/{id}:
-    parameters:
-      - name: id
-        in: path
-        description: ID of the selected area
-        required: true
-        schema:
-          type: integer
-    get:
-      description: Retrieve the data for an area.
-      responses:
-        '200':
-          description: Area data GEOjson
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/V1AreaGEOJson'
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
@@ -936,7 +910,7 @@ paths:
             - SIG/ALL
   /signals/v1/public/areas/:
     get:
-      description: Retrieve a list of areas in the database.
+      description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
         - name: "type_code"
           in: query
@@ -965,28 +939,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V1AreasGEOJsonList'
-        '404':
-          description: Not Found.
-      security:
-        - OAuth2:
-            - SIG/ALL
-  /signals/v1/public/areas/{id}:
-    parameters:
-      - name: id
-        in: path
-        description: ID of the selected area
-        required: true
-        schema:
-          type: integer
-    get:
-      description: Retrieve the data for an area.
-      responses:
-        '200':
-          description: Area data GEOjson
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/V1AreaGEOJson'
         '404':
           description: Not Found.
       security:
@@ -2170,7 +2122,7 @@ components:
           type: string
 
     V1AreasGEOJsonList:
-      description: Area GEOjson list
+      description: !!!EXPERIMENTAL!!! - Area GEOjson list
       type: object
       properties:
         'type':
@@ -2183,7 +2135,7 @@ components:
               $ref: '#/components/schemas/V1AreaGEOJson'
 
     V1AreaGEOJson:
-      description: Area GEOjson
+      description: !!!EXPERIMENTAL!!! - Area GEOjson
       type: object
       properties:
         'type':

@@ -31,15 +31,15 @@ class TestPublicAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_get_list_multiple_filter(self):
         response = self.client.get(f'{self.list_endpoint}?type_code={self.area_types[0].code}'
-                                   f'&type_code={self.area_types[1].code}')
+                                   f'&code={self.areas[self.area_types[0].code][0].code}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
-        self.assertEqual(10, len(data['features']))
+        self.assertEqual(1, len(data['features']))
 
     def test_get_detail(self):
         response = self.client.get(f'{self.list_endpoint}{self.areas[self.area_types[0].code][0].id}')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_post_method_not_allowed(self):
         response = self.client.post(f'{self.list_endpoint}1', data={}, format='json')
