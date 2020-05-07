@@ -1,9 +1,17 @@
 from django.contrib import admin
+from django.contrib.gis.admin import GeoModelAdmin
 from django.db import transaction
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Category, Signal, Status, StatusMessageTemplate
+from signals.apps.signals.models import Area, Category, Signal, Status, StatusMessageTemplate
 from signals.apps.signals.models.category_translation import CategoryTranslation
+
+
+class AreaAdmin(GeoModelAdmin):
+    pass
+
+
+admin.site.register(Area, AreaAdmin)
 
 
 class CategoryTranslationAdmin(admin.ModelAdmin):

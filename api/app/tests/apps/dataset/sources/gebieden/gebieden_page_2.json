@@ -1,0 +1,27 @@
+{
+    "_links": {
+        "self": {
+            "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/?page=2&page_size=1"
+        },
+        "next": {
+            "href": null
+        },
+        "previous": {
+            "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/?page=1&page_size=1"
+        }
+    },
+    "count": 8,
+    "results": [
+        {
+            "_links": {
+                "self": {
+                    "href": "https://api.data.amsterdam.nl/gebieden/stadsdeel/03630000000018/"
+                }
+            },
+            "_display": "Centrum (A)",
+            "code": "A",
+            "naam": "Centrum",
+            "dataset": "gebieden"
+        }
+    ]
+}
