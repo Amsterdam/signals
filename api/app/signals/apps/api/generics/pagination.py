@@ -6,6 +6,11 @@ class LinkHeaderPagination(PageNumberPagination):
     page_size = 4000  # 2.5 times the average signals made in a day, at this moment the highest average is 1600
     page_size_query_param = 'page_size'
 
+    def __init__(self, page_query_param=None, *args, **kwargs):
+        super(LinkHeaderPagination, self).__init__(*args, **kwargs)
+
+        self.page_query_param = page_query_param or self.page_query_param
+
     def get_pagination_headers(self):
         headers = {'X-Total-Count': self.page.paginator.count, 'Link': []}
         next_link = self.get_next_link()

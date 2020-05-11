@@ -142,7 +142,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             'id'  # Oldest Signals first
         )
 
-        paginator = LinkHeaderPagination()
+        paginator = LinkHeaderPagination(page_query_param='geopage')
         page = paginator.paginate_queryset(filtered_qs, self.request, view=self)
         if page is not None:
             serializer = SignalGeoSerializer(page, many=True)
