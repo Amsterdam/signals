@@ -1,4 +1,5 @@
-from rest_framework_gis import serializers
+from datapunt_api.serializers import HALSerializer
+from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
@@ -8,7 +9,7 @@ from signals.apps.signals.models import Area, AreaType
 class AreaTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AreaType
-        fields = ('name', 'code')
+        fields = ('name', 'code', )
 
 
 class AreaGeoSerializer(GeoFeatureModelSerializer):
@@ -20,4 +21,17 @@ class AreaGeoSerializer(GeoFeatureModelSerializer):
         model = Area
         id_field = False
         geo_field = 'geometry'
-        fields = ('id', 'name', 'code', 'type', )
+        fields = ('name', 'code', 'type', )
+
+
+class AreaSerializer(HALSerializer):
+    type = AreaTypeSerializer(source='_type')
+    bbox = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Area
+        fields = ('name', 'code', 'type', 'bbox', 'geometry', )
+
+    def get_bbox(self, obj):
+        if obj.geometry:
+            return obj.geometry.extent

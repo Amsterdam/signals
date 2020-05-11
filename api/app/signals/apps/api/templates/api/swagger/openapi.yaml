@@ -868,7 +868,7 @@ paths:
       - OAuth2:
           - SIG/ALL
 
-  /signals/v1/private/areas/:
+  /signals/v1/private/areas/geography/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
@@ -908,7 +908,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
-  /signals/v1/public/areas/:
+  /signals/v1/public/areas/geography/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
@@ -939,6 +939,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V1AreasGEOJsonList'
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
+  /signals/v1/private/areas/:
+    get:
+      description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
+      parameters:
+        - name: "type_code"
+          in: query
+          description: >-
+            Filter returns only areas of a certain type. Can be used to filter on multiple type
+            codes. For example a "buurt" or a "stadsdeel" or combination of these codes.
+          schema:
+            type: string
+            format: string
+          required: false
+      responses:
+        '200':
+          description: List of area data json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreasJsonList'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+  /signals/v1/public/areas/:
+    get:
+      description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
+      parameters:
+        - name: "type_code"
+          in: query
+          description: >-
+            Filter returns only areas of a certain type. Can be used to filter on multiple type
+            codes. For example a "buurt" or a "stadsdeel" or combination of these codes.
+          schema:
+            type: string
+            format: string
+          required: false
+      responses:
+        '200':
+          description: List of area data json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AreasJsonList'
         '404':
           description: Not Found.
       security:
@@ -2122,7 +2177,7 @@ components:
           type: string
 
     V1AreasGEOJsonList:
-      description: !!!EXPERIMENTAL!!! - Area GEOjson list
+      description: EXPERIMENTAL - Area GEOjson list
       type: object
       properties:
         'type':
@@ -2135,7 +2190,7 @@ components:
               $ref: '#/components/schemas/V1AreaGEOJson'
 
     V1AreaGEOJson:
-      description: !!!EXPERIMENTAL!!! - Area GEOjson
+      description: EXPERIMENTAL - Area GEOjson
       type: object
       properties:
         'type':
@@ -2177,6 +2232,88 @@ components:
                   type: string
                   example: gebied
 
+    V1AreasJsonList:
+      description: EXPERIMENTAL - Area GEOjson list
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 1
+        results:
+          type: array
+          description: A list of signals, paginated
+          items:
+            $ref: '#/components/schemas/V1AreaJson'
+
+    V1AreaJson:
+      description: EXPERIMENTAL - Area GEOjson
+      type: object
+      properties:
+        name:
+          description: The Name of the Area
+          type: string
+          example: Gebied
+        code:
+          description: The code of the Area
+          type: string
+          example: gebied
+        'type':
+          type: object
+          properties:
+            name:
+              description: The Name of the Area type
+              type: string
+              example: Gebied
+            code:
+              description: The code of the Area type
+              type: string
+              example: gebied
+        bbox:
+          type: array
+          items:
+            type: integer
+          example: [4.804035, 52.306854, 4.87683, 52.352063]
+        geometry:
+          type: object
+          properties:
+            'type':
+              type: string
+              example: "MultiPolygon"
+            coordinates:
+              type: array
+              items:
+                type: integer
+              minItems: 0
+              maxItems: 2
+              example: [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
 
   securitySchemes:
     OAuth2:
