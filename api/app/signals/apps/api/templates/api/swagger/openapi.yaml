@@ -2212,10 +2212,6 @@ components:
         'properties':
           type: object
           properties:
-            id:
-              description: The ID of the Area
-              type: integer
-              example: 1
             name:
               description: The Name of the Area
               type: string
