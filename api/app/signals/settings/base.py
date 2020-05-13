@@ -216,7 +216,7 @@ JWKS_TEST_KEY = """
 
 SIGNALS_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
-    'USER_ID_FIELD': os.getenv('USER_ID_FIELD', 'email'),
+    'USER_ID_FIELD': os.getenv('USER_ID_FIELD', 'sub'),
     'ALWAYS_OK': False,
 }
 
