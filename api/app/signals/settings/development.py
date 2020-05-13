@@ -8,7 +8,7 @@ ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SIGNALS_AUTHZ = {
-    'JWKS_URL': "http://localhost:5556/keys",
+    'JWKS_URL': "http://dex:5556/keys",
     'ALWAYS_OK': False,
     'USER_ID_FIELD': 'email'
 }

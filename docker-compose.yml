@@ -82,6 +82,7 @@ services:
       - database
       - rabbit
       - elasticsearch
+      - dex
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
