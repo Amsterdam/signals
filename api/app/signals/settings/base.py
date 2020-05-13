@@ -85,7 +85,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'authorization_django.authorization_middleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
     'change_log.middleware.ChangeLoggerMiddleware',
 ]
@@ -215,8 +214,9 @@ JWKS_TEST_KEY = """
     }
 """
 
-DATAPUNT_AUTHZ = {
+SIGNALS_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
+    'USER_ID_FIELD': os.getenv('USER_ID_FIELD', 'email'),
     'ALWAYS_OK': False,
 }
 

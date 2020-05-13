@@ -3,47 +3,54 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from rest_framework import exceptions
 
+from .tokens import JWTAccessToken
+
 USER_NOT_AUTHORIZED = "User {} is not authorized"
 USER_DOES_NOT_EXIST = -1
 
 
-class JWTAuthBackend:
+class JWTAuthBackend():
     """
-    Authenticate. Check if required scope is present and get user_email from JWT token.
+    Retrieve user from backend and cache the result
     """
-
     @staticmethod  # noqa: C901
-    def authenticate(request):
-        # The Datapunt django_authorization middleware performs the OAuth2 authentication checks.
-        # Note: SIG/ALL is available to all Amsterdam municipal employees.
-        scope = required_scope = 'SIG/ALL'
-        if hasattr(request, "is_authorized_for") and request.is_authorized_for(required_scope):
-            user_email = request.get_token_subject.lower()
-
-            if user_email == "always_ok":
-                user_email = settings.TEST_LOGIN
-        else:
-            raise exceptions.AuthenticationFailed("No token or required scope")
-
+    def get_user(user_id):
         # Now we know we have a Amsterdam municipal employee (may or may not be allowed acceess)
         # or external user with access to the `signals` application, we retrieve the Django user.
-        user = cache.get(user_email)
+        user = cache.get(user_id)
 
         if user == USER_DOES_NOT_EXIST:
-            raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_email))
+            raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_id))
 
         # We hit the database max once per 5 minutes, and then cache the results.
         if user is None:  # i.e. cache miss
             try:
-                user = User.objects.get(username=user_email)
+                user = User.objects.get(username=user_id)
             except User.DoesNotExist:
-                cache.set(user_email, USER_DOES_NOT_EXIST, 5 * 60)
-                raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_email))
+                cache.set(user_id, USER_DOES_NOT_EXIST, 5 * 60)
+                raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_id))
             else:
-                cache.set(user_email, user, 5 * 60)
+                cache.set(user_id, user, 5 * 60)
 
+        if not user.is_active:
+            raise exceptions.AuthenticationFailed('User inactive')
+        return user
+
+    """
+    Authenticate. Check if required scope is present and get user_email from JWT token.
+    use ALWAYS_OK = True to skip token verification. Useful for local dev/testing
+    """
+    @staticmethod  # noqa: C901
+    def authenticate(request):
+        authz_header = request.META.get('HTTP_AUTHORIZATION')
+        claims, user_id = JWTAccessToken.token_data(authz_header)
+        if user_id == "ALWAYS_OK":
+            user_id = settings.TEST_LOGIN
+
+        auth_user = JWTAuthBackend.get_user(user_id)
         # We return only when we have correct scope, and user is known to `signals`.
-        return user, scope
+        # TODO remove default empty scope
+        return auth_user, ''
 
     def authenticate_header(self, request):
         """

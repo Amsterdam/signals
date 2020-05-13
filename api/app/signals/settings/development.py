@@ -6,7 +6,13 @@ SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DATAPUNT_AUTHZ['ALWAYS_OK'] = True  # noqa
+
+SIGNALS_AUTHZ = {
+    'JWKS_URL': "http://localhost:5556/keys",
+    'ALWAYS_OK': False,
+    'USER_ID_FIELD': 'email'
+}
+
 SITE_DOMAIN = 'localhost:8000'
 
 INSTALLED_APPS += [  # noqa
