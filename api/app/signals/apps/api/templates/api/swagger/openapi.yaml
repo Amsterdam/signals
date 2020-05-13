@@ -872,6 +872,15 @@ paths:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
+        - name: "code"
+          in: query
+          description: >-
+            Filter returns only areas with a certain code. Can be used to filter on multiple type
+            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018"
+          schema:
+            type: string
+            format: string
+          required: false
         - name: "type_code"
           in: query
           description: >-
@@ -912,6 +921,15 @@ paths:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
+        - name: "code"
+          in: query
+          description: >-
+            Filter returns only areas with a certain code. Can be used to filter on multiple type
+            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018"
+          schema:
+            type: string
+            format: string
+          required: false
         - name: "type_code"
           in: query
           description: >-
@@ -949,6 +967,15 @@ paths:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
+        - name: "code"
+          in: query
+          description: >-
+            Filter returns only areas with a certain code. Can be used to filter on multiple type
+            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018"
+          schema:
+            type: string
+            format: string
+          required: false
         - name: "type_code"
           in: query
           description: >-
@@ -978,6 +1005,15 @@ paths:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
       parameters:
+        - name: "code"
+          in: query
+          description: >-
+            Filter returns only areas with a certain code. Can be used to filter on multiple type
+            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018"
+          schema:
+            type: string
+            format: string
+          required: false
         - name: "type_code"
           in: query
           description: >-
