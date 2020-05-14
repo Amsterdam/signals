@@ -1,4 +1,5 @@
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -24,6 +25,9 @@ from signals.auth.backend import JWTAuthBackend
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
+    def list(self, *args, **kwargs):
+        raise Http404
+
     def create(self, request):
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
