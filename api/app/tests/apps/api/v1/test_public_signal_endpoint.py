@@ -264,3 +264,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIn('extra_properties', data)
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(0, Signal.objects.count())
+
+    def test_get_list(self):
+        response = self.client.get(f'{self.list_endpoint}')
+        self.assertEqual(response.status_code, 404)
