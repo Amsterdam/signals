@@ -25,7 +25,7 @@ class JWTAuthBackend():
         # We hit the database max once per 5 minutes, and then cache the results.
         if user is None:  # i.e. cache miss
             try:
-                user = User.objects.get(username=user_id)
+                user = User.objects.get(username__iexact=user_id)  # insensitive match fixes log-in bug
             except User.DoesNotExist:
                 cache.set(user_id, USER_DOES_NOT_EXIST, 5 * 60)
                 raise exceptions.AuthenticationFailed(USER_NOT_AUTHORIZED.format(user_id))
