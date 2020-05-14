@@ -47,7 +47,7 @@ class JWTAccessToken():
             return {settings['USER_ID_FIELD']: "ALWAYS_OK"}, "ALWAYS_OK"
         try:
             prefix, raw_jwt = authz_header.split()
-        except:
+        except:  # noqa
             raise AuthenticationFailed('invalid token')
 
         if prefix.lower() != 'bearer':
