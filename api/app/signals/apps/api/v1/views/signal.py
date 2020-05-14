@@ -25,6 +25,8 @@ from signals.auth.backend import JWTAuthBackend
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
+    serializer_class = PublicSignalSerializerDetail
+
     def list(self, *args, **kwargs):
         raise Http404
 
