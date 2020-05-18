@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
+from signals.apps.signals.models import CategoryDepartment
 from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -57,6 +58,30 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
             slo = category.slo.all().order_by('-created_at').first()
             self.assertEqual(data['sla']['n_days'], slo.n_days)
             self.assertEqual(data['sla']['use_calendar_days'], slo.use_calendar_days)
+
+        self.assertIn('departments', data)
+        if category.departments.count() > 0:
+            self.assertEqual(category.departments.count(), len(data['departments']))
+            category_departments = CategoryDepartment.objects.filter(
+                category_id=category.pk
+            ).order_by(
+                'department__code'
+            )
+            item = 0  # we start with item 0 in the response data
+            for category_department in category_departments:
+                department_data = data['departments'][item]
+
+                self.assertEqual(department_data['id'], category_department.department.pk)
+                self.assertEqual(department_data['code'], category_department.department.code)
+                self.assertEqual(department_data['name'], category_department.department.name)
+                self.assertEqual(department_data['is_intern'], category_department.department.is_intern)
+                self.assertEqual(department_data['is_responsible'], category_department.is_responsible)
+                self.assertEqual(department_data['can_view'], category_department.can_view)
+
+                # Next item
+                item += 1
+        else:
+            self.assertEqual(0, len(data['departments']))
 
     def test_list_categories(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
