@@ -7,7 +7,7 @@ class AreaType(models.Model):
         verbose_name_plural = 'Gebiedstypen'
 
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, unique=True)
     description = models.TextField(max_length=3000)
 
     def __str__(self):
@@ -18,6 +18,7 @@ class Area(models.Model):
     class Meta:
         verbose_name = 'Gebied'
         verbose_name_plural = 'Gebieden'
+        unique_together = ('code', '_type')
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
