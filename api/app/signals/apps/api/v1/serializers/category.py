@@ -8,7 +8,7 @@ from signals.apps.api.v1.fields import (
     ParentCategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
-from signals.apps.signals.models import Category, ServiceLevelObjective
+from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective
 
 
 class CategoryHALSerializer(HALSerializer):
@@ -62,11 +62,32 @@ class PrivateCategorySLASerializer(serializers.ModelSerializer):
         )
 
 
+class _NestedPrivateCategoryDepartmentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='department.id')
+    code = serializers.CharField(source='department.code')
+    name = serializers.CharField(source='department.name')
+    is_intern = serializers.CharField(source='department.is_intern')
+
+    class Meta:
+        model = CategoryDepartment
+        fields = (
+            'id',
+            'code',
+            'name',
+            'is_intern',
+            'is_responsible',
+            'can_view',
+        )
+        read_only_fields = fields
+
+
 class PrivateCategorySerializer(HALSerializer):
     serializer_url_field = PrivateCategoryHyperlinkedIdentityField
     _display = DisplayField()
     sla = serializers.SerializerMethodField()
     new_sla = PrivateCategorySLASerializer(write_only=True)
+
+    departments = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -81,15 +102,23 @@ class PrivateCategorySerializer(HALSerializer):
             'handling_message',
             'sla',
             'new_sla',
+            'departments',
         )
         read_only_fields = (
             'id',
             'slug',
             'sla',
+            'departments',  # noqa Is read-only by default because we use the SerializerMethodField but also added here for readability
         )
 
     def get_sla(self, obj):
         return PrivateCategorySLASerializer(obj.slo.all().order_by('-created_at').first()).data
+
+    def get_departments(self, obj):
+        return _NestedPrivateCategoryDepartmentSerializer(
+            CategoryDepartment.objects.filter(category_id=obj.pk).order_by('department__code'),
+            many=True
+        ).data
 
     def update(self, instance, validated_data):
         new_sla = validated_data.pop('new_sla') if 'new_sla' in validated_data else None

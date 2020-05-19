@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
-from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory
+from signals.apps.signals.models import CategoryDepartment
+from tests.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -58,6 +59,27 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
             self.assertEqual(data['sla']['n_days'], slo.n_days)
             self.assertEqual(data['sla']['use_calendar_days'], slo.use_calendar_days)
 
+        self.assertIn('departments', data)
+        if category.departments.count() > 0:
+            self.assertEqual(category.departments.count(), len(data['departments']))
+            category_departments = CategoryDepartment.objects.filter(
+                category_id=category.pk
+            ).order_by(
+                'department__code'
+            )
+            for counter, category_department in enumerate(category_departments):
+                # Check if the expected departments are present in the json output
+                department_data = data['departments'][counter]
+
+                self.assertEqual(department_data['id'], category_department.department.pk)
+                self.assertEqual(department_data['code'], category_department.department.code)
+                self.assertEqual(department_data['name'], category_department.department.name)
+                self.assertEqual(str(department_data['is_intern']), str(category_department.department.is_intern))
+                self.assertEqual(str(department_data['is_responsible']), str(category_department.is_responsible))
+                self.assertEqual(str(department_data['can_view']), str(category_department.can_view))
+        else:
+            self.assertEqual(0, len(data['departments']))
+
     def test_list_categories(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
@@ -97,6 +119,23 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         category = self.parent_category.children.first()
+
+        url = f'/signals/v1/private/categories/{category.pk}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self._assert_category_data(category=category, data=response.json())
+
+    def test_get_second_child_category(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        category = self.parent_category.children.first()
+
+        department = DepartmentFactory.create(is_intern=False)
+        category.departments.add(department, through_defaults={'is_responsible': False, 'can_view': True})
+
+        department = DepartmentFactory.create(is_intern=True)
+        category.departments.add(department, through_defaults={'is_responsible': True, 'can_view': True})
 
         url = f'/signals/v1/private/categories/{category.pk}'
         response = self.client.get(url)

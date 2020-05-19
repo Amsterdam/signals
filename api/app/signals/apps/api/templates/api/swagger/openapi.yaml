@@ -1858,6 +1858,36 @@ components:
             use_calendar_days:
               type: boolean
               description: If the n_days is in calendar days (true) or working days (false)
+        departments:
+          type: array
+          description: A readonly list of departments for the selected category
+          items:
+            type: object
+            properties:
+              id:
+                description: ID of the department
+                type: integer
+              code:
+                description: The code of the department
+                type: string
+              name:
+                description: The name of the department
+                type: string
+              is_intern:
+                description: Department is internal or external
+                type: boolean
+              is_responsible:
+                description: >-
+                  The department being created is responsible for given category
+                  as identified by the `category_id` (true) or not (false).
+                  Defaults to false.
+                type: boolean
+              can_view:
+                description: >-
+                  The department being created can view given category as
+                  identified by the `category_id` (true) or not (false).
+                  Defaults to false.
+                type: boolean
 
     privateCategoryListResponse:
       description: JSON data describing the category response
