@@ -9,7 +9,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SIGNALS_AUTHZ = {
     'JWKS_URL': "http://dex:5556/keys",
-    'ALWAYS_OK': True,
+    'ALWAYS_OK': False,
     'USER_ID_FIELD': 'email'
 }
 
