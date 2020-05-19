@@ -1,11 +1,12 @@
 from django.core.management import BaseCommand
 
-from signals.apps.dataset.sources.amsterdamse_bos import load_amsterdamse_bos
+from signals.apps.dataset.sources.amsterdamse_bos import SIAStadsdeelLoader
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Loading Amsterdamse Bos Geometry ...')
-        load_amsterdamse_bos()
+        sl = SIAStadsdeelLoader('sia-stadsdeel')
+        sl.load()
         self.stdout.write('... done.')

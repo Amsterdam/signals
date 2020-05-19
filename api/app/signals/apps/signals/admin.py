@@ -8,7 +8,9 @@ from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class AreaAdmin(GeoModelAdmin):
-    pass
+    search_fields = ['name', 'code', '_type__name', '_type__code']
+    list_display = ['name', 'code', '_type']
+    list_filter = ['_type__code']
 
 
 admin.site.register(Area, AreaAdmin)

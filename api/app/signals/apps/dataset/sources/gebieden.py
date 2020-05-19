@@ -7,6 +7,8 @@ SIA Area instances.
 """
 import requests
 from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
+from django.contrib.gis.db.models.functions import MakeValid
+
 from django.db import transaction
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -103,3 +105,6 @@ class APIGebiedenLoader:
         with transaction.atomic():
             for detail_url in self._iterate_urls(requests_session, self.list_endpoint):
                 self._load_area_detail(requests_session, detail_url)
+
+            # Fix any invalid geometries
+            Area.objects.filter(_type=self.area_type).update(geometry=MakeValid('geometry'))

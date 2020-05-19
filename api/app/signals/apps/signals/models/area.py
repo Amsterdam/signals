@@ -6,6 +6,7 @@ class AreaType(models.Model):
         verbose_name = 'Gebiedstype'
         verbose_name_plural = 'Gebiedstypen'
 
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255, unique=True)
     description = models.TextField(max_length=3000)
