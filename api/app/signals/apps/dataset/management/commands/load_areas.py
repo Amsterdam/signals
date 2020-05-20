@@ -20,7 +20,7 @@ class Command(BaseCommand):
         return data_loaders
 
     def add_arguments(self, parser):
-        parser.add_argument('type_string', type=str, help='stadsdeel, wijk or buurt')
+        parser.add_argument('type_string', type=str, help='Use list_areas command to see options.')
 
     def handle(self, *args, **options):
         data_loaders = self._get_data_loaders()

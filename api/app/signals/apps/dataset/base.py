@@ -1,5 +1,5 @@
 class AreaLoader:
-    PROVIDES = []  # override, make list of string data set names
+    PROVIDES = []  # override, make list of string dataset names
 
     def __init__(self, type_string):
         # type_string takes a value from the self.PROVIDES list, and is passed
