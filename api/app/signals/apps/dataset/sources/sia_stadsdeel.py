@@ -49,14 +49,16 @@ class SIAStadsdeelLoader(AreaLoader):
         ds = DataSource(self.DATAFILE)
         assert len(ds) == 1
         assert len(ds[0]) == 1
+        assert ds[0].srs
         assert ds[0].geom_type == 'MultiPolygon'
 
         geometries = ds[0].get_geoms(geos=True)
         assert isinstance(geometries[0], MultiPolygon)
+        geometries[0].srid = 4326  # Set SRID to WGS84
         return geometries[0]
 
     def _load_sia_stadsdeel(self):
-        # Load "Het Amsterdamse Bos" and save it as an area of type "sia-stadsdeel"
+        """Load "Het Amsterdamse Bos", save it with AreaType "sia-stadsdeel"."""
         geometry = self._load_amsterdamse_bos_geometry()
         assert isinstance(geometry, MultiPolygon)
         amsterdamse_bos = Area.objects.create(
