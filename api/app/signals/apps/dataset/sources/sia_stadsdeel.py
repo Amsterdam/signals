@@ -1,6 +1,7 @@
 """
 Load handdrawn outline of "Het Amsterdamse Bos" (stored along with the SIA
-source) and do some spatial queries
+source), do some spatial queries and store as "SIA stadsdeel" (City District for
+SIA purposes).
 """
 import os
 
@@ -9,16 +10,25 @@ from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import MultiPolygon
 from django.utils.text import slugify
 
+from signals.apps.dataset.base import AreaLoader
 from signals.apps.signals.models import Area, AreaType
 
 THIS_DIR = os.path.dirname(__file__)
 
 
-class SIAStadsdeelLoader:
+class SIAStadsdeelLoader(AreaLoader):
     """
-    Load the Amsterdamse Bos geometry as a SIA stadsdeel
+    Load the Amsterdamse Bos geometry as a SIA stadsdeel.
+
+    Note:
+    * A "stadsdeel" (city district) in SIA has a slightly different meaning than
+      usual. "Het Amsterdamse Bos", a big parkland on the edge of Amsterdam and
+      partially located in Amstelveen, also counts as a "stadsdeel" for SIA
+      purposes. Similarly, "stadsdeel Zuid" is changed from its usual definition
+      to not include any part of "Het Amsterdamse Bos".
     """
     DATAFILE = os.path.join(THIS_DIR, 'amsterdamse_bos.json')
+    PROVIDES = ['sia-stadsdeel']
 
     def __init__(self, type_string):
         assert type_string == 'sia-stadsdeel'
@@ -31,8 +41,8 @@ class SIAStadsdeelLoader:
     def _load_amsterdamse_bos_geometry(self):
         """Load the GeoJSON containing Amsterdamse Bos geometry."""
         # Note:
-        # * lacking an official source, we provide our own data file and use
-        #   some or our knowledge as to its contents
+        # * Lacking an official source, we provide our own data file and use
+        #   some or our knowledge as to its contents.
         # * We use assert liberally - we cannot recover from an incorrect
         #   datafile, we just fail the import. Since we use DRF in this project
         #   our interpreter is running with assertions on.

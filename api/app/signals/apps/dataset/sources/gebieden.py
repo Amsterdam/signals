@@ -6,13 +6,13 @@ Amsterdam. This module contains code to scrape that API and turn the data into
 SIA Area instances.
 """
 import requests
-from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
 from django.contrib.gis.db.models.functions import MakeValid
-
+from django.contrib.gis.geos import LinearRing, MultiPolygon, Polygon
 from django.db import transaction
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+from signals.apps.dataset.base import AreaLoader
 from signals.apps.signals.models import Area, AreaType
 
 
@@ -35,7 +35,7 @@ class GebiedenAPIGeometryLoader:
         return MultiPolygon(polygons, srid=28992)
 
 
-class APIGebiedenLoader:
+class APIGebiedenLoader(AreaLoader):
     """
     Load entries from Datapunt "Gebieden API", save as SIA Area instances.
     """
@@ -45,6 +45,7 @@ class APIGebiedenLoader:
         'buurt': 'buurtidentificatie',
         'wijk': 'buurtcombinatie_identificatie',
     }
+    PROVIDES = ['stadsdeel', 'buurt', 'wijk']
 
     def __init__(self, type_string):
         assert type_string in self.CODE_FIELDS
