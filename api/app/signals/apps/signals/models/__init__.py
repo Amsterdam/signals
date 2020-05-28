@@ -5,6 +5,7 @@ from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.department import Department
+from signals.apps.signals.models.directing_departments import DirectingDepartments
 from signals.apps.signals.models.history import History
 from signals.apps.signals.models.location import (
     STADSDEEL_CENTRUM,
@@ -40,6 +41,7 @@ __all__ = [
     'CategoryAssignment',
     'CategoryDepartment',
     'Department',
+    'DirectingDepartments',
     'History',
     'STADSDEEL_CENTRUM',
     'STADSDEEL_NIEUWWEST',

@@ -356,6 +356,31 @@
 				}
 			]
 		},
+		"directing_departments": {
+			"type": "array",
+			"items": [
+				{
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": "integer"
+						},
+						"code": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						},
+						"is_intern": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"id"
+					]
+				}
+			]
+		},
 		"type": {
 			"type": "object",
 			"properties": {

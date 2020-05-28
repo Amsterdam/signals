@@ -569,6 +569,18 @@ class SignalManager(models.Manager):
                     'prev_type': previous_type
                 }))
 
+            if 'directing_departments_assignment' in data:
+                previous_directing_departments = locked_signal.directing_departments_assignment
+                directing_departments = self._update_directing_departments_no_transaction(
+                    data['directing_departments_assignment'], locked_signal
+                )
+                to_send.append((update_type, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'directing_departments': directing_departments,
+                    'prev_directing_departments': previous_directing_departments
+                }))
+
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
@@ -603,3 +615,24 @@ class SignalManager(models.Manager):
                                                                   type=signal_type, prev_type=previous_type))
 
         return signal_type
+
+    def _update_directing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.directing_departments import DirectingDepartments
+
+        directing_departments = DirectingDepartments.objects.create(_signal=signal, created_by=data['created_by'])
+        for department_data in data['departments']:
+            directing_departments.departments.add(department_data['id'])
+
+        signal.directing_departments_assignment = directing_departments
+        signal.save()
+
+        return directing_departments
+
+    def update_directing_departments(self, data, signal):
+        from signals.apps.signals.models import Signal
+
+        with transaction.atomic():
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+            directing_departments = self._update_directing_departments_no_transaction(data=data, signal=locked_signal)
+
+        return directing_departments

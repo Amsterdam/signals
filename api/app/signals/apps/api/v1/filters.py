@@ -2,7 +2,16 @@ from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.generics.filters import buurt_choices, status_choices
-from signals.apps.signals.models import STADSDELEN, Area, AreaType, Category, Priority, Signal, Type
+from signals.apps.signals.models import (
+    STADSDELEN,
+    Area,
+    AreaType,
+    Category,
+    Department,
+    Priority,
+    Signal,
+    Type
+)
 
 feedback_choices = (
     ('satisfied', 'satisfied'),
@@ -40,6 +49,10 @@ def stadsdelen():
     return (
         ('null', 'Niet bepaald'),
     ) + STADSDELEN
+
+
+def department_choices():
+    return [(department.code, f'{department.code}') for department in Department.objects.only('code').all()]
 
 
 class SignalFilter(FilterSet):
@@ -97,6 +110,11 @@ class SignalFilter(FilterSet):
 
     note_keyword = filters.CharFilter(
         method='note_keyword_filter',
+    )
+
+    directing_department = filters.MultipleChoiceFilter(
+        field_name='directing_departments_assignment__departments__code',
+        choices=department_choices
     )
 
     def feedback_filter(self, queryset, name, value):
