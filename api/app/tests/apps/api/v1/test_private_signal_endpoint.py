@@ -1621,6 +1621,49 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn(created_at_with_time_zone_str, data['_display'])
         self.assertEqual(created_at_with_time_zone_str, data['created_at'])
 
+    def test_update_directing_departments_on_parent_signal(self):
+        parent_signal = SignalFactoryValidLocation.create(status__state=workflow.GESPLITST)
+
+        child_signal = SignalFactoryValidLocation.create()
+        child_signal.parent = parent_signal
+        child_signal.save()
+
+        department = DepartmentFactory.create()
+
+        data = {'directing_departments': [{'id': department.pk}, ]}
+
+        detail_endpoint = self.detail_endpoint.format(pk=parent_signal.id)
+        history_endpoint = self.history_endpoint.format(pk=parent_signal.id)
+
+        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 0)
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+
+        self.assertJsonSchema(self.retrieve_signal_schema, response_data)
+        self.assertIn('directing_departments', response_data)
+        self.assertEqual(len(response_data['directing_departments']), 1)
+        self.assertEqual(response_data['directing_departments'][0]['id'], department.pk)
+        self.assertEqual(response_data['directing_departments'][0]['code'], department.code)
+        self.assertEqual(response_data['directing_departments'][0]['name'], department.name)
+        self.assertEqual(response_data['directing_departments'][0]['is_intern'], department.is_intern)
+
+        parent_signal.refresh_from_db()
+        self.assertEqual(parent_signal.directing_departments.count(), 1)
+        self.assertIsNotNone(parent_signal.directing_departments_assignment)
+        self.assertEqual(parent_signal.directing_departments_assignment.departments.count(), 1)
+        self.assertEqual(parent_signal.directing_departments_assignment.departments.first().id, department.pk)
+
+        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+
+        self.assertEqual(len(response.json()), 1)
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'

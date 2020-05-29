@@ -153,6 +153,15 @@ paths:
           required: false
           schema:
             type: string
+        - name: directing_department
+          in: query
+          description: >-
+            Filter signals according to the currently assigned directing department(s), accepts
+            (a combination of) the codes of the declared departments
+          schema:
+            type: string
+            example: 'ASC'
+          required: false
 
       responses:
         '200':
@@ -1338,6 +1347,23 @@ components:
           nullable: true
           example: 'test@test.com'
 
+    _NestedDirectingDepartmentResponseData:
+      description: JSON Data of a directing department, can only be set on a parent Signal
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: 'ASC'
+        name:
+          type: string
+          example: 'Actie service centrum'
+        is_intern:
+          type: boolean
+          example: false
+
     V1PrivateSignalPost:
       description: JSON data for creation of Signal/melding (private version).
       type: object
@@ -1516,6 +1542,10 @@ components:
           $ref: '#/components/schemas/_NestedPriorityResponseData'
         'type':
           $ref: '#/components/schemas/_NestedTypeResponseData'
+        directing_departments:
+          type: array
+          items:
+            $ref: '#/components/schemas/_NestedDirectingDepartmentResponseData'
         source:
           type: string
           example: Telefoon – ASC

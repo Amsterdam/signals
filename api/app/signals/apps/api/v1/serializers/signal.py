@@ -22,6 +22,7 @@ from signals.apps.api.v1.fields import (
 from signals.apps.api.v1.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.v1.serializers.nested import (
     _NestedCategoryModelSerializer,
+    _NestedDepartmentModelSerializer,
     _NestedLocationModelSerializer,
     _NestedNoteModelSerializer,
     _NestedPriorityModelSerializer,
@@ -81,6 +82,13 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         source='type_assignment',
     )
 
+    directing_departments = _NestedDepartmentModelSerializer(
+        source='directing_departments_assignment.departments',
+        many=True,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -114,6 +122,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'updated_at',
             'incident_date_start',
             'incident_date_end',
+            'directing_departments',
         )
         read_only_fields = (
             'id',
@@ -132,6 +141,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         - Atomic update (all fail/succeed), django signals on full success (see
           underlying update_multiple method of actions SignalManager).
         """
+        if not instance.is_parent() and validated_data.get('directing_departments_assignment') is not None:
+            raise serializers.ValidationError('Directing departments can only be set on a parent Signal')
+
         user_email = self.context['request'].user.email
 
         for _property in ['location', 'status', 'category_assignment', 'priority']:
@@ -147,6 +159,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         if 'notes' in validated_data and validated_data['notes']:
             note_data = validated_data['notes'][0]
             note_data['created_by'] = user_email
+
+        if 'directing_departments_assignment' in validated_data and validated_data['directing_departments_assignment']:
+            validated_data['directing_departments_assignment']['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
@@ -194,6 +209,13 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         source='type_assignment',
     )
 
+    directing_departments = _NestedDepartmentModelSerializer(
+        source='directing_departments_assignment.departments',
+        many=True,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -231,6 +253,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'has_attachments',
             'extra_properties',
             'notes',
+            'directing_departments',
         )
         read_only_fields = (
             'created_at',
@@ -245,6 +268,9 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         return obj.attachments.exists()
 
     def create(self, validated_data):
+        if validated_data.get('directing_departments_assignment') is not None:
+            raise serializers.ValidationError('Directing departments cannot be set on initial creation')
+
         if validated_data.get('status') is not None:
             raise serializers.ValidationError("Status cannot be set on initial creation")
 
