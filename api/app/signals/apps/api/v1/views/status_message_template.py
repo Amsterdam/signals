@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from signals.apps.api import mixins
+from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.serializers import StateStatusMessageTemplateSerializer
 from signals.apps.signals.models import Category, StatusMessageTemplate

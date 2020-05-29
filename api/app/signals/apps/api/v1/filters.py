@@ -1,17 +1,18 @@
 from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
-from signals.apps.api.generics.filters import buurt_choices, status_choices
 from signals.apps.signals.models import (
     STADSDELEN,
     Area,
     AreaType,
+    Buurt,
     Category,
     Department,
     Priority,
     Signal,
     Type
 )
+from signals.apps.signals.workflow import STATUS_CHOICES
 
 feedback_choices = (
     ('satisfied', 'satisfied'),
@@ -24,6 +25,15 @@ contact_details_choices = (
     ('email', 'email'),
     ('phone', 'phone')
 )
+
+
+def buurt_choices():
+    options = Buurt.objects.values_list('vollcode', 'naam')
+    return [(c, f'{n} ({c})') for c, n in options]
+
+
+def status_choices():
+    return [(c, f'{n} ({c})') for c, n in STATUS_CHOICES]
 
 
 def _get_child_category_queryset():

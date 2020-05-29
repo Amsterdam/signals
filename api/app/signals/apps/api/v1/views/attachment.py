@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin
 
-from signals.apps.api import mixins
+from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateSignalAttachmentSerializer,

@@ -5,7 +5,7 @@ from datapunt_api.rest import HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 
-from signals.apps.api import mixins
+from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter
 from signals.apps.api.v1.serializers import SignalIdListSerializer

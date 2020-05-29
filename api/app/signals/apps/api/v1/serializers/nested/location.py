@@ -1,5 +1,5 @@
+from signals.apps.api.generics.mixins import NearAmsterdamValidatorMixin
 from signals.apps.api.generics.serializers import SIAModelSerializer
-from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
 from signals.apps.signals.models import Location
 
 

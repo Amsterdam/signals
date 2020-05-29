@@ -4,9 +4,8 @@ ViewSet that splits `api.Signal` instances in several children.
 from rest_framework import viewsets
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.api import mixins
-from signals.apps.api.generics.permissions import SplitPermission
-from signals.apps.api.generics.permissions.base import SignalViewObjectPermission
+from signals.apps.api.generics import mixins
+from signals.apps.api.generics.permissions import SignalViewObjectPermission, SplitPermission
 from signals.apps.api.v1.serializers import PrivateSplitSignalSerializer
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
