@@ -14,6 +14,9 @@ NEW_CATEGORIES = {
                 "Als u een mailadres hebt opgegeven, zullen we u op de hoogte houden.",
             'departments': ['AEG'],
             'slo': '3W',
+            'description':
+                "Bruin en witgoed zijn zaken als: wasmachines, koelkasten, magnetrons of andere zaken met "
+                "een motor en kleine electrische huishoudelijke spullen."
         }
     }
 }
@@ -33,6 +36,7 @@ def _new_categories(apps, schema_editor):
             category.name = category_data['name']
             category.handling = category_data['handling']
             category.handling_message = category_data['handling_message']
+            category.description = category_data['description']
 
             responsible_deps = Department.objects.filter(code__in=category_data['departments'])
             category.departments.add(*responsible_deps, through_defaults={'is_responsible': True, 'can_view': True})
