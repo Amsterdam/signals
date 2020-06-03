@@ -3,11 +3,11 @@ services:
   dex:
     image: quay.io/dexidp/dex:v2.23.0
     user: root
-    command: serve /config.yaml
+    command: serve /config.yml
     ports:
       - 5556:5556
     volumes:
-      - ./dex/dex.dev.yaml:/config.yaml
+      - ./dex.dev.yml:/config.yml
       - dex-data:/data
 
   elasticsearch:

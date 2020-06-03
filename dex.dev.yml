@@ -9,12 +9,11 @@ web:
   http: 0.0.0.0:5556
 
 staticClients:
-- id: appstore
+- id: signals
   redirectURIs:
-    - 'http://localhost:3000/oidc/callback/'
-    - 'http://localhost:8000/oidc/callback/'
-    - 'http://127.0.0.1:8000/oidc/callback/'
-  name: 'Appstore'
+    - 'http://localhost:3001/manage/incidents'
+    - 'http://127.0.0.1:3001/manage/incidents'
+  name: 'Signals'
   secret: ZXhhbXBsZS1hcHAtc2VjcmV0
 
 enablePasswordDB: true
@@ -22,14 +21,9 @@ enablePasswordDB: true
 staticPasswords:
 - email: "signals.admin@example.com"
   hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"  # hash for: password
+  userID: "1"
   username: "admin"
-  name: "admin"
-  userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
-- email: "po@example.com"
-  hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"  # hash for: password
-  username: "po"
-  name: "po"
-  userID: "6d0f1daa-4613-4b8f-a9cf-233dc9895c34"
+  name: "Signals admin"
 
 oauth2:
   responseTypes: [ "token", "id_token" ]
