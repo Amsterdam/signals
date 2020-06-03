@@ -1,5 +1,4 @@
 import inspect
-import pprint
 
 from django.core.management import BaseCommand
 
@@ -24,4 +23,4 @@ class Command(BaseCommand):
         data_loaders = self._get_data_loaders()
 
         self.stdout.write('The following AreaTypes can be loaded:')
-        pprint.pprint(list(data_loaders.keys()), stream=self.stdout)
+        self.stdout.write(repr(list(data_loaders.keys())))
