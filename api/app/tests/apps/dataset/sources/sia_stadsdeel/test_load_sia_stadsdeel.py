@@ -18,13 +18,19 @@ class TestLoadSIAStadsdeel(TestCase):
             code='stadsdeel',
             description='Stadsdeel voor tests.'
         )
+        cbs_gemeente_type = AreaType.objects.create(
+            name='Stadsdeel',
+            code='cbs-gemeente-2019',
+            description='CBS gemeentegrens voor tests.'
+        )
 
-        # We create two city distticts of 10x10 meters located at City Hall to
+        # We create three city distticts of 10x10 meters located at City Hall to
         # test with. (Code stolen from the Gebieden API tests.)
         x, y = RD_STADHUIS
         width, height = 10, 10
         self.bbox_1 = [x, y, x + width, y + height]
         self.bbox_2 = [x, y + height, x + width, y + 2 * height]
+        self.bbox_3 = [x, y + 2 * height, x + width, y + 3 * height]
 
         zuid_geometry = MultiPolygon([Polygon.from_bbox(self.bbox_1)])
         zuid_geometry.srid = 28992
@@ -32,6 +38,9 @@ class TestLoadSIAStadsdeel(TestCase):
         noord_geometry = MultiPolygon([Polygon.from_bbox(self.bbox_2)])
         noord_geometry.srid = 28992
         noord_geometry.transform(ct=4326)
+        weesp_geometry = MultiPolygon([Polygon.from_bbox(self.bbox_3)])
+        weesp_geometry.srid = 28992
+        weesp_geometry.transform(ct=4326)
 
         Area.objects.create(
             name='Zuid',
@@ -45,8 +54,14 @@ class TestLoadSIAStadsdeel(TestCase):
             _type=stadsdeel_area_type,
             geometry=noord_geometry,
         )
+        Area.objects.create(
+            name='Weesp',
+            code='SOME_CBS_CODE_3',
+            _type=cbs_gemeente_type,
+            geometry=weesp_geometry,
+        )
 
-        self.assertEqual(Area.objects.count(), 2)
+        self.assertEqual(Area.objects.count(), 3)
         self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 2)
 
     def test__load_amsterdamse_bos_geometry(self):
@@ -57,16 +72,16 @@ class TestLoadSIAStadsdeel(TestCase):
         self.assertEqual(out.srid, 4326)
 
     def test_load(self):
-        self.assertEqual(Area.objects.count(), 2)
+        self.assertEqual(Area.objects.count(), 3)
         self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 2)
         self.loader.load()
 
-        # There should be three "sia-stadsdeel" type areas (Amsterdamse bos,
-        # zuid and noord).
-        self.assertEqual(Area.objects.filter(_type__code='sia-stadsdeel').count(), 3)
+        # There should be four "sia-stadsdeel" type areas (Amsterdamse bos,
+        # zuid, noord and weesp).
+        self.assertEqual(Area.objects.filter(_type__code='sia-stadsdeel').count(), 4)
 
         # Since we know "Het Amsterdamse Bos" does not intersect City Hall:
         zuid = Area.objects.get(name__iexact='zuid', _type__code='stadsdeel')
-        sia_zuid = Area.objects.get(name__iexact='stadsdeel zuid', _type__code='sia-stadsdeel')
+        sia_zuid = Area.objects.get(name__iexact='zuid', _type__code='sia-stadsdeel')
 
         self.assertEqual(zuid.geometry, sia_zuid.geometry)

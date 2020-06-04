@@ -8,6 +8,7 @@ import os
 from django.contrib.gis.db.models.functions import MakeValid
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import MultiPolygon
+from django.db import transaction
 from django.utils.text import slugify
 
 from signals.apps.dataset.base import AreaLoader
@@ -61,40 +62,53 @@ class SIAStadsdeelLoader(AreaLoader):
         """Load "Het Amsterdamse Bos", save it with AreaType "sia-stadsdeel"."""
         geometry = self._load_amsterdamse_bos_geometry()
         assert isinstance(geometry, MultiPolygon)
-        amsterdamse_bos = Area.objects.create(
-            name='Het Amsterdamse Bos',
-            code='het-amsterdamse-bos',
-            _type=self.area_type,
-            geometry=geometry
-        )
-        # Fix invalid geometry
-        Area.objects.filter(id=amsterdamse_bos.id).update(geometry=MakeValid('geometry'))
 
-        # Convert al normal stadsdeel instances into SIA stadsdeel instances.
-        for entry in Area.objects.filter(_type__code='stadsdeel').exclude(name__iexact='zuid'):
-            entry.pk = None
-            entry._type = self.area_type
-            entry.code = slugify(entry.name)
-            entry.save()
+        with transaction.atomic():
+            Area.objects.filter(_type=self.area_type).delete()
 
-        # Special case: subract "Het Amsterdamse Bos" from "Stadsdeel Zuid".
-        zuid = Area.objects.get(_type__code='stadsdeel', name__iexact='zuid')
-        amsterdamse_bos.refresh_from_db()
-        diff = zuid.geometry - amsterdamse_bos.geometry
-        # Only handle non-pathological cases. We want the difference between Zuid
-        # and the hand drawn Amsterdamse Bos GeoJSON to be either a Polygon or a
-        # MultiPolygon. If the difference is empty, a line or a point it cannot
-        # serve as an Area in SIA.
-        assert diff.geom_typeid in [3, 6]
-        if diff.geom_typeid == 3:
-            diff = MultiPolygon([diff])
+            amsterdamse_bos = Area.objects.create(
+                name='Het Amsterdamse Bos',
+                code='het-amsterdamse-bos',
+                _type=self.area_type,
+                geometry=geometry
+            )
+            # Fix invalid geometry
+            Area.objects.filter(id=amsterdamse_bos.id).update(geometry=MakeValid('geometry'))
 
-        Area.objects.create(
-            name='Stadsdeel Zuid',
-            code='stadsdeel-zuid',
-            _type=self.area_type,
-            geometry=diff
-        )
+            # Convert al normal stadsdeel instances into SIA stadsdeel instances.
+            for entry in Area.objects.filter(_type__code='stadsdeel').exclude(name__iexact='zuid'):
+                entry.pk = None
+                entry._type = self.area_type
+                entry.code = slugify(entry.name)
+                entry.save()
+
+            # Special case: subract "Het Amsterdamse Bos" from "Stadsdeel Zuid".
+            zuid = Area.objects.get(_type__code='stadsdeel', name__iexact='zuid')
+            amsterdamse_bos.refresh_from_db()
+            diff = zuid.geometry - amsterdamse_bos.geometry
+            # Only handle non-pathological cases. We want the difference between Zuid
+            # and the hand drawn Amsterdamse Bos GeoJSON to be either a Polygon or a
+            # MultiPolygon. If the difference is empty, a line or a point it cannot
+            # serve as an Area in SIA.
+            assert diff.geom_typeid in [3, 6]
+            if diff.geom_typeid == 3:
+                diff = MultiPolygon([diff])
+
+            Area.objects.create(
+                name='Zuid',
+                code='zuid',
+                _type=self.area_type,
+                geometry=diff
+            )
+
+            # Special case for Weesp (we want it as a sia-stadsdeel as well)
+            weesp = Area.objects.get(_type__code='cbs-gemeente-2019', name__iexact='weesp')
+            Area.objects.create(
+                name='Weesp',
+                code='weesp',
+                _type=self.area_type,
+                geometry=weesp.geometry
+            )
 
     def load(self):
         self._load_sia_stadsdeel()

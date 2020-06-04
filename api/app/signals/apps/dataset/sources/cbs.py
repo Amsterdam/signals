@@ -1,20 +1,15 @@
 import os
 import zipfile
-import time
+from tempfile import TemporaryDirectory
+from urllib.parse import urlsplit
 
 import requests
-
+from django.contrib.gis.gdal import DataSource, OGRGeomType
+from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 
 from signals.apps.dataset.base import AreaLoader
 from signals.apps.signals.models import Area, AreaType
-from django.contrib.gis.geos import MultiPolygon
-
-from django.contrib.gis.gdal import DataSource
-from django.contrib.gis.gdal import OGRGeomType
-
-from urllib.parse import urlsplit
-from tempfile import TemporaryDirectory
 
 
 class CBSBoundariesLoader(AreaLoader):
