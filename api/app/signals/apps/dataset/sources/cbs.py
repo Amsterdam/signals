@@ -21,13 +21,25 @@ class CBSBoundariesLoader(AreaLoader):
     # Unfortunately, these filenames are not uniformly named over the years,
     # so a hard-coded mapping is provided for the most recent data file (as of
     # this writing 2019).
-    DATA_FILES = {
-        'cbs-gemeente-2019': 'gemeente_2019_v1.shp',
-        # 'cbs-wijk-2019': 'wijk_2019_v1.shp',
-        # 'cbs-buurt-2019': 'buurt_2019_v1.shp',
+    DATASET_INFO = {
+        'cbs-gemeente-2019': {
+            'shp_file': 'gemeente_2019_v1.shp',
+            'code_field': 'GM_CODE',
+            'name_field': 'GM_NAAM',
+        },
+        'cbs-wijk-2019': {
+            'shp_file': 'wijk_2019_v1.shp',
+            'code_field': 'WK_CODE',
+            'name_field': 'WK_NAAM',
+        },
+        'cbs-buurt-2019': {
+            'shp_file': 'buurt_2019_v1.shp',
+            'code_field': 'BU_CODE',
+            'name_field': 'BU_NAAM',
+        }
     }
 
-    PROVIDES = ['cbs-gemeente-2019']
+    PROVIDES = DATASET_INFO.keys()
 
     def __init__(self, type_string):
         assert type_string in self.PROVIDES
@@ -37,7 +49,11 @@ class CBSBoundariesLoader(AreaLoader):
             code=type_string,
             description=f'{type_string} from CBS "Wijk- en buurtkaart" data.',
         )
-        self.data_file = self.DATA_FILES[type_string]
+
+        dataset_info = self.DATASET_INFO[type_string]
+        self.data_file = dataset_info['shp_file']
+        self.code_field = dataset_info['code_field']
+        self.name_field = dataset_info['name_field']
 
     def _download(self, zip_fullpath):
         """
@@ -53,13 +69,12 @@ class CBSBoundariesLoader(AreaLoader):
         """
         Extract ZIP file to temp_dir.
         """
-        print(os.listdir(temp_dir))
         with zipfile.ZipFile(zip_fullpath, 'r') as zf:
             zf.extractall(path=temp_dir)
 
-    def _load_cbs_gemeente(self, data_fullpath):
+    def _load_cbs_data(self, data_fullpath):
         """
-        Load municipal boundaries.
+        Load "gemeente", "wijk" or "buurt" areas from the CBS provided shapefiles.
         """
         ds = DataSource(data_fullpath)
         geom_by_code = {}
@@ -71,22 +86,22 @@ class CBSBoundariesLoader(AreaLoader):
         # Collect possible separate geometries representing the area of a signle
         # municipality.
         for feature in ds[0]:
-            gm_code = feature.get('GM_CODE')
-            name_by_code[gm_code] = feature.get('GM_NAAM')
+            code = feature.get(self.code_field)
+            name_by_code[code] = feature.get(self.name_field)
 
             # Transform to WGS84 and merge if needed.
             transformed = feature.geom.transform('WGS84', clone=True)
-            if gm_code in geom_by_code:
-                geom_by_code[gm_code].union(transformed)
+            if code in geom_by_code:
+                geom_by_code[code].union(transformed)
             else:
-                geom_by_code[gm_code] = transformed
+                geom_by_code[code] = transformed
 
         # Remove previously imported data, save our merged and transformed
         # municipal boundaries to SIA DB.
         with transaction.atomic():
             Area.objects.filter(_type=self.area_type).delete()
 
-            for gm_code, geometry in geom_by_code.items():
+            for code, geometry in geom_by_code.items():
                 if geometry.geom_type == polygon_type:
                     geos_polygon = geometry.geos
                     geos_geometry = MultiPolygon(geos_polygon)
@@ -96,8 +111,8 @@ class CBSBoundariesLoader(AreaLoader):
                     raise Exception('Expected either polygon or multipolygon.')
 
                 Area.objects.create(
-                    name=name_by_code[gm_code],
-                    code=gm_code,  # For now we use the CBS codes
+                    name=name_by_code[code],
+                    code=code,
                     _type=self.area_type,
                     geometry=geos_geometry
                 )
@@ -112,4 +127,4 @@ class CBSBoundariesLoader(AreaLoader):
 
             self._download(zip_fullpath)
             self._unzip(temp_dir, zip_fullpath)
-            self._load_cbs_gemeente(data_fullpath)
+            self._load_cbs_data(data_fullpath)

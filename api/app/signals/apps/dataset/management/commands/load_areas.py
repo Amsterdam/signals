@@ -30,6 +30,6 @@ class Command(BaseCommand):
 
         loader = data_loaders[type_string](type_string)
 
-        self.stdout.write(f'Loading {type_string} areas from gebieden API...')
+        self.stdout.write(f'Loading "{type_string}" areas ...')
         loader.load()
         self.stdout.write('...done.')
