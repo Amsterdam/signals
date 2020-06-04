@@ -238,6 +238,9 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
+        # SIG-2773
+        self.assertTrue(response_json['reporter']['sharing_allowed'])
+
         self.assertEqual(response_json['status']['user'], self.sia_read_write_user.email)
         self.assertEqual(response_json['priority']['created_by'], self.sia_read_write_user.email)
         self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)

@@ -20,6 +20,8 @@ class Reporter(CreatedUpdatedModel):
     email_anonymized = models.BooleanField(default=False)
     phone_anonymized = models.BooleanField(default=False)
 
+    sharing_allowed = models.BooleanField(default=False)
+
     @property
     def is_anonymized(self):
         """
