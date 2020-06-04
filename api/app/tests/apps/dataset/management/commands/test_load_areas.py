@@ -10,7 +10,7 @@ from signals.apps.dataset.base import AreaLoader
 class FakeAreaLoader(AreaLoader):
     PROVIDES = ['fake']
 
-    def __init__(self, type_string):
+    def __init__(self, type_string, directory=None):
         pass
 
     def load(self):
@@ -29,4 +29,4 @@ class TestLoadAreas(TestCase):
         call_command('load_areas', 'fake', stdout=buffer)
 
         output = buffer.getvalue()
-        self.assertIn('Loading fake areas from gebieden API...', output)
+        self.assertIn('Loading "fake" areas ...', output)

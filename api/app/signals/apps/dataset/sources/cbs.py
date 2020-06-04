@@ -1,6 +1,5 @@
 import os
 import zipfile
-from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
 
 import requests
@@ -41,7 +40,7 @@ class CBSBoundariesLoader(AreaLoader):
 
     PROVIDES = DATASET_INFO.keys()
 
-    def __init__(self, type_string):
+    def __init__(self, type_string, directory):
         assert type_string in self.PROVIDES
 
         self.area_type, _ = AreaType.objects.get_or_create(
@@ -49,6 +48,7 @@ class CBSBoundariesLoader(AreaLoader):
             code=type_string,
             description=f'{type_string} from CBS "Wijk- en buurtkaart" data.',
         )
+        self.directory = directory  # Data downloaded / processed here. Caller is responsible to clean-up directory.
 
         dataset_info = self.DATASET_INFO[type_string]
         self.data_file = dataset_info['shp_file']
@@ -59,18 +59,21 @@ class CBSBoundariesLoader(AreaLoader):
         """
         Download relevant data file.
         """
+        if os.path.exists(zip_fullpath):
+            return  # Datafile already downloaded.
+
         with requests.get(self.DATASET_URL, stream=True) as r:
             r.raise_for_status()
             with open(zip_fullpath, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
 
-    def _unzip(self, temp_dir, zip_fullpath):
+    def _unzip(self, zip_fullpath):
         """
         Extract ZIP file to temp_dir.
         """
         with zipfile.ZipFile(zip_fullpath, 'r') as zf:
-            zf.extractall(path=temp_dir)
+            zf.extractall(path=self.directory)
 
     def _load_cbs_data(self, data_fullpath):
         """
@@ -121,10 +124,9 @@ class CBSBoundariesLoader(AreaLoader):
         split_url = urlsplit(self.DATASET_URL)
         zip_name = os.path.split(split_url.path)[-1]
 
-        with TemporaryDirectory() as temp_dir:
-            zip_fullpath = os.path.join(temp_dir, zip_name)
-            data_fullpath = os.path.join(temp_dir, self.data_file)
+        zip_fullpath = os.path.join(self.directory, zip_name)
+        data_fullpath = os.path.join(self.directory, self.data_file)
 
-            self._download(zip_fullpath)
-            self._unzip(temp_dir, zip_fullpath)
-            self._load_cbs_data(data_fullpath)
+        self._download(zip_fullpath)
+        self._unzip(zip_fullpath)
+        self._load_cbs_data(data_fullpath)

@@ -47,7 +47,7 @@ class APIGebiedenLoader(AreaLoader):
     }
     PROVIDES = ['stadsdeel', 'buurt', 'wijk']
 
-    def __init__(self, type_string):
+    def __init__(self, type_string, directory=None):
         assert type_string in self.CODE_FIELDS
 
         self.area_type, _ = AreaType.objects.get_or_create(

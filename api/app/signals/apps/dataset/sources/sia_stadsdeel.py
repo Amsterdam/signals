@@ -31,7 +31,7 @@ class SIAStadsdeelLoader(AreaLoader):
     DATAFILE = os.path.join(THIS_DIR, 'amsterdamse_bos.json')
     PROVIDES = ['sia-stadsdeel']
 
-    def __init__(self, type_string):
+    def __init__(self, type_string, directory=None):
         assert type_string == 'sia-stadsdeel'
         self.area_type, _ = AreaType.objects.get_or_create(
             name='SIA stadsdeel',
