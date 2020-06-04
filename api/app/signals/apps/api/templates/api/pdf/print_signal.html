@@ -162,6 +162,10 @@
             <td>Telefoonnummer</td>
             <td>: {{ signal.reporter.phone|default:"Onbekend" }}</td>
         </tr>
+        <tr>
+            <td>Verklaring contactgegevens delen</td>
+            <td>: {{ signal.reporter.sharing_allowed|yesno:"Toegestaan,Niet toegestaan" }}</td>
+        </tr>
     </table>
 
     <div class="divider">&nbsp;</div>

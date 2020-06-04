@@ -8,6 +8,7 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
         fields = (
             'email',
             'phone',
+            'sharing_allowed',
         )
 
     def to_representation(self, *args, **kwargs):

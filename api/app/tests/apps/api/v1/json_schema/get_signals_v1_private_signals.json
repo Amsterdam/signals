@@ -244,6 +244,9 @@
 								},
 								"phone": {
 									"type": "string"
+								},
+								"sharing_allowed": {
+									"type": "boolean"
 								}
 							},
 							"required": [
