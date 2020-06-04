@@ -1276,7 +1276,7 @@ components:
           description: Phone number of reporter.
         sharing_allowed:
           type: boolean
-          description: States if the reporter gives permission to share this information with 3th parties
+          description: Reporter allows their contact information to be shared (true) or not (false).
 
     _NestedReporterResponseData:
       description: JSON Data
@@ -1292,7 +1292,7 @@ components:
           example: ''
         sharing_allowed:
           type: boolean
-          description: States if the reporter gives permission to share this information with 3th parties
+          description: Reporter allows their contact information to be shared (true) or not (false).
           example: false
 
     _NestedPriorityRequestData:
