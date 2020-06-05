@@ -188,4 +188,3 @@ dwh_media/
 *.pid
 *.lock
 *.env
-dex/dex-data/dex.db

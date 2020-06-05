@@ -1,1 +1,0 @@
-http://localhost:5556/auth?response_type=id_token&scope=openid+email+profile&client_id=appstore&redirect_uri=http://localhost:3000/oidc/callback/&nonce=123
