@@ -6,6 +6,7 @@ from unittest import skip
 from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -18,13 +19,14 @@ from signals.apps.api.v1.validation.address.base import (
     NoResultsException
 )
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
     small_gif
 )
 from tests.apps.signals.factories import (
+    AreaFactory,
     CategoryFactory,
     DepartmentFactory,
     ParentCategoryFactory,
@@ -256,6 +258,38 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
+
+    @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_without_stadsdeel(self, validate_address):
+        # Create initial Signal, check that it reached the database.
+        signal_count = Signal.objects.count()
+
+        create_initial_data = self.create_initial_data
+        del(create_initial_data['location']['stadsdeel'])
+        del(create_initial_data['location']['address'])
+        del(create_initial_data['location']['buurt_code'])
+
+        y, x = create_initial_data['location']['geometrie']['coordinates']
+        geometry = MultiPolygon([Polygon.from_bbox([x - 100, y - 100, x + 100, y + 100])])
+        AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='sia-stadsdeel')
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # Check that the actions are logged with the correct user email
+        new_url = response.json()['_links']['self']['href']
+        response = self.client.get(new_url)
+        response_json = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+        self.assertIsNotNone(response_json['location']['stadsdeel'])
+        self.assertEqual(response_json['location']['stadsdeel'], STADSDEEL_CENTRUM)
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
 
     @skip('Disabled for now, it no longer throws an error but logs a warning and stores the unvalidated address')
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",

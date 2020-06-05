@@ -47,11 +47,16 @@ class SignalManager(models.Manager):
         :returns: Signal object
         """
         from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
+        from .utils.location import _get_stadsdeel_code
 
         signal = self.create(**signal_data)
 
         # Set default (empty dict) value for `priority_data` if None is given.
         priority_data = priority_data or {}
+
+        # SIG-2513 Determine the stadsdeel
+        default_stadsdeel = location_data['stadsdeel'] if 'stadsdeel' in location_data else None
+        location_data['stadsdeel'] = _get_stadsdeel_code(location_data['geometrie'], default_stadsdeel)
 
         # Create dependent model instances with correct foreign keys to Signal
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
@@ -275,6 +280,11 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         from .models import Location
+        from .utils.location import _get_stadsdeel_code
+
+        # SIG-2513 Determine the stadsdeel
+        default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None
+        data['stadsdeel'] = _get_stadsdeel_code(signal.location.geometrie, default_stadsdeel)
 
         prev_location = signal.location
         location = Location.objects.create(**data, _signal_id=signal.id)
