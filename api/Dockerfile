@@ -1,4 +1,4 @@
-FROM amsterdam/python
+FROM amsterdam/python:3.8.2-buster
 MAINTAINER datapunt@amsterdam.nl
 
 # libgdk-pixbuf is needed to generate PDF files with rendered JPEG images.
