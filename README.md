@@ -104,7 +104,7 @@ in the backend.
 
 ### Local development
 
-The Docker compose file provides [Dex](https://github.com/dexidp/dex) as Identity
+The Docker Compose file provides [Dex](https://github.com/dexidp/dex) as Identity
 Provider.
 
 Start Dex with the following command:
@@ -113,7 +113,7 @@ Start Dex with the following command:
 docker-compose up -d dex
 ```
 
-Dex is configured with the following user:
+The data of Dex is persisted on a [named volume](https://docs.docker.com/storage/volumes/). The following user is created:
 
 - E-mail: signals.admin@example.com
 - Password: password
