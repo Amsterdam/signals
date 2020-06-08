@@ -87,6 +87,10 @@ class Category(models.Model):
 
     description = models.TextField(null=True, blank=True)
 
+    questions = models.ManyToManyField('signals.Question',
+                                       through='signals.CategoryQuestion',
+                                       through_fields=('category', 'question'))
+
     logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message', ))
 
     objects = CategoryManager()

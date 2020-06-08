@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: coverage-report
-          path: api/app/htmlcov/
+          path: /tmp/test/htmlcov/
