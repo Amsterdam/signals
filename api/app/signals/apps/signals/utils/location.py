@@ -17,7 +17,7 @@ def _get_area(geometry: PointField, area_type: Optional[str] = None) -> Optional
     :param area_type:
     :return: Area or None
     """
-    query = Q(geometry__contains_properly=geometry)
+    query = Q(geometry__contains=geometry)
     if area_type:
         query &= Q(_type__code=area_type)
 
