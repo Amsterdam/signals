@@ -270,8 +270,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         del(create_initial_data['location']['address'])
         del(create_initial_data['location']['buurt_code'])
 
-        y, x = create_initial_data['location']['geometrie']['coordinates']
-        geometry = MultiPolygon([Polygon.from_bbox([x - 100, y - 100, x + 100, y + 100])])
+        geometry = MultiPolygon([Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
         AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='sia-stadsdeel')
 
         response = self.client.post(self.list_endpoint, create_initial_data, format='json')

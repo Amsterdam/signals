@@ -19,7 +19,6 @@ class Command(BaseCommand):
             qs = Signal.objects.filter(location__geometrie__within=area.geometry)
             correct_qs = qs.filter(Q(location__stadsdeel=self._area_stadsdeel_mapping[area.code]))
             incorrect_qs = qs.filter(~Q(location__stadsdeel=self._area_stadsdeel_mapping[area.code]))
-            incorrect_qs.values_list('location__stadsdeel', flat=True)
             incorrect_stadsdelen = ', '.join([stadsdeel or 'None' for stadsdeel in incorrect_qs.distinct('location__stadsdeel').order_by('location__stadsdeel').values_list('location__stadsdeel', flat=True)])  # noqa
 
             self.stdout.write(f'* Total Signals: {qs.count()}')
@@ -29,9 +28,6 @@ class Command(BaseCommand):
             self.stdout.write(f'--------------------------------------------------------------------------------')
 
         self.stdout.write(f'\nDone!')
-
-    def _signals_in_area(self, area: Area) -> QuerySet:
-        return Signal.objects.filter(location__geometrie__within=area.geometry)
 
     def _get_area_qs(self) -> QuerySet:
         if not self._area_qs:
