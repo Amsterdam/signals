@@ -25,7 +25,7 @@ class Question(models.Model):
 
     key = models.CharField(max_length=255)
     field_type = models.CharField(max_length=32, choices=FIELD_TYPE_CHOICES, default=PLAIN_TEXT)
-    meta = JSONField(null=True)
+    meta = JSONField(blank=True, default=dict)
     required = models.BooleanField(default=False)
 
     class Meta:

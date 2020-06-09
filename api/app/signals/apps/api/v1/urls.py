@@ -27,6 +27,7 @@ from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserView
 # Public API
 public_router = SignalsRouterVersion1()
 public_router.register(r'public/terms/categories', ParentCategoryViewSet, basename='category')
+public_router.register(r'public/questions/categories', PublicQuestionViewSet, basename='category')
 public_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
 public_router.register(r'public/feedback/standard_answers', StandardAnswerViewSet, basename='feedback-standard-answers')
 public_router.register(r'public/feedback/forms', FeedbackViewSet, basename='feedback-forms')

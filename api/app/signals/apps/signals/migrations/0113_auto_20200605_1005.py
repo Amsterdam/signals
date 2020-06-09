@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.CharField(max_length=255)),
                 ('field_type', models.CharField(choices=[('plain_text', 'PlainText'), ('text_input', 'TextInput'), ('multi_text_input', 'MultiTextInput'), ('checkbox_input', 'CheckboxInput'), ('radio_input', 'RadioInput'), ('select_input', 'SelectInput'), ('text_area_input', 'TextareaInput'), ('map_select', 'MapSelect')], default='plain_text', max_length=32)), # noqa
-                ('meta', django.contrib.postgres.fields.jsonb.JSONField(null=True)),
+                ('meta', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict)),
                 ('required', models.BooleanField(default=False)),
             ],
             options={
