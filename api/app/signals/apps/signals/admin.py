@@ -6,6 +6,7 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Area,
     Category,
+    CategoryQuestion,
     Question,
     Signal,
     Status,
@@ -14,7 +15,13 @@ from signals.apps.signals.models import (
 from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
+class CategoryQuestionInline(admin.StackedInline):
+    model = CategoryQuestion
+    extra = 1
+
+
 class QuestionAdmin(admin.ModelAdmin):
+    inlines = (CategoryQuestionInline, )
     fields = ('key', 'field_type', 'meta', 'required')
     list_display = ('key', 'field_type', 'meta', 'required')
     ordering = ('-key',)
