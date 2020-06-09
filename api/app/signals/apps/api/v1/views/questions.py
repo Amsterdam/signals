@@ -15,11 +15,10 @@ class PublicQuestionViewSet(DatapuntViewSet):
     def get_queryset(self, *args, **kwargs):
         if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
             return self.queryset.filter(
-                category__parent__slug=self.kwargs['slug'],
-                category__slug=self.kwargs['sub_slug']
+                category__slug__in=[self.kwargs['slug'], self.kwargs['sub_slug']]
             )
         else:
             return self.queryset.filter(
-                category__parent__slug=None,
+                category__parent=None,
                 category__slug=self.kwargs['slug']
             )
