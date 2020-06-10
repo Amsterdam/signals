@@ -14,8 +14,11 @@ class PublicQuestionViewSet(DatapuntViewSet):
     pagination_class = HALPagination
 
     def get_queryset(self, *args, **kwargs):
+        # sort on main category first, then question ordering
         queryset = self.filter_queryset(
-            self.queryset.filter(category__is_active=True).order_by('-categoryquestion__order')
+            self.queryset.filter(category__is_active=True).order_by(
+                'categoryquestion__category__parent', '-categoryquestion__order'
+            )
         )
 
         if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
