@@ -64,13 +64,9 @@ urlpatterns = [
         path('terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
              ChildCategoryViewSet.as_view({'get': 'retrieve'}),
              name='category-detail'),
-        path('questions/categories/<str:slug>',
+        path('questions/',
              PublicQuestionViewSet.as_view({'get': 'list'}),
              name='question-detail'),
-        path('questions/categories/<str:slug>/sub_categories/<str:sub_slug>',
-             PublicQuestionViewSet.as_view({'get': 'list'}),
-             name='question-detail'),
-
         # V1 disabled for now
         # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),
     ])),
