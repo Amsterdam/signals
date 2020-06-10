@@ -36,4 +36,4 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
 
-        self.assertEqual(data['count'], 5)
+        self.assertEqual(data['count'], 25)
