@@ -1,4 +1,5 @@
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django.db.models import Q
 
 from signals.apps.api.v1.serializers import PublicQuestionSerializerDetail
 from signals.apps.signals.models import Question
@@ -14,8 +15,10 @@ class PublicQuestionViewSet(DatapuntViewSet):
 
     def get_queryset(self, *args, **kwargs):
         if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
+            childq = Q(category__parent__slug=self.kwargs['slug']) & Q(category__slug=self.kwargs['sub_slug'])
+            parentq = Q(category__parent=None) & Q(category__slug=self.kwargs['slug'])
             return self.queryset.filter(
-                category__slug__in=[self.kwargs['slug'], self.kwargs['sub_slug']]
+                childq | parentq
             )
         else:
             return self.queryset.filter(
