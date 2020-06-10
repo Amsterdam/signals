@@ -14,6 +14,8 @@ STADSDEEL_NOORD = 'N'
 STADSDEEL_ZUIDOOST = 'T'
 STADSDEEL_ZUID = 'K'
 STADSDEEL_NIEUWWEST = 'F'
+STADSDEEL_AMSTERDAMSE_BOS = 'H'
+STADSDEEL_WEESP = 'W'
 STADSDELEN = (
     (STADSDEEL_CENTRUM, 'Centrum'),
     (STADSDEEL_WESTPOORT, 'Westpoort'),
@@ -23,7 +25,23 @@ STADSDELEN = (
     (STADSDEEL_ZUIDOOST, 'Zuidoost'),
     (STADSDEEL_ZUID, 'Zuid'),
     (STADSDEEL_NIEUWWEST, 'Nieuw-West'),
+    (STADSDEEL_AMSTERDAMSE_BOS, 'Het Amsterdamse Bos'),
+    (STADSDEEL_WEESP, 'Weesp'),
 )
+
+AREA_STADSDEEL_TRANSLATION = {
+    'het-amsterdamse-bos': STADSDEEL_AMSTERDAMSE_BOS,
+    'zuidoost': STADSDEEL_ZUIDOOST,
+    'centrum': STADSDEEL_CENTRUM,
+    'noord': STADSDEEL_NOORD,
+    'westpoort': STADSDEEL_WESTPOORT,
+    'west': STADSDEEL_WEST,
+    'nieuw-west': STADSDEEL_NIEUWWEST,
+    'oost': STADSDEEL_OOST,
+    'zuid': STADSDEEL_ZUID,
+    'stadsdeel-zuid': STADSDEEL_ZUID,
+    'weesp': STADSDEEL_WEESP,
+}
 
 _ADDRESS_FIELD_PREFIXES = (
     ('openbare_ruimte', ''),
@@ -51,13 +69,13 @@ class Location(CreatedUpdatedModel):
     """All location related information."""
 
     _signal = models.ForeignKey(
-        "signals.Signal", related_name="locations",
+        'signals.Signal', related_name='locations',
         null=False, on_delete=models.CASCADE
     )
 
-    geometrie = models.PointField(name="geometrie")
-    stadsdeel = models.CharField(
-        null=True, max_length=1, choices=STADSDELEN)
+    geometrie = models.PointField(name='geometrie')
+    stadsdeel = models.CharField(null=True, max_length=1, choices=STADSDELEN)
+
     # we do NOT use foreign key, since we update
     # buurten as external data in a seperate process
     buurt_code = models.CharField(null=True, max_length=4)

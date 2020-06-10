@@ -145,7 +145,7 @@
 					"type": "string"
 				},
 				"buurt_code": {
-					"type": "string"
+					"type": ["string", "null"]
 				},
 				"address": {
                     "anyOf": [
@@ -238,9 +238,6 @@
 			"required": [
 				"id",
 				"stadsdeel",
-				"buurt_code",
-				"address",
-				"address_text",
 				"geometrie",
 				"extra_properties",
 				"created_by",
