@@ -270,20 +270,26 @@ class AreaFilterSet(FilterSet):
 
 
 class QuestionFilterSet(FilterSet):
-    main_slug = filters.ChoiceFilter(
-        choices=[(c.slug, c.name) for c in _get_parent_category_queryset()],
+    main_slug = filters.ModelChoiceFilter(
+        queryset=Category.objects.filter(parent__isnull=True).all(),
+        to_field_name='slug',
         field_name='category__slug',
         label='Hoofd categorie',
     )
-    sub_slug = filters.ChoiceFilter(
-        choices=[(c.slug, c.name) for c in _get_child_category_queryset()],
+    sub_slug = filters.ModelChoiceFilter(
+        queryset=Category.objects.filter(parent__isnull=False).all(),
+        to_field_name='slug',
         field_name='category__parent__slug',
         label='Sub categorie',
     )
 
     def filter_queryset(self, queryset):
         main_slug = self.form.cleaned_data.get('main_slug', None)
+        if main_slug:
+            main_slug = main_slug.slug
         sub_slug = self.form.cleaned_data.get('sub_slug', None)
+        if sub_slug:
+            sub_slug = sub_slug.slug
 
         # sort on main category first, then question ordering
         qs = queryset.filter(category__is_active=True).order_by(
@@ -293,11 +299,11 @@ class QuestionFilterSet(FilterSet):
         if main_slug:
             if sub_slug:
                 childq = Q(category__parent__slug=main_slug) & Q(category__slug=sub_slug)
-                parentq = Q(category__parent=None) & Q(category__slug=main_slug)
+                parentq = Q(category__parent__isnull=True) & Q(category__slug=main_slug)
                 qs = qs.filter(childq | parentq)
             else:
                 qs = qs.filter(
-                    category__parent=None,
+                    category__parent__isnull=True,
                     category__slug=main_slug
                 )
         return qs

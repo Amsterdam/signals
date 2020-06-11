@@ -2,7 +2,6 @@ import os
 
 from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory, QuestionFactory
 from tests.test import SignalsBaseApiTestCase
-from unittest import skip
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -24,21 +23,22 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         super(TestCategoryQuestionEndpoints, self).setUp()
 
     def test_category_question_list(self):
-        response = self.client.get('/signals/v1/public/questions/')
+        endpoint_url = '/signals/v1/public/questions/'
+        response = self.client.get(endpoint_url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
         self.assertEqual(data['count'], 1)
 
-    @skip('skip')
-    def test_sub_category_question_list(self):
+        # filter on main and sub
         sub_category = self.parent_category.children.first()
-        url = '/signals/v1/public/questions/?main_slug={slug}&sub_slug={sub_slug}'.format(
+        url = '{endp}?main_slug={slug}&sub_slug={sub_slug}'.format(
+            endp=endpoint_url,
             slug=sub_category.parent.slug,
             sub_slug=sub_category.slug)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, msg=url)
         data = response.json()
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
