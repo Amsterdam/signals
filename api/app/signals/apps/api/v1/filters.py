@@ -287,7 +287,7 @@ class QuestionFilterSet(FilterSet):
 
         # sort on main category first, then question ordering
         qs = queryset.filter(category__is_active=True).order_by(
-            'categoryquestion__category__parent', '-categoryquestion__order'
+            '-categoryquestion__category__parent', '-categoryquestion__order'
         )
 
         if main_slug:
