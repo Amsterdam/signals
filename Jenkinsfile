@@ -62,6 +62,12 @@ if (BRANCH == "master") {
                     [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
                     [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e cmdb_id=app_signals"],
                 ]
+                build job: "Subtask_Openstack_Playbook",
+                parameters: [
+                    [$class: "StringParameterValue", name: "INVENTORY", value: "acceptance"],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e cmdb_id=app_signals-celery-beat"],
+                ]
             }
         }
     }
@@ -97,6 +103,12 @@ if (BRANCH == "master") {
                     [$class: "StringParameterValue", name: "INVENTORY", value: "production"],
                     [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
                     [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e cmdb_id=app_signals"],
+                ]
+                build job: "Subtask_Openstack_Playbook",
+                parameters: [
+                    [$class: "StringParameterValue", name: "INVENTORY", value: "production"],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e cmdb_id=app_signals-celery-beat"],
                 ]
             }
         }
