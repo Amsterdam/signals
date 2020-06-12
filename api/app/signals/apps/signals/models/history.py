@@ -32,7 +32,7 @@ class History(models.Model):
         elif self.what == 'UPDATE_PRIORITY':
             # SIG-1727 ad-hoc translation, must match signals.Priority model!
             translated = {'high': 'Hoog', 'normal': 'Normaal', 'low': 'Laag'}.get(self.extra, 'Onbekend')
-            return f'Prioriteit update naar: {translated}'
+            return f'Urgentie update naar: {translated}'
         elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
             return f'Categorie gewijzigd naar: {self.extra}'
         elif self.what == 'CREATE_NOTE' or self.what == 'UPDATE_LOCATION':
