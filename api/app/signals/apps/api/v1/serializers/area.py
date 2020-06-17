@@ -30,7 +30,7 @@ class AreaSerializer(HALSerializer):
 
     class Meta:
         model = Area
-        fields = ('name', 'code', 'type', 'bbox', 'geometry', )
+        fields = ('name', 'code', 'type', 'bbox', )
 
     def get_bbox(self, obj):
         if obj.geometry:
