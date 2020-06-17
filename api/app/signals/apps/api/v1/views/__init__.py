@@ -16,6 +16,7 @@ from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
 # from signals.apps.api.v1.views.ml_tool_proxy import MlPredictCategoryView  # V1 disabled for now
 from signals.apps.api.v1.views.namespace import NamespaceView
 from signals.apps.api.v1.views.pdf import GeneratePdfView
+from signals.apps.api.v1.views.questions import PublicQuestionViewSet
 from signals.apps.api.v1.views.signal import PrivateSignalViewSet, PublicSignalViewSet
 from signals.apps.api.v1.views.signal_split import PrivateSignalSplitViewSet
 from signals.apps.api.v1.views.status_message_template import StatusMessageTemplatesViewSet
@@ -30,6 +31,7 @@ __all__ = (
     'ChildCategoryViewSet',
     'ParentCategoryViewSet',
     'PrivateCategoryViewSet',
+    'PublicQuestionViewSet',
     # 'MlPredictCategoryView',  # V1 disabled for now
     'NamespaceView',
     'GeneratePdfView',

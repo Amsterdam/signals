@@ -13,6 +13,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
     PublicAreasViewSet,
+    PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
@@ -63,7 +64,9 @@ urlpatterns = [
         path('terms/categories/<str:slug>/sub_categories/<str:sub_slug>',
              ChildCategoryViewSet.as_view({'get': 'retrieve'}),
              name='category-detail'),
-
+        path('questions/',
+             PublicQuestionViewSet.as_view({'get': 'list'}),
+             name='question-detail'),
         # V1 disabled for now
         # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),
     ])),

@@ -21,6 +21,7 @@ from signals.apps.signals.models import (
     Location,
     Note,
     Priority,
+    Question,
     Reporter,
     Signal,
     Status,
@@ -245,6 +246,15 @@ class ParentCategoryFactory(factory.DjangoModelFactory):
         model = Category
         django_get_or_create = ('slug', )
 
+    @factory.post_generation
+    def questions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for question in extracted:
+                self.questions.add(question)
+
 
 class CategoryFactory(factory.DjangoModelFactory):
     parent = factory.SubFactory('tests.apps.signals.factories.ParentCategoryFactory')
@@ -273,6 +283,15 @@ class CategoryFactory(factory.DjangoModelFactory):
                     }
                 )
 
+    @factory.post_generation
+    def questions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for question in extracted:
+                self.questions.add(question)
+
 
 class DepartmentFactory(factory.DjangoModelFactory):
     code = fuzzy.FuzzyText(length=3)
@@ -281,6 +300,16 @@ class DepartmentFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Department
+
+
+class QuestionFactory(factory.DjangoModelFactory):
+    key = fuzzy.FuzzyText(length=3)
+    field_type = fuzzy.FuzzyChoice(choices=list(dict(Question.FIELD_TYPE_CHOICES).keys()))
+    meta = '{ "dummy" : "test" }'
+    required = fuzzy.FuzzyChoice(choices=[True, False])
+
+    class Meta:
+        model = Question
 
 
 class NoteFactory(factory.DjangoModelFactory):

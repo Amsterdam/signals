@@ -3,8 +3,34 @@ from django.contrib.gis.admin import GeoModelAdmin
 from django.db import transaction
 
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Area, Category, Signal, Status, StatusMessageTemplate
+from signals.apps.signals.models import (
+    Area,
+    Category,
+    CategoryQuestion,
+    Question,
+    Signal,
+    Status,
+    StatusMessageTemplate
+)
 from signals.apps.signals.models.category_translation import CategoryTranslation
+
+
+class CategoryQuestionInline(admin.StackedInline):
+    model = CategoryQuestion
+    extra = 1
+
+
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = (CategoryQuestionInline, )
+    fields = ('key', 'field_type', 'meta', 'required')
+    list_display = ('key', 'field_type', 'meta', 'required')
+    ordering = ('-key',)
+    list_per_page = 20
+    list_select_related = True
+    list_filter = ['category__slug']
+
+
+admin.site.register(Question, QuestionAdmin)
 
 
 class AreaAdmin(GeoModelAdmin):
