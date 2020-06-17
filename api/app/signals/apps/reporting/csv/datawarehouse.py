@@ -15,6 +15,7 @@ from django.db import connection, reset_queries
 from signals.apps.feedback.models import Feedback
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
 from signals.apps.reporting.csv.utils import _get_storage_backend
+from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
@@ -101,12 +102,25 @@ def _create_signals_csv(location):
             'location_id',
             'reporter_id',
             'status_id',
+
+            # SIG-2823
+            'priority',
+            'priority_created_at',
+            'parent',
+            'type',
+            'type_created_at',
+            'sent_to_sigmax',
         ])
 
         # Writing all `Signal` objects to the CSV file.
         qs = Signal.objects.all()
 
         for signal in qs.iterator(chunk_size=BATCH_SIZE):
+            cc_roundtrip = None
+            cc_qs = CityControlRoundtrip.objects.filter(_signal_id=signal.pk).order_by('-when')
+            if cc_qs.exists():
+                cc_roundtrip = cc_qs.first().when
+
             writer.writerow([
                 signal.pk,
                 signal.signal_id,
@@ -127,6 +141,14 @@ def _create_signals_csv(location):
                 signal.location_id,
                 signal.reporter_id,
                 signal.status_id,
+
+                # SIG-2823
+                signal.priority.priority if signal.priority else '',
+                signal.priority.created_at if signal.priority else '',
+                signal.parent_id if signal.is_child() else '',
+                signal.type_assignment.name if signal.type_assignment else '',
+                signal.type_assignment.created_at if signal.type_assignment else '',
+                cc_roundtrip
             ])
 
     return csv_file.name
@@ -234,6 +256,11 @@ def _create_category_assignments_csv(location):
             'updated_at',
             'extra_properties',
             '_signal_id',
+
+            # SIG-2823
+            'sla_n_days',
+            'sla_use_calendar_days',
+            'sla_created_at',
         ])
 
         departments_cache = {
@@ -241,6 +268,10 @@ def _create_category_assignments_csv(location):
                 [d.name for d in c.departments.filter(categorydepartment__is_responsible=True)]
             ) for c in Category.objects.prefetch_related('departments').all()
         }
+
+        slo_cache = {}
+        for c in Category.objects.prefetch_related('departments').all():
+            slo_cache[c.id] = c.slo.order_by('-created_at').first() if c.slo.exists() else None
 
         # Writing all `CategoryAssignment` objects to the CSV file.
         qs = CategoryAssignment.objects.select_related('category', 'category__parent')\
@@ -256,6 +287,11 @@ def _create_category_assignments_csv(location):
                 category_assignment.updated_at,
                 json.dumps(category_assignment.extra_properties),
                 category_assignment._signal_id,
+
+                # SIG-2823
+                slo_cache[category_assignment.category_id].n_days if slo_cache[category_assignment.category_id] else '',
+                slo_cache[category_assignment.category_id].use_calendar_days if slo_cache[category_assignment.category_id] else '',  # noqa
+                slo_cache[category_assignment.category_id].created_at if slo_cache[category_assignment.category_id] else '',  # noqa
             ])
 
     return csv_file.name

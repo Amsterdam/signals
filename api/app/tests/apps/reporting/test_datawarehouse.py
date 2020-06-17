@@ -119,6 +119,14 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertDictEqual(json.loads(row['extra_properties']),
                                      signal.extra_properties)
 
+                # SIG-2823
+                self.assertEqual(row['priority'], str(signal.priority.priority))
+                self.assertEqual(row['priority_created_at'], str(signal.priority.created_at))
+                self.assertEqual(row['parent'], '')
+                self.assertEqual(row['type'], str(signal.type_assignment.name))
+                self.assertEqual(row['type_created_at'], str(signal.type_assignment.created_at))
+                self.assertEqual(row['sent_to_sigmax'], '')
+
     def test_create_locations_csv(self):
         signal = SignalFactory.create()
         location = signal.location
@@ -189,6 +197,11 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['created_at'], str(category_assignment.created_at))
                 self.assertEqual(row['updated_at'], str(category_assignment.updated_at))
                 self.assertEqual(json.loads(row['extra_properties']), None)
+
+                # SIG-2823
+                self.assertEqual(row['sla_n_days'], '')
+                self.assertEqual(row['sla_use_calendar_days'], '')
+                self.assertEqual(row['sla_created_at'], '')
 
     def test_create_statuses_csv(self):
         signal = SignalFactory.create()
