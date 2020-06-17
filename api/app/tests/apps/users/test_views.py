@@ -1,10 +1,9 @@
-from unittest import skip
-
 from django.contrib.auth.models import Group
 from django.test import override_settings
-from django.urls import path
+from django.urls import include, path
 from rest_framework import status
 
+from signals.apps.api.urls import signal_router_v0
 from signals.apps.users.v0.views import UserMeView
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -18,6 +17,10 @@ test_urlconf = NameSpace()
 test_urlconf.urlpatterns = [
     path('signals/auth/me/', UserMeView.as_view()),
     path('signals/user/auth/me/', UserMeView.as_view()),
+    path('signals/', include([
+        path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+        path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),
+    ])),
 ]
 
 
@@ -65,7 +68,6 @@ class TestUserMeView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    @skip('Disabled this feature, change_log on User seems to be causing errors')
     def test_history_view(self):
         self.client.force_authenticate(user=self.superuser)
 
