@@ -1044,6 +1044,31 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+  /signals/v1/public/questions/:
+    get:
+      description: Retrieve a list of questions in the database. Experimental, the content of the response can still be changed
+      parameters:
+        - name: main_slug
+          in: query
+          description: Slug that identifies the main category.
+          required: true
+          schema:
+            type: string
+        - name: sub_slug
+          in: query
+          description: Slug that identifies the sub category.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of questions data json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1QuestionsJsonList'
+        '404':
+          description: Not Found.
 
 components:
   schemas:
@@ -2414,6 +2439,70 @@ components:
               maxItems: 2
               example: [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
 
+    V1QuestionsJsonList:
+      description: EXPERIMENTAL - Questions json list
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 1
+        results:
+          type: array
+          description: A list of signals, paginated
+          items:
+            $ref: '#/components/schemas/V1QuestionJson'
+
+    V1QuestionJson:
+      description: EXPERIMENTAL - Question json
+      type: object
+      properties:
+        key:
+          description: The question key
+          type: string
+          example: extra_bedrijven_horeca_personen
+        field_type:
+          description: The code of the Area
+          type: string
+          enum:
+            - 'PlainText'
+            - 'TextInput'
+            - 'MultiTextInput'
+            - 'CheckboxInput'
+            - 'RadioInput'
+            - 'SelectInput'
+            - 'TextareaInput'
+            - 'MapSelect'
+          example: CheckboxInput
+        meta:
+          type: object
   securitySchemes:
     OAuth2:
       description: SIA API is using OAuth2 implicit grant flow.
