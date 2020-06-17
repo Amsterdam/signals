@@ -1050,13 +1050,13 @@ paths:
       parameters:
         - name: main_slug
           in: query
-          description: Slug that identifies the main category.
+          description: Slug that identifies the main category. Only questions related to the main category is returned if only the main_slug is provided.
           required: true
           schema:
             type: string
         - name: sub_slug
           in: query
-          description: Slug that identifies the sub category.
+          description: Slug that identifies the sub category. Questions are returned for main_slug and sub_slug (sorted on main_slug.order, sub_slug.order)
           required: true
           schema:
             type: string

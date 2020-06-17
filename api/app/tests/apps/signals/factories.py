@@ -246,6 +246,15 @@ class ParentCategoryFactory(factory.DjangoModelFactory):
         model = Category
         django_get_or_create = ('slug', )
 
+    @factory.post_generation
+    def questions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for question in extracted:
+                self.questions.add(question)
+
 
 class CategoryFactory(factory.DjangoModelFactory):
     parent = factory.SubFactory('tests.apps.signals.factories.ParentCategoryFactory')

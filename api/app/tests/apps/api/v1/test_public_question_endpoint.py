@@ -16,9 +16,10 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
             )
         )
 
-        self.question = QuestionFactory.create_batch(1)
-        self.parent_category = ParentCategoryFactory.create()
-        CategoryFactory.create_batch(1, parent=self.parent_category, questions=self.question)
+        question = QuestionFactory.create_batch(1)
+        question2 = QuestionFactory.create_batch(1)
+        self.parent_category = ParentCategoryFactory.create(questions=question2)
+        CategoryFactory.create_batch(1, parent=self.parent_category, questions=question)
         self.parent_category.refresh_from_db()
         super(TestCategoryQuestionEndpoints, self).setUp()
 
@@ -26,6 +27,18 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         endpoint_url = '/signals/v1/public/questions/'
         response = self.client.get(endpoint_url)
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
+        self.assertEqual(data['count'], 2)
+
+        # filter on main
+        sub_category = self.parent_category.children.first()
+        url = '{endp}?main_slug={slug}'.format(
+            endp=endpoint_url,
+            slug=sub_category.parent.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200, msg=url)
         data = response.json()
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
@@ -42,4 +55,4 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         data = response.json()
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
-        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['count'], 2)

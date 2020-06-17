@@ -284,12 +284,10 @@ class QuestionFilterSet(FilterSet):
     )
 
     def filter_queryset(self, queryset):
-        main_slug = self.form.cleaned_data.get('main_slug', None)
-        if main_slug:
-            main_slug = main_slug.slug
-        sub_slug = self.form.cleaned_data.get('sub_slug', None)
-        if sub_slug:
-            sub_slug = sub_slug.slug
+        main_cat = self.form.cleaned_data.get('main_slug', None)
+        main_slug = main_cat.slug if main_cat else None
+        sub_cat = self.form.cleaned_data.get('sub_slug', None)
+        sub_slug = sub_cat.slug if sub_cat else None
 
         # sort on main category first, then question ordering
         qs = queryset.filter(category__is_active=True).order_by(
