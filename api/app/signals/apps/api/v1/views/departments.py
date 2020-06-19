@@ -2,8 +2,8 @@ from datapunt_api.rest import DatapuntViewSet, HALPagination
 from rest_framework import status
 from rest_framework.response import Response
 
-from signals.apps.api import mixins
-from signals.apps.api.generics.permissions.base import ModelWritePermissions, SIAPermissions
+from signals.apps.api.generics import mixins
+from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateDepartmentSerializerDetail,
     PrivateDepartmentSerializerList

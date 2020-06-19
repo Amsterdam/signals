@@ -6,8 +6,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
-from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.api.generics.permissions.base import (
+from signals.apps.api.generics.permissions import (
+    SIAPermissions,
     SignalChangeCategoryPermission,
     SignalChangeStatusPermission,
     SignalCreateInitialPermission,

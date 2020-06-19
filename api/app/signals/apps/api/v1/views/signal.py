@@ -5,11 +5,13 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from signals.apps.api import mixins
+from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPagination
-from signals.apps.api.generics.permissions import SignalCreateInitialPermission
-from signals.apps.api.generics.permissions.base import SignalViewObjectPermission
+from signals.apps.api.generics.permissions import (
+    SignalCreateInitialPermission,
+    SignalViewObjectPermission
+)
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,

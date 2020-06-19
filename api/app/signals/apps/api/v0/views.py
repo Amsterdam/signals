@@ -17,21 +17,17 @@ from rest_framework.status import HTTP_202_ACCEPTED
 from rest_framework.views import APIView
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-from signals.apps.api.generics.filters import (
-    FieldMappingOrderingFilter,
-    LocationFilter,
-    SignalFilter,
-    StatusFilter
-)
-from signals.apps.api.generics.permissions import (
+from signals.apps.api.generics.filters import FieldMappingOrderingFilter
+from signals.apps.api.ml_tool.proxy.client import MLToolClient
+from signals.apps.api.ml_tool.utils import translate_prediction_category_url, url_from_category
+from signals.apps.api.v0.filters import LocationFilter, SignalFilter, StatusFilter
+from signals.apps.api.v0.permissions import (
     CategoryPermission,
     LocationPermission,
     NotePermission,
     PriorityPermission,
     StatusPermission
 )
-from signals.apps.api.ml_tool.proxy.client import MLToolClient
-from signals.apps.api.ml_tool.utils import translate_prediction_category_url, url_from_category
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,

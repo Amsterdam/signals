@@ -5,8 +5,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from signals.apps.api.generics.mixins import RetrieveModelMixin, UpdateModelMixin
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
-from signals.apps.api.mixins import RetrieveModelMixin, UpdateModelMixin
 from signals.apps.api.v1.serializers import (
     CategoryHALSerializer,
     ParentCategoryHALSerializer,

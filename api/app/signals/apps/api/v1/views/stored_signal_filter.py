@@ -1,7 +1,7 @@
 from datapunt_api.pagination import HALPagination
 from rest_framework import viewsets
 
-from signals.apps.api import mixins
+from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import StoredSignalFilterSerializer
 from signals.apps.signals.models import StoredSignalFilter

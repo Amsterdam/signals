@@ -10,8 +10,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
-from signals.apps.api.generics.mixins import AddExtrasMixin
-from signals.apps.api.generics.validators import NearAmsterdamValidatorMixin
+from signals.apps.api.generics.mixins import AddExtrasMixin, NearAmsterdamValidatorMixin
 from signals.apps.api.v0.fields import (
     CategoryLinksField,
     PriorityLinksField,

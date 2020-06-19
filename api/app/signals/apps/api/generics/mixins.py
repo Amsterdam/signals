@@ -1,3 +1,51 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import mixins
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
+
+def convert_validation_error(error):
+    """
+    Convert a Django ValidationError to a DRF ValidationError.
+    """
+    # TODO: handle Django ValidationError properties other than message
+    if hasattr(error, 'message'):
+        return DRFValidationError(error.message)
+    else:
+        return DRFValidationError('Validation error on underlying data.')
+
+
+class CreateModelMixin(mixins.CreateModelMixin):
+    def perform_create(self, serializer):
+        try:
+            return super(CreateModelMixin, self).perform_create(serializer=serializer)
+        except DjangoValidationError as e:
+            raise convert_validation_error(e)
+
+
+class ListModelMixin(mixins.ListModelMixin):
+    pass
+
+
+class RetrieveModelMixin(mixins.RetrieveModelMixin):
+    pass
+
+
+class DestroyModelMixin(mixins.DestroyModelMixin):
+    def perform_destroy(self, instance):
+        try:
+            instance.delete()
+        except DjangoValidationError as e:
+            raise convert_validation_error(e)
+
+
+class UpdateModelMixin(mixins.UpdateModelMixin):
+    def perform_update(self, serializer):
+        try:
+            return super(UpdateModelMixin, self).perform_update(serializer=serializer)
+        except DjangoValidationError as e:
+            raise convert_validation_error(e)
+
+
 class AddExtrasMixin:
     """Mixin class to add extra values to the validated data."""
 
@@ -47,3 +95,16 @@ class WriteOnceMixin:
             extra_kwargs[field_name] = kwargs
 
         return extra_kwargs
+
+
+class NearAmsterdamValidatorMixin:
+
+    def validate_geometrie(self, value):
+        fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
+
+        lat_not_in_adam_area = not 50 < value.coords[1] < 55
+        lon_not_in_adam_area = not 1 < value.coords[0] < 7
+
+        if lon_not_in_adam_area or lat_not_in_adam_area:
+            raise DRFValidationError(fail_msg)
+        return value
