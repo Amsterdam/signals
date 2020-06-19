@@ -1,6 +1,6 @@
 from django_filters import FilterSet, OrderingFilter, filters
 
-from signals.apps.api.generics.filters import status_choices
+from signals.apps.api.v1.filters import status_choices
 
 
 class CategoryFilterSet(FilterSet):
