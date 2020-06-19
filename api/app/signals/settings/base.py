@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'djcelery_email',
+    'graphene_django',
     'imagekit',
     'raven.contrib.django.raven_compat',
     'rest_framework',
@@ -507,3 +508,14 @@ FEATURE_FLAGS = {
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
+
+# GraphQL Settings
+GRAPHENE = {
+    'SCHEMA': 'signals.apps.graphql.schema.schema',
+    'MIDDLEWARE': (
+        'signals.apps.graphql.middleware.AuthenticationMiddleware',
+    ),
+    'CAMELCASE_ERRORS': True,
+    'RELAY_CONNECTION_ENFORCE_FIRST_OR_LAST': True,
+    'RELAY_CONNECTION_MAX_LIMIT': 50,
+}

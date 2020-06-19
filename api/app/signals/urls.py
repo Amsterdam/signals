@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from signals.apps.graphql.views import SIAGraphQLView
 from signals.apps.users.v0.views import UserMeView
 
 urlpatterns = [
@@ -20,6 +21,9 @@ urlpatterns = [
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
 
     # path('signals/experimental/reporting/', include('signals.apps.reporting.urls'))
+
+    # GraphQL endpoint
+    path('signals/graphql', SIAGraphQLView.as_view(graphiql=True)),
 ]
 
 if settings.DEBUG:

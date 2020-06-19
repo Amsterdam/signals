@@ -49,6 +49,8 @@ filelock==3.0.12
 flake8==3.7.9
 flex==6.14.1
 freezegun==0.3.14
+graphene==2.1.8
+graphene-django==2.10.1
 graypy==2.1.0
 html5lib==1.0.1
 idna==2.8

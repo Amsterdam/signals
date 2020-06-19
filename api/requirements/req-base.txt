@@ -12,6 +12,9 @@ django-rest-swagger
 django-storage-swift
 django-storages
 
+# GraphQL
+graphene-django
+
 # Database
 psycopg2-binary
 
