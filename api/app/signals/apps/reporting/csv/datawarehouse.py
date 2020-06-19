@@ -21,6 +21,7 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
     Reporter,
+    ServiceLevelObjective,
     Signal,
     Status
 )
@@ -57,6 +58,7 @@ def save_csv_files_datawarehouse():
         csv_files.append(_create_reporters_csv(tmp_dir))
         csv_files.append(_create_category_assignments_csv(tmp_dir))
         csv_files.append(_create_statuses_csv(tmp_dir))
+        csv_files.append(_create_category_sla_csv(tmp_dir))
 
         # KTO feedback if running on acceptance or production
         try:
@@ -256,11 +258,6 @@ def _create_category_assignments_csv(location):
             'updated_at',
             'extra_properties',
             '_signal_id',
-
-            # SIG-2823
-            'sla_n_days',
-            'sla_use_calendar_days',
-            'sla_created_at',
         ])
 
         departments_cache = {
@@ -268,10 +265,6 @@ def _create_category_assignments_csv(location):
                 [d.name for d in c.departments.filter(categorydepartment__is_responsible=True)]
             ) for c in Category.objects.prefetch_related('departments').all()
         }
-
-        slo_cache = {}
-        for c in Category.objects.prefetch_related('departments').all():
-            slo_cache[c.id] = c.slo.order_by('-created_at').first() if c.slo.exists() else None
 
         # Writing all `CategoryAssignment` objects to the CSV file.
         qs = CategoryAssignment.objects.select_related('category', 'category__parent')\
@@ -287,11 +280,6 @@ def _create_category_assignments_csv(location):
                 category_assignment.updated_at,
                 json.dumps(category_assignment.extra_properties),
                 category_assignment._signal_id,
-
-                # SIG-2823
-                slo_cache[category_assignment.category_id].n_days if slo_cache[category_assignment.category_id] else '',
-                slo_cache[category_assignment.category_id].use_calendar_days if slo_cache[category_assignment.category_id] else '',  # noqa
-                slo_cache[category_assignment.category_id].created_at if slo_cache[category_assignment.category_id] else '',  # noqa
             ])
 
     return csv_file.name
@@ -378,6 +366,47 @@ def _create_kto_feedback_csv(location):
                 feedback.text_extra,
                 feedback.created_at,
                 feedback.submitted_at,
+            ])
+
+    return csv_file.name
+
+
+def _create_category_sla_csv(location):
+    """Create CSV file with all `ServiceLevelObjective` objects.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    with open(os.path.join(location, 'sla.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # Writing the header to the CSV file.
+        writer.writerow([
+            'id',
+            'main',
+            'sub',
+            'n_days',
+            'use_calendar_days',
+            'created_at'
+        ])
+
+        # Writing all `ServiceLevelObjective` objects to the CSV file.
+        qs = ServiceLevelObjective.objects.select_related(
+            'category',
+            'category__parent'
+        ).order_by(
+            'category_id',
+            '-created_at'
+        )
+
+        for slo in qs.iterator(chunk_size=BATCH_SIZE):
+            writer.writerow([
+                slo.pk,
+                slo.category.parent.name,
+                slo.category.name,
+                slo.n_days,
+                slo.use_calendar_days,
+                slo.created_at
             ])
 
     return csv_file.name
