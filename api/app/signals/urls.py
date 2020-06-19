@@ -4,6 +4,7 @@ from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 
 from signals.apps.graphql.views import SIAGraphQLView
+
 # from signals.apps.users.v0.views import UserMeView
 
 urlpatterns = [
