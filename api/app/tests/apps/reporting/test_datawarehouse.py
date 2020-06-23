@@ -48,6 +48,7 @@ class TestDatawarehouse(testcases.TestCase):
         reporters_csv = path.join(self.file_backend_tmp_dir, 'reporters.csv')
         categories_csv = path.join(self.file_backend_tmp_dir, 'categories.csv')
         statuses_csv = path.join(self.file_backend_tmp_dir, 'statuses.csv')
+        sla_csv = path.join(self.file_backend_tmp_dir, 'sla.csv')
         self.assertTrue(path.exists(signals_csv))
         self.assertTrue(path.getsize(signals_csv))
         self.assertTrue(path.exists(locations_csv))
@@ -58,6 +59,7 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(categories_csv))
         self.assertTrue(path.exists(statuses_csv))
         self.assertTrue(path.getsize(statuses_csv))
+        self.assertTrue(path.getsize(sla_csv))
 
     @override_settings(
         DWH_SWIFT_AUTH_URL='dwh_auth_url',
@@ -118,6 +120,13 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['upload'], '')
                 self.assertDictEqual(json.loads(row['extra_properties']),
                                      signal.extra_properties)
+
+                # SIG-2823
+                self.assertEqual(row['priority'], str(signal.priority.priority))
+                self.assertEqual(row['priority_created_at'], str(signal.priority.created_at))
+                self.assertEqual(row['parent'], '')
+                self.assertEqual(row['type'], str(signal.type_assignment.name))
+                self.assertEqual(row['type_created_at'], str(signal.type_assignment.created_at))
 
     def test_create_locations_csv(self):
         signal = SignalFactory.create()

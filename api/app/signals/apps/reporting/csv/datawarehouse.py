@@ -20,6 +20,7 @@ from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
     Reporter,
+    ServiceLevelObjective,
     Signal,
     Status
 )
@@ -56,6 +57,7 @@ def save_csv_files_datawarehouse():
         csv_files.append(_create_reporters_csv(tmp_dir))
         csv_files.append(_create_category_assignments_csv(tmp_dir))
         csv_files.append(_create_statuses_csv(tmp_dir))
+        csv_files.append(_create_category_sla_csv(tmp_dir))
 
         # KTO feedback if running on acceptance or production
         try:
@@ -101,6 +103,13 @@ def _create_signals_csv(location):
             'location_id',
             'reporter_id',
             'status_id',
+
+            # SIG-2823
+            'priority',
+            'priority_created_at',
+            'parent',
+            'type',
+            'type_created_at',
         ])
 
         # Writing all `Signal` objects to the CSV file.
@@ -127,6 +136,13 @@ def _create_signals_csv(location):
                 signal.location_id,
                 signal.reporter_id,
                 signal.status_id,
+
+                # SIG-2823
+                signal.priority.priority if signal.priority else '',
+                signal.priority.created_at if signal.priority else '',
+                signal.parent_id if signal.is_child() else '',
+                signal.type_assignment.name if signal.type_assignment else '',
+                signal.type_assignment.created_at if signal.type_assignment else '',
             ])
 
     return csv_file.name
@@ -342,6 +358,47 @@ def _create_kto_feedback_csv(location):
                 feedback.text_extra,
                 feedback.created_at,
                 feedback.submitted_at,
+            ])
+
+    return csv_file.name
+
+
+def _create_category_sla_csv(location):
+    """Create CSV file with all `ServiceLevelObjective` objects.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    with open(os.path.join(location, 'sla.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # Writing the header to the CSV file.
+        writer.writerow([
+            'id',
+            'main',
+            'sub',
+            'n_days',
+            'use_calendar_days',
+            'created_at'
+        ])
+
+        # Writing all `ServiceLevelObjective` objects to the CSV file.
+        qs = ServiceLevelObjective.objects.select_related(
+            'category',
+            'category__parent'
+        ).order_by(
+            'category_id',
+            '-created_at'
+        )
+
+        for slo in qs.iterator(chunk_size=BATCH_SIZE):
+            writer.writerow([
+                slo.pk,
+                slo.category.parent.name,
+                slo.category.name,
+                slo.n_days,
+                slo.use_calendar_days,
+                slo.created_at
             ])
 
     return csv_file.name
