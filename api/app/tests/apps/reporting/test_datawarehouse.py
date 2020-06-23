@@ -127,7 +127,6 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['parent'], '')
                 self.assertEqual(row['type'], str(signal.type_assignment.name))
                 self.assertEqual(row['type_created_at'], str(signal.type_assignment.created_at))
-                self.assertEqual(row['sent_to_sigmax'], '')
 
     def test_create_locations_csv(self):
         signal = SignalFactory.create()

@@ -15,7 +15,6 @@ from django.db import connection, reset_queries
 from signals.apps.feedback.models import Feedback
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
 from signals.apps.reporting.csv.utils import _get_storage_backend
-from signals.apps.sigmax.models import CityControlRoundtrip
 from signals.apps.signals.models import (
     Category,
     CategoryAssignment,
@@ -111,18 +110,12 @@ def _create_signals_csv(location):
             'parent',
             'type',
             'type_created_at',
-            'sent_to_sigmax',
         ])
 
         # Writing all `Signal` objects to the CSV file.
         qs = Signal.objects.all()
 
         for signal in qs.iterator(chunk_size=BATCH_SIZE):
-            cc_roundtrip = None
-            cc_qs = CityControlRoundtrip.objects.filter(_signal_id=signal.pk).order_by('-when')
-            if cc_qs.exists():
-                cc_roundtrip = cc_qs.first().when
-
             writer.writerow([
                 signal.pk,
                 signal.signal_id,
@@ -150,7 +143,6 @@ def _create_signals_csv(location):
                 signal.parent_id if signal.is_child() else '',
                 signal.type_assignment.name if signal.type_assignment else '',
                 signal.type_assignment.created_at if signal.type_assignment else '',
-                cc_roundtrip
             ])
 
     return csv_file.name
