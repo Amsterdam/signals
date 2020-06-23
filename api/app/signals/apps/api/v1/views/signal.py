@@ -14,6 +14,7 @@ from signals.apps.api.generics.permissions import (
 )
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
+    AbridgedChildSignalSerializer,
     HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
@@ -157,4 +158,10 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             return paginator.get_paginated_response(serializer.data)
 
         serializer = SignalGeoSerializer(filtered_qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True)
+    def children(self, request, pk=None):
+        child_qs = Signal.objects.filter(parent_id=pk)
+        serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)

@@ -17,6 +17,7 @@ from signals.apps.api.v1.serializers.departments import (
 )
 from signals.apps.api.v1.serializers.question import PublicQuestionSerializerDetail
 from signals.apps.api.v1.serializers.signal import (
+    AbridgedChildSignalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
@@ -53,4 +54,5 @@ __all__ = [
     'StoredSignalFilterSerializer',
     'PrivateCategorySerializer',
     'PublicQuestionSerializerDetail',
+    'AbridgedChildSignalSerializer',
 ]
