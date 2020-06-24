@@ -3,6 +3,7 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
@@ -162,6 +163,29 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=True)
     def children(self, request, pk=None):
+        """Show abbriged version of child signals for a given parent signal."""
+        # Based on a user's department a signal may not be accessible.
+        signal_exists = Signal.objects.filter(id=pk).exists()
+        signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()
+
+        if signal_exists and not signal_accessible:
+            raise PermissionDenied()
+
+        # return a HTTP 404 if we ask for a child signal's children.
+        signal = Signal.objects.get(id=pk)
+        if signal.is_child():
+            raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
+
+        # Return the child signals for a parent signal in an abbridged version
+        # of the usual serialization.
+        paginator = HALPagination()
+
         child_qs = Signal.objects.filter(parent_id=pk)
+        page = paginator.paginate_queryset(child_qs, self.request, view=self)
+
+        if page is not None:
+            serializer = AbridgedChildSignalSerializer(page, many=True, context=self.get_serializer_context())
+            return paginator.get_paginated_response(serializer.data)
+
         serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
