@@ -2168,21 +2168,13 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
 
 class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
-        self.child_endpoint = '/signals/v1/private/signals/{pk}/children'
+        self.child_endpoint = '/signals/v1/private/signals/{pk}/children/'
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
-
-        # Two categories, one associated with a department, the other not.
-        self.dep_a = DepartmentFactory.create(name='Department A', code='A')
-        self.cat_a = CategoryFactory.create(name='Category A', slug='cat-a')
-        self.cat_a.departments.add(self.dep_a, through_defaults={'is_responsible': True, 'can_view': True})
-
-        self.cat_b = CategoryFactory.create(name='Category B', slug='cat-b')
-
-        # self.superuser = SuperUserFactory()
 
         # test signals
         self.parent_signal = SignalFactory.create()
         self.child_signal = SignalFactory.create(parent=self.parent_signal)
+        self.normal_signal = SignalFactory.create()
 
     def test_shows_children(self):
         # Check that we can access a parent signal's children.
@@ -2196,6 +2188,11 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # Check that accessing child endpoint on child signal results in 404
         response = self.client.get(self.child_endpoint.format(pk=self.child_signal.pk))
+        self.assertEqual(response.status_code, 404)
+
+        # Check that accessing child endpoint on normal signal results in 404
+        self.assertFalse(self.normal_signal.is_parent())
+        response = self.client.get(self.child_endpoint.format(pk=self.normal_signal.pk))
         self.assertEqual(response.status_code, 404)
 
     def test_only_for_visible_parent(self):

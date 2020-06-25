@@ -161,7 +161,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=True)
+    @action(detail=True, url_path='children/')
     def children(self, request, pk=None):
         """Show abbriged version of child signals for a given parent signal."""
         # Based on a user's department a signal may not be accessible.
@@ -172,15 +172,16 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             raise PermissionDenied()
 
         # return a HTTP 404 if we ask for a child signal's children.
-        signal = Signal.objects.get(id=pk)
+        signal = self.get_object()
         if signal.is_child():
             raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
+        elif not signal.is_parent():
+            raise NotFound(detail=f'Signal {pk} has no children.')
 
-        # Return the child signals for a parent signal in an abbridged version
+        # Return the child signals for a parent signal in an abridged version
         # of the usual serialization.
         paginator = HALPagination()
-
-        child_qs = Signal.objects.filter(parent_id=pk)
+        child_qs = signal.children.all()
         page = paginator.paginate_queryset(child_qs, self.request, view=self)
 
         if page is not None:
