@@ -11,5 +11,5 @@ class SearchConfig(AppConfig):
 
         from elasticsearch_dsl import connections
 
-        host = app_settings.CONNECTION['URL'] or 'localhost'
+        host = app_settings.CONNECTION['HOST'] or 'localhost'
         connections.create_connection(hosts=[host, ])

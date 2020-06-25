@@ -4,7 +4,7 @@ from django.test.signals import setting_changed
 DEFAULTS = dict(
     PAGE_SIZE=100,
     CONNECTION=dict(
-        URL='http://127.0.0.1:9200',
+        HOST='http://127.0.0.1:9200',
         INDEX_NAME='sia_signals',
     ),
 )

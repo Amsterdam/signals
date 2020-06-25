@@ -101,6 +101,8 @@ services:
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
       - DWH_MEDIA_ROOT=/dwh_media
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - ELASTICSEARCH_INDEX=signals
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
