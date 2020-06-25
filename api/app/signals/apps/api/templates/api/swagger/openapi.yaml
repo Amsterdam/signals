@@ -405,6 +405,37 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+  
+  /signals/v1/private/signals/{id}/children/:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal whose child signsl are requested
+        required: true
+        schema:
+          type: integer
+          example: 1
+    get:
+      description: Retrieve child signals by parent signal ID.
+      responses:
+        '200':
+          description: Child signals associated with the specified parent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalchildrenGet'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+        '404':
+          description: >-
+            Parent signal not found or requesting children of a parent signal
+            that has no child signals.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
 
   /signals/v1/private/signals/{id}/history:
     parameters:
@@ -2245,6 +2276,78 @@ components:
             $ref: '#/components/schemas/privateNestedPermissionResponse'
         profile:
            $ref: '#/components/schemas/privateNestedProfileResponse'
+
+    V1PrivateSignalchildrenGet:
+      description: >-
+        Child signals associated with a specific parent Signal. If the
+        requesting user has access to the parent signal and not the child
+        signals, they will still be visible in this endpoint in an
+        abridged representation.
+      type: object
+      properties:
+        _links:
+          description: HAL JSON links
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  description: URI of these child signals in API
+                  type: string
+                  format: uri
+        count:
+          description: Number of child signals associated with parent signal.
+          type: integer
+        results:
+          description: List of child signals
+          type: array
+          items:
+            type: object
+            properties:
+              _links:
+                description: HAL JSON links
+                type: object
+                properties:
+                  self:
+                    type: object
+                    properties:
+                      href:
+                        description: URI of this child signal
+                        type: string
+                        format: uri
+              id:
+                description: child signal ID
+                type: integer
+              status:
+                description: child signal status
+                type: object
+                properties:
+                  state:
+                    type: string
+                    description: status "state" code
+                  state_display:
+                    type: string
+                    description: display name of status
+              category:
+                description: Main and sub category of child signal
+                type: object
+                properties:
+                  sub:
+                    type: string
+                    description: sub category name
+                  sub_slug:
+                    type: string
+                    description: sub category slug
+                  departments:
+                    type: string
+                    description: department codes associated with sub category
+                  main:
+                    type: string
+                    description: main category name
+                  main_slug:
+                    type: string
+                    description: main category slug
 
     privateNestedRoleResponse:
       description: A SIA role
