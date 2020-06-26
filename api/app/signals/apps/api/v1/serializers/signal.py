@@ -411,3 +411,39 @@ class SignalGeoSerializer(GeoFeatureModelSerializer):
         id_field = False
         geo_field = 'location'
         fields = ['id', 'created_at']
+
+
+class AbridgedChildSignalSerializer(HALSerializer):
+    serializer_url_field = PrivateSignalLinksField
+
+    status = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Signal
+        fields = (
+            '_links',
+            'id',
+            'status',
+            'category',
+        )
+
+    def get_status(self, obj):
+        return {
+            'state': obj.status.state,
+            'state_display': obj.status.get_state_display(),
+        }
+
+    def get_category(self, obj):
+        departments = ', '.join(
+            obj.category_assignment.category.departments.filter(
+                categorydepartment__is_responsible=True
+            ).values_list('code', flat=True)
+        )
+        return {
+            'sub': obj.category_assignment.category.name,
+            'sub_slug': obj.category_assignment.category.slug,
+            'departments': departments,
+            'main': obj.category_assignment.category.parent.name,
+            'main_slug': obj.category_assignment.category.parent.slug,
+        }

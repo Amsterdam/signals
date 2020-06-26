@@ -2164,3 +2164,41 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        self.child_endpoint = '/signals/v1/private/signals/{pk}/children/'
+        self.detail_endpoint = '/signals/v1/private/signals/{pk}'
+
+        # test signals
+        self.parent_signal = SignalFactory.create()
+        self.child_signal = SignalFactory.create(parent=self.parent_signal)
+        self.normal_signal = SignalFactory.create()
+
+    def test_shows_children(self):
+        # Check that we can access a parent signal's children.
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(self.child_endpoint.format(pk=self.parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 1)
+        self.assertEqual(response_json['results'][0]['id'], self.child_signal.pk)
+
+        # Check that accessing child endpoint on child signal results in 404
+        response = self.client.get(self.child_endpoint.format(pk=self.child_signal.pk))
+        self.assertEqual(response.status_code, 404)
+
+        # Check that accessing child endpoint on normal signal results in 404
+        self.assertFalse(self.normal_signal.is_parent())
+        response = self.client.get(self.child_endpoint.format(pk=self.normal_signal.pk))
+        self.assertEqual(response.status_code, 404)
+
+    def test_only_for_visible_parent(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(self.detail_endpoint.format(pk=self.parent_signal.pk))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(self.child_endpoint.format(pk=self.parent_signal.pk))
+        self.assertEqual(response.status_code, 403)

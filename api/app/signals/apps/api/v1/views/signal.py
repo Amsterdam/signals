@@ -3,6 +3,7 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
@@ -14,6 +15,7 @@ from signals.apps.api.generics.permissions import (
 )
 from signals.apps.api.v1.filters import SignalFilter
 from signals.apps.api.v1.serializers import (
+    AbridgedChildSignalSerializer,
     HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
@@ -157,4 +159,34 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             return paginator.get_paginated_response(serializer.data)
 
         serializer = SignalGeoSerializer(filtered_qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path='children/')
+    def children(self, request, pk=None):
+        """Show abbriged version of child signals for a given parent signal."""
+        # Based on a user's department a signal may not be accessible.
+        signal_exists = Signal.objects.filter(id=pk).exists()
+        signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()
+
+        if signal_exists and not signal_accessible:
+            raise PermissionDenied()
+
+        # return a HTTP 404 if we ask for a child signal's children.
+        signal = self.get_object()
+        if signal.is_child():
+            raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
+        elif not signal.is_parent():
+            raise NotFound(detail=f'Signal {pk} has no children.')
+
+        # Return the child signals for a parent signal in an abridged version
+        # of the usual serialization.
+        paginator = HALPagination()
+        child_qs = signal.children.all()
+        page = paginator.paginate_queryset(child_qs, self.request, view=self)
+
+        if page is not None:
+            serializer = AbridgedChildSignalSerializer(page, many=True, context=self.get_serializer_context())
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
