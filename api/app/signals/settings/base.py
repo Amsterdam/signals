@@ -495,8 +495,8 @@ ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amste
 SEARCH = {
     'PAGE_SIZE': 500,
     'CONNECTION': {
-        'URL': 'elastic-index.service.consul:9200',
-        'INDEX': 'sia_signals',
+        'HOST': os.getenv('ELASTICSEARCH_HOST', 'elastic-index.service.consul:9200'),
+        'INDEX': os.getenv('ELASTICSEARCH_INDEX', 'sia_signals'),
     },
 }
 
