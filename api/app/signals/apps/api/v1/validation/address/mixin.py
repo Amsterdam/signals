@@ -44,10 +44,12 @@ class AddressValidationMixin:
         if 'geometrie' not in location_data:
             raise ValidationError('Coordinate data must be present')
 
+        lon, lat = location_data['geometrie'].coords
+
         if 'address' in location_data and location_data["address"]:
             try:
                 address_validation = self.get_address_validation()
-                validated_address = address_validation.validate_address(location_data["address"])
+                validated_address = address_validation.validate_address(location_data["address"], lon, lat)
 
                 # Set suggested address from AddressValidation as address and save original address
                 # in extra_properties, to correct possible spelling mistakes in original address.
