@@ -57,6 +57,9 @@ class CategoryAdmin(admin.ModelAdmin):
     list_per_page = 20
     list_filter = (ParentCategoryFilter,)
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(Category, CategoryAdmin)
 
