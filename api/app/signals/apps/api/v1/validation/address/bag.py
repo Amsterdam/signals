@@ -26,7 +26,7 @@ class AddressValidation(BaseAddressValidation):
                f'{address["huisnummer"]}{address["huisletter"] if "huisletter" in address else ""}' \
                f'{"-" + address["huisnummer_toevoeging"] if "huisnummer_toevoeging" in address else ""}'
 
-    def _search(self, address):
+    def _search(self, address, *args, **kwargs):
         try:
             response = get(self.address_validation_url, params={'q': self._address_dict_to_string(address)})
             response.raise_for_status()
