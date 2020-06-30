@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.decorators.csrf import csrf_exempt
 
 from signals.apps.graphql.views import SIAGraphQLView
 from signals.apps.users.v0.views import UserMeView
@@ -23,7 +24,7 @@ urlpatterns = [
     # path('signals/experimental/reporting/', include('signals.apps.reporting.urls'))
 
     # GraphQL endpoint
-    path('signals/graphql', SIAGraphQLView.as_view(graphiql=True)),
+    path('signals/graphql', csrf_exempt(SIAGraphQLView.as_view(graphiql=True))),
 ]
 
 if settings.DEBUG:
