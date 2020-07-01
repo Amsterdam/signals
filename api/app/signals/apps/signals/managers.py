@@ -284,7 +284,7 @@ class SignalManager(models.Manager):
 
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None
-        data['stadsdeel'] = _get_stadsdeel_code(signal.location.geometrie, default_stadsdeel)
+        data['stadsdeel'] = _get_stadsdeel_code(data['geometrie'], default_stadsdeel)
 
         prev_location = signal.location
         location = Location.objects.create(**data, _signal_id=signal.id)
