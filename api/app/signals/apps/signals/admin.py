@@ -7,7 +7,9 @@ from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Area,
     Category,
+    CategoryDepartment,
     CategoryQuestion,
+    Department,
     Question,
     Signal,
     Status,
@@ -17,6 +19,7 @@ from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class CategoryQuestionInline(admin.StackedInline):
+    raw_id_fields = ('category', 'question',)
     model = CategoryQuestion
     extra = 1
 
@@ -62,6 +65,23 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Category, CategoryAdmin)
+
+
+class CategoryDepartmentInline(admin.TabularInline):
+    raw_id_fields = ('category', 'department',)
+    model = CategoryDepartment
+    extra = 0
+
+
+class DepartmentAdmin(admin.ModelAdmin):
+    inlines = (CategoryDepartmentInline, )
+    fields = ('code', 'name', 'is_intern')
+    list_display = ('code', 'name', 'is_intern')
+    ordering = ('name',)
+    list_per_page = 20
+
+
+admin.site.register(Department, DepartmentAdmin)
 
 
 class AreaAdmin(GeoModelAdmin):
