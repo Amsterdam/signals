@@ -53,6 +53,7 @@ services:
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - SWIFT_ENABLED=False
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -69,6 +70,7 @@ services:
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - SWIFT_ENABLED=False
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -103,6 +105,7 @@ services:
       - DWH_MEDIA_ROOT=/dwh_media
       - ELASTICSEARCH_HOST=elasticsearch:9200
       - ELASTICSEARCH_INDEX=signals
+      - SWIFT_ENABLED=False
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
