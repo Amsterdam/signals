@@ -1,12 +1,15 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GeoModelAdmin
 from django.db import transaction
+from django.db.models import Q
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Area,
     Category,
+    CategoryDepartment,
     CategoryQuestion,
+    Department,
     Question,
     Signal,
     Status,
@@ -16,6 +19,7 @@ from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class CategoryQuestionInline(admin.StackedInline):
+    raw_id_fields = ('category', 'question',)
     model = CategoryQuestion
     extra = 1
 
@@ -31,6 +35,53 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Question, QuestionAdmin)
+
+
+class ParentCategoryFilter(admin.SimpleListFilter):
+    title = 'Parent category'
+    parameter_name = 'parent__id'
+
+    def lookups(self, request, model_admin):
+        return [
+            (category.pk, category.__str__())
+            for category in Category.objects.filter(parent__isnull=True).iterator()
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(Q(parent__id=self.value()) | Q(id=self.value()))
+        return queryset.all()
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    fields = ('name', 'parent', 'is_active', 'description', 'handling_message')
+    list_display = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message')
+    ordering = ('parent__name', 'name',)
+    list_per_page = 20
+    list_filter = (ParentCategoryFilter,)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.register(Category, CategoryAdmin)
+
+
+class CategoryDepartmentInline(admin.TabularInline):
+    raw_id_fields = ('category', 'department',)
+    model = CategoryDepartment
+    extra = 0
+
+
+class DepartmentAdmin(admin.ModelAdmin):
+    inlines = (CategoryDepartmentInline, )
+    fields = ('code', 'name', 'is_intern')
+    list_display = ('code', 'name', 'is_intern')
+    ordering = ('name',)
+    list_per_page = 20
+
+
+admin.site.register(Department, DepartmentAdmin)
 
 
 class AreaAdmin(GeoModelAdmin):
