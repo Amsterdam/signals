@@ -3,7 +3,7 @@ import datetime
 from .Evaluator import Evaluator
 from django.contrib.gis import geos
 
-class WithInEvaluator(Evaluator):
+class InEvaluator(Evaluator):
     _TIME_FORMAT = '%H:%M:%S'
     def __init__(self, **kwargs):
         self._CMD_MAP = {
@@ -14,6 +14,7 @@ class WithInEvaluator(Evaluator):
 
         self.lhs = kwargs.pop('lhs')
         self.rhs = kwargs.pop('rhs')
+        self.rhs_prop = kwargs.get('rhs_prop', None)
 
     def _rais_type_error(self, exp, act):
         raise Exception("Error: expected: '{exp}', actual: '{act}'".format(exp=exp, act=act))
