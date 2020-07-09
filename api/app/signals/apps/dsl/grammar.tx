@@ -5,6 +5,6 @@ BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
 
 EqualityExpression: lhs=ID op=EqualityOperand rhs=ID;
 EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-InExpression: lhs=ID 'in' rhs=STRING;
+InExpression: lhs=ID 'in' (rhs=STRING | rhs=ID ('.' rhs_prop=ID)?);
 
 Comment: /\/\/.*$/;
