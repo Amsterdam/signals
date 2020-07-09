@@ -33,6 +33,9 @@ class Status(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True, blank=True)
 
+    # SIG-2620 Flag to determine if a status can send an email
+    send_email = models.BooleanField(default=False)
+
     class Meta:
         permissions = (
             ('push_to_sigmax', 'Doorsturen van een melding (THOR)'),  # SIG-2192

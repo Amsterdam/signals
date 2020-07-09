@@ -46,7 +46,7 @@ execnet==1.7.1
 factory-boy==2.12.0
 Faker==4.0.0
 filelock==3.0.12
-flake8==3.7.9
+flake8==3.8.3
 flex==6.14.1
 freezegun==0.3.14
 graphene==2.1.8
@@ -84,9 +84,9 @@ Pillow==7.1.0
 pluggy==0.13.1
 psycopg2-binary==2.8.4
 py==1.8.1
-pycodestyle==2.5.0
+pycodestyle==2.6.0
 pycparser==2.19
-pyflakes==2.1.1
+pyflakes==2.2.0
 pygelf==0.3.6
 PyJWT==1.7.1
 pyparsing==2.4.6
