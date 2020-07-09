@@ -1,3 +1,3 @@
-location within eenlijst 
+location in "eenlijst" 
+and time in "20:00-00:00"
 or (category == eikenprocessierups and (subcat == bomen or subcat == afval))
-and time in "20:00","00:00"
