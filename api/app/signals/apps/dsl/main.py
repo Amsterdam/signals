@@ -16,20 +16,19 @@ TEST_GRAMMAR2='''
 RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
-BinaryExpression: WithInExpression | EqualityExpression | TimeExpression | ('(' OrExpression ')');
+BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
 
-WithInExpression: lhs=ID 'within' rhs=ID;
 EqualityExpression: lhs=ID op=EqualityOperand rhs=ID;
 EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-TimeExpression: lhs=ID 'in' start=STRING ',' end=STRING;
+InExpression: lhs=ID 'in' (rhs=STRING | rhs=ID ('.' rhs_prop=ID)?);
 
 Comment: /\/\/.*$/;
 '''
 
 TEST_EXPR ='''
-location within eenlijst 
-or (maincat == eikenprocessierups and (subcat == bomen or subcat == afval))
-and time in "20:00","00:00"
+location in stadsdeel.oost
+and time in "20:00-00:00"
+or (category == eikenprocessierups and (subcat == bomen or subcat == afval))
 '''
  
 
@@ -43,7 +42,7 @@ def main():
         'maincat' : 'dieren',
         'subcat' : 'subcat',
         'time' : time.time(),
-        'eenlijst' : set(['geo1', 'geo2'])
+        'stadsdeel' : set(['geo1', 'geo2'])
     }
 
     result = model.evaluate(context)
