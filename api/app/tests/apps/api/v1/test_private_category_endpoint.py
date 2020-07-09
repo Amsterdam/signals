@@ -173,7 +173,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
     def test_post_category(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
-        url = f'/signals/v1/private/categories/'
+        url = '/signals/v1/private/categories/'
         response = self.client.post(url, data={})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -185,7 +185,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_not_logged_in(self):
-        url = f'/signals/v1/private/categories/'
+        url = '/signals/v1/private/categories/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
