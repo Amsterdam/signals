@@ -1,5 +1,6 @@
 import time
 from evaluators import MetaModel
+from django.contrib.gis import geos
 
 TEST_GRAMMAR='''
 RootExpression: expressions *= LogicalExpression;
@@ -37,12 +38,16 @@ def main():
     model = mm.model_from_str(TEST_EXPR)
 
     # we can fill identifiers with the values, these can be resolved via the evaluators resolve() method
+    poly = geos.Polygon( ((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0)) )
     context = {
-        'location' : 'geo1',
+        'location' : geos.Point(5, 23),
         'maincat' : 'dieren',
         'subcat' : 'subcat',
         'time' : time.time(),
-        'stadsdeel' : set(['geo1', 'geo2'])
+        'stadsdeel' : {
+            'oost' : geos.MultiPolygon(poly)
+        },
+        'lijstje' : set(['geo1', 'geo2'])
     }
 
     result = model.evaluate(context)
