@@ -1,8 +1,7 @@
 from .RootEvaluator import RootEvaluator
 from .EqualityEvaluator import EqualityEvaluator
 from .LogicalEvaluator import LogicalEvaluator
-from .TimeEvaluator import TimeEvaluator
-from .WithInEvaluator import WithInEvaluator
+from .InEvaluator import InEvaluator
 from textx import metamodel_from_str
 
 # user classes have to live in the same module-space where the metamodel_from_str is invoked.
@@ -27,14 +26,9 @@ class AndExpression(LogicalEvaluator):
     op='and'
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    
-class TimeExpression(TimeEvaluator):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
     
 
-class WithInExpression(WithInEvaluator):
+class InExpression(InEvaluator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -43,7 +37,7 @@ class MetaModel(object):
     def __init__(self, grammar):
         self.mm = metamodel_from_str(
             lang_desc = grammar,
-            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, TimeExpression, WithInExpression],
+            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression],
             debug=False
         )
 
