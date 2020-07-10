@@ -8,10 +8,10 @@ import shutil
 from typing import TextIO
 
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.db import connection
 from django.db.models import Case, CharField, QuerySet, Value, When
 from django.utils import timezone
+from swift.storage import SwiftStorage
 
 from signals.apps.reporting.csv.utils import _get_storage_backend
 
@@ -38,7 +38,8 @@ def get_swift_parameters() -> dict:
 
 def save_csv_files(csv_files: list) -> None:
     """
-    Writes the CSV files to the storage backend for the Datawarehouse
+    Writes the CSV files to the configured storage backend
+    This could either be the SwiftStorage (used to store files for the Datawarehouse) or a local FileSystemStorage
 
     :param csv_files:
     :returns None:
@@ -48,9 +49,9 @@ def save_csv_files(csv_files: list) -> None:
     for csv_file_path in csv_files:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
-            storage.save(name=file_name, content=opened_csv_file)
-
-            if isinstance(storage, FileSystemStorage):
+            if isinstance(storage, SwiftStorage):
+                storage.save(name=file_name, content=opened_csv_file)
+            else:
                 # Saves the file in a folder structure like "Y/m/d/file_name" for local storage
                 now = timezone.now()
                 file_path = f'{now:%Y}/{now:%m}/{now:%d}/{now:%H%M%S%Z}_{file_name}'
@@ -60,6 +61,9 @@ def save_csv_files(csv_files: list) -> None:
 def queryset_to_csv_file(queryset: QuerySet, csv_file_path: str) -> TextIO:
     """
     Creates the CSV file based on the given queryset and stores it in the given csv file path
+
+    Special thanks for Mehdi Pourfar and his post about "Faster CSV export with Django & Postgres"
+    https://dev.to/mehdipourfar/faster-csv-export-with-django-postgres-5bi5
 
     :param queryset:
     :param csv_file_path:

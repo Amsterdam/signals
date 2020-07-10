@@ -22,6 +22,8 @@ def create_signals_csv(location: str) -> str:
     queryset = Signal.objects.annotate(
         type_assignment_id=Max('types__id'),
         image=Value(None, output_field=CharField())
+    ).filter(
+        types__id=F('type_assignment_id'),
     ).values(
         'id',
         'source',
