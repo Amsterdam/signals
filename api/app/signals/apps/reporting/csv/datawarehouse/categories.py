@@ -46,8 +46,6 @@ def create_category_sla_csv(location: str) -> str:
     """
     queryset = ServiceLevelObjective.objects.values(
         'id',
-        'main',
-        'sub',
         'n_days',
         'use_calendar_days',
         'created_at',

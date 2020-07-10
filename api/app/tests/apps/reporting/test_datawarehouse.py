@@ -10,6 +10,7 @@ from unittest import mock
 import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
+from freezegun import freeze_time
 
 from signals.apps.reporting.csv import datawarehouse
 from tests.apps.feedback.factories import FeedbackFactory
@@ -28,6 +29,7 @@ class TestDatawarehouse(testcases.TestCase):
 
     @mock.patch.dict('os.environ', {}, clear=True)
     @mock.patch('signals.apps.reporting.csv.datawarehouse.utils._get_storage_backend')
+    @freeze_time('2020-09-10T12:00:00+00:00')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
         # In this test case we don't want to make usage of the remote Object
@@ -42,12 +44,12 @@ class TestDatawarehouse(testcases.TestCase):
 
         # Checking if we have files on the correct locations and that they
         # do have some content.
-        signals_csv = path.join(self.file_backend_tmp_dir, 'signals.csv')
-        locations_csv = path.join(self.file_backend_tmp_dir, 'locations.csv')
-        reporters_csv = path.join(self.file_backend_tmp_dir, 'reporters.csv')
-        categories_csv = path.join(self.file_backend_tmp_dir, 'categories.csv')
-        statuses_csv = path.join(self.file_backend_tmp_dir, 'statuses.csv')
-        sla_csv = path.join(self.file_backend_tmp_dir, 'sla.csv')
+        signals_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_signals.csv')
+        locations_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_locations.csv')
+        reporters_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_reporters.csv')
+        categories_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_categories.csv')
+        statuses_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_statuses.csv')
+        sla_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_sla.csv')
 
         self.assertTrue(path.exists(signals_csv))
         self.assertTrue(path.getsize(signals_csv))
@@ -108,10 +110,13 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['status_id'], str(signal.status_id))
                 self.assertEqual(row['category_assignment_id'], str(signal.category_assignment_id))
                 self.assertEqual(row['reporter_id'], str(signal.reporter_id))
-                # self.assertIn(row['incident_date_start'], str(signal.incident_date_start))
-                # self.assertIn(row['incident_date_end'], str(signal.incident_date_end))
-                # self.assertIn(row['created_at'], str(signal.created_at))
-                # self.assertIn(row['updated_at'], str(signal.updated_at))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['incident_date_start'], str(signal.incident_date_start))
+                # self.assertEqual(row['incident_date_end'], str(signal.incident_date_end))
+                # self.assertEqual(row['created_at'], str(signal.created_at))
+                # self.assertEqual(row['updated_at'], str(signal.updated_at))
+
                 self.assertEqual(row['operational_date'], '')
                 self.assertEqual(row['expire_date'], '')
                 self.assertEqual(row['image'], str(signal.image))
@@ -120,10 +125,15 @@ class TestDatawarehouse(testcases.TestCase):
 
                 # SIG-2823
                 self.assertEqual(row['priority'], str(signal.priority.priority))
-                # self.assertIn(row['priority_created_at'], str(signal.priority.created_at))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['priority_created_at'], str(signal.priority.created_at))
+
                 self.assertEqual(row['parent'], '')
                 self.assertEqual(row['type'], str(signal.type_assignment.name))
-                # self.assertIn(row['type_created_at'], str(signal.type_assignment.created_at))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['type_created_at'], str(signal.type_assignment.created_at))
 
     def test_create_locations_csv(self):
         signal = SignalFactory.create()
@@ -149,8 +159,10 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['address_text'],
                                  str(location.address_text))
 
-                # self.assertIn(row['created_at'], str(location.created_at))
-                # self.assertIn(row['updated_at'], str(location.updated_at))
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['created_at'], str(location.created_at))
+                # self.assertEqual(row['updated_at'], str(location.updated_at))
+
                 self.assertEqual(row['extra_properties'], '')
 
     def test_create_reporters_csv(self):
@@ -187,14 +199,15 @@ class TestDatawarehouse(testcases.TestCase):
             for row in reader:
                 self.assertEqual(row['id'], str(category_assignment.id))
                 self.assertEqual(row['_signal_id'], str(category_assignment._signal_id))
-                self.assertEqual(row['main'],
-                                 str(category_assignment.category.parent.name))
+                self.assertEqual(row['main'], str(category_assignment.category.parent.name))
                 self.assertEqual(row['sub'], str(category_assignment.category.name))
                 self.assertEqual(row['departments'],
-                                 ', '.join(category_assignment.category.departments.values_list(
-                                     'name', flat=True)))
-                # self.assertIn(row['created_at'], str(category_assignment.created_at))
-                # self.assertIn(row['updated_at'], str(category_assignment.updated_at))
+                                 ', '.join(category_assignment.category.departments.values_list('name', flat=True)))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['created_at'], str(category_assignment.created_at))
+                # self.assertEqual(row['updated_at'], str(category_assignment.updated_at))
+
                 self.assertEqual(row['extra_properties'], '')
 
     def test_create_statuses_csv(self):
@@ -215,8 +228,11 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['target_api'], '')
                 self.assertEqual(row['state_display'], status.get_state_display())
                 self.assertEqual(row['extern'], str(status.extern))
-                # self.assertIn(row['created_at'], str(status.created_at))
-                # self.assertIn(row['updated_at'], str(status.updated_at))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['created_at'], str(status.created_at))
+                # self.assertEqual(row['updated_at'], str(status.updated_at))
+
                 self.assertEqual(row['extra_properties'], '')
                 self.assertEqual(row['state'], status.state)
 
@@ -277,8 +293,10 @@ class TestFeedbackHandling(testcases.TestCase):
                 self.assertEqual(row['is_satisfied'], str(self.feedback_submitted.is_satisfied))
                 self.assertEqual(row['allows_contact'], str(self.feedback_submitted.allows_contact))
                 self.assertEqual(row['text_extra'], self.feedback_submitted.text_extra)
-                # self.assertIn(row['created_at'], str(self.feedback_submitted.created_at))
-                # self.assertIn(row['submitted_at'], str(self.feedback_submitted.submitted_at))
+
+                # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
+                # self.assertEqual(row['created_at'], str(self.feedback_submitted.created_at))
+                # self.assertEqual(row['submitted_at'], str(self.feedback_submitted.submitted_at))
 
                 self.assertEqual(row['text'], self.feedback_submitted.text)
 
