@@ -16,9 +16,9 @@ from signals.apps.signals.workflow import (
     VERZOEK_TOT_HEROPENEN
 )
 
-MAIL_CONFIGURATION = [
+SIGNAL_MAIL_RULES = [
     {
-        'name': 'Sent mail signal created',
+        'name': 'Send mail signal created',
         'conditions': {
             'filters': {
                 'status__state__in': [GEMELD, ],
@@ -36,7 +36,7 @@ MAIL_CONFIGURATION = [
         }
     },
     {
-        'name': 'Sent mail signal handled',
+        'name': 'Send mail signal handled',
         'conditions': {
             'filters': {
                 'status__state__in': [AFGEHANDELD, ],
@@ -64,7 +64,7 @@ MAIL_CONFIGURATION = [
         }
     },
     {
-        'name': 'Sent mail signal split',
+        'name': 'Send mail signal split',
         'conditions': {
             'filters': {
                 'status__state__in': [GESPLITST, ],
@@ -81,7 +81,7 @@ MAIL_CONFIGURATION = [
         }
     },
     {
-        'name': 'Sent mail signal scheduled',
+        'name': 'Send mail signal scheduled',
         'conditions': {
             'filters': {
                 'status__state__in': [INGEPLAND, ],
@@ -98,7 +98,7 @@ MAIL_CONFIGURATION = [
         }
     },
     {
-        'name': 'Sent mail signal reopened',
+        'name': 'Send mail signal reopened',
         'conditions': {
             'filters': {
                 'status__state__in': [HEROPEND, ],
@@ -139,14 +139,12 @@ class MailActions:
     _from_email = settings.NOREPLY
 
     def __init__(self) -> None:
-        self._actions = {}
         self._conditions = {}
         self._kwargs = {}
 
-        for config in MAIL_CONFIGURATION:
+        for config in SIGNAL_MAIL_RULES:
             key = slugify(config['name'])
 
-            self._actions[key] = config['name']
             self._conditions[key] = config['conditions']
             self._kwargs[key] = config['kwargs'] or {}
 
@@ -173,13 +171,10 @@ class MailActions:
 
     def _get_actions(self, signal: Signal) -> list:
         found_actions_to_apply = []
-        for action, name in self._actions.items():
-            if self._apply_conditions(conditions=self._conditions[action], signal=signal):
-                found_actions_to_apply.append(action)
+        for key, conditions in self._conditions.items():
+            if self._apply_conditions(conditions=conditions, signal=signal):
+                found_actions_to_apply.append(key)
         return found_actions_to_apply
-
-    def get_actions(self, signal: Signal) -> list:
-        return self._get_actions(signal=signal)
 
     def _get_mail_context(self, signal: Signal, mail_kwargs: dict):
         context = {'signal': signal, 'status': signal.status}
