@@ -2,6 +2,7 @@ from .RootEvaluator import RootEvaluator
 from .EqualityEvaluator import EqualityEvaluator
 from .LogicalEvaluator import LogicalEvaluator
 from .InEvaluator import InEvaluator
+from .TerminalEvaludator import TerminalEvaluator
 from textx import metamodel_from_str
 
 # user classes have to live in the same module-space where the metamodel_from_str is invoked.
@@ -32,12 +33,20 @@ class InExpression(InEvaluator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class TermStringExpression(TerminalEvaluator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class TermNumericExpression(TerminalEvaluator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class MetaModel(object):
     def __init__(self, grammar):
         self.mm = metamodel_from_str(
             lang_desc = grammar,
-            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression],
+            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression, TermStringExpression, TermNumericExpression],
             debug=False
         )
 
