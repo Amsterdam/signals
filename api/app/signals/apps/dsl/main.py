@@ -6,13 +6,14 @@ TEST_GRAMMAR='''
 RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
-BinaryExpression: NumericExpression | InExpression | EqualityExpression | ('(' OrExpression ')');
+BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
 
 EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
 EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-InExpression: lhs=TermExpression 'in' (rhs=TermExpression ('.' rhs_prop=TermExpression)*);
-TermExpression: STRING | ID;
-NumericExpression: INT | FLOAT;
+InExpression: lhs=TermStringExpression 'in' (rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*);
+TermExpression: TermStringExpression | TermNumericExpression;
+TermStringExpression: str_val=STRING | id_val=ID;
+TermNumericExpression: int_val=INT | float_val=FLOAT;
 
 Comment: /\/\/.*$/;
 '''
@@ -33,7 +34,7 @@ Comment: /\/\/.*$/;
 TEST_EXPR ='''
 location in area."stadsdeel"."oost"
 and time in "20:00-00:00"
-or (category == eikenprocessierups and (subcat == bomen or subcat == afval))
+or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
 '''
  
 
