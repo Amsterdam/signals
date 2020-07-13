@@ -19,7 +19,7 @@ class InEvaluator(Evaluator):
     def _get_type(self, obj):
         if isinstance(obj, str):
             return 'str'
-        elif isinstance(obj, datetime.datetime):
+        elif isinstance(obj, time.struct_time):
             return 'datetime'
         elif isinstance(obj, geos.Point):
             return 'point'
@@ -58,9 +58,7 @@ class InEvaluator(Evaluator):
 
 
     def _time_handler(self, ctx, lhs_val):
-        lhs_split = lhs_val.split('-')
-        start = time.strptime(lhs_split[0], self._TIME_FORMAT)
-        end = time.strptime(lhs_split[1], self._TIME_FORMAT)
-        current = self.lhs.evaluate(ctx)
-        current = time.strptime(current, self._TIME_FORMAT)
-        return current >= start and current <= end
+        rhs_split = self.rhs.evaluate(ctx).split('-')
+        start = time.strptime(rhs_split[0], self._TIME_FORMAT)
+        end = time.strptime(rhs_split[1], self._TIME_FORMAT)
+        return lhs_val >= start and lhs_val <= end
