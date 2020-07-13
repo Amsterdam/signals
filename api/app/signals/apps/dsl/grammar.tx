@@ -1,10 +1,12 @@
 RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
-BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
+BinaryExpression: NumericExpression | InExpression | EqualityExpression | ('(' OrExpression ')');
 
-EqualityExpression: lhs=ID op=EqualityOperand rhs=ID;
+EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
 EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-InExpression: lhs=ID 'in' (rhs=STRING | rhs=ID ('.' rhs_prop=ID)?);
+InExpression: lhs=TermExpression 'in' (rhs=TermExpression ('.' rhs_prop=TermExpression)*);
+TermExpression: STRING | ID;
+NumericExpression: INT | FLOAT;
 
 Comment: /\/\/.*$/;

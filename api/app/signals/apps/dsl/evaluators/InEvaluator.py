@@ -1,5 +1,5 @@
-import time
 import datetime
+import time
 from .Evaluator import Evaluator
 from django.contrib.gis import geos
 
@@ -46,8 +46,12 @@ class InEvaluator(Evaluator):
 
     def _geo_handler(self, ctx, lhs_val):
         rhs_val = self.resolve(ctx, self.rhs)
-        if self.rhs_prop:
-            rhs_val = rhs_val[self.rhs_prop]
+        if self.rhs_prop and len(self.rhs_prop) > 0:
+            try:
+                for prop in self.rhs_prop:
+                    rhs_val = rhs_val[prop]
+            except KeyError:
+                raise Exception("Could not resolve {prop}".format(prop=".".join(self.rhs_prop)))
         if type(rhs_val) is not geos.MultiPolygon:
             self._rais_type_error(exp=type(geos.MultiPolygon), act=type(rhs_val))
         return rhs_val.within(lhs_val)
