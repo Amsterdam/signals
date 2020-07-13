@@ -3,14 +3,18 @@ from evaluators import MetaModel
 from django.contrib.gis import geos
 
 TEST_GRAMMAR='''
-RootExpression: expressions *= LogicalExpression;
-LogicalExpression: lhs=Expression (op=Logical rhs=Expression)*;
-Logical: 'and' | 'or';
-Expression: WithInExpression | EqualityExpression | TimeExpression | ('(' LogicalExpression ')');
-WithInExpression: lhs=ID 'within' rhs=ID;
-EqualityExpression: lhs=ID op=EqualityOperand rhs=ID;
+RootExpression: expression = OrExpression;
+OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
+AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
+BinaryExpression: NumericExpression | InExpression | EqualityExpression | ('(' OrExpression ')');
+
+EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
 EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-TimeExpression: lhs=ID 'in' start=STRING ',' end=STRING;
+InExpression: lhs=TermExpression 'in' (rhs=TermExpression ('.' rhs_prop=TermExpression)*);
+TermExpression: STRING | ID;
+NumericExpression: INT | FLOAT;
+
+Comment: /\/\/.*$/;
 '''
 
 TEST_GRAMMAR2='''
@@ -27,14 +31,14 @@ Comment: /\/\/.*$/;
 '''
 
 TEST_EXPR ='''
-location in stadsdeel.oost
+location in area."stadsdeel"."oost"
 and time in "20:00-00:00"
 or (category == eikenprocessierups and (subcat == bomen or subcat == afval))
 '''
  
 
 def main():
-    mm = MetaModel(TEST_GRAMMAR2)
+    mm = MetaModel(TEST_GRAMMAR)
     model = mm.model_from_str(TEST_EXPR)
 
     # we can fill identifiers with the values, these can be resolved via the evaluators resolve() method
@@ -44,8 +48,10 @@ def main():
         'maincat' : 'dieren',
         'subcat' : 'subcat',
         'time' : time.time(),
-        'stadsdeel' : {
-            'oost' : geos.MultiPolygon(poly)
+        'area' : {
+            'stadsdeel' : {
+                'oost' : geos.MultiPolygon(poly)
+            }
         },
         'lijstje' : set(['geo1', 'geo2'])
     }
