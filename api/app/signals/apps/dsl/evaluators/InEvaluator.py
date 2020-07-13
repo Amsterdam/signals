@@ -30,7 +30,7 @@ class InEvaluator(Evaluator):
         raise Exception("Error: expected: '{exp}', actual: '{act}'".format(exp=exp, act=act))
 
     def evaluate(self, ctx):
-        lhs_val = self.resolve(ctx, self.lhs)
+        lhs_val = self.lhs.evaluate(ctx)
         lhs_type = self._get_type(lhs_val)
         if lhs_type in self._CMD_MAP:
             return self._CMD_MAP[lhs_type](ctx, lhs_val)
@@ -39,17 +39,17 @@ class InEvaluator(Evaluator):
 
     
     def _list_handler(self, ctx, lhs_val):
-        rhs_val = self.resolve(ctx, self.rhs)
+        rhs_val = self.rhs.evaluate(ctx)
         if type(rhs_val) is not set:
             self._rais_type_error(exp=type(set), act=type(rhs_val))
         return lhs_val in rhs_val
 
     def _geo_handler(self, ctx, lhs_val):
-        rhs_val = self.resolve(ctx, self.rhs)
+        rhs_val = self.rhs.evaluate(ctx)
         if self.rhs_prop and len(self.rhs_prop) > 0:
             try:
                 for prop in self.rhs_prop:
-                    rhs_val = rhs_val[prop]
+                    rhs_val = rhs_val[prop.evaluate(ctx)]
             except KeyError:
                 raise Exception("Could not resolve {prop}".format(prop=".".join(self.rhs_prop)))
         if type(rhs_val) is not geos.MultiPolygon:
@@ -61,6 +61,6 @@ class InEvaluator(Evaluator):
         lhs_split = lhs_val.split('-')
         start = time.strptime(lhs_split[0], self._TIME_FORMAT)
         end = time.strptime(lhs_split[1], self._TIME_FORMAT)
-        current = self.resolve(ctx, self.lhs)
+        current = self.lhs.evaluate(ctx)
         current = time.strptime(current, self._TIME_FORMAT)
         return current >= start and current <= end
