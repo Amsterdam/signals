@@ -9,30 +9,18 @@ AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
 BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
 
 EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
-EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-InExpression: lhs=TermStringExpression 'in' (rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*);
-TermExpression: TermStringExpression | TermNumericExpression;
+EqualityOperand: '==' | '!=' | '<=' | '<' | '>=' | '>';
+InExpression: lhs=TermStringExpression 'in' rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*;
+TermExpression: TermTimeExpression | TermStringExpression | TermNumericExpression;
 TermStringExpression: str_val=STRING | id_val=ID;
 TermNumericExpression: int_val=INT | float_val=FLOAT;
-
-Comment: /\/\/.*$/;
-'''
-
-TEST_GRAMMAR2='''
-RootExpression: expression = OrExpression;
-OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
-AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
-BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
-
-EqualityExpression: lhs=ID op=EqualityOperand rhs=ID;
-EqualityOperand: '==' | '!=' | '<' | '<=' | '>' | '>=';
-InExpression: lhs=ID 'in' (rhs=STRING | rhs=ID ('.' rhs_prop=ID)?);
+TermTimeExpression: time_val=/\d{1,2}\:\d{2}(\:\d{2})?/;
 
 Comment: /\/\/.*$/;
 '''
 
 TEST_EXPR ='''
-time in "08:00:00-20:00:00"
+(time <= 20:00:00 and time >= 08:00:00) 
 and location in area."stadsdeel"."oost"
 or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
 '''
@@ -45,6 +33,7 @@ def main():
     # we can fill identifiers with the values, these can be resolved via the evaluators resolve() method
     poly = geos.Polygon( ((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0)) )
     context = {
+        'testint' : 1,
         'location' : geos.Point(5, 23),
         'maincat' : 'dieren',
         'subcat' : 'subcat',
