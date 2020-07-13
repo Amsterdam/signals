@@ -32,8 +32,8 @@ Comment: /\/\/.*$/;
 '''
 
 TEST_EXPR ='''
-location in area."stadsdeel"."oost"
-and time in "20:00-00:00"
+time in "08:00:00-20:00:00"
+and location in area."stadsdeel"."oost"
 or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
 '''
  
@@ -48,7 +48,7 @@ def main():
         'location' : geos.Point(5, 23),
         'maincat' : 'dieren',
         'subcat' : 'subcat',
-        'time' : time.time(),
+        'time' : time.strptime("16:00:00", "%H:%M:%S"),
         'area' : {
             'stadsdeel' : {
                 'oost' : geos.MultiPolygon(poly)
