@@ -13,16 +13,17 @@ EqualityOperand: '==' | '!=' | '<=' | '<' | '>=' | '>';
 InExpression: lhs=TermStringExpression 'in' rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*;
 TermExpression: TermTimeExpression | TermStringExpression | TermNumericExpression;
 TermStringExpression: str_val=STRING | id_val=ID;
-TermNumericExpression: int_val=INT | float_val=FLOAT;
+TermNumericExpression: numeric_val=NUMBER;
 TermTimeExpression: time_val=/\d{1,2}\:\d{2}(\:\d{2})?/;
 
 Comment: /\/\/.*$/;
 '''
 
 TEST_EXPR ='''
+//testint < 0
 (time <= 20:00:00 and time >= 08:00:00) 
-and location in area."stadsdeel"."oost"
-or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
+//and location in area."stadsdeel"."oost"
+//or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
 '''
  
 
