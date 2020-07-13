@@ -42,11 +42,16 @@ class TermNumericExpression(TerminalEvaluator):
         super().__init__(**kwargs)
 
 
+class TermTimeExpression(TerminalEvaluator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
 class MetaModel(object):
     def __init__(self, grammar):
         self.mm = metamodel_from_str(
             lang_desc = grammar,
-            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression, TermStringExpression, TermNumericExpression],
+            classes=[RootExpression, EqualityExpression, OrExpression, AndExpression, InExpression, TermStringExpression, TermNumericExpression, TermTimeExpression],
             debug=False
         )
 
