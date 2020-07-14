@@ -28,6 +28,7 @@ from signals.apps.signals.models.question import Question
 from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.slo import ServiceLevelObjective
+from signals.apps.signals.models.source import Source
 from signals.apps.signals.models.status import Status
 from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 from signals.apps.signals.models.stored_signal_filter import StoredSignalFilter
@@ -64,6 +65,7 @@ __all__ = [
     'Reporter',
     'Signal',
     'ServiceLevelObjective',
+    'Source',
     'Status',
     'StatusMessageTemplate',
     'StoredSignalFilter',

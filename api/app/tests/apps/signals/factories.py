@@ -24,6 +24,7 @@ from signals.apps.signals.models import (
     Question,
     Reporter,
     Signal,
+    Source,
     Status,
     StatusMessageTemplate,
     StoredSignalFilter,
@@ -364,3 +365,11 @@ class AreaFactory(factory.DjangoModelFactory):
     code = factory.Sequence(lambda n: f'gebied-type-code-{n}')
     _type = factory.SubFactory(AreaTypeFactory)
     geometry = MultiPolygon([get_random_bbox()])
+
+
+class SourceFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Source
+
+    name = factory.Sequence(lambda n: f'Bron {n}')
+    description = factory.Sequence(lambda n: f'Beschrijving bron {n}')
