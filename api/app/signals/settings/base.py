@@ -507,3 +507,5 @@ DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
     'DEFAULT_PDOK_MUNICIPALITIES',
     'Amsterdam,Amstelveen,Weesp',
 ).split(',')
+# Default setting for area type
+DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
