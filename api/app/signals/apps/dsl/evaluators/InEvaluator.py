@@ -1,5 +1,3 @@
-import time
-
 from django.contrib.gis import geos
 
 from .Evaluator import Evaluator
