@@ -1,5 +1,7 @@
 import time
+
 from .Evaluator import Evaluator
+
 
 class TerminalEvaluator(Evaluator):
     id_val = None
@@ -27,7 +29,7 @@ class TerminalEvaluator(Evaluator):
             return self.str_val
         if self.time_val:
             return self._convert(self.time_val)
-        if self.numeric_val != None:
+        if self.numeric_val is not None:
             return self.numeric_val
 
         raise Exception("No value for term evaluator")
