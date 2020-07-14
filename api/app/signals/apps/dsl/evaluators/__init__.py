@@ -1,1 +1,1 @@
-from .MetaModel import MetaModel
+from .MetaModel import MetaModel  # noqa
