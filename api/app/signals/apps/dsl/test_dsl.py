@@ -5,10 +5,12 @@ from django.contrib.gis import geos
 from ExpressionEvaluator import ExpressionEvaluator
 
 TEST_EXPR = '''
-//testint < 0
-(time <= 20:00:00 and time >= 08:00:00)
+maincat == "dieren"
+//lijstval in lijstje
+//testint > 0
+//and (time <= 20:00:00 and time >= 08:00:00)
 //and location in area."stadsdeel"."oost"
-//or (maincat == "eikenprocessierups" and (subcat == bomen or subcat == afval))
+//or (maincat == "dieren" and (subcat == bomen or subcat == "eikenprocessierups"))
 '''
 
 
@@ -32,6 +34,7 @@ def main():
                 'oost': geos.MultiPolygon(poly)
             }
         },
+        'lijstval': 'geo1',
         'lijstje': set(['geo1', 'geo2'])
     }
 
