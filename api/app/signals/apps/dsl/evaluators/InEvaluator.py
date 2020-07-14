@@ -1,15 +1,18 @@
-import datetime
 import time
-from .Evaluator import Evaluator
+
 from django.contrib.gis import geos
+
+from .Evaluator import Evaluator
+
 
 class InEvaluator(Evaluator):
     _TIME_FORMAT = '%H:%M:%S'
+
     def __init__(self, **kwargs):
         self._CMD_MAP = {
-            'str' : self._list_handler,
-            'datetime' : self._time_handler,
-            'point' : self._geo_handler,
+            'str': self._list_handler,
+            'datetime': self._time_handler,
+            'point': self._geo_handler,
         }
 
         self.lhs = kwargs.pop('lhs')
@@ -25,7 +28,7 @@ class InEvaluator(Evaluator):
             return 'point'
         else:
             return 'unknown'
-    
+
     def _rais_type_error(self, exp, act):
         raise Exception("Error: expected: '{exp}', actual: '{act}'".format(exp=exp, act=act))
 
@@ -37,7 +40,6 @@ class InEvaluator(Evaluator):
         else:
             raise Exception("No 'in' handler for type: '{}'".format(lhs_type))
 
-    
     def _list_handler(self, ctx, lhs_val):
         rhs_val = self.rhs.evaluate(ctx)
         if type(rhs_val) is not set:
@@ -55,7 +57,6 @@ class InEvaluator(Evaluator):
         if type(rhs_val) is not geos.MultiPolygon:
             self._rais_type_error(exp=type(geos.MultiPolygon), act=type(rhs_val))
         return rhs_val.within(lhs_val)
-
 
     def _time_handler(self, ctx, lhs_val):
         rhs_split = self.rhs.evaluate(ctx).split('-')
