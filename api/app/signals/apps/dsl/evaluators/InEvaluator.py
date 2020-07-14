@@ -11,7 +11,6 @@ class InEvaluator(Evaluator):
     def __init__(self, **kwargs):
         self._CMD_MAP = {
             'str': self._list_handler,
-            'datetime': self._time_handler,
             'point': self._geo_handler,
         }
 
@@ -22,8 +21,6 @@ class InEvaluator(Evaluator):
     def _get_type(self, obj):
         if isinstance(obj, str):
             return 'str'
-        elif isinstance(obj, time.struct_time):
-            return 'datetime'
         elif isinstance(obj, geos.Point):
             return 'point'
         else:
@@ -57,9 +54,3 @@ class InEvaluator(Evaluator):
         if type(rhs_val) is not geos.MultiPolygon:
             self._rais_type_error(exp=type(geos.MultiPolygon), act=type(rhs_val))
         return rhs_val.within(lhs_val)
-
-    def _time_handler(self, ctx, lhs_val):
-        rhs_split = self.rhs.evaluate(ctx).split('-')
-        start = time.strptime(rhs_split[0], self._TIME_FORMAT)
-        end = time.strptime(rhs_split[1], self._TIME_FORMAT)
-        return lhs_val >= start and lhs_val <= end
