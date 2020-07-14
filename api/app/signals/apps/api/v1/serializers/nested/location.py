@@ -11,6 +11,8 @@ class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, SIAModelSerial
             'id',
             'stadsdeel',
             'buurt_code',
+            'area_type',
+            'area_code',
             'address',
             'address_text',
             'geometrie',

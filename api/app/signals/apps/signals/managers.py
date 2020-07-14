@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
+from signals.settings import DEFAULT_SIGNAL_AREA_TYPE
 
 # Declaring custom Django signals for our `SignalManager`.
 
@@ -47,7 +48,7 @@ class SignalManager(models.Manager):
         :returns: Signal object
         """
         from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
-        from .utils.location import _get_stadsdeel_code
+        from .utils.location import _get_stadsdeel_code, _get_area
 
         signal = self.create(**signal_data)
 
@@ -57,6 +58,12 @@ class SignalManager(models.Manager):
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = location_data['stadsdeel'] if 'stadsdeel' in location_data else None
         location_data['stadsdeel'] = _get_stadsdeel_code(location_data['geometrie'], default_stadsdeel)
+        # set area_type and area_code if default area type is provided
+        if DEFAULT_SIGNAL_AREA_TYPE:
+            area = _get_area(location_data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
+            if area:
+                location_data['area_type'] = DEFAULT_SIGNAL_AREA_TYPE
+                location_data['area_code'] = area.code
 
         # Create dependent model instances with correct foreign keys to Signal
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
@@ -150,6 +157,8 @@ class SignalManager(models.Manager):
                         'geometrie',
                         'stadsdeel',
                         'buurt_code',
+                        'area_type',
+                        'area_code',
                         'address',
                         'created_by',
                         'extra_properties',

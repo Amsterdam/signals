@@ -75,6 +75,8 @@ class Location(CreatedUpdatedModel):
 
     geometrie = models.PointField(name='geometrie')
     stadsdeel = models.CharField(null=True, max_length=1, choices=STADSDELEN)
+    area_type = models.CharField(null=True, max_length=256)
+    area_code = models.CharField(null=True, max_length=256)
 
     # we do NOT use foreign key, since we update
     # buurten as external data in a seperate process
