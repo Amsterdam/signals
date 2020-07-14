@@ -1,3 +1,6 @@
+from evaluators import MetaModel
+
+GRAMMAR = '''
 RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)?;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)?;
@@ -10,3 +13,11 @@ TermStringExpression: str_val=STRING | id_val=ID;
 TermNumericExpression: numeric_val=NUMBER;
 TermTimeExpression: time_val=/\d{1,2}\:\d{2}(\:\d{2})?/;
 Comment: /\/\/.*$/;
+''' # noqa
+
+
+class ExpressionEvaluator:
+    mm = MetaModel(GRAMMAR)
+
+    def compile(self, code):
+        return self.mm.model_from_str(code)
