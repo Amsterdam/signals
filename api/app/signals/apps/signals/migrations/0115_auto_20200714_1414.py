@@ -20,9 +20,4 @@ class Migration(migrations.Migration):
             name='area_type',
             field=models.CharField(max_length=256, null=True),
         ),
-        migrations.AlterField(
-            model_name='location',
-            name='stadsdeel',
-            field=models.CharField(choices=[('A', 'Centrum'), ('B', 'Westpoort'), ('E', 'West'), ('M', 'Oost'), ('N', 'Noord'), ('T', 'Zuidoost'), ('K', 'Zuid'), ('F', 'Nieuw-West'), ('H', 'Het Amsterdamse Bos'), ('W', 'Weesp')], max_length=1, null=True), # noqa
-        ),
     ]
