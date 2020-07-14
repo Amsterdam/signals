@@ -1100,6 +1100,18 @@ paths:
                 $ref: '#/components/schemas/V1QuestionsJsonList'
         '404':
           description: Not Found.
+  /signals/v1/private/sources/:
+    get:
+      description: Retrieve a list of signal sources.
+      responses:
+        '200':
+          description: List of signal sources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1SourceList'
+        '404':
+          description: Not Found.
 
 components:
   schemas:
@@ -2593,6 +2605,64 @@ components:
           example: CheckboxInput
         meta:
           type: object
+
+    V1SourceList:
+      description: List of sources
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 1
+        results:
+          type: array
+          description: A list of signals, paginated
+          items:
+            $ref: '#/components/schemas/V1Source'
+
+    V1Source:
+      description: Possible signal source
+      type: object
+      properties:
+        id:
+          description: ID of source
+          type: integer
+          example: 1
+        name:
+          description: Name of source
+          type: string
+          example: Eigen organisatie
+        description:
+          description: Description of source
+          type: string
+          example: Binnengekomen via de eigen organisatie
   securitySchemes:
     OAuth2:
       description: SIA API is using OAuth2 implicit grant flow.
