@@ -26,6 +26,7 @@ contact_details_choices = (
     ('phone', 'phone')
 )
 
+
 def area_type_choices():
     options = AreaType.objects.values_list('code', 'name')
     return [(c, f'{n} ({c})') for c, n in options]
