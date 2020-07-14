@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
+
 from signals.settings import DEFAULT_SIGNAL_AREA_TYPE
 
 # Declaring custom Django signals for our `SignalManager`.

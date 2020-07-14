@@ -23,6 +23,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='location',
             name='stadsdeel',
-            field=models.CharField(choices=[('A', 'Centrum'), ('B', 'Westpoort'), ('E', 'West'), ('M', 'Oost'), ('N', 'Noord'), ('T', 'Zuidoost'), ('K', 'Zuid'), ('F', 'Nieuw-West'), ('H', 'Het Amsterdamse Bos'), ('W', 'Weesp')], max_length=1, null=True),
+            field=models.CharField(choices=[('A', 'Centrum'), ('B', 'Westpoort'), ('E', 'West'), ('M', 'Oost'), ('N', 'Noord'), ('T', 'Zuidoost'), ('K', 'Zuid'), ('F', 'Nieuw-West'), ('H', 'Het Amsterdamse Bos'), ('W', 'Weesp')], max_length=1, null=True), # noqa
         ),
     ]
