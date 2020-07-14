@@ -1,6 +1,7 @@
 import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework_gis.fields import GeometryField
@@ -35,6 +36,68 @@ from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Priority, Signal
+
+
+class _SignalListSerializer(serializers.ListSerializer):
+    """
+    A custom "list_serializer_class" that is set on the PrivateSignalSerializerList.
+    The PrivateSignalSerializerList is the only serializer that allows the creation of Signals.
+    This class provides custom validation for the creation of Signals OR child Signals in bulk.
+    """
+    def validate(self, attrs):
+        """
+        Validate the data given.
+
+        The API allows the bulk creation of Signals if:
+
+         * All Signals given do not have a parent
+
+         * All Signals given need to be children of the same Signal
+         ** The given Signals + the already existing child Signals do not exceed X
+
+         * A maximum of X Signals can be sent to create in bulk
+
+        :param attrs:
+        :return attrs:
+        """
+        if len(attrs) > settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            raise ValidationError(
+                f'Only a maximum of {settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} Signals can be created in bulk'
+            )
+
+        # Get all parent id's from the attrs
+        parent_ids = [signal_data['parent'].pk for signal_data in attrs if 'parent' in signal_data]
+
+        if len(attrs) > 0 and len(parent_ids) == 0:
+            # We are only creating normal Signals so we can continue
+            return attrs
+
+        if len(attrs) != len(parent_ids):
+            # Check if the given data is not mixing the creation of Signals and Child Signals
+            raise ValidationError('Only Signals OR Child Signals (of the same parent) can be created in bulk')
+
+        # Additional checks for the creation of child Signals
+        if len(set(parent_ids)) > 1:
+            raise ValidationError('All Parent ID\'s must be the same Signal')
+
+        # We know that all provided parent's are the same so just get the parent from the first child
+        signal = attrs[0]['parent']
+        if signal.is_child():
+            raise ValidationError('The given parent Signal is itself a child, therefore it cannot have children')
+
+        number_of_children_in_db = signal.children.count()
+        if number_of_children_in_db >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            raise ValidationError(
+                f'Maximum number of {settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} child Signals reached for parent Signal'
+            )
+
+        if number_of_children_in_db + len(attrs) > settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
+            raise ValidationError(
+                f'Cannot create the given child signals because this will exceed the maximum of children allowed on a '
+                f'Signal. Which is set to {settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} child Signals per parent Signal'
+            )
+
+        return attrs
 
 
 class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
@@ -98,7 +161,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
                 os.path.dirname(__file__), '..', 'json_schema', 'extra_properties.json')
             )
         ]
-    )  # noqa
+    )
 
     class Meta:
         model = Signal
@@ -229,8 +292,16 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         ]
     )
 
+    parent = serializers.PrimaryKeyRelatedField(
+        required=False,
+        read_only=False,
+        write_only=True,
+        queryset=Signal.objects.all()
+    )
+
     class Meta:
         model = Signal
+        list_serializer_class = _SignalListSerializer
         fields = (
             '_links',
             '_display',
@@ -254,6 +325,8 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'extra_properties',
             'notes',
             'directing_departments',
+
+            'parent'
         )
         read_only_fields = (
             'created_at',
@@ -267,13 +340,24 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
+    def validate(self, attrs):
+        errors = {}
+        if attrs.get('directing_departments_assignment') is not None:
+            errors.update(
+                {'directing_departments_assignment': ['Directing departments cannot be set on initial creation']}
+            )
+
+        if attrs.get('status') is not None:
+            errors.update(
+                {'status': ['Status cannot be set on initial creation']}
+            )
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return super(PrivateSignalSerializerList, self).validate(attrs=attrs)
+
     def create(self, validated_data):
-        if validated_data.get('directing_departments_assignment') is not None:
-            raise serializers.ValidationError('Directing departments cannot be set on initial creation')
-
-        if validated_data.get('status') is not None:
-            raise serializers.ValidationError("Status cannot be set on initial creation")
-
         # Set default status
         logged_in_user = self.context['request'].user
         INITIAL_STATUS = {
