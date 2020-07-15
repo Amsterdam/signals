@@ -38,7 +38,7 @@ Uw {% if signal.is_child %}(gedeeltelijke) {% endif %}omschrijving:
 {{ signal.text }}
 
 Meer weten?
-Als u vragen heeft over deze deelmelding, dan kunt u bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
+Als u vragen heeft over deze melding, dan kunt u voor meldingen in Amsterdam bellen met 14020 (op werkdagen tussen 08:00 en 18:00 uur). Voor meldingen in Weesp kunt u bellen met (0294) 491 391 (op werkdagen tussen 8.30 en 17:00 uur). Geef dan ook het nummer van uw melding: {{ signal.sia_id }}.
 
 Met vriendelijke groet,
 
