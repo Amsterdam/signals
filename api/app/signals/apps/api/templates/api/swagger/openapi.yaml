@@ -162,6 +162,24 @@ paths:
             type: string
             example: 'ASC'
           required: false
+        - name: area_type
+          in: query
+          description: >-
+            Filter signals according to the currently assigned location area_type, accepts
+            a single area_type
+          schema:
+            type: string
+            example: 'district'
+          required: false
+        - name: area_code
+          in: query
+          description: >-
+            Filter signals according to the currently assigned location area_code, accepts
+            a single area_code
+          schema:
+            type: string
+            example: 'ASC'
+          required: false
 
       responses:
         '200':
