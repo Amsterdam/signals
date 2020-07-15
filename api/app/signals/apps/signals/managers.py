@@ -291,11 +291,18 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         from .models import Location
-        from .utils.location import _get_stadsdeel_code
+        from .utils.location import _get_stadsdeel_code, _get_area
 
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None
         data['stadsdeel'] = _get_stadsdeel_code(data['geometrie'], default_stadsdeel)
+
+        # set area_type and area_code if default area type is provided
+        if DEFAULT_SIGNAL_AREA_TYPE:
+            area = _get_area(data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
+            if area:
+                data['area_type'] = DEFAULT_SIGNAL_AREA_TYPE
+                data['area_code'] = area.code
 
         prev_location = signal.location
         location = Location.objects.create(**data, _signal_id=signal.id)
