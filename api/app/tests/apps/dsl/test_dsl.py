@@ -89,3 +89,14 @@ class DslTest(TestCase):
         c = self.compiler
         self.assertFalse(c.compile('location_1 in area."stadsdeel"."oost"').evaluate(self.context))
         self.assertTrue(c.compile('location_2 in area."stadsdeel"."oost"').evaluate(self.context))
+
+    def test_and_or(self):
+        c = self.compiler
+        self.assertTrue(c.compile('testint == 0 or testint == 1').evaluate(self.context))
+        self.assertFalse(c.compile('testint == 0 and testint == 1').evaluate(self.context))
+        self.assertTrue(c.compile('testint == 1 and (time > 12:00 and time < 20:00)').evaluate(self.context))
+        self.assertTrue(c.compile('testint == 1 or (time > 12:00 and time < 20:00)').evaluate(self.context))
+        self.assertTrue(c.compile(
+            'location_2 in area."stadsdeel"."oost" and (testint > 0 or (testint == 1))'
+        ).evaluate(self.context))
+        self.assertFalse(c.compile('maincat in list and (time > 12:00 and time < 20:00)').evaluate(self.context))
