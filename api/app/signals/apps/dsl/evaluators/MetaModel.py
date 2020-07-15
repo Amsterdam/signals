@@ -1,10 +1,10 @@
 from textx import metamodel_from_str
 
-from .EqualityEvaluator import EqualityEvaluator
-from .InEvaluator import InEvaluator
-from .LogicalEvaluator import LogicalEvaluator
-from .RootEvaluator import RootEvaluator
-from .TerminalEvaludator import TerminalEvaluator
+from signals.apps.dsl.evaluators.EqualityEvaluator import EqualityEvaluator
+from signals.apps.dsl.evaluators.InEvaluator import InEvaluator
+from signals.apps.dsl.evaluators.LogicalEvaluator import LogicalEvaluator
+from signals.apps.dsl.evaluators.RootEvaluator import RootEvaluator
+from signals.apps.dsl.evaluators.TerminalEvaludator import TerminalEvaluator
 
 # user classes have to live in the same module-space where the metamodel_from_str is invoked.
 # the names should exactly match the rule-name, we will just subclass them here with the correct name
