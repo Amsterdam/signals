@@ -1,4 +1,4 @@
-from evaluators import MetaModel
+from signals.apps.dsl.evaluators.MetaModel import MetaModel
 
 GRAMMAR = '''
 RootExpression: expression = OrExpression;
