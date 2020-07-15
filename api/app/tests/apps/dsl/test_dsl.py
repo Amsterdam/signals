@@ -15,7 +15,7 @@ class DslTest(TestCase):
 
         self.context = {
             'testint': 1,
-            'location_1': geos.Point(5, 23),
+            'location_1': geos.Point(66, 66),
             'location_2': geos.Point(1, 1),
             'maincat': 'dieren',
             'subcat': 'subcat',
@@ -88,4 +88,4 @@ class DslTest(TestCase):
     def test_in_gemometry_operations(self):
         c = self.compiler
         self.assertFalse(c.compile('location_1 in area."stadsdeel"."oost"').evaluate(self.context))
-        self.assertFalse(c.compile('location_2 in area."stadsdeel"."oost"').evaluate(self.context))
+        self.assertTrue(c.compile('location_2 in area."stadsdeel"."oost"').evaluate(self.context))
