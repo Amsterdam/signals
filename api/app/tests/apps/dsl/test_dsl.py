@@ -15,7 +15,8 @@ class DslTest(TestCase):
 
         self.context = {
             'testint': 1,
-            'location': geos.Point(5, 23),
+            'location_1': geos.Point(5, 23),
+            'location_2': geos.Point(1, 1),
             'maincat': 'dieren',
             'subcat': 'subcat',
             'time': time.strptime("16:00:00", "%H:%M:%S"),
@@ -24,11 +25,11 @@ class DslTest(TestCase):
                     'oost': geos.MultiPolygon(poly)
                 }
             },
-            'lijstval': 'geo1',
-            'lijstje': set(['geo1', 'geo2'])
+            'listval': 'geo1',
+            'list': set(['geo1', 'geo2'])
         }
 
-    def test_numeric_equality(self):
+    def test_numeric_operations(self):
         c = self.compiler
         self.assertTrue(c.compile('testint == 1').evaluate(self.context))
         self.assertFalse(c.compile('testint == 0').evaluate(self.context))
@@ -71,3 +72,20 @@ class DslTest(TestCase):
         self.assertFalse(c.compile('time <= 15:00:00').evaluate(self.context))
         self.assertTrue(c.compile('time < 16:00:01').evaluate(self.context))
         self.assertTrue(c.compile('time <= 16:00:01').evaluate(self.context))
+
+    def test_string_operations(self):
+        c = self.compiler
+        self.assertFalse(c.compile('maincat == "test"').evaluate(self.context))
+        self.assertTrue(c.compile('maincat == "dieren"').evaluate(self.context))
+        self.assertTrue(c.compile('maincat != "test"').evaluate(self.context))
+        self.assertFalse(c.compile('maincat != "dieren"').evaluate(self.context))
+
+    def test_in_collection_operations(self):
+        c = self.compiler
+        self.assertTrue(c.compile('listval in list').evaluate(self.context))
+        self.assertFalse(c.compile('maincat in list').evaluate(self.context))
+
+    def test_in_gemometry_operations(self):
+        c = self.compiler
+        self.assertFalse(c.compile('location_1 in area."stadsdeel"."oost"').evaluate(self.context))
+        self.assertFalse(c.compile('location_2 in area."stadsdeel"."oost"').evaluate(self.context))
