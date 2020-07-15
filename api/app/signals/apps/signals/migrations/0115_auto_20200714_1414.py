@@ -20,8 +20,4 @@ class Migration(migrations.Migration):
             name='area_type',
             field=models.CharField(max_length=256, null=True),
         ),
-        migrations.AlterUniqueTogether(
-            name='location',
-            unique_together={('area_type', 'area_code')},
-        ),
     ]

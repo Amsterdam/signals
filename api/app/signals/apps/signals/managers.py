@@ -61,8 +61,6 @@ class SignalManager(models.Manager):
         location_data['stadsdeel'] = _get_stadsdeel_code(location_data['geometrie'], default_stadsdeel)
         
         # set area_type and area_code if default area type is provided
-        location_data['area_type'] = None
-        location_data['area_code'] = None
         if DEFAULT_SIGNAL_AREA_TYPE:
             area = _get_area(location_data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
             if area:
