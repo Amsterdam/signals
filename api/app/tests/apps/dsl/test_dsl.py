@@ -28,7 +28,6 @@ class DslTest(TestCase):
             'lijstje': set(['geo1', 'geo2'])
         }
 
-
     def test_numeric_equality(self):
         c = self.compiler
         self.assertTrue(c.compile('testint == 1').evaluate(self.context))
