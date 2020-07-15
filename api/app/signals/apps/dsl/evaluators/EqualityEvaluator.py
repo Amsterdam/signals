@@ -1,4 +1,4 @@
-from .Evaluator import Evaluator
+from signals.apps.dsl.evaluators.Evaluator import Evaluator
 
 
 class EqualityEvaluator(Evaluator):

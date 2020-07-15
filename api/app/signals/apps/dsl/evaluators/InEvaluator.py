@@ -1,6 +1,6 @@
 from django.contrib.gis import geos
 
-from .Evaluator import Evaluator
+from signals.apps.dsl.evaluators.Evaluator import Evaluator
 
 
 class InEvaluator(Evaluator):

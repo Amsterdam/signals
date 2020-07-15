@@ -2,7 +2,7 @@ import time
 
 from django.contrib.gis import geos
 
-from ExpressionEvaluator import ExpressionEvaluator
+from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 
 TEST_EXPR = '''
 location in area."stadsdeel"."oost"
