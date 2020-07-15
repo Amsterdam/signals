@@ -88,6 +88,9 @@ class Location(CreatedUpdatedModel):
     extra_properties = JSONField(null=True)
     bag_validated = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('area_type', 'area_code',)
+
     @property
     def short_address_text(self):
         # no postal code, no municipality
