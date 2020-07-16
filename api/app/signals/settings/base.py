@@ -520,3 +520,8 @@ GRAPHENE = {
     'RELAY_CONNECTION_ENFORCE_FIRST_OR_LAST': True,
     'RELAY_CONNECTION_MAX_LIMIT': 50,
 }
+
+DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
+    'DEFAULT_PDOK_MUNICIPALITIES',
+    'Amsterdam,Amstelveen,Weesp',
+).split(',')
