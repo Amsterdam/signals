@@ -67,6 +67,13 @@ class DocumentBase(Document):
             )
 
     @classmethod
-    def index_documents(cls, index=None, using=None, batch=1000):
+    def index_documents(cls, index=None, using=None, batch=1000, queryset=None):
+        qs = queryset.all() if queryset else cls().get_queryset()
+
         cls.init(index, using)
-        cls.bulk(cls().get_queryset(), batch, using)
+        cls.bulk(qs, batch, using)
+
+    @classmethod
+    def ping(cls, using=None):
+        es = cls._get_connection(using)
+        return es.ping()
