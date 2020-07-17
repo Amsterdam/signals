@@ -80,6 +80,8 @@ class SignalDocument(DocumentBase):
             'children',
             'attachments',
             'notes',
+        ).order_by(
+            '-updated_at'
         ).all()
 
     @classmethod
