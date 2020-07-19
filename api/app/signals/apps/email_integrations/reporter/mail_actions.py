@@ -138,11 +138,11 @@ def _create_feedback_and_mail_context(signal: Signal):
 class MailActions:
     _from_email = settings.NOREPLY
 
-    def __init__(self) -> None:
+    def __init__(self, mail_rules=SIGNAL_MAIL_RULES) -> None:
         self._conditions = {}
         self._kwargs = {}
 
-        for config in SIGNAL_MAIL_RULES:
+        for config in mail_rules:
             key = slugify(config['name'])
 
             self._conditions[key] = config['conditions']
