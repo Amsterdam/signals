@@ -14,15 +14,3 @@ def update_status_handler(sender, signal_obj, status, prev_status, *args, **kwar
     tasks.send_mail_reporter_status_changed_afgehandeld.delay(signal_pk=signal_obj.pk,
                                                               status_pk=status.pk,
                                                               prev_status_pk=prev_status.pk)
-
-    tasks.send_mail_reporter_status_changed_split.delay(signal_pk=signal_obj.pk,
-                                                        status_pk=status.pk,
-                                                        prev_status_pk=prev_status.pk)
-
-    tasks.send_mail_reporter_status_changed_ingepland.delay(signal_pk=signal_obj.pk,
-                                                            status_pk=status.pk,
-                                                            prev_status_pk=prev_status.pk)
-
-    tasks.send_mail_reporter_status_changed_heropend.delay(signal_pk=signal_obj.pk,
-                                                           status_pk=status.pk,
-                                                           prev_status_pk=prev_status.pk)
