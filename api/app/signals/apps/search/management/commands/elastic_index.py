@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         ping = True if self._dry_run else SignalDocument.ping()
         if not ping:
-            self.stderr.write('* Elastic cluster not online!')
+            self.stderr.write('* Elastic cluster is unreachable!')
         else:
             self._apply_options(**options)
 
@@ -116,7 +116,8 @@ class Command(BaseCommand):
             to_date = timezone.make_aware(timezone.datetime.strptime(to_date, '%Y-%m-%d'))
         else:
             to_date = timezone.now()
-        to_date = to_date.replace(hour=23, minute=59, second=59)  # End of the given day
+        to_date = to_date + timezone.timedelta(days=1)
+        to_date = to_date.replace(hour=00, minute=00, second=00)  # Beginning of the next day
 
         if to_date < from_date:
             self.stderr.write('* To date cannot be before the from date')
