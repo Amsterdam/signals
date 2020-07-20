@@ -31,8 +31,8 @@ class TestTasks(TestCase):
     @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
     def test_send_mail_reporter_status_changed(self, mocked_mail):
         tasks.send_mail_reporter_status_changed(signal_pk=self.signal.id,
-                                                            status_pk=self.signal.status.id,
-                                                            prev_status_pk=self.prev_status.id)
+                                                status_pk=self.signal.status.id,
+                                                prev_status_pk=self.prev_status.id)
         mocked_mail.send_mail_reporter_status_changed.assert_called_once_with(
             self.signal, self.signal.status, self.prev_status
         )
