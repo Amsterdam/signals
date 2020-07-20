@@ -172,7 +172,7 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
                 continue  # We do not show other tracked values, so on to the next one
 
             actions.append(action)
-        return f'\n'.join(actions)
+        return '\n'.join(actions)
 
     def get_description(self, log):
         return None  # No description implemented yet

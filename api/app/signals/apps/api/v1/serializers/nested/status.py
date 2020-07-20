@@ -25,6 +25,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             'state_display',
             'target_api',
             'extra_properties',
+            'send_email',
             'created_at',
         )
         read_only_fields = (
