@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 @app.task
 def save_to_elastic(signal_id):
     if not SignalDocument.ping():
-        raise Exception('Elastic cluster is down')
+        raise Exception('Elastic cluster is unreachable')
 
     signal = Signal.objects.get(id=signal_id)
     signal_document = SignalDocument.create_document(signal)
@@ -22,7 +22,7 @@ def rebuild_index():
     log.info('rebuild_index - start')
 
     if not SignalDocument.ping():
-        raise Exception('Elastic cluster is down')
+        raise Exception('Elastic cluster is unreachable')
 
     SignalDocument.index_documents()
     log.info('rebuild_index - done!')
