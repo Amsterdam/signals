@@ -1,6 +1,10 @@
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.exceptions import APIException
-from rest_framework.status import HTTP_412_PRECONDITION_FAILED, HTTP_501_NOT_IMPLEMENTED
+from rest_framework.status import (
+    HTTP_412_PRECONDITION_FAILED,
+    HTTP_501_NOT_IMPLEMENTED,
+    HTTP_504_GATEWAY_TIMEOUT
+)
 
 
 class PreconditionFailed(APIException):
@@ -12,3 +16,8 @@ class PreconditionFailed(APIException):
 class NotImplementedException(APIException):
     status_code = HTTP_501_NOT_IMPLEMENTED
     default_detail = 'Not implemented'
+
+
+class GatewayTimeoutException(APIException):
+    status_code = HTTP_504_GATEWAY_TIMEOUT
+    default_detail = 'A server error occurred.'
