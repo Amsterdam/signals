@@ -30,8 +30,7 @@ class TestCore(TestCase):
         """
         Apply only specified mail rules. (allows better isolation of tests)
         """
-        to_match = set(action_names)
-        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in action_names]
+        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
         ma = MailActions(mail_rules=mail_rules)
 
         return ma.apply(signal.id, send_mail=True)
@@ -227,8 +226,7 @@ class TestSignalSplitEmailFlow(TestCase):
         """
         Apply only specified mail rules. (allows better isolation of tests)
         """
-        to_match = set(action_names)
-        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in action_names]
+        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
         ma = MailActions(mail_rules=mail_rules)
 
         return ma.apply(signal.id, send_mail=True)
