@@ -1,7 +1,8 @@
 import os
 
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import F, Q
+from django.db.models import CharField, F, Q, Value
+from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.datawarehouse.utils import queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import CategoryAssignment, ServiceLevelObjective
@@ -18,12 +19,13 @@ def create_category_assignments_csv(location: str) -> str:
         'id',
         'created_at',
         'updated_at',
-        'extra_properties',
         '_signal_id',
         main=F('category__parent__name'),
         sub=F('category__name'),
         _departments=StringAgg('category__departments__name', delimiter=', ',
-                               filter=Q(category__categorydepartment__is_responsible=True))
+                               filter=Q(category__categorydepartment__is_responsible=True)),
+        _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
+                                   Value('null', output_field=CharField()))
     ).order_by(
         'id'
     )

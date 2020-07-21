@@ -163,7 +163,7 @@ class TestDatawarehouse(testcases.TestCase):
                 # self.assertEqual(row['created_at'], str(location.created_at))
                 # self.assertEqual(row['updated_at'], str(location.updated_at))
 
-                self.assertEqual(row['extra_properties'], '')
+                self.assertEqual(row['extra_properties'], 'null')
 
     def test_create_reporters_csv(self):
         signal = SignalFactory.create()
@@ -208,7 +208,7 @@ class TestDatawarehouse(testcases.TestCase):
                 # self.assertEqual(row['created_at'], str(category_assignment.created_at))
                 # self.assertEqual(row['updated_at'], str(category_assignment.updated_at))
 
-                self.assertEqual(row['extra_properties'], '')
+                self.assertEqual(row['extra_properties'], 'null')
 
     def test_create_statuses_csv(self):
         signal = SignalFactory.create()
@@ -233,7 +233,7 @@ class TestDatawarehouse(testcases.TestCase):
                 # self.assertEqual(row['created_at'], str(status.created_at))
                 # self.assertEqual(row['updated_at'], str(status.updated_at))
 
-                self.assertEqual(row['extra_properties'], '')
+                self.assertEqual(row['extra_properties'], 'null')
                 self.assertEqual(row['state'], status.state)
 
 

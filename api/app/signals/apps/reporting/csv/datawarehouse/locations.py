@@ -1,6 +1,7 @@
 import os
 
-from django.db.models import ExpressionWrapper, FloatField, Func
+from django.db.models import CharField, ExpressionWrapper, FloatField, Func, Value
+from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.datawarehouse.utils import (
     map_choices,
@@ -20,15 +21,16 @@ def create_locations_csv(location: str) -> str:
     queryset = Location.objects.values(
         'id',
         'buurt_code',
-        'address',
         'address_text',
         'created_at',
         'updated_at',
-        'extra_properties',
         '_signal_id',
         lat=ExpressionWrapper(Func('geometrie', function='st_x'), output_field=FloatField()),
         lng=ExpressionWrapper(Func('geometrie', function='st_y'), output_field=FloatField()),
         _stadsdeel=map_choices('stadsdeel', STADSDELEN),
+        _address=Coalesce(Cast('address', output_field=CharField()), Value('null', output_field=CharField())),
+        _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
+                                   Value('null', output_field=CharField()))
     ).order_by(
         'id'
     )

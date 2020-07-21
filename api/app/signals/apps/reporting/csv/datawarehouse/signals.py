@@ -5,6 +5,7 @@ import logging
 import os
 
 from django.db.models import CharField, F, Max, Value
+from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.datawarehouse.utils import queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import Signal
@@ -21,7 +22,7 @@ def create_signals_csv(location: str) -> str:
     """
     queryset = Signal.objects.annotate(
         type_assignment_id=Max('types__id'),
-        image=Value(None, output_field=CharField())
+        image=Value(None, output_field=CharField()),
     ).filter(
         types__id=F('type_assignment_id'),
     ).values(
@@ -37,7 +38,6 @@ def create_signals_csv(location: str) -> str:
         'expire_date',
         'image',
         'upload',
-        'extra_properties',
         'category_assignment_id',
         'location_id',
         'reporter_id',
@@ -48,7 +48,9 @@ def create_signals_csv(location: str) -> str:
         priority_created_at=F('priority__created_at'),
         _parent=F('parent_id'),
         type=F('types__name'),
-        type_created_at=F('types__created_at')
+        type_created_at=F('types__created_at'),
+        _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
+                                   Value('null', output_field=CharField()))
     )
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals.csv'))
