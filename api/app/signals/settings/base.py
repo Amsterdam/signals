@@ -156,7 +156,7 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
-if os.getenv('SWIFT_ENABLED', 'false') == 'true':
+if os.getenv('SWIFT_ENABLED', False) in [True, 1, '1', 'True', 'true']:
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
     SWIFT_PASSWORD = os.getenv('SWIFT_PASSWORD')
