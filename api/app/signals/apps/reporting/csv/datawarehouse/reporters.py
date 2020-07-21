@@ -32,7 +32,7 @@ def create_reporters_csv(location: str) -> str:
             default=False,
             output_field=BooleanField()
         ),
-        extra_properties=Value(None, output_field=CharField())
+        extra_properties=Value('null', output_field=CharField())
     ).values(
         'id',
         'email',
