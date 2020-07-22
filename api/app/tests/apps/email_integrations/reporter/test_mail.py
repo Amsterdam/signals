@@ -38,9 +38,8 @@ class TestCore(TestCase):
     def test_send_mail_reporter_created(self):
         # Make sure an email is sent on creation of a nuisance complaint.
         category = self.signal.category_assignment.category
-        num_of_messages = self._apply_mail_actions(['Send mail signal created'], self.signal)
+        self._apply_mail_actions(['Send mail signal created'], self.signal)
 
-        self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
@@ -56,9 +55,8 @@ class TestCore(TestCase):
         category.save()
         self.signal.refresh_from_db()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal created'], self.signal)
+        self._apply_mail_actions(['Send mail signal created'], self.signal)
 
-        self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
@@ -68,9 +66,9 @@ class TestCore(TestCase):
 
     def test_send_mail_reporter_created_no_email(self):
         ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-        num_of_messages = ma.apply(self.signal_no_email.id, send_mail=True)
+        ma.apply(self.signal_no_email.id, send_mail=True)
 
-        self.assertEqual(num_of_messages, None)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld(self):
         # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
@@ -79,10 +77,9 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
         self.assertEqual(1, Feedback.objects.count())
-        self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
@@ -95,10 +92,9 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
         self.assertEqual(0, Feedback.objects.count())
-        self.assertEqual(num_of_messages, None)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
@@ -108,10 +104,10 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
         self.assertEqual(0, Feedback.objects.count())
-        self.assertEqual(num_of_messages, None)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_email(self):
         # Prepare signal with status change to `AFGEHANDELD`.
@@ -120,10 +116,10 @@ class TestCore(TestCase):
         self.signal_no_email.status = status
         self.signal_no_email.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal_no_email)
+        self._apply_mail_actions(['Send mail signal handled'], self.signal_no_email)
 
         self.assertEqual(0, Feedback.objects.count())
-        self.assertEqual(num_of_messages, None)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
         mail.outbox = []
@@ -134,12 +130,11 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
         self.assertEqual(1, Feedback.objects.count())
         feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
-        self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
@@ -180,9 +175,8 @@ class TestCore(TestCase):
 
             with mock.patch.dict('os.environ', local_env):
                 mail.outbox = []
-                num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+                self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
-                self.assertEqual(num_of_messages, 1)
                 self.assertEqual(len(mail.outbox), 1)
                 message = mail.outbox[0]
                 self.assertIn(fe_location, message.body)
@@ -204,9 +198,8 @@ class TestCore(TestCase):
         for environment, fe_location in env_fe_mapping.items():
             with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
-                num_of_messages = self._apply_mail_actions(['Send mail signal handled'], self.signal)
+                self._apply_mail_actions(['Send mail signal handled'], self.signal)
 
-                self.assertEqual(num_of_messages, 1)
                 self.assertEqual(len(mail.outbox), 1)
                 message = mail.outbox[0]
                 self.assertIn('http://dummy_link', message.body)
@@ -234,9 +227,8 @@ class TestSignalSplitEmailFlow(TestCase):
     def test_send_mail_reporter_status_changed_split(self):
         """Original reporter must be emailed with resolution GESPLITST."""
         ma = MailActions()
-        num_of_messages = ma.apply(self.parent_signal.id, send_mail=True)
+        ma.apply(self.parent_signal.id, send_mail=True)
 
-        self.assertEqual(num_of_messages, 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.parent_signal.id}')
         self.assertEqual(mail.outbox[0].to, ['piet@example.com'])
@@ -246,16 +238,16 @@ class TestSignalSplitEmailFlow(TestCase):
         self.parent_signal.status.state = 'workflow.GEMELD'
         self.parent_signal.status.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
-        self.assertEqual(num_of_messages, None)
+        self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_split_no_email(self):
         """No email should be sent when the reporter did not leave an email address."""
         self.parent_signal.reporter.email = None
         self.parent_signal.reporter.save()
 
-        num_of_messages = self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
-        self.assertEqual(num_of_messages, None)
+        self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestReporterMailRules(TestCase):

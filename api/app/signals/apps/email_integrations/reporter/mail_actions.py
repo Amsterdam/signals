@@ -199,11 +199,9 @@ class MailActions:
     def apply(self, signal_id: int, send_mail: bool = True) -> None:
         signal = Signal.objects.get(pk=signal_id)
 
-        number_of_messages_sent = 0
         actions = self._get_actions(signal=signal)
         for action in actions:
             kwargs = copy.deepcopy(self._kwargs[action])
 
             if send_mail:
-                number_of_messages_sent += self._mail(signal=signal, mail_kwargs=kwargs)
-        return number_of_messages_sent if number_of_messages_sent > 0 else None
+                self._mail(signal=signal, mail_kwargs=kwargs)
