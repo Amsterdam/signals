@@ -11,8 +11,10 @@ from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
 from signals.apps.reporting.csv.datawarehouse.utils import save_csv_files
+from signals.celery import app
 
 
+@app.task
 def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
@@ -30,6 +32,7 @@ def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
         save_csv_files(csv_files)
 
 
+@app.task
 def save_csv_files_datawarehouse():
     """
     Create CSV files for Datawarehouse and save them on the storage backend.

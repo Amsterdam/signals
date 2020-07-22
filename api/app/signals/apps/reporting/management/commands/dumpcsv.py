@@ -33,6 +33,9 @@ REPORT_OPTIONS = {
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
+        parser.add_argument('--delay', action='store_true', dest='celery_delay', help='Run the task async, can only be '
+                                                                                      'used if creating all CSV\'s at '
+                                                                                      'once')
         parser.add_argument('--report', type=str,
                             help=f'Report type to export (if none given all reports will be exported), '
                                  f'choices are: {", ".join(REPORT_OPTIONS.keys())}')
@@ -54,7 +57,7 @@ class Command(BaseCommand):
         if reports is None or set(reports) == set(REPORT_OPTIONS.keys()):
             # Default is to export all, if all options are selected also export all
             self.stdout.write(f'Export: {", ".join(REPORT_OPTIONS.keys())}')
-            self._dump_all()
+            self._dump_all(delay=kwargs['celery_delay'])
         else:
             # Only export the selected reports
             reports = set(reports)
@@ -66,8 +69,12 @@ class Command(BaseCommand):
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')
         self.stdout.write('Done!')
 
-    def _dump_all(self):
-        save_csv_files_datawarehouse()
+    def _dump_all(self, delay=False):
+        if delay:
+            self.stdout.write(f'* Execute dump task async')
+            save_csv_files_datawarehouse.delay()
+        else:
+            save_csv_files_datawarehouse()
 
     def _dump_selected(self, report):
         func = REPORT_OPTIONS[report]
