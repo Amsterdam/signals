@@ -71,7 +71,7 @@ class Command(BaseCommand):
 
     def _dump_all(self, delay=False):
         if delay:
-            self.stdout.write(f'* Execute dump task async')
+            self.stdout.write('* Execute dump task async')
             save_csv_files_datawarehouse.delay()
         else:
             save_csv_files_datawarehouse()
