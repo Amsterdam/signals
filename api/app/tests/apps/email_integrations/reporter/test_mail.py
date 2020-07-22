@@ -47,6 +47,21 @@ class TestCore(TestCase):
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
         self.assertIn(category.handling_message, mail.outbox[0].body)
 
+    def test_send_mail_reporter_created_only_once(self):
+        signal = SignalFactory.create(reporter__email='foo@bar.com')
+
+        status = StatusFactory.create(_signal=signal, state=workflow.BEHANDELING)
+        signal.status = status
+        signal.save()
+
+        status = StatusFactory.create(_signal=signal, state=workflow.GEMELD)
+        signal.status = status
+        signal.save()
+
+        self._apply_mail_actions(['Send mail signal created'], signal)
+
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_send_mail_reporter_created_custom_handling_message(self):
         # Make sure a category's handling messages makes it to the reporter via
         # the mail generated on creation of a nuisance complaint.
