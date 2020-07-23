@@ -26,11 +26,9 @@ def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
         try:
             csv_files.append(func(tmp_dir))
         except EnvironmentError:
-            print('* EnvironmentError')
-            raise
+            pass
 
         # Store the CSV files to the correct location
-        print(f'* CSV Files: {", ".join(csv_files)}')
         save_csv_files(csv_files)
 
 
