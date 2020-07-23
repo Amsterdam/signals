@@ -46,6 +46,7 @@ def save_csv_files(csv_files: list) -> None:
     """
     storage = _get_storage_backend(get_swift_parameters())
 
+    print(f'* CSV Files: {", ".join(csv_files)}')
     for csv_file_path in csv_files:
         print(f'* {csv_file_path} - {"exists" if os.path.exists(csv_file_path) else "does not exists"}')
         from pathlib import Path
