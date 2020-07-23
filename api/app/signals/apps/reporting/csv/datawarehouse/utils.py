@@ -47,14 +47,19 @@ def save_csv_files(csv_files: list) -> None:
     storage = _get_storage_backend(get_swift_parameters())
 
     for csv_file_path in csv_files:
+        print(f'* {csv_file_path} - {"exists" if os.path.exists(csv_file_path) else "does not exists"}')
+        from pathlib import Path
+        print(f'* File size: {Path(csv_file_path).stat().st_size} bytes')
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             if isinstance(storage, SwiftStorage):
+                print(f'* SwiftStorage: {file_name}')
                 storage.save(name=file_name, content=opened_csv_file)
             else:
                 # Saves the file in a folder structure like "Y/m/d/file_name" for local storage
                 now = timezone.now()
                 file_path = f'{now:%Y}/{now:%m}/{now:%d}/{now:%H%M%S%Z}_{file_name}'
+                print(f'* FileSystemStorage: {file_path}')
                 storage.save(name=file_path, content=opened_csv_file)
 
 
@@ -73,10 +78,12 @@ def queryset_to_csv_file(queryset: QuerySet, csv_file_path: str) -> TextIO:
     sql = f"COPY ({sql}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER E',')"
     sql = sql.replace('AS "_', 'AS "')
 
+    print(f'* Query: {sql}')
     with open(csv_file_path, 'w') as file:
         with connection.cursor() as cursor:
             sql = cursor.mogrify(sql, params)
             cursor.copy_expert(sql, file)
+    print(f'* Dumped content of to tmp CSV file: {file.name}')
     return file
 
 
