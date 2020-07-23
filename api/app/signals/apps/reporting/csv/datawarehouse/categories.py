@@ -62,5 +62,5 @@ def create_category_sla_csv(location: str) -> str:
 
     ordered_field_names = ['id', 'main', 'sub', 'n_days', 'use_calendar_days', 'created_at', ]
     reorder_csv(csv_file.name, ordered_field_names)
-    print(f'* ServiceLevelObjective created CSV File: {csv_file.name}')
+
     return csv_file.name
