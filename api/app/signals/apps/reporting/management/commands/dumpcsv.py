@@ -54,8 +54,10 @@ class Command(BaseCommand):
         reports = set(reports)
         self.stdout.write(f'Export: {", ".join(reports)}')
         for report in reports:
+            self.stdout.write(f'* Exporting: {report}')
             func = REPORT_OPTIONS[report]
             save_csv_file_datawarehouse(func)
+            self.stdout.write('* ---------------------------------')
 
         stop = timer()
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')
