@@ -104,11 +104,12 @@ def map_choices(field_name: str, choices: list) -> Case:
 
 
 def reorder_csv(file_path, ordered_field_names):
-    reordered_file_path = f'{file_path[-4]}_reordered.csv'
+    reordered_file_path = f'{file_path[:-4]}_reordered.csv'
     with open(file_path, 'r') as infile, open(reordered_file_path, 'a') as outfile:
         writer = csv.DictWriter(outfile, fieldnames=ordered_field_names)
         writer.writeheader()
         for row in csv.DictReader(infile):
             writer.writerow(row)
 
+    shutil.move(file_path, f'{file_path[:-4]}_original.csv')
     shutil.move(reordered_file_path, file_path)
