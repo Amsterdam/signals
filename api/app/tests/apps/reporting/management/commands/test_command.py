@@ -6,7 +6,7 @@ from django.test import TransactionTestCase
 
 
 class TestCommand(TransactionTestCase):
-    @patch('signals.apps.reporting.csv.datawarehouse.tasks.save_csv_files_datawarehouse')
+    @patch('signals.apps.reporting.csv.datawarehouse.tasks.save_csv_file_datawarehouse')
     def test_command(self, patched_save_csv_files_datawarehouse):
         out = StringIO()
         err = StringIO()
@@ -16,7 +16,7 @@ class TestCommand(TransactionTestCase):
         self.assertNotEqual(out.getvalue(), '')
         self.assertEqual(err.getvalue(), '')
 
-        patched_save_csv_files_datawarehouse.assert_called_once()
+        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 7)
 
 
 class TestCSVHorecaCommand(TransactionTestCase):

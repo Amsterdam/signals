@@ -14,10 +14,7 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.datawarehouse.tasks import (
-    save_csv_file_datawarehouse,
-    save_csv_files_datawarehouse
-)
+from signals.apps.reporting.csv.datawarehouse.tasks import save_csv_file_datawarehouse
 
 REPORT_OPTIONS = {
     # Option, Func
@@ -33,9 +30,6 @@ REPORT_OPTIONS = {
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--delay', action='store_true', dest='celery_delay', help='Run the task async, can only be '
-                                                                                      'used if creating all CSV\'s at '
-                                                                                      'once')
         parser.add_argument('--report', type=str,
                             help=f'Report type to export (if none given all reports will be exported), '
                                  f'choices are: {", ".join(REPORT_OPTIONS.keys())}')
@@ -55,27 +49,14 @@ class Command(BaseCommand):
 
         reports = kwargs['report'].split(',') if kwargs['report'] else None
         if reports is None or set(reports) == set(REPORT_OPTIONS.keys()):
-            # Default is to export all, if all options are selected also export all
-            self.stdout.write(f'Export: {", ".join(REPORT_OPTIONS.keys())}')
-            self._dump_all(delay=kwargs['celery_delay'])
-        else:
-            # Only export the selected reports
-            reports = set(reports)
-            self.stdout.write(f'Export: {", ".join(reports)}')
-            for report in reports:
-                self._dump_selected(report)
+            reports = REPORT_OPTIONS.keys()
+
+        reports = set(reports)
+        self.stdout.write(f'Export: {", ".join(reports)}')
+        for report in reports:
+            func = REPORT_OPTIONS[report]
+            save_csv_file_datawarehouse(func)
 
         stop = timer()
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')
         self.stdout.write('Done!')
-
-    def _dump_all(self, delay=False):
-        if delay:
-            self.stdout.write('* Execute dump task async')
-            save_csv_files_datawarehouse.delay()
-        else:
-            save_csv_files_datawarehouse()
-
-    def _dump_selected(self, report):
-        func = REPORT_OPTIONS[report]
-        save_csv_file_datawarehouse(func)
