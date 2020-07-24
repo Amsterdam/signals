@@ -21,6 +21,9 @@ ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 COPY app /app/
 COPY deploy /deploy/
 
+RUN chgrp datapunt /app
+RUN chmod g+w /app
+
 USER datapunt
 
 RUN SECRET_KEY=$DJANGO_SECRET_KEY python manage.py collectstatic --no-input
