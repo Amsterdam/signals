@@ -28,4 +28,4 @@ USER datapunt
 
 RUN SECRET_KEY=$DJANGO_SECRET_KEY python manage.py collectstatic --no-input
 
-CMD uwsgi=
+CMD uwsgi
