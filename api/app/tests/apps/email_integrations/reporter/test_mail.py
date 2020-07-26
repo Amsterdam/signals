@@ -1,4 +1,5 @@
 from unittest import mock
+import uuid
 
 from django.conf import settings
 from django.core import mail
@@ -15,16 +16,47 @@ from signals.apps.signals.managers import create_initial, update_status
 from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
-class TestCore(TestCase):
-    ALL_RULE_NAMES = set([r['name'] for r in SIGNAL_MAIL_RULES])
+class TestMailActionTriggers(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create()
+
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.MailActions')
+    def test_triggered_on_create_initial(self, patched_actions):
+        create_initial.send_robust(sender=self.__class__, signal_obj=self.signal)
+        patched_actions.apply.called_once()
+
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.MailActions')
+    def test_triggered_on_update_status(self, patched_actions):
+        prev_status = self.signal.status
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
+        self.signal.status = new_status
+        self.signal.save()
+
+        update_status.send_robust(sender=self.__class__,
+                                  signal_obj=self.signal,
+                                  status=new_status,
+                                  prev_status=prev_status)
+
+
+class TestMailRuleConditions(TestCase):
 
     @freeze_time('2018-10-10T10:00+00:00')
     def setUp(self):
-        self.signal = SignalFactory.create(reporter__email='foo@bar.com')
+        def get_email():
+            return f'{uuid.uuid4()}@example.com'
+
+        self.signal = SignalFactory.create(reporter__email=get_email())
         self.signal_no_email = SignalFactory.create(reporter__email='')
-        self.parent_signal = SignalFactory.create(reporter__email='foo@bar.com')
-        self.child_signal = SignalFactory.create(reporter__email='foo@bar.com',
+        self.parent_signal = SignalFactory.create(reporter__email=get_email())
+        self.child_signal = SignalFactory.create(reporter__email=get_email(),
                                                  parent=self.parent_signal)
+
+    def _get_mail_rules(self, action_names):
+        """
+        Get MailActions object instantiated with specific mail rules.
+        """
+        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
+        return MailActions(mail_rules=mail_rules)
 
     def _apply_mail_actions(self, action_names, signal):
         """
@@ -33,16 +65,60 @@ class TestCore(TestCase):
         mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
         ma = MailActions(mail_rules=mail_rules)
 
-        return ma.apply(signal.id, send_mail=True)
+    def _find_messages(self, signal):
+        # We use the unique email adresses to correlate a signal in the tests
+        # and the eventual email. This does not work for anonymous reporters,
+        # so our tests there are less robust.        
+        return [msg for msg in mail.outbox if signal.reporter.email in msg.to]
+
+    def test_never_send_mail_for_child_signal(self):
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+
+        actions = ma._get_actions(self.child_signal)
+        self.assertEqual(len(actions), 0)
+
+        ma.apply(signal_id=self.child_signal.id, send_mail=True)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_email_for_anonymous_reporter(self):
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        ma.apply(self.signal_no_email.id, send_mail=True)
+
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_created(self):
-        # Make sure an email is sent on creation of a nuisance complaint.
-        category = self.signal.category_assignment.category
-        self._apply_mail_actions(['Send mail signal created'], self.signal)
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
-        self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
+        self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
+        self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
+        category = self.signal.category_assignment.category
+        self.assertIn(category.handling_message, mail.outbox[0].body)
+
+    def test_send_mail_reporter_created_custom_handling_message(self):
+        # Make sure a category's handling messages makes it to the reporter via
+        # the mail generated on creation of a nuisance complaint.
+        category = self.signal.category_assignment.category
+        category.handling_message = 'This text should end up in the mail to the reporter'
+        category.save()
+        self.signal.refresh_from_db()
+
+        MailActions(mail_rules=SIGNAL_MAIL_RULES).apply(signal_id=self.signal.id)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
 
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
         self.assertIn(category.handling_message, mail.outbox[0].body)
@@ -58,30 +134,7 @@ class TestCore(TestCase):
         signal.status = status
         signal.save()
 
-        self._apply_mail_actions(['Send mail signal created'], signal)
-
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_send_mail_reporter_created_custom_handling_message(self):
-        # Make sure a category's handling messages makes it to the reporter via
-        # the mail generated on creation of a nuisance complaint.
-        category = self.signal.category_assignment.category
-        category.handling_message = 'This text should end up in the mail to the reporter'
-        category.save()
-        self.signal.refresh_from_db()
-
-        self._apply_mail_actions(['Send mail signal created'], self.signal)
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
-        self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
-
-        self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
-        self.assertIn(category.handling_message, mail.outbox[0].body)
-
-    def test_send_mail_reporter_created_no_email(self):
-        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-        ma.apply(self.signal_no_email.id, send_mail=True)
+        ma = MailActions().apply(signal_id=signal.id, send_mail=True)
 
         self.assertEqual(len(mail.outbox), 0)
 
@@ -92,12 +145,21 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal handled'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
 
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
         self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
-        self.assertEqual(mail.outbox[0].to, ['foo@bar.com', ])
+        self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
 
     def test_send_no_mail_reporter_status_changed_afgehandeld_after_verzoek_tot_heropenen(self):
         # Prepare signal with status change from `VERZOEK_TOT_HEROPENEN` to `AFGEHANDELD`,
@@ -107,8 +169,13 @@ class TestCore(TestCase):
         self.signal.status = status
         self.signal.save()
 
-        self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        # no mail rule should activate
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(len(activated), 0)
 
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
 
@@ -118,9 +185,14 @@ class TestCore(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         self.signal.status = status
         self.signal.save()
+ 
+        # no mail rule should activate
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(len(activated), 0)
 
-        self._apply_mail_actions(['Send mail signal handled'], self.signal)
-
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
 
@@ -133,29 +205,42 @@ class TestCore(TestCase):
 
         self._apply_mail_actions(['Send mail signal handled'], self.signal_no_email)
 
+        # no mail rule should activate
+        actions = self._get_mail_rules(['Send mail signal handled'])._get_actions(self.signal_no_email)
+        self.assertEqual(len(actions), 0)
+
+        # Check mail contents
+        ma = MailActions()
+        ma.apply(signal_id=self.signal_no_email.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
-        mail.outbox = []
-
         # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
         StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.save()
 
-        self._apply_mail_actions(['Send mail signal handled'], self.signal)
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal handled'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
 
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(1, Feedback.objects.count())
         feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
-        self.assertEqual(len(mail.outbox), 1)
-
         message = mail.outbox[0]
-
         self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
-        self.assertEqual(message.to, ['foo@bar.com', ])
+        self.assertEqual(message.to, [self.signal.reporter.email, ])
 
         positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
         context = {'negative_feedback_url': negative_feedback_url,
@@ -174,6 +259,7 @@ class TestCore(TestCase):
     def test_links_in_different_environments(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
+        StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
         self.signal.status = status
         self.signal.save()
@@ -190,7 +276,8 @@ class TestCore(TestCase):
 
             with mock.patch.dict('os.environ', local_env):
                 mail.outbox = []
-                self._apply_mail_actions(['Send mail signal handled'], self.signal)
+                ma = MailActions()
+                ma.apply(signal_id=self.signal.id)
 
                 self.assertEqual(len(mail.outbox), 1)
                 message = mail.outbox[0]
@@ -213,7 +300,8 @@ class TestCore(TestCase):
         for environment, fe_location in env_fe_mapping.items():
             with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
-                self._apply_mail_actions(['Send mail signal handled'], self.signal)
+                ma = MailActions()
+                ma.apply(signal_id=self.signal.id)
 
                 self.assertEqual(len(mail.outbox), 1)
                 message = mail.outbox[0]
@@ -221,108 +309,169 @@ class TestCore(TestCase):
                 self.assertIn('http://dummy_link', message.alternatives[0][0])
 
 
-class TestSignalSplitEmailFlow(TestCase):
+class TestOptionalMails(TestCase):
+    @freeze_time('2018-10-10T10:00+00:00')
     def setUp(self):
-        self.parent_signal = SignalFactory.create(
-            status__state=workflow.GESPLITST, parent=None, reporter__email='piet@example.com')
-        self.child_signal_1 = SignalFactory.create(
-            status__state=workflow.GEMELD, parent=self.parent_signal)
-        self.child_signal_2 = SignalFactory.create(
-            status__state=workflow.GEMELD, parent=self.parent_signal)
+        def get_email():
+            return f'{uuid.uuid4()}@example.com'
 
-    def _apply_mail_actions(self, action_names, signal):
+        self.signal = SignalFactory.create(reporter__email=get_email())
+        self.signal_no_email = SignalFactory.create(reporter__email='')
+        self.parent_signal = SignalFactory.create(reporter__email=get_email())
+        self.child_signal = SignalFactory.create(reporter__email=get_email(),
+                                                 parent=self.parent_signal)
+
+    def _get_mail_rules(self, action_names):
         """
-        Apply only specified mail rules. (allows better isolation of tests)
+        Get MailActions object instantiated with specific mail rules.
         """
         mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
-        ma = MailActions(mail_rules=mail_rules)
+        return MailActions(mail_rules=mail_rules)
 
-        return ma.apply(signal.id, send_mail=True)
-
-    def test_send_mail_reporter_status_changed_split(self):
-        """Original reporter must be emailed with resolution GESPLITST."""
-        ma = MailActions()
-        ma.apply(self.parent_signal.id, send_mail=True)
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.parent_signal.id}')
-        self.assertEqual(mail.outbox[0].to, ['piet@example.com'])
-
-    def test_send_mail_reporter_status_changed_split_no_correct_status(self):
-        """No resolution GESPLITST email should be sent if status is not GESPLITST."""
-        self.parent_signal.status.state = 'workflow.GEMELD'
-        self.parent_signal.status.save()
-
-        self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_send_mail_reporter_status_changed_split_no_email(self):
-        """No email should be sent when the reporter did not leave an email address."""
-        self.parent_signal.reporter.email = None
-        self.parent_signal.reporter.save()
-
-        self._apply_mail_actions(['Send mail signal split'], self.parent_signal)
-        self.assertEqual(len(mail.outbox), 0)
-
-
-class TestReporterMailRules(TestCase):
-    def setUp(self):
-        self.signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='k.lager@example.com')
-        self.signal_no_email = SignalFactory.create(status__state=workflow.GEMELD, reporter__email=None)
-
-    def _update_status(self, state):
-        prev_status = self.signal.status
-        new_status = StatusFactory.create(state=state, _signal=self.signal)
+    def test_optional_mail_GEMELD(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEMELD, send_email=False)
         self.signal.status = new_status
         self.signal.save()
 
-        update_status.send_robust(sender=self.__class__,
-                                  signal_obj=self.signal,
-                                  status=new_status,
-                                  prev_status=prev_status)
-        return prev_status, new_status
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
 
-    def test_no_email_means_no_sending(self):
-        create_initial.send_robust(sender=self.__class__, signal_obj=self.signal_no_email)
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEMELD, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
 
-        self.assertEqual(len(mail.outbox), 0)
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
 
-    def test_send_mail_AFGEHANDELD(self):
-        self._update_status(workflow.AFGEHANDELD)
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.GEMELD, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
 
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertEqual(message.to, [self.signal.reporter.email])
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
 
-    def test_send_mail_GEMELD(self):
-        create_initial.send_robust(sender=self.__class__, signal_obj=self.signal)
+        # TODO: equivalent for parent signal cannot be tested yet (as it can 
+        # only have status.state=workflow.GESPLITST).
 
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertEqual(message.to, [self.signal.reporter.email])
-        self.assertEqual(message.subject, f'Bedankt voor uw melding ({self.signal.id})')
+    def test_optional_mail_AFWACHTING(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
 
-    def test_send_mail_HEROPEND(self):
-        self._update_status(workflow.HEROPEND)
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
 
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertEqual(message.to, [self.signal.reporter.email])
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
 
-    def test_send_mail_INGEPLAND(self):
-        self._update_status(workflow.INGEPLAND)
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
 
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertEqual(message.to, [self.signal.reporter.email])
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.AFWACHTING, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
 
-    def test_send_mail_GESPLIT(self):
-        self._update_status(workflow.GESPLITST)
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
 
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertEqual(message.to, [self.signal.reporter.email])
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+    def test_optional_mail_BEHANDELING(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
+
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
+
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.BEHANDELING, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
+
+    def test_optional_mail_ON_HOLD(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
+
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
+
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.ON_HOLD, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
+
+    def test_optional_mail_VERZOEK_TOT_AFHANDELING(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.VERZOEK_TOT_AFHANDELING, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
+
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.VERZOEK_TOT_AFHANDELING, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
+
+        # ... not for child signal
+        new_status = StatusFactory.create(
+            _signal=self.child_signal, state=workflow.VERZOEK_TOT_AFHANDELING, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
+
+    def test_optional_mail_GEANNULEERD(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEANNULEERD, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
+
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEANNULEERD, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
+
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.GEANNULEERD, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
+
+        rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)

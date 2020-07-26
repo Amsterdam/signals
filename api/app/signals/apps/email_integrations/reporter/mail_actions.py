@@ -9,11 +9,16 @@ from django.utils.text import slugify
 from signals.apps.signals.models import Signal
 from signals.apps.signals.workflow import (
     AFGEHANDELD,
+    AFWACHTING,
+    BEHANDELING,
+    GEANNULEERD,
     GEMELD,
     GESPLITST,
     HEROPEND,
     INGEPLAND,
-    VERZOEK_TOT_HEROPENEN
+    ON_HOLD,
+    VERZOEK_TOT_AFHANDELING,
+    VERZOEK_TOT_HEROPENEN,
 )
 
 SIGNAL_MAIL_RULES = [
@@ -23,7 +28,8 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'status__state__in': [GEMELD, ],
                 'reporter__email__isnull': False,
-                'reporter__email__gt': 0
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
             },
             'functions': {
                 'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1
@@ -44,7 +50,8 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'status__state__in': [AFGEHANDELD, ],
                 'reporter__email__isnull': False,
-                'reporter__email__gt': 0
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
             },
             'functions': {
                 'prev_status_not_in': lambda signal: signal.statuses.exclude(
@@ -72,7 +79,8 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'status__state__in': [GESPLITST, ],
                 'reporter__email__isnull': False,
-                'reporter__email__gt': 0
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
             }
         },
         'kwargs': {
@@ -89,7 +97,8 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'status__state__in': [INGEPLAND, ],
                 'reporter__email__isnull': False,
-                'reporter__email__gt': 0
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
             },
         },
         'kwargs': {
@@ -106,7 +115,8 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'status__state__in': [HEROPEND, ],
                 'reporter__email__isnull': False,
-                'reporter__email__gt': 0
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
             },
         },
         'kwargs': {
@@ -115,6 +125,34 @@ SIGNAL_MAIL_RULES = [
                 'txt': 'email/signal_status_changed_heropend.txt',
                 'html': 'email/signal_status_changed_heropend.html'
             }
+        }
+    },
+    # SIG-2932
+    {
+        'name': 'Send mail optional',
+        'conditions': {
+            'filters': {
+                'reporter__email__isnull': False,
+                'reporter__email__gt': 0,
+                'parent_id__exact': None,  # SIG-2931
+                'status__state__in': [
+                    GEMELD,  # no need for extra filtering, send_mail=True is enough
+                    AFWACHTING,
+                    BEHANDELING,
+                    ON_HOLD,
+                    VERZOEK_TOT_AFHANDELING,
+                    GEANNULEERD,  # TODO: do we GEANNULEERD to send emails
+                ],
+                'status__send_email__exact': True,  # on create_initial this is False (model default) and not trigger here
+            }
+        },
+        'kwargs': {
+            'subject': 'Meer over uw melding {signal_id}',
+            'templates': {
+                'txt': 'email/signal_status_changed_optional.txt',
+                'html': 'email/signal_status_changed_optional.html',
+            },
+            'context': lambda signal: dict(afhandelings_text=signal.status.text)
         }
     }
 ]
