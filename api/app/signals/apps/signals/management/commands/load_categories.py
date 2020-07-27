@@ -7,7 +7,6 @@ from signals.apps.signals.models import Category
 
 class Command(BaseCommand):
     data = None
-    processed_cats = []
     slugsdict = {}
 
     def _init_slugs_dict(self) -> None:
@@ -31,6 +30,7 @@ class Command(BaseCommand):
         parser.add_argument('data_file', type=str)
 
     def handle(self, *args, **options) -> None:
+        self.processed_cats = set()
         with open(options['data_file']) as f:
             self.data = json.load(f)
         if self.data is not None:
@@ -51,10 +51,12 @@ class Command(BaseCommand):
                 else:
                     # create cat
                     cat = Category.objects.create(**fields)
-                self.processed_cats.append(cat.pk)
+                self.processed_cats.add(cat.pk)
 
             # set non processed cats to inactive
             inactive_cats = Category.objects.exclude(id__in=self.processed_cats).filter(is_active=True)
             self.stdout.write(f'\nInactive categories {len(inactive_cats)}')
             inactive_cats.update(**{'is_active': False})
+            active_cats = Category.objects.filter(is_active=True)
+            self.stdout.write(f'\nActive categories {len(active_cats)}')
             self.stdout.write('\nDone!')
