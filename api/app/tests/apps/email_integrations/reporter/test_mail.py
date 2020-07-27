@@ -1,5 +1,5 @@
-from unittest import mock
 import uuid
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
@@ -64,11 +64,12 @@ class TestMailRuleConditions(TestCase):
         """
         mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
         ma = MailActions(mail_rules=mail_rules)
+        ma.apply(signal_id=signal.id)
 
     def _find_messages(self, signal):
         # We use the unique email adresses to correlate a signal in the tests
         # and the eventual email. This does not work for anonymous reporters,
-        # so our tests there are less robust.        
+        # so our tests there are less robust.
         return [msg for msg in mail.outbox if signal.reporter.email in msg.to]
 
     def test_never_send_mail_for_child_signal(self):
@@ -134,8 +135,7 @@ class TestMailRuleConditions(TestCase):
         signal.status = status
         signal.save()
 
-        ma = MailActions().apply(signal_id=signal.id, send_mail=True)
-
+        MailActions().apply(signal_id=signal.id, send_mail=True)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld(self):
@@ -185,7 +185,7 @@ class TestMailRuleConditions(TestCase):
         status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         self.signal.status = status
         self.signal.save()
- 
+
         # no mail rule should activate
         ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
         activated = ma._get_actions(self.signal)
@@ -352,7 +352,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-        # TODO: equivalent for parent signal cannot be tested yet (as it can 
+        # TODO: equivalent for parent signal cannot be tested yet (as it can
         # only have status.state=workflow.GESPLITST).
 
     def test_optional_mail_AFWACHTING(self):
