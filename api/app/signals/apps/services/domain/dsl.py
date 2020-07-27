@@ -32,7 +32,7 @@ class SignalContext:
     def __init__(self):
         for area_type in AreaType.objects.all():
             self._areas[area_type.name] = {
-                area.name: area.geometry for area in Area.objects.filter(_type=area_type).all()
+                area.code: area.geometry for area in Area.objects.filter(_type=area_type).all()
             }
 
     def __call__(self, signal: Signal):
