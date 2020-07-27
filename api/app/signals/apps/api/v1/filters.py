@@ -1,6 +1,7 @@
 from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
+from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.models import (
     STADSDELEN,
     Area,
@@ -127,6 +128,8 @@ class SignalFilter(FilterSet):
         choices=department_choices
     )
 
+    dsl_service = SignalDslService()
+
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
         queryset = queryset.annotate(feedback_count=Count('feedback')).filter(feedback_count__gte=1)
@@ -152,6 +155,16 @@ class SignalFilter(FilterSet):
 
         return queryset
 
+    def _dsl_filter(self, queryset, code):
+        if code is None:
+            return queryset
+
+        include = []
+        for signal in queryset.all():
+            if self.dsl_service.evaluate(signal, code):
+                include.append(signal.pk)
+        return queryset.filter(pk__in=include)
+
     def _categories_filter(self, queryset, main_categories, sub_categories):
         if not main_categories and not sub_categories:
             return queryset
@@ -165,6 +178,7 @@ class SignalFilter(FilterSet):
     def filter_queryset(self, queryset):
         main_categories = []
         sub_categories = []
+        code = self.request.query_params.get('dsl_code', None)
 
         for name, value in self.form.cleaned_data.items():
             if name.lower() == 'maincategory_slug':
@@ -174,9 +188,9 @@ class SignalFilter(FilterSet):
             else:
                 queryset = self.filters[name].filter(queryset, value)
 
-        return self._categories_filter(queryset=queryset,
-                                       main_categories=main_categories,
-                                       sub_categories=sub_categories)
+        ret = self._categories_filter(queryset=queryset, main_categories=main_categories, sub_categories=sub_categories)
+        # apply dsl filtering before returning
+        return self._dsl_filter(queryset=ret, code=code)
 
     def contact_details_filter(self, queryset, name, value):
         """
