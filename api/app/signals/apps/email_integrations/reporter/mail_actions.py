@@ -30,7 +30,6 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [GEMELD, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                # 'parent_id__isnull': True,  # SIG-2931
             },
             'functions': {
                 'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1,
