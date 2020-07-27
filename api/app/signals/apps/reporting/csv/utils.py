@@ -12,7 +12,7 @@ def _get_storage_backend(swift_parameters):
     """
     # TODO: Refactor this logic, belongs in app_settings and project settings
 
-    if os.getenv('SWIFT_ENABLED', 'false') == 'true':
+    if os.getenv('SWIFT_ENABLED', False) in [True, 1, '1', 'True', 'true']:
         return SwiftStorage(**swift_parameters)
     else:
         return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)

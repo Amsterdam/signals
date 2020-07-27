@@ -30,51 +30,17 @@ class TestTasks(TestCase):
 
     @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
     def test_send_mail_reporter_status_changed(self, mocked_mail):
-        tasks.send_mail_reporter_status_changed_afgehandeld(signal_pk=self.signal.id,
-                                                            status_pk=self.signal.status.id,
-                                                            prev_status_pk=self.prev_status.id)
-        mocked_mail.send_mail_reporter_status_changed_afgehandeld.assert_called_once_with(
+        tasks.send_mail_reporter_status_changed(signal_pk=self.signal.id,
+                                                status_pk=self.signal.status.id,
+                                                prev_status_pk=self.prev_status.id)
+        mocked_mail.send_mail_reporter_status_changed.assert_called_once_with(
             self.signal, self.signal.status, self.prev_status
-        )
-
-    @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
-    def test_send_mail_reporter_status_changed_heropend(self, mocked_mail):
-        tasks.send_mail_reporter_status_changed_heropend(signal_pk=self.signal.id,
-                                                         status_pk=self.signal.status.id,
-                                                         prev_status_pk=self.prev_status.id)
-        mocked_mail.send_mail_reporter_status_changed_heropend.assert_called_once_with(
-            self.signal, self.signal.status
         )
 
     @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
     def test_send_mail_reporter_status_changed_status_not_found(self, mocked_mail):
         with self.assertRaises(Status.DoesNotExist):
-            tasks.send_mail_reporter_status_changed_afgehandeld(
+            tasks.send_mail_reporter_status_changed(
                 signal_pk=self.signal.pk, status_pk=999, prev_status_pk=self.prev_status.id
             )
-        mocked_mail.send_mail_reporter_status_changed_afgehandeld.assert_not_called()
-
-    @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
-    def test_send_mail_reporter_status_changed_heropend_status_not_found(self, mocked_mail):
-        with self.assertRaises(Status.DoesNotExist):
-            tasks.send_mail_reporter_status_changed_heropend(signal_pk=self.signal.pk,
-                                                             status_pk=999,
-                                                             prev_status_pk=self.prev_status.id)
-        mocked_mail.send_mail_reporter_status_changed_heropend.assert_not_called()
-
-    @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
-    def test_send_mail_reporter_status_changed_split(self, mocked_mail):
-        tasks.send_mail_reporter_status_changed_split(signal_pk=self.signal.id,
-                                                      status_pk=self.signal.status.id,
-                                                      prev_status_pk=self.prev_status.id)
-        mocked_mail.send_mail_reporter_status_changed_split.assert_called_once_with(
-            self.signal, self.signal.status
-        )
-
-    @mock.patch('signals.apps.email_integrations.reporter.tasks.mail', autospec=True)
-    def test_send_mail_reporter_status_changed_split_signal_not_found(self, mocked_mail):
-        with self.assertRaises(Signal.DoesNotExist):
-            tasks.send_mail_reporter_status_changed_split(
-                signal_pk=999, status_pk=999, prev_status_pk=999
-            )
-        mocked_mail.send_mail_reporter_status_changed_split.assert_not_called()
+        mocked_mail.send_mail_reporter_status_changed.assert_not_called()

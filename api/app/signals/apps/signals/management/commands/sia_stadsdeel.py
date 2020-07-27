@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         self.stdout.write(f'Total Signals: {Signal.objects.all().count()}')
-        self.stdout.write(f'--------------------------------------------------------------------------------')
+        self.stdout.write('--------------------------------------------------------------------------------')
 
         for area in self._get_area_qs():
             self.stdout.write(f'Checking Area "{area.name}" (stadsdeel "{self._area_stadsdeel_mapping[area.code]}")')
@@ -25,9 +25,9 @@ class Command(BaseCommand):
             self.stdout.write(f'* Total Signals correct stadsdeel label: {correct_qs.count()}')
             self.stdout.write(f'* Total Signals incorrect stadsdeel label: {incorrect_qs.count()}')
             self.stdout.write(f'** Incorrect stadsdeel labels: {incorrect_stadsdelen}')
-            self.stdout.write(f'--------------------------------------------------------------------------------')
+            self.stdout.write('--------------------------------------------------------------------------------')
 
-        self.stdout.write(f'\nDone!')
+        self.stdout.write('\nDone!')
 
     def _get_area_qs(self) -> QuerySet:
         if not self._area_qs:

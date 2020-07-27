@@ -1,6 +1,7 @@
 from datapunt_api.rest import DatapuntViewSet
 from elasticsearch_dsl.query import MultiMatch
 
+from signals.apps.api.generics.exceptions import GatewayTimeoutException
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerDetail,
@@ -43,3 +44,8 @@ class SearchView(DatapuntViewSet):
         s = SignalDocument.search().query(multi_match)
         s.execute()
         return s
+
+    def list(self, request, *args, **kwargs):
+        if not SignalDocument.ping():
+            raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
+        return super(SearchView, self).list(request=request, *args, **kwargs)

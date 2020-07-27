@@ -142,7 +142,7 @@ def get_week_interval(value):
         isoweek = int(value['isoweek'])
         isoyear = int(value['isoyear'])
     except (ValueError, TypeError):
-        msg = f'"isoweek" and/or "isoyear" parameters are invalid.'
+        msg = '"isoweek" and/or "isoyear" parameters are invalid.'
         raise DjangoValidationError(msg)
     except KeyError:
         raise DjangoValidationError('Missing parameter(s) for weekly interval.')
@@ -173,7 +173,7 @@ def get_month_interval(value):
         month = int(value['month'])
         year = int(value['year'])
     except (ValueError, TypeError):
-        msg = f'"month" and/or "year" parameters are invalid.'
+        msg = '"month" and/or "year" parameters are invalid.'
         raise DjangoValidationError(msg)
     except KeyError:
         raise DjangoValidationError('Missing parameter(s) for weekly interval.')

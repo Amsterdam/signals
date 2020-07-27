@@ -166,7 +166,7 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
                 value = 'Actief' if value else 'Inactief'
 
             actions.append(f'{key_2_title[key]}:\n {value if value else "-"}')
-        return f'\n'.join(actions)
+        return '\n'.join(actions)
 
     def get_description(self, log):
         return None

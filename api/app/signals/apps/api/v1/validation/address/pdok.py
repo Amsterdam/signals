@@ -7,12 +7,7 @@ from signals.apps.api.v1.validation.address.base import (
     AddressValidationUnavailableException,
     BaseAddressValidation
 )
-
-MUNICIPALITIES = (
-    'Amsterdam',
-    'Amstelveen',
-    'Weesp',
-)
+from signals.settings import DEFAULT_PDOK_MUNICIPALITIES
 
 
 class PDOKAddressValidation(BaseAddressValidation):
@@ -45,7 +40,7 @@ class PDOKAddressValidation(BaseAddressValidation):
             query_dict.update({'fq': f'woonplaatsnaam:{address["woonplaats"]}'})
         if 'postcode' in address and address["postcode"]:
             query_dict.update({'fq': f'postcode:{address["postcode"]}'})
-        query_dict.update({'fq': f'gemeentenaam:{",".join(MUNICIPALITIES)}'})
+        query_dict.update({'fq': f'gemeentenaam:{",".join(DEFAULT_PDOK_MUNICIPALITIES)}'})
 
         straatnaam = address["openbare_ruimte"]
         huisnummer = address["huisnummer"]
