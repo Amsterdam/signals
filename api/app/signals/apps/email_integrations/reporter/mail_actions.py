@@ -18,7 +18,7 @@ from signals.apps.signals.workflow import (
     INGEPLAND,
     ON_HOLD,
     VERZOEK_TOT_AFHANDELING,
-    VERZOEK_TOT_HEROPENEN,
+    VERZOEK_TOT_HEROPENEN
 )
 
 SIGNAL_MAIL_RULES = [
@@ -141,9 +141,9 @@ SIGNAL_MAIL_RULES = [
                     BEHANDELING,
                     ON_HOLD,
                     VERZOEK_TOT_AFHANDELING,
-                    GEANNULEERD,  # TODO: do we GEANNULEERD to send emails
+                    GEANNULEERD,  # TODO: do we GEANNULEERD to send emails?
                 ],
-                'status__send_email__exact': True,  # on create_initial this is False (model default) and not trigger here
+                'status__send_email__exact': True,  # on create_initial this is False (model default)
             }
         },
         'kwargs': {
