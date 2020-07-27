@@ -3,6 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
+from django.db.models import Q
 from django.template import loader
 from django.utils.text import slugify
 
@@ -29,10 +30,13 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [GEMELD, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
+                # 'parent_id__isnull': True,  # SIG-2931
             },
             'functions': {
-                'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1
+                'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1,
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
             }
         },
         'kwargs': {
@@ -51,7 +55,6 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [AFGEHANDELD, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
             },
             'functions': {
                 'prev_status_not_in': lambda signal: signal.statuses.exclude(
@@ -61,7 +64,10 @@ SIGNAL_MAIL_RULES = [
                         ).values_list(
                             'state',
                             flat=True
-                        ).first() not in [VERZOEK_TOT_HEROPENEN, ]
+                        ).first() not in [VERZOEK_TOT_HEROPENEN, ],
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
             }
         },
         'kwargs': {
@@ -80,7 +86,11 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [GESPLITST, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
+            },
+            'functions': {
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
             }
         },
         'kwargs': {
@@ -98,8 +108,12 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [INGEPLAND, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
             },
+            'functions': {
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
+            }
         },
         'kwargs': {
             'subject': 'Betreft melding: {signal_id}',
@@ -116,8 +130,12 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [HEROPEND, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
             },
+            'functions': {
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
+            }
         },
         'kwargs': {
             'subject': 'Betreft melding: {signal_id}',
@@ -134,7 +152,6 @@ SIGNAL_MAIL_RULES = [
             'filters': {
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
-                'parent_id__exact': None,  # SIG-2931
                 'status__state__in': [
                     GEMELD,  # no need for extra filtering, send_mail=True is enough
                     AFWACHTING,
@@ -144,6 +161,11 @@ SIGNAL_MAIL_RULES = [
                     GEANNULEERD,  # TODO: do we GEANNULEERD to send emails?
                 ],
                 'status__send_email__exact': True,  # on create_initial this is False (model default)
+            },
+            'functions': {
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                )  # SIG-2931, special case for children of split signal
             }
         },
         'kwargs': {
