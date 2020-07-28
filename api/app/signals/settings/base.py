@@ -1,7 +1,5 @@
 import os
 
-from celery.schedules import crontab
-
 from signals import API_VERSIONS
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
@@ -237,23 +235,7 @@ CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
-CELERY_BEAT_SCHEDULE = {
-    # SIG-1051
-    'rebuild-elastic': {  # Run task every day at 07:00
-        'task': 'signals.apps.search.tasks.rebuild_index',
-        'schedule': crontab(minute='0', hour='7'),
-    },
-    # SIG-1456
-    # 'save-csv-files-datawarehouse': {
-    #     'task': 'signals.apps.signals.tasks.task_save_csv_files_datawarehouse',
-    #     'schedule': crontab(hour=4),
-    # },
-    'sigmax-fail-stuck-sending-signals': {
-        'task': 'signals.apps.sigmax.tasks.fail_stuck_sending_signals',
-        'schedule': crontab(minute='*/15'),
-    },
-}
+CELERY_BEAT_SCHEDULE = {}
 
 # E-mail settings for SMTP (SendGrid)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'djcelery_email.backends.CeleryEmailBackend')

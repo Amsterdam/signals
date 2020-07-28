@@ -62,9 +62,9 @@ services:
   celery_beat:
     build: ./api
     links:
+      - celery
       - database
       - rabbit
-      - elasticsearch
     environment:
       - DB_NAME=meldingen
       - DB_PASSWORD=insecure
@@ -82,7 +82,6 @@ services:
       - "8000:8000"
     links:
       - database
-      - rabbit
       - elasticsearch
       - dex
     environment:
