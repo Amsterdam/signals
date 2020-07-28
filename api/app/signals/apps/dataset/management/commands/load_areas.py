@@ -24,6 +24,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('type_string', type=str, help='Use list_areas command to see options.')
         parser.add_argument('--dir', type=str, default=None, help='Directory to use for data processing.')
+        parser.add_argument('--url', type=str, default=None, help='Url containing shape file')
+        parser.add_argument('--shp', type=str, default=None, help='shape file within zip')
+        parser.add_argument('--type', type=str, default=None, help='area type field')
+        parser.add_argument('--code', type=str, default=None, help='code field')
+        parser.add_argument('--name', type=str, default=None, help='name field')
 
     def handle(self, *args, **options):
         data_loaders = self._get_data_loaders()
@@ -38,11 +43,12 @@ class Command(BaseCommand):
         # container, we do not want to bloat it).
         if options['dir'] is None:
             with TemporaryDirectory() as directory:
-                loader = data_loaders[type_string](type_string, directory)
+                options['dir'] = directory
+                loader = data_loaders[type_string](**options)
                 loader.load()
         else:
             assert os.path.exists(options['dir'])
-            loader = data_loaders[type_string](type_string, options['dir'])
+            loader = data_loaders[type_string](**options)
             loader.load()
 
         self.stdout.write('...done.')
