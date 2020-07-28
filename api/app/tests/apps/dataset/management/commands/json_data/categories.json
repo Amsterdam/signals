@@ -1,0 +1,54 @@
+[
+    {
+        "model": "signals.category",
+        "pk": 19991,
+        "fields": {
+            "parent": null,
+            "slug": "test-parent-cat1",
+            "name": "test parent cat1",
+            "handling": "REST",
+            "handling_message": null,
+            "is_active": true,
+            "description": null
+        }
+    },
+    {
+        "model": "signals.category",
+        "pk": 19992,
+        "fields": {
+            "parent": 19991,
+            "slug": "test-parent-cat1-child",
+            "name": "test parent cat1 child",
+            "handling": "REST",
+            "handling_message": null,
+            "is_active": true,
+            "description": null
+        }
+    },
+    {
+        "model": "signals.category",
+        "pk": 19993,
+        "fields": {
+            "parent": null,
+            "slug": "test-parent-cat2",
+            "name": "test parent cat2",
+            "handling": "REST",
+            "handling_message": null,
+            "is_active": true,
+            "description": null
+        }
+    },
+    {
+        "model": "signals.category",
+        "pk": 19994,
+        "fields": {
+            "parent": 19993,
+            "slug": "test-parent-cat2-child",
+            "name": "test parent cat2 child",
+            "handling": "REST",
+            "handling_message": null,
+            "is_active": true,
+            "description": null
+        }
+    }
+]
