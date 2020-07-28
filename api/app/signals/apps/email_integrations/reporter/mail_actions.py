@@ -174,6 +174,9 @@ SIGNAL_MAIL_RULES = [
                 'html': 'email/signal_status_changed_optional.html',
             },
             'context': lambda signal: dict(afhandelings_text=signal.status.text)
+        },
+        'additional_info': {
+            'history_entry_text': 'Extra email is verzonden aan melder.'
         }
     }
 ]
@@ -203,12 +206,14 @@ class MailActions:
     def __init__(self, mail_rules=SIGNAL_MAIL_RULES) -> None:
         self._conditions = {}
         self._kwargs = {}
+        self._additional_info = {}
 
         for config in mail_rules:
             key = slugify(config['name'])
 
-            self._conditions[key] = config['conditions']
-            self._kwargs[key] = config['kwargs'] or {}
+            self._conditions[key] = config['conditions'] if 'conditions' in config else {}
+            self._kwargs[key] = config['kwargs'] if 'kwargs' in config else {}
+            self._additional_info[key] = config['additional_info'] if 'additional_info' in config else {}
 
     def _apply_filters(self, filters: dict, signal: Signal) -> bool:
         try:
@@ -258,12 +263,20 @@ class MailActions:
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)
 
+    def _add_note(self, signal: Signal):
+        # Add a note to a given Signals history
+        data = {'text': 'Extra email is verzonden aan melder.'}
+        Signal.actions.create_note(data=data, signal=signal)
+
     def apply(self, signal_id: int, send_mail: bool = True) -> None:
         signal = Signal.objects.get(pk=signal_id)
 
         actions = self._get_actions(signal=signal)
         for action in actions:
             kwargs = copy.deepcopy(self._kwargs[action])
+            history_entry_text = self._additional_info[action].get('history_entry_text', '')
 
             if send_mail:
                 self._mail(signal=signal, mail_kwargs=kwargs)
+                if history_entry_text:
+                    self._add_note(signal=signal)

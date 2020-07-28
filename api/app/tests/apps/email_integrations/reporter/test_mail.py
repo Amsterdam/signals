@@ -13,6 +13,7 @@ from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
 from signals.apps.signals.managers import create_initial, update_status
+from signals.apps.signals.models import Note
 from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
@@ -355,6 +356,17 @@ class TestOptionalMails(TestCase):
         # TODO: equivalent for parent signal cannot be tested yet (as it can
         # only have status.state=workflow.GESPLITST).
 
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_GEMELD(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.GEMELD, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_optional_mail_AFWACHTING(self):
         # check normal signal
         new_status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, send_email=False)
@@ -378,6 +390,17 @@ class TestOptionalMails(TestCase):
 
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
+
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_AFWACHTING(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
 
     def test_optional_mail_BEHANDELING(self):
         # check normal signal
@@ -403,6 +426,17 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_BEHANDELING(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.BEHANDELING, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_optional_mail_ON_HOLD(self):
         # check normal signal
         new_status = StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, send_email=False)
@@ -426,6 +460,17 @@ class TestOptionalMails(TestCase):
 
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
+
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_ON_HOLD(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
 
     def test_optional_mail_VERZOEK_TOT_AFHANDELING(self):
         # check normal signal
@@ -452,6 +497,17 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_VERZOEK_TOT_AFHANDELING(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.VERZOEK_TOT_AFHANDELING, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_optional_mail_GEANNULEERD(self):
         # check normal signal
         new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEANNULEERD, send_email=False)
@@ -475,3 +531,14 @@ class TestOptionalMails(TestCase):
 
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
+
+    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    def test_send_optional_mail_GEANNULEERD(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.GEANNULEERD, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
