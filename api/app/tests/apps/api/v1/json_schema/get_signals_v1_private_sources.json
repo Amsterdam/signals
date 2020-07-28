@@ -1,0 +1,90 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"next": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"previous": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self",
+				"next",
+				"previous"
+			]
+		},
+		"count": {
+			"type": "integer"
+		},
+		"results": {
+			"type": "array",
+			"items": [
+				{
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": "integer"
+						},
+						"name": {
+							"type": "string"
+            },
+						"description": {
+							"type": "string"
+            }
+          }
+				}
+			]
+		}
+	},
+	"required": [
+		"_links",
+		"count",
+		"results"
+	]
+}

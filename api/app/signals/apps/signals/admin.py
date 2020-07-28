@@ -12,6 +12,7 @@ from signals.apps.signals.models import (
     Department,
     Question,
     Signal,
+    Source,
     Status,
     StatusMessageTemplate
 )
@@ -197,3 +198,10 @@ class SignalAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Signal, SignalAdmin)
+
+
+class SourceAdmin(admin.ModelAdmin):
+    fields = ('name', 'description', 'order', )
+
+
+admin.site.register(Source, SourceAdmin)

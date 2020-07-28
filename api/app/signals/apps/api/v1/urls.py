@@ -12,6 +12,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
+    PrivateSourcesViewSet,
     PublicAreasViewSet,
     PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
@@ -42,6 +43,7 @@ private_router.register(r'private/permissions', PermissionViewSet, basename='per
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
+private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
 
 # Combined API
 base_router = SignalsRouterVersion1()
