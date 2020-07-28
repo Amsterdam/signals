@@ -19,7 +19,7 @@ from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     _generate_creeerZaak_Lk01,
     _generate_omschrijving
 )
-from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.models import STADSDELEN, Priority, Signal
 from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.apps.signals.valid_locations import STADHUIS
 
@@ -118,6 +118,16 @@ class TestGenerateOmschrijving(TestCase):
 
         seq_no = '04'
         self.assertEqual(_generate_omschrijving(self.signal, seq_no), correct)
+
+    def test_stadsdeel_mapping(self):
+        # Check that all known STADSDELEN (city districts) have a code for use
+        # by Sigmax/CityControl.
+        seq_no = '01'
+        for short_code, name in STADSDELEN:
+            self.signal.location.stadsdeel = short_code
+            self.signal.location.save()
+            self.signal.refresh_from_db()
+            self.assertNotRegex(_generate_omschrijving(self.signal, seq_no), 'SD--')
 
 
 class TestAddressMatchesSigmaxExpectation(TestCase):
