@@ -8,7 +8,7 @@ from signals.apps.signals.models import Category
 THIS_DIR = os.path.dirname(__file__)
 
 
-class TestLoadAreas(TestCase):
+class TestLoadCategories(TestCase):
     def test_load_categories(self):
         datafile = os.path.join(THIS_DIR, 'json_data', 'categories.json')
         datafile_update = os.path.join(THIS_DIR, 'json_data', 'categories-update.json')
