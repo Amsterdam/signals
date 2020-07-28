@@ -9,7 +9,7 @@ RD_STADHUIS = [121853, 486780]
 
 class TestLoadSIAStadsdeel(TestCase):
     def setUp(self):
-        self.loader = SIAStadsdeelLoader('sia-stadsdeel')
+        self.loader = SIAStadsdeelLoader(**{'type_string': 'sia-stadsdeel'})
         # "sia-stadsdeel" type Areas are derived from "stadsdeel" type Areas,
         # here we create "stadsdeel" AreaType and provide some Area instances
         # using that type

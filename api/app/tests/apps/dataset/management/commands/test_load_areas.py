@@ -10,7 +10,7 @@ from signals.apps.dataset.base import AreaLoader
 class FakeAreaLoader(AreaLoader):
     PROVIDES = ['fake']
 
-    def __init__(self, type_string, directory=None):
+    def __init__(self, **options):
         pass
 
     def load(self):
