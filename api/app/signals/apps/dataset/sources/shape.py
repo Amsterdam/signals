@@ -56,7 +56,7 @@ class ShapeBoundariesLoader(AreaLoader):
 
     def _load_shape_data(self, data_fullpath):
         """
-        Load "gemeente", "wijk" or "buurt" areas from the CBS provided shapefiles.
+        Load shape area as specified area type from the CBS (or compatible format) shapefiles.
         """
         ds = DataSource(data_fullpath)
         geom_by_code = {}
@@ -78,8 +78,7 @@ class ShapeBoundariesLoader(AreaLoader):
             else:
                 geom_by_code[code] = transformed
 
-        # Remove previously imported data, save our merged and transformed
-        # municipal boundaries to SIA DB.
+        # Remove previously imported data, save our merged and transformed boundaries to the DB.
         with transaction.atomic():
             Area.objects.filter(_type=self.area_type).delete()
 

@@ -33,7 +33,8 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
 
     def __init__(self, **options):
         type_string = options['type_string']
-        directory = options['dir']
+        # Data downloaded / processed here. Caller is responsible to clean-up directory.
+        self.directory = options['dir']
 
         assert type_string in self.PROVIDES
 
@@ -42,7 +43,6 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
             code=type_string,
             description=f'{type_string} from CBS "Wijk- en buurtkaart" data.',
         )
-        self.directory = directory  # Data downloaded / processed here. Caller is responsible to clean-up directory.
 
         dataset_info = self.DATASET_INFO[type_string]
         self.data_file = dataset_info['shp_file']
