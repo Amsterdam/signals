@@ -82,11 +82,17 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.child_signal.id, send_mail=True)
         self.assertEqual(len(mail.outbox), 0)
 
+        # we want no history entry when no email was sent:
+        self.assertEqual(Note.objects.count(), 0)
+
     def test_no_email_for_anonymous_reporter(self):
         ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
         ma.apply(self.signal_no_email.id, send_mail=True)
 
         self.assertEqual(len(mail.outbox), 0)
+
+        # we want no history entry when no email was sent
+        self.assertEqual(Note.objects.count(), 0)
 
     def test_send_mail_reporter_created(self):
         # Is the intended rule activated?
@@ -108,6 +114,9 @@ class TestMailRuleConditions(TestCase):
         category = self.signal.category_assignment.category
         self.assertIn(category.handling_message, mail.outbox[0].body)
 
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_send_mail_reporter_created_custom_handling_message(self):
         # Make sure a category's handling messages makes it to the reporter via
         # the mail generated on creation of a nuisance complaint.
@@ -125,6 +134,9 @@ class TestMailRuleConditions(TestCase):
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
         self.assertIn(category.handling_message, mail.outbox[0].body)
 
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_send_mail_reporter_created_only_once(self):
         signal = SignalFactory.create(reporter__email='foo@bar.com')
 
@@ -138,6 +150,9 @@ class TestMailRuleConditions(TestCase):
 
         MailActions().apply(signal_id=signal.id, send_mail=True)
         self.assertEqual(len(mail.outbox), 0)
+
+        # we want no history entry when no email was sent
+        self.assertEqual(Note.objects.count(), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld(self):
         # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
@@ -162,6 +177,9 @@ class TestMailRuleConditions(TestCase):
         self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
 
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_send_no_mail_reporter_status_changed_afgehandeld_after_verzoek_tot_heropenen(self):
         # Prepare signal with status change from `VERZOEK_TOT_HEROPENEN` to `AFGEHANDELD`,
         # this should not lead to an email being sent.
@@ -180,6 +198,9 @@ class TestMailRuleConditions(TestCase):
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
 
+        # we want no history entry when no email was sent
+        self.assertEqual(Note.objects.count(), 0)
+
     def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
         # Note: SignalFactory always creates a signal with GEMELD status.
         # TODO: test is redundant, remove
@@ -196,6 +217,9 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
+
+        # we want no history entry when no email was sent
+        self.assertEqual(Note.objects.count(), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_no_email(self):
         # Prepare signal with status change to `AFGEHANDELD`.
@@ -215,6 +239,9 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal_no_email.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
+
+        # we want no history entry when no email was sent
+        self.assertEqual(Note.objects.count(), 0)
 
     def test_send_mail_reporter_status_changed_afgehandeld_txt_and_html(self):
         # Prepare signal with status change from `BEHANDELING` to `AFGEHANDELD`.
@@ -257,6 +284,9 @@ class TestMailRuleConditions(TestCase):
         self.assertEqual(mime_type, 'text/html')
         self.assertEqual(content, html_message)
 
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_links_in_different_environments(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
@@ -285,6 +315,9 @@ class TestMailRuleConditions(TestCase):
                 self.assertIn(fe_location, message.body)
                 self.assertIn(fe_location, message.alternatives[0][0])
 
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+
     def test_links_environment_env_var_not_set(self):
         """Deals with the case where nothing is overridden and `environment` not set."""
 
@@ -308,6 +341,9 @@ class TestMailRuleConditions(TestCase):
                 message = mail.outbox[0]
                 self.assertIn('http://dummy_link', message.body)
                 self.assertIn('http://dummy_link', message.alternatives[0][0])
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
 
 class TestOptionalMails(TestCase):
