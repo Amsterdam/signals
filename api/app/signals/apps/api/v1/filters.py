@@ -173,11 +173,14 @@ class SignalFilter(FilterSet):
         if code is None:
             return queryset
 
-        include = []
-        for signal in queryset.all():
-            if self.dsl_service.evaluate(signal, code):
-                include.append(signal.pk)
-        return queryset.filter(pk__in=include)
+        try:
+            include = []
+            for signal in queryset.all():
+                if self.dsl_service.evaluate(signal, code):
+                    include.append(signal.pk)
+            return queryset.filter(pk__in=include)
+        except Exception:
+            return Signal.objects.none()
 
     def _categories_filter(self, queryset, main_categories, sub_categories):
         if not main_categories and not sub_categories:
