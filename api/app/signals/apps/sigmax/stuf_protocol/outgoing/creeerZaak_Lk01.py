@@ -105,6 +105,7 @@ def _generate_creeerZaak_Lk01(signal, seq_no):
     num_days_priority_mapping = {
         Priority.PRIORITY_HIGH: 1,
         Priority.PRIORITY_NORMAL: 3,
+        Priority.PRIORITY_LOW: 3,
     }
     incident_date_end = (
         signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))
