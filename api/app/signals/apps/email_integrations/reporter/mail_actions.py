@@ -278,9 +278,9 @@ class MailActions:
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)
 
-    def _add_note(self, signal: Signal):
+    def _add_note(self, signal: Signal, text: str):
         # Add a note to a given Signals history
-        data = {'text': 'Extra email is verzonden aan melder.'}
+        data = {'text': text}
         Signal.actions.create_note(data=data, signal=signal)
 
     def apply(self, signal_id: int, send_mail: bool = True) -> None:
@@ -294,4 +294,4 @@ class MailActions:
             if send_mail:
                 self._mail(signal=signal, mail_kwargs=kwargs)
                 if history_entry_text:
-                    self._add_note(signal=signal)
+                    self._add_note(signal=signal, text=history_entry_text)
