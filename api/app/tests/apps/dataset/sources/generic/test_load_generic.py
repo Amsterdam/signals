@@ -2,8 +2,6 @@ import os
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 
-import requests
-import requests_mock
 from django.test import TestCase
 
 from signals.apps.dataset.sources.shape import ShapeBoundariesLoader
@@ -14,11 +12,6 @@ THIS_DIR = os.path.dirname(__file__)
 
 class TestGenericAreaLoader(TestCase):
     def setUp(self):
-        self.session = requests.Session()
-        self.adapter = requests_mock.Adapter()
-        self.session.mount('https://', self.adapter)
-
-        ShapeBoundariesLoader._get_session = lambda instance: self.session
         zip_file_name = 'example_shp.zip'
         zip_file = os.path.join(THIS_DIR, 'data', zip_file_name)
         self.directory = TemporaryDirectory()
