@@ -503,6 +503,10 @@ GRAPHENE = {
     'RELAY_CONNECTION_MAX_LIMIT': 50,
 }
 
+# Default setting for area type
+DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
+
+# Default pdok municipalities
 DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
     'DEFAULT_PDOK_MUNICIPALITIES',
     'Amsterdam,Amstelveen,Weesp',
