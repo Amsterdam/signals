@@ -64,7 +64,7 @@ class SignalManager(models.Manager):
         if DEFAULT_SIGNAL_AREA_TYPE:
             area = _get_area(location_data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
             if area:
-                location_data['area_type'] = DEFAULT_SIGNAL_AREA_TYPE
+                location_data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
                 location_data['area_code'] = area.code
 
         # Create dependent model instances with correct foreign keys to Signal
@@ -159,7 +159,7 @@ class SignalManager(models.Manager):
                         'geometrie',
                         'stadsdeel',
                         'buurt_code',
-                        'area_type',
+                        'area_type_code',
                         'area_code',
                         'address',
                         'created_by',
@@ -301,7 +301,7 @@ class SignalManager(models.Manager):
         if DEFAULT_SIGNAL_AREA_TYPE:
             area = _get_area(data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
             if area:
-                data['area_type'] = DEFAULT_SIGNAL_AREA_TYPE
+                data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
                 data['area_code'] = area.code
 
         prev_location = signal.location
