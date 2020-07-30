@@ -73,7 +73,7 @@ class TestAPIGebiedenLoader(TestCase):
         self.session.mount('https://', self.adapter)
 
         APIGebiedenLoader._get_session = lambda instance: self.session
-        self.api_loader = APIGebiedenLoader('stadsdeel')
+        self.api_loader = APIGebiedenLoader(**{'type_string': 'stadsdeel'})
 
         # We mock the API output using some saved API output (edited to have
         # only two stadsdeel instances).
@@ -119,6 +119,6 @@ class TestAPIGebiedenLoader(TestCase):
         self.assertEqual(created_areas, set(['Centrum', 'Zuidoost']))
 
     def test__get_session(self):
-        agl = APIGebiedenLoader('stadsdeel')
+        agl = APIGebiedenLoader(**{'type_string': 'stadsdeel'})
         session = agl._get_session()
         self.assertIsInstance(session, requests.Session)
