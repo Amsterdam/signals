@@ -162,6 +162,24 @@ paths:
             type: string
             example: 'ASC'
           required: false
+        - name: area_type_code
+          in: query
+          description: >-
+            Filter signals according to the currently assigned location area_type_code, accepts
+            a single area_type_code. area_code is required if area_type_code is present.
+          schema:
+            type: string
+            example: 'district'
+          required: false
+        - name: area_code
+          in: query
+          description: >-
+            Filter signals according to the currently assigned location area_code, accepts
+            a single area_code. area_type_code is required if area_code is present.
+          schema:
+            type: string
+            example: 'ASC'
+          required: false
 
       responses:
         '200':

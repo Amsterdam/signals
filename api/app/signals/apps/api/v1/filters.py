@@ -27,6 +27,16 @@ contact_details_choices = (
 )
 
 
+def area_type_choices():
+    options = AreaType.objects.values_list('code', 'name')
+    return [(c, f'{n} ({c})') for c, n in options]
+
+
+def area_choices():
+    options = Area.objects.values_list('code', '_type__name')
+    return [(c, f'{n} ({c})') for c, n in options]
+
+
 def buurt_choices():
     options = Buurt.objects.values_list('vollcode', 'naam')
     return [(c, f'{n} ({c})') for c, n in options]
@@ -95,6 +105,10 @@ class SignalFilter(FilterSet):
 
     stadsdeel = filters.MultipleChoiceFilter(field_name='location__stadsdeel',
                                              choices=stadsdelen)
+    area_type_code = filters.MultipleChoiceFilter(field_name='location__area_type_code',
+                                                  choices=area_type_choices)
+    area_code = filters.MultipleChoiceFilter(field_name='location__area_code',
+                                             choices=area_choices)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code',
                                               choices=buurt_choices)
     address_text = filters.CharFilter(field_name='location__address_text',
@@ -165,6 +179,12 @@ class SignalFilter(FilterSet):
     def filter_queryset(self, queryset):
         main_categories = []
         sub_categories = []
+
+        # remove elements if both attribs are not present.
+        if (self.form.cleaned_data.get('area_type_code', None) is None or
+                self.form.cleaned_data.get('area_code', None) is None):
+            self.form.cleaned_data.pop('area_type_code', None)
+            self.form.cleaned_data.pop('area_code', None)
 
         for name, value in self.form.cleaned_data.items():
             if name.lower() == 'maincategory_slug':
