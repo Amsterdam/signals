@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from random import shuffle
 
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -8,6 +9,7 @@ from signals.apps.signals.models import Priority
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
+    AreaFactory,
     CategoryAssignmentFactory,
     CategoryFactory,
     NoteFactory,
@@ -717,3 +719,50 @@ class TestTypeFilter(SignalsBaseApiTestCase):
 
         self.assertEqual(len(signal_ids), len(response_ids))
         self.assertEqual(set(signal_ids), set(response_ids))
+
+
+class TestAreaFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        geometry = MultiPolygon([Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
+        self.pt_in_center = Point(4.88, 52.36)
+        self.pt_out_center = Point(6, 53)
+        self.assertTrue(geometry.contains(self.pt_in_center))
+        self.assertFalse(geometry.contains(self.pt_out_center))
+
+        self.area = AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
+        self.area_in = SignalFactory.create(
+            location__geometrie=self.pt_in_center,
+            location__area_code=self.area.code,
+            location__area_type_code=self.area._type.code,
+        )
+        self.area_out = SignalFactory.create(location__geometrie=self.pt_out_center)
+
+    def test_filter_areas(self):
+        # all
+        result_ids = self._request_filter_signals({})
+        self.assertEqual(2, len(result_ids))
+        # filter on type_code or area code
+        result_ids = self._request_filter_signals({'area_type_code': 'district'})
+        self.assertEqual(2, len(result_ids))
+        # filter on type_code or area code
+        result_ids = self._request_filter_signals({'area_code': self.area.code})
+        self.assertEqual(2, len(result_ids))
+        # filter on both
+        result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
+        self.assertEqual(1, len(result_ids))
