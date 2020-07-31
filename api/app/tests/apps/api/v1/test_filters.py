@@ -742,16 +742,14 @@ class TestAreaFilter(SignalsBaseApiTestCase):
         geometry = MultiPolygon([Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
         self.pt_in_center = Point(4.88, 52.36)
         self.pt_out_center = Point(6, 53)
-        self.assertTrue(geometry.contains(self.pt_in_center))
-        self.assertFalse(geometry.contains(self.pt_out_center))
 
         self.area = AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
-        self.area_in = SignalFactory.create(
+        SignalFactory.create(
             location__geometrie=self.pt_in_center,
             location__area_code=self.area.code,
             location__area_type_code=self.area._type.code,
         )
-        self.area_out = SignalFactory.create(location__geometrie=self.pt_out_center)
+        SignalFactory.create(location__geometrie=self.pt_out_center)
 
     def test_filter_areas(self):
         # all
