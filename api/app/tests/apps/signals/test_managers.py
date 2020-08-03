@@ -1,11 +1,11 @@
 from unittest.mock import patch
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from signals.apps.signals.models import CategoryAssignment, Signal, Type
-from tests.apps.signals.factories import CategoryFactory, SignalFactory
+from tests.apps.signals.factories import AreaFactory, CategoryFactory, SignalFactory
 
 
 class TestSignalManager(TestCase):
@@ -19,6 +19,10 @@ class TestSignalManager(TestCase):
         self.link_category = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
             self.category.parent.slug, self.category.slug
         )
+        geometry = MultiPolygon([Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
+        self.pt_in_center = Point(4.88, 52.36)
+        self.pt_out_center = Point(6, 53)
+        self.area = AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
 
     @patch('signals.apps.signals.models.CategoryAssignment.objects.create')
     def test_update_category_assignment(self, cat_assignment_create):
@@ -111,6 +115,78 @@ class TestSignalManager(TestCase):
         self.assertEqual(signal.types.count(), 1)
         self.assertIsNotNone(signal.type_assignment)
         self.assertEqual(signal.type_assignment.name, Type.QUESTION)  # Should be QUESTION
+
+    def test_create_initial_inside_default_area(self):
+        signal_data = {
+            'text': 'Bladiebla',
+            'text_extra': 'Meer bladiebla',
+            'incident_date_start': '2020-02-26T12:00:00.000000Z',
+            'source': 'online',
+        }
+        location_data = {
+            'geometrie': self.pt_in_center
+        }
+        category_assignment_data = {
+            'category': self.category
+        }
+        status_data = {}  # Default status
+        reporter_data = {}  # No reporter
+        priority_data = None  # Default priority
+        type_data = None  # This triggers the default Type
+
+        signal = Signal.actions.create_initial(signal_data=signal_data,
+                                               location_data=location_data,
+                                               status_data=status_data,
+                                               category_assignment_data=category_assignment_data,
+                                               reporter_data=reporter_data,
+                                               priority_data=priority_data,
+                                               type_data=type_data)
+
+        self.assertEqual(signal.location.area_type_code, self.area._type.code)
+        self.assertEqual(signal.location.area_code, self.area.code)
+        location_data = {
+            "geometrie": self.pt_out_center,
+            "buurt_code": "ABCD",
+        }
+        updated_location = Signal.actions.update_location(location_data, signal)
+        self.assertFalse(updated_location.area_type_code)
+        self.assertFalse(updated_location.area_code)
+
+    def test_create_initial_outside_default_area(self):
+        signal_data = {
+            'text': 'Bladiebla',
+            'text_extra': 'Meer bladiebla',
+            'incident_date_start': '2020-02-26T12:00:00.000000Z',
+            'source': 'online',
+        }
+        location_data = {
+            'geometrie': self.pt_out_center
+        }
+        category_assignment_data = {
+            'category': self.category
+        }
+        status_data = {}  # Default status
+        reporter_data = {}  # No reporter
+        priority_data = None  # Default priority
+        type_data = None  # This triggers the default Type
+
+        signal = Signal.actions.create_initial(signal_data=signal_data,
+                                               location_data=location_data,
+                                               status_data=status_data,
+                                               category_assignment_data=category_assignment_data,
+                                               reporter_data=reporter_data,
+                                               priority_data=priority_data,
+                                               type_data=type_data)
+
+        self.assertFalse(signal.location.area_type_code)
+        self.assertFalse(signal.location.area_code)
+        location_data = {
+            "geometrie": self.pt_in_center,
+            "buurt_code": "ABCD",
+        }
+        updated_location = Signal.actions.update_location(location_data, signal)
+        self.assertEqual(updated_location.area_type_code, self.area._type.code)
+        self.assertEqual(updated_location.area_code, self.area.code)
 
     def test_split_default_type(self):
         self.signal.types.all().delete()

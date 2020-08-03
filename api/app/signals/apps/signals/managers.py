@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.dispatch import Signal as DjangoSignal
 
+from signals.settings import DEFAULT_SIGNAL_AREA_TYPE
+
 # Declaring custom Django signals for our `SignalManager`.
 
 create_initial = DjangoSignal(providing_args=['signal_obj'])
@@ -47,7 +49,7 @@ class SignalManager(models.Manager):
         :returns: Signal object
         """
         from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
-        from .utils.location import _get_stadsdeel_code
+        from .utils.location import _get_stadsdeel_code, _get_area
 
         signal = self.create(**signal_data)
 
@@ -57,6 +59,13 @@ class SignalManager(models.Manager):
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = location_data['stadsdeel'] if 'stadsdeel' in location_data else None
         location_data['stadsdeel'] = _get_stadsdeel_code(location_data['geometrie'], default_stadsdeel)
+
+        # set area_type and area_code if default area type is provided
+        if DEFAULT_SIGNAL_AREA_TYPE:
+            area = _get_area(location_data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
+            if area:
+                location_data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
+                location_data['area_code'] = area.code
 
         # Create dependent model instances with correct foreign keys to Signal
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
@@ -150,6 +159,8 @@ class SignalManager(models.Manager):
                         'geometrie',
                         'stadsdeel',
                         'buurt_code',
+                        'area_type_code',
+                        'area_code',
                         'address',
                         'created_by',
                         'extra_properties',
@@ -280,11 +291,18 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         from .models import Location
-        from .utils.location import _get_stadsdeel_code
+        from .utils.location import _get_stadsdeel_code, _get_area
 
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None
         data['stadsdeel'] = _get_stadsdeel_code(data['geometrie'], default_stadsdeel)
+
+        # set area_type and area_code if default area type is provided
+        if DEFAULT_SIGNAL_AREA_TYPE:
+            area = _get_area(data['geometrie'], DEFAULT_SIGNAL_AREA_TYPE)
+            if area:
+                data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
+                data['area_code'] = area.code
 
         prev_location = signal.location
         location = Location.objects.create(**data, _signal_id=signal.id)
