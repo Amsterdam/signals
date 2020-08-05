@@ -5,6 +5,7 @@ from datetime import timedelta
 from unittest import skip
 from unittest.mock import patch
 
+import requests_mock
 from django.contrib.auth.models import Permission
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.core.exceptions import ValidationError
@@ -1741,6 +1742,19 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
         self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
+
+    def test_attachment_url_post(self):
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        file_url = 'http://example.com/doeterniettoe.txt'
+        data = {'location': file_url}
+        attachment_content = 'Lorem ipsum'
+
+        with requests_mock.Mocker() as rm:
+            rm.get(file_url, text=attachment_content)
+            response = self.client.post(endpoint, data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Attachment.objects.count(), 1)
 
     def test_create_has_attachments_false(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')

@@ -5,6 +5,7 @@ from datapunt_api.pagination import HALPagination
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import CreateModelMixin
+from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
@@ -12,6 +13,7 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
 )
+from signals.apps.api.v1.serializers.attachment import ImageOrUrlPostSerializer
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
@@ -19,6 +21,16 @@ from signals.auth.backend import JWTAuthBackend
 
 class PublicSignalAttachmentsViewSet(CreateModelMixin, PublicSignalGenericViewSet):
     serializer_class = PublicSignalAttachmentSerializer
+
+    def create(self, request, signal_id):
+        # Save POSTed file (whether directly or as URL)
+        ls = ImageOrUrlPostSerializer(data=request.data, context=self.get_serializer_context())
+        ls.is_valid(raise_exception=True)
+        attachment = ls.save()
+
+        # Return a serialization of the newly created attachment
+        serializer = self.serializer_class(attachment, context=self.get_serializer_context())
+        return Response(serializer.data, status=201)
 
 
 class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -56,3 +68,13 @@ class PrivateSignalAttachmentsViewSet(mixins.CreateModelMixin, mixins.ListModelM
 
         qs = super(PrivateSignalAttachmentsViewSet, self).get_queryset()
         return qs.filter(**self._filter_kwargs())
+
+    def create(self, request, pk):
+        # Save POSTed file (whether directly or as URL)
+        ls = ImageOrUrlPostSerializer(data=request.data, context=self.get_serializer_context())
+        ls.is_valid(raise_exception=True)
+        attachment = ls.save()
+
+        # Return a serialization of the newly created attachment
+        serializer = self.serializer_class(attachment, context=self.get_serializer_context())
+        return Response(serializer.data, status=201)
