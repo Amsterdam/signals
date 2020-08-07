@@ -9,6 +9,8 @@ from signals.apps.signals.models import (
     Buurt,
     Category,
     Department,
+    Expression,
+    ExpressionType,
     Priority,
     Signal,
     Type
@@ -195,7 +197,7 @@ class SignalFilter(FilterSet):
     def filter_queryset(self, queryset):
         main_categories = []
         sub_categories = []
-        code = self.request.query_params.get('dsl_code', None)
+        code = self.request.query_params.get('expression', None)
 
         # remove elements if both attribs are not present.
         if (not self.form.cleaned_data.get('area_type_code', None) or
@@ -352,3 +354,27 @@ class QuestionFilterSet(FilterSet):
                     category__slug=main_slug
                 )
         return qs
+
+
+def expression_choices():
+    """
+    Helper function to determine available expressions
+    """
+    return [(expr.name, expr.name) for expr in Expression.objects.only('name').all().distinct()]
+
+
+def expression_type_choices():
+    """
+    Helper function to determine available expression types
+    """
+    return [(expr_type.name, expr_type.name) for expr_type in ExpressionType.objects.only('name').all().distinct()]
+
+
+class ExpressionFilterSet(FilterSet):
+    """
+    FilterSet used in the V1 API of expressions, options to filter on:
+    - expression name
+    - expression type
+    """
+    name = filters.ChoiceFilter(choices=expression_choices)
+    type_name = filters.MultipleChoiceFilter(field_name='_type__name', choices=expression_type_choices)

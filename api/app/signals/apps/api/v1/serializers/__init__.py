@@ -15,6 +15,11 @@ from signals.apps.api.v1.serializers.departments import (
     PrivateDepartmentSerializerDetail,
     PrivateDepartmentSerializerList
 )
+from signals.apps.api.v1.serializers.expression import (
+    ExpressionContextSerializer,
+    ExpressionModificationSerializer,
+    ExpressionTypeSerializer
+)
 from signals.apps.api.v1.serializers.question import PublicQuestionSerializerDetail
 from signals.apps.api.v1.serializers.signal import (
     AbridgedChildSignalSerializer,
@@ -55,4 +60,7 @@ __all__ = [
     'PrivateCategorySerializer',
     'PublicQuestionSerializerDetail',
     'AbridgedChildSignalSerializer',
+    'ExpressionTypeSerializer',
+    'ExpressionContextSerializer',
+    'ExpressionModificationSerializer'
 ]
