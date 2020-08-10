@@ -84,11 +84,14 @@
             <tr>
                 <td width="40%">
                   <p style="text-align: left;">
-                    <span>Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}SIA Systeem{% endif %}</span>
+                    <span>
+                        <img src="{{ logo_src }}" style="height:100px">
+                    </span>
                   </p>
                 </td>
-                <td width="60%">
+                <td width="60%" style="vertical-align: top;">
                     <p>
+                        <span>Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}SIA Systeem{% endif %}</span><br>
                         <span>{% now "l, j F Y H:i" %}</span>
                     </p>
                 </td>
