@@ -5,26 +5,26 @@ from rest_framework.exceptions import ValidationError
 from signals.apps.signals.models import Expression, ExpressionContext, ExpressionType
 
 
-class ExpressionTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ExpressionType
-        fields = ('name', )
-
-
 class ExpressionContextSerializer(serializers.ModelSerializer):
-    type = ExpressionTypeSerializer(source='_type')
+    type = serializers.SerializerMethodField('get_type_name')
 
     class Meta:
         model = ExpressionContext
         fields = ('identifier', 'identifier_type', 'type',)
 
+    def get_type_name(self, obj):
+        return obj._type.name
+
 
 class ExpressionSerializer(HALSerializer):
-    type = ExpressionTypeSerializer(source='_type')
+    type = serializers.SerializerMethodField('get_type_name')
 
     class Meta:
         model = Expression
         fields = ('id', 'name', 'code', 'type', )
+
+    def get_type_name(self, obj):
+        return obj._type.name
 
 
 class ExpressionModificationSerializer(serializers.ModelSerializer):

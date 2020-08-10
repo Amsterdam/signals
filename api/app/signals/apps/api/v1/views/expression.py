@@ -68,7 +68,7 @@ class PrivateExpressionViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
         }
 
     def create(self, request):
-        serializer = ExpressionModificationSerializer(data=request.data, context=self.get_serializer_context())
+        serializer = ExpressionModificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         expression = serializer.save()
 
