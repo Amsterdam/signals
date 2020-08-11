@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.contrib.staticfiles import finders
+from django.core.exceptions import SuspiciousFileOperation
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 
@@ -14,15 +15,23 @@ from signals.auth.backend import JWTAuthBackend
 
 def _get_data_uri(static_file):
     formats = {
-        'svg': 'data:image/svg+xml;base64,',
-        'jpg': 'data:image/jpeg;base64',
-        'png': 'data:image/png;base64,',
+        '.svg': 'data:image/svg+xml;base64,',
+        '.jpg': 'data:image/jpeg;base64',
+        '.png': 'data:image/png;base64,',
     }
 
-    result = finders.find(static_file)
+    if not static_file:  # protect against None or ''
+        return ''
+
+    try:
+        result = finders.find(static_file)
+    except SuspiciousFileOperation:  # when file path starts with /
+        return ''
+
     if result:
-        filename = os.path.split(result)[1]
-        ext = filename.split('.')[-1]
+        _, ext = os.path.splitext(result)
+        if not ext:
+            return ''
 
         try:
             start = formats[ext]
