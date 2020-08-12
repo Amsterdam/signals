@@ -511,3 +511,9 @@ DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
 
 # Default setting for area type
 DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
+
+# Logo used on first page of generated PDFs, supports SVG, PNG, and JPG in
+# order of preference. Note that this logo is rescaled to 100 pixels in height.
+# Note: this assumes the configured image is available through the staticfiles
+# app.
+API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemeente-amsterdam.svg')
