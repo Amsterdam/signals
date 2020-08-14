@@ -8,6 +8,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
     PrivateExpressionViewSet,
+    PrivateQuestionViewSet,
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
@@ -51,6 +52,7 @@ private_router.register(r'private/categories', PrivateCategoryViewSet, basename=
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
 private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-expression')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
+private_router.register(r'private/questions', PrivateQuestionViewSet, basename='private-questions')
 
 
 # Combined API
@@ -94,7 +96,6 @@ urlpatterns = [
         re_path(r'signals/(?P<pk>\d+)/pdf/?$', GeneratePdfView.as_view(), name='signal-pdf-download'),
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),
-
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
     ])),

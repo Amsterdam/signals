@@ -14,7 +14,7 @@ from signals.apps.api.v1.views.expression import PrivateExpressionViewSet
 from signals.apps.api.v1.views.ml_tool_proxy import LegacyMlPredictCategoryView
 from signals.apps.api.v1.views.namespace import NamespaceView
 from signals.apps.api.v1.views.pdf import GeneratePdfView
-from signals.apps.api.v1.views.questions import PublicQuestionViewSet
+from signals.apps.api.v1.views.questions import PrivateQuestionViewSet, PublicQuestionViewSet
 from signals.apps.api.v1.views.signal import PrivateSignalViewSet, PublicSignalViewSet
 from signals.apps.api.v1.views.signal_split import PrivateSignalSplitViewSet
 from signals.apps.api.v1.views.source import PrivateSourcesViewSet
@@ -34,6 +34,7 @@ __all__ = (
     'NamespaceView',
     'GeneratePdfView',
     'PrivateDepartmentViewSet',
+    'PrivateQuestionViewSet',
     'PrivateSignalSplitViewSet',
     'StatusMessageTemplatesViewSet',
     'StoredSignalFilterViewSet',
