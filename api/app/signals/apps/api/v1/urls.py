@@ -9,6 +9,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
+    PrivateQuestionViewSet,
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
@@ -68,7 +69,7 @@ urlpatterns = [
              name='category-detail'),
         path('questions/',
              PublicQuestionViewSet.as_view({'get': 'list'}),
-             name='question-detail'),
+             name='questions-list'),
         # V1 disabled for now
         # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),
     ])),
@@ -97,6 +98,14 @@ urlpatterns = [
         path('signals/category/removed',
              SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
              name='signal-category-changed-since'),
+
+        # expression
+        path('questions',
+             PrivateQuestionViewSet.as_view({'get': 'list', 'post': 'create'}),
+             name='questions-create-list'),
+        path('questions/<int:pk>',
+             PrivateQuestionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
+             name='questions-detail-update'),
 
         # Search
         path('search', SearchView.as_view({'get': 'list'}), name='elastic-search')
