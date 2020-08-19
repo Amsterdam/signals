@@ -1,6 +1,6 @@
 from json import loads
 
-from jwcrypto.jws import InvalidJWSSignature
+from jwcrypto.jws import InvalidJWSObject, InvalidJWSSignature
 from jwcrypto.jwt import JWT, JWTExpired, JWTMissingKey
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -25,6 +25,8 @@ class JWTAccessToken():
                 raise AuthenticationFailed('token key not present')
             check_update_keyset()
             return JWTAccessToken.decode_token(token=token, missing_key=True)
+        except InvalidJWSObject as e:
+            raise AuthenticationFailed(f'{e}')
         return jwt
 
     @staticmethod  # noqa: C901
