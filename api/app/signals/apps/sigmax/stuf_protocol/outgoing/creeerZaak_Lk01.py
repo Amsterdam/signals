@@ -33,7 +33,7 @@ SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
 SIGMAX_REQUIRED_ADDRESS_FIELDS = ['woonplaats', 'openbare_ruimte', 'huisnummer']
 # See ticket SIG-743 for the origin of this mapping:
 SIGMAX_STADSDEEL_MAPPING = {
-    STADSDEEL_AMSTERDAMSE_BOS: 'ABO',  # SIG-2980
+    STADSDEEL_AMSTERDAMSE_BOS: 'ABOS',  # SIG-2980
     STADSDEEL_CENTRUM: 'SDC',
     STADSDEEL_NOORD: 'SDN',
     STADSDEEL_NIEUWWEST: 'SDNW',
