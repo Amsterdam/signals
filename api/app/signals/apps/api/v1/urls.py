@@ -105,7 +105,7 @@ urlpatterns = [
 
         # expression
         path('expression/<int:pk>',
-             PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update'}),
+             PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
              name='expression-detail'),
     ])),
 ]

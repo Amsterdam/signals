@@ -12,7 +12,6 @@ from signals.apps.api.generics import mixins
 from signals.apps.api.v1.filters import ExpressionFilterSet
 from signals.apps.api.v1.serializers.expression import (
     ExpressionContextSerializer,
-    ExpressionModificationSerializer,
     ExpressionSerializer
 )
 from signals.apps.services.domain.dsl import DslService
@@ -20,11 +19,16 @@ from signals.apps.signals.models import Expression, ExpressionContext
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateExpressionViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
+class PrivateExpressionViewSet(mixins.ListModelMixin,
+                               mixins.CreateModelMixin,
+                               mixins.RetrieveModelMixin,
+                               mixins.UpdateModelMixin,
+                               mixins.DestroyModelMixin,
+                               DatapuntViewSet):
     """
     V1 private ViewSet to display/process expressions in the database
     """
-    http_method_names = ['get', 'post', 'patch', 'head', 'options']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     authentication_classes = (JWTAuthBackend, )
     queryset = Expression.objects.all()
@@ -67,26 +71,12 @@ class PrivateExpressionViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
             for t in ExpressionContext.objects.filter(_type__name=exp_type)
         }
 
-    def create(self, request):
-        serializer = ExpressionModificationSerializer(data=request.data)
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_detail_class(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
-        expression = serializer.save()
-
-        data = ExpressionSerializer(expression, context=self.get_serializer_context()).data
-        return Response(data, status=status.HTTP_201_CREATED)
-
-    def retrieve(self, request, pk):
-        data = ExpressionSerializer(self.get_object(), context=self.get_serializer_context()).data
-        return Response(data)
-
-    def update(self, request, pk, partial):
-        data = request.data.copy()
-        serializer = ExpressionModificationSerializer(self.get_object(), data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        expression = serializer.save()
-
-        data = ExpressionSerializer(expression, context=self.get_serializer_context()).data
-        return Response(data)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, url_path='validate/')
     def validate(self, request):

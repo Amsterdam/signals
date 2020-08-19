@@ -17,26 +17,12 @@ class ExpressionContextSerializer(serializers.ModelSerializer):
 
 
 class ExpressionSerializer(HALSerializer):
-    type = serializers.SerializerMethodField('get_type_name')
+    id = serializers.ReadOnlyField()
+    type = serializers.ReadOnlyField(source='_type.name')
 
     class Meta:
         model = Expression
         fields = ('id', 'name', 'code', 'type', )
-
-    def get_type_name(self, obj):
-        return obj._type.name
-
-
-class ExpressionModificationSerializer(serializers.ModelSerializer):
-    type = serializers.PrimaryKeyRelatedField(read_only=True, source='_type')
-
-    class Meta(object):
-        model = Expression
-        fields = (
-            'name',
-            'code',
-            'type',
-        )
 
     def validate(self, data):
         try:

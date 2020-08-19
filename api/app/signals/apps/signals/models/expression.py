@@ -47,6 +47,10 @@ class Expression(models.Model):
         verbose_name = 'Expression'
         verbose_name_plural = 'Expression'
         unique_together = ('name', '_type')
+        permissions = (
+            ('sia_expression_read', 'Inzien van expressies'),
+            ('sia_expression_write', 'Wijzigen van expressies'),
+        )
 
     name = models.CharField(max_length=255)
     code = models.TextField()
