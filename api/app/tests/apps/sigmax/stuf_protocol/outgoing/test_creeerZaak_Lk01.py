@@ -89,6 +89,21 @@ class TestOutgoing(TestCase, XmlTestMixin):
                 incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
             xml_message)
 
+    def test_generate_creeerZaak_Lk01_priority_low(self):
+        current_tz = timezone.get_current_timezone()
+        signal = SignalFactory.create(incident_date_end=None,
+                                      priority__priority=Priority.PRIORITY_LOW)
+
+        seq_no = _generate_sequence_number(signal)
+        xml_message = _generate_creeerZaak_Lk01(signal, seq_no)
+
+        self.assertXmlDocument(xml_message)
+        incident_date_end = signal.created_at + timedelta(days=3)
+        self.assertIn(
+            '<ZKN:einddatumGepland>{}</ZKN:einddatumGepland>'.format(
+                incident_date_end.astimezone(current_tz).strftime('%Y%m%d')),
+            xml_message)
+
 
 class TestGenerateOmschrijving(TestCase):
     def setUp(self):
