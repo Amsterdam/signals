@@ -12,7 +12,7 @@ Draft
 SIA deals with complaints to a municipality about problems in public spaces. In
 SIA jargon these complaints are "signals". Signals often contain several
 complaints or have to be handled by multiple municipal departments. To
-accomodate these signals in the complaint resolution workflow SIA allows signals
+accommodate these signals in the complaint resolution workflow SIA allows signals
 to be split into several "child signals" (deelmeldingen) whilst the original
 signal becomes a "parent signal" (hoofdmelding).
 
@@ -41,7 +41,7 @@ Problems with the status quo:
 
 Having thus described the goal of this ADR and problems with the current
 approach we propose the following, secondary, design goals:
-- API clients should not have to re-upload attachments (i.e. conserve bandwith)
+- API clients should not have to re-upload attachments (i.e. conserve bandwidth)
 - API clients should be able to create child signals with a minimum of API
   requests (i.e. maintain consistency in case the network or client issues)
 - the API should maintain backwards compatibility
@@ -103,7 +103,7 @@ of these child signals.
 #### V1 Signal Detail endpoint
 
 The response will be modified to return a list of attachment URL's. These URL's
-can be used to navigate to the correspondending attachment or to provide when 
+can be used to navigate to the corresponding attachment or to provide when 
 copying attachment to a new child Signal. As an aside: the attachments list
 endpoint will remain available so it will remain possible to retrieve all
 attachments associated with a signal in one API request.
@@ -218,10 +218,10 @@ will suffice.
 
 This ADR provides a way of creating child signals with attachments copied from
 their parents in an efficient way. It will be possible to use the batch creation
-of child signals meachanism to also copy attachments from their parents.
+of child signals mechanism to also copy attachments from their parents.
 
 All goals, described in the context section, are met save the backwards
-compatibility goal. The proposed change is, strictly speaking, imcompatible
+compatibility goal. The proposed change is, strictly speaking, incompatible
 because it changes the output of the attachments list endpoint to give each
 attachment a unique path in the API. In our estimation this is of no consequence
 because the current behavior can be considered a bug.
