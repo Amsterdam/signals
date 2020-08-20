@@ -23,12 +23,16 @@ class Question(models.Model):
         (MAP_SELECT, 'MapSelect'),
     )
 
-    key = models.CharField(max_length=255)
+    key = models.CharField(max_length=255, unique=True)
     field_type = models.CharField(max_length=32, choices=FIELD_TYPE_CHOICES, default=PLAIN_TEXT)
     meta = JSONField(blank=True, default=dict)
     required = models.BooleanField(default=False)
 
     class Meta:
+        permissions = (
+            ('sia_questions_read', 'Inzien van additionele vragen'),
+            ('sia_questions_write', 'Wijzigen van additionele vragen')
+        )
         verbose_name_plural = 'Questions'
 
     def __str__(self):

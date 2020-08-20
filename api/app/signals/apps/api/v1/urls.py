@@ -100,7 +100,7 @@ urlpatterns = [
              name='signal-category-changed-since'),
 
         # expression
-        path('questions',
+        path('questions/',
              PrivateQuestionViewSet.as_view({'get': 'list', 'post': 'create'}),
              name='questions-create-list'),
         path('questions/<int:pk>',
