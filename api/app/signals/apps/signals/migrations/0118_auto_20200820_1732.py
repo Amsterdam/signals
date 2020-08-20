@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='question',
-            options={'permissions': (('sia_questions_read', 'Inzien van additionele vragen'), ('sia_questions_write', 'Wijzigen van additionele vragen')), 'verbose_name_plural': 'Questions'},
+            options={'permissions': (('sia_questions_read', 'Inzien van additionele vragen'), ('sia_questions_write', 'Wijzigen van additionele vragen')), 'verbose_name_plural': 'Questions'}, # noqa
         ),
         migrations.AlterField(
             model_name='question',
