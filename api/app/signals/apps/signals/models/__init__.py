@@ -9,10 +9,12 @@ from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.directing_departments import DirectingDepartments
 from signals.apps.signals.models.history import History
 from signals.apps.signals.models.location import (
+    STADSDEEL_AMSTERDAMSE_BOS,
     STADSDEEL_CENTRUM,
     STADSDEEL_NIEUWWEST,
     STADSDEEL_NOORD,
     STADSDEEL_OOST,
+    STADSDEEL_WEESP,
     STADSDEEL_WEST,
     STADSDEEL_WESTPOORT,
     STADSDEEL_ZUID,
@@ -47,10 +49,12 @@ __all__ = [
     'Department',
     'DirectingDepartments',
     'History',
+    'STADSDEEL_AMSTERDAMSE_BOS',
     'STADSDEEL_CENTRUM',
     'STADSDEEL_NIEUWWEST',
     'STADSDEEL_NOORD',
     'STADSDEEL_OOST',
+    'STADSDEEL_WEESP',
     'STADSDEEL_WEST',
     'STADSDEEL_WESTPOORT',
     'STADSDEEL_ZUID',
