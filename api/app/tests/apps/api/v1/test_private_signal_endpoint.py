@@ -389,29 +389,16 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_and_upload_image(self, validate_address):
-        # Create initial Signal.
-        signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Signal.objects.count(), signal_count + 1)
+        attachments_url = self.detail_endpoint.format(pk=self.signal_no_image.pk) + '/attachments/'
 
-        # Store URL of the newly created Signal, then upload image to it.
-        new_url = response.json()['_links']['self']['href']
-
-        new_image_url = f'{new_url}/attachments/'
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'file': image})
-
+        response = self.client.post(attachments_url, data={'file': image})
         self.assertEqual(response.status_code, 201)
 
         # Check that a second upload is NOT rejected
         image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'file': image2})
+        response = self.client.post(attachments_url, data={'file': image2})
         self.assertEqual(response.status_code, 201)
-
-        # JSONSchema validation
-        response_json = self.client.get(new_url).json()
-        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
@@ -1704,7 +1691,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = list_endpoint + '{}'
-    attachment_endpoint = detail_endpoint + '/attachments'
+    attachment_endpoint = detail_endpoint + '/attachments/'
     test_host = 'http://testserver'
 
     def setUp(self):
