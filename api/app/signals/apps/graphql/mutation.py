@@ -3,17 +3,19 @@ from graphene_django.rest_framework.mutation import SerializerMutation
 
 from signals.apps.api.v1.serializers import PrivateQuestionSerializerDetail
 from signals.apps.graphql.types import QuestionType
+from signals.apps.signals.models import Question
 
-# from signals.apps.signals.models import Question
 
+class DeleteQuestion(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int()
 
-'''
-class QuestionInput(graphene.InputObjectType):
-    key = graphene.String(required=True)
-    field_type = graphene.String(required=True)
-    meta = graphene.JSONString(required=True)
-    required = graphene.Boolean(required=False)
-'''
+    ok = graphene.Boolean()
+
+    def mutate(self, info, id):
+        question = Question.objects.get(id=id)
+        question.delete()
+        return DeleteQuestion(ok=True)
 
 
 class QuestionMutation(SerializerMutation):
