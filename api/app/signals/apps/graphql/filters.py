@@ -1,6 +1,6 @@
 from django_filters import FilterSet, OrderingFilter, filters
 
-from signals.apps.api.v1.filters import status_choices
+from signals.apps.api.v1.filters import question_field_type_choices, status_choices
 
 
 class CategoryFilterSet(FilterSet):
@@ -19,6 +19,18 @@ class DepartmentFilterSet(FilterSet):
     order_by = OrderingFilter(
         fields=(
             ('code', 'code')
+        )
+    )
+
+
+class QuestionFilterSet(FilterSet):
+    id = filters.NumberFilter()
+    required = filters.BooleanFilter()
+    field_type = filters.ChoiceFilter(choices=question_field_type_choices)
+
+    order_by = OrderingFilter(
+        fields=(
+            ('key', 'key')
         )
     )
 

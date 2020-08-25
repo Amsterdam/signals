@@ -9,6 +9,7 @@ from signals.apps.signals.models import (
     Category,
     Department,
     Priority,
+    Question,
     Signal,
     Type
 )
@@ -297,6 +298,10 @@ class AreaFilterSet(FilterSet):
     """
     code = filters.MultipleChoiceFilter(choices=area_code_choices)
     type_code = filters.MultipleChoiceFilter(field_name='_type__code', choices=area_type_code_choices)
+
+
+def question_field_type_choices():
+    return Question.FIELD_TYPE_CHOICES
 
 
 class QuestionFilterSet(FilterSet):

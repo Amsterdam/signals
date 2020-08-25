@@ -20,6 +20,7 @@ class PublicQuestionSerializerDetail(serializers.Serializer):
 
 
 class PrivateQuestionSerializerDetail(HALSerializer):
+    id = serializers.ReadOnlyField()
     key = serializers.CharField()
     field_type = serializers.ChoiceField(choices=Question.FIELD_TYPE_CHOICES)
     meta = serializers.JSONField()
@@ -34,6 +35,11 @@ class PrivateQuestionSerializerDetail(HALSerializer):
             'meta',
             'required',
         )
+        # https://github.com/graphql-python/graphene-django/issues/906
+        extra_kwargs = {
+            'id': {'read_only': False, 'required': False}
+        }
+
 
     def create(self, validated_data):
         instance = super(PrivateQuestionSerializerDetail, self).create(validated_data)

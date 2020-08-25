@@ -5,12 +5,14 @@ from graphene_django.types import DjangoObjectType
 from signals.apps.graphql.filters import (
     CategoryFilterSet,
     DepartmentFilterSet,
+    QuestionFilterSet,
     ServiceLevelObjectiveFilterSet,
     StatusMessageTemplateFilterSet
 )
 from signals.apps.signals.models import (
     Category,
     Department,
+    Question,
     ServiceLevelObjective,
     StatusMessageTemplate
 )
@@ -73,4 +75,19 @@ class CategoryType(DjangoObjectType):
             'status_message_templates',
         )
         filterset_class = CategoryFilterSet
+        interfaces = (relay.Node,)
+
+
+class QuestionType(DjangoObjectType):
+    class Meta:
+        description = 'Additional Question'
+        model = Question
+        fields = (
+            'id',
+            'key',
+            'field_type',
+            'meta',
+            'required',
+        )
+        filterset_class = QuestionFilterSet
         interfaces = (relay.Node,)
