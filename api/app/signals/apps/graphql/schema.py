@@ -1,10 +1,8 @@
 import graphene
 
 import signals.apps.graphql.query
+from signals.apps.graphql.mutation import QuestionMutation
 
-from signals.apps.graphql.mutation import (
-    QuestionMutation
-)
 
 class Query(signals.apps.graphql.query.CategoryQuery,
             signals.apps.graphql.query.DepartmentQuery,

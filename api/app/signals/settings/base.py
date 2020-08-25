@@ -501,7 +501,7 @@ GRAPHENE = {
     'CAMELCASE_ERRORS': True,
     'RELAY_CONNECTION_ENFORCE_FIRST_OR_LAST': True,
     'RELAY_CONNECTION_MAX_LIMIT': 50,
-    "DJANGO_CHOICE_FIELD_ENUM_V3_NAMING": True, # fixes enumType errors a 'type' field is present
+    'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True,  # fixes enumType errors a 'type' field is present
 }
 
 # Default pdok municipalities

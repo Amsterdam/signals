@@ -90,4 +90,3 @@ class QuestionType(DjangoObjectType):
             'required',
         )
         filterset_class = QuestionFilterSet
-        interfaces = (relay.Node,)

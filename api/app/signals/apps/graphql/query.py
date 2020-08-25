@@ -2,6 +2,7 @@ import graphene
 from graphene_django.filter import DjangoFilterConnectionField
 
 from signals.apps.graphql.types import CategoryType, DepartmentType, QuestionType
+from signals.apps.signals.models import Question
 
 
 class CategoryQuery:
@@ -15,5 +16,11 @@ class DepartmentQuery:
 
 
 class QuestionQuery:
-    question = graphene.relay.Node.Field(QuestionType)
-    questions = DjangoFilterConnectionField(QuestionType)
+    question = graphene.Field(QuestionType, id=graphene.Int())
+    questions = graphene.List(QuestionType)
+
+    def resolve_questions(self, info, **kwargs):
+        return Question.objects.all()
+
+    def resolve_question(self, info, id):
+        return Question.objects.get(pk=id)
