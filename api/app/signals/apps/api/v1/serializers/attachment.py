@@ -36,8 +36,7 @@ class SignalAttachmentSerializer(HALSerializer):
         extra_kwargs = {'file': {'write_only': True}}
 
     def create(self, validated_data):
-        attachment = Signal.actions.add_attachment(validated_data['file'],
-                                                   self.context['view'].get_object())
+        attachment = Signal.actions.add_attachment(validated_data['file'], self.context['view'].get_signal())
 
         if self.context['request'].user:
             attachment.created_by = self.context['request'].user.email

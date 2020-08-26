@@ -35,7 +35,9 @@ public_router.register(r'public/areas', PublicAreasViewSet, basename='public-are
 
 # Private API
 private_router = SignalsRouterVersion1()
-private_router.register(r'private/signals', PrivateSignalViewSet, basename='private-signals')
+private_signals = private_router.register(r'private/signals', PrivateSignalViewSet, basename='private-signals')
+private_signals.register(r'attachments', PrivateSignalAttachmentsViewSet, basename='private-signals-attachments',
+                         parents_query_lookups=['_signal__pk'])
 private_router.register(r'private/me/filters', StoredSignalFilterViewSet, basename='stored-signal-filters')
 private_router.register(r'private/users', UserViewSet, basename='user')
 private_router.register(r'private/roles', RoleViewSet, basename='group')
@@ -44,6 +46,7 @@ private_router.register(r'private/departments', PrivateDepartmentViewSet, basena
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
+
 
 # Combined API
 base_router = SignalsRouterVersion1()
@@ -58,7 +61,6 @@ urlpatterns = [
     re_path(r'v1/relations/?$', NamespaceView.as_view(), name='signal-namespace'),
 
     # Public additions
-    # path('v1/public/', include(public_router.urls)),
     path('v1/public/', include([
         re_path(r'signals/(?P<signal_id>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
@@ -86,9 +88,6 @@ urlpatterns = [
         re_path(r'signals/(?P<pk>\d+)/split/?$',
                 PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
                 name='private-signals-split'),
-        re_path(r'signals/(?P<pk>\d+)/attachments/?$',
-                PrivateSignalAttachmentsViewSet.as_view({'get': 'list', 'post': 'create'}),
-                name='private-signals-attachments'),
         re_path(r'signals/(?P<pk>\d+)/pdf/?$', GeneratePdfView.as_view(), name='signal-pdf-download'),
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),

@@ -1,4 +1,5 @@
 from rest_framework import routers
+from rest_framework_extensions.routers import ExtendedDefaultRouter
 
 
 class SignalsAPIRootViewVersion1(routers.APIRootView):
@@ -8,7 +9,7 @@ class SignalsAPIRootViewVersion1(routers.APIRootView):
         return 'Signals API Version 1'
 
 
-class SignalsRouterVersion1(routers.DefaultRouter):
+class SignalsRouterVersion1(ExtendedDefaultRouter):
     APIRootView = SignalsAPIRootViewVersion1
 
     # Overriding the `routes` attribute from the default DRF `routes`. We do this to control the
