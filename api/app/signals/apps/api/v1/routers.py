@@ -17,7 +17,7 @@ class SignalsRouterVersion1(routers.DefaultRouter):
     routes = [
         # List route.
         routers.Route(
-            url=r'^{prefix}/$',
+            url=r'^{prefix}{trailing_slash}$',
             mapping={
                 'get': 'list',
                 'post': 'create',
@@ -32,14 +32,14 @@ class SignalsRouterVersion1(routers.DefaultRouter):
         # Dynamically generated list routes. Generated using
         # @action(detail=False) decorator on methods of the viewset.
         routers.DynamicRoute(
-            url=r'^{prefix}/{url_path}$',
+            url=r'^{prefix}/{url_path}{trailing_slash}$',
             name='{basename}-{url_name}',
             detail=False,
             initkwargs={}
         ),
         # Detail route.
         routers.Route(
-            url=r'^{prefix}/{lookup}$',
+            url=r'^{prefix}/{lookup}{trailing_slash}$',
             mapping={
                 'get': 'retrieve',
                 'put': 'update',
@@ -53,9 +53,13 @@ class SignalsRouterVersion1(routers.DefaultRouter):
         # Dynamically generated detail routes. Generated using
         # @action(detail=True) decorator on methods of the viewset.
         routers.DynamicRoute(
-            url=r'^{prefix}/{lookup}/{url_path}$',
+            url=r'^{prefix}/{lookup}/{url_path}{trailing_slash}$',
             name='{basename}-{url_name}',
             detail=True,
             initkwargs={}
         ),
     ]
+
+    def __init__(self, *args, **kwargs):
+        super(SignalsRouterVersion1, self).__init__(*args, **kwargs)
+        self.trailing_slash = '/?'

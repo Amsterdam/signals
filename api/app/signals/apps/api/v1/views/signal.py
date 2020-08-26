@@ -130,7 +130,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                     request, message=getattr(permission, 'message', None)
                 )
 
-    @action(detail=True)
+    @action(detail=True, url_path=r'history/?$')
     def history(self, request, pk=None):
         """History endpoint filterable by action."""
         history_entries = History.objects.filter(_signal__id=pk)
@@ -141,7 +141,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = HistoryHalSerializer(history_entries, many=True)
         return Response(serializer.data)
 
-    @action(detail=False)
+    @action(detail=False, url_path=r'geography/?$')
     def geography(self, request):
         # Makes use of the optimised queryset
         filtered_qs = self.filter_queryset(
@@ -161,7 +161,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = SignalGeoSerializer(filtered_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, url_path='children/')
+    @action(detail=True, url_path=r'children/?$')
     def children(self, request, pk=None):
         """Show abbriged version of child signals for a given parent signal."""
         # Based on a user's department a signal may not be accessible.
