@@ -52,7 +52,7 @@ class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions,)
 
-    @action(detail=True)
+    @action(detail=True, url_path=r'history/?$')
     def history(self, request, pk=None):
         """
         The change log of the selected Category instance

@@ -398,7 +398,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Store URL of the newly created Signal, then upload image to it.
         new_url = response.json()['_links']['self']['href']
 
-        new_image_url = f'{new_url}/attachments'
+        new_image_url = f'{new_url}/attachments/'
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(new_image_url, data={'file': image})
 
