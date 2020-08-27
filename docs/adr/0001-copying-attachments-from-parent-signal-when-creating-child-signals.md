@@ -5,7 +5,7 @@ Author: David van Buiten & Thijs Coenen
 
 ## Status
 
-Draft
+Accepted
 
 ## Context
 
