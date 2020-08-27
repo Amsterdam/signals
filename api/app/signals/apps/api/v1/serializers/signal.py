@@ -20,6 +20,7 @@ from signals.apps.api.v1.fields import (
     PrivateSignalLinksFieldWithArchives,
     PublicSignalLinksField
 )
+from signals.apps.api.v1.fields.attachment import PrivateSignalAttachmentRelatedField
 from signals.apps.api.v1.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.v1.serializers.nested import (
     _NestedCategoryModelSerializer,
@@ -35,7 +36,7 @@ from signals.apps.api.v1.serializers.nested import (
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.models import Attachment, Priority, Signal
 
 
 class _SignalListSerializer(serializers.ListSerializer):
@@ -163,6 +164,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         ]
     )
 
+    attachments = PrivateSignalAttachmentRelatedField(view_name='PrivateSignalAttachmentsViewSet', many=True,
+                                                      required=False, read_only=True)
+
     class Meta:
         model = Signal
         fields = (
@@ -186,6 +190,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'directing_departments',
+            'attachments',
         )
         read_only_fields = (
             'id',
@@ -299,6 +304,10 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         queryset=Signal.objects.all()
     )
 
+    attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
+                                                      required=False, read_only=False, write_only=True,
+                                                      queryset=Attachment.objects.all())
+
     class Meta:
         model = Signal
         list_serializer_class = _SignalListSerializer
@@ -325,6 +334,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'extra_properties',
             'notes',
             'directing_departments',
+            'attachments',
 
             'parent'
         )
@@ -351,6 +361,16 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             errors.update(
                 {'status': ['Status cannot be set on initial creation']}
             )
+
+        attachments = attrs.get('attachments')
+        parent = attrs.get('parent')  # Not yet implemented, see PR 543. Should be working after this PR is merged
+        if attachments and parent is None:
+            errors.update({'attachments': ['Attachments can only be copied when creating a child Signal']})
+
+        if attachments and parent:
+            attachments_belong_to_parent = all([parent.pk == attachment._signal_id for attachment in attachments])
+            if not attachments_belong_to_parent:
+                errors.update({'attachments': ['Attachments can only be copied from the parent Signal']})
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -383,6 +403,8 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         type_data = validated_data.pop('type_assignment', {})
         type_data['created_by'] = logged_in_user.email
 
+        attachments = validated_data.pop('attachments') if 'attachments' in validated_data else None
+
         signal = Signal.actions.create_initial(
             validated_data,
             location_data,
@@ -392,6 +414,11 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             priority_data,
             type_data
         )
+
+        if attachments:
+            Signal.actions.copy_attachments(data=attachments, signal=signal)
+
+        signal.refresh_from_db()
         return signal
 
 

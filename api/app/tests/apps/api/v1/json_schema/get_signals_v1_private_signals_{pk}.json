@@ -142,7 +142,7 @@
 					"type": "integer"
 				},
 				"stadsdeel": {
-					"type": "string"
+					"type": ["string", "null"]
 				},
 				"buurt_code": {
 					"type": ["string", "null"]
@@ -404,6 +404,14 @@
 			"required": [
 				"code"
 			]
+		},
+		"attachments": {
+			"type": "array",
+			"items": [
+				{
+					"type": "string"
+				}
+			]
 		}
 	},
 	"required": [
@@ -417,6 +425,7 @@
 		"reporter",
 		"priority",
 		"notes",
-		"type"
+		"type",
+		"attachments"
 	]
 }
