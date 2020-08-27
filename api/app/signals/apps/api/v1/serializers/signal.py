@@ -55,7 +55,7 @@ class _SignalListSerializer(serializers.ListSerializer):
          * All Signals given need to be children of the same Signal
          ** The given Signals + the already existing child Signals do not exceed X
 
-         * A maximum of X Signals can be sent to create in bulk
+         * A maximum of X Signals can be sent to create in bulk (defined in the setting SIGNAL_MAX_NUMBER_OF_CHILDREN)
 
         :param attrs:
         :return attrs:

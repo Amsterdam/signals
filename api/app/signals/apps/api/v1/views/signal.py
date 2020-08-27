@@ -193,7 +193,6 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):
-            # We want some additional checks here
             serializer = self.get_serializer(data=request.data, many=True)
         else:
             serializer = self.get_serializer(data=request.data)
