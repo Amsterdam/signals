@@ -17,10 +17,7 @@ class DepartmentQuery:
 
 class QuestionQuery:
     question = graphene.Field(QuestionType, id=graphene.Int())
-    questions = graphene.List(QuestionType)
-
-    def resolve_questions(self, info, **kwargs):
-        return Question.objects.all()
+    questions = DjangoFilterConnectionField(QuestionType)
 
     def resolve_question(self, info, id):
         return Question.objects.get(pk=id)
