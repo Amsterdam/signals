@@ -78,16 +78,6 @@ class CategoryType(DjangoObjectType):
         interfaces = (relay.Node,)
 
 
-class CustomRelayNode(relay.Node):
-    @classmethod
-    def from_global_id(cls, global_id):
-        return global_id
-
-    @classmethod
-    def to_global_id(cls, type, id):
-        return id
-
-
 class QuestionType(DjangoObjectType):
     id = ID(source='id', required=True)
 

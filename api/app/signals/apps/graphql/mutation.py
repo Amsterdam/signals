@@ -19,6 +19,7 @@ class DeleteQuestion(graphene.Mutation):
 
 
 class QuestionMutation(SerializerMutation):
+
     class Meta:
         serializer_class = PrivateQuestionSerializerDetail
         convert_choices_to_enum = False
