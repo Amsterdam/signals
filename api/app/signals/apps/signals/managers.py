@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -672,7 +674,7 @@ class SignalManager(models.Manager):
         target_attachment._signal = signal
 
         try:
-            file_name = source_attachment.file.name.split('/').pop()
+            _, file_name = os.path.split(source_attachment.file.name)
             target_attachment.file.save(name=f'signal_{signal.pk}_{file_name}', content=source_attachment.file)
         except FileNotFoundError:
             pass

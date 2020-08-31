@@ -164,7 +164,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         ]
     )
 
-    attachments = PrivateSignalAttachmentRelatedField(view_name='PrivateSignalAttachmentsViewSet', many=True,
+    attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
                                                       required=False, read_only=True)
 
     class Meta:
@@ -363,7 +363,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             )
 
         attachments = attrs.get('attachments')
-        parent = attrs.get('parent')  # Not yet implemented, see PR 543. Should be working after this PR is merged
+        parent = attrs.get('parent')
         if attachments and parent is None:
             errors.update({'attachments': ['Attachments can only be copied when creating a child Signal']})
 
