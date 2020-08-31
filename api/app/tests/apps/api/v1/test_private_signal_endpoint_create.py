@@ -1,4 +1,5 @@
 import copy
+import os
 from unittest.mock import patch
 
 from django.conf import settings
@@ -7,9 +8,16 @@ from django.utils import timezone
 from rest_framework import status
 
 from signals.apps.api.v1.validation.address.base import AddressValidationUnavailableException
-from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory, SignalFactory
+from signals.apps.signals.models import Attachment, Signal
+from tests.apps.signals.factories import (
+    CategoryFactory,
+    ParentCategoryFactory,
+    SignalFactory,
+    SignalFactoryWithImage
+)
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+
+THIS_DIR = os.path.dirname(__file__)
 
 
 class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -40,6 +48,10 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
             reporter=dict(email='melder@example.com'),
             incident_date_start=timezone.now().strftime('%Y-%m-%dT%H:%M'),
             source='Telefoon – ASC',
+        )
+
+        self.retrieve_signal_schema = self.load_json_schema(
+            os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals_{pk}.json')
         )
 
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
@@ -248,3 +260,43 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(Signal.objects.count(), 2)
         self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), 1)
         self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), 1)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_child_signals_copy_attachments(self, validate_address):
+        parent_signal = SignalFactoryWithImage.create()
+
+        signal_count = Signal.objects.count()
+        parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
+        child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
+        attachment_count = Attachment.objects.count()
+
+        self.assertEqual(signal_count, 1)
+        self.assertEqual(parent_signal_count, 1)
+        self.assertEqual(child_signal_count, 0)
+        self.assertEqual(attachment_count, 1)
+
+        attachment = parent_signal.attachments.first()
+
+        initial_data = []
+        for _ in range(2):
+            data = copy.deepcopy(self.initial_data_base)
+            data['parent'] = parent_signal.pk
+            data['attachments'] = [f'/signals/v1/private/signals/{attachment._signal_id}/attachments/{attachment.pk}', ]
+            initial_data.append(data)
+
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), 3)
+        self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), 1)
+        self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), 2)
+        self.assertEqual(Attachment.objects.count(), 3)
+
+        # JSONSchema validation
+        response_json = response.json()
+        for response_signal in response_json:
+            detail_response_json = self.client.get(response_signal['_links']['self']['href']).json()
+
+            self.assertEqual(len(detail_response_json['attachments']), 1)
+            self.assertJsonSchema(self.retrieve_signal_schema, detail_response_json)
