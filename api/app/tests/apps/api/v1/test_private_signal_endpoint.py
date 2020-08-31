@@ -220,6 +220,48 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         data = result.json()
         self.assertJsonSchema(self.list_history_schema, data)
 
+    def test_history_deelmeldingen(self):
+        parent = SignalFactory.create()
+        child_1 = SignalFactory.create(parent=parent)
+        child_2 = SignalFactory.create(parent=parent)
+
+        base_url = self.history_endpoint.format(pk=parent.id)
+        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
+        response = self.client.get(base_url + '?' + querystring)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # SIA should show 2 entries for child signals created
+        self.assertEqual(len(data), 2)
+
+        self.assertEqual(data[0]['identifier'], f'CHILD_SIGNAL_CREATED_{child_2.id}')
+        self.assertEqual(data[0]['what'], 'CHILD_SIGNAL_CREATED')
+        self.assertEqual(data[0]['action'], 'Deelmelding toegevoegd')
+        self.assertEqual(data[0]['description'], f'Melding {child_2.id}')
+
+        self.assertEqual(data[1]['identifier'], f'CHILD_SIGNAL_CREATED_{child_1.id}')
+        self.assertEqual(data[1]['what'], 'CHILD_SIGNAL_CREATED')
+        self.assertEqual(data[1]['action'], 'Deelmelding toegevoegd')
+        self.assertEqual(data[1]['description'], f'Melding {child_1.id}')
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.list_history_schema, data)
+
+    def test_history_splitmeldingen(self):
+        parent = SignalFactory.create(status__state='s')
+        SignalFactory.create_batch(2, parent=parent)
+
+        base_url = self.history_endpoint.format(pk=parent.id)
+        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
+        response = self.client.get(base_url + '?' + querystring)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # SIA should not show 2 entries because the Signal was split instead of "opgedeeld"
+        self.assertEqual(len(data), 0)
+
     # -- write tests --
 
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
