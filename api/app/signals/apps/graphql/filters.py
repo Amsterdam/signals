@@ -24,6 +24,7 @@ class DepartmentFilterSet(FilterSet):
 
 
 class QuestionFilterSet(FilterSet):
+    id = filters.NumberFilter()
     required = filters.BooleanFilter()
     field_type = filters.ChoiceFilter(choices=question_field_type_choices)
 

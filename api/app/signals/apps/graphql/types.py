@@ -1,4 +1,4 @@
-from graphene import ID, relay
+from graphene import relay
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 
@@ -79,8 +79,6 @@ class CategoryType(DjangoObjectType):
 
 
 class QuestionType(DjangoObjectType):
-    id = ID(source='id', required=True)
-
     class Meta:
         description = 'Additional Question'
         model = Question
@@ -92,4 +90,6 @@ class QuestionType(DjangoObjectType):
             'required',
         )
         filterset_class = QuestionFilterSet
-        interfaces = (relay.Node,)
+        use_connection = True
+        # https://github.com/graphql-python/graphene-django/issues/957#issuecomment-626307802
+        # interfaces = (relay.Node,)
