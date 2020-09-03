@@ -11,8 +11,8 @@ from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateExpressionEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
-    list_endpoint = '/signals/v1/private/expression/'
-    detail_endpoint = '/signals/v1/private/expression/{pk}'
+    list_endpoint = '/signals/v1/private/expressions/'
+    detail_endpoint = '/signals/v1/private/expressions/{pk}'
 
     def setUp(self):
         self.expression_read = Permission.objects.get(
