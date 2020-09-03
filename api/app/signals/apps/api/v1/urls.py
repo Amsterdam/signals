@@ -99,7 +99,7 @@ urlpatterns = [
         path('search', SearchView.as_view({'get': 'list'}), name='elastic-search'),
 
         # expression
-        path('expression/<int:pk>',
+        re_path(r'expression/(?P<pk>\d+)/?$',
              PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
              name='expression-detail'),
     ])),
