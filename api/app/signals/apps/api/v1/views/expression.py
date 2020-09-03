@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
+from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.filters import ExpressionFilterSet
 from signals.apps.api.v1.serializers.expression import (
     ExpressionContextSerializer,
@@ -40,6 +41,8 @@ class PrivateExpressionViewSet(mixins.ListModelMixin,
     pagination_class = HALPagination
 
     filter_backends = (DjangoFilterBackend, )
+    permission_classes = (SIAPermissions & ModelWritePermissions, )
+
     filterset_class = ExpressionFilterSet
 
     dsl_service = DslService()
