@@ -49,7 +49,7 @@ private_router.register(r'private/permissions', PermissionViewSet, basename='per
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
-private_router.register(r'private/expression', PrivateExpressionViewSet, basename='private-dsl')
+private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-dsl')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
 
 
@@ -99,7 +99,7 @@ urlpatterns = [
         path('search', SearchView.as_view({'get': 'list'}), name='elastic-search'),
 
         # expression
-        re_path(r'expression/(?P<pk>\d+)/?$',
+        re_path(r'expressions/(?P<pk>\d+)/?$',
                 PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
                 name='expression-detail'),
     ])),
