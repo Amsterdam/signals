@@ -2,6 +2,7 @@ from graphene import relay
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 
+from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.graphql.filters import (
     CategoryFilterSet,
     DepartmentFilterSet,
@@ -79,6 +80,8 @@ class CategoryType(DjangoObjectType):
 
 
 class QuestionType(DjangoObjectType):
+    permission_classes = (SIAPermissions & ModelWritePermissions,)
+
     class Meta:
         description = 'Additional Question'
         model = Question
@@ -92,4 +95,4 @@ class QuestionType(DjangoObjectType):
         filterset_class = QuestionFilterSet
         use_connection = True
         # https://github.com/graphql-python/graphene-django/issues/957#issuecomment-626307802
-        # interfaces = (relay.Node,)
+        # interfaces = (CustomNode,)

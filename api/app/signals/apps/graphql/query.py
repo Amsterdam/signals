@@ -1,8 +1,8 @@
 import graphene
 from graphene_django.filter import DjangoFilterConnectionField
 
+from signals.apps.graphql.authorization import SiaAuthConnectionField, SiaAuthNode
 from signals.apps.graphql.types import CategoryType, DepartmentType, QuestionType
-from signals.apps.signals.models import Question
 
 
 class CategoryQuery:
@@ -16,8 +16,5 @@ class DepartmentQuery:
 
 
 class QuestionQuery:
-    question = graphene.Field(QuestionType, id=graphene.Int())
-    questions = DjangoFilterConnectionField(QuestionType)
-
-    def resolve_question(self, info, id):
-        return Question.objects.get(pk=id)
+    question = SiaAuthNode.Field(QuestionType)
+    questions = SiaAuthConnectionField(QuestionType)
