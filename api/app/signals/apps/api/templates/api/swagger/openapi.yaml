@@ -203,14 +203,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/V1PrivateSignalPost'
+              oneOf:
+                - $ref: '#/components/schemas/V1PrivateSignalPost'
+                - $ref: '#/components/schemas/V1PrivateSignalPostBulk'
       responses:
         '201':
           description: New signal created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/V1PrivateSignalDetailGet'
+                oneOf:
+                  - $ref: '#/components/schemas/V1PrivateSignalDetailGet'
+                  - $ref: '#/components/schemas/V1PrivateSignalDetailGetBulk'
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
@@ -423,7 +427,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
-  
+
   /signals/v1/private/signals/{id}/children/:
     parameters:
       - name: id
@@ -1457,20 +1461,33 @@ components:
           type: boolean
           example: false
 
+    V1PrivateSignalPostBulk:
+      description: JSON data for creation of Signals/meldingen in bulk (private version). When creating children all items in the list must belong to the same parent. Can also be used to create "normal" Signals/meldingen (Signals/meldingen withouth a parent link).
+      type: array
+      items:
+        $ref: '#/components/schemas/V1PrivateSignalPost'
+      minItems: 1
+      maxItems: 10
+
     V1PrivateSignalPost:
       description: JSON data for creation of Signal/melding (private version).
       type: object
       properties:
         source:
           type: string
+          example: 'online'
         text:
           type: string
           description: The complaint
+          example: 'Er ligt vuilnis midden op straat'
         text_extra:
           type: string
           nullable: true
+          example: 'Extra tekst kan hier worden meegegeven, dit veld is niet verplicht'
         location:
           $ref: '#/components/schemas/_NestedLocationRequestData'
+        reporter:
+          $ref: '#/components/schemas/_NestedReporterRequestData'
         category:
           $ref: '#/components/schemas/_NestedCategoryRequestData'
         priority:
@@ -1480,20 +1497,31 @@ components:
         incident_date_start:
           type: string
           format: date-time
+          example: '2020-01-01T00:00:00+00:00'
         incident_date_end:
           type: string
           format: date-time
           nullable: true
+          example: '2020-01-01T00:00:00+00:00'
         operational_date:
           type: string
           format: date-time
           nullable: true
+          example: '2020-01-01T00:00:00+00:00'
         extra_properties:
           type: object
           example: {}
+        attachments:
+          type: array
+          items:
+            type: string
+            example: 'http://127.0.0.1:8000/signals/v1/private/signals/123/attachments/456'
+          minItems: 0
       required:
         - text
         - location
+        - reporter
+        - category
         - incident_date_start
 
     V1PublicSignalPost:
@@ -1707,6 +1735,14 @@ components:
                     format: date-time
                     example: "2020-01-01T00:00:00+00:00"
 
+    V1PrivateSignalDetailGetBulk:
+      description: Detailed JSON serialization of SIA Signals/meldingen when creating them in bulk.
+      type: array
+      items:
+        $ref: '#/components/schemas/V1PrivateSignalDetailGet'
+      minItems: 1
+      maxItems: 10
+
     V1PrivateSignalDetailGet:
       description: Detailed JSON serialization of a SIA Signal/melding.
       type: object
@@ -1735,38 +1771,38 @@ components:
                       description: URI of this user in API
                       type: string
                       format: uri
-                      example: "http://127.0.0.1:8000/signals/v1/private/signals/1"
+                      example: "http://127.0.0.1:8000/signals/v1/private/signals/123"
             archives:
               type: object
               properties:
                 href:
                   type: string
                   format: uri
-                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/history"
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/123/history"
             sia:attachments:
               type: object
               properties:
                 href:
                   type: string
                   format: uri
-                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/attachments"
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/123/attachments"
             sia:pdf:
               type: object
               properties:
                 href:
                   type: string
                   format: uri
-                  example: "http://127.0.0.1:8000/signals/v1/private/signals/4669/pdf"
+                  example: "http://127.0.0.1:8000/signals/v1/private/signals/123/pdf"
         _display:
           description: Textual representation of signal for display purposes.
           type: string
-          example: 1 - m - E17a - 2020-01-01 00:00:00.000000+00:00
+          example: 123 - m - E17a - 2020-01-01 00:00:00.000000+00:00
         category:
           $ref: '#/components/schemas/_NestedCategoryResponseData'
         id:
           description: ID of the signal
           type: integer
-          example: 1
+          example: 123
         has_attachments:
           type: boolean
           example: false
@@ -1807,6 +1843,12 @@ components:
           format: date-time
           nullable: true
           example: null
+        attachments:
+          type: array
+          items:
+            type: string
+            example: 'http://127.0.0.1:8000/signals/v1/private/signals/123/attachments/456'
+          minItems: 0
 
     V1PublicSignalDetailGet:
       description: Detailed JSON serialization of a SIA Signal.

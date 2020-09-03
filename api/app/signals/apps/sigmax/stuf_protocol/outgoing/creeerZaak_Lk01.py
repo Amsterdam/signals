@@ -9,10 +9,12 @@ from django.template.loader import render_to_string
 
 from signals.apps.sigmax.stuf_protocol.outgoing.stuf import _send_stuf_message
 from signals.apps.signals.models import (
+    STADSDEEL_AMSTERDAMSE_BOS,
     STADSDEEL_CENTRUM,
     STADSDEEL_NIEUWWEST,
     STADSDEEL_NOORD,
     STADSDEEL_OOST,
+    STADSDEEL_WEESP,
     STADSDEEL_WEST,
     STADSDEEL_WESTPOORT,
     STADSDEEL_ZUID,
@@ -31,10 +33,12 @@ SIGNALS_API_BASE = os.getenv('SIGNALS_API_BASE',
 SIGMAX_REQUIRED_ADDRESS_FIELDS = ['woonplaats', 'openbare_ruimte', 'huisnummer']
 # See ticket SIG-743 for the origin of this mapping:
 SIGMAX_STADSDEEL_MAPPING = {
+    STADSDEEL_AMSTERDAMSE_BOS: 'ABOS',  # SIG-2980
     STADSDEEL_CENTRUM: 'SDC',
     STADSDEEL_NOORD: 'SDN',
     STADSDEEL_NIEUWWEST: 'SDNW',
     STADSDEEL_OOST: 'SDO',
+    STADSDEEL_WEESP: 'WSP',  # SIG-2980
     STADSDEEL_WEST: 'SDW',
     STADSDEEL_ZUID: 'SDZ',
     STADSDEEL_ZUIDOOST: 'SDZO',
@@ -105,6 +109,7 @@ def _generate_creeerZaak_Lk01(signal, seq_no):
     num_days_priority_mapping = {
         Priority.PRIORITY_HIGH: 1,
         Priority.PRIORITY_NORMAL: 3,
+        Priority.PRIORITY_LOW: 3,
     }
     incident_date_end = (
         signal.created_at + timedelta(days=num_days_priority_mapping[signal.priority.priority]))

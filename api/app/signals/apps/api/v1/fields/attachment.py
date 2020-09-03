@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from rest_framework import serializers
+from rest_framework.request import Request
 
 from signals.apps.signals.models import Attachment
 
@@ -20,12 +21,20 @@ class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
 
 
 class PrivateSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
-    def to_representation(self, value: Attachment):
+    def to_representation(self, value: Attachment) -> OrderedDict:
         request = self.context.get('request')
 
         result = OrderedDict([
-            ('self',
-             dict(href=self.get_url(value._signal, "private-signals-attachments", request, None))),
+            ('self', dict(href=self.reverse("private-signals-attachments-detail",
+                                            kwargs={'parent_lookup__signal__pk': value._signal_id, 'pk': value.pk},
+                                            request=request) if value.pk else None)),
         ])
 
         return result
+
+
+class PrivateSignalAttachmentRelatedField(serializers.HyperlinkedRelatedField):
+    def get_url(self, obj: Attachment, view_name: str, request: Request, format: str) -> str:
+        return self.reverse("private-signals-attachments-detail",
+                            kwargs={'parent_lookup__signal__pk': obj._signal_id, 'pk': obj.pk},
+                            request=request)

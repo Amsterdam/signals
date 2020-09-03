@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -664,3 +666,28 @@ class SignalManager(models.Manager):
             directing_departments = self._update_directing_departments_no_transaction(data=data, signal=locked_signal)
 
         return directing_departments
+
+    def _copy_attachment_no_transaction(self, source_attachment, signal):
+        from signals.apps.signals.models import Attachment
+
+        target_attachment = Attachment()
+        target_attachment._signal = signal
+
+        try:
+            _, file_name = os.path.split(source_attachment.file.name)
+            target_attachment.file.save(name=f'signal_{signal.pk}_{file_name}', content=source_attachment.file)
+        except FileNotFoundError:
+            pass
+        else:
+            target_attachment.save()
+            return target_attachment
+
+    def copy_attachments(self, data, signal):
+        from signals.apps.signals.models import Signal
+
+        with transaction.atomic():
+            attachments = []
+            locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
+            for attachment in data:
+                attachments.append(self._copy_attachment_no_transaction(attachment, locked_signal))
+        return attachments

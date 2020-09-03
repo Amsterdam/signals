@@ -2,17 +2,20 @@ from collections import OrderedDict
 
 from rest_framework import serializers
 
+from signals.apps.signals.models import Signal
+
 
 class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
-    def to_representation(self, value):
+    def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
 
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse("signal-namespace", request=request))),
             ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
             ('archives', dict(href=self.get_url(value, "private-signals-history", request, None))),
-            ('sia:attachments',
-             dict(href=self.get_url(value, "private-signals-attachments", request, None))),
+            ('sia:attachments', dict(href=self.reverse("private-signals-attachments-list",
+                                                       kwargs={'parent_lookup__signal__pk': value.pk},
+                                                       request=request))),
             ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
         ])
 
@@ -33,7 +36,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
 
 class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
 
-    def to_representation(self, value):
+    def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
 
         result = OrderedDict([
@@ -46,7 +49,7 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
 class PublicSignalLinksField(serializers.HyperlinkedIdentityField):
     lookup_field = 'signal_id'
 
-    def to_representation(self, value):
+    def to_representation(self, value: Signal) -> OrderedDict:
         request = self.context.get('request')
 
         result = OrderedDict([

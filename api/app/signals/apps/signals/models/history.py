@@ -25,7 +25,7 @@ class History(models.Model):
     def delete(self, *args, **kwargs):
         raise NotImplementedError
 
-    def get_action(self):
+    def get_action(self):  # noqa: C901
         """Generate text for the action field that can serve as title in UI."""
         if self.what == 'UPDATE_STATUS':
             return f'Update status naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
@@ -43,6 +43,8 @@ class History(models.Model):
             return f'Type update naar: {_history_translated_action(self.extra)}'
         elif self.what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
             return f'Regie voerende afdeling/afdelingen gewijzigd naar: {self.extra}'
+        elif self.what == 'CHILD_SIGNAL_CREATED':
+            return 'Deelmelding toegevoegd'
         return 'Actie onbekend.'
 
     def get_who(self):
@@ -58,6 +60,8 @@ class History(models.Model):
         elif self.what == 'RECEIVE_FEEDBACK':
             feedback_id = self.identifier.strip('RECEIVE_FEEDBACK_')
             return _get_description_of_receive_feedback(feedback_id)
+        elif self.what == 'CHILD_SIGNAL_CREATED':
+            return f'Melding {self.extra}'
         else:
             return self.description
 

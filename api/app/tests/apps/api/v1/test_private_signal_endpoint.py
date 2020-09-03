@@ -220,6 +220,48 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         data = result.json()
         self.assertJsonSchema(self.list_history_schema, data)
 
+    def test_history_deelmeldingen(self):
+        parent = SignalFactory.create()
+        child_1 = SignalFactory.create(parent=parent)
+        child_2 = SignalFactory.create(parent=parent)
+
+        base_url = self.history_endpoint.format(pk=parent.id)
+        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
+        response = self.client.get(base_url + '?' + querystring)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # SIA should show 2 entries for child signals created
+        self.assertEqual(len(data), 2)
+
+        self.assertEqual(data[0]['identifier'], f'CHILD_SIGNAL_CREATED_{child_2.id}')
+        self.assertEqual(data[0]['what'], 'CHILD_SIGNAL_CREATED')
+        self.assertEqual(data[0]['action'], 'Deelmelding toegevoegd')
+        self.assertEqual(data[0]['description'], f'Melding {child_2.id}')
+
+        self.assertEqual(data[1]['identifier'], f'CHILD_SIGNAL_CREATED_{child_1.id}')
+        self.assertEqual(data[1]['what'], 'CHILD_SIGNAL_CREATED')
+        self.assertEqual(data[1]['action'], 'Deelmelding toegevoegd')
+        self.assertEqual(data[1]['description'], f'Melding {child_1.id}')
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.list_history_schema, data)
+
+    def test_history_splitmeldingen(self):
+        parent = SignalFactory.create(status__state='s')
+        SignalFactory.create_batch(2, parent=parent)
+
+        base_url = self.history_endpoint.format(pk=parent.id)
+        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
+        response = self.client.get(base_url + '?' + querystring)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # SIA should not show 2 entries because the Signal was split instead of "opgedeeld"
+        self.assertEqual(len(data), 0)
+
     # -- write tests --
 
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
@@ -389,29 +431,16 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_and_upload_image(self, validate_address):
-        # Create initial Signal.
-        signal_count = Signal.objects.count()
-        response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Signal.objects.count(), signal_count + 1)
+        attachments_url = self.detail_endpoint.format(pk=self.signal_no_image.pk) + '/attachments/'
 
-        # Store URL of the newly created Signal, then upload image to it.
-        new_url = response.json()['_links']['self']['href']
-
-        new_image_url = f'{new_url}/attachments'
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'file': image})
-
+        response = self.client.post(attachments_url, data={'file': image})
         self.assertEqual(response.status_code, 201)
 
         # Check that a second upload is NOT rejected
         image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        response = self.client.post(new_image_url, data={'file': image2})
+        response = self.client.post(attachments_url, data={'file': image2})
         self.assertEqual(response.status_code, 201)
-
-        # JSONSchema validation
-        response_json = self.client.get(new_url).json()
-        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
 
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
@@ -475,6 +504,79 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Signal.objects.count(), signal_count)
+
+    @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_and_copy_attachments_from_parent(self, validate_address):
+        signal_count = Signal.objects.count()
+        attachment_count = Attachment.objects.count()
+
+        attachment = self.signal_with_image.attachments.first()
+
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data['parent'] = self.signal_with_image.pk
+        create_initial_data['attachments'] = [
+            f'/signals/v1/private/signals/{attachment._signal_id}/attachments/{attachment.pk}',
+        ]
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+        self.assertEqual(Attachment.objects.count(), attachment_count + 1)
+
+        # JSONSchema validation
+        new_url = response.json()['_links']['self']['href']
+        response_json = self.client.get(new_url).json()
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+    @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_and_copy_attachments_from_different_signal(self, validate_address):
+        signal_count = Signal.objects.count()
+        attachment_count = Attachment.objects.count()
+
+        attachment = self.signal_with_image.attachments.first()
+
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data['parent'] = self.signal_no_image.pk
+        create_initial_data['attachments'] = [
+            f'/signals/v1/private/signals/{attachment._signal_id}/attachments/{attachment.pk}',
+        ]
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(len(response_json['attachments']), 1)
+        self.assertEqual(response_json['attachments'][0], 'Attachments can only be copied from the parent Signal')
+
+        self.assertEqual(Signal.objects.count(), signal_count)
+        self.assertEqual(Attachment.objects.count(), attachment_count)
+
+    @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_and_copy_attachments_not_a_child(self, validate_address):
+        signal_count = Signal.objects.count()
+        attachment_count = Attachment.objects.count()
+
+        attachment = self.signal_with_image.attachments.first()
+
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        if 'parent' in create_initial_data:
+            del (create_initial_data['parent'])  # Make sure we are not creating a child Signal
+        create_initial_data['attachments'] = [
+            f'/signals/v1/private/signals/{attachment._signal_id}/attachments/{attachment.pk}',
+        ]
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(len(response_json['attachments']), 1)
+        self.assertEqual(response_json['attachments'][0], 'Attachments can only be copied when creating a child Signal')
+
+        self.assertEqual(Signal.objects.count(), signal_count)
+        self.assertEqual(Attachment.objects.count(), attachment_count)
 
     @patch("signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address")
     def test_update_location(self, validate_address):
@@ -1704,7 +1806,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = list_endpoint + '{}'
-    attachment_endpoint = detail_endpoint + '/attachments'
+    attachment_endpoint = detail_endpoint + '/attachments/'
     test_host = 'http://testserver'
 
     def setUp(self):

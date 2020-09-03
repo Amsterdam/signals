@@ -32,7 +32,7 @@ class PublicAreasViewSet(DatapuntViewSet):
     def retrieve(self, request, *args, **kwargs):
         raise Http404
 
-    @action(detail=False, url_path='geography/')
+    @action(detail=False, url_path=r'geography/?$')
     def geography(self, request):
         filtered_qs = self.filter_queryset(self.get_queryset())
 

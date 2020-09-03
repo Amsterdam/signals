@@ -16,14 +16,15 @@ class Command(BaseCommand):
 
     def _get_parent(self, id) -> Category:
         if id in self.slugsdict:
-            return self._get_cat(slug=self.slugsdict[id])
+            return self._get_cat(slug=self.slugsdict[id], parent=None)
         else:
             return None
 
-    def _get_cat(self, slug) -> Category:
+    def _get_cat(self, slug, parent) -> Category:
         try:
-            return Category.objects.get(slug=slug)
-        except Exception:
+            return Category.objects.get(slug=slug, parent=parent)
+        except Exception as e:
+            print("Failed get cat {cat} - {parent}: {err}".format(cat=slug, parent=parent, err=str(e)))
             return None
 
     def add_arguments(self, parser) -> None:
@@ -41,7 +42,7 @@ class Command(BaseCommand):
                 parent_id = fields.pop('parent')
                 if parent_id:
                     fields['parent'] = self._get_parent(parent_id)
-                cat = self._get_cat(fields['slug'])
+                cat = self._get_cat(fields['slug'], fields.get('parent', None))
                 if cat is not None:
                     self.stdout.write(f'Updating: {fields["slug"]}')
                     for attr, value in fields.items():
