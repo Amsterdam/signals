@@ -44,6 +44,10 @@ def feedback_choices():
     return (('satisfied', 'satisfied'), ('not_satisfied', 'not_satisfied'), ('not_received', 'not_received'), )
 
 
+def kind_choices():
+    return (('parent_signal', 'parent_signal'), ('child_signal', 'child_signal'), ('signal', 'signal'), )
+
+
 def status_choices():
     return [(c, f'{n} ({c})') for c, n in STATUS_CHOICES]
 

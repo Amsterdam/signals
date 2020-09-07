@@ -180,6 +180,20 @@ paths:
             type: string
             example: 'ASC'
           required: false
+        - name: kind
+          in: query
+          description: >-
+            Filter Signals according to wether they are a Signal ("signal"), A parent Signal
+            ("parent_signal") or a child Signal ("child_signal"). Parent/Child Signals can contain
+            both "split Signals" and/or "Hoofd- en deelmeldingen".
+          required: false
+          schema:
+            type: string
+            enum:
+              - signal
+              - parent_signal
+              - child_signal
+            example: 'signal'
 
       responses:
         '200':

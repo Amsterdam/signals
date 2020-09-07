@@ -405,6 +405,64 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))
 
+    def test_filter_kind_parent_signal(self):
+        """
+        Filter Signals that are a parent Signal (2 parent Signals are created so we expect 2)
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(2, len(result_ids))
+
+    def test_filter_kind_no_parent_signal(self):
+        """
+        Filter Signals that are a parent Signal (None are created so we expect 0)
+        """
+        params = {'kind': 'parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+    def test_filter_kind_child_signal(self):
+        """
+        Filter Signals that are a child Signal (3 child Signals are created so we expect 3)
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'child_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(3, len(result_ids))
+
+    def test_filter_kind_no_child_signal(self):
+        """
+        Filter Signals that are a child Signal (None are created so we expect 0)
+        """
+        params = {'kind': 'child_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+    def test_filter_kind_signal(self):
+        """
+        We expect only "normal" Signals
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(20, len(result_ids))
+
 
 class TestPriorityFilter(SignalsBaseApiTestCase):
     LIST_ENDPOINT = '/signals/v1/private/signals/'

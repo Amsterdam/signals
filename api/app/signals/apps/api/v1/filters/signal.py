@@ -10,6 +10,7 @@ from signals.apps.api.v1.filters.utils import (
     contact_details_choices,
     department_choices,
     feedback_choices,
+    kind_choices,
     source_choices,
     stadsdelen_choices,
     status_choices
@@ -36,6 +37,7 @@ class SignalFilter(FilterSet):
         choices=department_choices
     )
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
+    kind = filters.ChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
     incident_date_before = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__gte')
     incident_date_after = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__lte')
@@ -139,6 +141,15 @@ class SignalFilter(FilterSet):
             )
 
         return queryset
+
+    def kind_filter(self, queryset, name, value):
+        q_objects = {
+            'signal': (Q(parent__isnull=True) & Q(children__isnull=True)),
+            'parent_signal': (Q(parent__isnull=True) & Q(children__isnull=False)),
+            'child_signal': (Q(parent__isnull=False)),
+        }
+        q_filter = q_objects.get(value.lower(), None)
+        return queryset.filter(q_filter).distinct() if q_filter else queryset
 
     def note_keyword_filter(self, queryset, name, value):
         return queryset.filter(notes__text__icontains=value).distinct()

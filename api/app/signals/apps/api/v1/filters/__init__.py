@@ -12,6 +12,7 @@ from signals.apps.api.v1.filters.utils import (
     contact_details_choices,
     department_choices,
     feedback_choices,
+    kind_choices,
     source_choices,
     stadsdelen_choices,
     status_choices
@@ -33,6 +34,7 @@ __all__ = [
     'contact_details_choices',
     'department_choices',
     'feedback_choices',
+    'kind_choices',
     'status_choices',
     'source_choices',
     'stadsdelen_choices',
