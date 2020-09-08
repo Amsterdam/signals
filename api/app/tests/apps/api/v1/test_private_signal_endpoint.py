@@ -1792,7 +1792,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response_data['directing_departments'][0]['is_intern'], department.is_intern)
 
         parent_signal.refresh_from_db()
-        self.assertEqual(parent_signal.directing_departments.count(), 1)
+        self.assertEqual(parent_signal.signal_departments.count(), 1)
         self.assertIsNotNone(parent_signal.directing_departments_assignment)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.count(), 1)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.first().id, department.pk)
