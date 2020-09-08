@@ -647,14 +647,21 @@ class SignalManager(models.Manager):
         return signal_type
 
     def _update_directing_departments_no_transaction(self, data, signal):
-        from signals.apps.signals.models.directing_departments import DirectingDepartments
+        from signals.apps.signals.models.signal_departments import SignalDepartments
 
-        directing_departments = DirectingDepartments.objects.create(_signal=signal, created_by=data['created_by'])
+        directing_departments, created = SignalDepartments.objects.get_or_create(
+            _signal=signal,
+            relation_type=SignalDepartments.REL_DIRECTING,
+        )
+
+        if not created:
+            directing_departments.departments.clear()
+
+        directing_departments.created_by = data['created_by']
         for department_data in data['departments']:
             directing_departments.departments.add(department_data['id'])
 
-        signal.directing_departments_assignment = directing_departments
-        signal.save()
+        directing_departments.save()
 
         return directing_departments
 
