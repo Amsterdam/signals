@@ -18,7 +18,7 @@ from signals.apps.api.v1.filters.utils import (
 from signals.apps.signals.models import Category, Priority, Type
 
 
-class SignalFilter(FilterSet):
+class SignalFilterSet(FilterSet):
     id = filters.NumberFilter()
     address_text = filters.CharFilter(field_name='location__address_text', lookup_expr='icontains')
     area_code = filters.ChoiceFilter(field_name='location__area_code', choices=area_choices)
@@ -37,7 +37,7 @@ class SignalFilter(FilterSet):
         choices=department_choices
     )
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
-    kind = filters.ChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
+    kind = filters.MultipleChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
     incident_date_before = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__gte')
     incident_date_after = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__lte')
@@ -80,7 +80,7 @@ class SignalFilter(FilterSet):
             )
 
         self._cleanup_form_data()
-        return super(SignalFilter, self).filter_queryset(queryset=queryset)
+        return super(SignalFilterSet, self).filter_queryset(queryset=queryset)
 
     # Custom filter functions
 
@@ -143,12 +143,24 @@ class SignalFilter(FilterSet):
         return queryset
 
     def kind_filter(self, queryset, name, value):
+        choices = value  # we have a MultipleChoiceFilter ...
+
+        if (len(choices) == len(kind_choices())
+                or {'signal', 'parent_signal', 'child_signal'} == set(choices)
+                or {'parent_signal', 'exclude_parent_signal'} == set(choices)):
+            return queryset
+
         q_objects = {
             'signal': (Q(parent__isnull=True) & Q(children__isnull=True)),
             'parent_signal': (Q(parent__isnull=True) & Q(children__isnull=False)),
+            'exclude_parent_signal': ~(Q(parent__isnull=True) & Q(children__isnull=False)),
             'child_signal': (Q(parent__isnull=False)),
         }
-        q_filter = q_objects.get(value.lower(), None)
+
+        q_filter = q_objects[choices.pop()]
+        while choices:
+            q_filter |= q_objects[choices.pop()]
+
         return queryset.filter(q_filter).distinct() if q_filter else queryset
 
     def note_keyword_filter(self, queryset, name, value):
@@ -159,7 +171,7 @@ class SignalFilter(FilterSet):
                                                                              types__name__in=value)
 
 
-class SignalCategoryRemovedAfterFilter(FilterSet):
+class SignalCategoryRemovedAfterFilterSet(FilterSet):
     after = filters.IsoDateTimeFilter(field_name='category_assignment__created_at', lookup_expr='gte')
     before = filters.IsoDateTimeFilter(field_name='category_assignment__created_at', lookup_expr='lte')
     category_slug = filters.ModelMultipleChoiceFilter(

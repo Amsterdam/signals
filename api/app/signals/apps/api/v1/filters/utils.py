@@ -45,7 +45,8 @@ def feedback_choices():
 
 
 def kind_choices():
-    return (('parent_signal', 'parent_signal'), ('child_signal', 'child_signal'), ('signal', 'signal'), )
+    return (('parent_signal', 'parent_signal'), ('exclude_parent_signal', 'exclude_parent_signal'),
+            ('child_signal', 'child_signal'), ('signal', 'signal'), )
 
 
 def status_choices():

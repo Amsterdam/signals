@@ -463,6 +463,20 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals(params)
         self.assertEqual(20, len(result_ids))
 
+    def test_filter_kind_exclude_parent_signal(self):
+        """
+        We expect only "normal" and "child" Signals
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'exclude_parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(23, len(result_ids))
+
 
 class TestPriorityFilter(SignalsBaseApiTestCase):
     LIST_ENDPOINT = '/signals/v1/private/signals/'

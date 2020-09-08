@@ -1,6 +1,6 @@
 from signals.apps.api.v1.filters.area import AreaFilterSet
 from signals.apps.api.v1.filters.question import QuestionFilterSet
-from signals.apps.api.v1.filters.signal import SignalCategoryRemovedAfterFilter, SignalFilter
+from signals.apps.api.v1.filters.signal import SignalCategoryRemovedAfterFilterSet, SignalFilterSet
 from signals.apps.api.v1.filters.utils import (
     _get_child_category_queryset,
     _get_parent_category_queryset,
@@ -22,8 +22,8 @@ __all__ = [
     # Filters
     'AreaFilterSet',
     'QuestionFilterSet',
-    'SignalCategoryRemovedAfterFilter',
-    'SignalFilter',
+    'SignalCategoryRemovedAfterFilterSet',
+    'SignalFilterSet',
 
     # Util functions
     'area_code_choices',
