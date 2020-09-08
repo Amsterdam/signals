@@ -653,7 +653,6 @@ class SignalManager(models.Manager):
             _signal=signal,
             relation_type=SignalDepartments.REL_DIRECTING,
         )
-
         if not created:
             directing_departments.departments.clear()
 
@@ -662,7 +661,6 @@ class SignalManager(models.Manager):
             directing_departments.departments.add(department_data['id'])
 
         directing_departments.save()
-
         return directing_departments
 
     def update_directing_departments(self, data, signal):
