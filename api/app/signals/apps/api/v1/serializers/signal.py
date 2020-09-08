@@ -31,7 +31,8 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
     _NestedStatusModelSerializer,
-    _NestedTypeModelSerializer
+    _NestedTypeModelSerializer,
+    _NestedUserModelSerializer
 )
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
@@ -190,7 +191,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'directing_departments',
+            'routing_assignment',
             'attachments',
+            'user_assignment',
         )
         read_only_fields = (
             'id',
@@ -284,6 +287,20 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
+    routing_assignment = _NestedDepartmentModelSerializer(
+        source='routing_assignment.departments',
+        many=True,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
+    user_assignment = _NestedUserModelSerializer(
+        source='user_assignment.user',
+        many=False,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -334,8 +351,9 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'extra_properties',
             'notes',
             'directing_departments',
+            'routing_assignment',
             'attachments',
-
+            'user_assignment',
             'parent'
         )
         read_only_fields = (
