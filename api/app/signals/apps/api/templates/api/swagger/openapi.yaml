@@ -156,11 +156,20 @@ paths:
         - name: directing_department
           in: query
           description: >-
-            Filter signals according to the currently assigned directing department(s), accepts
-            (a combination of) the codes of the declared departments
+            Filter (parent) signals according to the currently assigned directing department(s),
+            accepts (a combination of) the codes of the declared departments. The value "null" will
+            select all (parent) signals without a directing department assignment. This means that
+            the "is_responsible" department associated with the category is considered the
+            "directing department".
           schema:
             type: string
-            example: 'ASC'
+            examples:
+              ASC:
+                value: 'ASC'
+                summary: Will select all (parent) Signals where ASC is the directing department
+              null:
+                value: 'null'
+                summary: Will select all (parent) Signals withouta directing department assignemt
           required: false
         - name: area_type_code
           in: query

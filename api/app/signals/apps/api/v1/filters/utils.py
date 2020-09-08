@@ -37,7 +37,9 @@ def contact_details_choices():
 
 
 def department_choices():
-    return [(department.code, f'{department.code}') for department in Department.objects.only('code').all()]
+    return [
+        ('null', 'null'),
+    ] + [(department.code, f'{department.code}') for department in Department.objects.only('code').all()]
 
 
 def feedback_choices():
