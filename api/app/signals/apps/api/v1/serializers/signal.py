@@ -30,6 +30,7 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPriorityModelSerializer,
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
+    _NestedSignalDepartmentsModelSerializer,
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer,
     _NestedUserModelSerializer
@@ -154,6 +155,19 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
+    signal_departments = _NestedSignalDepartmentsModelSerializer(
+        many=True,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
+    user_assignment = _NestedUserModelSerializer(
+        source='user_assignment.user',
+        many=False,
+        required=False,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
 
     extra_properties = SignalExtraPropertiesField(
@@ -191,7 +205,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'directing_departments',
-            'routing_assignment',
+            'signal_departments',
             'attachments',
             'user_assignment',
         )
@@ -203,7 +217,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data): # noqa
         """
         Perform update on nested models.
 
@@ -233,6 +247,10 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
         if 'directing_departments_assignment' in validated_data and validated_data['directing_departments_assignment']:
             validated_data['directing_departments_assignment']['created_by'] = user_email
+
+        if 'signal_departments' in validated_data and validated_data['signal_departments']:
+            for relation in validated_data['signal_departments']:
+                relation['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
@@ -287,8 +305,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
-    routing_assignment = _NestedDepartmentModelSerializer(
-        source='routing_assignment.departments',
+    signal_departments = _NestedSignalDepartmentsModelSerializer(
         many=True,
         required=False,
         permission_classes=(SIAPermissions,),
@@ -351,7 +368,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'extra_properties',
             'notes',
             'directing_departments',
-            'routing_assignment',
+            'signal_departments',
             'attachments',
             'user_assignment',
             'parent'
@@ -373,6 +390,11 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         if attrs.get('directing_departments_assignment') is not None:
             errors.update(
                 {'directing_departments_assignment': ['Directing departments cannot be set on initial creation']}
+            )
+
+        if attrs.get('signal_departments') is not None:
+            errors.update(
+                {'signal_departments': ['Signal departments relation cannot be set on initial creation']}
             )
 
         if attrs.get('status') is not None:
