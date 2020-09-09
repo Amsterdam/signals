@@ -252,6 +252,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             for relation in validated_data['signal_departments']:
                 relation['created_by'] = user_email
 
+        if 'user_assignment' in validated_data and validated_data['user_assignment']:
+            validated_data['user_assignment']['created_by'] = user_email
+
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
 
