@@ -4,7 +4,10 @@ API V1 nested serializers used in various 'signals.Signal' serializers.
 
 from signals.apps.api.v1.serializers.nested.attachment import _NestedAttachmentModelSerializer
 from signals.apps.api.v1.serializers.nested.category import _NestedCategoryModelSerializer
-from signals.apps.api.v1.serializers.nested.department import _NestedDepartmentModelSerializer
+from signals.apps.api.v1.serializers.nested.department import (
+    _NestedDepartmentModelSerializer,
+    _NestedSignalDepartmentsModelSerializer
+)
 from signals.apps.api.v1.serializers.nested.location import _NestedLocationModelSerializer
 from signals.apps.api.v1.serializers.nested.note import _NestedNoteModelSerializer
 from signals.apps.api.v1.serializers.nested.priority import _NestedPriorityModelSerializer
@@ -30,4 +33,5 @@ __all__ = (
     '_NestedTypeModelSerializer',
     '_NestedDepartmentModelSerializer',
     '_NestedUserModelSerializer',
+    '_NestedSignalDepartmentsModelSerializer',
 )

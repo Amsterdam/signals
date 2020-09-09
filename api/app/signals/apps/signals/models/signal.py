@@ -77,12 +77,6 @@ class Signal(CreatedUpdatedModel):
         return user if user else None
 
     @property
-    def routing_assignment(self):
-        # unique constraint on signal <-> relation_type, so at max 1 result
-        departments = self.signal_departments.filter(relation_type='routing').first()
-        return departments if departments else None
-
-    @property
     def directing_departments_assignment(self):
         # unique constraint on signal <-> relation_type, so at max 1 result
         departments = self.signal_departments.filter(relation_type='directing').first()

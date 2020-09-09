@@ -611,6 +611,19 @@ class SignalManager(models.Manager):
                     'prev_directing_departments': previous_directing_departments
                 }))
 
+            if 'signal_departments' in data:
+                previous_signal_departments = locked_signal.signal_departments
+                update_detail_data = data['signal_departments']
+                signal_departments = self._update_signal_departments_list_no_transaction(
+                    update_detail_data, locked_signal
+                )
+                to_send.append((update_type, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'signal_departments': signal_departments,
+                    'prev_signal_departments': previous_signal_departments
+                }))
+
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
@@ -646,31 +659,71 @@ class SignalManager(models.Manager):
 
         return signal_type
 
-    def _update_directing_departments_no_transaction(self, data, signal):
+    def _update_signal_departments_list_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        lst = []
+        for relation in data:
+            obj, _ = SignalDepartments.objects.get_or_create(
+                _signal=signal,
+                relation_type=relation['relation_type'],
+            )
+            obj.created_by = relation['created_by']
+            obj.departments.set([dept['id'] for dept in relation['departments']])
+            lst.append(obj)
+
+        signal.signal_departments.set(lst)
+        signal.save()
+        return signal.signal_departments
+
+    def _update_signal_departments_no_transaction(self, data, signal, relation_type):
         from signals.apps.signals.models.signal_departments import SignalDepartments
 
-        directing_departments, created = SignalDepartments.objects.get_or_create(
+        relation, created = SignalDepartments.objects.get_or_create(
             _signal=signal,
-            relation_type=SignalDepartments.REL_DIRECTING,
+            relation_type=relation_type,
         )
         if not created:
-            directing_departments.departments.clear()
+            relation.departments.clear()
 
-        directing_departments.created_by = data['created_by']
+        relation.created_by = data['created_by']
         for department_data in data['departments']:
-            directing_departments.departments.add(department_data['id'])
+            relation.departments.add(department_data['id'])
 
-        directing_departments.save()
-        return directing_departments
+        if created:
+            signal.signal_departments.add(relation)
+            signal.save()
+        else:
+            relation.save()
+        return relation
 
-    def update_directing_departments(self, data, signal):
+    def _update_directing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_DIRECTING)
+
+    def _update_routing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
+
+    def update_signal_departments(self, data, signal, relation_type):
         from signals.apps.signals.models import Signal
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            directing_departments = self._update_directing_departments_no_transaction(data=data, signal=locked_signal)
+            directing_departments = self._update_signal_departments_no_transaction(
+                data=data,
+                signal=locked_signal,
+                relation_type=relation_type
+            )
 
         return directing_departments
+
+    def update_directing_departments(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self.update_signal_departments(data, signal, SignalDepartments.REL_DIRECTING)
+
+    def update_routing_departments(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self.update_signal_departments(data, signal, SignalDepartments.REL_ROUTING)
 
     def _copy_attachment_no_transaction(self, source_attachment, signal):
         from signals.apps.signals.models import Attachment
