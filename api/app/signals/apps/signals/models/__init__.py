@@ -28,6 +28,7 @@ from signals.apps.signals.models.note import Note
 from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.question import Question
 from signals.apps.signals.models.reporter import Reporter
+from signals.apps.signals.models.routing_expression import RoutingExpression
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.signal_departments import SignalDepartments
 from signals.apps.signals.models.slo import ServiceLevelObjective
@@ -78,4 +79,5 @@ __all__ = [
     'StatusMessageTemplate',
     'StoredSignalFilter',
     'Type',
+    'RoutingExpression',
 ]

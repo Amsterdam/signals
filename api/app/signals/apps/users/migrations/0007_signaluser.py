@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('created_by', models.EmailField(blank=True, max_length=254, null=True)),
                 ('_signal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='signals.Signal')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)), # noqa
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)), # noqa
             ],
             options={
                 'unique_together': {('_signal', 'user')},
