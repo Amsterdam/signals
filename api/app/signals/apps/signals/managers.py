@@ -624,6 +624,19 @@ class SignalManager(models.Manager):
                     'prev_signal_departments': previous_signal_departments
                 }))
 
+            if 'user_assignment' in data:
+                previous_user_assignment = locked_signal.user_assignment
+                update_detail_data = data['user_assignment']
+                signal_departments = self._update_user_signal_no_transaction(
+                    update_detail_data, locked_signal
+                )
+                to_send.append((update_type, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'user_assignment': signal_departments,
+                    'prev_user_assignment': previous_user_assignment
+                }))
+
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
 
@@ -658,6 +671,18 @@ class SignalManager(models.Manager):
                                                                   type=signal_type, prev_type=previous_type))
 
         return signal_type
+
+    def _update_user_signal_no_transaction(self, data, signal):
+        from signals.apps.users.models import SignalUser
+
+        relation, _ = SignalUser.objects.get_or_create(_signal=signal)
+        relation.created_by = data['created_by']
+        relation.user = data['user']['id']
+        relation.save()
+
+        signal.signaluser_set.set([relation])
+        signal.save()
+        return relation
 
     def _update_signal_departments_list_no_transaction(self, data, signal):
         from signals.apps.signals.models.signal_departments import SignalDepartments
@@ -704,6 +729,7 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_departments import SignalDepartments
         return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
 
+    # REMOVE? seems unused
     def update_signal_departments(self, data, signal, relation_type):
         from signals.apps.signals.models import Signal
 
