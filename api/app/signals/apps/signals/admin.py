@@ -10,7 +10,11 @@ from signals.apps.signals.models import (
     CategoryDepartment,
     CategoryQuestion,
     Department,
+    Expression,
+    ExpressionContext,
+    ExpressionType,
     Question,
+    RoutingExpression,
     Signal,
     Source,
     Status,
@@ -205,3 +209,31 @@ class SourceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Source, SourceAdmin)
+
+
+class RoutingExpressionAdmin(admin.ModelAdmin):
+    list_filter = ['_expression___type__name']
+
+
+admin.site.register(RoutingExpression, RoutingExpressionAdmin)
+
+
+class ExpressionAdmin(admin.ModelAdmin):
+    list_filter = ['_type__name']
+
+
+admin.site.register(Expression, ExpressionAdmin)
+
+
+class ExpressionTypeAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(ExpressionType, ExpressionTypeAdmin)
+
+
+class ExpressionContextAdmin(admin.ModelAdmin):
+    list_filter = ['_type__name']
+
+
+admin.site.register(ExpressionContext, ExpressionContextAdmin)
