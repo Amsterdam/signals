@@ -674,12 +674,13 @@ class SignalManager(models.Manager):
 
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import SignalUser
+        try:
+            relation = SignalUser.objects.get(_signal=signal, user=data['user']['id'])
+        except SignalUser.DoesNotExist:
+            relation = SignalUser.objects.create(_signal=signal, user=data['user']['id'])
 
-        relation, _ = SignalUser.objects.get_or_create(_signal=signal)
         relation.created_by = data['created_by']
-        relation.user = data['user']['id']
         relation.save()
-
         signal.signaluser_set.set([relation])
         signal.save()
         return relation
@@ -710,7 +711,7 @@ class SignalManager(models.Manager):
         if not created:
             relation.departments.clear()
 
-        relation.created_by = data['created_by']
+        relation.created_by = data['created_by'] if 'created_by' in data else None
         for department_data in data['departments']:
             relation.departments.add(department_data['id'])
 
@@ -729,7 +730,6 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_departments import SignalDepartments
         return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
 
-    # REMOVE? seems unused
     def update_signal_departments(self, data, signal, relation_type):
         from signals.apps.signals.models import Signal
 
@@ -743,6 +743,7 @@ class SignalManager(models.Manager):
 
         return directing_departments
 
+    # REMOVE? seems unused
     def update_directing_departments(self, data, signal):
         from signals.apps.signals.models.signal_departments import SignalDepartments
         return self.update_signal_departments(data, signal, SignalDepartments.REL_DIRECTING)

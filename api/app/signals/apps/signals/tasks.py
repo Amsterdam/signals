@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
+from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.models import Reporter
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.signal import Signal
@@ -16,6 +17,13 @@ from signals.apps.signals.workflow import (
 from signals.celery import app
 
 log = logging.getLogger(__name__)
+dsl_service = SignalDslService()
+
+
+@app.task
+def apply_routing(signal_id):
+    signal = Signal.objects.get(pk=signal_id)
+    dsl_service.process_routing_rules(signal)
 
 
 @app.task

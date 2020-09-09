@@ -1,7 +1,8 @@
 import time
 
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
-from signals.apps.signals.models import Area, AreaType, Signal
+from signals.apps.signals.managers import SignalManager
+from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
 
 
 class DslService:
@@ -58,6 +59,24 @@ class SignalContext:
 
 class SignalDslService(DslService):
     context_func = SignalContext()
+    signal_manager = SignalManager()
+
+    def process_routing_rules(self, signal):
+        rules = RoutingExpression.objects.filter(_expression___type__name='routing').order_by('order')
+        for rule in rules:
+            if self.evaluate(signal, rule._expression.code):
+                # assign relation to department
+                data = {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': rule._department.id
+                        }
+                    ]
+                }
+                self.signal_manager.update_routing_departments(data, signal)
+                return True
+        return False
 
     def evaluate(self, signal, code):
         ctx = self.context_func(signal)
