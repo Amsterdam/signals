@@ -44,7 +44,7 @@ class SignalUser(CreatedUpdatedModel):
     """
 
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE)
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_by = models.EmailField(null=True, blank=True)
 
     class Meta:
