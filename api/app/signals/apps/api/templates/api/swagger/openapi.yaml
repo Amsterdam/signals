@@ -180,6 +180,34 @@ paths:
             type: string
             example: 'ASC'
           required: false
+        - name: kind
+          in: query
+          description: >-
+            Filter Signals according to whether they are a Signal ("signal"), A parent Signal
+            ("parent_signal") and/or a child Signal ("child_signal"). An additional option can be
+            used to select all Signals that are NOT a parent Signal, this option is
+            "exclude_parent_signal". This filter accepts (a combination of) the options "signal",
+            "parent_signal", "exclude_parent_signal" or "child_signal". Parent/Child Signals can
+            contain both "split Signals" and/or "Hoofd- en deelmeldingen".
+          required: false
+          schema:
+            type: string
+            enum:
+              - signal
+              - parent_signal
+              - exclude_parent_signal
+              - child_signal
+            example:
+              signal:
+                value: 'signal'
+              parent_signal:
+                value: 'parent_signal'
+              exclude_parent_signal:
+                value: 'exclude_parent_signal'
+              child_signal:
+                value: 'child_signal'
+              combination:
+                value: ['parent_signal', 'signal']
 
       responses:
         '200':
