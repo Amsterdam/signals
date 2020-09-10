@@ -1,8 +1,12 @@
+import copy
 import json
 import os
+from unittest.mock import patch
 
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from signals.apps.api.v1.validation.address.base import AddressValidationUnavailableException
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from tests.apps.signals.attachment_helpers import small_gif
@@ -54,7 +58,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             )
         )
 
-    def test_create_nothing_special(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_nothing_special(self, validate_address):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(201, response.status_code)
@@ -70,7 +76,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual("extra: heel luidruchtig debat", signal.text_extra)
         self.assertEqual('SIG', signal.type_assignment.name)
 
-    def test_create_with_status(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_status(self, validate_address):
         """ Tests that an error is returned when we try to set the status """
 
         self.create_initial_data["status"] = {
@@ -83,7 +91,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
-    def test_create_with_priority(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_priority(self, validate_address):
         # must not be able to set priority
         self.create_initial_data['priorty'] = {
             'priority': Priority.PRIORITY_HIGH
@@ -93,7 +103,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
-    def test_create_with_type(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_type(self, validate_address):
         # must not be able to set type
         self.create_initial_data['type'] = {
             'code': Type.COMPLAINT
@@ -103,7 +115,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, Signal.objects.count())
 
-    def test_create_extra_properties_missing(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_extra_properties_missing(self, validate_address):
         # "extra_properties" missing <- must be accepted
         del self.create_initial_data['extra_properties']
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -111,7 +125,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    def test_create_extra_properties_null(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_extra_properties_null(self, validate_address):
         # "extra_properties": null <- must be accepted
         self.create_initial_data['extra_properties'] = None
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -119,7 +135,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    def test_create_extra_properties_empty_object(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_extra_properties_empty_object(self, validate_address):
         # "extra_properties": {} <- must not be accepted
         self.create_initial_data['extra_properties'] = {}
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -228,7 +246,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
         self.assertEqual(response.status_code, 405)
 
-    def test_validate_extra_properties_enabled(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_validate_extra_properties_enabled(self, validate_address):
         self.create_initial_data['extra_properties'] = [{
             'id': 'test_id',
             'label': 'test_label',
@@ -254,7 +274,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, Signal.objects.count())
 
-    def test_validate_extra_properties_enabled_invalid_data(self):
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_validate_extra_properties_enabled_invalid_data(self, validate_address):
         self.create_initial_data['extra_properties'] = {'old_style': 'extra_properties'}
 
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -268,3 +290,20 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_get_list(self):
         response = self.client.get(f'{self.list_endpoint}')
         self.assertEqual(response.status_code, 404)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_interne_melding(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.create_initial_data)
+        initial_data['reporter']['email'] = 'test-email-1' \
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS[0]}'
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        signal = Signal.objects.get(pk=data['id'])
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
