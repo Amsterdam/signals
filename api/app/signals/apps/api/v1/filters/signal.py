@@ -140,7 +140,7 @@ class SignalFilterSet(FilterSet):
         parent_q_filter = (Q(parent__isnull=True) & Q(children__isnull=False))
 
         if 'null' in choices and len(choices) == 1:
-            # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
+            # "?directing_department=null" will select all parent Signals without a directing department
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__isnull=True)
@@ -156,7 +156,7 @@ class SignalFilterSet(FilterSet):
                 )
             ).distinct()
         elif len(choices):
-            # "?directing_department=null" will select all parent Signals without a directing department
+            # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__departments__code__in=choices)
