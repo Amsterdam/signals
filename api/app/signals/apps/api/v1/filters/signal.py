@@ -31,11 +31,11 @@ class SignalFilterSet(FilterSet):
     )
     contact_details = filters.MultipleChoiceFilter(method='contact_details_filter', choices=contact_details_choices)
     created_before = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
-    created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
     directing_department = filters.MultipleChoiceFilter(
-        field_name='directing_departments_assignment__departments__code',
+        method='directing_department_filter',
         choices=department_choices
     )
+    created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
     kind = filters.MultipleChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
@@ -116,6 +116,52 @@ class SignalFilterSet(FilterSet):
             q_total |= q_objects[choices.pop()]
 
         return queryset.filter(q_total)
+
+    def directing_department_filter(self, queryset, name, value):
+        """
+        Filter Signals on directing department.
+
+        * A directing department can only be set on a Parent Signal
+        * When providing the option "null" select all parent Signals without one or more directing departments
+        * When providing on or more department codes as options select all parent Signals which match directing
+          departments
+
+        Example 1: "?directing_department=ASC" will select all parent Signals where ASC is the directing department
+        Example 2: "?directing_department=ASC&directing_department=null" will select all parent Signals without a
+                   directing department OR ASC as the directing department
+        Example 3: "?directing_department=null" will select all parent Signals without a directing department
+        """
+        choices = value  # we have a MultipleChoiceFilter ...
+        if len(choices) == len(department_choices()):
+            # No filters are present, or ... all filters are present. In that case we want all Signal instances
+            return queryset
+
+        # Directing departments are only set on parent Signals
+        parent_q_filter = (Q(parent__isnull=True) & Q(children__isnull=False))
+
+        if 'null' in choices and len(choices) == 1:
+            # "?directing_department=null" will select all parent Signals without a directing department
+            return queryset.filter(
+                parent_q_filter &
+                Q(directing_departments_assignment__isnull=True)
+            ).distinct()
+        elif 'null' in choices and len(choices) > 1:
+            # "?directing_department=ASC&directing_department=null" will select all parent Signals without a directing
+            # department OR ASC as the directing department
+            choices.pop(choices.index('null'))
+            return queryset.filter(
+                parent_q_filter & (
+                    Q(directing_departments_assignment__isnull=True) |
+                    Q(directing_departments_assignment__departments__code__in=choices)
+                )
+            ).distinct()
+        elif len(choices):
+            # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
+            return queryset.filter(
+                parent_q_filter &
+                Q(directing_departments_assignment__departments__code__in=choices)
+            ).distinct()
+        return queryset
 
     def feedback_filter(self, queryset, name, value):
         # Only signals that have feedback
