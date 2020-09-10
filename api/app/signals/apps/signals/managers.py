@@ -624,17 +624,17 @@ class SignalManager(models.Manager):
                     'prev_signal_departments': previous_signal_departments
                 }))
 
-            if 'user_assignment' in data:
-                previous_user_assignment = locked_signal.user_assignment
-                update_detail_data = data['user_assignment']
-                signal_departments = self._update_user_signal_no_transaction(
+            if 'user_assignments' in data:
+                previous_user_assignments = locked_signal.user_assignments
+                update_detail_data = data['user_assignments']
+                user_assignments = self._update_user_signal_no_transaction(
                     update_detail_data, locked_signal
                 )
                 to_send.append((update_type, {
                     'sender': sender,
                     'signal_obj': locked_signal,
-                    'user_assignment': signal_departments,
-                    'prev_user_assignment': previous_user_assignment
+                    'user_assignments': user_assignments,
+                    'prev_user_assignments': previous_user_assignments
                 }))
 
             # Send out all Django signals:
@@ -674,16 +674,20 @@ class SignalManager(models.Manager):
 
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import SignalUser
-        try:
-            relation = SignalUser.objects.get(_signal=signal, user=data['user']['id'])
-        except SignalUser.DoesNotExist:
-            relation = SignalUser.objects.create(_signal=signal, user=data['user']['id'])
+        lst = []
+        for relation in data:
+            obj, created = SignalUser.objects.get_or_create(
+                _signal=signal,
+                user=relation['user']['id']
+            )
+            obj.created_by = relation['created_by']
+            lst.append(obj)
 
-        relation.created_by = data['created_by']
-        relation.save()
-        signal.signaluser_set.set([relation])
+        if created:
+            signal.signaluser_set.all().exclude(id=obj.id).delete()
+        signal.signaluser_set.set(lst)
         signal.save()
-        return relation
+        return signal.signaluser_set
 
     def _update_signal_departments_list_no_transaction(self, data, signal):
         from signals.apps.signals.models.signal_departments import SignalDepartments

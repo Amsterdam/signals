@@ -71,10 +71,9 @@ class Signal(CreatedUpdatedModel):
     actions = SignalManager()
 
     @property
-    def user_assignment(self):
-        # unique constraint on signal <-> relation_type, so at max 1 result
-        user = self.signaluser_set.first()
-        return user if user else None
+    def user_assignments(self):
+        users = self.signaluser_set
+        return users if users else None
 
     @property
     def directing_departments_assignment(self):
