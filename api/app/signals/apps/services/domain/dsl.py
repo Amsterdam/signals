@@ -59,9 +59,10 @@ class SignalDslService(DslService):
     signal_manager = SignalManager()
 
     def process_routing_rules(self, signal):
-        rules = RoutingExpression.objects.filter(_expression___type__name='routing').order_by('order')
-        for rule in rules:
-            if self.evaluate(signal, rule._expression.code):
+        ctx = self.context_func(signal)
+        rules = RoutingExpression.objects.select_related('_expression', '_department')
+        for rule in rules.filter(_expression___type__name='routing').order_by('order'):
+            if self.evaluate(signal, rule._expression.code, ctx):
                 # assign relation to department
                 data = {
                     'relation_type': 'routing',
@@ -75,6 +76,7 @@ class SignalDslService(DslService):
                 return True
         return False
 
-    def evaluate(self, signal, code):
-        ctx = self.context_func(signal)
+    def evaluate(self, signal, code, ctx=None):
+        if not ctx:
+            ctx = self.context_func(signal)
         return super().evaluate(ctx, code)
