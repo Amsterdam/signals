@@ -31,9 +31,9 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
     _NestedSignalDepartmentsModelSerializer,
+    _NestedSignalUsersModelSerializer,
     _NestedStatusModelSerializer,
-    _NestedTypeModelSerializer,
-    _NestedUserModelSerializer
+    _NestedTypeModelSerializer
 )
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
@@ -161,9 +161,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
-    user_assignment = _NestedUserModelSerializer(
-        source='user_assignment.user',
-        many=False,
+    user_assignments = _NestedSignalUsersModelSerializer(
+        many=True,
         required=False,
         permission_classes=(SIAPermissions,),
     )
@@ -207,7 +206,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'directing_departments',
             'signal_departments',
             'attachments',
-            'user_assignment',
+            'user_assignments',
         )
         read_only_fields = (
             'id',
@@ -252,8 +251,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             for relation in validated_data['signal_departments']:
                 relation['created_by'] = user_email
 
-        if 'user_assignment' in validated_data and validated_data['user_assignment']:
-            validated_data['user_assignment']['created_by'] = user_email
+        if 'user_assignments' in validated_data and validated_data['user_assignments']:
+            for relation in validated_data['user_assignments']:
+                relation['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
@@ -314,9 +314,8 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
-    user_assignment = _NestedUserModelSerializer(
-        source='user_assignment.user',
-        many=False,
+    user_assignments = _NestedSignalUsersModelSerializer(
+        many=True,
         required=False,
         permission_classes=(SIAPermissions,),
     )
@@ -373,7 +372,7 @@ class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
             'directing_departments',
             'signal_departments',
             'attachments',
-            'user_assignment',
+            'user_assignments',
             'parent'
         )
         read_only_fields = (
