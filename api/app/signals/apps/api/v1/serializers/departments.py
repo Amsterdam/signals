@@ -2,10 +2,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
-from signals.apps.api.v1.fields import (
-    CategoryHyperlinkedIdentityField,
-    ParentCategoryHyperlinkedIdentityField
-)
+from signals.apps.api.v1.fields import CategoryHyperlinkedIdentityField
 from signals.apps.signals.models import Category, CategoryDepartment, Department
 
 
@@ -57,10 +54,8 @@ class TemporaryCategoryHALSerializer(HALSerializer):
         )
 
     def get_departments(self, obj):
-        return _NestedDepartmentSerializer(
-            obj.departments.filter(categorydepartment__is_responsible=True),
-            many=True
-        ).data
+        return _NestedDepartmentSerializer(obj.departments.filter(categorydepartment__is_responsible=True),
+                                           many=True).data
 
 
 class TemporaryParentCategoryHALSerializer(TemporaryCategoryHALSerializer):
@@ -72,7 +67,7 @@ class TemporaryParentCategoryHALSerializer(TemporaryCategoryHALSerializer):
 
     TODO: Refactor the TemporaryCategoryHALSerializer and TemporaryParentCategoryHALSerializer serializers
     """
-    serializer_url_field = ParentCategoryHyperlinkedIdentityField
+    serializer_url_field = CategoryHyperlinkedIdentityField
 
 
 class CategoryDepartmentSerializer(serializers.ModelSerializer):
@@ -113,9 +108,7 @@ class CategoryDepartmentSerializer(serializers.ModelSerializer):
 class PrivateDepartmentSerializerDetail(HALSerializer):
     _display = DisplayField()
 
-    categories = CategoryDepartmentSerializer(source='active_categorydepartment_set',
-                                              many=True,
-                                              required=False)
+    categories = CategoryDepartmentSerializer(source='active_categorydepartment_set', many=True, required=False)
 
     class Meta:
         model = Department

@@ -11,8 +11,8 @@ def get_category_from_prediction(category_url):
     if not hasattr(resolved, 'kwargs'):
         return category_url, False
 
-    slug = resolved.kwargs['sub_slug'] if 'sub_slug' in resolved.kwargs else resolved.kwargs['slug']
-    parent_isnull = False if 'sub_slug' in resolved.kwargs else True
+    slug = resolved.kwargs['slug'] if 'slug' in resolved.kwargs else resolved.kwargs['parent_lookup_parent__slug']
+    parent_isnull = False if 'parent_lookup_parent__slug' in resolved.kwargs else True
 
     category = Category.objects.get(slug=slug, parent__isnull=parent_isnull)
     if category.is_translated():
@@ -31,7 +31,8 @@ def translate_prediction_category_url(category_url, request=None):
 
 def url_from_category(category, request=None):
     if category.is_child():
-        kwargs = {'slug': category.parent.slug, 'sub_slug': category.slug}
+        kwargs = {'parent_lookup_parent__slug': category.parent.slug, 'slug': category.slug}
+        return reverse('v1:public-subcategory-detail', kwargs=kwargs, request=request)
     else:
         kwargs = {'slug': category.slug}
-    return reverse('v1:category-detail', kwargs=kwargs, request=request)
+        return reverse('v1:public-maincategory-detail', kwargs=kwargs, request=request)

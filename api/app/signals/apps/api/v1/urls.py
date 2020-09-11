@@ -2,10 +2,8 @@ from django.urls import include, path, re_path
 
 from signals.apps.api.v1.routers import SignalsRouterVersion1
 from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled for now
-    ChildCategoryViewSet,
     GeneratePdfView,
     NamespaceView,
-    ParentCategoryViewSet,
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
@@ -14,6 +12,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateSignalViewSet,
     PrivateSourcesViewSet,
     PublicAreasViewSet,
+    PublicCategoryViewSet,
     PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
     PublicSignalViewSet,
@@ -27,11 +26,15 @@ from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserView
 
 # Public API
 public_router = SignalsRouterVersion1()
-public_router.register(r'public/terms/categories', ParentCategoryViewSet, basename='category')
 public_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
 public_router.register(r'public/feedback/standard_answers', StandardAnswerViewSet, basename='feedback-standard-answers')
 public_router.register(r'public/feedback/forms', FeedbackViewSet, basename='feedback-forms')
 public_router.register(r'public/areas', PublicAreasViewSet, basename='public-areas')
+
+public_categories = public_router.register(r'public/terms/categories', PublicCategoryViewSet,
+                                           basename='public-maincategory')
+public_categories.register(r'sub_categories', PublicCategoryViewSet, basename='public-subcategory',
+                           parents_query_lookups=['parent__slug'])
 
 # Private API
 private_router = SignalsRouterVersion1()
@@ -64,8 +67,6 @@ urlpatterns = [
     path('v1/public/', include([
         re_path(r'signals/(?P<signal_id>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
-        re_path(r'terms/categories/(?P<slug>[-\w]+)/sub_categories/(?P<sub_slug>[-\w]+)/?$',
-                ChildCategoryViewSet.as_view({'get': 'retrieve'}), name='category-detail'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
         # V1 disabled for now
         # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),

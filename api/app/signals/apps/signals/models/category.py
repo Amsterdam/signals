@@ -11,8 +11,8 @@ from change_log.logger import ChangeLogger
 class CategoryManager(models.Manager):
     def get_from_url(self, url):
         _, _, kwargs = resolve((urlparse(url)).path)
-        if 'slug' in kwargs and 'sub_slug' in kwargs:
-            return self.get_queryset().get(slug=kwargs['sub_slug'], parent__slug=kwargs['slug'])
+        if 'parent_lookup_parent__slug' in kwargs and 'slug' in kwargs:
+            return self.get_queryset().get(slug=kwargs['slug'], parent__slug=kwargs['parent_lookup_parent__slug'])
         else:
             return self.get_queryset().get(slug=kwargs['slug'], parent__isnull=True)
 

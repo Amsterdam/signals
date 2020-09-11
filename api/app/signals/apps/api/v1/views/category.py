@@ -1,11 +1,9 @@
-from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from signals.apps.api.generics.mixins import RetrieveModelMixin, UpdateModelMixin
+from signals.apps.api.generics.mixins import UpdateModelMixin
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.serializers import (
     CategoryHALSerializer,
@@ -17,30 +15,25 @@ from signals.apps.signals.models import Category
 from signals.auth.backend import JWTAuthBackend
 
 
-class ParentCategoryViewSet(DatapuntViewSet):
-    queryset = Category.objects.filter(parent__isnull=True)
-    serializer_detail_class = ParentCategoryHALSerializer
-    serializer_class = ParentCategoryHALSerializer
+class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
+    queryset = Category.objects.all()
     lookup_field = 'slug'
 
+    def get_queryset(self):
+        if self.get_parents_query_dict():
+            return super(PublicCategoryViewSet, self).get_queryset()
+        return self.queryset.filter(parent__isnull=True)
 
-class ChildCategoryViewSet(RetrieveModelMixin, GenericViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategoryHALSerializer
-    pagination_class = HALPagination
-
-    def get_object(self):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        if 'slug' in self.kwargs and 'sub_slug' in self.kwargs:
-            obj = get_object_or_404(queryset,
-                                    parent__slug=self.kwargs['slug'],
-                                    slug=self.kwargs['sub_slug'])
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(args[0], Category):
+            serializer_class = CategoryHALSerializer if args[0].is_child() else ParentCategoryHALSerializer
+        elif self.get_parents_query_dict():
+            serializer_class = CategoryHALSerializer
         else:
-            obj = get_object_or_404(queryset, slug=self.kwargs['slug'])
+            serializer_class = ParentCategoryHALSerializer
 
-        self.check_object_permissions(self.request, obj)
-        return obj
+        kwargs['context'] = self.get_serializer_context()
+        return serializer_class(*args, **kwargs)
 
 
 class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
