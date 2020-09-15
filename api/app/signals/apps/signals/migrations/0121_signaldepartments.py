@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0120_merge_20200903_1303'),
+        ('signals', '0120_expression_expressioncontext_expressiontype'),
     ]
 
     operations = [
