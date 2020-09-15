@@ -13,7 +13,7 @@ from signals.apps.api.generics.permissions import (
     SignalCreateInitialPermission,
     SignalViewObjectPermission
 )
-from signals.apps.api.v1.filters import SignalFilter
+from signals.apps.api.v1.filters import SignalFilterSet
 from signals.apps.api.v1.serializers import (
     AbridgedChildSignalSerializer,
     HistoryHalSerializer,
@@ -89,7 +89,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     object_permission_classes = (SignalViewObjectPermission, )
 
     filter_backends = (DjangoFilterBackend, FieldMappingOrderingFilter, )
-    filterset_class = SignalFilter
+    filterset_class = SignalFilterSet
 
     ordering = ('-created_at', )
     ordering_fields = (

@@ -36,6 +36,7 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedTypeModelSerializer
 )
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
+from signals.apps.api.v1.validation.mixin import SignalValidationMixin
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal
@@ -259,7 +260,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         return signal
 
 
-class PrivateSignalSerializerList(HALSerializer, AddressValidationMixin):
+class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     """
     This serializer is used for the list endpoint and when creating a new instance
     """
@@ -486,7 +487,7 @@ class PublicSignalSerializerDetail(HALSerializer):
         return obj.sia_id
 
 
-class PublicSignalCreateSerializer(serializers.ModelSerializer):
+class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):
     """
     This serializer allows anonymous users to report `signals.Signals`.
 
@@ -534,7 +535,7 @@ class PublicSignalCreateSerializer(serializers.ModelSerializer):
                 raise ValidationError('Extra properties present: {}'.format(
                     ', '.join(present_keys - allowed_keys)
                 ))
-        return data
+        return super(PublicSignalCreateSerializer, self).validate(data)
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
