@@ -2,7 +2,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.v1.fields import StoredSignalFilterLinksField
-from signals.apps.api.v1.filters import SignalFilter
+from signals.apps.api.v1.filters import SignalFilterSet
 from signals.apps.signals.models import Signal, StoredSignalFilter
 
 
@@ -32,7 +32,7 @@ class StoredSignalFilterSerializer(HALSerializer):
         if type(value) != dict:
             raise ValidationError('Expected an object for "options"')
 
-        signal_filter = SignalFilter(data=value, queryset=Signal.objects.none())
+        signal_filter = SignalFilterSet(data=value, queryset=Signal.objects.none())
         if not signal_filter.is_valid():
             raise ValidationError(signal_filter.errors)
 

@@ -9,7 +9,6 @@ from django.utils import timezone
 from pytz import utc
 from swift.storage import SwiftStorage
 
-from signals.apps.signals import workflow
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.querysets import SignalQuerySet
@@ -191,10 +190,6 @@ class Signal(CreatedUpdatedModel):
                 self.siblings.count() >= settings.SIGNAL_MAX_NUMBER_OF_CHILDREN):
             # we are a new child and our parent already has the max number of children
             raise ValidationError('Maximum number of children reached for the parent Signal')
-
-        if self.children.exists() and self.status.state != workflow.GESPLITST:
-            # If we have children our status can only be "gesplitst"
-            raise ValidationError('The status of a parent Signal can only be "gesplitst"')
 
     def save(self, *args, **kwargs):
         self._validate()

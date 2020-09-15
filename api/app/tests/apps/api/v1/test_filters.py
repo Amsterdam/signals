@@ -5,13 +5,14 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import Priority
+from signals.apps.signals.models import DirectingDepartments, Priority
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
     AreaFactory,
     CategoryAssignmentFactory,
     CategoryFactory,
+    DepartmentFactory,
     NoteFactory,
     ParentCategoryFactory,
     SignalFactory,
@@ -404,6 +405,119 @@ class TestFilters(SignalsBaseApiTestCase):
 
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))
+
+    def test_filter_kind_parent_signal(self):
+        """
+        Filter Signals that are a parent Signal (2 parent Signals are created so we expect 2)
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(2, len(result_ids))
+
+    def test_filter_kind_no_parent_signal(self):
+        """
+        Filter Signals that are a parent Signal (None are created so we expect 0)
+        """
+        params = {'kind': 'parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+    def test_filter_kind_child_signal(self):
+        """
+        Filter Signals that are a child Signal (3 child Signals are created so we expect 3)
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'child_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(3, len(result_ids))
+
+    def test_filter_kind_no_child_signal(self):
+        """
+        Filter Signals that are a child Signal (None are created so we expect 0)
+        """
+        params = {'kind': 'child_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(0, len(result_ids))
+
+    def test_filter_kind_signal(self):
+        """
+        We expect only "normal" Signals
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(20, len(result_ids))
+
+    def test_filter_kind_exclude_parent_signal(self):
+        """
+        We expect only "normal" and "child" Signals
+        """
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'kind': 'exclude_parent_signal'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(23, len(result_ids))
+
+    def test_filter_directing_department_null(self):
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        params = {'directing_department': 'null'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))
+
+    def test_filter_directing_department(self):
+        department = DepartmentFactory.create()
+
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        directing_departments = DirectingDepartments.objects.create(_signal=parent_one, created_by='test@example.com')
+        directing_departments.departments.add(department)
+        parent_one.directing_departments_assignment = directing_departments
+        parent_one.save()
+
+        params = {'directing_department': department.code}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))
+
+    def test_filter_directing_department_mixed(self):
+        department = DepartmentFactory.create()
+
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        directing_departments = DirectingDepartments.objects.create(_signal=parent_one, created_by='test@example.com')
+        directing_departments.departments.add(department)
+        parent_one.directing_departments_assignment = directing_departments
+        parent_one.save()
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        params = {'directing_department': ['null', department.code]}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(2, len(result_ids))
 
 
 class TestPriorityFilter(SignalsBaseApiTestCase):

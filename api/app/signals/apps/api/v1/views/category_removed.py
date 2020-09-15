@@ -7,7 +7,7 @@ from rest_framework import viewsets
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilter
+from signals.apps.api.v1.filters import SignalCategoryRemovedAfterFilterSet
 from signals.apps.api.v1.serializers import SignalIdListSerializer
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
@@ -21,6 +21,6 @@ class SignalCategoryRemovedAfterViewSet(viewsets.GenericViewSet, mixins.ListMode
     permission_classes = (SIAPermissions,)
 
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = SignalCategoryRemovedAfterFilter
+    filterset_class = SignalCategoryRemovedAfterFilterSet
 
     queryset = Signal.objects.only('id').all()

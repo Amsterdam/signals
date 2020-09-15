@@ -1,5 +1,5 @@
 import os
-from unittest import mock
+from unittest import mock, skip
 
 import requests
 from django.conf import settings
@@ -395,6 +395,7 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'Maximum number of children reached for the parent Signal')
 
+    @skip('With the introduction of "deelmeldingen" this is no longer the case, TODO remove when the splits endpoint can be removed from the code')  # noqa
     def test_split_signal_parent_status_cannot_change_from_gesplits(self):
         status_gesplitst = factories.StatusFactory.create(state=workflow.GESPLITST)
         signal_parent = factories.SignalFactory.create(status=status_gesplitst)
