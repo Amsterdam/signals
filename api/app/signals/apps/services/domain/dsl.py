@@ -27,13 +27,21 @@ class DslService:
 
 # maps signal object to context dictionary
 class SignalContext:
-    _areas = {}
+    _areas = None
 
-    def __init__(self):
+    def _init_areas(self):
+        tmp = {}
         for area_type in AreaType.objects.all():
-            self._areas[area_type.name] = {
+            tmp[area_type.name] = {
                 area.code: area.geometry for area in Area.objects.filter(_type=area_type).all()
             }
+        return tmp
+
+    @property
+    def areas(self):
+        if not self._areas:
+            self._areas = self._init_areas()
+        return self._areas
 
     def __call__(self, signal: Signal):
         departments = signal.category_assignment.category.departments.filter(
@@ -49,7 +57,7 @@ class SignalContext:
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
-            'areas': self._areas
+            'areas': self.areas
         }
 
 
