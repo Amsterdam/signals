@@ -486,6 +486,36 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))
 
+    def test_filter_directing_department_null_with_other_relations(self):
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_one,
+            created_by='test@example.com',
+            relation_type='routing'
+        )
+        directing_departments.save()
+
+        params = {'directing_department': 'null'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))
+
+    def test_filter_directing_department_null_empty_directing(self):
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_one,
+            created_by='test@example.com',
+            relation_type='directing'
+        )
+        directing_departments.save()
+
+        params = {'directing_department': 'null'}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(1, len(result_ids))
+
     def test_filter_directing_department(self):
         department = DepartmentFactory.create()
 
