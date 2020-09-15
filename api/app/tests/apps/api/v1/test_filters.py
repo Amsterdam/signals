@@ -5,7 +5,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import DirectingDepartments, Priority
+from signals.apps.signals.models import Priority, SignalDepartments
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import (
@@ -492,10 +492,13 @@ class TestFilters(SignalsBaseApiTestCase):
         parent_one = SignalFactory.create()
         SignalFactory.create_batch(1, parent=parent_one)
 
-        directing_departments = DirectingDepartments.objects.create(_signal=parent_one, created_by='test@example.com')
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_one,
+            created_by='test@example.com',
+            relation_type='directing'
+        )
         directing_departments.departments.add(department)
-        parent_one.directing_departments_assignment = directing_departments
-        parent_one.save()
+        directing_departments.save()
 
         params = {'directing_department': department.code}
         result_ids = self._request_filter_signals(params)
@@ -507,10 +510,14 @@ class TestFilters(SignalsBaseApiTestCase):
         parent_one = SignalFactory.create()
         SignalFactory.create_batch(1, parent=parent_one)
 
-        directing_departments = DirectingDepartments.objects.create(_signal=parent_one, created_by='test@example.com')
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_one,
+            created_by='test@example.com',
+            relation_type='directing'
+        )
+
         directing_departments.departments.add(department)
-        parent_one.directing_departments_assignment = directing_departments
-        parent_one.save()
+        directing_departments.save()
 
         parent_two = SignalFactory.create()
         SignalFactory.create_batch(2, parent=parent_two)
