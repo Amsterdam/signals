@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
-from signals.apps.api.v1.filters import ExpressionFilterSet
+from signals.apps.api.v1.filters.expression import ExpressionFilterSet
 from signals.apps.api.v1.serializers.expression import (
     ExpressionContextSerializer,
     ExpressionSerializer

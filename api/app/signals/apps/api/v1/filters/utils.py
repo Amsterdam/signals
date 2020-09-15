@@ -5,6 +5,8 @@ from signals.apps.signals.models import (
     Buurt,
     Category,
     Department,
+    Expression,
+    ExpressionType,
     Signal
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
@@ -40,6 +42,20 @@ def department_choices():
     return [
         ('null', 'null'),
     ] + [(department.code, f'{department.code}') for department in Department.objects.only('code').all()]
+
+
+def expression_choices():
+    """
+    Helper function to determine available expressions
+    """
+    return [(expr.name, expr.name) for expr in Expression.objects.only('name').all().distinct()]
+
+
+def expression_type_choices():
+    """
+    Helper function to determine available expression types
+    """
+    return [(expr_type.name, expr_type.name) for expr_type in ExpressionType.objects.only('name').all().distinct()]
 
 
 def feedback_choices():
