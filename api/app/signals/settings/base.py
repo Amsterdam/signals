@@ -492,7 +492,14 @@ FEATURE_FLAGS = {
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
-API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS = ('@amsterdam.nl', )
+API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS = os.getenv(
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS',
+    'techview@amsterdam.nl,verbeterdebuurt@amsterdam.nl,hnw@amsterdam.nl,webcare@amsterdam.nl,qubz@amsterdam.nl'
+).split(',')
+API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS = os.getenv(
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS',
+    '@amsterdam.nl',
+)
 API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE = 'Interne melding'
 
 # GraphQL Settings
