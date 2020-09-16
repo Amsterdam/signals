@@ -96,9 +96,5 @@ urlpatterns = [
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
-        # expression
-        re_path(r'expressions/(?P<pk>\d+)/?$',
-                PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
-                name='expression-detail'),
     ])),
 ]
