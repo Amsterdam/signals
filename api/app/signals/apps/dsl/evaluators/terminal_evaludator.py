@@ -1,6 +1,6 @@
 import time
 
-from signals.apps.dsl.evaluators.Evaluator import Evaluator
+from signals.apps.dsl.evaluators.evaluator import Evaluator
 
 
 class TerminalEvaluator(Evaluator):

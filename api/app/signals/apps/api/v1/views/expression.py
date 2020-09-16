@@ -74,7 +74,7 @@ class PrivateExpressionViewSet(DatapuntViewSetWritable):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=False, url_path='validate/')
+    @action(detail=False, url_path='validate/?$')
     def validate(self, request):
         """Validate expression for a certain expression type"""
         exp_type = request.query_params.get('type', None)
@@ -89,7 +89,7 @@ class PrivateExpressionViewSet(DatapuntViewSetWritable):
         else:
             return self._bad_request(result)
 
-    @action(detail=False, url_path='context/')
+    @action(detail=False, url_path='context/?$')
     def context(self, request):
         """Returns available identifers for expression type"""
         exp_type = request.query_params.get('type', None)

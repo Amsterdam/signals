@@ -1106,7 +1106,7 @@ paths:
 
   /signals/v1/private/expressions/:
     get:
-      description: Retrieve list of expressions.
+      description: Retrieve list of expressions. An expression is used to evaluate simplified logic. It can be used as a domain specific language for condition evaluation. We could evaluate an condition such as 'location in area' and use the result to perform actions. The expressions are configurable and don't require a developer to add logic.
       responses:
         '200':
           description: List of expressions.
