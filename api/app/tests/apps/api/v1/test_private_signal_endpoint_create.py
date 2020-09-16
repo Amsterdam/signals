@@ -309,7 +309,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         initial_data = copy.deepcopy(self.initial_data_base)
         initial_data['reporter']['email'] = 'test-email-1' \
-                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS[0]}'
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS}'
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
