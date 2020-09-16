@@ -1,14 +1,13 @@
 import time
 
 from datapunt_api.pagination import HALPagination
-from datapunt_api.rest import DatapuntViewSet
+from datapunt_api.rest import DatapuntViewSetWritable
 from django.contrib.gis import geos
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.filters.expression import ExpressionFilterSet
 from signals.apps.api.v1.serializers.expression import (
@@ -20,16 +19,10 @@ from signals.apps.signals.models import Expression, ExpressionContext
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateExpressionViewSet(mixins.ListModelMixin,
-                               mixins.CreateModelMixin,
-                               mixins.RetrieveModelMixin,
-                               mixins.UpdateModelMixin,
-                               mixins.DestroyModelMixin,
-                               DatapuntViewSet):
+class PrivateExpressionViewSet(DatapuntViewSetWritable):
     """
     V1 private ViewSet to display/process expressions in the database
     """
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     authentication_classes = (JWTAuthBackend, )
     queryset = Expression.objects.all()
