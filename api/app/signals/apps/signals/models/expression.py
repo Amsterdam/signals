@@ -4,7 +4,6 @@ from django.contrib.gis.db import models
 class ExpressionType(models.Model):
     class Meta:
         verbose_name = 'ExpressionsType'
-        verbose_name_plural = 'ExpressionType'
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
@@ -32,7 +31,6 @@ class ExpressionContext(models.Model):
 
     class Meta:
         verbose_name = 'ExpressionContext'
-        verbose_name_plural = 'ExpressionContext'
 
     identifier = models.CharField(max_length=255)
     identifier_type = models.CharField(max_length=255, choices=CTX_TYPE_CHOICES, default=CTX_NUMBER)
@@ -45,7 +43,6 @@ class ExpressionContext(models.Model):
 class Expression(models.Model):
     class Meta:
         verbose_name = 'Expression'
-        verbose_name_plural = 'Expression'
         unique_together = ('name', '_type')
         permissions = (
             ('sia_expression_read', 'Inzien van expressies'),
