@@ -372,3 +372,30 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         signal = Signal.objects.get(pk=response_data['id'])
         self.assertEqual(signal.source, source.name)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_child_signal_transform_source(self, validate_address):
+        parent_signal = SignalFactory.create()
+        signal_count = Signal.objects.count()
+
+        source, *_ = SourceFactory.create_batch(4)
+        SourceFactory.create(name=settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = source.name
+        initial_data['parent'] = parent_signal.pk
+
+        with self.settings(FEATURE_FLAGS={'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        response_data = response.json()
+        self.assertNotEqual(response_data['source'], source.name)
+        self.assertEqual(response_data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)
+
+        signal = Signal.objects.get(pk=response_data['id'])
+        self.assertNotEqual(signal.source, source.name)
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)

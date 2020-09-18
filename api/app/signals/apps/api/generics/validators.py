@@ -10,12 +10,19 @@ class SignalSourceValidator(object):
     def __init__(self, *args, **kwargs):
         self.serializer_field = None
 
-    def __call__(self, value, serializer_field):
+    def __call__(self, value, serializer_field):  # noqa: C901
         # Check if the given source is valid against the known sources in the database
         # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
         if settings.FEATURE_FLAGS.get('API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL', True):
             if not Source.objects.filter(name__iexact=value).exists():
                 raise ValidationError('Invalid source given')
+
+        # No need to check the given source this will be overwritten when creating the child Signal
+        # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
+        if (settings.FEATURE_FLAGS.get('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True)
+                and hasattr(settings, 'API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD')):
+            if serializer_field.context['request'].data.get('parent', None):
+                return value
 
         self.serializer_field = serializer_field
 
