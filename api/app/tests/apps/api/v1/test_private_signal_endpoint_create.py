@@ -14,7 +14,8 @@ from tests.apps.signals.factories import (
     CategoryFactory,
     ParentCategoryFactory,
     SignalFactory,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    SourceFactory
 )
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -333,3 +334,41 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         data = response.json()
         self.assertEqual(data['source'], 'Telefoon – ASC')
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_invalid_source(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = 'this-source-does-not-exists-so-the-create-should-fail'
+
+        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Signal.objects.count(), signal_count)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_valid_source(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        source, *_ = SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = source.name
+
+        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        response_data = response.json()
+        self.assertEqual(response_data['source'], source.name)
+
+        signal = Signal.objects.get(pk=response_data['id'])
+        self.assertEqual(signal.source, source.name)

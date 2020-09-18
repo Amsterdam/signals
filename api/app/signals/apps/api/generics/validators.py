@@ -1,6 +1,7 @@
+from django.conf import settings
 from rest_framework.serializers import ValidationError
 
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, Source
 
 
 class SignalSourceValidator(object):
@@ -10,6 +11,12 @@ class SignalSourceValidator(object):
         self.serializer_field = None
 
     def __call__(self, value, serializer_field):
+        # Check if the given source is valid against the known sources in the database
+        # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
+        if settings.FEATURE_FLAGS.get('API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL', True):
+            if not Source.objects.filter(name__iexact=value).exists():
+                raise ValidationError('Invalid source given')
+
         self.serializer_field = serializer_field
 
         user = self.serializer_field.context['request'].user

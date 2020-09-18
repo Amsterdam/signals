@@ -9,3 +9,4 @@ CSRF_COOKIE_SECURE = True
 
 # Filter extra properties is not yet enabled for production
 FEATURE_FLAGS['API_FILTER_EXTRA_PROPERTIES'] = False  # noqa F405
+FEATURE_FLAGS['API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL'] = False  # noqa F405
