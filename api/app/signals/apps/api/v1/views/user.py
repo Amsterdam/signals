@@ -8,9 +8,12 @@ from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.users.v1.filters import UserFilterSet
-from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
-from signals.apps.users.v1.serializers.user import PrivateUserHistoryHalSerializer
+from signals.apps.api.v1.filters import UserFilterSet
+from signals.apps.api.v1.serializers import (
+    PrivateUserHistoryHalSerializer,
+    UserDetailHALSerializer,
+    UserListHALSerializer
+)
 from signals.auth.backend import JWTAuthBackend
 
 # Get the user model as defined in the settings, defaults to the auth User from Django

@@ -15,7 +15,10 @@ from signals.apps.api.v1.serializers.departments import (
     PrivateDepartmentSerializerDetail,
     PrivateDepartmentSerializerList
 )
+from signals.apps.api.v1.serializers.permission import PermissionSerializer
+from signals.apps.api.v1.serializers.profile import ProfileDetailSerializer, ProfileListSerializer
 from signals.apps.api.v1.serializers.question import PublicQuestionSerializerDetail
+from signals.apps.api.v1.serializers.role import RoleSerializer
 from signals.apps.api.v1.serializers.signal import (
     AbridgedChildSignalSerializer,
     PrivateSignalSerializerDetail,
@@ -32,27 +35,39 @@ from signals.apps.api.v1.serializers.status_message_template import (
     StateStatusMessageTemplateSerializer
 )
 from signals.apps.api.v1.serializers.stored_signal_filter import StoredSignalFilterSerializer
+from signals.apps.api.v1.serializers.user import (
+    PrivateUserHistoryHalSerializer,
+    UserDetailHALSerializer,
+    UserListHALSerializer
+)
 
 __all__ = [
-    'PublicSignalAttachmentSerializer',
-    'PrivateSignalAttachmentSerializer',
-    'SignalAttachmentSerializer',
-    'StateStatusMessageTemplateListSerializer',
-    'StateStatusMessageTemplateSerializer',
+    'AbridgedChildSignalSerializer',
     'CategoryHALSerializer',
-    'ParentCategoryHALSerializer',
     'HistoryHalSerializer',
+    'ParentCategoryHALSerializer',
+    'PublicSignalAttachmentSerializer',
+    'PermissionSerializer',
     'PrivateDepartmentSerializerDetail',
     'PrivateDepartmentSerializerList',
+    'PrivateSignalAttachmentSerializer',
+    'ProfileDetailSerializer',
     'PrivateSignalSerializerDetail',
     'PrivateSignalSerializerList',
-    'PublicSignalSerializerDetail',
-    'PublicSignalCreateSerializer',
+    'ProfileListSerializer',
     'PrivateSplitSignalSerializer',
+    'PrivateCategorySerializer',
+    'PrivateUserHistoryHalSerializer',
+    'PublicSignalCreateSerializer',
+    'PublicSignalSerializerDetail',
+    'PublicQuestionSerializerDetail',
+    'RoleSerializer',
+    'SignalAttachmentSerializer',
     'SignalGeoSerializer',
     'SignalIdListSerializer',
+    'StateStatusMessageTemplateListSerializer',
+    'StateStatusMessageTemplateSerializer',
     'StoredSignalFilterSerializer',
-    'PrivateCategorySerializer',
-    'PublicQuestionSerializerDetail',
-    'AbridgedChildSignalSerializer',
+    'UserListHALSerializer',
+    'UserDetailHALSerializer',
 ]

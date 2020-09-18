@@ -3,8 +3,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 
+from signals.apps.api.v0.views import UserMeView
 from signals.apps.graphql.views import SIAGraphQLView
-from signals.apps.users.v0.views import UserMeView
 
 urlpatterns = [
     path('status/', include('signals.apps.health.urls')),

@@ -20,6 +20,7 @@ from signals.apps.api.v1.fields.signal import (
 )
 from signals.apps.api.v1.fields.signal_split import PrivateSignalSplitLinksField
 from signals.apps.api.v1.fields.stored_signal_filter import StoredSignalFilterLinksField
+from signals.apps.api.v1.fields.user import UserHyperlinkedIdentityField
 
 __all__ = [
     'ParentCategoryHyperlinkedIdentityField',
@@ -35,4 +36,5 @@ __all__ = [
     'PrivateSignalSplitLinksField',
     'StoredSignalFilterLinksField',
     'PrivateCategoryHyperlinkedIdentityField',
+    'UserHyperlinkedIdentityField',
 ]

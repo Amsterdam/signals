@@ -6,8 +6,8 @@ from rest_framework import serializers
 
 from change_log.models import Log
 from signals.apps.api.generics.mixins import WriteOnceMixin
-from signals.apps.users.v1.fields.user import UserHyperlinkedIdentityField
-from signals.apps.users.v1.serializers import (
+from signals.apps.api.v1.fields import UserHyperlinkedIdentityField
+from signals.apps.api.v1.serializers import (
     PermissionSerializer,
     ProfileDetailSerializer,
     ProfileListSerializer,

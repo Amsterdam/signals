@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
 
-from signals.apps.users.v1.serializers import PermissionSerializer
+from signals.apps.api.v1.serializers import PermissionSerializer
 
 
 def _get_permissions_queryset():

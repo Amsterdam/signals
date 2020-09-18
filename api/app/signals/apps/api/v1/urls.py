@@ -6,6 +6,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     GeneratePdfView,
     NamespaceView,
     ParentCategoryViewSet,
+    PermissionViewSet,
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
@@ -17,13 +18,14 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
     PublicSignalViewSet,
+    RoleViewSet,
     SignalCategoryRemovedAfterViewSet,
     StatusMessageTemplatesViewSet,
-    StoredSignalFilterViewSet
+    StoredSignalFilterViewSet,
+    UserViewSet
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
-from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserViewSet
 
 # Public API
 public_router = SignalsRouterVersion1()
