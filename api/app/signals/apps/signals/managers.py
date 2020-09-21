@@ -674,17 +674,19 @@ class SignalManager(models.Manager):
 
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import SignalUser
+
+        # clear existing
+        signal.signaluser_set.all().delete()
         lst = []
         for relation in data:
-            obj, created = SignalUser.objects.get_or_create(
+            obj, _ = SignalUser.objects.get_or_create(
                 _signal=signal,
                 user=relation['user']['id']
             )
-            obj.created_by = relation['created_by']
+            obj.created_by = relation['created_by'] if 'created_by' in relation else None
+            obj.save()
             lst.append(obj)
 
-        if created:
-            signal.signaluser_set.all().exclude(id=obj.id).delete()
         signal.signaluser_set.set(lst)
         signal.save()
         return signal.signaluser_set
@@ -697,8 +699,9 @@ class SignalManager(models.Manager):
                 _signal=signal,
                 relation_type=relation['relation_type'],
             )
-            obj.created_by = relation['created_by']
+            obj.created_by = relation['created_by'] if 'created_by' in relation else None
             obj.departments.set([dept['id'] for dept in relation['departments']])
+            obj.save()
             lst.append(obj)
 
         signal.signal_departments.set(lst)
