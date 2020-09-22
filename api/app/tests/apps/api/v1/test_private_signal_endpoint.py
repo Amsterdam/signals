@@ -2304,3 +2304,97 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         response = self.client.get(self.child_endpoint.format(pk=self.parent_signal.pk))
         self.assertEqual(response.status_code, 403)
+
+
+class TestSignalEndpointRouting(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        self.detail_endpoint = '/signals/v1/private/signals/{pk}'
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+
+        # test signals
+        self.signal = SignalFactory.create()
+        self.department = DepartmentFactory.create()
+
+    def _get_routing(self, signal):
+        return signal.signal_departments.filter(relation_type='routing').first()
+
+    def test_routing_add_remove(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': self.department.id
+                        }
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        routing = self._get_routing(self.signal)
+        self.assertEqual(routing.departments.count(), 1)
+
+        # remove routing
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        routing = self._get_routing(self.signal)
+        self.assertEqual(routing.departments.count(), 0)
+
+    def test_routing_user_add_remove(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': self.department.id
+                        }
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        data = {
+            'user_assignments': [
+                {
+                    'created_by': None,
+                    'user': {
+                        'id': self.sia_read_write_user.id
+                    }
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignments.count(), 1)
+
+        # remove user assignment
+        data = {
+            'user_assignments': [
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignments.count(), 0)
