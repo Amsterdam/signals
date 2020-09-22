@@ -380,7 +380,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         signal_count = Signal.objects.count()
 
         source, *_ = SourceFactory.create_batch(4)
-        SourceFactory.create(name=settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)
+        SourceFactory.create(name=settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
 
         initial_data = copy.deepcopy(self.initial_data_base)
         initial_data['source'] = source.name
@@ -394,8 +394,8 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         response_data = response.json()
         self.assertNotEqual(response_data['source'], source.name)
-        self.assertEqual(response_data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)
+        self.assertEqual(response_data['source'], settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
 
         signal = Signal.objects.get(pk=response_data['id'])
         self.assertNotEqual(signal.source, source.name)
-        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD)
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)

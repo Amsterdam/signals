@@ -4,11 +4,8 @@ from rest_framework.serializers import ValidationError
 from signals.apps.signals.models import Signal, Source
 
 
-class SignalSourceValidator(object):
+class SignalSourceValidator:
     requires_context = True
-
-    def __init__(self, *args, **kwargs):
-        self.serializer_field = None
 
     def __call__(self, value, serializer_field):  # noqa: C901
         # Check if the given source is valid against the known sources in the database
@@ -20,13 +17,11 @@ class SignalSourceValidator(object):
         # No need to check the given source this will be overwritten when creating the child Signal
         # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
         if (settings.FEATURE_FLAGS.get('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True)
-                and hasattr(settings, 'API_TRANSFORM_SOURCE_BASED_ON_SIGNAL_IS_A_CHILD')):
+                and hasattr(settings, 'API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO')):
             if serializer_field.context['request'].data.get('parent', None):
                 return value
 
-        self.serializer_field = serializer_field
-
-        user = self.serializer_field.context['request'].user
+        user = serializer_field.context['request'].user
 
         # If there is no user only the Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be given as a source
         if not user and value.lower() != Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
