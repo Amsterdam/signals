@@ -15,6 +15,14 @@ class SignalQuerySet(QuerySet):
                 flat=True
             )
 
-            return self.filter(category_assignment__category_id__in=category_ids)
+            department_ids = user.profile.departments.values_list('id', flat=True)
+
+            return self.filter(
+                Q(category_assignment__category_id__in=category_ids) |
+                (
+                    Q(signal_departments__relation_type='routing') &
+                    Q(signal_departments__departments__id__in=department_ids)
+                )
+            )
 
         return self.all()
