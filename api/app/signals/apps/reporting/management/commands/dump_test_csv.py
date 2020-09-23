@@ -2,16 +2,15 @@ import csv
 import os
 from timeit import default_timer as timer
 
+from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from signals.apps.reporting.csv.datawarehouse import (
-    get_swift_parameters,
-    save_csv_file_datawarehouse
-)
+from signals.apps.reporting.csv.datawarehouse import save_csv_file_datawarehouse
 
 
 def _test_file(tmp_dir: str) -> str:
+
     now = timezone.now()
     csv_file_path = os.path.join(tmp_dir, f'{now:%Y}-{now:%m}-{now:%d}_{now:%H%M%S%Z}_test.csv')
     with open(csv_file_path, 'w') as file:
@@ -35,7 +34,7 @@ class Command(BaseCommand):
             self.stdout.write('* FileSystemStorage enabled, file will be sent to the local storage')
 
         if swift_enabled and very_verbose:
-            swift_parameters = get_swift_parameters()
+            swift_parameters = settings.SWIFT.get('datawarehouse')
             self.stdout.write('* DWH SwiftStorage parameters:')
 
             for key, value in swift_parameters.items():
