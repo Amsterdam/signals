@@ -71,9 +71,11 @@ class Signal(CreatedUpdatedModel):
     actions = SignalManager()
 
     @property
-    def user_assignments(self):
-        users = self.signaluser_set
-        return users if users else None
+    def assigned_user_id(self):
+        try:
+            return self.user_assignment.user.id
+        except Exception:
+            return None
 
     @property
     def directing_departments_assignment(self):

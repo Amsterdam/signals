@@ -2375,26 +2375,18 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
 
         data = {
-            'user_assignments': [
-                {
-                    'created_by': None,
-                    'user': {
-                        'id': self.sia_read_write_user.id
-                    }
-                }
-            ]
+            'assigned_user_id': self.sia_read_write_user.id
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignments.count(), 1)
+        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)
 
         # remove user assignment
         data = {
-            'user_assignments': [
-            ]
+            'assigned_user_id': None
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignments.count(), 0)
+        self.assertEquals(self.signal.user_assignment.user, None)
