@@ -32,4 +32,4 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
         if 'phone' in data and data['phone'] == '':
             data['phone'] = None
 
-        return super().to_representation(data)
+        return super().to_internal_value(data)

@@ -309,6 +309,19 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         signal = Signal.objects.get(pk=data['id'])
         self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
 
+        initial_data = copy.deepcopy(self.create_initial_data)
+        # Added a trailing space to the email, this should be removed
+        initial_data['reporter']['email'] = 'trailing-space-should-be-removed' \
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS} '
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 2)
+
+        data = response.json()
+        signal = Signal.objects.get(pk=data['id'])
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
     @override_settings(API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS=('uitzondering@amsterdam.nl',))
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
