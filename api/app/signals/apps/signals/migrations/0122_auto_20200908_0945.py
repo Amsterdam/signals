@@ -13,11 +13,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='signal',
-            name='user_assignment',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='users.SignalUser'),
-        ),
-        migrations.AddField(
             model_name='signaldepartments',
             name='_signal',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='signal_departments', to='signals.Signal'), # noqa
@@ -26,11 +21,6 @@ class Migration(migrations.Migration):
             model_name='signaldepartments',
             name='departments',
             field=models.ManyToManyField(related_name='_signaldepartments_departments_+', to='signals.Department'),
-        ),
-        migrations.AddField(
-            model_name='signal',
-            name='department_assignment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='signal', to='signals.SignalDepartments'), # noqa
         ),
         migrations.AlterUniqueTogether(
             name='signaldepartments',

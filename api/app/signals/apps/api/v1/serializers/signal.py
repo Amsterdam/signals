@@ -31,7 +31,6 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
     _NestedSignalDepartmentsModelSerializer,
-    _NestedSignalUsersModelSerializer,
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer
 )
@@ -162,13 +161,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
-    user_assignments = _NestedSignalUsersModelSerializer(
-        many=True,
-        required=False,
-        permission_classes=(SIAPermissions,),
-    )
-
     has_attachments = serializers.SerializerMethodField()
+
+    assigned_user_id = serializers.IntegerField(required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -207,7 +202,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'directing_departments',
             'signal_departments',
             'attachments',
-            'user_assignments',
+            'assigned_user_id',
         )
         read_only_fields = (
             'id',
@@ -252,9 +247,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             for relation in validated_data['signal_departments']:
                 relation['created_by'] = user_email
 
-        if 'user_assignments' in validated_data and validated_data['user_assignments']:
-            for relation in validated_data['user_assignments']:
-                relation['created_by'] = user_email
+        if 'assigned_user_id' in validated_data and validated_data['assigned_user_id']:
+            validated_data['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
@@ -315,13 +309,9 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         permission_classes=(SIAPermissions,),
     )
 
-    user_assignments = _NestedSignalUsersModelSerializer(
-        many=True,
-        required=False,
-        permission_classes=(SIAPermissions,),
-    )
-
     has_attachments = serializers.SerializerMethodField()
+
+    assigned_user_id = serializers.IntegerField(required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -373,7 +363,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'directing_departments',
             'signal_departments',
             'attachments',
-            'user_assignments',
+            'assigned_user_id',
             'parent'
         )
         read_only_fields = (

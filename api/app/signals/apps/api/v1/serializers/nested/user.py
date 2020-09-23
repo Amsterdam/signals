@@ -1,9 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.generics.serializers import SIAModelSerializer
-from signals.apps.users.models import SignalUser
 
 User = get_user_model()
 
@@ -30,19 +28,4 @@ class _NestedUserModelSerializer(SIAModelSerializer):
             'email',
             'first_name',
             'last_name',
-        )
-
-
-class _NestedSignalUsersModelSerializer(SIAModelSerializer):
-    user = _NestedUserModelSerializer(
-        many=False,
-        required=False,
-        permission_classes=(SIAPermissions,),
-    )
-
-    class Meta:
-        model = SignalUser
-        fields = (
-            'created_by',
-            'user',
         )
