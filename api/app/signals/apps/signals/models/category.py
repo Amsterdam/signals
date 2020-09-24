@@ -4,15 +4,19 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.urls import resolve
 from django_extensions.db.fields import AutoSlugField
+from rest_framework_extensions.settings import extensions_api_settings
 
 from change_log.logger import ChangeLogger
 
 
 class CategoryManager(models.Manager):
+    parent_lookup_prefix = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX
+
     def get_from_url(self, url):
         _, _, kwargs = resolve((urlparse(url)).path)
-        if 'slug' in kwargs and 'sub_slug' in kwargs:
-            return self.get_queryset().get(slug=kwargs['sub_slug'], parent__slug=kwargs['slug'])
+        if f'{self.parent_lookup_prefix}parent__slug' in kwargs and 'slug' in kwargs:
+            return self.get_queryset().get(slug=kwargs['slug'],
+                                           parent__slug=kwargs[f'{self.parent_lookup_prefix}parent__slug'])
         else:
             return self.get_queryset().get(slug=kwargs['slug'], parent__isnull=True)
 

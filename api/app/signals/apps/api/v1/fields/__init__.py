@@ -8,8 +8,6 @@ from signals.apps.api.v1.fields.attachment import (
 from signals.apps.api.v1.fields.category import (
     CategoryHyperlinkedIdentityField,
     CategoryHyperlinkedRelatedField,
-    LegacyCategoryHyperlinkedRelatedField,
-    ParentCategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
 from signals.apps.api.v1.fields.note import NoteHyperlinkedIdentityField
@@ -22,10 +20,8 @@ from signals.apps.api.v1.fields.signal_split import PrivateSignalSplitLinksField
 from signals.apps.api.v1.fields.stored_signal_filter import StoredSignalFilterLinksField
 
 __all__ = [
-    'ParentCategoryHyperlinkedIdentityField',
     'CategoryHyperlinkedIdentityField',
     'CategoryHyperlinkedRelatedField',
-    'LegacyCategoryHyperlinkedRelatedField',
     'NoteHyperlinkedIdentityField',
     'PrivateSignalLinksFieldWithArchives',
     'PrivateSignalLinksField',

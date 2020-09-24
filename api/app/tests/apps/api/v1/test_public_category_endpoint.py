@@ -68,6 +68,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         url = '/signals/v1/public/terms/categories/{slug}/sub_categories/{sub_slug}'.format(
             slug=sub_category.parent.slug,
             sub_slug=sub_category.slug)
+
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 

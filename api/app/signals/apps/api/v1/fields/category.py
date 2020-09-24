@@ -2,106 +2,62 @@ from collections import OrderedDict
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+from rest_framework_extensions.settings import extensions_api_settings
 
-from signals.apps.api.generics.relations import (
-    ParameterisedHyperLinkedIdentityField,
-    ParameterisedHyperlinkedRelatedField
-)
+from signals.apps.api.v1.fields.decorators import enforce_request_version_v1
 from signals.apps.signals.models import Category
 
 
-class ParentCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
-    lookup_field = 'slug'
+def category_public_url(category, request, format=None):
+    if category.is_child():
+        viewname, kwargs = 'public-subcategory-detail', {'parent_lookup_parent__slug': category.parent.slug,
+                                                         'slug': category.slug}
+    else:
+        viewname, kwargs = 'public-maincategory-detail', {'slug': category.slug}
+    return reverse(viewname, kwargs=kwargs, request=request, format=format)
 
+
+class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request')
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(href=self.get_url(value, 'category-detail', request, None))),
+            ('self', {'href': category_public_url(value, request)}),
         ])
-
         return result
 
 
-class CategoryHyperlinkedIdentityField(ParameterisedHyperLinkedIdentityField):
-    lookup_fields = (('parent.slug', 'slug'), ('slug', 'sub_slug'),)
-
-    def to_representation(self, value):
-        request = self.context.get('request')
-        hyperlink = super(ParameterisedHyperlinkedRelatedField, self).to_representation(value=value)
-        result = OrderedDict([
-            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', {'href': hyperlink})
-        ])
-
-        return result
-
-
-class CategoryHyperlinkedRelatedField(ParameterisedHyperlinkedRelatedField):
-    lookup_fields = (('parent.slug', 'slug'), ('slug', 'sub_slug'),)
-
-    view_name = 'category-detail'
+class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
+    view_name = 'public-subcategory-detail'
     queryset = Category.objects.all()
-
-
-class LegacyCategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
-    view_name = 'category-detail'
-    queryset = Category.objects.all()
-
-    def to_internal_value(self, data):
-        request = self.context.get('request', None)
-        original_version = request.version
-
-        # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
-        # version 1. Afterwards we revert back to the origional API version from the request.
-        request.version = 'v1'
-        value = super().to_internal_value(data)
-        request.version = original_version
-
-        return value
-
-    def get_url(self, obj: Category, view_name, request, format):
-
-        if obj.is_child():
-            url_kwargs = {
-                'slug': obj.parent.slug,
-                'sub_slug': obj.slug,
-            }
-        else:
-            url_kwargs = {
-                'slug': obj.slug,
-            }
-
-        # Tricking DRF to use API version `v1` because our `category-detail` view lives in API
-        # version 1. Afterwards we revert back to the origional API version from the request.
-        original_version = request.version
-        request.version = 'v1'
-        url = reverse(view_name, kwargs=url_kwargs, request=request, format=format)
-        request.version = original_version
-
-        return url
+    parent_lookup_prefix = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX
 
     def get_object(self, view_name, view_args, view_kwargs):
-        return self.get_queryset().get(
-            parent__slug=view_kwargs['slug'],
-            slug=view_kwargs['sub_slug'])
+        queryset = self.get_queryset()
+        if f'{self.parent_lookup_prefix}parent__slug' in view_kwargs:
+            queryset = queryset.filter(parent__slug=view_kwargs[f'{self.parent_lookup_prefix}parent__slug'])
+        return queryset.get(slug=view_kwargs['slug'])
+
+    def get_url(self, obj, view_name, request, format):
+        # We want a Category instance, DRF can also return a PKOnlyObject when use_pk_only_optimization is enabled
+        category = obj if isinstance(obj, Category) else self.get_queryset().get(pk=obj.pk)
+        return category_public_url(category, request=request, format=format)
+
+    @enforce_request_version_v1
+    def to_internal_value(self, data):
+        return super(CategoryHyperlinkedRelatedField, self).to_internal_value(data=data)
 
 
 class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def _get_public_url(self, obj, request=None):
-        if obj.is_child():
-            kwargs = {'slug': obj.parent.slug, 'sub_slug': obj.slug}
-        else:
-            kwargs = {'slug': obj.slug}
-        return self.reverse('category-detail', kwargs=kwargs, request=request)
+        return category_public_url(obj, request=request)
 
     def _get_status_message_templates_url(self, obj, request=None):
         if obj.is_child():
-            kwargs = {'slug': obj.parent.slug, 'sub_slug': obj.slug}
-            return self.reverse('private-status-message-templates-child', kwargs=kwargs, request=request)
+            viewname, kwargs = 'private-status-message-templates-child', {'slug': obj.parent.slug, 'sub_slug': obj.slug}
         else:
-            kwargs = {'slug': obj.slug}
-            return self.reverse('private-status-message-templates-parent', kwargs=kwargs, request=request)
+            viewname, kwargs = 'private-status-message-templates-parent', {'slug': obj.slug}
+        return self.reverse(viewname, kwargs=kwargs, request=request)
 
     def to_representation(self, value):
         request = self.context.get('request')
