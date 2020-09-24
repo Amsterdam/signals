@@ -39,6 +39,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
         return queryset.get(slug=view_kwargs['slug'])
 
     def get_url(self, obj, view_name, request, format):
+        # We want a Category instance, DRF can also return a PKOnlyObject when use_pk_only_optimization is enabled
         category = obj if isinstance(obj, Category) else self.get_queryset().get(pk=obj.pk)
         return category_public_url(category, request=request, format=format)
 
