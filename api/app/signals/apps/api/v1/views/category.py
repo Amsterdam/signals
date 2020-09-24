@@ -25,9 +25,7 @@ class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
         return self.queryset.filter(parent__isnull=True)
 
     def get_serializer(self, *args, **kwargs):
-        if isinstance(args[0], Category):
-            serializer_class = CategoryHALSerializer if args[0].is_child() else ParentCategoryHALSerializer
-        elif self.get_parents_query_dict():
+        if self.get_parents_query_dict():
             serializer_class = CategoryHALSerializer
         else:
             serializer_class = ParentCategoryHALSerializer

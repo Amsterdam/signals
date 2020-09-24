@@ -11,7 +11,7 @@ def get_category_from_prediction(category_url):
     if not hasattr(resolved, 'kwargs'):
         return category_url, False
 
-    slug = resolved.kwargs['slug'] if 'slug' in resolved.kwargs else resolved.kwargs['parent_lookup_parent__slug']
+    slug = resolved.kwargs['slug']
     parent_isnull = False if 'parent_lookup_parent__slug' in resolved.kwargs else True
 
     category = Category.objects.get(slug=slug, parent__isnull=parent_isnull)

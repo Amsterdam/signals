@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+from rest_framework_extensions.settings import extensions_api_settings
 
 from signals.apps.api.v1.fields.decorators import enforce_request_version_v1
 from signals.apps.signals.models import Category
@@ -29,15 +30,16 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'public-subcategory-detail'
     queryset = Category.objects.all()
+    parent_lookup_prefix = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX
 
     def get_object(self, view_name, view_args, view_kwargs):
         queryset = self.get_queryset()
-        if 'parent_lookup_parent__slug' in view_kwargs:
-            queryset = queryset.filter(parent__slug=view_kwargs['parent_lookup_parent__slug'])
+        if f'{self.parent_lookup_prefix}parent__slug' in view_kwargs:
+            queryset = queryset.filter(parent__slug=view_kwargs[f'{self.parent_lookup_prefix}parent__slug'])
         return queryset.get(slug=view_kwargs['slug'])
 
     def get_url(self, obj, view_name, request, format):
-        category = self.get_queryset().get(pk=obj.pk)
+        category = obj if isinstance(obj, Category) else self.get_queryset().get(pk=obj.pk)
         return category_public_url(category, request=request, format=format)
 
     @enforce_request_version_v1
