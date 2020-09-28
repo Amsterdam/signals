@@ -155,6 +155,7 @@ MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
 if os.getenv('SWIFT_ENABLED', 'False') in ['True', 'true', '1']:
+    # The default settings when using SwiftStorage to the general SIA ObjectStore
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
     SWIFT_PASSWORD = os.getenv('SWIFT_PASSWORD')
@@ -166,25 +167,29 @@ if os.getenv('SWIFT_ENABLED', 'False') in ['True', 'true', '1']:
     SWIFT_TEMP_URL_KEY = os.getenv('SWIFT_TEMP_URL_KEY')
     SWIFT_USE_TEMP_URLS = True
 
+SWIFT = {
+    # These settings are used to create override the default Swift storage settings. Usefull for writing to a different
+    # ObjectStore
+    'datawarehouse': {
+        'api_username': os.getenv('DWH_SWIFT_USERNAME'),
+        'api_key': os.getenv('DWH_SWIFT_PASSWORD'),
+        'tenant_name': os.getenv('DWH_SWIFT_TENANT_NAME'),
+        'tenant_id': os.getenv('DWH_SWIFT_TENANT_ID'),
+        'container_name': os.getenv('DWH_SWIFT_CONTAINER_NAME'),
+        'auto_overwrite': os.getenv('DWH_SWIFT_AUTO_OVERWRITE', True)
+    },
+    'horeca': {
+        'api_username': os.getenv('HORECA_SWIFT_USERNAME'),
+        'api_key': os.getenv('HORECA_SWIFT_PASSWORD'),
+        'tenant_name': os.getenv('HORECA_SWIFT_TENANT_NAME'),
+        'tenant_id': os.getenv('HORECA_SWIFT_TENANT_ID'),
+        'container_name': os.getenv('HORECA_SWIFT_CONTAINER_NAME'),
+        'auto_overwrite': os.getenv('HORECA_SWIFT_AUTO_OVERWRITE', True)
+    }
+}
+
 # Object store - Datawarehouse (DWH)
-DWH_SWIFT_AUTH_URL = os.getenv('SWIFT_AUTH_URL')
-DWH_SWIFT_USERNAME = os.getenv('DWH_SWIFT_USERNAME')
-DWH_SWIFT_PASSWORD = os.getenv('DWH_SWIFT_PASSWORD')
-DWH_SWIFT_TENANT_NAME = os.getenv('DWH_SWIFT_TENANT_NAME')
-DWH_SWIFT_TENANT_ID = os.getenv('DWH_SWIFT_TENANT_ID')
-DWH_SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
-DWH_SWIFT_CONTAINER_NAME = os.getenv('DWH_SWIFT_CONTAINER_NAME')
-
 DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
-
-# Object store - Horeca data levering
-HORECA_SWIFT_AUTH_URL = os.getenv('SWIFT_AUTH_URL')
-HORECA_SWIFT_USERNAME = os.getenv('HORECA_SWIFT_USERNAME')
-HORECA_SWIFT_PASSWORD = os.getenv('HORECA_SWIFT_PASSWORD')
-HORECA_SWIFT_TENANT_NAME = os.getenv('HORECA_SWIFT_TENANT_NAME')
-HORECA_SWIFT_TENANT_ID = os.getenv('HORECA_SWIFT_TENANT_ID')
-HORECA_SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
-HORECA_SWIFT_CONTAINER_NAME = os.getenv('HORECA_SWIFT_CONTAINER_NAME')
 
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'

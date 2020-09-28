@@ -7,33 +7,14 @@ import os
 import shutil
 from typing import TextIO
 
-from django.conf import settings
 from django.db import connection
 from django.db.models import Case, CharField, QuerySet, Value, When
 from django.utils import timezone
 from swift.storage import SwiftStorage
 
-from signals.apps.reporting.csv.utils import _get_storage_backend
+from signals.apps.reporting.utils import _get_storage_backend
 
 logger = logging.getLogger(__name__)
-
-
-def get_swift_parameters() -> dict:
-    """
-    Get Swift parameters
-
-    :return dict:
-    """
-    return {
-        'api_auth_url': settings.DWH_SWIFT_AUTH_URL,
-        'api_username': settings.DWH_SWIFT_USERNAME,
-        'api_key': settings.DWH_SWIFT_PASSWORD,
-        'tenant_name': settings.DWH_SWIFT_TENANT_NAME,
-        'tenant_id': settings.DWH_SWIFT_TENANT_ID,
-        'region_name': settings.DWH_SWIFT_REGION_NAME,
-        'container_name': settings.DWH_SWIFT_CONTAINER_NAME,
-        'auto_overwrite': True,
-    }
 
 
 def save_csv_files(csv_files: list) -> None:
@@ -44,7 +25,7 @@ def save_csv_files(csv_files: list) -> None:
     :param csv_files:
     :returns None:
     """
-    storage = _get_storage_backend(get_swift_parameters())
+    storage = _get_storage_backend(using='datawarehouse')
 
     for csv_file_path in csv_files:
         with open(csv_file_path, 'rb') as opened_csv_file:

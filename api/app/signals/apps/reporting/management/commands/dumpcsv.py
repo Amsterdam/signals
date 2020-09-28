@@ -1,10 +1,10 @@
 import os
 from timeit import default_timer as timer
 
+from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from signals.apps.reporting.csv.datawarehouse import get_swift_parameters
 from signals.apps.reporting.csv.datawarehouse.categories import (
     create_category_assignments_csv,
     create_category_sla_csv
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         self.stdout.write('Swift storage: '
                           f'{"Enabled" if swift_enabled else "Disabled (Files will be stored in local file storage"}')
         if swift_enabled:
-            swift_parameters = get_swift_parameters()
+            swift_parameters = settings.SWIFT.get('datawarehouse')
             self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
         else:
             now = timezone.now()

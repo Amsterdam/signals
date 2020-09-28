@@ -12,7 +12,6 @@ from signals.apps.reporting.csv.datawarehouse.tasks import (
     save_csv_files_datawarehouse
 )
 from signals.apps.reporting.csv.datawarehouse.utils import (
-    get_swift_parameters,
     map_choices,
     queryset_to_csv_file,
     save_csv_files
@@ -26,7 +25,6 @@ __all__ = [
     'create_reporters_csv',
     'create_statuses_csv',
     'create_signals_csv',
-    'get_swift_parameters',
     'save_csv_file_datawarehouse',
     'save_csv_files_datawarehouse',
     'save_csv_files',
