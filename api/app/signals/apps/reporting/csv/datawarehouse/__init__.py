@@ -11,11 +11,6 @@ from signals.apps.reporting.csv.datawarehouse.tasks import (
     save_csv_file_datawarehouse,
     save_csv_files_datawarehouse
 )
-from signals.apps.reporting.csv.datawarehouse.utils import (
-    map_choices,
-    queryset_to_csv_file,
-    save_csv_files
-)
 
 __all__ = [
     'create_category_assignments_csv',
@@ -27,7 +22,4 @@ __all__ = [
     'create_signals_csv',
     'save_csv_file_datawarehouse',
     'save_csv_files_datawarehouse',
-    'save_csv_files',
-    'queryset_to_csv_file',
-    'map_choices',
 ]

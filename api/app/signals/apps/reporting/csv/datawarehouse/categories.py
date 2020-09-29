@@ -4,7 +4,7 @@ from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Cast, Coalesce
 
-from signals.apps.reporting.csv.datawarehouse.utils import queryset_to_csv_file, reorder_csv
+from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import CategoryAssignment, ServiceLevelObjective
 
 

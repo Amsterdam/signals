@@ -13,6 +13,7 @@ from django.test import override_settings, testcases
 from freezegun import freeze_time
 
 from signals.apps.reporting.csv import datawarehouse
+from signals.apps.reporting.utils import _get_storage_backend
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
 
@@ -28,7 +29,7 @@ class TestDatawarehouse(testcases.TestCase):
         shutil.rmtree(self.file_backend_tmp_dir)
 
     @mock.patch.dict('os.environ', {}, clear=True)
-    @mock.patch('signals.apps.reporting.csv.datawarehouse.utils._get_storage_backend')
+    @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
     @freeze_time('2020-09-10T12:00:00+00:00')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
@@ -83,7 +84,7 @@ class TestDatawarehouse(testcases.TestCase):
         mocked_swift_storage_instance = mock.Mock()
         mocked_swift_storage.return_value = mocked_swift_storage_instance
 
-        result = datawarehouse.utils._get_storage_backend(using='datawarehouse')
+        result = _get_storage_backend(using='datawarehouse')
 
         self.assertEqual(result, mocked_swift_storage_instance)
         mocked_swift_storage.assert_called_once_with(
