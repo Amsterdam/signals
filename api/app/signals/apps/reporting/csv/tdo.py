@@ -5,7 +5,7 @@ from typing import Callable
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, save_csv_files
 from signals.apps.reporting.models import TDOSignal
-from signals.apps.signals.workflow import STATUS_CHOICES
+from signals.apps.signals.workflow import LEEG, STATUS_CHOICES
 from signals.celery import app
 
 
@@ -31,6 +31,7 @@ def create_statuses_csv(location: str) -> str:
     with open(os.path.join(location, 'statuses.csv'), 'w') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(['code', 'name'])
+        writer.writerow([LEEG, 'Leeg'])  # Special case, not present in STATUS_CHOICES
         for row in STATUS_CHOICES:
             writer.writerow(row)
     return csv_file.name
