@@ -39,6 +39,20 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
             'departments',
         )
 
+    def to_internal_value(self, data):
+        if 'sub_category' not in data and 'category_url' not in data:
+            raise serializers.ValidationError('Either the "sub_category" OR the "category_url" must be given')
+        elif 'sub_category' in data and 'category_url' in data:
+            raise serializers.ValidationError('Only the "sub_category" OR "category_url" can be given')
+
+        return super(_NestedCategoryModelSerializer, self).to_internal_value(data=data)
+
+    def validate(self, attrs):
+        if 'category' not in attrs:
+            raise serializers.ValidationError('Either the "sub_category" OR the "category_url" must be given')
+
+        return super(_NestedCategoryModelSerializer, self).validate(attrs=attrs)
+
     def get_departments(self, obj):
         return ', '.join(
             obj.category.departments.filter(categorydepartment__is_responsible=True).values_list('code', flat=True)
