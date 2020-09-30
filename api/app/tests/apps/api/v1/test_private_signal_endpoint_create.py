@@ -399,3 +399,45 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         signal = Signal.objects.get(pk=response_data['id'])
         self.assertNotEqual(signal.source, source.name)
         self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_child_signals_validate_source_online(self, validate_address):
+        # Validating a valid source for child Signals causes a HTTP 500 in
+        # SIA production, this testcase reproduces the problem.
+        SourceFactory.create(name='online', description='online')
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': True,
+            'API_FILTER_EXTRA_PROPERTIES': True,
+            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
+        }
+
+        with self.settings(FEATURE_FLAGS=production_flags):
+            parent_signal = SignalFactory.create()
+
+            signal_count = Signal.objects.count()
+            parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
+            child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
+
+            self.assertEqual(signal_count, 1)
+            self.assertEqual(parent_signal_count, 1)
+            self.assertEqual(child_signal_count, 0)
+
+            initial_data = []
+            for i in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                initial_data.append(data)
+
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(Signal.objects.count(), signal_count + len(initial_data))
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), parent_signal_count)
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), len(initial_data))
