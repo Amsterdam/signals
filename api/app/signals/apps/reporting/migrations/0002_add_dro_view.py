@@ -1,4 +1,5 @@
-from django.db import migrations
+import django.contrib.gis.db.models.fields
+from django.db import migrations, models
 
 view_sql = """
 DROP VIEW IF EXISTS "signals_ext_tdo";
@@ -33,4 +34,24 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(view_sql),
+        migrations.CreateModel(
+            name='TDOSignal',
+            fields=[
+                ('id', models.IntegerField(primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField()),
+                ('updated_at', models.DateTimeField()),
+                ('geometry', django.contrib.gis.db.models.fields.PointField(srid=4326)),
+                ('status', models.CharField(max_length=255)),
+                ('main_slug', models.CharField(max_length=255)),
+                ('sub_slug', models.CharField(max_length=255)),
+            ],
+            options={
+                'db_table': 'signals_ext_tdo',
+                'managed': False,
+            },
+        ),
+        migrations.AlterModelOptions(
+            name='horecacsvexport',
+            options={'ordering': ('-isoyear', '-isoweek', '-created_at')},
+        ),
     ]

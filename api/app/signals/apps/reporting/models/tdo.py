@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 
 
-class ExternalTDO(models.Model):
+class TDOSignal(models.Model):
     class Meta:
         managed = False
         db_table = 'signals_ext_tdo'
