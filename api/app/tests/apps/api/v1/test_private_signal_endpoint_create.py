@@ -1,6 +1,5 @@
 import copy
 import os
-from unittest import expectedFailure
 from unittest.mock import patch
 
 from django.conf import settings
@@ -401,7 +400,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertNotEqual(signal.source, source.name)
         self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
 
-    @expectedFailure
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)
     def test_create_initial_child_signals_validate_source_online(self, validate_address):
@@ -412,11 +410,11 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         production_flags = {
             'API_DETERMINE_STADSDEEL_ENABLED': True,
             'API_FILTER_EXTRA_PROPERTIES': True,
-            'API_SEARCH_ENABLED': False,  # not prod, also not relevant here
+            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
             'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
             'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
-            'SEARCH_BUILD_INDEX': False,  # not prod, also not relevant here
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
         }
 
         with self.settings(FEATURE_FLAGS=production_flags):
