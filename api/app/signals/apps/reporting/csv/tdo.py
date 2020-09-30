@@ -16,7 +16,8 @@ def create_signals_csv(location: str) -> str:
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    csv_file = queryset_to_csv_file(TDOSignal.objects.all(), os.path.join(location, 'signals.csv'))
+    queryset = TDOSignal.objects.all().order_by('id')
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals.csv'))
     return csv_file.name
 
 
