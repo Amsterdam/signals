@@ -5,10 +5,15 @@ from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from signals.apps.reporting.csv.tdo import create_signals_csv, save_csv_file_tdo
+from signals.apps.reporting.csv.tdo import (
+    create_signals_csv,
+    create_statuses_csv,
+    save_csv_file_tdo
+)
 
 REPORT_OPTIONS = {
     'signals': create_signals_csv,
+    'statuses': create_statuses_csv,
 }
 
 

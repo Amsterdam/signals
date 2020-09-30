@@ -1,7 +1,11 @@
+import csv
+import os
 import tempfile
 from typing import Callable
 
-from signals.apps.reporting.csv.utils import save_csv_files
+from signals.apps.reporting.csv.utils import queryset_to_csv_file, save_csv_files
+from signals.apps.reporting.models import TDOSignal
+from signals.apps.signals.workflow import STATUS_CHOICES
 from signals.celery import app
 
 
@@ -9,12 +13,26 @@ def create_signals_csv(location: str) -> str:
     """
     Create the CSV file based on the Signals view
 
-    TODO: Add functionality to export the "view" to CSV, for an example look at the datawarehouse/signals.py file
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    csv_file = queryset_to_csv_file(TDOSignal.objects.all(), os.path.join(location, 'signals.csv'))
+    return csv_file.name
+
+
+def create_statuses_csv(location: str) -> str:
+    """
+    Create the CSV file based on the STATUS_CHOICES from the workflow.py
 
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    pass
+    with open(os.path.join(location, 'statuses.csv'), 'w') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(['code', 'name'])
+        for row in STATUS_CHOICES:
+            writer.writerow(row)
+    return csv_file.name
 
 
 @app.task
