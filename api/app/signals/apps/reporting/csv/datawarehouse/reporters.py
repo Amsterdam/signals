@@ -2,11 +2,7 @@ import os
 
 from django.db.models import BooleanField, Case, CharField, Q, Value, When
 
-from signals.apps.reporting.csv.datawarehouse.utils import (
-    map_choices,
-    queryset_to_csv_file,
-    reorder_csv
-)
+from signals.apps.reporting.csv.utils import map_choices, queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import Reporter
 
 

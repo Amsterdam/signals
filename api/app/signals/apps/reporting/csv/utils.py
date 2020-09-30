@@ -1,6 +1,3 @@
-"""
-Dump CSV of SIA tables matching the old, agreed-upon, format.
-"""
 import csv
 import logging
 import os
@@ -17,15 +14,16 @@ from signals.apps.reporting.utils import _get_storage_backend
 logger = logging.getLogger(__name__)
 
 
-def save_csv_files(csv_files: list) -> None:
+def save_csv_files(csv_files: list, using: str) -> None:
     """
     Writes the CSV files to the configured storage backend
-    This could either be the SwiftStorage (used to store files for the Datawarehouse) or a local FileSystemStorage
+    This could either be the SwiftStorage or a local FileSystemStorage
 
     :param csv_files:
+    :param using:
     :returns None:
     """
-    storage = _get_storage_backend(using='datawarehouse')
+    storage = _get_storage_backend(using=using)
 
     for csv_file_path in csv_files:
         with open(csv_file_path, 'rb') as opened_csv_file:

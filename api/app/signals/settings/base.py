@@ -185,6 +185,14 @@ SWIFT = {
         'tenant_id': os.getenv('HORECA_SWIFT_TENANT_ID'),
         'container_name': os.getenv('HORECA_SWIFT_CONTAINER_NAME'),
         'auto_overwrite': os.getenv('HORECA_SWIFT_AUTO_OVERWRITE', True)
+    },
+    'tdo': {
+        'api_username': os.getenv('TDO_SWIFT_USERNAME'),
+        'api_key': os.getenv('TDO_SWIFT_PASSWORD'),
+        'tenant_name': os.getenv('TDO_SWIFT_TENANT_NAME'),
+        'tenant_id': os.getenv('TDO_SWIFT_TENANT_ID'),
+        'container_name': os.getenv('TDO_SWIFT_CONTAINER_NAME'),
+        'auto_overwrite': os.getenv('TDO_SWIFT_AUTO_OVERWRITE', True)
     }
 }
 

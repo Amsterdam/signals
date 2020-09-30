@@ -10,7 +10,7 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.datawarehouse.utils import save_csv_files
+from signals.apps.reporting.csv.utils import save_csv_files
 from signals.celery import app
 
 
@@ -29,7 +29,7 @@ def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
             pass
 
         # Store the CSV files to the correct location
-        save_csv_files(csv_files)
+        save_csv_files(csv_files=csv_files, using='datawarehouse')
 
 
 @app.task
