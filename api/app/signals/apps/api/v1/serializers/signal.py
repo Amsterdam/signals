@@ -192,11 +192,16 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_end',
             'directing_departments',
             'attachments',
+            'checksum',
         )
         read_only_fields = (
             'id',
             'has_attachments',
         )
+
+    def validate_checksum(self, value):
+        value
+        return value
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()

@@ -71,6 +71,8 @@ class Signal(CreatedUpdatedModel):
     parent = models.ForeignKey(to='self', related_name='children', null=True, blank=True,
                                on_delete=models.SET_NULL)
 
+    checksum = models.CharField(max_length=32, auto_created=True)  # Will be generated using a DB trigger
+
     objects = SignalQuerySet.as_manager()
     actions = SignalManager()
 
