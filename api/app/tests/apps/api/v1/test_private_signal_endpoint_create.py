@@ -1,9 +1,11 @@
 import copy
 import os
+from unittest import expectedFailure
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.db.utils import IntegrityError
 from django.test import override_settings
 from django.utils import timezone
 from rest_framework import status
@@ -441,3 +443,63 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
             self.assertEqual(Signal.objects.count(), signal_count + len(initial_data))
             self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), parent_signal_count)
             self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), len(initial_data))
+
+    @expectedFailure
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)
+    def test_signal_ids_cannot_be_skipped(self, validate_address):
+        SourceFactory.create(name='online', description='online')
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': True,
+            'API_FILTER_EXTRA_PROPERTIES': True,
+            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
+        }
+
+        with self.settings(FEATURE_FLAGS=production_flags):
+            parent_signal = SignalFactory.create()
+
+            signal_count = Signal.objects.count()
+            parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
+            child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
+
+            self.assertEqual(signal_count, 1)
+            self.assertEqual(parent_signal_count, 1)
+            self.assertEqual(child_signal_count, 0)
+
+            # bad data
+            initial_data = []
+            for _ in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                data['category'] = {'subcategory': data['category']['category_url']}
+                initial_data.append(data)
+
+            with self.assertRaises(IntegrityError):
+                response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+            # good data
+            initial_data = []
+            for _ in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                initial_data.append(data)
+
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+            response_json = response.json()
+
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(Signal.objects.count(), signal_count + len(initial_data))
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), parent_signal_count)
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), len(initial_data))
+
+            # check that we did not skip signal ids
+            ids = [entry['id'] for entry in response_json]
+            self.assertEqual(ids[0] - parent_signal.id, 1)
+            self.assertEqual(ids[1] - parent_signal.id, 2)
