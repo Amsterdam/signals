@@ -1,13 +1,30 @@
 from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 
 
-class SignalValidationMixin(AddressValidationMixin):
+class FeatureFlagEnabledMixin:
     @staticmethod
     def feature_enabled(feature_flag_name=None):
         return settings.FEATURE_FLAGS.get(feature_flag_name, True) if feature_flag_name else True
 
+
+class SignalChecksumValidationMixin(FeatureFlagEnabledMixin):
+    def validate_checksum(self, value):
+        """
+        When the feature is enabled this will check if the given checksum matches the checksum in the database.
+        If these do not match the request will not be processed.
+
+        :param value:
+        :return value:
+        """
+        if self.feature_enabled('API_SIGNAL_CHECKSUM_VALIDATION') and self.instance.checksum != value:
+            raise ValidationError('Checksum failed!')
+        return value
+
+
+class SignalValidationMixin(FeatureFlagEnabledMixin, AddressValidationMixin):
     def validate(self, attrs):
         if (self.feature_enabled('API_TRANSFORM_SOURCE_BASED_ON_REPORTER')
                 and 'reporter' in attrs and 'email' in attrs['reporter']

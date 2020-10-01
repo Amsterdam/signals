@@ -1802,6 +1802,52 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(len(response.json()), 1)
 
+    def test_update_signal_checksum_success(self):
+        signal = SignalFactoryValidLocation.create()
+        signal.refresh_from_db()
+        detail_endpoint = self.detail_endpoint.format(pk=signal.id)
+
+        data = {'priority': {'priority': 'high'}, 'checksum': signal.checksum}
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': False,  # we are not interested in this behavior here
+            'API_FILTER_EXTRA_PROPERTIES': False,  # we are not interested in this behavior here
+            'API_SEARCH_ENABLED': False,  # we are not interested in this behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in this behavior here
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in this behavior here
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,  # we are not interested in this behavior here
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in this behavior here
+            'API_SIGNAL_CHECKSUM_VALIDATION': True
+        }
+        with self.settings(FEATURE_FLAGS=production_flags):
+            response = self.client.patch(detail_endpoint, data, format='json')
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_signal_checksum_fail(self):
+        signal = SignalFactoryValidLocation.create()
+        detail_endpoint = self.detail_endpoint.format(pk=signal.id)
+
+        data = {'priority': {'priority': 'high'}, 'checksum': 'invalid'}
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': False,  # we are not interested in this behavior here
+            'API_FILTER_EXTRA_PROPERTIES': False,  # we are not interested in this behavior here
+            'API_SEARCH_ENABLED': False,  # we are not interested in this behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in this behavior here
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in this behavior here
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,  # we are not interested in this behavior here
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in this behavior here
+            'API_SIGNAL_CHECKSUM_VALIDATION': True
+        }
+        with self.settings(FEATURE_FLAGS=production_flags):
+            response = self.client.patch(detail_endpoint, data, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+
+        self.assertEqual(response_data['checksum'][0], 'Checksum failed!')
+
 
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'

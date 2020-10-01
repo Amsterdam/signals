@@ -34,7 +34,10 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedTypeModelSerializer
 )
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
-from signals.apps.api.v1.validation.mixin import SignalValidationMixin
+from signals.apps.api.v1.validation.mixin import (
+    SignalChecksumValidationMixin,
+    SignalValidationMixin
+)
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal
@@ -102,7 +105,7 @@ class _SignalListSerializer(serializers.ListSerializer):
         return attrs
 
 
-class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
+class PrivateSignalSerializerDetail(HALSerializer, SignalChecksumValidationMixin, AddressValidationMixin):
     """
     This serializer is used for the detail endpoint and when updating the instance
     """
@@ -198,10 +201,6 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'id',
             'has_attachments',
         )
-
-    def validate_checksum(self, value):
-        value
-        return value
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
@@ -341,13 +340,14 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'notes',
             'directing_departments',
             'attachments',
-
-            'parent'
+            'parent',
+            'checksum',
         )
         read_only_fields = (
             'created_at',
             'updated_at',
             'has_attachments',
+            'checksum',
         )
         extra_kwargs = {
             'source': {'validators': [SignalSourceValidator()]},

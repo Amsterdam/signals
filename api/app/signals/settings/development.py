@@ -28,6 +28,8 @@ IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic
 
 # ML_TOOL_ENDPOINT = 'https://acc.api.data.amsterdam.nl/signals_mltool'
 
+FEATURE_FLAGS['API_SIGNAL_CHECKSUM_VALIDATION'] = True  # noqa F405
+
 try:
     from signals.settings.local import *  # noqa
 except ImportError:
