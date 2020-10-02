@@ -24,7 +24,7 @@ class InEvaluator(Evaluator):
         else:
             return 'unknown'
 
-    def _rais_type_error(self, exp, act):
+    def _raise_type_error(self, exp, act):
         raise Exception("Error: expected: '{exp}', actual: '{act}'".format(exp=exp, act=act))
 
     def evaluate(self, ctx):
@@ -38,7 +38,7 @@ class InEvaluator(Evaluator):
     def _list_handler(self, ctx, lhs_val):
         rhs_val = self.rhs.evaluate(ctx)
         if type(rhs_val) is not set:
-            self._rais_type_error(exp=type(set), act=type(rhs_val))
+            self._raise_type_error(exp=type(set), act=type(rhs_val))
         return lhs_val in rhs_val
 
     def _geo_handler(self, ctx, lhs_val):
@@ -50,5 +50,5 @@ class InEvaluator(Evaluator):
             except KeyError:
                 raise Exception("Could not resolve {prop}".format(prop=".".join(self.rhs_prop)))
         if type(rhs_val) is not geos.MultiPolygon:
-            self._rais_type_error(exp=type(geos.MultiPolygon), act=type(rhs_val))
+            self._raise_type_error(exp=type(geos.MultiPolygon), act=type(rhs_val))
         return rhs_val.contains(lhs_val)
