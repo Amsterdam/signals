@@ -29,8 +29,8 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             if isinstance(storage, SwiftStorage):
-                file_path = f'{path}{file_name}'
-                storage.save(name=file_name, content=opened_csv_file)
+                file_path = f'{path}{file_name}' if path else file_name
+                storage.save(name=file_path, content=opened_csv_file)
             else:
                 # Saves the file in a folder structure like "Y/m/d/file_name" for local storage
                 now = timezone.now()
