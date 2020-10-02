@@ -3,11 +3,7 @@ import os
 from django.db.models import CharField, ExpressionWrapper, FloatField, Func, Value
 from django.db.models.functions import Cast, Coalesce
 
-from signals.apps.reporting.csv.datawarehouse.utils import (
-    map_choices,
-    queryset_to_csv_file,
-    reorder_csv
-)
+from signals.apps.reporting.csv.utils import map_choices, queryset_to_csv_file, reorder_csv
 from signals.apps.signals.models import STADSDELEN, Location
 
 

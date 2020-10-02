@@ -1,10 +1,7 @@
 from rest_framework import serializers
 
 from signals.apps.api.generics.serializers import SIAModelSerializer
-from signals.apps.api.v1.fields import (
-    CategoryHyperlinkedRelatedField,
-    LegacyCategoryHyperlinkedRelatedField
-)
+from signals.apps.api.v1.fields import CategoryHyperlinkedRelatedField
 from signals.apps.signals.models import CategoryAssignment
 
 
@@ -14,11 +11,8 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
     main = serializers.CharField(source='category.parent.name', read_only=True)
     main_slug = serializers.CharField(source='category.parent.slug', read_only=True)
 
-    sub_category = LegacyCategoryHyperlinkedRelatedField(source='category',
-                                                         write_only=True,
-                                                         required=False)
-    category_url = CategoryHyperlinkedRelatedField(source='category',
-                                                   required=False)
+    sub_category = CategoryHyperlinkedRelatedField(source='category', write_only=True, required=False)
+    category_url = CategoryHyperlinkedRelatedField(source='category', required=False)
 
     text = serializers.CharField(required=False)
     departments = serializers.SerializerMethodField()
@@ -44,6 +38,20 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
             'created_by',
             'departments',
         )
+
+    def to_internal_value(self, data):
+        if 'sub_category' not in data and 'category_url' not in data:
+            raise serializers.ValidationError('Either the "sub_category" OR the "category_url" must be given')
+        elif 'sub_category' in data and 'category_url' in data:
+            raise serializers.ValidationError('Only the "sub_category" OR "category_url" can be given')
+
+        return super(_NestedCategoryModelSerializer, self).to_internal_value(data=data)
+
+    def validate(self, attrs):
+        if 'category' not in attrs:
+            raise serializers.ValidationError('Either the "sub_category" OR the "category_url" must be given')
+
+        return super(_NestedCategoryModelSerializer, self).validate(attrs=attrs)
 
     def get_departments(self, obj):
         return ', '.join(

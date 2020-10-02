@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 
 from signals.apps.api.v1.validation.address.base import AddressValidationUnavailableException
 from signals.apps.signals import workflow
@@ -298,7 +299,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         initial_data = copy.deepcopy(self.create_initial_data)
         initial_data['reporter']['email'] = 'test-email-1' \
-                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS[0]}'
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS}'
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, 201)
@@ -307,3 +308,33 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         signal = Signal.objects.get(pk=data['id'])
         self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
+        initial_data = copy.deepcopy(self.create_initial_data)
+        # Added a trailing space to the email, this should be removed
+        initial_data['reporter']['email'] = 'trailing-space-should-be-removed' \
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS} '
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 2)
+
+        data = response.json()
+        signal = Signal.objects.get(pk=data['id'])
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
+    @override_settings(API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS=('uitzondering@amsterdam.nl',))
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_interne_melding_check_exceptions(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.create_initial_data)
+        initial_data['reporter']['email'] = 'uitzondering@amsterdam.nl'
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        signal = Signal.objects.get(pk=data['id'])
+        self.assertEqual(signal.source, 'online')  # online is model default and is used for non-logged in users

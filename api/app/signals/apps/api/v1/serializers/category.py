@@ -5,7 +5,6 @@ from change_log.models import Log
 from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
-    ParentCategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
 from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective
@@ -38,7 +37,7 @@ class CategoryHALSerializer(HALSerializer):
 
 
 class ParentCategoryHALSerializer(HALSerializer):
-    serializer_url_field = ParentCategoryHyperlinkedIdentityField
+    serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='children')
 

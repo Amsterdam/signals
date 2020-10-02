@@ -1,18 +1,86 @@
+import csv
+import logging
 import os
+import shutil
+from typing import TextIO
 
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
+from django.db import connection
+from django.db.models import Case, CharField, QuerySet, Value, When
+from django.utils import timezone
 from swift.storage import SwiftStorage
 
+from signals.apps.reporting.utils import _get_storage_backend
 
-def _get_storage_backend(swift_parameters):
-    """Return the storage backend (Object Store) specific for Horeca data delivery.
+logger = logging.getLogger(__name__)
 
-    :returns: FileSystemStorage or SwiftStorage instance
+
+def save_csv_files(csv_files: list, using: str) -> None:
     """
-    # TODO: Refactor this logic, belongs in app_settings and project settings
+    Writes the CSV files to the configured storage backend
+    This could either be the SwiftStorage or a local FileSystemStorage
 
-    if os.getenv('SWIFT_ENABLED', False) in [True, 1, '1', 'True', 'true']:
-        return SwiftStorage(**swift_parameters)
-    else:
-        return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
+    :param csv_files:
+    :param using:
+    :returns None:
+    """
+    storage = _get_storage_backend(using=using)
+
+    for csv_file_path in csv_files:
+        with open(csv_file_path, 'rb') as opened_csv_file:
+            file_name = os.path.basename(opened_csv_file.name)
+            if isinstance(storage, SwiftStorage):
+                storage.save(name=file_name, content=opened_csv_file)
+            else:
+                # Saves the file in a folder structure like "Y/m/d/file_name" for local storage
+                now = timezone.now()
+                file_path = f'{now:%Y}/{now:%m}/{now:%d}/{now:%H%M%S%Z}_{file_name}'
+                storage.save(name=file_path, content=opened_csv_file)
+
+
+def queryset_to_csv_file(queryset: QuerySet, csv_file_path: str) -> TextIO:
+    """
+    Creates the CSV file based on the given queryset and stores it in the given csv file path
+
+    Special thanks for Mehdi Pourfar and his post about "Faster CSV export with Django & Postgres"
+    https://dev.to/mehdipourfar/faster-csv-export-with-django-postgres-5bi5
+
+    :param queryset:
+    :param csv_file_path:
+    :return TextIO:
+    """
+    sql, params = queryset.query.sql_with_params()
+    sql = f"COPY ({sql}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER E',')"
+    sql = sql.replace('AS "_', 'AS "')
+
+    with open(csv_file_path, 'w') as file:
+        with connection.cursor() as cursor:
+            sql = cursor.mogrify(sql, params)
+            cursor.copy_expert(sql, file)
+    return file
+
+
+def map_choices(field_name: str, choices: list) -> Case:
+    """
+    Creates a mapping for Postgres with case and when statements
+
+    :param field_name:
+    :param choices:
+    :return Case:
+    """
+    return Case(
+        *[When(**{field_name: value, 'then': Value(str(representation))})
+          for value, representation in choices],
+        output_field=CharField()
+    )
+
+
+def reorder_csv(file_path, ordered_field_names):
+    reordered_file_path = f'{file_path[:-4]}_reordered.csv'
+    with open(file_path, 'r') as infile, open(reordered_file_path, 'a') as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=ordered_field_names)
+        writer.writeheader()
+        for row in csv.DictReader(infile):
+            writer.writerow(row)
+
+    shutil.move(file_path, f'{file_path[:-4]}_original.csv')
+    shutil.move(reordered_file_path, file_path)

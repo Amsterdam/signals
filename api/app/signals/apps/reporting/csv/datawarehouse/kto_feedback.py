@@ -1,11 +1,7 @@
 import os
 
 from signals.apps.feedback.models import Feedback
-from signals.apps.reporting.csv.datawarehouse.utils import (
-    map_choices,
-    queryset_to_csv_file,
-    reorder_csv
-)
+from signals.apps.reporting.csv.utils import map_choices, queryset_to_csv_file, reorder_csv
 
 
 def create_kto_feedback_csv(location: str) -> str:

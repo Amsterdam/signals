@@ -13,6 +13,7 @@ from django.test import override_settings, testcases
 from freezegun import freeze_time
 
 from signals.apps.reporting.csv import datawarehouse
+from signals.apps.reporting.utils import _get_storage_backend
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import SignalFactory
 
@@ -28,7 +29,7 @@ class TestDatawarehouse(testcases.TestCase):
         shutil.rmtree(self.file_backend_tmp_dir)
 
     @mock.patch.dict('os.environ', {}, clear=True)
-    @mock.patch('signals.apps.reporting.csv.datawarehouse.utils._get_storage_backend')
+    @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
     @freeze_time('2020-09-10T12:00:00+00:00')
     def test_save_csv_files_datawarehouse(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
@@ -64,21 +65,26 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(sla_csv))
 
     @override_settings(
-        DWH_SWIFT_AUTH_URL='dwh_auth_url',
-        DWH_SWIFT_USERNAME='dwh_username',
-        DWH_SWIFT_PASSWORD='dwh_password',
-        DWH_SWIFT_TENANT_NAME='dwh_tenant_name',
-        DWH_SWIFT_TENANT_ID='dwh_tenant_id',
-        DWH_SWIFT_REGION_NAME='dwh_region_name',
-        DWH_SWIFT_CONTAINER_NAME='dwh_container_name'
+        SWIFT={
+            'datawarehouse': {
+                'api_auth_url': 'dwh_auth_url',
+                'api_username': 'dwh_username',
+                'api_key': 'dwh_password',
+                'tenant_name': 'dwh_tenant_name',
+                'tenant_id': 'dwh_tenant_id',
+                'region_name': 'dwh_region_name',
+                'container_name': 'dwh_container_name',
+                'auto_overwrite': True
+            }
+        }
     )
     @mock.patch.dict(os.environ, {'SWIFT_ENABLED': 'true'})
-    @mock.patch('signals.apps.reporting.csv.utils.SwiftStorage', autospec=True)
+    @mock.patch('signals.apps.reporting.utils.SwiftStorage', autospec=True)
     def test_get_storage_backend(self, mocked_swift_storage):
         mocked_swift_storage_instance = mock.Mock()
         mocked_swift_storage.return_value = mocked_swift_storage_instance
 
-        result = datawarehouse.utils._get_storage_backend(datawarehouse.get_swift_parameters())
+        result = _get_storage_backend(using='datawarehouse')
 
         self.assertEqual(result, mocked_swift_storage_instance)
         mocked_swift_storage.assert_called_once_with(
@@ -89,7 +95,8 @@ class TestDatawarehouse(testcases.TestCase):
             tenant_id='dwh_tenant_id',
             region_name='dwh_region_name',
             container_name='dwh_container_name',
-            auto_overwrite=True)
+            auto_overwrite=True
+        )
 
     def test_create_signals_csv(self):
         signal = SignalFactory.create()

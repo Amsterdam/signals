@@ -227,6 +227,7 @@ class MlPredictCategoryView(APIView):
         else:
             if response.status_code == 200:
                 response_data = response.json()
+
                 for key in data.keys():
                     category_url, translated = translate_prediction_category_url(
                         category_url=response_data[key][0][0], request=self.request

@@ -5,26 +5,15 @@ from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from signals.apps.reporting.csv.datawarehouse.categories import (
-    create_category_assignments_csv,
-    create_category_sla_csv
+from signals.apps.reporting.csv.tdo import (
+    create_signals_csv,
+    create_statuses_csv,
+    save_csv_file_tdo
 )
-from signals.apps.reporting.csv.datawarehouse.kto_feedback import create_kto_feedback_csv
-from signals.apps.reporting.csv.datawarehouse.locations import create_locations_csv
-from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
-from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
-from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.datawarehouse.tasks import save_csv_file_datawarehouse
 
 REPORT_OPTIONS = {
-    # Option, Func
     'signals': create_signals_csv,
-    'locations': create_locations_csv,
-    'reporters': create_reporters_csv,
-    'category_assignments': create_category_assignments_csv,
-    'statusses': create_statuses_csv,
-    'category_sla': create_category_sla_csv,
-    'feedback': create_kto_feedback_csv,
+    'statuses': create_statuses_csv,
 }
 
 
@@ -41,7 +30,7 @@ class Command(BaseCommand):
         self.stdout.write('Swift storage: '
                           f'{"Enabled" if swift_enabled else "Disabled (Files will be stored in local file storage"}')
         if swift_enabled:
-            swift_parameters = settings.SWIFT.get('datawarehouse')
+            swift_parameters = settings.SWIFT.get('tdo')
             self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
         else:
             now = timezone.now()
@@ -56,7 +45,7 @@ class Command(BaseCommand):
         for report in reports:
             self.stdout.write(f'* Exporting: {report}')
             func = REPORT_OPTIONS[report]
-            save_csv_file_datawarehouse(func)
+            save_csv_file_tdo(func)
             self.stdout.write('* ---------------------------------')
 
         stop = timer()

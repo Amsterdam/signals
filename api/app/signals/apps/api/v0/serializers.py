@@ -18,10 +18,7 @@ from signals.apps.api.v0.fields import (
     SignalUnauthenticatedLinksField,
     StatusLinksField
 )
-from signals.apps.api.v1.fields import (
-    LegacyCategoryHyperlinkedRelatedField,
-    NoteHyperlinkedIdentityField
-)
+from signals.apps.api.v1.fields import CategoryHyperlinkedRelatedField, NoteHyperlinkedIdentityField
 from signals.apps.api.v1.validators.extra_properties import ExtraPropertiesValidator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
@@ -136,8 +133,7 @@ class _NestedStatusModelSerializer(serializers.ModelSerializer):
 class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = LegacyCategoryHyperlinkedRelatedField(write_only=True, required=False,
-                                                         source='category')
+    sub_category = CategoryHyperlinkedRelatedField(write_only=True, required=False, source='category')
 
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)
@@ -191,14 +187,8 @@ class _NestedCategoryModelSerializer(serializers.ModelSerializer):
     def get_category_url(self, obj):
         from rest_framework.reverse import reverse
         request = self.context['request'] if 'request' in self.context else None
-        return reverse(
-            'v1:category-detail',
-            kwargs={
-                'slug': obj.category.parent.slug,
-                'sub_slug': obj.category.slug,
-            },
-            request=request
-        )
+        return reverse('v1:public-subcategory-detail', kwargs={'parent_lookup_parent__slug': obj.category.parent.slug,
+                                                               'slug': obj.category.slug, }, request=request)
 
 
 class _NestedReporterModelSerializer(serializers.ModelSerializer):
@@ -539,8 +529,7 @@ class CategoryHALSerializer(AddExtrasMixin, HALSerializer):
 
     # Should be required, but to make it work with the backwards compatibility fix it's not required
     # at the moment..
-    sub_category = LegacyCategoryHyperlinkedRelatedField(write_only=True, required=False,
-                                                         source='category')
+    sub_category = CategoryHyperlinkedRelatedField(write_only=True, required=False, source='category')
 
     sub = serializers.CharField(source='category.name', read_only=True)
     sub_slug = serializers.CharField(source='category.slug', read_only=True)

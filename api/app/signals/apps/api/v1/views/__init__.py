@@ -6,11 +6,7 @@ from signals.apps.api.v1.views.attachment import (
     PrivateSignalAttachmentsViewSet,
     PublicSignalAttachmentsViewSet
 )
-from signals.apps.api.v1.views.category import (
-    ChildCategoryViewSet,
-    ParentCategoryViewSet,
-    PrivateCategoryViewSet
-)
+from signals.apps.api.v1.views.category import PrivateCategoryViewSet, PublicCategoryViewSet
 from signals.apps.api.v1.views.category_removed import SignalCategoryRemovedAfterViewSet
 from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
 from signals.apps.api.v1.views.expression import PrivateExpressionViewSet
@@ -30,8 +26,6 @@ __all__ = (
     'PublicSignalViewSet',
     'PrivateSignalViewSet',
     'SignalCategoryRemovedAfterViewSet',
-    'ChildCategoryViewSet',
-    'ParentCategoryViewSet',
     'PrivateCategoryViewSet',
     'PublicQuestionViewSet',
     # 'MlPredictCategoryView',  # V1 disabled for now
@@ -45,4 +39,5 @@ __all__ = (
     'PrivateAreasViewSet',
     'PrivateExpressionViewSet',
     'PrivateSourcesViewSet',
+    'PublicCategoryViewSet',
 )

@@ -1,9 +1,12 @@
 import copy
 import os
+from unittest import expectedFailure
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.db.utils import IntegrityError
+from django.test import override_settings
 from django.utils import timezone
 from rest_framework import status
 
@@ -13,7 +16,8 @@ from tests.apps.signals.factories import (
     CategoryFactory,
     ParentCategoryFactory,
     SignalFactory,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    SourceFactory
 )
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -308,7 +312,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         initial_data = copy.deepcopy(self.initial_data_base)
         initial_data['reporter']['email'] = 'test-email-1' \
-                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS[0]}'
+                                            f'{settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_DOMAIN_EXTENSIONS}'
         response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -316,3 +320,186 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         data = response.json()
         self.assertEqual(data['source'], settings.API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE)
+
+    @override_settings(API_TRANSFORM_SOURCE_BASED_ON_REPORTER_EXCEPTIONS=('uitzondering@amsterdam.nl',))
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_interne_melding_check_exceptions(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['reporter']['email'] = 'uitzondering@amsterdam.nl'
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        self.assertEqual(data['source'], 'Telefoon – ASC')
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_invalid_source(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = 'this-source-does-not-exists-so-the-create-should-fail'
+
+        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Signal.objects.count(), signal_count)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_valid_source(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        source, *_ = SourceFactory.create_batch(5)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = source.name
+
+        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        response_data = response.json()
+        self.assertEqual(response_data['source'], source.name)
+
+        signal = Signal.objects.get(pk=response_data['id'])
+        self.assertEqual(signal.source, source.name)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_child_signal_transform_source(self, validate_address):
+        parent_signal = SignalFactory.create()
+        signal_count = Signal.objects.count()
+
+        source, *_ = SourceFactory.create_batch(4)
+        SourceFactory.create(name=settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = source.name
+        initial_data['parent'] = parent_signal.pk
+
+        with self.settings(FEATURE_FLAGS={'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True}):
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        response_data = response.json()
+        self.assertNotEqual(response_data['source'], source.name)
+        self.assertEqual(response_data['source'], settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
+
+        signal = Signal.objects.get(pk=response_data['id'])
+        self.assertNotEqual(signal.source, source.name)
+        self.assertEqual(signal.source, settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)
+    def test_create_initial_child_signals_validate_source_online(self, validate_address):
+        # Validating a valid source for child Signals causes a HTTP 500 in
+        # SIA production, this testcase reproduces the problem.
+        SourceFactory.create(name='online', description='online')
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': True,
+            'API_FILTER_EXTRA_PROPERTIES': True,
+            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
+        }
+
+        with self.settings(FEATURE_FLAGS=production_flags):
+            parent_signal = SignalFactory.create()
+
+            signal_count = Signal.objects.count()
+            parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
+            child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
+
+            self.assertEqual(signal_count, 1)
+            self.assertEqual(parent_signal_count, 1)
+            self.assertEqual(child_signal_count, 0)
+
+            initial_data = []
+            for i in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                initial_data.append(data)
+
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(Signal.objects.count(), signal_count + len(initial_data))
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), parent_signal_count)
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), len(initial_data))
+
+    @expectedFailure
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)
+    def test_signal_ids_cannot_be_skipped(self, validate_address):
+        SourceFactory.create(name='online', description='online')
+
+        production_flags = {
+            'API_DETERMINE_STADSDEEL_ENABLED': True,
+            'API_FILTER_EXTRA_PROPERTIES': True,
+            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
+            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
+            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
+        }
+
+        with self.settings(FEATURE_FLAGS=production_flags):
+            parent_signal = SignalFactory.create()
+
+            signal_count = Signal.objects.count()
+            parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
+            child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
+
+            self.assertEqual(signal_count, 1)
+            self.assertEqual(parent_signal_count, 1)
+            self.assertEqual(child_signal_count, 0)
+
+            # bad data
+            initial_data = []
+            for _ in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                data['category'] = {'subcategory': data['category']['category_url']}
+                initial_data.append(data)
+
+            with self.assertRaises(IntegrityError):
+                response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+            # good data
+            initial_data = []
+            for _ in range(2):
+                data = copy.deepcopy(self.initial_data_base)
+                data['parent'] = parent_signal.pk
+                data['source'] = 'online'
+                initial_data.append(data)
+
+            response = self.client.post(self.list_endpoint, initial_data, format='json')
+            response_json = response.json()
+
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(Signal.objects.count(), signal_count + len(initial_data))
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), parent_signal_count)
+            self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), len(initial_data))
+
+            # check that we did not skip signal ids
+            ids = [entry['id'] for entry in response_json]
+            self.assertEqual(ids[0] - parent_signal.id, 1)
+            self.assertEqual(ids[1] - parent_signal.id, 2)
