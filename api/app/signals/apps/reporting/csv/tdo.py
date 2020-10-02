@@ -52,4 +52,4 @@ def save_csv_file_tdo(func: Callable[[str], str]) -> None:
             pass
 
         # Store the CSV files to the correct location
-        save_csv_files(csv_files=csv_files, using='tdo', path='sia/')
+        save_csv_files(csv_files=csv_files, using='tdo', path='SIA/')
