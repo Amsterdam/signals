@@ -1,9 +1,10 @@
 import logging
 
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
-from signals.apps.signals.models import Reporter
+from signals.apps.signals.models import Reporter, Status
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.workflow import (
@@ -86,3 +87,22 @@ def anonymize_reporter(reporter_id):
                 'text': text,
                 'created_by': None  # This wil show as "SIA systeem"
             }, signal=reporter.signal)
+
+
+@app.task
+def update_status_children_based_on_parent(signal_id):
+    if not settings.FEATURE_FLAGS.get('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True):
+        # Feature disabled
+        log.warning("Feature 'TASK_UPDATE_CHILDREN_BASED_ON_PARENT' disabled!")
+        return
+
+    text = 'Hoofdmelding is afgehandeld hierdoor is deze deelmelding geannuleerd'
+    signal = Signal.objects.get(pk=signal_id)
+    if signal.is_parent() and signal.status.state in [AFGEHANDELD, ]:
+        # Lets check the children
+        children = signal.children.exclude(status__state__in=[AFGEHANDELD, GEANNULEERD, ])
+        for child in children:
+            # All children must get the state "GEANNULEERD"
+            status = Status.objects.create(state=GEANNULEERD, text=text, _signal=child)
+            child.status = status
+            child.save()
