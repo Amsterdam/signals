@@ -14,7 +14,7 @@ from signals.apps.reporting.utils import _get_storage_backend
 logger = logging.getLogger(__name__)
 
 
-def save_csv_files(csv_files: list, using: str) -> None:
+def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
     """
     Writes the CSV files to the configured storage backend
     This could either be the SwiftStorage or a local FileSystemStorage
@@ -29,6 +29,7 @@ def save_csv_files(csv_files: list, using: str) -> None:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             if isinstance(storage, SwiftStorage):
+                file_path = f'{path}{file_name}'
                 storage.save(name=file_name, content=opened_csv_file)
             else:
                 # Saves the file in a folder structure like "Y/m/d/file_name" for local storage
