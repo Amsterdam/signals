@@ -32,6 +32,7 @@ has associated coordinates it should be possible to retroactively enrich the
 SIA data with proper city district designations. A general implementation would
 allow SIA to reason about areas, for instance to allow the access to data based
 on location and not just user/role/department.
+**[DONE]**
 
 ## Clean up the Django migration code
 SIA has used Django migrations liberally for maintenance tasks. We are now
@@ -43,3 +44,4 @@ Currently SIA, which is used in the Amsterdam municipal context, expects certain
 external services to be available. This is no problem in the production context,
 but for integration testing a way of either mocking or replacing these services
 so that SIA can be run self contained for tests.
+**[DONE]**
