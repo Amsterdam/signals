@@ -9,7 +9,7 @@ productive.
 Since the conclusion of this project both systems have evolved significantly
 to the effect that the integration no longer works. In particular, the
 integration uses the "zero" version of the SIA API which is no longer
-suppoerted, and therefore the implementation was removed from the master
+supported, and therefore the implementation was removed from the master
 branch of SIA.
 
 Results of collaboration are archived on a protected branch in Github:

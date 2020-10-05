@@ -1,4 +1,6 @@
 # Signalen Informatievoorziening Amsterdam (SIA) Application Design
+*Document status: under review*
+
 
 SIA is an application developed for and by the Amsterdam municipality. It allows
 citizens to message the Amsterdam municipality with problems they spot in public
@@ -131,7 +133,7 @@ are defined in code. This choice was made to keep as much of the complexity of
 the Amsterdam municipal organisation out of the SIA code base and datamodel.
 
 Related:
-* Detailed description of the [SIA authorization system](sia-authorization.md)
+* Detailed description of the [SIA authorization system](authorization.md)
 
 ### External integrations (SIA API)
 Several external systems integrate with SIA. These integrations use the same
