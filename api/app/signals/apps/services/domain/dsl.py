@@ -44,16 +44,11 @@ class SignalContext:
         return self._areas
 
     def __call__(self, signal: Signal):
-        departments = signal.category_assignment.category.departments.filter(
-            categorydepartment__is_responsible=True
-        ).values_list('code', flat=True)
 
         t = signal.incident_date_start.strftime("%H:%M:%S")
         return {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
-            'departments': set(departments),
-            'status': signal.status.state,
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
