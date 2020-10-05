@@ -538,6 +538,7 @@ class AbridgedChildSignalSerializer(HALSerializer):
             'id',
             'status',
             'category',
+            'updated_at',
         )
 
     def get_status(self, obj):
