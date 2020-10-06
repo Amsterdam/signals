@@ -76,8 +76,8 @@ class CategoryDepartmentInline(admin.TabularInline):
 
 class DepartmentAdmin(admin.ModelAdmin):
     inlines = (CategoryDepartmentInline, )
-    fields = ('code', 'name', 'is_intern')
-    list_display = ('code', 'name', 'is_intern')
+    fields = ('code', 'name', 'is_intern', 'can_direct')
+    list_display = ('code', 'name', 'is_intern', 'can_direct')
     ordering = ('name',)
     list_per_page = 20
 

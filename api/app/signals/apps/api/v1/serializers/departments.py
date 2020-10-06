@@ -20,6 +20,7 @@ class PrivateDepartmentSerializerList(HALSerializer):
             'code',
             'is_intern',
             'category_names',
+            'can_direct',
         )
 
     def get_category_names(self, obj):
@@ -120,6 +121,7 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
             'code',
             'is_intern',
             'categories',
+            'can_direct',
         )
 
     def _save_category_department(self, instance, validated_data):
