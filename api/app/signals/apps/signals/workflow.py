@@ -74,6 +74,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         TE_VERZENDEN,  # SIG-1293
         BEHANDELING,  # SIG-1295
+        GEANNULEERD,  # SIG-2987
     ],
     BEHANDELING: [
         GEMELD,  # SIG-1264
@@ -94,17 +95,21 @@ ALLOWED_STATUS_CHANGES = {
     ],
     ON_HOLD: [
         INGEPLAND,
+        GEANNULEERD,  # SIG-2987
     ],
     TE_VERZENDEN: [
         VERZONDEN,
         VERZENDEN_MISLUKT,
+        GEANNULEERD,  # SIG-2987
     ],
     VERZONDEN: [
         AFGEHANDELD_EXTERN,
+        GEANNULEERD,  # SIG-2987
     ],
     VERZENDEN_MISLUKT: [
         GEMELD,
         TE_VERZENDEN,
+        GEANNULEERD,  # SIG-2987
     ],
     AFGEHANDELD_EXTERN: [
         AFGEHANDELD,

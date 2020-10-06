@@ -270,7 +270,7 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
 
     def test_signal_receiver_feature_disabled(self):
         """
-        Feature disabled by FEATURE_FLAG should not trigger the children to status GEANNULEERD
+        Feature disabled by TASK_UPDATE_CHILDREN_BASED_ON_PARENT should not trigger the children to status GEANNULEERD
         """
         parent_signal_state = self.parent_signal.status.state
         child_signal_1_state = self.child_signal_1.status.state
