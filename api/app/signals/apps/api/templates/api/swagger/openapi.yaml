@@ -163,13 +163,13 @@ paths:
             "directing department".
           schema:
             type: string
-            examples:
-              ASC:
-                value: 'ASC'
-                summary: Will select all (parent) Signals where ASC is the directing department
-              null:
-                value: 'null'
-                summary: Will select all (parent) Signals withouta directing department assignemt
+          examples:
+            ASC:
+              value: 'ASC'
+              summary: Will select all (parent) Signals where ASC is the directing department
+            null:
+              value: 'null'
+              summary: Will select all (parent) Signals withouta directing department assignemt
           required: false
         - name: area_type_code
           in: query
@@ -1449,6 +1449,14 @@ components:
         text:
           type: string
 
+    _NestedDirectingDepartmentRequestData:
+      description: JSON Data
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+
     _NestedNoteResponseData:
       description: JSON Data
       type: object
@@ -1548,6 +1556,15 @@ components:
         extra_properties:
           type: object
           example: {}
+        parent:
+          description: Makes the given Signal a parent if the newly created (child) Signal
+          type: int
+        directing_departments:
+          description: A list of directing departments that can be set on a parent Signal. For each object in the list only the id is required.
+          type: array
+          items:
+            $ref: '#/components/schemas/_NestedDirectingDepartmentRequestData'
+          minItems: 0
         attachments:
           type: array
           items:
@@ -1611,9 +1628,17 @@ components:
           $ref: '#/components/schemas/_NestedPriorityRequestData'
         'type':
           $ref: '#/components/schemas/_NestedTypeRequestData'
+        notes:
+          $ref: '#/components/schemas/_NestedNoteRequestData'
         extra_properties:
           type: object
           example: {}
+        directing_departments:
+          description: A list of directing departments that can be set on a parent Signal. For each object in the list only the id is required.
+          type: array
+          items:
+            $ref: '#/components/schemas/_NestedDirectingDepartmentRequestData'
+          minItems: 0
 
     V1PrivateSignalListGet:
       description: JSON serialization of paginated list of signals
