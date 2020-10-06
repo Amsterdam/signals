@@ -969,7 +969,7 @@ paths:
 
   /signals/v1/private/expressions/:
     get:
-      description: Retrieve list of expressions. An expression is used to evaluate simplified logic. It can be used as a domain specific language for condition evaluation. We could evaluate an condition such as 'location in area' and use the result to perform actions. The expressions are configurable and don't require a developer to add logic.
+      description: (EXPERIMENTAL) An expression is a simple piece of code such as 'a > 1'. It can be used as a domain specific language for condition evaluation. We could evaluate an condition such as 'location in area' and use the result to perform actions. The expressions are configurable and don't require a developer to add logic. Currently it is being used to dynamically filter signal attributes. But it is generic and can be used on arbitrary objects.
       responses:
         '200':
           description: List of expressions.
@@ -1006,7 +1006,7 @@ paths:
     parameters:
       - name: type
         in: query
-        description: type of expression context
+        description: A context is used to categorized expressions (similar to a type). We could have 'routing' and 'email' contexes. The 'routing' context is used for signal routing for example.
         required: true
         schema:
           type: string
