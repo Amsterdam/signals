@@ -35,5 +35,5 @@ class TestIntegrationFlexHoreca(TestCase):
         mocked_django_send_mail.assert_called_once_with(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=mocked_message,
-            from_email=settings.NOREPLY,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['test@test.com', ])

@@ -277,7 +277,7 @@ EMAIL_INTEGRATIONS = dict(
     ),
 )
 
-NOREPLY = 'noreply@meldingen.amsterdam.nl'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@meldingen.amsterdam.nl')
 
 # Django cache settings
 CACHES = {
