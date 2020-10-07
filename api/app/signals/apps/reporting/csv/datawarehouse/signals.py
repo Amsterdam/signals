@@ -38,6 +38,7 @@ def create_signals_csv(location: str) -> str:
         'expire_date',
         'image',
         'upload',
+        'directing_departments_assignment_id',
         'category_assignment_id',
         'location_id',
         'reporter_id',
@@ -58,7 +59,8 @@ def create_signals_csv(location: str) -> str:
     ordered_field_names = ['id', 'signal_uuid', 'source', 'text', 'text_extra', 'incident_date_start',
                            'incident_date_end', 'created_at', 'updated_at', 'operational_date', 'expire_date', 'image',
                            'upload', 'extra_properties', 'category_assignment_id', 'location_id', 'reporter_id',
-                           'status_id', 'priority', 'priority_created_at', 'parent', 'type', 'type_created_at', ]
+                           'status_id', 'priority', 'priority_created_at', 'parent', 'type', 'type_created_at',
+                           'directing_departments_assignment_id', ]
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name

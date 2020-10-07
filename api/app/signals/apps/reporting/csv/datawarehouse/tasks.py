@@ -5,6 +5,9 @@ from signals.apps.reporting.csv.datawarehouse.categories import (
     create_category_assignments_csv,
     create_category_sla_csv
 )
+from signals.apps.reporting.csv.datawarehouse.directing_departments import (
+    create_directing_departments_csv
+)
 from signals.apps.reporting.csv.datawarehouse.kto_feedback import create_kto_feedback_csv
 from signals.apps.reporting.csv.datawarehouse.locations import create_locations_csv
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
@@ -45,6 +48,7 @@ def save_csv_files_datawarehouse():
     save_csv_file_datawarehouse(create_category_assignments_csv)
     save_csv_file_datawarehouse(create_statuses_csv)
     save_csv_file_datawarehouse(create_category_sla_csv)
+    save_csv_file_datawarehouse(create_directing_departments_csv)
 
     try:
         save_csv_file_datawarehouse(create_kto_feedback_csv)
