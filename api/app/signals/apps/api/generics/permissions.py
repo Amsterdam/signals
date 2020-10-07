@@ -2,6 +2,8 @@ from django.conf import settings
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
 
+from signals.apps.services.domain.signal_permission import SignalPermissionService
+
 
 class SIABasePermission(BasePermission):
     perms_map = {
@@ -122,22 +124,15 @@ class ModelWritePermissions(DjangoModelPermissions):
 
 
 class SignalViewObjectPermission(DjangoModelPermissions):
+    permission_service = SignalPermissionService()
+
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser or request.user.has_perm('signals.sia_can_view_all_categories'):  # noqa
             return True
 
-        has_category_read_permission = set(
-            request.user.profile.departments.values_list(
-                'pk',
-                flat=True
-            )
-        ).intersection(
-            obj.category_assignment.category.departments.filter(
-                categorydepartment__can_view=True
-            ).values_list(
-                'pk',
-                flat=True
-            )
+        read_permisson = (
+            self.permission_service.has_permission_via_category(request.user, obj) or
+            self.permission_service.has_permission_via_routing(request.user, obj)
         )
 
-        return bool(has_category_read_permission) and request.user.has_perm('signals.sia_read')
+        return read_permisson and request.user.has_perm('signals.sia_read')
