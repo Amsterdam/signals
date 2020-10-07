@@ -889,6 +889,15 @@ paths:
   /signals/v1/private/departments/:
     get:
       description: Retrieve list of departments.
+      parameters:
+        - name: "can_direct"
+          in: query
+          description: >-
+            Filter by can_direct property of a department, `true` if a department
+            has the ability to direct a parent Signal/hoofdmelding else `false`.
+          schema:
+            type: string
+          required: false
       responses:
         '200':
           description: List of departments.
