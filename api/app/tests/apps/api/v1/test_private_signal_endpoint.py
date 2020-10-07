@@ -2402,6 +2402,9 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         data = response.json()
         self.assertEqual(data['count'], 0)
 
+        response = read_client.get(self.detail_endpoint.format(pk=self.signal.id))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
             'signal_departments': [
@@ -2426,3 +2429,6 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertEqual(data['count'], 1)
+
+        response = read_client.get(self.detail_endpoint.format(pk=self.signal.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
