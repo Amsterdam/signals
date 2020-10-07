@@ -1,9 +1,11 @@
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.response import Response
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
+from signals.apps.api.v1.filters import DepartmentFilterSet
 from signals.apps.api.v1.serializers import (
     PrivateDepartmentSerializerDetail,
     PrivateDepartmentSerializerList
@@ -26,6 +28,9 @@ class PrivateDepartmentViewSet(mixins.ListModelMixin,
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions, )
+
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = DepartmentFilterSet
 
     ordering = ('-code', )
 

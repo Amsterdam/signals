@@ -6,6 +6,7 @@ class Department(models.Model):
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=255)
     is_intern = models.BooleanField(default=True)
+    can_direct = models.BooleanField(default=False)
 
     class Meta:
         permissions = (

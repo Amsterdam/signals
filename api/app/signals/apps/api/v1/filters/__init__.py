@@ -1,4 +1,5 @@
 from signals.apps.api.v1.filters.area import AreaFilterSet
+from signals.apps.api.v1.filters.department import DepartmentFilterSet
 from signals.apps.api.v1.filters.question import QuestionFilterSet
 from signals.apps.api.v1.filters.signal import SignalCategoryRemovedAfterFilterSet, SignalFilterSet
 from signals.apps.api.v1.filters.utils import (
@@ -21,6 +22,7 @@ from signals.apps.api.v1.filters.utils import (
 __all__ = [
     # Filters
     'AreaFilterSet',
+    'DepartmentFilterSet',
     'QuestionFilterSet',
     'SignalCategoryRemovedAfterFilterSet',
     'SignalFilterSet',
