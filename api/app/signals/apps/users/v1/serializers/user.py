@@ -91,6 +91,11 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
             'username',
         )
 
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError(f'A user with username {value} already exists')
+        return value
+
     def create(self, validated_data):
         self.get_extra_kwargs()
 

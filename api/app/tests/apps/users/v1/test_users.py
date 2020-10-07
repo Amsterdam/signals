@@ -262,3 +262,33 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             self.sia_read_write_user.pk
         ), data={}, format='json')
         self.assertEqual(response.status_code, 405)
+
+    def test_bug_post_username_already_exists(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        data = {
+            'username': self.superuser.username,
+            'first_name': 'Test',
+            'last_name': 'Tester',
+            'is_active': True,
+        }
+
+        response = self.client.post('/signals/v1/private/users/', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data['username'][0], f'A user with username {self.superuser.username} already exists')
+
+    def test_post_username_must_be_an_email(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        data = {
+            'username': 'username',
+            'first_name': 'Test',
+            'last_name': 'Tester',
+            'is_active': True,
+        }
+
+        response = self.client.post('/signals/v1/private/users/', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data['username'][0], 'Voer een geldig e-mailadres in.')
