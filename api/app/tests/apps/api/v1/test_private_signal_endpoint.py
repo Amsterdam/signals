@@ -2306,8 +2306,9 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class TestSignalEndpointRouting(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
+        self.list_endpoint = '/signals/v1/private/signals/'
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
 
@@ -2390,3 +2391,38 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
         self.assertEquals(self.signal.user_assignment.user, None)
+
+    def test_routing_add_and_check_user(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        read_client = self.client_class()
+        read_client.force_authenticate(user=self.sia_read_user)
+
+        response = read_client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': self.department.id
+                        }
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        # add user to department
+        self.sia_read_user.profile.departments.add(self.department)
+
+        response = read_client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['count'], 1)
