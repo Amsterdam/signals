@@ -16,7 +16,7 @@ class TestCommand(TransactionTestCase):
         self.assertNotEqual(out.getvalue(), '')
         self.assertEqual(err.getvalue(), '')
 
-        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 7)
+        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 8)
 
 
 class TestCSVHorecaCommand(TransactionTestCase):

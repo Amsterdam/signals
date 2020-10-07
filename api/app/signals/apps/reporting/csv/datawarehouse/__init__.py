@@ -2,6 +2,9 @@ from signals.apps.reporting.csv.datawarehouse.categories import (
     create_category_assignments_csv,
     create_category_sla_csv
 )
+from signals.apps.reporting.csv.datawarehouse.directing_departments import (
+    create_directing_departments_csv
+)
 from signals.apps.reporting.csv.datawarehouse.kto_feedback import create_kto_feedback_csv
 from signals.apps.reporting.csv.datawarehouse.locations import create_locations_csv
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
@@ -15,6 +18,7 @@ from signals.apps.reporting.csv.datawarehouse.tasks import (
 __all__ = [
     'create_category_assignments_csv',
     'create_category_sla_csv',
+    'create_directing_departments_csv',
     'create_kto_feedback_csv',
     'create_locations_csv',
     'create_reporters_csv',

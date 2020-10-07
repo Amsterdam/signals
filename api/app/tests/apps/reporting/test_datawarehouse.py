@@ -14,8 +14,9 @@ from freezegun import freeze_time
 
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
+from signals.apps.signals.models import DirectingDepartments
 from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import SignalFactory
+from tests.apps.signals.factories import DepartmentFactory, SignalFactory
 
 
 class TestDatawarehouse(testcases.TestCase):
@@ -51,6 +52,7 @@ class TestDatawarehouse(testcases.TestCase):
         categories_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_categories.csv')
         statuses_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_statuses.csv')
         sla_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_sla.csv')
+        directing_departments_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_directing_departments.csv')  # noqa
 
         self.assertTrue(path.exists(signals_csv))
         self.assertTrue(path.getsize(signals_csv))
@@ -63,6 +65,7 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.exists(statuses_csv))
         self.assertTrue(path.getsize(statuses_csv))
         self.assertTrue(path.getsize(sla_csv))
+        self.assertTrue(path.getsize(directing_departments_csv))
 
     @override_settings(
         SWIFT={
@@ -242,6 +245,27 @@ class TestDatawarehouse(testcases.TestCase):
 
                 self.assertEqual(row['extra_properties'], 'null')
                 self.assertEqual(row['state'], status.state)
+
+    def test_create_directing_departments_csv(self):
+        signal = SignalFactory.create()
+        departments = DepartmentFactory.create_batch(2)
+        directing_department = DirectingDepartments.objects.create(_signal=signal)
+        directing_department.departments.add(*departments)
+        signal.directing_departments_assignment = directing_department
+        signal.save()
+
+        csv_file = datawarehouse.create_directing_departments_csv(self.csv_tmp_dir)
+
+        self.assertEqual(path.join(self.csv_tmp_dir, 'directing_departments.csv'), csv_file)
+
+        with open(csv_file) as opened_csv_file:
+            reader = csv.DictReader(opened_csv_file)
+            for row in reader:
+                self.assertEqual(row['id'], str(directing_department.id))
+                self.assertEqual(row['_signal_id'], str(directing_department._signal_id))
+
+                for department in departments:
+                    self.assertIn(department.name, row['departments'].split(', '))
 
 
 class TestFeedbackHandling(testcases.TestCase):
