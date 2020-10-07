@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
+from signals.apps.signals.models import Department
 from tests.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -211,3 +212,26 @@ class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCas
             self.assertEqual(expected_child_url, category_url)
         else:
             self.assertEqual(expected_parent_url, category_url)
+
+    def test_department_filter_set(self):
+        DepartmentFactory.create(can_direct=False)
+        DepartmentFactory.create_batch(2, can_direct=True)
+        n_can_direct = Department.objects.filter(can_direct=True).count()
+        n_cannot_direct = Department.objects.filter(can_direct=False).count()
+
+        self.client.force_authenticate(user=self.sia_read_write_user, )
+
+        # no filter
+        response = self.client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], Department.objects.count())
+
+        # filter can_direct=True
+        response = self.client.get(self.list_endpoint, {'can_direct': True})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], n_can_direct)
+
+        # filter can_direct=False
+        response = self.client.get(self.list_endpoint, {'can_direct': False})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], n_cannot_direct)
