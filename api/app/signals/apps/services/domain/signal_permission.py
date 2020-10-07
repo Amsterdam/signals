@@ -25,8 +25,6 @@ class SignalPermissionService:
         )
 
     def has_permission_via_routing(self, user, signal):
-        if not hasattr(signal, 'signal_departments'):
-            return False
 
         has_read_permission_via_routing = set(
             user.profile.departments.values_list(
