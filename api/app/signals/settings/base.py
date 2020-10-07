@@ -27,6 +27,8 @@ SITE_ID = 1
 SITE_NAME = 'Signalen API'
 SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
 
+ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
+
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -102,7 +104,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'signals.context_processors.admin_feature_flags',
+                'signals.context_processors.settings_in_context',
             ]
         },
     }
