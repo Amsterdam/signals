@@ -878,3 +878,101 @@ class TestAreaFilter(SignalsBaseApiTestCase):
         # filter on both
         result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
         self.assertEqual(1, len(result_ids))
+
+
+class TestParentSignalFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def test_retrieve_all_parents_with_changes_in_children(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parent_signal = SignalFactory()
+
+        with freeze_time(now):
+            SignalFactory(parent=parent_signal)
+
+        filter_params = {'changes_in_children': True}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(ids, [parent_signal.id])
+
+    def test_retrieve_all_parents_with_no_changes_in_children(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parent_signal = SignalFactory()
+
+        with freeze_time(now):
+            SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            parent_signal.save()
+
+        filter_params = {'changes_in_children': 'False'}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(ids, [parent_signal.id])
+
+    def test_retrieve_mixed_signals(self):
+        # A bunch of normal signals that should never be retrieved by this filter
+        SignalFactory.create_batch(5)
+
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parents_with_changes = SignalFactory.create_batch(3)
+            parents_without_changes = SignalFactory.create_batch(2)
+
+        with freeze_time(now):
+            for parent_signal in parents_with_changes:
+                SignalFactory(parent=parent_signal)
+
+            for parent_signal in parents_without_changes:
+                SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            for parent_signal in parents_without_changes:
+                parent_signal.save()
+
+        filter_params = {'changes_in_children': True}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_with_changes))
+        self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_with_changes]))
+
+        filter_params = {'changes_in_children': False}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_without_changes))
+        self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_without_changes]))
+
+    def test_retrieve_multiple(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parents_with_changes = SignalFactory.create_batch(3)
+            parents_without_changes = SignalFactory.create_batch(2)
+
+        with freeze_time(now):
+            for parent_signal in parents_with_changes:
+                SignalFactory(parent=parent_signal)
+
+            for parent_signal in parents_without_changes:
+                SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            for parent_signal in parents_without_changes:
+                parent_signal.save()
+
+        filter_params = {'changes_in_children': ['true', 0]}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_with_changes) + len(parents_without_changes))

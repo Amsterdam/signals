@@ -22,7 +22,7 @@ services:
 
   database:
     image: amsterdam/postgres11
-    shm_size: '512m'
+    shm_size: '1024m'
     ports:
       - "5409:5432"
     environment:

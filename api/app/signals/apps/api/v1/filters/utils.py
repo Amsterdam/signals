@@ -28,6 +28,11 @@ def area_choices():
     return [(c, f'{n} ({t})') for c, t, n in Area.objects.values_list('code', '_type__name', 'name')]
 
 
+boolean_true_choices = [(True, 'True'), ('true', 'true'), ('True', 'True'), (1, '1')]
+boolean_false_choices = [(False, 'False'), ('false', 'false'), ('False', 'False'), (0, '0')]
+boolean_choices = boolean_true_choices + boolean_false_choices
+
+
 def buurt_choices():
     return [(c, f'{n} ({c})') for c, n in Buurt.objects.values_list('vollcode', 'naam')]
 

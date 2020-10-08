@@ -217,6 +217,18 @@ paths:
                 value: 'child_signal'
               combination:
                 value: ['parent_signal', 'signal']
+        - name: changes_in_children
+          in: query
+          description: >-
+            Filters all parent signals...
+          required: false
+          schema:
+            type: boolean
+            example:
+              true: true
+              1: 1
+              false: false
+              0: 0
 
       responses:
         '200':
@@ -1897,6 +1909,9 @@ components:
           format: date-time
           nullable: true
           example: null
+        has_chidlren:
+          type: boolean
+          example: false
 
     V1PrivateSignalListGetGeography:
       description: Geography
