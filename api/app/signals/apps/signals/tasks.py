@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
@@ -86,3 +87,22 @@ def anonymize_reporter(reporter_id):
                 'text': text,
                 'created_by': None  # This wil show as "SIA systeem"
             }, signal=reporter.signal)
+
+
+@app.task
+def update_status_children_based_on_parent(signal_id):
+    if not settings.FEATURE_FLAGS.get('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True):
+        # Feature disabled
+        log.warning("Feature 'TASK_UPDATE_CHILDREN_BASED_ON_PARENT' disabled!")
+        return
+
+    signal = Signal.objects.get(pk=signal_id)
+    if signal.is_parent() and signal.status.state in [AFGEHANDELD, ]:
+        text = 'Hoofdmelding is afgehandeld'
+
+        # Lets check the children
+        children = signal.children.exclude(status__state__in=[AFGEHANDELD, GEANNULEERD, ])
+        for child in children:
+            # All children must get the state "GEANNULEERD"
+            data = dict(state=GEANNULEERD, text=text)
+            Signal.actions.update_status(data=data, signal=child)
