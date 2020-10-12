@@ -30,7 +30,6 @@ class SignalFilterSet(FilterSet):
         to_field_name='slug',
         field_name='category_assignment__category__slug',
     )
-    changes_in_children = filters.MultipleChoiceFilter(method='changes_in_children_filter', choices=boolean_choices)
     contact_details = filters.MultipleChoiceFilter(method='contact_details_filter', choices=contact_details_choices)
     created_before = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
     directing_department = filters.MultipleChoiceFilter(
@@ -39,6 +38,7 @@ class SignalFilterSet(FilterSet):
     )
     created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
+    has_changed_children = filters.MultipleChoiceFilter(method='has_changed_children_filter', choices=boolean_choices)
     kind = filters.MultipleChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
     incident_date_before = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__gte')
@@ -218,7 +218,7 @@ class SignalFilterSet(FilterSet):
         return queryset.annotate(type_assignment_id=Max('types__id')).filter(types__id=F('type_assignment_id'),
                                                                              types__name__in=value)
 
-    def changes_in_children_filter(self, queryset, name, value):
+    def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
         choices = list(set(map(lambda x: True if x in [True, 'True', 'true', 1] else False, value)))
         q_filter = Q(children__isnull=False)

@@ -905,7 +905,7 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
         with freeze_time(now):
             SignalFactory(parent=parent_signal)
 
-        filter_params = {'changes_in_children': True}
+        filter_params = {'has_changed_children': True}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), 1)
         self.assertEqual(ids, [parent_signal.id])
@@ -921,7 +921,7 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
         with freeze_time(now + timedelta(hours=1)):
             parent_signal.save()
 
-        filter_params = {'changes_in_children': 'False'}
+        filter_params = {'has_changed_children': 'False'}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), 1)
         self.assertEqual(ids, [parent_signal.id])
@@ -946,12 +946,12 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
             for parent_signal in parents_without_changes:
                 parent_signal.save()
 
-        filter_params = {'changes_in_children': True}
+        filter_params = {'has_changed_children': True}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), len(parents_with_changes))
         self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_with_changes]))
 
-        filter_params = {'changes_in_children': False}
+        filter_params = {'has_changed_children': False}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), len(parents_without_changes))
         self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_without_changes]))
@@ -973,6 +973,6 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
             for parent_signal in parents_without_changes:
                 parent_signal.save()
 
-        filter_params = {'changes_in_children': ['true', 0]}
+        filter_params = {'has_changed_children': ['true', 0]}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), len(parents_with_changes) + len(parents_without_changes))

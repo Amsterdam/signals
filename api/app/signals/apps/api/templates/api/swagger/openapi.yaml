@@ -217,18 +217,17 @@ paths:
                 value: 'child_signal'
               combination:
                 value: ['parent_signal', 'signal']
-        - name: changes_in_children
+        - name: has_changed_children
           in: query
           description: >-
-            Filters all parent signals...
+            Filters all parent signals that have changes or no changes in children. Accepts true,
+            false or both. When both true and false are given only parent Signals are returned.
           required: false
           schema:
             type: boolean
             example:
               true: true
-              1: 1
               false: false
-              0: 0
 
       responses:
         '200':
@@ -1909,7 +1908,7 @@ components:
           format: date-time
           nullable: true
           example: null
-        has_chidlren:
+        has_children:
           type: boolean
           example: false
 
