@@ -6,6 +6,7 @@ from signals.apps.api.v1.filters.utils import (
     _get_parent_category_queryset,
     area_choices,
     area_type_choices,
+    boolean_choices,
     buurt_choices,
     contact_details_choices,
     department_choices,
@@ -37,6 +38,7 @@ class SignalFilterSet(FilterSet):
     )
     created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
+    has_changed_children = filters.MultipleChoiceFilter(method='has_changed_children_filter', choices=boolean_choices)
     kind = filters.MultipleChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
     incident_date_before = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__gte')
@@ -215,6 +217,21 @@ class SignalFilterSet(FilterSet):
     def type_filter(self, queryset, name, value):
         return queryset.annotate(type_assignment_id=Max('types__id')).filter(types__id=F('type_assignment_id'),
                                                                              types__name__in=value)
+
+    def has_changed_children_filter(self, queryset, name, value):
+        # we have a MultipleChoiceFilter ...
+        choices = list(set(map(lambda x: True if x in [True, 'True', 'true', 1] else False, value)))
+        q_filter = Q(children__isnull=False)
+        if len(choices) == 2:
+            return queryset.filter(q_filter)
+
+        if True in choices:
+            q_filter &= Q(updated_at__lt=F('children__updated_at'))  # noqa Selects all parent signals with changes in the child signals
+
+        if False in choices:
+            q_filter &= Q(updated_at__gt=F('children__updated_at'))  # noqa Selects all parent signals with NO changes in the child signals
+
+        return queryset.filter(q_filter)
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):

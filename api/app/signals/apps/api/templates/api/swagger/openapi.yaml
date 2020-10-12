@@ -217,6 +217,17 @@ paths:
                 value: 'child_signal'
               combination:
                 value: ['parent_signal', 'signal']
+        - name: has_changed_children
+          in: query
+          description: >-
+            Filters all parent signals that have changes or no changes in children. Accepts true,
+            false or both. When both true and false are given only parent Signals are returned.
+          required: false
+          schema:
+            type: boolean
+            example:
+              true: true
+              false: false
 
       responses:
         '200':
@@ -1897,6 +1908,9 @@ components:
           format: date-time
           nullable: true
           example: null
+        has_children:
+          type: boolean
+          example: false
 
     V1PrivateSignalListGetGeography:
       description: Geography
