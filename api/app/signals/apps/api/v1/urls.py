@@ -7,6 +7,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
     PrivateDepartmentViewSet,
+    PrivateExpressionViewSet,
     PrivateSignalAttachmentsViewSet,
     PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
@@ -48,6 +49,7 @@ private_router.register(r'private/permissions', PermissionViewSet, basename='per
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
+private_router.register(r'private/expression', PrivateExpressionViewSet, basename='private-dsl')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
 
 
@@ -94,6 +96,11 @@ urlpatterns = [
                 name='signal-category-changed-since'),
 
         # Search
-        re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search')
+        path('search', SearchView.as_view({'get': 'list'}), name='elastic-search'),
+
+        # expression
+        path('expression/<int:pk>',
+             PrivateExpressionViewSet.as_view({'get': 'retrieve', 'patch': 'update', 'delete': 'destroy'}),
+             name='expression-detail'),
     ])),
 ]
