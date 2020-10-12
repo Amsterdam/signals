@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0119_rename_eigen-organisatie_to_interne-melding'),
+        ('signals', '0120_department_can_direct'),
     ]
 
     operations = [
