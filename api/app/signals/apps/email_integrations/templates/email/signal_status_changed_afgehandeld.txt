@@ -42,4 +42,4 @@ Als u vragen heeft over deze melding, dan kunt u voor meldingen in Amsterdam bel
 
 Met vriendelijke groet,
 
-Gemeente Amsterdam
+{{ settings.ORGANIZATION_NAME }}

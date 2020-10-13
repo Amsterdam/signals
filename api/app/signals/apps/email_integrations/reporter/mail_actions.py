@@ -216,7 +216,7 @@ def _create_feedback_and_mail_context(signal: Signal):
 
 
 class MailActions:
-    _from_email = settings.NOREPLY
+    _from_email = settings.DEFAULT_FROM_EMAIL
 
     def __init__(self, mail_rules=SIGNAL_MAIL_RULES) -> None:
         self._conditions = {}

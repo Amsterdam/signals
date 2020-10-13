@@ -14,7 +14,7 @@ def send_mail(signal: Signal) -> int:
     """
     subject = 'Nieuwe melding op meldingen.amsterdam.nl'
     message = create_default_notification_message(signal)
-    from_email = settings.NOREPLY
+    from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = app_settings.VTH_NIEUW_WEST['RECIPIENT_LIST']
 
     return django_send_mail(subject=subject, message=message, from_email=from_email,
