@@ -537,6 +537,15 @@ DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
     'Amsterdam,Amstelveen,Weesp',
 ).split(',')
 
+# use dynamic map server for pdf, empty by default
+# example servers
+# 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts/brtachtergrondkaart/EPSG:3857/{zoom}/{x}/{y}.png'
+# 'https://a.tile.openstreetmap.org/{zoom}/{x}/{y}.png'
+DEFAULT_MAP_TILE_SERVER = os.getenv(
+    'DEFAULT_MAP_TILE_SERVER',
+    '',
+)
+
 # Default setting for area type
 DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
 

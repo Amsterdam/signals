@@ -1,4 +1,5 @@
 import base64
+import io
 import os
 
 from django.conf import settings
@@ -10,7 +11,9 @@ from django.views.generic.detail import SingleObjectMixin
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
 from signals.apps.signals.models import Signal
+from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend
+from signals.settings import DEFAULT_MAP_TILE_SERVER
 
 
 def _get_data_uri(static_file):
@@ -51,6 +54,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
     pagination_class = None
+    map_generator = MapGenerator()
 
     queryset = Signal.objects.all()
 
@@ -59,18 +63,39 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
-        rd_coordinates = self.object.location.get_rd_coordinates()
-        bbox = '{},{},{},{}'.format(
-            rd_coordinates.x - 340.00,
-            rd_coordinates.y - 125.00,
-            rd_coordinates.x + 340.00,
-            rd_coordinates.y + 125.00,
-        )
-
         logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
+        img_data_uri = None
+        bbox = None
 
+        if settings.DEFAULT_MAP_TILE_SERVER:
+            (map_img, (x, y)) = self.map_generator.make_map(
+                url_template=DEFAULT_MAP_TILE_SERVER,
+                lat=self.object.location.geometrie.coords[1],
+                lon=self.object.location.geometrie.coords[0],
+                zoom=17,
+                img_size=[680, 250]
+            )
+            # transform image to png -> bytes -> data uri
+            png_array = io.BytesIO()
+            map_img.save(png_array, format='png')
+            encoded = base64.b64encode(png_array.getvalue()).decode()
+            img_data_uri = 'data:image/png;base64,{}'.format(encoded)
+            # correct x,y for marker location size (40x40) so adjust both sides with 20
+            x = x - 20
+            y = y - 20
+        else:
+            rd_coordinates = self.object.location.get_rd_coordinates()
+            bbox = '{},{},{},{}'.format(
+                rd_coordinates.x - 340.00,
+                rd_coordinates.y - 125.00,
+                rd_coordinates.x + 340.00,
+                rd_coordinates.y + 125.00,
+            )
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
+            img_data_uri=img_data_uri,
+            x=x,
+            y=y,
             images=self.object.attachments.filter(is_image=True),
             user=self.request.user,
             logo_src=logo_src,
