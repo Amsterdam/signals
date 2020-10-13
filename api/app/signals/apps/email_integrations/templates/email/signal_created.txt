@@ -22,4 +22,4 @@ Het melden van overlast bij de gemeente wordt continu verbeterd. Gebruik bij voo
 
 Met vriendelijke groet,
 
-{{ settings.ORGANIZATION_NAME }}
+{{ ORGANIZATION_NAME }}
