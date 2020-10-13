@@ -66,6 +66,8 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
         img_data_uri = None
         bbox = None
+        x = 0
+        y = 0
 
         if settings.DEFAULT_MAP_TILE_SERVER:
             (map_img, (x, y)) = self.map_generator.make_map(
