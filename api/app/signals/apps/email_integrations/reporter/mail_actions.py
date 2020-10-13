@@ -259,7 +259,11 @@ class MailActions:
         return found_actions_to_apply
 
     def _get_mail_context(self, signal: Signal, mail_kwargs: dict):
-        context = {'signal': signal, 'status': signal.status}
+        context = {
+            'signal': signal,
+            'status': signal.status,
+            'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        }
 
         if 'context' in mail_kwargs and callable(mail_kwargs['context']):
             context.update(mail_kwargs['context'](signal))
