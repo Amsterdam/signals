@@ -693,11 +693,18 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_departments import SignalDepartments
         lst = []
         for relation in data:
-            obj, _ = SignalDepartments.objects.get_or_create(
+            obj, created = SignalDepartments.objects.get_or_create(
                 _signal=signal,
                 relation_type=relation['relation_type'],
             )
             obj.created_by = relation['created_by'] if 'created_by' in relation else None
+
+            # check if different dep id is set, reset assigned user
+            if not created and hasattr(signal, 'user_assignment'):
+                if obj.departments.exclude(id__in=[dept['id'].id for dept in relation['departments']]).exists():
+                    signal.user_assignment.user = None
+                    signal.user_assignment.save()
+
             obj.departments.set([dept['id'] for dept in relation['departments']])
             obj.save()
             lst.append(obj)
