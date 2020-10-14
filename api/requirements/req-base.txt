@@ -56,3 +56,8 @@ python-dateutil
 
 # Elasticsearch
 elasticsearch-dsl==6.4.0
+
+# dsl
+Arpeggio
+Click
+textX

@@ -1115,6 +1115,131 @@ paths:
       - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/expressions/:
+    get:
+      description: (EXPERIMENTAL) An expression is a simple piece of code such as 'a > 1'. It can be used as a domain specific language for condition evaluation. We could evaluate an condition such as 'location in area' and use the result to perform actions. The expressions are configurable and don't require a developer to add logic. Currently it is being used to dynamically filter signal attributes. But it is generic and can be used on arbitrary objects.
+      responses:
+        '200':
+          description: List of expressions.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+      security:
+        - OAuth2:
+          - SIG/ALL
+    post:
+      description: Create a expression.
+      requestBody:
+        description: JSON serialized new expression data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/expressionCreate'
+      responses:
+        '200':
+          description: Detailed expression data after creation.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+      security:
+        - OAuth2:
+          - SIG/ALL
+
+  /signals/v1/private/expressions/context:
+    parameters:
+      - name: type
+        in: query
+        description: A context is used to categorized expressions (similar to a type). We could have 'routing' and 'email' contexes. The 'routing' context is used for signal routing for example.
+        required: true
+        schema:
+          type: string
+    get:
+      description: Retrieve collection of available expression identifiers/types for a context.
+      responses:
+        '200':
+          description: Detailed expression context data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateExpressionContextGet'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+
+  /signals/v1/private/expressions/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of expression
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieve detailed data for a expression.
+      responses:
+        '200':
+          description: Detailed department data.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+    patch:
+      description: (Partial) update of expression data.
+      requestBody:
+        description: JSON serialized new expression data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/expressionPatch'
+      responses:
+        '200':
+          description: Detailed expression data after successful update.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+    delete:
+      description: delete expression.
+      responses:
+        '204':
+          description: successful delete.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+
+
   /signals/v1/private/areas/geography/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
@@ -2534,6 +2659,63 @@ components:
                   identified by the `category_id` (true) or not (false).
                   Defaults to false.
                 type: boolean
+
+    V1PrivateExpressionContextGet:
+      description: >-
+        Example identifiers with types for context.
+      type: object
+      properties:
+        results:
+          description: List of child expression context types
+          type: array
+          items:
+            type: object
+            properties:
+              identifier:
+                description: identifier name
+                type: string
+              identifier_type:
+                description: identifier type (point, time, str, set, dict, number)
+                type: string
+              type:
+                description: context type name
+                type: string
+
+    expressionCreate:
+      description: JSON data for new department
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of expression
+        code:
+          type: string
+          description: expression in expression language
+        type:
+          type: string
+          description: type of expression
+      required:
+        - name
+        - code
+        - type
+
+    expressionPatch:
+      description: JSON data for partial update to department.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of expression
+        code:
+          type: string
+          description: expression in expression language
+        type:
+          type: string
+          description: type of expression
+      required:
+        - name
+        - code
+        - type
 
     privateUserListResponse:
       description: JSON serialization of paginated list of SIA users.
