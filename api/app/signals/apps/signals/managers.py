@@ -492,6 +492,7 @@ class SignalManager(models.Manager):
         from .models import Note
 
         note = Note.objects.create(**data, _signal_id=signal.id)
+        signal.save()
         return note
 
     def create_note(self, data, signal):
@@ -511,7 +512,6 @@ class SignalManager(models.Manager):
             transaction.on_commit(lambda: create_note.send_robust(sender=self.__class__,
                                                                   signal_obj=locked_signal,
                                                                   note=note))
-            locked_signal.save()
 
         return note
 
