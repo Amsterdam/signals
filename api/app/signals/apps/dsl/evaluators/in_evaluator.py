@@ -4,7 +4,6 @@ from signals.apps.dsl.evaluators.evaluator import Evaluator
 
 
 class InEvaluator(Evaluator):
-    _TIME_FORMAT = '%H:%M:%S'
 
     def __init__(self, **kwargs):
         self._CMD_MAP = {

@@ -49,7 +49,7 @@ private_router.register(r'private/permissions', PermissionViewSet, basename='per
 private_router.register(r'private/departments', PrivateDepartmentViewSet, basename='department')
 private_router.register(r'private/categories', PrivateCategoryViewSet, basename='private-category')
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
-private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-dsl')
+private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-expression')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
 
 

@@ -4,7 +4,7 @@ from signals.apps.dsl.evaluators.equality_evaluator import EqualityEvaluator
 from signals.apps.dsl.evaluators.in_evaluator import InEvaluator
 from signals.apps.dsl.evaluators.logical_evaluator import LogicalEvaluator
 from signals.apps.dsl.evaluators.root_evaluator import RootEvaluator
-from signals.apps.dsl.evaluators.terminal_evaludator import TerminalEvaluator
+from signals.apps.dsl.evaluators.terminal_evaluator import TerminalEvaluator
 
 # user classes have to live in the same module-space where the metamodel_from_str is invoked.
 # the names should exactly match the rule-name, we will just subclass them here with the correct name
