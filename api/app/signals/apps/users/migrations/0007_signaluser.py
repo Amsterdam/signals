@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0121_signaldepartments'),
+        ('signals', '0122_signaldepartments'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('users', '0006_auto_20200120_1131'),
     ]

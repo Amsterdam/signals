@@ -14,7 +14,7 @@ from freezegun import freeze_time
 
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
-from signals.apps.signals.models import DirectingDepartments
+from signals.apps.signals.models import SignalDepartments
 from tests.apps.feedback.factories import FeedbackFactory
 from tests.apps.signals.factories import DepartmentFactory, SignalFactory
 
@@ -249,10 +249,13 @@ class TestDatawarehouse(testcases.TestCase):
     def test_create_directing_departments_csv(self):
         signal = SignalFactory.create()
         departments = DepartmentFactory.create_batch(2)
-        directing_department = DirectingDepartments.objects.create(_signal=signal)
+        directing_department = SignalDepartments.objects.create(
+            relation_type=SignalDepartments.REL_DIRECTING,
+            _signal=signal
+        )
         directing_department.departments.add(*departments)
-        signal.directing_departments_assignment = directing_department
-        signal.save()
+        directing_department.save()
+        signal.refresh_from_db()
 
         csv_file = datawarehouse.create_directing_departments_csv(self.csv_tmp_dir)
 

@@ -131,7 +131,7 @@ DROP VIEW IF EXISTS "signals_history_view";
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0124_auto_20200908_1047'),
+        ('signals', '0125_auto_20200908_1047'),
     ]
 
     operations = [
