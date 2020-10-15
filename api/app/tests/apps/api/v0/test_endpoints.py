@@ -7,8 +7,11 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
+from django.urls import include, path
 
 from signals import API_VERSIONS
+from signals.apps.api.urls import signal_router_v0
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -35,6 +38,21 @@ from tests.apps.users.factories import UserFactory
 from tests.test import SignalsBaseApiTestCase, SuperUserMixin
 
 
+# V0 has been disabled but we still want to test the code, so for the tests we will add the endpoints
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = [
+    path('signals/', include([
+        path('', include((signal_router_v0.urls, 'signals'), namespace='v0')),
+        path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),
+    ])),
+]
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestAPIRoot(SignalsBaseApiTestCase):
 
     def test_signals_index(self):
@@ -58,6 +76,7 @@ class TestAPIRoot(SignalsBaseApiTestCase):
         self.assertEqual(response['X-API-Version'], get_version(API_VERSIONS['v0']))
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestAuthAPIEndpoints(SignalsBaseApiTestCase):
     endpoints = [
         '/signals/auth/signal/',
@@ -131,6 +150,7 @@ class TestAuthAPIEndpoints(SignalsBaseApiTestCase):
             self.assertEqual(response.status_code, 405, 'Wrong response code for {}'.format(url))
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestAPIEndpointsBase(SignalsBaseApiTestCase):
     fixture_files = {
         "post_signal": "signal_post.json",
@@ -157,6 +177,7 @@ class TestAPIEndpointsBase(SignalsBaseApiTestCase):
         self.reporter = self.signal.reporter
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicSignalEndpoint(TestAPIEndpointsBase):
     """Test for public endpoint `/signals/signal/`."""
 
@@ -359,6 +380,7 @@ class TestPublicSignalEndpoint(TestAPIEndpointsBase):
         self.assertTrue(self.signal.image)
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestAuthSignalEndpoint(SignalsBaseApiTestCase):
 
     def setUp(self):
@@ -439,6 +461,7 @@ class TestAuthSignalEndpoint(SignalsBaseApiTestCase):
         self.assertFalse('attachments' in json_resp, "Attachments is a v1-only field")
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
 
     def setUp(self):
@@ -694,6 +717,7 @@ class TestAuthAPIEndpointsPOST(TestAPIEndpointsBase):
         self.assertIn('Cannot assign the same category twice', data['non_field_errors'])
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestUserLogging(TestAPIEndpointsBase):
     """Check that the API returns who did what and when."""
 
@@ -793,6 +817,7 @@ class TestUserLogging(TestAPIEndpointsBase):
         self.assertEqual(note.created_by, result['created_by'])
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestNoImageUrlsInSignalList(TestAPIEndpointsBase, SuperUserMixin):
     """We do not want the image urls generated on list endpoints"""
 
@@ -810,6 +835,7 @@ class TestNoImageUrlsInSignalList(TestAPIEndpointsBase, SuperUserMixin):
         self.assertNotIn('image', response_data['results'][0])
 
 
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestMlPredictCategory(SignalsBaseApiTestCase):
     test_host = 'http://testserver'
     endpoint = '/signals/category/prediction'

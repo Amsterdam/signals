@@ -446,7 +446,7 @@ REST_FRAMEWORK = dict(
         'nouser': '60/hour'
     },
     DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
-    DEFAULT_VERSION='v0',
+    DEFAULT_VERSION='v1',
     ALLOWED_VERSIONS=API_VERSIONS.keys(),
 )
 
