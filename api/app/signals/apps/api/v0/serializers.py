@@ -10,7 +10,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
-from signals.apps.api.generics.mixins import AddExtrasMixin, NearAmsterdamValidatorMixin
+from signals.apps.api.generics.mixins import AddExtrasMixin, WithinBoundingBoxValidatorMixin
 from signals.apps.api.v0.fields import (
     CategoryLinksField,
     PriorityLinksField,
@@ -88,7 +88,7 @@ class SignalUpdateImageSerializer(serializers.ModelSerializer):
         return instance
 
 
-class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, serializers.ModelSerializer):
+class _NestedLocationModelSerializer(WithinBoundingBoxValidatorMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
         geo_field = 'geometrie'
@@ -444,7 +444,7 @@ class SignalAuthHALSerializerDetail(HALSerializer):
         return obj.children.values_list('id', flat=True)
 
 
-class LocationHALSerializer(AddExtrasMixin, NearAmsterdamValidatorMixin, HALSerializer):
+class LocationHALSerializer(AddExtrasMixin, WithinBoundingBoxValidatorMixin, HALSerializer):
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
 
     class Meta:

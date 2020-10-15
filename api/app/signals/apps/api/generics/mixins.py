@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import mixins
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -97,14 +98,15 @@ class WriteOnceMixin:
         return extra_kwargs
 
 
-class NearAmsterdamValidatorMixin:
+class WithinBoundingBoxValidatorMixin:
 
     def validate_geometrie(self, value):
-        fail_msg = 'Location coordinates not anywhere near Amsterdam. (in WGS84)'
+        fail_msg = 'The location coordinates (WS84) are not inside the bounding box we are accepting signals for.'
 
-        lat_not_in_adam_area = not 50 < value.coords[1] < 55
-        lon_not_in_adam_area = not 1 < value.coords[0] < 7
+        lat_not_in_bounding_box = not settings.BOUNDING_BOX[1] <= value.coords[1] <= settings.BOUNDING_BOX[3]
+        lon_not_in_bounding_box = not settings.BOUNDING_BOX[0] <= value.coords[0] <= settings.BOUNDING_BOX[2]
 
-        if lon_not_in_adam_area or lat_not_in_adam_area:
+        if lat_not_in_bounding_box or lon_not_in_bounding_box:
             raise DRFValidationError(fail_msg)
+
         return value

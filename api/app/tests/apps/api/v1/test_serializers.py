@@ -12,15 +12,15 @@ from signals.apps.api.v0.fields import CategoryLinksField
 from signals.apps.api.v0.serializers import (
     CategoryHALSerializer,
     LocationHALSerializer,
-    NearAmsterdamValidatorMixin
+    WithinBoundingBoxValidatorMixin
 )
 from signals.apps.signals.models import Location
 from tests.apps.signals.factories import SignalFactory
 from tests.apps.users.factories import UserFactory
 from tests.test import SignalsBaseApiTestCase
 
-IN_AMSTERDAM = (4.898466, 52.361585)
-OUTSIDE_AMSTERDAM = tuple(reversed(IN_AMSTERDAM))
+IN_THE_NETHERLANDS = (4.898466, 52.361585)
+OUTSIDE_THE_NETHERLANDS = tuple(reversed(IN_THE_NETHERLANDS))
 
 
 # V0 has been disabled but we still want to test the code, so for the tests we will add the endpoints
@@ -37,14 +37,14 @@ test_urlconf.urlpatterns = [
 ]
 
 
-class TestNearAmsterdamValidatorMixin(TestCase):
+class TestWithinBoundingBoxValidatorMixin(TestCase):
     def test_validate_geometrie(self):
         # note this test bypasses the API
-        correct = Point(IN_AMSTERDAM)
-        wrong = Point(OUTSIDE_AMSTERDAM)
+        correct = Point(IN_THE_NETHERLANDS)
+        wrong = Point(OUTSIDE_THE_NETHERLANDS)
 
         # check that valid data is returned, and wrong data rejected
-        v = NearAmsterdamValidatorMixin()
+        v = WithinBoundingBoxValidatorMixin()
         self.assertEqual(correct, v.validate_geometrie(correct))
 
         with self.assertRaises(serializers.ValidationError):
@@ -67,7 +67,7 @@ class TestLocationSerializer(SignalsBaseApiTestCase):
         """Post een compleet signaal."""
         url = '/signals/signal/'
         payload = self._get_fixture()
-        payload['location']['geometrie']['coordinates'] = OUTSIDE_AMSTERDAM
+        payload['location']['geometrie']['coordinates'] = OUTSIDE_THE_NETHERLANDS
 
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, 400)
@@ -75,7 +75,7 @@ class TestLocationSerializer(SignalsBaseApiTestCase):
     def test_correct_lon_lat(self):
         url = '/signals/signal/'
         payload = self._get_fixture()
-        payload['location']['geometrie']['coordinates'] = IN_AMSTERDAM
+        payload['location']['geometrie']['coordinates'] = IN_THE_NETHERLANDS
 
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, 201)
