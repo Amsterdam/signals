@@ -2432,3 +2432,49 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         response = read_client.get(self.detail_endpoint.format(pk=self.signal.id))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_routing_remove_and_check_user(self):
+        # adds routing to signal, add user (from dept)
+        # change to another department -> user should be removed
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': self.department.id
+                        }
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        # add user to department
+        self.sia_read_user.profile.departments.add(self.department)
+
+        new_department = DepartmentFactory.create()
+        data = {
+            'signal_departments': [
+                {
+                    'relation_type': 'routing',
+                    'departments': [
+                        {
+                            'id': new_department.id
+                        }
+                    ]
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsNone(data['assigned_user_id'])
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.assigned_user_id, None)
