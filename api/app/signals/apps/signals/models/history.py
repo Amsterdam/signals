@@ -46,7 +46,7 @@ class History(models.Model):
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
         elif self.what == 'UPDATE_SLA':
-            return 'Service belofte gewijzigd naar:'
+            return 'Servicebelofte:'
         return 'Actie onbekend.'
 
     def get_who(self):
