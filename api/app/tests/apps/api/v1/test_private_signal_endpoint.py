@@ -191,7 +191,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         # SIA currently does 4 updates before Signal is fully in the system
-        self.assertEqual(len(response.json()), 5)
+        self.assertEqual(len(response.json()), 6)
 
         # JSONSchema validation
         data = response.json()

@@ -45,6 +45,8 @@ class History(models.Model):
             return f'Regie voerende afdeling/afdelingen gewijzigd naar: {self.extra}'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
+        elif self.what == 'UPDATE_SLA':
+            return 'Service belofte gewijzigd naar:'
         return 'Actie onbekend.'
 
     def get_who(self):
