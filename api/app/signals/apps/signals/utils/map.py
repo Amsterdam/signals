@@ -52,15 +52,15 @@ class MapGenerator:
         return rounded
 
     def make_map(self, url_template, lat, lon, zoom, img_size):
-        (W, H) = img_size
-        (x, y) = self.deg2num(lat, lon, zoom)
+        W, H = img_size
+        x, y = self.deg2num(lat, lon, zoom)
 
         img = self.load_image(url_template, zoom, x, y)
-        (xp, yp) = self.deg2num_pixel(lat, lon, zoom)
+        xp, yp = self.deg2num_pixel(lat, lon, zoom)
 
-        # left top x
+        # left top of cropped region
         x1 = (3 * TILE_SIZE - W)/2
-        # left bottom x
+        # left bottom of cropped region
         x2 = x1 + W
 
         y1 = (TILE_SIZE + yp) - (H / 2)
