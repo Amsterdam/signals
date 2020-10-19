@@ -115,9 +115,9 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
 
         actions_in_history = [entry['action'] for entry in data]
-        self.assertIn('Service belofte gewijzigd naar:', actions_in_history)
+        self.assertIn('Servicebelofte:', actions_in_history)
 
-        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Service belofte gewijzigd naar:']  # noqa
+        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']  # noqa
         self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
                          sla_description_in_history[0])
 
@@ -153,7 +153,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('UPDATE_SLA', what_in_history)
         self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
 
-        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Service belofte gewijzigd naar:']  # noqa
+        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']  # noqa
         self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
                          sla_description_in_history[0])
 
