@@ -6,13 +6,13 @@ from signals.apps.signals.models import Category
 
 class QuestionFilterSet(FilterSet):
     main_slug = filters.ModelChoiceFilter(
-        queryset=Category.objects.filter(parent__isnull=True).all(),
+        queryset=Category.objects.filter(is_active=True, parent__isnull=True).all(),
         to_field_name='slug',
         field_name='category__slug',
         label='Hoofd categorie',
     )
     sub_slug = filters.ModelChoiceFilter(
-        queryset=Category.objects.filter(parent__isnull=False).all(),
+        queryset=Category.objects.filter(is_active=True, parent__isnull=False).all(),
         to_field_name='slug',
         field_name='category__parent__slug',
         label='Sub categorie',
