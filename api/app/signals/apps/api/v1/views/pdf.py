@@ -66,11 +66,9 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
         img_data_uri = None
         bbox = None
-        left = 0
-        top = 0
 
         if settings.DEFAULT_MAP_TILE_SERVER:
-            map_img, (x, y) = self.map_generator.make_map(
+            map_img = self.map_generator.make_map(
                 url_template=DEFAULT_MAP_TILE_SERVER,
                 lat=self.object.location.geometrie.coords[1],
                 lon=self.object.location.geometrie.coords[0],
@@ -82,9 +80,6 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
             map_img.save(png_array, format='png')
             encoded = base64.b64encode(png_array.getvalue()).decode()
             img_data_uri = 'data:image/png;base64,{}'.format(encoded)
-            # correct x,y for marker location size (40x40) so adjust both sides with 20
-            left = x - 20
-            top = y - 40
         else:
             rd_coordinates = self.object.location.get_rd_coordinates()
             bbox = '{},{},{},{}'.format(
@@ -96,8 +91,6 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
-            left=left,
-            top=top,
             images=self.object.attachments.filter(is_image=True),
             user=self.request.user,
             logo_src=logo_src,
