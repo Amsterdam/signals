@@ -39,7 +39,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Bedankt voor uw melding ({signal_id})',
+            'subject': 'Bedankt voor uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_created.txt',
                 'html': 'email/signal_created.html'
