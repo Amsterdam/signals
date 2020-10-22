@@ -11,6 +11,7 @@ from signals.apps.api.v1.views.category_removed import SignalCategoryRemovedAfte
 from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
 from signals.apps.api.v1.views.expression import PrivateExpressionViewSet
 # from signals.apps.api.v1.views.ml_tool_proxy import MlPredictCategoryView  # V1 disabled for now
+from signals.apps.api.v1.views.ml_tool_proxy import LegacyMlPredictCategoryView
 from signals.apps.api.v1.views.namespace import NamespaceView
 from signals.apps.api.v1.views.pdf import GeneratePdfView
 from signals.apps.api.v1.views.questions import PublicQuestionViewSet
@@ -29,6 +30,7 @@ __all__ = (
     'PrivateCategoryViewSet',
     'PublicQuestionViewSet',
     # 'MlPredictCategoryView',  # V1 disabled for now
+    'LegacyMlPredictCategoryView',
     'NamespaceView',
     'GeneratePdfView',
     'PrivateDepartmentViewSet',
