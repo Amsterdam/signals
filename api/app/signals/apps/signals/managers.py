@@ -600,41 +600,20 @@ class SignalManager(models.Manager):
                 }))
 
             if 'directing_departments_assignment' in data:
-                previous_directing_departments = locked_signal.directing_departments_assignment
-                directing_departments = self._update_directing_departments_no_transaction(
+                self._update_directing_departments_no_transaction(
                     data['directing_departments_assignment'], locked_signal
                 )
-                to_send.append((update_type, {
-                    'sender': sender,
-                    'signal_obj': locked_signal,
-                    'directing_departments': directing_departments,
-                    'prev_directing_departments': previous_directing_departments
-                }))
 
             if 'signal_departments' in data:
-                previous_signal_departments = locked_signal.signal_departments
                 update_detail_data = data['signal_departments']
-                signal_departments = self._update_signal_departments_list_no_transaction(
+                self._update_signal_departments_list_no_transaction(
                     update_detail_data, locked_signal
                 )
-                to_send.append((update_type, {
-                    'sender': sender,
-                    'signal_obj': locked_signal,
-                    'signal_departments': signal_departments,
-                    'prev_signal_departments': previous_signal_departments
-                }))
 
             if 'assigned_user_id' in data:
-                previous_user_assignment = locked_signal.assigned_user_id
-                user_assignment = self._update_user_signal_no_transaction(
+                self._update_user_signal_no_transaction(
                     data, locked_signal
                 )
-                to_send.append((update_type, {
-                    'sender': sender,
-                    'signal_obj': locked_signal,
-                    'assigned_user_id': user_assignment,
-                    'prev_assigned_user_id': previous_user_assignment
-                }))
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
