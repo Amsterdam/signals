@@ -519,6 +519,22 @@ class TestFilters(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals(params)
         self.assertEqual(2, len(result_ids))
 
+    def test_filter_category_id(self):
+        """
+        Test the category_id filter. When the ID of a category is know there is no need to filter by slug(s) we can just
+        use the category_id to filter on.
+        """
+        params = {'category_id': [
+            self.signals[0].category_assignment.category.id,
+            self.signals[1].category_assignment.category.id,
+        ]}
+        result_ids = self._request_filter_signals(params)
+
+        expected_cnt = len([
+            signal for signal in self.signals if signal.category_assignment.category.id in params['category_id']
+        ])
+        self.assertEqual(expected_cnt, len(result_ids))
+
 
 class TestPriorityFilter(SignalsBaseApiTestCase):
     LIST_ENDPOINT = '/signals/v1/private/signals/'

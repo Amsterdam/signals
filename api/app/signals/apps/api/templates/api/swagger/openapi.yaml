@@ -75,6 +75,14 @@ paths:
           required: false
           schema:
             type: string
+        - name: category_id
+          description: >-
+            Filter returns only signals with matching category id(s). This will overrule the use of
+            maincategory_slug and/or category_slug.
+          in: query
+          required: false
+          schema:
+            type: integer
         - name: contact_details
           in: query
           description: >-
