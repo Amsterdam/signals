@@ -62,15 +62,19 @@ paths:
             $ref: '#/components/schemas/StatusStateChoices'
           required: false
         - name: maincategory_slug
-          description: Filter returns only signals with matching main category
-            slug.
+          description: >-
+            If the category_id filter is used this will overwrite the use of the
+            maincategory_slug/category_slug filter. Filter returns only signals with matching main
+            category slug.
           in: query
           required: false
           schema:
             type: string
         - name: category_slug
           description: >-
-            Filter returns only signals with matching sub category slug.
+            If the category_id filter is used this will overwrite the use of the
+            maincategory_slug/category_slug filter. Filter returns only signals with matching
+            sub category slug.
           in: query
           required: false
           schema:
