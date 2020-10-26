@@ -29,6 +29,11 @@ SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
 
 ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
 
+# Accept signals within this geographic bounding box in
+# format: <lon_min>,<lat_min>,<lon_max>,<lat_max> (WS84)
+# default value covers The Netherlands
+BOUNDING_BOX = [float(i) for i in os.getenv('BOUNDING_BOX', '3.3,50.7,7.3,53.6').split(',')]
+
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
