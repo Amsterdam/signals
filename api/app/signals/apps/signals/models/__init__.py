@@ -5,6 +5,7 @@ from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.category_question import CategoryQuestion
+from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.directing_departments import DirectingDepartments
 from signals.apps.signals.models.expression import Expression, ExpressionContext, ExpressionType
@@ -46,6 +47,7 @@ __all__ = [
     'Category',
     'CategoryAssignment',
     'CategoryDepartment',
+    'CategoryTranslation',
     'CategoryQuestion',
     'Department',
     'ExpressionType',
