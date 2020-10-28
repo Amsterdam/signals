@@ -11,7 +11,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
         model = Reporter
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.signal.SignalFactory', reporter=None)
+    _signal = factory.SubFactory('signals.apps.signals.factories.signal.SignalFactory', reporter=None)
 
     email = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     email_anonymized = False

@@ -23,7 +23,7 @@ class LocationFactory(factory.DjangoModelFactory):
     class Meta:
         model = Location
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.signal.signal.SignalFactory', location=None)
+    _signal = factory.SubFactory('signals.apps.signals.factories.signal.signal.SignalFactory', location=None)
 
     buurt_code = fuzzy.FuzzyText(length=4)
     stadsdeel = fuzzy.FuzzyChoice(choices=(s[0] for s in STADSDELEN))

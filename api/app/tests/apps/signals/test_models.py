@@ -11,7 +11,7 @@ from django.test import LiveServerTestCase, TestCase, TransactionTestCase
 from django.utils import timezone
 from django.utils.text import slugify
 
-from signals.apps.signals import workflow
+from signals.apps.signals import factories, workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
     Attachment,
@@ -26,7 +26,7 @@ from signals.apps.signals.models import (
     StatusMessageTemplate
 )
 from signals.apps.signals.models.category_translation import CategoryTranslation
-from tests.apps.signals import factories, valid_locations
+from tests.apps.signals import valid_locations
 from tests.apps.signals.attachment_helpers import small_gif
 
 

@@ -8,7 +8,7 @@ class ImageAttachmentFactory(factory.DjangoModelFactory):
     class Meta:
         model = Attachment
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.signal.SignalFactory')
+    _signal = factory.SubFactory('signals.apps.signals.factories.signal.SignalFactory')
     created_by = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))
     file = factory.django.ImageField()  # In reality it's a FileField, but we want to force an image
     is_image = True

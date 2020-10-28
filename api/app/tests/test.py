@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission
 from jsonschema import validate
 from rest_framework.test import APITestCase
 
-from tests.apps.users.factories import GroupFactory, SuperUserFactory, UserFactory
+from signals.apps.users.factories import GroupFactory, SuperUserFactory, UserFactory
 
 
 class SIAGroupMixin:

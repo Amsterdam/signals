@@ -4,8 +4,8 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from signals.apps.signals.factories import AreaFactory, CategoryFactory, SignalFactory
 from signals.apps.signals.models import CategoryAssignment, Signal, Type
-from tests.apps.signals.factories import AreaFactory, CategoryFactory, SignalFactory
 
 
 class TestSignalManager(TestCase):

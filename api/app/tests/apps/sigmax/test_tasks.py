@@ -7,8 +7,8 @@ from freezegun import freeze_time
 
 from signals.apps.sigmax.tasks import fail_stuck_sending_signals
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Signal, Status
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestFailStuckSendingSignalsTask(TestCase):

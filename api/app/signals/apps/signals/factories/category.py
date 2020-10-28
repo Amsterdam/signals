@@ -27,7 +27,7 @@ class ParentCategoryFactory(factory.DjangoModelFactory):
 
 
 class CategoryFactory(factory.DjangoModelFactory):
-    parent = factory.SubFactory('tests.apps.signals.factories.category.ParentCategoryFactory')
+    parent = factory.SubFactory('signals.apps.signals.factories.category.ParentCategoryFactory')
     name = factory.Sequence(lambda n: 'Category {}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])

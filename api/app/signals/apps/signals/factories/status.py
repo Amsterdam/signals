@@ -10,7 +10,7 @@ class StatusFactory(factory.DjangoModelFactory):
     class Meta:
         model = Status
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.signal.SignalFactory', status=None)
+    _signal = factory.SubFactory('signals.apps.signals.factories.signal.SignalFactory', status=None)
 
     text = fuzzy.FuzzyText(length=400)
     user = factory.Sequence(lambda n: 'veelmelder{}@example.com'.format(n))

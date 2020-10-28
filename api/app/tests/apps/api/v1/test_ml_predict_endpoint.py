@@ -5,9 +5,9 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from rest_framework.exceptions import APIException
 
+from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.models import Category
 from signals.apps.signals.models.category_translation import CategoryTranslation
-from tests.apps.signals.factories import CategoryFactory
 from tests.test import SignalsBaseApiTestCase
 
 

@@ -11,7 +11,7 @@ class StatusMessageTemplateFactory(factory.DjangoModelFactory):
     title = fuzzy.FuzzyText(length=100)
     text = fuzzy.FuzzyText(length=100)
     order = 0
-    category = factory.SubFactory('tests.apps.signals.factories.category.CategoryFactory')
+    category = factory.SubFactory('signals.apps.signals.factories.category.CategoryFactory')
     state = factory.LazyAttribute(lambda o: random.choice(STATUS_CHOICES_API)[0])
 
     class Meta:

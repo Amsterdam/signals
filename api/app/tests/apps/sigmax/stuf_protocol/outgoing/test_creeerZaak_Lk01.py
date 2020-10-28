@@ -19,8 +19,8 @@ from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import (
     _generate_creeerZaak_Lk01,
     _generate_omschrijving
 )
+from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import STADSDELEN, Priority, Signal
-from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.apps.signals.valid_locations import STADHUIS
 
 logger = logging.getLogger(__name__)

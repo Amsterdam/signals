@@ -2,7 +2,7 @@ import os
 
 from rest_framework import status
 
-from tests.apps.signals.factories import SourceFactory
+from signals.apps.signals.factories import SourceFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

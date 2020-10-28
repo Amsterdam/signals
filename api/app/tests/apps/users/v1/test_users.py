@@ -2,8 +2,8 @@ import unittest
 
 from django.contrib.auth.models import Group, Permission
 
-from tests.apps.signals.factories import DepartmentFactory
-from tests.apps.users.factories import GroupFactory
+from signals.apps.signals.factories import DepartmentFactory
+from signals.apps.users.factories import GroupFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 

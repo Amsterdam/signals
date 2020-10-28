@@ -1,12 +1,12 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
-from signals.apps.signals.models import ExpressionContext
-from tests.apps.signals.factories import (
+from signals.apps.signals.factories import (
     ExpressionContextFactory,
     ExpressionFactory,
     ExpressionTypeFactory
 )
+from signals.apps.signals.models import ExpressionContext
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 

@@ -5,8 +5,8 @@ from django.core import mail
 from django.test import TestCase
 
 from signals.apps.email_integrations.vth_nieuw_west import mail as vth_nieuw_west_mail
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestIntegrationVTHNieuwWest(TestCase):

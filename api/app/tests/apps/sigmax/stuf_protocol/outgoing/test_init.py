@@ -14,8 +14,8 @@ from signals.apps.sigmax.stuf_protocol.exceptions import (
 )
 from signals.apps.sigmax.stuf_protocol.outgoing import handle
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Status
-from tests.apps.signals.factories import SignalFactory
 
 logger = logging.getLogger(__name__)
 

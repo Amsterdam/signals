@@ -8,13 +8,13 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.feedback import app_settings as feedback_settings
+from signals.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
-from tests.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
-from tests.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
 
 # We want to keep these tests confined to the reusable application itself, see:

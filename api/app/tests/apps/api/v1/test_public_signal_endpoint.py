@@ -9,9 +9,9 @@ from django.test import override_settings
 
 from signals.apps.api.v1.validation.address.base import AddressValidationUnavailableException
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import CategoryFactory, SignalFactory
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from tests.apps.signals.attachment_helpers import small_gif
-from tests.apps.signals.factories import CategoryFactory, SignalFactory
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

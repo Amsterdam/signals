@@ -18,14 +18,14 @@ class SignalFactory(factory.DjangoModelFactory):
     text_extra = fuzzy.FuzzyText(length=100)
 
     # Creating (reverse FK) related objects after this `Signal` is created.
-    location = factory.RelatedFactory('tests.apps.signals.factories.location.LocationFactory', '_signal')
-    status = factory.RelatedFactory('tests.apps.signals.factories.status.StatusFactory', '_signal')
+    location = factory.RelatedFactory('signals.apps.signals.factories.location.LocationFactory', '_signal')
+    status = factory.RelatedFactory('signals.apps.signals.factories.status.StatusFactory', '_signal')
     category_assignment = factory.RelatedFactory(
-        'tests.apps.signals.factories.category_assignment.CategoryAssignmentFactory',
+        'signals.apps.signals.factories.category_assignment.CategoryAssignmentFactory',
         '_signal',
     )
-    reporter = factory.RelatedFactory('tests.apps.signals.factories.reporter.ReporterFactory', '_signal')
-    priority = factory.RelatedFactory('tests.apps.signals.factories.priority.PriorityFactory', '_signal')
+    reporter = factory.RelatedFactory('signals.apps.signals.factories.reporter.ReporterFactory', '_signal')
+    priority = factory.RelatedFactory('signals.apps.signals.factories.priority.PriorityFactory', '_signal')
 
     incident_date_start = fuzzy.FuzzyDateTime(
         datetime(2017, 11, 1, tzinfo=pytz.UTC),
@@ -62,8 +62,8 @@ class SignalFactory(factory.DjangoModelFactory):
 
 class SignalFactoryWithImage(SignalFactory):
 
-    attachment = factory.RelatedFactory('tests.apps.signals.factories.attachment.ImageAttachmentFactory', '_signal')
+    attachment = factory.RelatedFactory('signals.apps.signals.factories.attachment.ImageAttachmentFactory', '_signal')
 
 
 class SignalFactoryValidLocation(SignalFactory):
-    location = factory.RelatedFactory('tests.apps.signals.factories.location.ValidLocationFactory', '_signal')
+    location = factory.RelatedFactory('signals.apps.signals.factories.location.ValidLocationFactory', '_signal')
