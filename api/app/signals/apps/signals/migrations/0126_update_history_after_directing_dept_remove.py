@@ -2,6 +2,7 @@ from django.db import migrations
 
 history_view = """
 DROP VIEW IF EXISTS "signals_history_view";
+DROP VIEW IF EXISTS "signals_history_view";
 CREATE VIEW "signals_history_view" AS
     SELECT
         CAST("identifier" AS varchar(255)),
@@ -89,10 +90,18 @@ CREATE VIEW "signals_history_view" AS
         FROM
             "public"."signals_type" AS "st"
         UNION SELECT
-            CONCAT('UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT_', CAST("dd"."id" AS VARCHAR(255))) AS "identifier",
+            CASE
+                WHEN "dd"."relation_type" = 'routing' THEN CONCAT('UPDATE_ROUTING_ASSIGNMENT_', CAST("dd"."id" AS VARCHAR(255)))
+                WHEN "dd"."relation_type" = 'directing' THEN CONCAT('UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT_', CAST("dd"."id" AS VARCHAR(255)))
+                ELSE 'UNKNOWN'
+            END as "identifier",
             "dd"."_signal_id" AS "_signal_id",
             "dd"."created_at" AS "when",
-            'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT' AS "what",
+            CASE
+                WHEN "dd"."relation_type" = 'routing' THEN 'UPDATE_ROUTING_ASSIGNMENT'
+                WHEN "dd"."relation_type" = 'directing' THEN 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'
+                ELSE 'UNKNOWN'
+            END as "what",
             "created_by" AS "who",
             array_to_string(array(
                 SELECT "sd"."code"
@@ -104,7 +113,16 @@ CREATE VIEW "signals_history_view" AS
                null AS "description"
         FROM
             "public"."signals_signaldepartments" AS "dd"
-        WHERE "dd"."relation_type" = 'directing'
+        UNION SELECT
+            CONCAT('UPDATE_USER_ASSIGNMENT_', CAST("us"."id" AS VARCHAR(255))) AS "identifier",
+            "us"."_signal_id" AS "_signal_id",
+            "us"."created_at" AS "when",
+            'UPDATE_USER_ASSIGNMENT' AS "what",
+            "created_by" AS "who",
+            CONCAT('Gebruiker gewijzigd naar ', CAST("us"."user_id" AS VARCHAR(255))) AS "extra",
+            null AS "description"
+        FROM
+            "public"."users_signaluser" AS "us"
         UNION SELECT
             CONCAT('CHILD_SIGNAL_CREATED_', "cs"."id") AS "identifier",
             "cs"."parent_id" AS "_signal_id",

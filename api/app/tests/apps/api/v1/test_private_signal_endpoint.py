@@ -2316,58 +2316,37 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.signal = SignalFactory.create()
         self.department = DepartmentFactory.create()
 
-    def _get_routing(self, signal):
-        return signal.signal_departments.filter(relation_type='routing').first()
-
     def test_routing_add_remove(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
-            'signal_departments': [
+            'routing_departments': [
                 {
-                    'relation_type': 'routing',
-                    'departments': [
-                        {
-                            'id': self.department.id
-                        }
-                    ]
+                    'id': self.department.id
                 }
             ]
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        routing = self._get_routing(self.signal)
-        self.assertEqual(routing.departments.count(), 1)
+        self.assertEqual(self.signal.routing_assignment.departments.count(), 1)
 
         # remove routing
         data = {
-            'signal_departments': [
-                {
-                    'relation_type': 'routing',
-                    'departments': [
-                    ]
-                }
-            ]
+            'routing_departments': []
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        routing = self._get_routing(self.signal)
-        self.assertEqual(routing.departments.count(), 0)
+        self.assertEqual(self.signal.routing_assignment.departments.count(), 0)
 
     def test_routing_user_add_remove(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
-            'signal_departments': [
+            'routing_departments': [
                 {
-                    'relation_type': 'routing',
-                    'departments': [
-                        {
-                            'id': self.department.id
-                        }
-                    ]
+                    'id': self.department.id
                 }
             ]
         }
@@ -2390,7 +2369,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEquals(self.signal.user_assignment.user, None)
+        self.assertEqual(self.signal.user_assignment.user, None)
 
     def test_routing_add_and_check_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -2407,14 +2386,9 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
-            'signal_departments': [
+            'routing_departments': [
                 {
-                    'relation_type': 'routing',
-                    'departments': [
-                        {
-                            'id': self.department.id
-                        }
-                    ]
+                    'id': self.department.id
                 }
             ]
         }
@@ -2440,14 +2414,9 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         data = {
-            'signal_departments': [
+            'routing_departments': [
                 {
-                    'relation_type': 'routing',
-                    'departments': [
-                        {
-                            'id': self.department.id
-                        }
-                    ]
+                    'id': self.department.id
                 }
             ]
         }
@@ -2460,14 +2429,9 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         new_department = DepartmentFactory.create()
         data = {
-            'signal_departments': [
+            'routing_departments': [
                 {
-                    'relation_type': 'routing',
-                    'departments': [
-                        {
-                            'id': new_department.id
-                        }
-                    ]
+                    'id': new_department.id
                 }
             ]
         }
@@ -2477,4 +2441,4 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertIsNone(data['assigned_user_id'])
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.assigned_user_id, None)
+        self.assertEqual(self.signal.user_assignment, None)

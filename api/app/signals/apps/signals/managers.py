@@ -604,13 +604,13 @@ class SignalManager(models.Manager):
                     data['directing_departments_assignment'], locked_signal
                 )
 
-            if 'signal_departments' in data:
-                update_detail_data = data['signal_departments']
-                self._update_signal_departments_list_no_transaction(
+            if 'routing_assignment' in data:
+                update_detail_data = data['routing_assignment']
+                self._update_routing_departments_no_transaction(
                     update_detail_data, locked_signal
                 )
 
-            if 'assigned_user_id' in data:
+            if 'user_assignment' in data:
                 self._update_user_signal_no_transaction(
                     data, locked_signal
                 )
@@ -653,64 +653,43 @@ class SignalManager(models.Manager):
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import User, SignalUser
 
-        if not hasattr(signal, 'user_assignment'):
-            signal.user_assignment = SignalUser.objects.create(
-                _signal=signal,
-                user=User.objects.get(pk=data['assigned_user_id']),
-                created_by=data['created_by'] if 'created_by' in data else None
-            )
-        else:
-            signal.user_assignment.user = None
-            if data['assigned_user_id']:
-                signal.user_assignment.user = User.objects.get(pk=data['assigned_user_id'])
-            signal.user_assignment.save()
+        user_id = data['user_assignment']['user']['id']
+        signal.user_assignment = SignalUser.objects.create(
+            _signal=signal,
+            user=None if not user_id else User.objects.get(pk=user_id),
+            created_by=data['created_by'] if 'created_by' in data else None
+        )
 
         signal.save()
         return signal.user_assignment
 
-    def _update_signal_departments_list_no_transaction(self, data, signal):
-        from signals.apps.signals.models.signal_departments import SignalDepartments
-        lst = []
-        for relation in data:
-            obj, created = SignalDepartments.objects.get_or_create(
-                _signal=signal,
-                relation_type=relation['relation_type'],
-            )
-            obj.created_by = relation['created_by'] if 'created_by' in relation else None
-
-            # check if different dep id is set, reset assigned user
-            if not created and hasattr(signal, 'user_assignment'):
-                if obj.departments.exclude(id__in=[dept['id'].id for dept in relation['departments']]).exists():
-                    signal.user_assignment.user = None
-                    signal.user_assignment.save()
-
-            obj.departments.set([dept['id'] for dept in relation['departments']])
-            obj.save()
-            lst.append(obj)
-
-        signal.signal_departments.set(lst)
-        signal.save()
-        return signal.signal_departments
-
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
         from signals.apps.signals.models.signal_departments import SignalDepartments
 
-        relation, created = SignalDepartments.objects.get_or_create(
+        relation = SignalDepartments.objects.create(
             _signal=signal,
             relation_type=relation_type,
+            created_by=data['created_by'] if 'created_by' in data else None
         )
-        if not created:
-            relation.departments.clear()
 
-        relation.created_by = data['created_by'] if 'created_by' in data else None
+        # check if different dep id is set, reset assigned user
+        if signal.user_assignment and relation_type == SignalDepartments.REL_ROUTING:
+            if signal.routing_assignment and signal.routing_assignment.departments.exclude(
+                id__in=[dept['id'].id for dept in relation['departments']]
+            ).exists():
+                signal.user_assignment.user = None
+                signal.user_assignment.save()
+
         for department_data in data['departments']:
             relation.departments.add(department_data['id'])
 
-        if created:
-            signal.signal_departments.add(relation)
-            signal.save()
+        if relation_type == SignalDepartments.REL_DIRECTING:
+            signal.directing_departments_assignment = relation
+        elif relation_type == SignalDepartments.REL_ROUTING:
+            signal.routing_assignment = relation
         else:
-            relation.save()
+            raise Exception("Signal - department relation {} is not supported".format(relation_type))
+        signal.save()
         return relation
 
     def _update_directing_departments_no_transaction(self, data, signal):

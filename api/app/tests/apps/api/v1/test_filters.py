@@ -529,7 +529,8 @@ class TestFilters(SignalsBaseApiTestCase):
         )
         directing_departments.departments.add(department)
         directing_departments.save()
-
+        parent_one.directing_departments_assignment = directing_departments
+        parent_one.save()
         params = {'directing_department': department.code}
         result_ids = self._request_filter_signals(params)
         self.assertEqual(1, len(result_ids))

@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('order', models.PositiveIntegerField(db_index=True, default=0)),
+                ('is_active', models.BooleanField(default=False)),
                 ('_department', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='signals.Department')), # noqa
                 ('_expression', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='routing_department', to='signals.Expression')), # noqa
             ],

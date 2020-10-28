@@ -146,13 +146,7 @@ class SignalFilterSet(FilterSet):
             # we either have a relation with empty departments or no 'directing' relation at all
             return queryset.filter(
                 parent_q_filter &
-                (
-                    ~Q(signal_departments__relation_type='directing') |
-                    (
-                        Q(signal_departments__relation_type='directing') &
-                        Q(signal_departments__departments=None)
-                    )
-                )
+                Q(directing_departments_assignment__isnull=True)
             ).distinct()
         elif 'null' in choices and len(choices) > 1:
             # "?directing_department=ASC&directing_department=null" will select all parent Signals without a directing
@@ -160,19 +154,15 @@ class SignalFilterSet(FilterSet):
             choices.pop(choices.index('null'))
             return queryset.filter(
                 parent_q_filter & (
-                    ~Q(signal_departments__relation_type='directing') |
-                    (
-                        Q(signal_departments__relation_type='directing') &
-                        Q(signal_departments__departments__code__in=choices)
-                    )
+                    Q(directing_departments_assignment__isnull=True) |
+                    Q(directing_departments_assignment__departments__code__in=choices)
                 )
             ).distinct()
         elif len(choices):
             # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
             return queryset.filter(
                 parent_q_filter &
-                Q(signal_departments__relation_type='directing') &
-                Q(signal_departments__departments__code__in=choices)
+                Q(directing_departments_assignment__departments__code__in=choices)
             ).distinct()
         return queryset
 

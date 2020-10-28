@@ -30,7 +30,6 @@ from signals.apps.api.v1.serializers.nested import (
     _NestedPriorityModelSerializer,
     _NestedPublicStatusModelSerializer,
     _NestedReporterModelSerializer,
-    _NestedSignalDepartmentsModelSerializer,
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer
 )
@@ -155,7 +154,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
-    signal_departments = _NestedSignalDepartmentsModelSerializer(
+    routing_departments = _NestedDepartmentModelSerializer(
+        source='routing_assignment.departments',
         many=True,
         required=False,
         permission_classes=(SIAPermissions,),
@@ -163,7 +163,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
     has_attachments = serializers.SerializerMethodField()
 
-    assigned_user_id = serializers.IntegerField(required=False, allow_null=True)
+    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -200,7 +200,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'directing_departments',
-            'signal_departments',
+            'routing_departments',
             'attachments',
             'assigned_user_id',
         )
@@ -243,11 +243,10 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         if 'directing_departments_assignment' in validated_data and validated_data['directing_departments_assignment']:
             validated_data['directing_departments_assignment']['created_by'] = user_email
 
-        if 'signal_departments' in validated_data and validated_data['signal_departments']:
-            for relation in validated_data['signal_departments']:
-                relation['created_by'] = user_email
+        if 'routing_assignment' in validated_data and validated_data['routing_assignment']:
+            validated_data['routing_assignment']['created_by'] = user_email
 
-        if 'assigned_user_id' in validated_data and validated_data['assigned_user_id']:
+        if 'user_assignment' in validated_data and validated_data['user_assignment']:
             validated_data['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
@@ -303,7 +302,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         permission_classes=(SIAPermissions,),
     )
 
-    signal_departments = _NestedSignalDepartmentsModelSerializer(
+    routing_departments = _NestedDepartmentModelSerializer(
+        source='routing_assignment.departments',
         many=True,
         required=False,
         permission_classes=(SIAPermissions,),
@@ -311,7 +311,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
     has_attachments = serializers.SerializerMethodField()
 
-    assigned_user_id = serializers.IntegerField(required=False, allow_null=True)
+    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -362,7 +362,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'extra_properties',
             'notes',
             'directing_departments',
-            'signal_departments',
+            'routing_departments',
             'attachments',
             'parent',
             'has_children',
@@ -391,9 +391,9 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
                 {'directing_departments_assignment': ['Directing departments cannot be set on initial creation']}
             )
 
-        if attrs.get('signal_departments') is not None:
+        if attrs.get('routing_assignment') is not None:
             errors.update(
-                {'signal_departments': ['Signal departments relation cannot be set on initial creation']}
+                {'routing_assignment': ['Signal departments relation cannot be set on initial creation']}
             )
 
         if attrs.get('status') is not None:

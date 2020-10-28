@@ -47,6 +47,18 @@ class Signal(CreatedUpdatedModel):
                                     related_name='signal',
                                     null=True,
                                     on_delete=models.SET_NULL)
+    directing_departments_assignment = models.OneToOneField('signals.SignalDepartments',
+                                                            related_name='directing_department_signal',
+                                                            null=True,
+                                                            on_delete=models.SET_NULL)
+    routing_assignment = models.OneToOneField('signals.SignalDepartments',
+                                              related_name='routing_signal',
+                                              null=True,
+                                              on_delete=models.SET_NULL)
+    user_assignment = models.OneToOneField('users.SignalUser',
+                                           related_name='user_assignment_signal',
+                                           null=True,
+                                           on_delete=models.SET_NULL)
 
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)
@@ -69,23 +81,6 @@ class Signal(CreatedUpdatedModel):
 
     objects = SignalQuerySet.as_manager()
     actions = SignalManager()
-
-    @property
-    def assigned_user_id(self):
-        try:
-            return self.user_assignment.user.id
-        except Exception:
-            return None
-
-    @property
-    def directing_departments_assignment(self):
-        # unique constraint on signal <-> relation_type, so at max 1 result
-        departments = self.signal_departments.filter(relation_type='directing').first()
-        return departments if departments else None
-
-    @property
-    def directing_departments(self):
-        return self.directing_departments_assignment()
 
     @property
     def image(self):

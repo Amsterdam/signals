@@ -43,6 +43,6 @@ class SignalUser(CreatedUpdatedModel):
     relation for assigning user to signal
     """
 
-    _signal = models.OneToOneField('signals.Signal', related_name='user_assignment', on_delete=models.CASCADE, blank=True) # noqa
+    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True) # noqa
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
     created_by = models.EmailField(null=True, blank=True)

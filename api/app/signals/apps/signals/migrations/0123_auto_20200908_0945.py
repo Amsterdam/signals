@@ -22,8 +22,4 @@ class Migration(migrations.Migration):
             name='departments',
             field=models.ManyToManyField(related_name='_signaldepartments_departments_+', to='signals.Department'),
         ),
-        migrations.AlterUniqueTogether(
-            name='signaldepartments',
-            unique_together={('_signal', 'relation_type')},
-        ),
     ]

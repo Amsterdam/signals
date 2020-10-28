@@ -25,7 +25,6 @@ def create_signals_csv(location: str) -> str:
         image=Value(None, output_field=CharField()),
     ).filter(
         types__id=F('type_assignment_id'),
-        signal_departments__relation_type='directing',
     ).values(
         'id',
         'source',
@@ -39,11 +38,11 @@ def create_signals_csv(location: str) -> str:
         'expire_date',
         'image',
         'upload',
+        'directing_departments_assignment_id',
         'category_assignment_id',
         'location_id',
         'reporter_id',
         'status_id',
-        directing_departments_assignment_id=F('signal_departments__departments__id'),
         signal_uuid=F('signal_id'),
         _priority=F('priority__priority'),
         priority_created_at=F('priority__created_at'),

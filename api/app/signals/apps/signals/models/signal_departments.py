@@ -15,6 +15,3 @@ class SignalDepartments(CreatedUpdatedModel):
     departments = models.ManyToManyField('signals.Department', related_name='+')
     relation_type = models.CharField(max_length=20, choices=REL_CHOICES, default=REL_DIRECTING)
     created_by = models.EmailField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ('_signal', 'relation_type',)
