@@ -139,7 +139,7 @@ CREATE VIEW "signals_history_view" AS
     ORDER BY
         "when"
     DESC;
-"""
+""" # noqa
 
 reverse_history_view = """
 DROP VIEW IF EXISTS "signals_history_view";

@@ -562,6 +562,7 @@ class SignalManager(models.Manager):
                         self._update_category_assignment_no_transaction(
                             data['category_assignment'], locked_signal)
 
+                    self._clear_routing_and_assigned_user_no_transaction(locked_signal)
                     to_send.append((update_category_assignment, {
                         'sender': sender,
                         'signal_obj': locked_signal,
@@ -677,8 +678,7 @@ class SignalManager(models.Manager):
             if signal.routing_assignment and signal.routing_assignment.departments.exclude(
                 id__in=[dept['id'].id for dept in relation['departments']]
             ).exists():
-                signal.user_assignment.user = None
-                signal.user_assignment.save()
+                signal.user_assignment = None
 
         for department_data in data['departments']:
             relation.departments.add(department_data['id'])
@@ -700,27 +700,27 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_departments import SignalDepartments
         return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
 
-    def update_signal_departments(self, data, signal, relation_type):
+    def _clear_routing_and_assigned_user_no_transaction(self, signal):
+        if signal.user_assignment:
+            signal.user_assignment = None
+        if signal.routing_assignment:
+            signal.routing_assignment = None
+        signal.save()
+        return signal
+
+    def update_routing_departments(self, data, signal):
         from signals.apps.signals.models import Signal
+        from signals.apps.signals.models.signal_departments import SignalDepartments
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            directing_departments = self._update_signal_departments_no_transaction(
+            departments = self._update_signal_departments_no_transaction(
                 data=data,
                 signal=locked_signal,
-                relation_type=relation_type
+                relation_type=SignalDepartments.REL_ROUTING
             )
 
-        return directing_departments
-
-    # REMOVE? seems unused
-    def update_directing_departments(self, data, signal):
-        from signals.apps.signals.models.signal_departments import SignalDepartments
-        return self.update_signal_departments(data, signal, SignalDepartments.REL_DIRECTING)
-
-    def update_routing_departments(self, data, signal):
-        from signals.apps.signals.models.signal_departments import SignalDepartments
-        return self.update_signal_departments(data, signal, SignalDepartments.REL_ROUTING)
+        return departments
 
     def _copy_attachment_no_transaction(self, source_attachment, signal):
         from signals.apps.signals.models import Attachment
