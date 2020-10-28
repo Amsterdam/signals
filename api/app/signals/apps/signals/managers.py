@@ -676,7 +676,7 @@ class SignalManager(models.Manager):
         # check if different dep id is set, reset assigned user
         if signal.user_assignment and relation_type == SignalDepartments.REL_ROUTING:
             if signal.routing_assignment and signal.routing_assignment.departments.exclude(
-                id__in=[dept['id'].id for dept in relation['departments']]
+                id__in=[dept.id for dept in relation.departments.all()]
             ).exists():
                 signal.user_assignment = None
 
