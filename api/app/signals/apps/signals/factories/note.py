@@ -1,13 +1,13 @@
-import factory
-from factory import fuzzy
+from factory import DjangoModelFactory, Sequence, SubFactory
+from factory.fuzzy import FuzzyText
 
 from signals.apps.signals.models import Note
 
 
-class NoteFactory(factory.DjangoModelFactory):
-    text = fuzzy.FuzzyText(length=100)
-    created_by = factory.Sequence(lambda n: 'ambtenaar{}@example.com'.format(n))
-    _signal = factory.SubFactory('signals.apps.signals.factories.signal.SignalFactory')
+class NoteFactory(DjangoModelFactory):
+    text = FuzzyText(length=100)
+    created_by = Sequence(lambda n: 'ambtenaar{}@example.com'.format(n))
+    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory')
 
     class Meta:
         model = Note

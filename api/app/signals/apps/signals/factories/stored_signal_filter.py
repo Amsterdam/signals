@@ -1,11 +1,13 @@
-import factory
-from factory import fuzzy
+from factory import DjangoModelFactory, SubFactory
+from factory.fuzzy import FuzzyChoice, FuzzyText
 
 from signals.apps.signals.models import StoredSignalFilter
 
 
-class StoredSignalFilterFactory(factory.DjangoModelFactory):
-    name = fuzzy.FuzzyText(length=100)
+class StoredSignalFilterFactory(DjangoModelFactory):
+    name = FuzzyText(length=100)
+    created_by = SubFactory('signals.apps.users.factories.UserFactory')
+    refresh = FuzzyChoice((True, False))
 
     class Meta:
         model = StoredSignalFilter

@@ -1,7 +1,7 @@
 import random
 
-import factory
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from factory import DjangoModelFactory, Sequence, SubFactory
 
 from signals.apps.signals.models import Area, AreaType
 
@@ -26,20 +26,20 @@ def get_random_bbox(bbox=BBOX, n_lon_subdiv=10, n_lat_subdiv=10):
     ))
 
 
-class AreaTypeFactory(factory.DjangoModelFactory):
+class AreaTypeFactory(DjangoModelFactory):
     class Meta:
         model = AreaType
 
-    name = factory.Sequence(lambda n: f'Gebied type {n}')
-    code = factory.Sequence(lambda n: f'gebied-type-code-{n}')
-    description = factory.Sequence(lambda n: f'Omschrijving bij gebied type {n}')
+    name = Sequence(lambda n: f'Gebied type {n}')
+    code = Sequence(lambda n: f'gebied-type-code-{n}')
+    description = Sequence(lambda n: f'Omschrijving bij gebied type {n}')
 
 
-class AreaFactory(factory.DjangoModelFactory):
+class AreaFactory(DjangoModelFactory):
     class Meta:
         model = Area
 
-    name = factory.Sequence(lambda n: f'Gebied type {n}')
-    code = factory.Sequence(lambda n: f'gebied-type-code-{n}')
-    _type = factory.SubFactory(AreaTypeFactory)
+    name = Sequence(lambda n: f'Gebied type {n}')
+    code = Sequence(lambda n: f'gebied-type-code-{n}')
+    _type = SubFactory(AreaTypeFactory)
     geometry = MultiPolygon([get_random_bbox()])

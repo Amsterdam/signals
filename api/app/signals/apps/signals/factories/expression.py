@@ -1,30 +1,30 @@
-import factory
-from factory import fuzzy
+from factory import DjangoModelFactory, Sequence, SubFactory
+from factory.fuzzy import FuzzyChoice, FuzzyText
 
 from signals.apps.signals.models import Expression, ExpressionContext, ExpressionType
 
 
-class ExpressionTypeFactory(factory.DjangoModelFactory):
+class ExpressionTypeFactory(DjangoModelFactory):
     class Meta:
         model = ExpressionType
 
-    name = factory.Sequence(lambda n: f'type_{n}')
-    description = factory.Sequence(lambda n: f'Omschrijving voor expressie type_{n}')
+    name = Sequence(lambda n: f'type_{n}')
+    description = Sequence(lambda n: f'Omschrijving voor expressie type_{n}')
 
 
-class ExpressionFactory(factory.DjangoModelFactory):
-    name = fuzzy.FuzzyText(length=3)
-    code = fuzzy.FuzzyText(length=100)
-    _type = factory.SubFactory(ExpressionTypeFactory)
+class ExpressionFactory(DjangoModelFactory):
+    name = FuzzyText(length=3)
+    code = FuzzyText(length=100)
+    _type = SubFactory(ExpressionTypeFactory)
 
     class Meta:
         model = Expression
 
 
-class ExpressionContextFactory(factory.DjangoModelFactory):
+class ExpressionContextFactory(DjangoModelFactory):
     class Meta:
         model = ExpressionContext
 
-    identifier = factory.Sequence(lambda n: f'ident_{n}')
-    identifier_type = fuzzy.FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
-    _type = factory.SubFactory(ExpressionTypeFactory)
+    identifier = Sequence(lambda n: f'ident_{n}')
+    identifier_type = FuzzyChoice(choices=list(dict(ExpressionContext.CTX_TYPE_CHOICES).keys()))
+    _type = SubFactory(ExpressionTypeFactory)

@@ -1,11 +1,11 @@
-import factory
+from factory import DjangoModelFactory, Sequence
 
 from signals.apps.signals.models import Source
 
 
-class SourceFactory(factory.DjangoModelFactory):
+class SourceFactory(DjangoModelFactory):
     class Meta:
         model = Source
 
-    name = factory.Sequence(lambda n: f'Bron {n}')
-    description = factory.Sequence(lambda n: f'Beschrijving bron {n}')
+    name = Sequence(lambda n: f'Bron {n}')
+    description = Sequence(lambda n: f'Beschrijving bron {n}')

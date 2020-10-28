@@ -1,9 +1,9 @@
 import copy
 import random
 
-import factory
 from django.contrib.gis.geos import Point
-from factory import fuzzy
+from factory import DjangoModelFactory, SubFactory, post_generation
+from factory.fuzzy import FuzzyChoice, FuzzyFloat, FuzzyText
 
 from signals.apps.signals.models import STADSDELEN, Location
 from tests.apps.signals.valid_locations import VALID_LOCATIONS
@@ -13,33 +13,33 @@ BBOX = [4.58565, 52.03560, 5.31360, 52.48769]
 
 
 def get_puntje():
-    lon = fuzzy.FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
-    lat = fuzzy.FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
+    lon = FuzzyFloat(BBOX[0], BBOX[2]).fuzz()
+    lat = FuzzyFloat(BBOX[1], BBOX[3]).fuzz()
     return Point(float(lon), float(lat))
 
 
-class LocationFactory(factory.DjangoModelFactory):
+class LocationFactory(DjangoModelFactory):
 
     class Meta:
         model = Location
 
-    _signal = factory.SubFactory('signals.apps.signals.factories.signal.signal.SignalFactory', location=None)
+    _signal = SubFactory('signals.apps.signals.factories.signal.signal.SignalFactory', location=None)
 
-    buurt_code = fuzzy.FuzzyText(length=4)
-    stadsdeel = fuzzy.FuzzyChoice(choices=(s[0] for s in STADSDELEN))
+    buurt_code = FuzzyText(length=4)
+    stadsdeel = FuzzyChoice(choices=(s[0] for s in STADSDELEN))
     geometrie = get_puntje()
     address = {'straat': 'Sesamstraat',
                'huisnummer': 666,
                'postcode': '1011AA',
                'openbare_ruimte': 'Ergens'}
 
-    @factory.post_generation
+    @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
 
 
 class ValidLocationFactory(LocationFactory):
-    @factory.post_generation
+    @post_generation
     def set_valid_location(self, create, extracted, **kwargs):
         valid_location = copy.copy(random.choice(VALID_LOCATIONS))
 

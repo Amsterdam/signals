@@ -1,18 +1,16 @@
-import random
-
-import factory
-from factory import fuzzy
+from factory import DjangoModelFactory, SubFactory
+from factory.fuzzy import FuzzyChoice, FuzzyText
 
 from signals.apps.signals.models import StatusMessageTemplate
 from signals.apps.signals.workflow import STATUS_CHOICES_API
 
 
-class StatusMessageTemplateFactory(factory.DjangoModelFactory):
-    title = fuzzy.FuzzyText(length=100)
-    text = fuzzy.FuzzyText(length=100)
+class StatusMessageTemplateFactory(DjangoModelFactory):
+    title = FuzzyText(length=100)
+    text = FuzzyText(length=100)
     order = 0
-    category = factory.SubFactory('signals.apps.signals.factories.category.CategoryFactory')
-    state = factory.LazyAttribute(lambda o: random.choice(STATUS_CHOICES_API)[0])
+    category = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
+    state = FuzzyChoice(STATUS_CHOICES_API)
 
     class Meta:
         model = StatusMessageTemplate

@@ -1,13 +1,13 @@
-import factory
-from factory import fuzzy
+from factory import DjangoModelFactory
+from factory.fuzzy import FuzzyChoice, FuzzyText
 
 from signals.apps.signals.models import Department
 
 
-class DepartmentFactory(factory.DjangoModelFactory):
-    code = fuzzy.FuzzyText(length=3)
-    name = fuzzy.FuzzyText(length=10)
-    is_intern = fuzzy.FuzzyChoice(choices=[True, False])
+class DepartmentFactory(DjangoModelFactory):
+    code = FuzzyText(length=3)
+    name = FuzzyText(length=10)
+    is_intern = FuzzyChoice(choices=[True, False])
     can_direct = False
 
     class Meta:

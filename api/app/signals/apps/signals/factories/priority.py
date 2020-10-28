@@ -1,15 +1,15 @@
-import factory
+from factory import DjangoModelFactory, SubFactory, post_generation
 
 from signals.apps.signals.models import Priority
 
 
-class PriorityFactory(factory.DjangoModelFactory):
+class PriorityFactory(DjangoModelFactory):
 
     class Meta:
         model = Priority
 
-    _signal = factory.SubFactory('signals.apps.signals.factories.signal.SignalFactory', priority=None)
+    _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', priority=None)
 
-    @factory.post_generation
+    @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):
         self.signal = self._signal
