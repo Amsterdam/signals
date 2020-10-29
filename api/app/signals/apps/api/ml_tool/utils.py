@@ -12,9 +12,13 @@ def get_category_from_prediction(category_url):
         return category_url, False
 
     slug = resolved.kwargs['slug']
-    parent_isnull = False if 'parent_lookup_parent__slug' in resolved.kwargs else True
+    parent_slug = resolved.kwargs.get('parent_lookup_parent__slug', None)
 
-    category = Category.objects.get(slug=slug, parent__isnull=parent_isnull)
+    if not parent_slug:
+        category = Category.objects.get(slug=slug, parent__isnull=True)
+    else:
+        category = Category.objects.get(slug=slug, parent__slug=parent_slug)
+
     if category.is_translated():
         return category.translated_to()
     return category

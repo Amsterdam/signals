@@ -8,6 +8,7 @@ from signals.apps.api.v1.filters.utils import (
     area_type_choices,
     boolean_choices,
     buurt_choices,
+    category_choices,
     contact_details_choices,
     department_choices,
     feedback_choices,
@@ -25,6 +26,8 @@ class SignalFilterSet(FilterSet):
     area_code = filters.ChoiceFilter(field_name='location__area_code', choices=area_choices)
     area_type_code = filters.ChoiceFilter(field_name='location__area_type_code', choices=area_type_choices)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code', choices=buurt_choices)
+    category_id = filters.MultipleChoiceFilter(field_name='category_assignment__category_id',
+                                               choices=category_choices)
     category_slug = filters.ModelMultipleChoiceFilter(
         queryset=_get_child_category_queryset(),
         to_field_name='slug',
@@ -72,14 +75,15 @@ class SignalFilterSet(FilterSet):
         """
         Add custom category filtering to the filter_queryset
         """
-        main_categories = self.form.cleaned_data['maincategory_slug']
-        sub_categories = self.form.cleaned_data['category_slug']
+        if not self.form.cleaned_data['category_id']:
+            main_categories = self.form.cleaned_data['maincategory_slug']
+            sub_categories = self.form.cleaned_data['category_slug']
 
-        if main_categories or sub_categories:
-            queryset = queryset.filter(
-                Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
-                Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
-            )
+            if main_categories or sub_categories:
+                queryset = queryset.filter(
+                    Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
+                    Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+                )
 
         self._cleanup_form_data()
         return super(SignalFilterSet, self).filter_queryset(queryset=queryset)

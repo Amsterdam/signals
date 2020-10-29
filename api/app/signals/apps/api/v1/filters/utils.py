@@ -93,3 +93,7 @@ def _get_child_category_queryset():
 
 def _get_parent_category_queryset():
     return Category.objects.filter(parent__isnull=True)
+
+
+def category_choices():
+    return [(category.id, f'{category.name}') for category in Category.objects.all()]

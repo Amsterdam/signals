@@ -42,9 +42,12 @@ class History(models.Model):
         elif self.what == 'UPDATE_TYPE_ASSIGNMENT':
             return f'Type update naar: {_history_translated_action(self.extra)}'
         elif self.what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
-            return f'Regie voerende afdeling/afdelingen gewijzigd naar: {self.extra}'
+            extra = self.extra or 'Verantwoordelijke afdeling'
+            return f'Regie voerende afdeling/afdelingen gewijzigd naar: {extra}'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
+        elif self.what == 'UPDATE_SLA':
+            return 'Servicebelofte:'
         return 'Actie onbekend.'
 
     def get_who(self):

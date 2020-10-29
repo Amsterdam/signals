@@ -108,7 +108,7 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
@@ -130,7 +130,7 @@ class TestMailRuleConditions(TestCase):
         MailActions(mail_rules=SIGNAL_MAIL_RULES).apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
@@ -178,7 +178,7 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
@@ -273,7 +273,7 @@ class TestMailRuleConditions(TestCase):
         feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
         message = mail.outbox[0]
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(message.subject, f'Meer over uw melding {self.signal.id}')
         self.assertEqual(message.to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 

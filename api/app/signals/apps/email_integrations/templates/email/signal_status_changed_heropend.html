@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding met registratienummer {{ signal.sia_id }} is opnieuw geopend.</title>
+    <title>Meer over uw melding {{ signal.sia_id }}</title>
 </head>
 <body>
     <p>
@@ -12,7 +12,7 @@
 
     <p>
         <b>Waarom hebben wij uw melding opnieuw geopend?</b><br/>
-        <i>{{ status.text|linebreaksbr }}</i><br/>
+        {{ status.text|linebreaksbr }}<br/>
     </p>
 
     <p>

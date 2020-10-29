@@ -1,9 +1,9 @@
-from signals.apps.api.generics.mixins import NearAmsterdamValidatorMixin
+from signals.apps.api.generics.mixins import WithinBoundingBoxValidatorMixin
 from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Location
 
 
-class _NestedLocationModelSerializer(NearAmsterdamValidatorMixin, SIAModelSerializer):
+class _NestedLocationModelSerializer(WithinBoundingBoxValidatorMixin, SIAModelSerializer):
     class Meta:
         model = Location
         geo_field = 'geometrie'
