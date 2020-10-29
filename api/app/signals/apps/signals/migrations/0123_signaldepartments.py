@@ -10,14 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='SignalDepartments',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('relation_type', models.CharField(choices=[('directing', 'directing'), ('routing', 'routing')], default='directing', max_length=20)), # noqa
-                ('created_by', models.EmailField(blank=True, max_length=254, null=True)),
-            ],
+        migrations.RenameModel('DirectingDepartments', 'SignalDepartments'),
+        migrations.AlterField(
+            model_name='signaldepartments',
+            name='_signal',
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='signal_departments', to='signals.Signal'), # noqa
         ),
+        migrations.AddField(
+            model_name='signaldepartments',
+            name='relation_type',
+            field=models.CharField(choices=[('directing', 'directing'), ('routing', 'routing')], default='directing', max_length=20), # noqa
+        )
     ]

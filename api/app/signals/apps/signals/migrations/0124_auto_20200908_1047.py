@@ -6,22 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0125_migrate_directing_department_data'),
+        ('signals', '0123_signaldepartments'),
+        ('users', '0007_signaluser'),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='signal',
-            name='directing_departments_assignment',
-        ),
-        migrations.DeleteModel(
-            name='DirectingDepartments',
-        ),
-        migrations.AddField(
-            model_name='signal',
-            name='directing_departments_assignment',
-            field=models.OneToOneField(null=True, on_delete=models.deletion.SET_NULL, related_name='directing_department_signal', to='signals.SignalDepartments'), # noqa
-        ),
         migrations.AddField(
             model_name='signal',
             name='routing_assignment',
