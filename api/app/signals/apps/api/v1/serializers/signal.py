@@ -158,7 +158,8 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         source='routing_assignment.departments',
         many=True,
         required=False,
-        permission_classes=(SIAPermissions,),
+        permission_classes=(SIAPermissions),
+        allow_null=True,
     )
 
     has_attachments = serializers.SerializerMethodField()
