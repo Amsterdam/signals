@@ -158,6 +158,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         source='routing_assignment.departments',
         many=True,
         required=False,
+        allow_null=True,
         permission_classes=(SIAPermissions,),
     )
 
@@ -306,6 +307,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         source='routing_assignment.departments',
         many=True,
         required=False,
+        allow_null=True,
         permission_classes=(SIAPermissions,),
     )
 
