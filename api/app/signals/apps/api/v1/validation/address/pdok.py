@@ -40,7 +40,10 @@ class PDOKAddressValidation(BaseAddressValidation):
             query_dict.update({'fq': f'woonplaatsnaam:{address["woonplaats"]}'})
         if 'postcode' in address and address["postcode"]:
             query_dict.update({'fq': f'postcode:{address["postcode"]}'})
-        query_dict.update({'fq': f'gemeentenaam:{",".join(DEFAULT_PDOK_MUNICIPALITIES)}'})
+
+        # remove None, '', ' ' strings before formatting
+        cleaned_pdok_list = filter(lambda item: item, map(str.strip, DEFAULT_PDOK_MUNICIPALITIES))
+        query_dict.update({'fq': f'''gemeentenaam:"{'"gemeentenaam:"'.join(cleaned_pdok_list)}"'''})
 
         straatnaam = address["openbare_ruimte"]
         huisnummer = address["huisnummer"]
