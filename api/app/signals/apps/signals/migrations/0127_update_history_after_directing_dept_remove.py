@@ -2,7 +2,6 @@ from django.db import migrations
 
 history_view = """
 DROP VIEW IF EXISTS "signals_history_view";
-DROP VIEW IF EXISTS "signals_history_view";
 CREATE VIEW "signals_history_view" AS
     SELECT
         CAST("identifier" AS varchar(255)),
@@ -33,6 +32,24 @@ CREATE VIEW "signals_history_view" AS
             null AS "description"
         FROM
             "public"."signals_priority" AS "p"
+        UNION SELECT
+            CONCAT('UPDATE_SLA_', CAST("ca1"."id" AS VARCHAR(255))) AS "identifier",
+            "ca1"."_signal_id" AS "_signal_id",
+            "ca1"."created_at" AS "when",
+            'UPDATE_SLA' AS "what",
+            NULL AS "who",
+            NULL AS "extra",
+            "sc1"."handling_message" AS "description"
+        FROM
+            "public"."signals_categoryassignment" AS "ca1",
+            "public"."signals_category" AS "sc1"
+        WHERE
+            "ca1"."category_id" = "sc1"."id"
+            AND "ca1"."id" = (
+                SELECT MIN("sca1"."id")
+                FROM "public"."signals_categoryassignment" AS "sca1"
+                WHERE "sca1"."_signal_id" = "ca1"."_signal_id"
+            )
         UNION SELECT
             CONCAT('UPDATE_CATEGORY_ASSIGNMENT_', CAST("ca"."id" AS VARCHAR(255))) AS "identifier",
             "ca"."_signal_id" AS "_signal_id",
@@ -149,7 +166,7 @@ DROP VIEW IF EXISTS "signals_history_view";
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0125_auto_20200908_1047'),
+        ('signals', '0126_auto_20200908_1047'),
     ]
 
     operations = [

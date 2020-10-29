@@ -25,7 +25,7 @@ def _reverse_migrate_directing_departments_to_generic_relation(apps, schema_edit
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('signals', '0123_auto_20200908_0945'),
+        ('signals', '0124_auto_20200908_0945'),
     ]
 
     operations = [
