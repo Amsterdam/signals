@@ -43,6 +43,7 @@ def create_signals_csv(location: str) -> str:
         'location_id',
         'reporter_id',
         'status_id',
+
         signal_uuid=F('signal_id'),
         _priority=F('priority__priority'),
         priority_created_at=F('priority__created_at'),

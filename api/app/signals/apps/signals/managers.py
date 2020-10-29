@@ -653,15 +653,16 @@ class SignalManager(models.Manager):
 
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import User, SignalUser
-
-        user_id = data['user_assignment']['user']['id']
-        signal.user_assignment = SignalUser.objects.create(
-            _signal=signal,
-            user=None if not user_id else User.objects.get(pk=user_id),
-            created_by=data['created_by'] if 'created_by' in data else None
-        )
-
-        signal.save()
+        try:
+            user_id = data['user_assignment']['user']['id']
+            signal.user_assignment = SignalUser.objects.create(
+                _signal=signal,
+                user=None if not user_id else User.objects.get(pk=user_id),
+                created_by=data['created_by'] if 'created_by' in data else None
+            )
+            signal.save()
+        except Exception:
+            pass
         return signal.user_assignment
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
@@ -688,7 +689,7 @@ class SignalManager(models.Manager):
         elif relation_type == SignalDepartments.REL_ROUTING:
             signal.routing_assignment = relation
         else:
-            raise Exception("Signal - department relation {} is not supported".format(relation_type))
+            raise Exception(f'Signal - department relation {relation_type} is not supported')
         signal.save()
         return relation
 
