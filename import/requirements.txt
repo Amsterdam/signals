@@ -7,7 +7,7 @@ cffi==1.11.5
 chardet==3.0.4
 coreapi==2.3.3
 coreschema==0.0.4
-cryptography==2.3
+cryptography==3.2
 datapunt-authorization-django==0.2.24
 datapunt-authorization-levels==0.1.3
 Django==2.2.13
