@@ -136,10 +136,12 @@ CREATE VIEW "signals_history_view" AS
             "us"."created_at" AS "when",
             'UPDATE_USER_ASSIGNMENT' AS "what",
             "created_by" AS "who",
-            CONCAT('Gebruiker gewijzigd naar ', CAST("us"."user_id" AS VARCHAR(255))) AS "extra",
+            CAST("user"."email" AS VARCHAR(255)) AS "extra",
             null AS "description"
         FROM
-            "public"."users_signaluser" AS "us"
+            "public"."users_signaluser" AS "us", "public"."auth_user" AS "user"
+        WHERE
+            "us"."user_id" = "user"."id" 
         UNION SELECT
             CONCAT('CHILD_SIGNAL_CREATED_', "cs"."id") AS "identifier",
             "cs"."parent_id" AS "_signal_id",
