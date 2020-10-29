@@ -16,9 +16,14 @@ class Migration(migrations.Migration):
             name='_signal',
             field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='signal_departments', to='signals.Signal'), # noqa
         ),
+        migrations.AlterField(
+            model_name='signal',
+            name='directing_departments_assignment',
+            field=models.OneToOneField(null=True, on_delete=models.deletion.SET_NULL, related_name='directing_department_signal', to='signals.SignalDepartments'), # noqa
+        ),
         migrations.AddField(
             model_name='signaldepartments',
             name='relation_type',
             field=models.CharField(choices=[('directing', 'directing'), ('routing', 'routing')], default='directing', max_length=20), # noqa
-        )
+        ),
     ]
