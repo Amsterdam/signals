@@ -43,7 +43,7 @@ class PDOKAddressValidation(BaseAddressValidation):
 
         # remove None, '', ' ' strings before formatting
         cleaned_pdok_list = filter(lambda item: item, map(str.strip, DEFAULT_PDOK_MUNICIPALITIES))
-        query_dict.update({'fq': f'''gemeentenaam:"{'"gemeentenaam:"'.join(cleaned_pdok_list)}"'''})
+        query_dict.update({'fq': f'''gemeentenaam:("{'" "'.join(cleaned_pdok_list)}")'''})
 
         straatnaam = address["openbare_ruimte"]
         huisnummer = address["huisnummer"]
