@@ -109,10 +109,10 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         what_in_history = [entry['what'] for entry in data]
         self.assertIn('UPDATE_CATEGORY_ASSIGNMENT', what_in_history)
-        self.assertEquals(1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
+        self.assertEqual(1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
 
         self.assertIn('UPDATE_SLA', what_in_history)
-        self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
+        self.assertEqual(1, what_in_history.count('UPDATE_SLA'))
 
         actions_in_history = [entry['action'] for entry in data]
         self.assertIn('Servicebelofte:', actions_in_history)
