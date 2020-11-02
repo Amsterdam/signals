@@ -1,6 +1,6 @@
 import unittest
 
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 
 from tests.apps.signals.factories import DepartmentFactory
 from tests.apps.users.factories import GroupFactory
@@ -292,3 +292,40 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 400)
         response_data = response.json()
         self.assertEqual(response_data['username'][0], 'Voer een geldig e-mailadres in.')
+
+    def test_get_unauthenticated(self):
+        response = self.client.get('/signals/v1/private/me/')
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_history_view(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        group = Group.objects.create(name='Test group')
+
+        url = f'/signals/v1/private/users/{self.superuser.pk}'
+
+        response = self.client.patch(url, data={'first_name': 'Patched', 'role_ids': [group.pk]})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.patch(url, data={'last_name': 'Patched', 'is_active': False})
+        self.assertEqual(response.status_code, 200)
+
+        history_url = f'{url}/history'
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED_USER')
+        self.assertEqual(change_log_data['who'], self.superuser.username)
+        self.assertIn('Achternaam gewijzigd:\n Patched', change_log_data['action'])
+        self.assertIn('Status wijziging:\n Inactief', change_log_data['action'])
+
+        change_log_data = response_data[1]
+        self.assertEqual(change_log_data['what'], 'UPDATED_USER')
+        self.assertEqual(change_log_data['who'], self.superuser.username)
+        self.assertIn('Voornaam gewijzigd:\n Patched', change_log_data['action'])
+        self.assertIn(f'Rol wijziging:\n {group.name}', change_log_data['action'])

@@ -2,11 +2,11 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from change_log.models import Log
-from signals.apps.api.v0.serializers import _NestedDepartmentSerializer
 from signals.apps.api.v1.fields import (
     CategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
+from signals.apps.api.v1.serializers.nested import _NestedPublicDepartmentSerializer
 from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective
 
 
@@ -30,7 +30,7 @@ class CategoryHALSerializer(HALSerializer):
         )
 
     def get_departments(self, obj):
-        return _NestedDepartmentSerializer(
+        return _NestedPublicDepartmentSerializer(
             obj.departments.filter(categorydepartment__is_responsible=True),
             many=True
         ).data
