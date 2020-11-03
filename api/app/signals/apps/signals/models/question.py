@@ -30,8 +30,8 @@ class Question(models.Model):
 
     class Meta:
         permissions = (
-            ('sia_questions_read', 'Inzien van additionele vragen'),
-            ('sia_questions_write', 'Wijzigen van additionele vragen')
+            ('sia_question_read', 'Inzien van additionele vragen'),
+            ('sia_question_write', 'Wijzigen van additionele vragen')
         )
         verbose_name_plural = 'Questions'
 
