@@ -4,11 +4,11 @@ from datetime import timedelta
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import Category, History, Signal
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

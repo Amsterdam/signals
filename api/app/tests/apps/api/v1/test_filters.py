@@ -1,14 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from random import shuffle
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import Priority, SignalDepartments
-from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import (
+from signals.apps.feedback.factories import FeedbackFactory
+from signals.apps.signals.factories import (
     AreaFactory,
     CategoryAssignmentFactory,
     CategoryFactory,
@@ -19,6 +17,8 @@ from tests.apps.signals.factories import (
     StatusFactory,
     TypeFactory
 )
+from signals.apps.signals.models import Priority, SignalDepartments
+from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.test import SignalsBaseApiTestCase
 
 
@@ -45,7 +45,7 @@ class TestFilters(SignalsBaseApiTestCase):
         - Per day: Thursday (yesterday) 16:00, Wednesday (day before yesterday) 16:00, Tuesday 16:00
         - Per hour: Friday 16:00 (now), Friday 15:00 (now minus 1 hour), Friday 14:00 (now minus 2h)
         """
-        now = datetime.utcnow()
+        now = timezone.now()
 
         # Generate created/updated times for new signals.
         times = [now - timedelta(days=idx + 1)
@@ -101,7 +101,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_updated_after(self):
         """ Test updated_after """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"updated_after": now - timedelta(hours=4, minutes=30)}
         result_ids = self._request_filter_signals(params)
@@ -111,7 +111,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_updated_before(self):
         """ Test updated_before """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"updated_before": now - timedelta(hours=18)}
         result_ids = self._request_filter_signals(params)
@@ -121,7 +121,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_created_after(self):
         """ Test created_after """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"created_after": now - timedelta(minutes=30)}
         result_ids = self._request_filter_signals(params)
@@ -130,7 +130,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_created_before(self):
         """ Test created_before """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"created_before": now - timedelta(days=8, hours=12)}
         result_ids = self._request_filter_signals(params)
@@ -139,7 +139,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_no_results(self):
         """ Test combination of created_before and created_after, distinct sets """
-        some_point_in_time = datetime.now() - timedelta(hours=3)
+        some_point_in_time = timezone.now() - timedelta(hours=3)
 
         params = {
             # Should return nothing. Sets are distinct, so no results
@@ -152,7 +152,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_with_one_result(self):
         """ Test combination of created_before and created_after, union contains one signal """
-        some_point_in_time = datetime.now() - timedelta(hours=3)
+        some_point_in_time = timezone.now() - timedelta(hours=3)
 
         params = {
             # Should return one that is created at (or very close to) some_point_in_time
@@ -165,7 +165,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_with_all_results(self):
         """ Test combination of created_before and created_after, union contains all signals """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {
             # Should return one that is created at (or very close to) some_point_in_time

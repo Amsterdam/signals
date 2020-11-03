@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 
-from signals.apps.signals import workflow
+from signals.apps.signals import factories, workflow
 from signals.apps.signals.managers import (
     create_note,
     update_category_assignment,
@@ -19,7 +19,6 @@ from signals.apps.signals.managers import (
     update_type
 )
 from signals.apps.signals.models import Category
-from tests.apps.signals import factories
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

@@ -2,7 +2,7 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.flex_horeca import utils
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestUtils(TestCase):

@@ -4,8 +4,8 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.toezicht_or_nieuw_west import tasks
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestTasks(TestCase):

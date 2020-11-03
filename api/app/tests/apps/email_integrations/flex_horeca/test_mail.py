@@ -5,7 +5,7 @@ from django.core import mail
 from django.test import TestCase
 
 from signals.apps.email_integrations.flex_horeca import mail as flex_horeca_mail
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestIntegrationFlexHoreca(TestCase):

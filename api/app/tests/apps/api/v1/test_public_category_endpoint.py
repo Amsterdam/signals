@@ -1,7 +1,7 @@
 import os
 
+from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from signals.apps.signals.models import Category
-from tests.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

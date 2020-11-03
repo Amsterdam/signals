@@ -6,8 +6,8 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.toezicht_or_nieuw_west import \
     mail as toezicht_or_nieuw_west_mail  # noqa
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestIntegrationToezichtORNieuwWest(TestCase):

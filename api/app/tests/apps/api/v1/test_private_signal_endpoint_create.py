@@ -11,14 +11,14 @@ from django.utils import timezone
 from rest_framework import status
 
 from signals.apps.api.v1.validation.address.base import AddressValidationUnavailableException
-from signals.apps.signals.models import Attachment, Signal
-from tests.apps.signals.factories import (
+from signals.apps.signals.factories import (
     CategoryFactory,
     ParentCategoryFactory,
     SignalFactory,
     SignalFactoryWithImage,
     SourceFactory
 )
+from signals.apps.signals.models import Attachment, Signal
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

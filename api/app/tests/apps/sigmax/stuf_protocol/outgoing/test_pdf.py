@@ -4,8 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf, _render_html
-from signals.apps.signals import workflow
-from tests.apps.signals import factories
+from signals.apps.signals import factories, workflow
 
 
 class TestPDF(TestCase):

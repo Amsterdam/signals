@@ -14,7 +14,7 @@ Click==7.0
 coreapi==2.3.3
 coreschema==0.0.4
 coverage==5.0.3
-cryptography==2.8
+cryptography==3.2
 cssselect2==0.2.2
 debtcollector==2.0.0
 defusedxml==0.6.0

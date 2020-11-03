@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import Error
 from django.test import TestCase, override_settings
 
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestHealthEndpoints(TestCase):

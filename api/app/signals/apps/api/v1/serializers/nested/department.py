@@ -25,3 +25,18 @@ class _NestedDepartmentModelSerializer(SIAModelSerializer):
             'name',
             'is_intern',
         )
+
+
+class _NestedPublicDepartmentSerializer(SIAModelSerializer):
+    class Meta:
+        model = Department
+        fields = (
+            'code',
+            'name',
+            'is_intern',
+        )
+        read_only_fields = (
+            'code',
+            'name',
+            'is_intern',
+        )

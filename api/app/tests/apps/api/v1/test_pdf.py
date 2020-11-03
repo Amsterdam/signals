@@ -1,4 +1,4 @@
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 

@@ -9,9 +9,8 @@ from unittest import mock
 from django.core.exceptions import ValidationError
 from django.test import TransactionTestCase
 
-from signals.apps.signals import workflow
+from signals.apps.signals import factories, workflow
 from signals.apps.signals.models import Signal, Status
-from tests.apps.signals import factories
 
 HAPPY_REOPEN_SCENARIO = [
     workflow.GEMELD,
