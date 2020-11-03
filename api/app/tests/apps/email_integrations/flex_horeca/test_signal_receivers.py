@@ -2,8 +2,8 @@ from unittest import mock
 
 from django.test import TestCase
 
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.managers import create_child, create_initial
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestSignalReceivers(TestCase):

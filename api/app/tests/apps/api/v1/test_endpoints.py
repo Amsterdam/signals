@@ -2,8 +2,8 @@ import os
 
 from django.contrib.auth.models import Permission
 
+from signals.apps.signals.factories import NoteFactory, SignalFactory
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import NoteFactory, SignalFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)

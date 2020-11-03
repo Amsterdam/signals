@@ -5,10 +5,8 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import DirectingDepartments, Priority
-from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import (
+from signals.apps.feedback.factories import FeedbackFactory
+from signals.apps.signals.factories import (
     AreaFactory,
     CategoryAssignmentFactory,
     CategoryFactory,
@@ -19,6 +17,8 @@ from tests.apps.signals.factories import (
     StatusFactory,
     TypeFactory
 )
+from signals.apps.signals.models import DirectingDepartments, Priority
+from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.test import SignalsBaseApiTestCase
 
 

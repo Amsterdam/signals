@@ -1,14 +1,14 @@
-import factory
 from django.utils.text import slugify
-from factory import fuzzy
+from factory import DjangoModelFactory, LazyAttribute, Sequence, SubFactory, post_generation
+from factory.fuzzy import FuzzyChoice
 
 from signals.apps.signals.models import Category
 
 
-class ParentCategoryFactory(factory.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Parent category {}'.format(n))
-    slug = factory.LazyAttribute(lambda o: slugify(o.name))
-    handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+class ParentCategoryFactory(DjangoModelFactory):
+    name = Sequence(lambda n: 'Parent category {}'.format(n))
+    slug = LazyAttribute(lambda o: slugify(o.name))
+    handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (parent category)'
     is_active = True
 
@@ -16,7 +16,7 @@ class ParentCategoryFactory(factory.DjangoModelFactory):
         model = Category
         django_get_or_create = ('slug', )
 
-    @factory.post_generation
+    @post_generation
     def questions(self, create, extracted, **kwargs):
         if not create:
             return
@@ -26,11 +26,11 @@ class ParentCategoryFactory(factory.DjangoModelFactory):
                 self.questions.add(question)
 
 
-class CategoryFactory(factory.DjangoModelFactory):
-    parent = factory.SubFactory('tests.apps.signals.factories.category.ParentCategoryFactory')
-    name = factory.Sequence(lambda n: 'Category {}'.format(n))
-    slug = factory.LazyAttribute(lambda o: slugify(o.name))
-    handling = fuzzy.FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
+class CategoryFactory(DjangoModelFactory):
+    parent = SubFactory('signals.apps.signals.factories.category.ParentCategoryFactory')
+    name = Sequence(lambda n: 'Category {}'.format(n))
+    slug = LazyAttribute(lambda o: slugify(o.name))
+    handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (child category)'
     is_active = True
 
@@ -38,7 +38,7 @@ class CategoryFactory(factory.DjangoModelFactory):
         model = Category
         django_get_or_create = ('parent', 'slug', )
 
-    @factory.post_generation
+    @post_generation
     def departments(self, create, extracted, **kwargs):
         if not create:
             return
@@ -53,7 +53,7 @@ class CategoryFactory(factory.DjangoModelFactory):
                     }
                 )
 
-    @factory.post_generation
+    @post_generation
     def questions(self, create, extracted, **kwargs):
         if not create:
             return

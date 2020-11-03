@@ -30,7 +30,7 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Feedback
 
-    _signal = factory.SubFactory('tests.apps.signals.factories.SignalFactory')
+    _signal = factory.SubFactory('signals.apps.signals.factories.SignalFactory')
     created_at = factory.LazyFunction(timezone.now)
     submitted_at = None
 

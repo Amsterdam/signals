@@ -13,8 +13,8 @@ from signals.apps.reporting.csv.horeca import (
     create_csv_files,
     create_csv_per_sub_category
 )
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Category, Signal
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestHoreca(testcases.TestCase):

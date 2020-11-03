@@ -3,6 +3,7 @@ from django.test import TransactionTestCase
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Reporter
 from signals.apps.signals.tasks import anonymize_reporter, anonymize_reporters
 from signals.apps.signals.workflow import (
@@ -12,7 +13,6 @@ from signals.apps.signals.workflow import (
     GESPLITST,
     VERZOEK_TOT_AFHANDELING
 )
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestTaskTranslateCategory(TransactionTestCase):

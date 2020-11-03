@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Permission
 
-from tests.apps.signals.factories import CategoryFactory, StatusMessageTemplateFactory
+from signals.apps.signals.factories import CategoryFactory, StatusMessageTemplateFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 

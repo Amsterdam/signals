@@ -11,7 +11,7 @@ from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 impor
     _parse_actualiseerZaakstatus_Lk01,
     _parse_zaak_identificatie
 )
-from tests.apps.signals.factories import SignalFactoryValidLocation
+from signals.apps.signals.factories import SignalFactoryValidLocation
 
 
 class TestProcessTestActualiseerZaakStatus(TestCase):

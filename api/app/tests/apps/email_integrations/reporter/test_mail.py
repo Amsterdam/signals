@@ -12,9 +12,9 @@ from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.managers import create_initial, update_status
 from signals.apps.signals.models import Note
-from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class TestMailActionTriggers(TestCase):

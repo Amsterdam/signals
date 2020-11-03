@@ -7,7 +7,7 @@ from signals.apps.email_integrations.core.utils import (
     create_default_notification_message,
     is_business_hour
 )
-from tests.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestUtils(TestCase):

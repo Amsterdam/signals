@@ -1,7 +1,7 @@
 from django.test import TestCase
 
+from signals.apps.signals import factories
 from signals.apps.signals.models import Area, AreaType
-from tests.apps.signals import factories
 
 
 class AreaTest(TestCase):

@@ -2,8 +2,8 @@ from django.test import TestCase
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.vth_nieuw_west import utils
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST, STADSDEEL_NOORD
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestUtils(TestCase):

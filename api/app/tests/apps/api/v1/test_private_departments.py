@@ -1,8 +1,8 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
+from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
 from signals.apps.signals.models import Department
-from tests.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
