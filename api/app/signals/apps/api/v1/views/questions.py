@@ -1,9 +1,8 @@
-from datapunt_api.rest import DatapuntViewSet, HALPagination
+from datapunt_api.rest import DatapuntViewSet, DatapuntViewSetWritable, HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.response import Response
 
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.v1.filters import QuestionFilterSet
 from signals.apps.api.v1.serializers import (
@@ -14,26 +13,21 @@ from signals.apps.signals.models import Question
 from signals.auth.backend import JWTAuthBackend
 
 
-class _BaseQuestionViewSet(DatapuntViewSet):
+class PublicQuestionViewSet(DatapuntViewSet):
     queryset = Question.objects.all()
     pagination_class = HALPagination
     filter_backends = (DjangoFilterBackend, )
 
-
-class PublicQuestionViewSet(_BaseQuestionViewSet):
-    http_method_names = ['get', 'options']
     serializer_class = PublicQuestionSerializerDetail
     serializer_detail_class = PublicQuestionSerializerDetail
     filterset_class = QuestionFilterSet
 
 
-class PrivateQuestionViewSet(mixins.ListModelMixin,
-                             mixins.CreateModelMixin,
-                             mixins.RetrieveModelMixin,
-                             mixins.UpdateModelMixin,
-                             mixins.DestroyModelMixin,
-                             _BaseQuestionViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+class PrivateQuestionViewSet(DatapuntViewSetWritable):
+    queryset = Question.objects.all()
+    pagination_class = HALPagination
+    filter_backends = (DjangoFilterBackend, )
+
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions,)
     serializer_class = PrivateQuestionSerializerDetail

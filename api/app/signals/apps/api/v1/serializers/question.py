@@ -34,13 +34,3 @@ class PrivateQuestionSerializerDetail(HALSerializer):
             'meta',
             'required',
         )
-
-    def create(self, validated_data):
-        instance = super(PrivateQuestionSerializerDetail, self).create(validated_data)
-        instance.refresh_from_db()
-        return instance
-
-    def update(self, instance, validated_data):
-        instance = super(PrivateQuestionSerializerDetail, self).update(instance, validated_data)
-        instance.refresh_from_db()
-        return instance
