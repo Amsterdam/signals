@@ -13,7 +13,6 @@ from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend
-from signals.settings import DEFAULT_MAP_TILE_SERVER
 
 
 def _get_data_uri(static_file):
@@ -69,7 +68,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
 
         if settings.DEFAULT_MAP_TILE_SERVER:
             map_img = self.map_generator.make_map(
-                url_template=DEFAULT_MAP_TILE_SERVER,
+                url_template=settings.DEFAULT_MAP_TILE_SERVER,
                 lat=self.object.location.geometrie.coords[1],
                 lon=self.object.location.geometrie.coords[0],
                 zoom=17,
