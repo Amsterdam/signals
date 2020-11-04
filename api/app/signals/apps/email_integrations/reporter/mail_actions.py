@@ -47,7 +47,7 @@ SIGNAL_MAIL_RULES = [
             'context': lambda signal: dict(afhandelings_text=signal.category_assignment.category.handling_message)
         },
         'additional_info': {
-            'history_entry_text': 'Standaard email bij doen van melding is verzonden aan melder.'
+            'history_entry_text': 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
         }
     },
     {
@@ -81,7 +81,7 @@ SIGNAL_MAIL_RULES = [
             'context': lambda signal: _create_feedback_and_mail_context(signal)
         },
         'additional_info': {
-            'history_entry_text': 'Standaard email bij afhandelen is verzonden aan melder.'
+            'history_entry_text': 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
         }
     },
     {
@@ -131,7 +131,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'additional_info': {
-            'history_entry_text': 'Standaard email bij inplannen is verzonden aan melder.'
+            'history_entry_text': 'Automatische e-mail bij inplannen is verzonden aan de melder.'
         }
     },
     {
@@ -156,7 +156,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'additional_info': {
-            'history_entry_text': 'Standaard email bij heropenen is verzonden aan melder.'
+            'history_entry_text': 'Automatische e-mail bij heropenen is verzonden aan de melder.'
         }
     },
     # SIG-2932
@@ -191,7 +191,7 @@ SIGNAL_MAIL_RULES = [
             'context': lambda signal: dict(afhandelings_text=signal.status.text)
         },
         'additional_info': {
-            'history_entry_text': 'Extra email is verzonden aan melder.'
+            'history_entry_text': 'De statusupdate is per e-mail verzonden aan de melder'
         }
     }
 ]
