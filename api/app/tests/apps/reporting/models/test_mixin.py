@@ -24,8 +24,8 @@ from signals.apps.reporting.models.mixin import (
     get_week_interval,
     validate_parameters
 )
+from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.models import Category
-from tests.apps.signals.factories import CategoryFactory
 
 VALID_CATEGORIES = [
     {'main_slug': 'main-a', 'sub_slug': 'sub-a'},  # specific sub category

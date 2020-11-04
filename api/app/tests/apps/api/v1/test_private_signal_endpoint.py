@@ -19,13 +19,7 @@ from signals.apps.api.v1.validation.address.base import (
     NoResultsException
 )
 from signals.apps.signals import workflow
-from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
-from tests.apps.signals.attachment_helpers import (
-    add_image_attachments,
-    add_non_image_attachments,
-    small_gif
-)
-from tests.apps.signals.factories import (
+from signals.apps.signals.factories import (
     AreaFactory,
     CategoryFactory,
     DepartmentFactory,
@@ -33,6 +27,12 @@ from tests.apps.signals.factories import (
     SignalFactory,
     SignalFactoryValidLocation,
     SignalFactoryWithImage
+)
+from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
+from tests.apps.signals.attachment_helpers import (
+    add_image_attachments,
+    add_non_image_attachments,
+    small_gif
 )
 from tests.test import (
     SIAReadUserMixin,
@@ -191,7 +191,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         # SIA currently does 4 updates before Signal is fully in the system
-        self.assertEqual(len(response.json()), 5)
+        self.assertEqual(len(response.json()), 6)
 
         # JSONSchema validation
         data = response.json()

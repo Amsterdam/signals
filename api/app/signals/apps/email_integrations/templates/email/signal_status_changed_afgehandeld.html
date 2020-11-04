@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Uw melding over {{ signal.category_assignment.category.name }} met registratienummer {{ signal.sia_id }} is afgehandeld.</title>
+    <title>Meer over uw melding {{ signal.sia_id }}</title>
 </head>
 <body>
     <p>
@@ -16,15 +16,15 @@
 
     <p>
         {% if signal.is_child %}
-        Wat hebben wij kunnen doen met uw deelmelding?<br/>
+        <b>Wat hebben wij kunnen doen met uw deelmelding?</b>
         Op {{ signal.created_at|date:"j F Y" }} heeft u bij ons melding {{ signal.parent.sia_id }} ingediend. Deze melding hebben wij voor u gesplitst om zo snel mogelijk een deel van de situatie op te kunnen lossen.<br/>
         <br/>
         Zojuist is deelmelding {{ signal.sia_id }} afgehandeld.<br/>
         {% else %}
-        Wat hebben wij kunnen doen met uw melding?<br/>
+        <b>Wat hebben wij kunnen doen met uw melding?</b>
         {% endif %}
         <br/>
-        <i>{{ status.text|linebreaksbr }}</i><br/>
+        {{ status.text|linebreaksbr }}<br/>
         {% if signal.is_child %}
         <br/>
         Als u van de andere deelmelding(en) nog geen bericht heeft gehad, kunt u die binnenkort verwachten.<br/>
@@ -66,7 +66,7 @@
     <p>
     Met vriendelijke groet,
     <br/>
-    Gemeente Amsterdam
+    {{ ORGANIZATION_NAME }}
     </p>
 </body>
 </html>

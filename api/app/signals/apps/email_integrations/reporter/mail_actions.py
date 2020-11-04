@@ -39,7 +39,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Bedankt voor uw melding ({signal_id})',
+            'subject': 'Bedankt voor uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_created.txt',
                 'html': 'email/signal_created.html'
@@ -73,7 +73,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Betreft melding: {signal_id}',
+            'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_afgehandeld.txt',
                 'html': 'email/signal_status_changed_afgehandeld.html'
@@ -99,7 +99,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Betreft melding: {signal_id}',
+            'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_split.txt',
                 'html': 'email/signal_split.html'
@@ -124,7 +124,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Betreft melding: {signal_id}',
+            'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_ingepland.txt',
                 'html': 'email/signal_status_changed_ingepland.html'
@@ -149,7 +149,7 @@ SIGNAL_MAIL_RULES = [
             }
         },
         'kwargs': {
-            'subject': 'Betreft melding: {signal_id}',
+            'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_heropend.txt',
                 'html': 'email/signal_status_changed_heropend.html'
@@ -216,7 +216,7 @@ def _create_feedback_and_mail_context(signal: Signal):
 
 
 class MailActions:
-    _from_email = settings.NOREPLY
+    _from_email = settings.DEFAULT_FROM_EMAIL
 
     def __init__(self, mail_rules=SIGNAL_MAIL_RULES) -> None:
         self._conditions = {}
@@ -259,7 +259,11 @@ class MailActions:
         return found_actions_to_apply
 
     def _get_mail_context(self, signal: Signal, mail_kwargs: dict):
-        context = {'signal': signal, 'status': signal.status}
+        context = {
+            'signal': signal,
+            'status': signal.status,
+            'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        }
 
         if 'context' in mail_kwargs and callable(mail_kwargs['context']):
             context.update(mail_kwargs['context'](signal))

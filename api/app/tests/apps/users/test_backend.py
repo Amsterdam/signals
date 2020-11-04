@@ -4,9 +4,9 @@ from django.conf import settings
 from django.test import TestCase
 from rest_framework import exceptions
 
+from signals.apps.users.factories import SuperUserFactory, UserFactory
 from signals.auth import backend
 from signals.auth.config import get_settings
-from tests.apps.users.factories import SuperUserFactory, UserFactory
 
 
 class TestJWTAuthBackend(TestCase):

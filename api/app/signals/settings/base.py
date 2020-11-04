@@ -27,6 +27,13 @@ SITE_ID = 1
 SITE_NAME = 'Signalen API'
 SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
 
+ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
+
+# Accept signals within this geographic bounding box in
+# format: <lon_min>,<lat_min>,<lon_max>,<lat_max> (WS84)
+# default value covers The Netherlands
+BOUNDING_BOX = [float(i) for i in os.getenv('BOUNDING_BOX', '3.3,50.7,7.3,53.6').split(',')]
+
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -102,7 +109,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'signals.context_processors.admin_feature_flags',
+                'signals.context_processors.settings_in_context',
             ]
         },
     }
@@ -277,7 +284,7 @@ EMAIL_INTEGRATIONS = dict(
     ),
 )
 
-NOREPLY = 'noreply@meldingen.amsterdam.nl'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@meldingen.amsterdam.nl')
 
 # Django cache settings
 CACHES = {
@@ -444,7 +451,7 @@ REST_FRAMEWORK = dict(
         'nouser': '60/hour'
     },
     DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
-    DEFAULT_VERSION='v0',
+    DEFAULT_VERSION='v1',
     ALLOWED_VERSIONS=API_VERSIONS.keys(),
 )
 
@@ -476,7 +483,7 @@ SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES',
 
 # SIG-884
 SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
-SIGNAL_MAX_NUMBER_OF_CHILDREN = 3
+SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
 # SIG-1017
 FEEDBACK_ENV_FE_MAPPING = {
@@ -504,6 +511,7 @@ FEATURE_FLAGS = {
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

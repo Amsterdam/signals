@@ -1,5 +1,8 @@
 from django.conf import settings
 
 
-def admin_feature_flags(request):
-    return {'FEATURE_FLAGS': settings.FEATURE_FLAGS}
+def settings_in_context(request):
+    return {
+        'FEATURE_FLAGS': settings.FEATURE_FLAGS,
+        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+    }

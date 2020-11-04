@@ -62,19 +62,31 @@ paths:
             $ref: '#/components/schemas/StatusStateChoices'
           required: false
         - name: maincategory_slug
-          description: Filter returns only signals with matching main category
-            slug.
+          description: >-
+            If the category_id filter is used this will overwrite the use of the
+            maincategory_slug/category_slug filter. Filter returns only signals with matching main
+            category slug.
           in: query
           required: false
           schema:
             type: string
         - name: category_slug
           description: >-
-            Filter returns only signals with matching sub category slug.
+            If the category_id filter is used this will overwrite the use of the
+            maincategory_slug/category_slug filter. Filter returns only signals with matching
+            sub category slug.
           in: query
           required: false
           schema:
             type: string
+        - name: category_id
+          description: >-
+            Filter returns only signals with matching category id(s). This will overrule the use of
+            maincategory_slug and/or category_slug.
+          in: query
+          required: false
+          schema:
+            type: integer
         - name: contact_details
           in: query
           description: >-
@@ -217,6 +229,17 @@ paths:
                 value: 'child_signal'
               combination:
                 value: ['parent_signal', 'signal']
+        - name: has_changed_children
+          in: query
+          description: >-
+            Filters all parent signals that have changes or no changes in children. Accepts true,
+            false or both. When both true and false are given only parent Signals are returned.
+          required: false
+          schema:
+            type: boolean
+            example:
+              true: true
+              false: false
 
       responses:
         '200':
@@ -259,6 +282,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+
   /signals/v1/private/signals/geography:
     get:
       description: Signals geography list endpoint
@@ -412,6 +436,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+
   /signals/v1/private/signals/{id}:
     parameters:
       - name: id
@@ -495,7 +520,6 @@ paths:
         - OAuth2:
             - SIG/ALL
 
-
   /signals/v1/private/signals/{id}/history:
     parameters:
       - name: id
@@ -539,6 +563,88 @@ paths:
       security:
       - OAuth2:
         - SIG/ALL
+
+  /signals/v1/private/signals/{id}/attachments/:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal whose attachments are requested.
+        required: true
+        schema:
+          type: integer
+    get:
+      description: A list of attachments that belong to the Signal
+      responses:
+        '200':
+          description: A list of attachments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalAttachmentsList'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
+    post:
+      description: Create an attachment for a Signal
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created an attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalAttachmentDetail'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
+  /signals/v1/private/signals/{id}/attachments/{attachment_id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of signal whose attachments are requested.
+        required: true
+        schema:
+          type: integer
+      - name: attachment_id
+        in: path
+        description: ID the requested attachment
+        required: true
+        schema:
+          type: integer
+    get:
+      description: A list of attachments that belong to the Signal
+      responses:
+        '200':
+          description: A list of attachments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalAttachmentDetail'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
 
   /signals/v1/private/signals/{id}/split:
     parameters:
@@ -629,6 +735,40 @@ paths:
         '404':
           description: Signal not found
 
+  /signals/v1/public/signals/{signal_id}/attachments/:
+    parameters:
+      - name: signal_id
+        in: path
+        description: Public identifier for a Signal/melding
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      description: Create an attachment for a Signal
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created an attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateSignalAttachmentDetail'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal split.
+        '404':
+          description: Signal not found.
 
   /signals/v1/public/terms/categories:
     get:
@@ -636,6 +776,7 @@ paths:
       responses:
         '200':
           description: List of all main categories with embedded sub categories.
+
   /signals/v1/public/terms/categories/{main_slug}:
     get:
       description: >-
@@ -651,6 +792,7 @@ paths:
           required: true
           schema:
             type: string
+
   /signals/v1/public/terms/categories/{main_slug}/sub_categories/{sub_slug}:
     get:
       description: Information about a specific sub category.  **May be changed**
@@ -670,6 +812,7 @@ paths:
           required: true
           schema:
             type: string
+
   /signals/user/auth/me:
     get:
       description: Information about the currently authenticated user.
@@ -984,6 +1127,131 @@ paths:
       - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/expressions/:
+    get:
+      description: (EXPERIMENTAL) An expression is a simple piece of code such as 'a > 1'. It can be used as a domain specific language for condition evaluation. We could evaluate an condition such as 'location in area' and use the result to perform actions. The expressions are configurable and don't require a developer to add logic. Currently it is being used to dynamically filter signal attributes. But it is generic and can be used on arbitrary objects.
+      responses:
+        '200':
+          description: List of expressions.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+      security:
+        - OAuth2:
+          - SIG/ALL
+    post:
+      description: Create a expression.
+      requestBody:
+        description: JSON serialized new expression data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/expressionCreate'
+      responses:
+        '200':
+          description: Detailed expression data after creation.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+      security:
+        - OAuth2:
+          - SIG/ALL
+
+  /signals/v1/private/expressions/context:
+    parameters:
+      - name: type
+        in: query
+        description: A context is used to categorized expressions (similar to a type). We could have 'routing' and 'email' contexes. The 'routing' context is used for signal routing for example.
+        required: true
+        schema:
+          type: string
+    get:
+      description: Retrieve collection of available expression identifiers/types for a context.
+      responses:
+        '200':
+          description: Detailed expression context data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PrivateExpressionContextGet'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+
+  /signals/v1/private/expressions/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of expression
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Retrieve detailed data for a expression.
+      responses:
+        '200':
+          description: Detailed department data.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+    patch:
+      description: (Partial) update of expression data.
+      requestBody:
+        description: JSON serialized new expression data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/expressionPatch'
+      responses:
+        '200':
+          description: Detailed expression data after successful update.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+    delete:
+      description: delete expression.
+      responses:
+        '204':
+          description: successful delete.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not Found.
+      security:
+      - OAuth2:
+          - SIG/ALL
+
+
   /signals/v1/private/areas/geography/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
@@ -1033,6 +1301,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+
   /signals/v1/public/areas/geography/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
@@ -1117,6 +1386,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+
   /signals/v1/public/areas/:
     get:
       description: Retrieve a list of areas in the database. Experimental, the content of the response can still be changed
@@ -1151,6 +1421,7 @@ paths:
       security:
         - OAuth2:
             - SIG/ALL
+
   /signals/v1/public/questions/:
     get:
       description: Retrieve a list of questions in the database. Experimental, the content of the response can still be changed
@@ -1176,6 +1447,7 @@ paths:
                 $ref: '#/components/schemas/V1QuestionsJsonList'
         '404':
           description: Not Found.
+
   /signals/v1/private/sources/:
     get:
       description: Retrieve a list of signal sources.
@@ -1773,6 +2045,9 @@ components:
           format: date-time
           nullable: true
           example: null
+        has_children:
+          type: boolean
+          example: false
 
     V1PrivateSignalListGetGeography:
       description: Geography
@@ -2397,6 +2672,63 @@ components:
                   Defaults to false.
                 type: boolean
 
+    V1PrivateExpressionContextGet:
+      description: >-
+        Example identifiers with types for context.
+      type: object
+      properties:
+        results:
+          description: List of child expression context types
+          type: array
+          items:
+            type: object
+            properties:
+              identifier:
+                description: identifier name
+                type: string
+              identifier_type:
+                description: identifier type (point, time, str, set, dict, number)
+                type: string
+              type:
+                description: context type name
+                type: string
+
+    expressionCreate:
+      description: JSON data for new department
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of expression
+        code:
+          type: string
+          description: expression in expression language
+        type:
+          type: string
+          description: type of expression
+      required:
+        - name
+        - code
+        - type
+
+    expressionPatch:
+      description: JSON data for partial update to department.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of expression
+        code:
+          type: string
+          description: expression in expression language
+        type:
+          type: string
+          description: type of expression
+      required:
+        - name
+        - code
+        - type
+
     privateUserListResponse:
       description: JSON serialization of paginated list of SIA users.
       type: object
@@ -2931,6 +3263,77 @@ components:
           description: Description of source
           type: string
           example: Binnengekomen via de eigen organisatie
+
+    V1PrivateSignalAttachmentsList:
+      description: List of sources
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 1
+        results:
+          type: array
+          description: A list of Attachments, paginated
+          items:
+            $ref: '#/components/schemas/V1PrivateSignalAttachmentGet'
+
+    V1PrivateSignalAttachmentGet:
+      description: Attachment
+      type: object
+      properties:
+        _display:
+          description: Textual representation of signal for display purposes.
+          type: string
+          example: Attachment object (1)
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the attachment detail
+        location:
+          description: The location of the attachment, for downloading
+          type: string
+          example: /signals/media/images/2020/01/01/happy-new-year.jpg
+        is_image:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+
   securitySchemes:
     OAuth2:
       description: SIA API is using OAuth2 implicit grant flow.

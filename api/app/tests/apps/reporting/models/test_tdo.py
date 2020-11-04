@@ -5,8 +5,8 @@ from freezegun import freeze_time
 
 from signals.apps.reporting.models import TDOSignal
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestTDOSignalRepresentation(TestCase):

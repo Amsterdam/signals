@@ -5,6 +5,8 @@ from signals.apps.signals.models import (
     Buurt,
     Category,
     Department,
+    Expression,
+    ExpressionType,
     Signal
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
@@ -28,6 +30,11 @@ def area_choices():
     return [(c, f'{n} ({t})') for c, t, n in Area.objects.values_list('code', '_type__name', 'name')]
 
 
+boolean_true_choices = [(True, 'True'), ('true', 'true'), ('True', 'True'), (1, '1')]
+boolean_false_choices = [(False, 'False'), ('false', 'false'), ('False', 'False'), (0, '0')]
+boolean_choices = boolean_true_choices + boolean_false_choices
+
+
 def buurt_choices():
     return [(c, f'{n} ({c})') for c, n in Buurt.objects.values_list('vollcode', 'naam')]
 
@@ -40,6 +47,20 @@ def department_choices():
     return [
         ('null', 'null'),
     ] + [(department.code, f'{department.code}') for department in Department.objects.only('code').all()]
+
+
+def expression_choices():
+    """
+    Helper function to determine available expressions
+    """
+    return [(expr.name, expr.name) for expr in Expression.objects.only('name').all().distinct()]
+
+
+def expression_type_choices():
+    """
+    Helper function to determine available expression types
+    """
+    return [(expr_type.name, expr_type.name) for expr_type in ExpressionType.objects.only('name').all().distinct()]
 
 
 def feedback_choices():
@@ -72,3 +93,7 @@ def _get_child_category_queryset():
 
 def _get_parent_category_queryset():
     return Category.objects.filter(parent__isnull=True)
+
+
+def category_choices():
+    return [(category.id, f'{category.name}') for category in Category.objects.all()]

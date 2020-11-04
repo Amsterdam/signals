@@ -12,9 +12,9 @@ from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.managers import create_initial, update_status
 from signals.apps.signals.models import Note
-from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class TestMailActionTriggers(TestCase):
@@ -108,11 +108,13 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
         category = self.signal.category_assignment.category
         self.assertIn(category.handling_message, mail.outbox[0].body)
+        self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
@@ -128,8 +130,10 @@ class TestMailRuleConditions(TestCase):
         MailActions(mail_rules=SIGNAL_MAIL_RULES).apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding ({self.signal.id})')
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
 
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
         self.assertIn(category.handling_message, mail.outbox[0].body)
@@ -174,8 +178,10 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
@@ -267,14 +273,16 @@ class TestMailRuleConditions(TestCase):
         feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
         message = mail.outbox[0]
-        self.assertEqual(message.subject, f'Betreft melding: {self.signal.id}')
+        self.assertEqual(message.subject, f'Meer over uw melding {self.signal.id}')
         self.assertEqual(message.to, [self.signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
         positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
         context = {'negative_feedback_url': negative_feedback_url,
                    'positive_feedback_url': positive_feedback_url,
                    'signal': self.signal,
-                   'status': status, }
+                   'status': status,
+                   'ORGANIZATION_NAME': settings.ORGANIZATION_NAME, }
         txt_message = loader.get_template('email/signal_status_changed_afgehandeld.txt').render(context)
         html_message = loader.get_template('email/signal_status_changed_afgehandeld.html').render(context)
 

@@ -11,8 +11,8 @@ from signals.apps.sigmax.stuf_protocol.outgoing import _generate_sequence_number
 from signals.apps.sigmax.stuf_protocol.outgoing.voegZaakdocumentToe_Lk01 import (
     _generate_voegZaakdocumentToe_Lk01
 )
+from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
-from tests.apps.signals.factories import SignalFactoryValidLocation
 
 logger = logging.getLogger(__name__)
 

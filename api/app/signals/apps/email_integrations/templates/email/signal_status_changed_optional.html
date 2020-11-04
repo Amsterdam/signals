@@ -6,6 +6,11 @@
 </head>
 <body>
     <p>
+        <h1>Meer over uw melding</h1>
+        <h2>Meldingnummer {{ signal.sia_id }}</h2>
+    </p>
+
+    <p>
         <b>Wat gebeurt er met uw melding?</b><br/>
         {{ afhandelings_text }}
     </p>
@@ -34,7 +39,7 @@
     <p>
         Met vriendelijke groet,
         <br/>
-        Gemeente Amsterdam
+        {{ ORGANIZATION_NAME }}
     </p>
 </body>
 </html>

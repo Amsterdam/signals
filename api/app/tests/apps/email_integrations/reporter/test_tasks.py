@@ -4,8 +4,8 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.reporter import tasks
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Signal, Status
-from tests.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class TestTasks(TestCase):

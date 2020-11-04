@@ -1,14 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from random import shuffle
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.models import DirectingDepartments, Priority
-from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import (
+from signals.apps.feedback.factories import FeedbackFactory
+from signals.apps.signals.factories import (
     AreaFactory,
     CategoryAssignmentFactory,
     CategoryFactory,
@@ -19,6 +17,8 @@ from tests.apps.signals.factories import (
     StatusFactory,
     TypeFactory
 )
+from signals.apps.signals.models import DirectingDepartments, Priority
+from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.test import SignalsBaseApiTestCase
 
 
@@ -45,7 +45,7 @@ class TestFilters(SignalsBaseApiTestCase):
         - Per day: Thursday (yesterday) 16:00, Wednesday (day before yesterday) 16:00, Tuesday 16:00
         - Per hour: Friday 16:00 (now), Friday 15:00 (now minus 1 hour), Friday 14:00 (now minus 2h)
         """
-        now = datetime.utcnow()
+        now = timezone.now()
 
         # Generate created/updated times for new signals.
         times = [now - timedelta(days=idx + 1)
@@ -101,7 +101,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_updated_after(self):
         """ Test updated_after """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"updated_after": now - timedelta(hours=4, minutes=30)}
         result_ids = self._request_filter_signals(params)
@@ -111,7 +111,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_updated_before(self):
         """ Test updated_before """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"updated_before": now - timedelta(hours=18)}
         result_ids = self._request_filter_signals(params)
@@ -121,7 +121,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_created_after(self):
         """ Test created_after """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"created_after": now - timedelta(minutes=30)}
         result_ids = self._request_filter_signals(params)
@@ -130,7 +130,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_created_before(self):
         """ Test created_before """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {"created_before": now - timedelta(days=8, hours=12)}
         result_ids = self._request_filter_signals(params)
@@ -139,7 +139,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_no_results(self):
         """ Test combination of created_before and created_after, distinct sets """
-        some_point_in_time = datetime.now() - timedelta(hours=3)
+        some_point_in_time = timezone.now() - timedelta(hours=3)
 
         params = {
             # Should return nothing. Sets are distinct, so no results
@@ -152,7 +152,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_with_one_result(self):
         """ Test combination of created_before and created_after, union contains one signal """
-        some_point_in_time = datetime.now() - timedelta(hours=3)
+        some_point_in_time = timezone.now() - timedelta(hours=3)
 
         params = {
             # Should return one that is created at (or very close to) some_point_in_time
@@ -165,7 +165,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
     def test_filter_combined_with_all_results(self):
         """ Test combination of created_before and created_after, union contains all signals """
-        now = datetime.now()
+        now = timezone.now()
 
         params = {
             # Should return one that is created at (or very close to) some_point_in_time
@@ -518,6 +518,22 @@ class TestFilters(SignalsBaseApiTestCase):
         params = {'directing_department': ['null', department.code]}
         result_ids = self._request_filter_signals(params)
         self.assertEqual(2, len(result_ids))
+
+    def test_filter_category_id(self):
+        """
+        Test the category_id filter. When the ID of a category is know there is no need to filter by slug(s) we can just
+        use the category_id to filter on.
+        """
+        params = {'category_id': [
+            self.signals[0].category_assignment.category.id,
+            self.signals[1].category_assignment.category.id,
+        ]}
+        result_ids = self._request_filter_signals(params)
+
+        expected_cnt = len([
+            signal for signal in self.signals if signal.category_assignment.category.id in params['category_id']
+        ])
+        self.assertEqual(expected_cnt, len(result_ids))
 
 
 class TestPriorityFilter(SignalsBaseApiTestCase):
@@ -878,3 +894,101 @@ class TestAreaFilter(SignalsBaseApiTestCase):
         # filter on both
         result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
         self.assertEqual(1, len(result_ids))
+
+
+class TestParentSignalFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def test_retrieve_all_parents_with_changes_in_children(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parent_signal = SignalFactory()
+
+        with freeze_time(now):
+            SignalFactory(parent=parent_signal)
+
+        filter_params = {'has_changed_children': True}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(ids, [parent_signal.id])
+
+    def test_retrieve_all_parents_with_no_changes_in_children(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parent_signal = SignalFactory()
+
+        with freeze_time(now):
+            SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            parent_signal.save()
+
+        filter_params = {'has_changed_children': 'False'}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), 1)
+        self.assertEqual(ids, [parent_signal.id])
+
+    def test_retrieve_mixed_signals(self):
+        # A bunch of normal signals that should never be retrieved by this filter
+        SignalFactory.create_batch(5)
+
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parents_with_changes = SignalFactory.create_batch(3)
+            parents_without_changes = SignalFactory.create_batch(2)
+
+        with freeze_time(now):
+            for parent_signal in parents_with_changes:
+                SignalFactory(parent=parent_signal)
+
+            for parent_signal in parents_without_changes:
+                SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            for parent_signal in parents_without_changes:
+                parent_signal.save()
+
+        filter_params = {'has_changed_children': True}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_with_changes))
+        self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_with_changes]))
+
+        filter_params = {'has_changed_children': False}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_without_changes))
+        self.assertEqual(set(ids), set([parent_signal.id for parent_signal in parents_without_changes]))
+
+    def test_retrieve_multiple(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=1)):
+            parents_with_changes = SignalFactory.create_batch(3)
+            parents_without_changes = SignalFactory.create_batch(2)
+
+        with freeze_time(now):
+            for parent_signal in parents_with_changes:
+                SignalFactory(parent=parent_signal)
+
+            for parent_signal in parents_without_changes:
+                SignalFactory(parent=parent_signal)
+
+        with freeze_time(now + timedelta(hours=1)):
+            for parent_signal in parents_without_changes:
+                parent_signal.save()
+
+        filter_params = {'has_changed_children': ['true', 0]}
+        ids = self._request_filter_signals(filter_params)
+        self.assertEqual(len(ids), len(parents_with_changes) + len(parents_without_changes))

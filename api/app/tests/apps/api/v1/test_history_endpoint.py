@@ -1,11 +1,14 @@
 import os
 from datetime import timedelta
 
+from django.utils import timezone
+from freezegun import freeze_time
+
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, Signal
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from signals.apps.signals.models import Category, History, Signal
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -94,6 +97,66 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(new_entry['who'], self.user.username)
         self.assertEqual(new_entry['description'], status.text)
 
+    def test_sla_in_history(self):
+        # Get a baseline for the Signal history
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
+        what_in_history = [entry['what'] for entry in data]
+        self.assertIn('UPDATE_CATEGORY_ASSIGNMENT', what_in_history)
+        self.assertEquals(1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
+
+        self.assertIn('UPDATE_SLA', what_in_history)
+        self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
+
+        actions_in_history = [entry['action'] for entry in data]
+        self.assertIn('Servicebelofte:', actions_in_history)
+
+        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']  # noqa
+        self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
+                         sla_description_in_history[0])
+
+    def test_sla_only_once_in_history(self):
+        # Update the Signal category, and check that we only have the original SLA hadnling message in the history
+        now = timezone.now()
+        hours = 1
+        categories = Category.objects.filter(parent__isnull=False).order_by('?')[:5]
+        for category in categories:
+            with freeze_time(now + timedelta(hours=hours)):
+                Signal.actions.update_category_assignment(
+                    {
+                        'category': category,
+                        'text': 'DIT IS EEN TEST',
+                    },
+                    self.signal
+                )
+                hours += 1
+
+        # Get a baseline for the Signal history
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 200)
+
+        # JSONSchema validation
+        data = response.json()
+        self.assertJsonSchema(self.list_history_schema, data)
+
+        what_in_history = [entry['what'] for entry in data]
+        self.assertIn('UPDATE_CATEGORY_ASSIGNMENT', what_in_history)
+        self.assertEquals(6, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
+
+        self.assertIn('UPDATE_SLA', what_in_history)
+        self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
+
+        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']  # noqa
+        self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
+                         sla_description_in_history[0])
+
 
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def setUp(self):
@@ -125,7 +188,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertEqual(len(response_data), 5)
+        self.assertEqual(len(response_data), 6)
 
         # Note the unhappy flow regarding feedback is tested in the feedback
         # app. Here we only check that it shows up in the history.
@@ -150,7 +213,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertEqual(len(response_data), 6)
+        self.assertEqual(len(response_data), 7)
 
         # check that filtering by RECEIVE_FEEDBACK works
         response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')

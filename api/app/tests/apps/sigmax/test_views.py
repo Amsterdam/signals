@@ -12,8 +12,8 @@ from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 impor
     ACTUALISEER_ZAAK_STATUS
 )
 from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import History, Signal
-from tests.apps.signals.factories import SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
 
 SOAP_ENDPOINT = '/signals/sigmax/soap'

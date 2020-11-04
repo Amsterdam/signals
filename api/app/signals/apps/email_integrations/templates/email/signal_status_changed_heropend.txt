@@ -18,4 +18,4 @@ Als u vragen heeft over deze melding, dan kunt u voor meldingen in Amsterdam bel
 
 Met vriendelijke groet,
 
-Gemeente Amsterdam
+{{ ORGANIZATION_NAME }}

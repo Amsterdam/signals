@@ -6,8 +6,8 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.toezicht_or_nieuw_west import \
     mail as toezicht_or_nieuw_west_mail  # noqa
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import STADSDEEL_NIEUWWEST
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestIntegrationToezichtORNieuwWest(TestCase):
@@ -42,6 +42,6 @@ class TestIntegrationToezichtORNieuwWest(TestCase):
         mocked_django_send_mail.assert_called_once_with(
             subject='Nieuwe melding op meldingen.amsterdam.nl',
             message=mocked_message,
-            from_email=settings.NOREPLY,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['test@test.com', ]
         )

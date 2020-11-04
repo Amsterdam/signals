@@ -12,11 +12,11 @@ from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
 from freezegun import freeze_time
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
+from signals.apps.signals.factories import DepartmentFactory, SignalFactory
 from signals.apps.signals.models import DirectingDepartments
-from tests.apps.feedback.factories import FeedbackFactory
-from tests.apps.signals.factories import DepartmentFactory, SignalFactory
 
 
 class TestDatawarehouse(testcases.TestCase):

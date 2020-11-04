@@ -22,4 +22,4 @@ Het melden van overlast bij de gemeente wordt continu verbeterd. Gebruik bij voo
 
 Met vriendelijke groet,
 
-Gemeente Amsterdam
+{{ ORGANIZATION_NAME }}

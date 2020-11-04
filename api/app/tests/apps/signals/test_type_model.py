@@ -4,8 +4,8 @@ from django.test import TestCase
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Type
-from tests.apps.signals.factories import SignalFactory
 
 
 class TestTypeModel(TestCase):

@@ -6,7 +6,9 @@ from signals.apps.api.v1.filters.utils import (
     _get_parent_category_queryset,
     area_choices,
     area_type_choices,
+    boolean_choices,
     buurt_choices,
+    category_choices,
     contact_details_choices,
     department_choices,
     feedback_choices,
@@ -24,6 +26,8 @@ class SignalFilterSet(FilterSet):
     area_code = filters.ChoiceFilter(field_name='location__area_code', choices=area_choices)
     area_type_code = filters.ChoiceFilter(field_name='location__area_type_code', choices=area_type_choices)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code', choices=buurt_choices)
+    category_id = filters.MultipleChoiceFilter(field_name='category_assignment__category_id',
+                                               choices=category_choices)
     category_slug = filters.ModelMultipleChoiceFilter(
         queryset=_get_child_category_queryset(),
         to_field_name='slug',
@@ -37,6 +41,7 @@ class SignalFilterSet(FilterSet):
     )
     created_after = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
     feedback = filters.ChoiceFilter(method='feedback_filter', choices=feedback_choices)
+    has_changed_children = filters.MultipleChoiceFilter(method='has_changed_children_filter', choices=boolean_choices)
     kind = filters.MultipleChoiceFilter(method='kind_filter', choices=kind_choices)  # SIG-2636
     incident_date = filters.DateFilter(field_name='incident_date_start', lookup_expr='date')
     incident_date_before = filters.DateFilter(field_name='incident_date_start', lookup_expr='date__gte')
@@ -70,14 +75,15 @@ class SignalFilterSet(FilterSet):
         """
         Add custom category filtering to the filter_queryset
         """
-        main_categories = self.form.cleaned_data['maincategory_slug']
-        sub_categories = self.form.cleaned_data['category_slug']
+        if not self.form.cleaned_data['category_id']:
+            main_categories = self.form.cleaned_data['maincategory_slug']
+            sub_categories = self.form.cleaned_data['category_slug']
 
-        if main_categories or sub_categories:
-            queryset = queryset.filter(
-                Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
-                Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
-            )
+            if main_categories or sub_categories:
+                queryset = queryset.filter(
+                    Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) |
+                    Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+                )
 
         self._cleanup_form_data()
         return super(SignalFilterSet, self).filter_queryset(queryset=queryset)
@@ -215,6 +221,21 @@ class SignalFilterSet(FilterSet):
     def type_filter(self, queryset, name, value):
         return queryset.annotate(type_assignment_id=Max('types__id')).filter(types__id=F('type_assignment_id'),
                                                                              types__name__in=value)
+
+    def has_changed_children_filter(self, queryset, name, value):
+        # we have a MultipleChoiceFilter ...
+        choices = list(set(map(lambda x: True if x in [True, 'True', 'true', 1] else False, value)))
+        q_filter = Q(children__isnull=False)
+        if len(choices) == 2:
+            return queryset.filter(q_filter)
+
+        if True in choices:
+            q_filter &= Q(updated_at__lt=F('children__updated_at'))  # noqa Selects all parent signals with changes in the child signals
+
+        if False in choices:
+            q_filter &= Q(updated_at__gt=F('children__updated_at'))  # noqa Selects all parent signals with NO changes in the child signals
+
+        return queryset.filter(q_filter)
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):
