@@ -1,3 +1,4 @@
+import io
 from unittest.mock import patch
 
 from django.test import TestCase
@@ -20,9 +21,13 @@ class MapGeneratorTest(TestCase):
         self.assertEqual(x, 67322)
         self.assertEqual(y, 43079)
 
-    @patch("signals.apps.signals.utils.map.MapGenerator.load_image")
-    def test_make_map(self, load_image):
-        load_image.return_value = Image.new("RGBA", (3*256, 3*256), 0)
+    @patch("urllib.request.urlopen")
+    def test_make_map(self, urlopen):
+        tile_img = Image.new("RGBA", (256, 256), 0)
+        png_array = io.BytesIO()
+        tile_img.save(png_array, format='png')
+        urlopen.return_value.__enter__.return_value.read.return_value = png_array.getvalue()
+
         try:
             mg = MapGenerator()
             map = mg.make_map(
