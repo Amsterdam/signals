@@ -5,10 +5,12 @@ from datetime import timedelta
 from unittest import skip
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.utils import timezone
 from django.utils.http import urlencode
 from freezegun import freeze_time
@@ -70,6 +72,16 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 401)
 
 
+@override_settings(FEATURE_FLAGS={
+    'API_SEARCH_ENABLED': False,
+    'SEARCH_BUILD_INDEX': False,
+    'API_DETERMINE_STADSDEEL_ENABLED': True,
+    'API_FILTER_EXTRA_PROPERTIES': True,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
+})
 class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
@@ -1235,6 +1247,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def _create_split_signal(self):
         parent_signal = SignalFactory.create()
         split_data = [
@@ -1252,6 +1265,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         return parent_signal
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_get_split_signal(self):
         """ A GET /<signal_id>/split on a split signal should return a 200 with its
         children in the response body """
@@ -1267,12 +1281,14 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertJsonSchema(self.post_split_schema, json_response)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_get_not_split_signal(self):
         """ A GET /<signal_id>/split on a non-split signal should return a 404 """
         signal = SignalFactory.create()
         response = self.client.get(self.split_endpoint.format(pk=signal.pk))
         self.assertEqual(404, response.status_code)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_post_split_signal(self):
         """ A POST /<signal_id>/split on an already updated signal should return a 412 """
         signal = self._create_split_signal()
@@ -1281,6 +1297,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(412, response.status_code)
         self.assertEqual("Signal has already been split", response.json()["detail"])
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_child_cannot_be_split(self):
         """Child signals cannot themselves have children (i.e. not be split)."""
         response = self.client.post(
@@ -1323,6 +1340,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             )
             self.assertEqual(response.status_code, 412)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_empty_data(self):
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1335,11 +1353,13 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()['children'],
-            "A signal can only be split into min 2 and max 3 signals"
+            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
+            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_less_than_min_data(self):
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1357,11 +1377,13 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()['children'],
-            'A signal can only be split into min 2 and max 3 signals'
+            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
+            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)
 
+    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_more_than_max_data(self):
         self.assertEqual(Signal.objects.count(), 2)
 
@@ -1391,7 +1413,8 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()['children'],
-            'A signal can only be split into min 2 and max 3 signals'
+            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
+            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
         )
 
         self.assertEqual(Signal.objects.count(), 2)
@@ -1803,6 +1826,16 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(response.json()), 1)
 
 
+@override_settings(FEATURE_FLAGS={
+    'API_SEARCH_ENABLED': False,
+    'SEARCH_BUILD_INDEX': False,
+    'API_DETERMINE_STADSDEEL_ENABLED': True,
+    'API_FILTER_EXTRA_PROPERTIES': True,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
+})
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = list_endpoint + '{}'
@@ -1892,6 +1925,16 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 @freeze_time('2019-11-01 12:00:00', tz_offset=1)
+@override_settings(FEATURE_FLAGS={
+    'API_SEARCH_ENABLED': False,
+    'SEARCH_BUILD_INDEX': False,
+    'API_DETERMINE_STADSDEEL_ENABLED': True,
+    'API_FILTER_EXTRA_PROPERTIES': True,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
+})
 class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, SIAReadWriteUserMixin,
                                           SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
