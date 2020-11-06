@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.gis.admin import GeoModelAdmin
+from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import transaction
 from django.db.models import Q
 
@@ -85,7 +85,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 admin.site.register(Department, DepartmentAdmin)
 
 
-class AreaAdmin(GeoModelAdmin):
+class AreaAdmin(OSMGeoAdmin):
     search_fields = ['name', 'code', '_type__name', '_type__code']
     list_display = ['name', 'code', '_type']
     list_filter = ['_type__code']
