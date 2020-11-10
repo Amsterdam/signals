@@ -266,6 +266,9 @@ EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
 if not EMAIL_USE_TLS:
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
+CELERY_EMAIL_BACKEND = os.getenv('CELERY_EMAIL_BACKEND', None)
+EMAIL_REST_ENDPOINT = os.getenv('EMAIL_REST_ENDPOINT', None)
+EMAIL_REST_ENDPOINT_TIMEOUT = os.getenv('EMAIL_REST_ENDPOINT_TIMEOUT', 5)
 
 # Email integration settings
 EMAIL_INTEGRATIONS = dict(
