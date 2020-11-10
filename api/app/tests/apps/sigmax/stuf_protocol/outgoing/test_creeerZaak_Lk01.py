@@ -204,7 +204,8 @@ class TestAddressMatchesSigmaxExpectation(TestCase):
 class TestGenerateCreeerZaakLk01Message(TestCase, XmlTestMixin):
 
     def setUp(self):
-        self.signal: Signal = SignalFactoryValidLocation.create()
+        self.signal: Signal = SignalFactoryValidLocation.create(incident_date_start=timezone.now() - timedelta(days=1),
+                                                                incident_date_end=timezone.now())
         self.seq_no = _generate_sequence_number(self.signal)
 
     def test_is_xml(self):
