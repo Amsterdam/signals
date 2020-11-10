@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         to_create = int(options['to_create'] or self.default_to_create)
-        if not 0 < to_create <= 10:
+        if not self.min_to_create <= to_create <= self.max_to_create:
             self.stderr.write(f'The to create option must be an integer from {self.min_to_create} to '
                               f'{self.max_to_create}, {to_create} given')
         else:
