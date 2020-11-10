@@ -27,7 +27,6 @@ class History(models.Model):
 
     def get_action(self):  # noqa: C901
         """Generate text for the action field that can serve as title in UI."""
-        print('--->', self.what)
         if self.what == 'UPDATE_STATUS':
             return f'Status gewijzigd naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
         elif self.what == 'UPDATE_PRIORITY':
