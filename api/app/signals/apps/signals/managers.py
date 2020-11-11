@@ -11,8 +11,7 @@ from signals.settings import DEFAULT_SIGNAL_AREA_TYPE
 
 create_initial = DjangoSignal(providing_args=['signal_obj'])
 create_child = DjangoSignal(providing_args=['signal_obj'])
-add_image = DjangoSignal(providing_args=['signal_obj'])
-add_attachment = DjangoSignal(providing_args=['signal_obj'])
+add_attachment = DjangoSignal(providing_args=['signal_obj', 'attachment'])
 update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
 update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
 update_category_assignment = DjangoSignal(providing_args=['signal_obj',
@@ -277,10 +276,9 @@ class SignalManager(models.Manager):
             attachment.file = file
             attachment.save()
 
-            if attachment.is_image:
-                add_image.send_robust(sender=self.__class__, signal_obj=signal)
-
-            add_attachment.send_robust(sender=self.__class__, signal_obj=signal)
+            # SIG-2213 use transaction.on_commit to send relevant Django signals
+            transaction.on_commit(lambda: add_attachment.send_robust(
+                sender=self.__class__, signal_obj=signal, attachment=attachment))
 
         return attachment
 
@@ -686,8 +684,15 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models import Signal
 
         with transaction.atomic():
+            to_send = []
+            sender = self.__class__
+
             attachments = []
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
             for attachment in data:
                 attachments.append(self._copy_attachment_no_transaction(attachment, locked_signal))
+                to_send.append((add_attachment, {'sender': sender, 'signal_obj': signal, 'attachment': attachment}))
+
+            transaction.on_commit(lambda: send_signals(to_send))  # SIG-2213
+
         return attachments
