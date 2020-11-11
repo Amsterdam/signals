@@ -55,7 +55,7 @@ class History(models.Model):
     def get_who(self):
         """Generate string to show in UI, missing users are set to default."""
         if self.who is None:
-            return 'SIA systeem'
+            return 'Signalen systeem'
         return self.who
 
     def get_description(self):
