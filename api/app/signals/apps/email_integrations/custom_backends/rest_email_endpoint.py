@@ -15,6 +15,7 @@ class RestEmailBackend(BaseEmailBackend):
         try:
             response = session.post(
                 url=settings.EMAIL_REST_ENDPOINT,
+                headers = {'Content-type': 'application/json', 'Accept': 'text/plain'},
                 data=json.dumps(message),
                 timeout=settings.EMAIL_REST_ENDPOINT_TIMEOUT,
             )
