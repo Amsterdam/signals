@@ -12,6 +12,8 @@ from signals.settings.settings_databases import (
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+TRUE_VALUES = [True, 'True', 'true', '1']
+
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = False
@@ -161,7 +163,7 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
-if os.getenv('SWIFT_ENABLED', 'False') in ['True', 'true', '1']:
+if os.getenv('SWIFT_ENABLED', 'False') in TRUE_VALUES:
     # The default settings when using SwiftStorage to the general SIA ObjectStore
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
@@ -481,8 +483,8 @@ SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
-# SIG-884
-SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
+# Child settings
+SIGNAL_MIN_NUMBER_OF_CHILDREN = 2  # TODO: Remove when split functionality will be removed from the code
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
 # SIG-1017
@@ -504,14 +506,14 @@ SEARCH = {
 }
 
 FEATURE_FLAGS = {
-    'API_FILTER_EXTRA_PROPERTIES': True,
-    'API_SEARCH_ENABLED': True,
-    'SEARCH_BUILD_INDEX': True,
-    'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
+    'API_FILTER_EXTRA_PROPERTIES': os.getenv('API_FILTER_EXTRA_PROPERTIES', True) in TRUE_VALUES,
+    'API_SEARCH_ENABLED': os.getenv('API_SEARCH_ENABLED', True) in TRUE_VALUES,
+    'SEARCH_BUILD_INDEX': os.getenv('SEARCH_BUILD_INDEX', True) in TRUE_VALUES,
+    'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': os.getenv('API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL', True) in TRUE_VALUES,  # noqa
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': os.getenv('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True) in TRUE_VALUES,  # noqa
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': os.getenv('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True) in TRUE_VALUES,
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
@@ -544,6 +546,15 @@ DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
     'DEFAULT_PDOK_MUNICIPALITIES',
     'Amsterdam,Amstelveen,Weesp',
 ).split(',')
+
+# use dynamic map server for pdf, empty by default
+# example servers
+# 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts/brtachtergrondkaart/EPSG:3857/{zoom}/{x}/{y}.png'
+# 'https://a.tile.openstreetmap.org/{zoom}/{x}/{y}.png'
+DEFAULT_MAP_TILE_SERVER = os.getenv(
+    'DEFAULT_MAP_TILE_SERVER',
+    '',
+)
 
 # Default setting for area type
 DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')

@@ -1,11 +1,26 @@
 import uuid
-from datetime import datetime
+from datetime import timedelta
 
-import pytz
-from factory import DjangoModelFactory, RelatedFactory, post_generation
-from factory.fuzzy import FuzzyAttribute, FuzzyDateTime, FuzzyText
+from django.utils import timezone
+from factory import DjangoModelFactory, LazyAttribute, LazyFunction, RelatedFactory, post_generation
+from factory.fuzzy import FuzzyAttribute, FuzzyChoice, FuzzyDateTime
+from faker import Faker
 
 from signals.apps.signals.models import Signal
+
+fake = Faker()
+
+
+def _incident_date_end(incident_date_start):
+    """
+    - Randomly decide if a Signal incident end date must be set
+    - If decided to set the incident end date check if we can create a date between incident date start and now
+    """
+    if FuzzyChoice([True, False]).fuzz():
+        now = timezone.now()
+        if incident_date_start < now - timedelta(hours=1):
+            return FuzzyDateTime(incident_date_start, now).fuzz()
+    return None
 
 
 class SignalFactory(DjangoModelFactory):
@@ -13,8 +28,8 @@ class SignalFactory(DjangoModelFactory):
         model = Signal
 
     signal_id = FuzzyAttribute(uuid.uuid4)
-    text = FuzzyText(length=100)
-    text_extra = FuzzyText(length=100)
+    text = LazyFunction(fake.paragraph)
+    text_extra = LazyFunction(fake.paragraph)
 
     # Creating (reverse FK) related objects after this `Signal` is created.
     location = RelatedFactory('signals.apps.signals.factories.location.LocationFactory', '_signal')
@@ -26,8 +41,8 @@ class SignalFactory(DjangoModelFactory):
     reporter = RelatedFactory('signals.apps.signals.factories.reporter.ReporterFactory', '_signal')
     priority = RelatedFactory('signals.apps.signals.factories.priority.PriorityFactory', '_signal')
 
-    incident_date_start = FuzzyDateTime(datetime(2017, 11, 1, tzinfo=pytz.UTC), datetime(2018, 2, 1, tzinfo=pytz.UTC))
-    incident_date_end = FuzzyDateTime(datetime(2018, 2, 2, tzinfo=pytz.UTC), datetime(2019, 2, 2, tzinfo=pytz.UTC))
+    incident_date_start = FuzzyDateTime(timezone.now() - timedelta(days=100), timezone.now())
+    incident_date_end = LazyAttribute(lambda o: _incident_date_end(o.incident_date_start))
     extra_properties = {}
 
     # SIG-884
