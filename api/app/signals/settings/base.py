@@ -254,6 +254,7 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
 CELERY_EMAIL_CHUNK_SIZE = 1
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False') in TRUE_VALUES
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
@@ -265,9 +266,9 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') in TRUE_VALUES
 if not EMAIL_USE_TLS:
-    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True') in TRUE_VALUES
 
 # Email integration settings
 EMAIL_INTEGRATIONS = dict(

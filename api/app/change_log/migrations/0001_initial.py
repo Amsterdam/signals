@@ -1,6 +1,6 @@
-from django.db import migrations, models
 import django.db.models.deletion
 import django_extensions.db.fields.json
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
