@@ -188,51 +188,6 @@ class TestSignalManager(TestCase):
         self.assertEqual(updated_location.area_type_code, self.area._type.code)
         self.assertEqual(updated_location.area_code, self.area.code)
 
-    def test_split_default_type(self):
-        self.signal.types.all().delete()
-        split_data = [{'text': 'Child #1', 'category': {'category_url': self.category}}]
-        split_signal = Signal.actions.split(split_data=split_data, signal=self.signal)
-
-        self.assertIsNone(split_signal.type_assignment)
-        self.assertEqual(split_signal.children.count(), 1)
-
-        child_signal = split_signal.children.first()
-        self.assertIsNotNone(child_signal.type_assignment)
-        self.assertEqual(child_signal.type_assignment.name, Type.SIGNAL)
-        self.assertIsNone(child_signal.type_assignment.created_by)
-
-    def test_split_copy_type_from_parent(self):
-        Type.objects.create(name=Type.REQUEST, _signal=self.signal)
-        self.signal.refresh_from_db()
-
-        split_data = [{'text': 'Child #1', 'category': {'category_url': self.category}}]
-        split_signal = Signal.actions.split(split_data=split_data, signal=self.signal)
-
-        self.assertIsNotNone(split_signal.type_assignment)
-
-        child_signal = split_signal.children.first()
-        self.assertIsNotNone(child_signal.type_assignment)
-        self.assertEqual(child_signal.type_assignment.name, split_signal.type_assignment.name)
-        self.assertIsNone(child_signal.type_assignment.created_by)
-
-    def test_split_new_type_for_child(self):
-        Type.objects.create(name=Type.REQUEST, _signal=self.signal)
-        self.signal.refresh_from_db()
-
-        split_data = [{'text': 'Child #1',
-                       'category': {'category_url': self.category},
-                       'type': {'name': Type.MAINTENANCE}}]
-        split_signal = Signal.actions.split(split_data=split_data, signal=self.signal)
-
-        self.assertIsNotNone(split_signal.type_assignment)
-
-        child_signal = split_signal.children.first()
-        self.assertIsNotNone(child_signal.type_assignment)
-        self.assertNotEqual(child_signal.type_assignment.name, Type.SIGNAL)  # Not the default
-        self.assertNotEqual(child_signal.type_assignment.name, Type.REQUEST)  # Not the parent
-        self.assertEqual(child_signal.type_assignment.name, Type.MAINTENANCE)
-        self.assertIsNone(child_signal.type_assignment.created_by)
-
     def test_update_type(self):
         type_data = {'name': Type.QUESTION}
         Signal.actions.update_type(data=type_data, signal=self.signal)
