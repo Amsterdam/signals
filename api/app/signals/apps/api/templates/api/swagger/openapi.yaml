@@ -2045,6 +2045,9 @@ components:
           format: date-time
           nullable: true
           example: null
+        has_parent:
+          type: boolean
+          example: false
         has_children:
           type: boolean
           example: false
