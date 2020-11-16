@@ -212,7 +212,8 @@ admin.site.register(Source, SourceAdmin)
 
 
 class RoutingExpressionAdmin(admin.ModelAdmin):
-    list_filter = ['_expression___type__name']
+    list_filter = ['_expression___type__name', '_department__code']
+    list_display = ['_expression', '_department', 'is_active']
 
 
 admin.site.register(RoutingExpression, RoutingExpressionAdmin)
