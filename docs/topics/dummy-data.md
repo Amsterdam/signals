@@ -6,11 +6,11 @@ When starting with a fresh new checkout of the project it is possible to start-u
 `docker-compose up -d api`. This will start the API using the 
 [scripts/initialize.sh](../../scripts/initialize.sh) script.
 
-The script will check if there is an `app/initialize.log` file present. If the log file is not 
-present the script will reset the database and setup some dummy data for you using the management
-commands explained a little bit later in this document. The `app/initialize.log` will contain a
-line with the date time when the initialize has run. The line will have the following format: 
-`[2020-11-10T00:00:00+0000] - Done!!!`
+The script will check if the environment variable `INITIALIZE_WITH_DUMMY_DATA` is set to 1 
+(by default this functionality is turned of). If so the script will reset the database and setup 
+some dummy data for you using the management commands explained a little bit later in this document.
+The `app/initialize.log` will contain a line with the date time when the initialize has run. The 
+line will have the following format: `[2020-11-10T00:00:00+0000] - Done!!!`
 
 ## Management commands for dummy data
 

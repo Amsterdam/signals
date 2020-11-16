@@ -11,7 +11,7 @@ done
 # and load dummy data for now
 LOGFILE='/app/initialize.log'
 
-if [[ ! -f "$LOGFILE" ]]; then
+if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
   echo "Start with a fresh database"
   export PGPASSWORD=insecure
   psql -h database -p 5432 -d signals -U signals -c "drop schema public cascade;"
@@ -28,7 +28,7 @@ echo "from django.contrib.auth import get_user_model; User = get_user_model(); U
 # Collect static
 python manage.py collectstatic --no-input
 
-if [[ ! -f "$LOGFILE" ]]; then
+if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
   echo "Load dummy data"
   python manage.py load_areas stadsdeel
   python manage.py load_areas cbs-gemeente-2019

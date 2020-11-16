@@ -94,6 +94,7 @@ services:
       - SIGMAX_SERVER
       - DWH_MEDIA_ROOT=/dwh_media
       - ELASTICSEARCH_HOST=elasticsearch:9200
+      - INITIALIZE_WITH_DUMMY_DATA=0
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
