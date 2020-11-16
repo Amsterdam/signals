@@ -282,7 +282,7 @@ class TestSignalModel(TestCase):
         mocked_isinstance.assert_called()
         self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_add_first_child(self):
         signal = factories.SignalFactory.create()
 
@@ -297,7 +297,7 @@ class TestSignalModel(TestCase):
         self.assertEqual(signal_from_db.siblings.count(), 0)  # Excluding the signal self
         self.assertEqual(signal_from_db.parent.children.count(), 1)  # All children of the parent
 
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_cannot_be_parent_and_child(self):
         signal_parent = factories.SignalFactory.create()
         signal_children = factories.SignalFactory.create_batch(3, parent=signal_parent)
@@ -309,7 +309,7 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'Cannot be a parent and a child at the once')
 
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_cannot_be_child_of_a_child(self):
         signal_parent = factories.SignalFactory.create()
         signal_children = factories.SignalFactory.create_batch(3, parent=signal_parent)
@@ -323,7 +323,7 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'A child of a child is not allowed')
 
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_max_children_reached(self):
         signal_parent = factories.SignalFactory.create()
         factories.SignalFactory.create_batch(3, parent=signal_parent)
