@@ -45,7 +45,7 @@ class History(models.Model):
             return f'Type gewijzigd naar: {_history_translated_action(self.extra)}'
         elif self.what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
             extra = self.extra or 'Verantwoordelijke afdeling'
-            return f'Regie voerende afdeling/afdelingen gewijzigd naar: {extra}'
+            return f'Regie gewijzigd naar: {extra}'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
         elif self.what == 'UPDATE_SLA':
