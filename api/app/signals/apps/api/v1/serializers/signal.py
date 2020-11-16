@@ -304,6 +304,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         write_only=True,
         queryset=Signal.objects.all()
     )
+    has_parent = serializers.SerializerMethodField()
     has_children = serializers.SerializerMethodField()
 
     attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
@@ -339,12 +340,14 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'attachments',
 
             'parent',
+            'has_parent',
             'has_children',
         )
         read_only_fields = (
             'created_at',
             'updated_at',
             'has_attachments',
+            'has_parent',
             'has_children',
         )
         extra_kwargs = {
@@ -353,6 +356,9 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
+
+    def get_has_parent(self, obj):
+        return obj.parent_id is not None  # True is a parent_id is set, False if not
 
     def get_has_children(self, obj):
         return obj.children.exists()
