@@ -31,6 +31,7 @@ services:
       POSTGRES_PASSWORD: insecure
     volumes:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+      - postgres-data:/var/lib/postgresql/data
 
   rabbit:
     image: rabbitmq:3
@@ -49,7 +50,7 @@ services:
       - rabbit
       - elasticsearch
     environment:
-      - DB_NAME=meldingen
+      - DB_NAME=signals
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
@@ -66,7 +67,7 @@ services:
       - database
       - rabbit
     environment:
-      - DB_NAME=meldingen
+      - DB_NAME=signals
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
@@ -87,31 +88,20 @@ services:
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
-      - UWSGI_HTTP=0.0.0.0:8000
-      - UWSGI_MASTER=1
-      - UWSGI_STATIC_INDEX=index.html
-      - UWSGI_STATIC_MAP=/signals/static=/static
-      - UWSGI_CALLABLE=application
-      - UWSGI_VACUUM=1
-      - UWSGI_STATIC_EXPIRES=/* 3600
-      - UWSGI_OFFLOAD_THREADS=1
-      - UWSGI_HARAKIRI=15
-      - UWSGI_DIE_ON_TERM=1
-      - UWSGI_MODULE=signals.wsgi:application
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - SWIFT_ENABLED=False
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
       - DWH_MEDIA_ROOT=/dwh_media
       - ELASTICSEARCH_HOST=elasticsearch:9200
-      - ELASTICSEARCH_INDEX=signals
-      - SWIFT_ENABLED=False
+      - INITIALIZE_WITH_DUMMY_DATA=0
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
       - ./dwh_media:/dwh_media
-    command: bash -c "
-      python /app/manage.py collectstatic --noinput &&
-      uwsgi --py-auto-reload=1"
+      - ./scripts/initialize.sh:/initialize.sh
+    command:
+      - /initialize.sh
 
   import:
     build: ./import
@@ -123,3 +113,4 @@ services:
 
 volumes:
   dex-data:
+  postgres-data:
