@@ -27,7 +27,7 @@ class TestPDF(TestCase):
                     "id": "niet_in_de_pdf",
                     "label": "Nee deze staat niet in de PDF"
                 },
-                "category_url": "/signals/v1/public/terms/categories/overigr/sub_categories/overig"
+                "category_url": "/signals/v1/public/terms/categories/overig/sub_categories/overig"
                 # noqa
             },
         ]
