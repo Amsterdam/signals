@@ -16,7 +16,7 @@ from signals.auth.backend import JWTAuthBackend
 
 
 class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.select_related('parent').prefetch_related('children').all()
     lookup_field = 'slug'
 
     def get_queryset(self):
