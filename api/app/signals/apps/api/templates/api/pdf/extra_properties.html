@@ -4,7 +4,7 @@
     <h2>Extra eigenschappen</h2>
 
     <table class="table" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
-    {% for extra_property in signal.extra_properties %}
+    {% for extra_property in signal|get_extra_properties %}
         <tr>
             <td style="width: 200px;">{{ extra_property.label }}</td>
             {% if extra_property.answer|is_a_list %}
