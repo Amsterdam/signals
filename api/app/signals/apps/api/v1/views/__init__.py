@@ -8,6 +8,7 @@ from signals.apps.api.v1.views.attachment import (
 )
 from signals.apps.api.v1.views.category import PrivateCategoryViewSet, PublicCategoryViewSet
 from signals.apps.api.v1.views.category_removed import SignalCategoryRemovedAfterViewSet
+from signals.apps.api.v1.views.csv import PrivateCsvViewSet
 from signals.apps.api.v1.views.departments import PrivateDepartmentViewSet
 from signals.apps.api.v1.views.expression import PrivateExpressionViewSet
 # from signals.apps.api.v1.views.ml_tool_proxy import MlPredictCategoryView  # V1 disabled for now
@@ -28,6 +29,7 @@ __all__ = (
     'PrivateSignalViewSet',
     'SignalCategoryRemovedAfterViewSet',
     'PrivateCategoryViewSet',
+    'PrivateCsvViewSet',
     'PublicQuestionViewSet',
     # 'MlPredictCategoryView',  # V1 disabled for now
     'LegacyMlPredictCategoryView',
