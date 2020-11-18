@@ -24,6 +24,8 @@ class TestPDF(TestCase):
         signal = factories.SignalFactoryWithImage.create(
             incident_date_start=timezone.now(),
             extra_properties=extra_properties_data,
+            category_assignment__category__parent__name='Wegen, verkeer, straatmeubilair',
+            category_assignment__category__name='lantaarnpaal straatverlichting',
             reporter__email='foo@bar.com',
             reporter__phone='0612345678')
         factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
