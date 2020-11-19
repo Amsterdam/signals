@@ -16,3 +16,6 @@ class ServiceLevelObjective(models.Model):
 
     created_at = models.DateTimeField(editable=False, auto_now_add=True, null=True, blank=True)
     created_by = models.EmailField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('category', '-created_at')
