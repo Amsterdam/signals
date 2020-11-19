@@ -496,6 +496,7 @@ class TestFilters(SignalsBaseApiTestCase):
             relation_type='routing'
         )
         directing_departments.save()
+        parent_one.directing_departments_assignment = directing_departments
 
         params = {'directing_department': 'null'}
         result_ids = self._request_filter_signals(params)
@@ -511,6 +512,7 @@ class TestFilters(SignalsBaseApiTestCase):
             relation_type='directing'
         )
         directing_departments.save()
+        parent_one.directing_departments_assignment = directing_departments
 
         params = {'directing_department': 'null'}
         result_ids = self._request_filter_signals(params)
@@ -549,6 +551,7 @@ class TestFilters(SignalsBaseApiTestCase):
 
         directing_departments.departments.add(department)
         directing_departments.save()
+        parent_one.directing_departments_assignment = directing_departments
 
         parent_two = SignalFactory.create()
         SignalFactory.create_batch(2, parent=parent_two)
