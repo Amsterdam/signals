@@ -49,6 +49,8 @@ class TestTDOSignalRepresentation(TestCase):
 
         e = TDOSignal.objects.get(id=s.id)
         self.assertEqual(s.status.state, e.status)
+        self.assertEqual(s.status.get_state_display(), 'Afgehandeld')
+        self.assertEqual(e.status_display, 'Afgehandeld')
 
     def test_slugs(self):
         s = Signal.objects.first()

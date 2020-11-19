@@ -17,5 +17,6 @@ class TDOSignal(models.Model):
     updated_at = models.DateTimeField(null=False)
     geometry = models.PointField(name='geometry')
     status = models.CharField(max_length=255)
+    status_display = models.CharField(max_length=255, blank=True, null=True)
     main_slug = models.CharField(max_length=255)
     sub_slug = models.CharField(max_length=255)
