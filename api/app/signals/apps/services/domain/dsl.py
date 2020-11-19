@@ -68,7 +68,6 @@ class SignalDslService(DslService):
             if self.evaluate(signal, rule._expression.code, ctx):
                 # assign relation to department
                 data = {
-                    'relation_type': 'routing',
                     'departments': [
                         {
                             'id': rule._department.id

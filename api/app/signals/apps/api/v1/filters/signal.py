@@ -147,7 +147,6 @@ class SignalFilterSet(FilterSet):
 
         if 'null' in choices and len(choices) == 1:
             # "?directing_department=null" will select all parent Signals without a directing department
-            # we either have a relation with empty departments or no 'directing' relation at all
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__isnull=True)

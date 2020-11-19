@@ -660,7 +660,7 @@ class SignalManager(models.Manager):
             )
             signal.save()
         except Exception:
-            pass
+            raise ValidationError('Could not set user assignment')
         return signal.user_assignment
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
@@ -687,7 +687,7 @@ class SignalManager(models.Manager):
         elif relation_type == SignalDepartments.REL_ROUTING:
             signal.routing_assignment = relation
         else:
-            raise Exception(f'Signal - department relation {relation_type} is not supported')
+            raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
         return relation
 
@@ -709,14 +709,12 @@ class SignalManager(models.Manager):
 
     def update_routing_departments(self, data, signal):
         from signals.apps.signals.models import Signal
-        from signals.apps.signals.models.signal_departments import SignalDepartments
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            departments = self._update_signal_departments_no_transaction(
+            departments = self._update_directing_departments_no_transaction(
                 data=data,
-                signal=locked_signal,
-                relation_type=SignalDepartments.REL_ROUTING
+                signal=locked_signal
             )
 
         return departments

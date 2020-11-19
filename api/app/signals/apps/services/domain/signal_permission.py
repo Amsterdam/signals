@@ -3,7 +3,7 @@ from django.db.models import Q
 
 class SignalPermissionService:
 
-    def make_permisson_condition(self, user):
+    def make_permisson_condition_for_user(self, user):
         category_ids = user.profile.departments.prefetch_related(
             'categorydepartment_set'
         ).filter(

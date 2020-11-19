@@ -5,7 +5,7 @@ from signals.apps.api.v1.serializers.nested import _NestedDepartmentModelSeriali
 from signals.apps.signals.models import RoutingExpression
 
 
-class RoutingDepartmentSerializer(serializers.ModelSerializer):
+class RoutingExpressionSerializer(serializers.ModelSerializer):
     department = _NestedDepartmentModelSerializer(
         source='_department',
         many=False,

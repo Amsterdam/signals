@@ -2,7 +2,7 @@ from datapunt_api.serializers import HALSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.api.v1.serializers.routing import RoutingDepartmentSerializer
+from signals.apps.api.v1.serializers.routing import RoutingExpressionSerializer
 from signals.apps.signals.models import (
     Expression,
     ExpressionContext,
@@ -22,7 +22,7 @@ class ExpressionContextSerializer(serializers.ModelSerializer):
 class ExpressionSerializer(HALSerializer):
     id = serializers.ReadOnlyField()
     type = serializers.ReadOnlyField(source='_type.name')
-    routing_department = RoutingDepartmentSerializer(required=False)
+    routing_department = RoutingExpressionSerializer(required=False)
 
     class Meta:
         model = Expression

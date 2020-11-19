@@ -160,10 +160,6 @@ CREATE VIEW "signals_history_view" AS
     DESC;
 """ # noqa
 
-reverse_history_view = """
-DROP VIEW IF EXISTS "signals_history_view";
-"""
-
 
 class Migration(migrations.Migration):
 
@@ -172,5 +168,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(history_view, reverse_history_view),
+        migrations.RunSQL(history_view),
     ]
