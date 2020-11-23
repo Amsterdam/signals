@@ -34,13 +34,13 @@ class PrivateCsvViewSet(viewsets.ViewSet):
 
     @action(methods=['get'], detail=True, renderer_classes=(PassthroughRenderer,))
     def download(self, *args, **kwargs):
-        if not settings.DEFAULT_CSV_FILE_LOCATION:
+        if not settings.DWH_MEDIA_ROOT:
             return self._not_found(msg='Unconfigured Csv location')
 
-        if not os.path.exists(settings.DEFAULT_CSV_FILE_LOCATION):
+        if not os.path.exists(settings.DWH_MEDIA_ROOT):
             return self._not_found(msg='Incorrect Csv folder')
 
-        list_of_files = glob.glob(f'{settings.DEFAULT_CSV_FILE_LOCATION}/*.zip', recursive=False)
+        list_of_files = glob.glob(f'{settings.DWH_MEDIA_ROOT}/*.zip', recursive=True)
         latest_file = None if not list_of_files else max(list_of_files, key=os.path.getctime)
 
         if not latest_file:
@@ -58,7 +58,7 @@ class PrivateCsvViewSet(viewsets.ViewSet):
 
     def _not_found(self, msg):
         return Response(
-            data= {
+            data={
                 'result': msg
             },
             status=status.HTTP_404_NOT_FOUND

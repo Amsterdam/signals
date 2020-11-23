@@ -564,7 +564,3 @@ DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
 # Note: this assumes the configured image is available through the staticfiles
 # app.
 API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemeente-amsterdam.svg')
-
-# default folder where the csv files will be stored by the background worker.
-# the csv endpoint use this folder to serve the csv dumps
-DEFAULT_CSV_FILE_LOCATION = os.getenv('DEFAULT_CSV_FILE_LOCATION', None)
