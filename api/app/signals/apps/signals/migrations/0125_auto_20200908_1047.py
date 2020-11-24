@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0123_signaldepartments'),
+        ('signals', '0124_signaldepartments'),
         ('users', '0007_signaluser'),
     ]
 
