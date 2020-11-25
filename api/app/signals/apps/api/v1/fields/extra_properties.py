@@ -25,7 +25,7 @@ class SignalExtraPropertiesField(JSONField):
         category_urls = [category_url, f'{category_url}/']
         if category.is_child():
             category_url = url_from_category(category.parent)
-            category_urls = [category_url, f'{category_url}/']
+            category_urls += [category_url, f'{category_url}/']
 
         return filter(
             lambda x: 'category_url' in x and x['category_url'] in category_urls, representation
