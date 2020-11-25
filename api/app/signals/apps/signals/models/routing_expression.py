@@ -8,7 +8,7 @@ class RoutingExpressionManager(models.Manager):
         department = data['_department']['id']
         order = data.get('order', None)
         if not hasattr(instance, 'routing_department'):
-            instance.routing_department = RoutingExpression.objects.create(
+            instance.routing_department = RoutingExpression.actions.create(
                 _department=department,
                 _expression=instance,
                 order=order
