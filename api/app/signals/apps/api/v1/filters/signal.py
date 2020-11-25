@@ -86,7 +86,8 @@ class SignalFilterSet(FilterSet):
                 )
 
         self._cleanup_form_data()
-        return super(SignalFilterSet, self).filter_queryset(queryset=queryset)
+        queryset = super(SignalFilterSet, self).filter_queryset(queryset=queryset)
+        return queryset.distinct()
 
     # Custom filter functions
 
@@ -150,7 +151,7 @@ class SignalFilterSet(FilterSet):
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__isnull=True)
-            ).distinct()
+            )
         elif 'null' in choices and len(choices) > 1:
             # "?directing_department=ASC&directing_department=null" will select all parent Signals without a directing
             # department OR ASC as the directing department
@@ -160,13 +161,13 @@ class SignalFilterSet(FilterSet):
                     Q(directing_departments_assignment__isnull=True) |
                     Q(directing_departments_assignment__departments__code__in=choices)
                 )
-            ).distinct()
+            )
         elif len(choices):
             # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__departments__code__in=choices)
-            ).distinct()
+            )
         return queryset
 
     def feedback_filter(self, queryset, name, value):
@@ -213,10 +214,10 @@ class SignalFilterSet(FilterSet):
         while choices:
             q_filter |= q_objects[choices.pop()]
 
-        return queryset.filter(q_filter).distinct() if q_filter else queryset
+        return queryset.filter(q_filter) if q_filter else queryset
 
     def note_keyword_filter(self, queryset, name, value):
-        return queryset.filter(notes__text__icontains=value).distinct()
+        return queryset.filter(notes__text__icontains=value)
 
     def type_filter(self, queryset, name, value):
         return queryset.annotate(type_assignment_id=Max('types__id')).filter(types__id=F('type_assignment_id'),
