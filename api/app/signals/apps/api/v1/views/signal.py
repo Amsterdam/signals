@@ -64,6 +64,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'children',
         'attachments',
         'notes',
+        'signal_departments',
+        'user_assignment',
     ).all()
 
     # Geography queryset to reduce the complexity of the query

@@ -31,5 +31,6 @@ __all__ = (
     '_NestedSplitSignalSerializer',
     '_NestedTypeModelSerializer',
     '_NestedDepartmentModelSerializer',
+    '_NestedUserModelSerializer',
     '_NestedPublicDepartmentSerializer',
 )

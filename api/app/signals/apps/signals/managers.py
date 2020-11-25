@@ -560,6 +560,7 @@ class SignalManager(models.Manager):
                         self._update_category_assignment_no_transaction(
                             data['category_assignment'], locked_signal)
 
+                    self._clear_routing_and_assigned_user_no_transaction(locked_signal)
                     to_send.append((update_category_assignment, {
                         'sender': sender,
                         'signal_obj': locked_signal,
@@ -598,16 +599,20 @@ class SignalManager(models.Manager):
                 }))
 
             if 'directing_departments_assignment' in data:
-                previous_directing_departments = locked_signal.directing_departments_assignment
-                directing_departments = self._update_directing_departments_no_transaction(
+                self._update_directing_departments_no_transaction(
                     data['directing_departments_assignment'], locked_signal
                 )
-                to_send.append((update_type, {
-                    'sender': sender,
-                    'signal_obj': locked_signal,
-                    'directing_departments': directing_departments,
-                    'prev_directing_departments': previous_directing_departments
-                }))
+
+            if 'routing_assignment' in data:
+                update_detail_data = data['routing_assignment']
+                self._update_routing_departments_no_transaction(
+                    update_detail_data, locked_signal
+                )
+
+            if 'user_assignment' in data:
+                self._update_user_signal_no_transaction(
+                    data, locked_signal
+                )
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
@@ -644,26 +649,75 @@ class SignalManager(models.Manager):
 
         return signal_type
 
-    def _update_directing_departments_no_transaction(self, data, signal):
-        from signals.apps.signals.models.directing_departments import DirectingDepartments
+    def _update_user_signal_no_transaction(self, data, signal):
+        from signals.apps.users.models import User, SignalUser
+        try:
+            user_id = data['user_assignment']['user']['id']
+            signal.user_assignment = SignalUser.objects.create(
+                _signal=signal,
+                user=None if not user_id else User.objects.get(pk=user_id),
+                created_by=data['created_by'] if 'created_by' in data else None
+            )
+            signal.save()
+        except Exception:
+            raise ValidationError('Could not set user assignment')
+        return signal.user_assignment
 
-        directing_departments = DirectingDepartments.objects.create(_signal=signal, created_by=data['created_by'])
+    def _update_signal_departments_no_transaction(self, data, signal, relation_type):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+
+        relation = SignalDepartments.objects.create(
+            _signal=signal,
+            relation_type=relation_type,
+            created_by=data['created_by'] if 'created_by' in data else None
+        )
+
+        # check if different dep id is set, reset assigned user
+        if signal.user_assignment and relation_type == SignalDepartments.REL_ROUTING:
+            if signal.routing_assignment and signal.routing_assignment.departments.exclude(
+                id__in=[dept.id for dept in relation.departments.all()]
+            ).exists():
+                signal.user_assignment = None
+
         for department_data in data['departments']:
-            directing_departments.departments.add(department_data['id'])
+            relation.departments.add(department_data['id'])
 
-        signal.directing_departments_assignment = directing_departments
+        if relation_type == SignalDepartments.REL_DIRECTING:
+            signal.directing_departments_assignment = relation
+        elif relation_type == SignalDepartments.REL_ROUTING:
+            signal.routing_assignment = relation
+        else:
+            raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
+        return relation
 
-        return directing_departments
+    def _update_directing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_DIRECTING)
 
-    def update_directing_departments(self, data, signal):
+    def _update_routing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
+
+    def _clear_routing_and_assigned_user_no_transaction(self, signal):
+        if signal.user_assignment:
+            signal.user_assignment = None
+        if signal.routing_assignment:
+            signal.routing_assignment = None
+        signal.save()
+        return signal
+
+    def update_routing_departments(self, data, signal):
         from signals.apps.signals.models import Signal
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            directing_departments = self._update_directing_departments_no_transaction(data=data, signal=locked_signal)
+            departments = self._update_directing_departments_no_transaction(
+                data=data,
+                signal=locked_signal
+            )
 
-        return directing_departments
+        return departments
 
     def _copy_attachment_no_transaction(self, source_attachment, signal):
         from signals.apps.signals.models import Attachment

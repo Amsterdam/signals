@@ -46,6 +46,11 @@ class History(models.Model):
         elif self.what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
             extra = self.extra or 'Verantwoordelijke afdeling'
             return f'Regie gewijzigd naar: {extra}'
+        elif self.what == 'UPDATE_ROUTING_ASSIGNMENT':
+            extra = self.extra or 'Verantwoordelijke afdeling (routering)'
+            return f'Routering: afdeling/afdelingen gewijzigd naar: {extra}'
+        elif self.what == 'UPDATE_USER_ASSIGNMENT':
+            return f'Melding toewijzing gewijzigd naar: {self.extra}'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
         elif self.what == 'UPDATE_SLA':

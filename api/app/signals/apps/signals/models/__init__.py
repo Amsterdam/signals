@@ -7,7 +7,6 @@ from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.category_question import CategoryQuestion
 from signals.apps.signals.models.category_translation import CategoryTranslation
 from signals.apps.signals.models.department import Department
-from signals.apps.signals.models.directing_departments import DirectingDepartments
 from signals.apps.signals.models.expression import Expression, ExpressionContext, ExpressionType
 from signals.apps.signals.models.history import History
 from signals.apps.signals.models.location import (
@@ -30,7 +29,9 @@ from signals.apps.signals.models.note import Note
 from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.question import Question
 from signals.apps.signals.models.reporter import Reporter
+from signals.apps.signals.models.routing_expression import RoutingExpression
 from signals.apps.signals.models.signal import Signal
+from signals.apps.signals.models.signal_departments import SignalDepartments
 from signals.apps.signals.models.slo import ServiceLevelObjective
 from signals.apps.signals.models.source import Source
 from signals.apps.signals.models.status import Status
@@ -53,7 +54,7 @@ __all__ = [
     'ExpressionType',
     'ExpressionContext',
     'Expression',
-    'DirectingDepartments',
+    'SignalDepartments',
     'History',
     'STADSDEEL_AMSTERDAMSE_BOS',
     'STADSDEEL_CENTRUM',
@@ -80,4 +81,5 @@ __all__ = [
     'StatusMessageTemplate',
     'StoredSignalFilter',
     'Type',
+    'RoutingExpression',
 ]

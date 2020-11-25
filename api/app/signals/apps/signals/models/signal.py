@@ -47,10 +47,18 @@ class Signal(CreatedUpdatedModel):
                                     related_name='signal',
                                     null=True,
                                     on_delete=models.SET_NULL)
-    directing_departments_assignment = models.OneToOneField('signals.DirectingDepartments',
-                                                            related_name='signal',
+    directing_departments_assignment = models.OneToOneField('signals.SignalDepartments',
+                                                            related_name='directing_department_signal',
                                                             null=True,
                                                             on_delete=models.SET_NULL)
+    routing_assignment = models.OneToOneField('signals.SignalDepartments',
+                                              related_name='routing_signal',
+                                              null=True,
+                                              on_delete=models.SET_NULL)
+    user_assignment = models.OneToOneField('users.SignalUser',
+                                           related_name='user_assignment_signal',
+                                           null=True,
+                                           on_delete=models.SET_NULL)
 
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)

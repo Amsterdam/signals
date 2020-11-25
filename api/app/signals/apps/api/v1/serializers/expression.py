@@ -2,7 +2,13 @@ from datapunt_api.serializers import HALSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.signals.models import Expression, ExpressionContext, ExpressionType
+from signals.apps.api.v1.serializers.routing import RoutingExpressionSerializer
+from signals.apps.signals.models import (
+    Expression,
+    ExpressionContext,
+    ExpressionType,
+    RoutingExpression
+)
 
 
 class ExpressionContextSerializer(serializers.ModelSerializer):
@@ -16,10 +22,11 @@ class ExpressionContextSerializer(serializers.ModelSerializer):
 class ExpressionSerializer(HALSerializer):
     id = serializers.ReadOnlyField()
     type = serializers.ReadOnlyField(source='_type.name')
+    routing_department = RoutingExpressionSerializer(required=False)
 
     class Meta:
         model = Expression
-        fields = ('id', 'name', 'code', 'type', )
+        fields = ('id', 'name', 'code', 'type', 'routing_department',)
 
     def validate(self, data):
         try:
@@ -28,3 +35,11 @@ class ExpressionSerializer(HALSerializer):
         except ExpressionType.DoesNotExist:
             raise ValidationError('type: {} does not exists'.format(self.initial_data['type']))
         return data
+
+    def update(self, instance, validated_data):
+        routing_data = validated_data.pop('routing_department', None)
+        if routing_data:
+            RoutingExpression.objects.update_routing(instance, routing_data)
+            instance.refresh_from_db()
+
+        return super(ExpressionSerializer, self).update(instance, validated_data)

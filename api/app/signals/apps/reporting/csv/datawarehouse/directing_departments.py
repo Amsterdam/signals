@@ -3,7 +3,7 @@ import os
 from django.contrib.postgres.aggregates import StringAgg
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
-from signals.apps.signals.models import DirectingDepartments
+from signals.apps.signals.models import SignalDepartments
 
 
 def create_directing_departments_csv(location: str) -> str:
@@ -13,13 +13,13 @@ def create_directing_departments_csv(location: str) -> str:
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    queryset = DirectingDepartments.objects.values(
+    queryset = SignalDepartments.objects.values(
         'id',
         'created_at',
         'updated_at',
         '_signal_id',
         _departments=StringAgg('departments__name', delimiter=', '),
-    ).order_by(
+    ).filter(relation_type=SignalDepartments.REL_DIRECTING).order_by(
         '_signal_id',
         '-created_at',
     )
