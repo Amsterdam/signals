@@ -53,15 +53,6 @@ class SIAPermissions(SIABasePermission):
     }
 
 
-class SplitPermission(SIABasePermission):
-    perms_map = {
-        'GET': ['signals.sia_read'],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': ['signals.sia_split'],
-    }
-
-
 class SignalCreateInitialPermission(SIABasePermission):
     perms_map = {
         'GET': ['signals.sia_read'],

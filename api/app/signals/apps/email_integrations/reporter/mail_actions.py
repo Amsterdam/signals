@@ -35,7 +35,7 @@ SIGNAL_MAIL_RULES = [
                 'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1,
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
                     Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
@@ -69,7 +69,7 @@ SIGNAL_MAIL_RULES = [
                         ).first() not in [VERZOEK_TOT_HEROPENEN, ],
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
                     Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
@@ -85,31 +85,6 @@ SIGNAL_MAIL_RULES = [
         }
     },
     {
-        'name': 'Send mail signal split',
-        'conditions': {
-            'filters': {
-                'status__state__in': [GESPLITST, ],
-                'reporter__email__isnull': False,
-                'reporter__email__gt': 0,
-            },
-            'functions': {
-                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
-            }
-        },
-        'kwargs': {
-            'subject': 'Meer over uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_split.txt',
-                'html': 'email/signal_split.html'
-            }
-        },
-        'additional_info': {
-            'history_entry_text': 'Standaard email bij splitsen is verzonden aan melder.'
-        }
-    },
-    {
         'name': 'Send mail signal scheduled',
         'conditions': {
             'filters': {
@@ -120,7 +95,7 @@ SIGNAL_MAIL_RULES = [
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
                     Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
@@ -145,7 +120,7 @@ SIGNAL_MAIL_RULES = [
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
                     Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
@@ -179,7 +154,7 @@ SIGNAL_MAIL_RULES = [
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
                     Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
-                )  # SIG-2931, special case for children of split signal
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {

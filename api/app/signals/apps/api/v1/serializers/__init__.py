@@ -27,7 +27,6 @@ from signals.apps.api.v1.serializers.signal import (
     SignalIdListSerializer
 )
 from signals.apps.api.v1.serializers.signal_history import HistoryHalSerializer
-from signals.apps.api.v1.serializers.signal_split import PrivateSplitSignalSerializer
 from signals.apps.api.v1.serializers.status_message_template import (
     StateStatusMessageTemplateListSerializer,
     StateStatusMessageTemplateSerializer
@@ -49,7 +48,6 @@ __all__ = [
     'PrivateSignalSerializerList',
     'PublicSignalSerializerDetail',
     'PublicSignalCreateSerializer',
-    'PrivateSplitSignalSerializer',
     'SignalGeoSerializer',
     'SignalIdListSerializer',
     'StoredSignalFilterSerializer',

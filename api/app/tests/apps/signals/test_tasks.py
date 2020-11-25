@@ -92,55 +92,6 @@ class TestTaskTranslateCategory(TransactionTestCase):
         cats = CategoryAssignment.objects.filter(_signal=signal)
         self.assertEqual(cats.count(), 1)
 
-    def test_translation_happens_split(self):
-        CategoryTranslation.objects.create(
-            created_by='somebody@example.com',
-            old_category=self.test_category_old,
-            new_category=self.test_category_new,
-            text='WAAROM? DAAROM!',
-        )
-
-        signal = factories.SignalFactory.create()
-
-        split_data = [
-            {
-                'text': 'Test',
-                'category': {
-                    'sub_category': self.test_category_old,
-                }
-            }
-        ]
-
-        signal = Signal.actions.split(split_data=split_data, signal=signal)
-        signal.refresh_from_db()
-
-        child_signal = signal.children.first()
-
-        self.assertEqual(child_signal.category_assignment.category, self.test_category_new)
-
-        cats = CategoryAssignment.objects.filter(_signal=child_signal)
-        self.assertEqual(cats.count(), 2)
-
-    def test_translation_skipped_category_not_in_translations_split(self):
-        signal = factories.SignalFactory.create()
-
-        split_data = [
-            {
-                'text': 'Test',
-                'category': {
-                    'sub_category': self.test_category_old,
-                }
-            }
-        ]
-        signal = Signal.actions.split(split_data=split_data, signal=signal)
-        signal.refresh_from_db()
-        child_signal = signal.children.first()
-
-        self.assertEqual(child_signal.category_assignment.category, self.test_category_old)
-
-        cats = CategoryAssignment.objects.filter(_signal=child_signal)
-        self.assertEqual(cats.count(), 1)
-
 
 class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
     def setUp(self):

@@ -484,7 +484,6 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
 # Child settings
-SIGNAL_MIN_NUMBER_OF_CHILDREN = 2  # TODO: Remove when split functionality will be removed from the code
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
 # SIG-1017
