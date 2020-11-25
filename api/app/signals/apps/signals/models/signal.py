@@ -60,6 +60,11 @@ class Signal(CreatedUpdatedModel):
                                            null=True,
                                            on_delete=models.SET_NULL)
 
+    type_assignment = models.OneToOneField('signals.Type',
+                                           related_name='signal',
+                                           null=True,
+                                           on_delete=models.SET_NULL)
+
     # Date of the incident.
     incident_date_start = models.DateTimeField(null=False)
     incident_date_end = models.DateTimeField(null=True)
@@ -202,7 +207,3 @@ class Signal(CreatedUpdatedModel):
     def save(self, *args, **kwargs):
         self._validate()
         super(Signal, self).save(*args, **kwargs)
-
-    @property
-    def type_assignment(self):
-        return self.types.first() if self.types.exists() else None
