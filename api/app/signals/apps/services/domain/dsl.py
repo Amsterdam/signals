@@ -38,14 +38,6 @@ class SignalContext:
             }
         return tmp
 
-    def _get_extra_properties(self, signal: Signal):
-        tmp = {}
-        if signal.extra_properties:
-            for prop in signal.extra_properties:
-                if 'id' in prop and 'answer' in prop:
-                    tmp[prop['id']] = prop['answer']
-        return tmp
-
     @property
     def areas(self):
         if not self._areas:
@@ -55,15 +47,22 @@ class SignalContext:
     def __call__(self, signal: Signal):
 
         t = signal.incident_date_start.strftime("%H:%M:%S")
-        return {
+        tmp = {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
-            'extra_properties': self._get_extra_properties(signal),
             'areas': self.areas
         }
+
+        # add additonal question answers id to context
+        if signal.extra_properties:
+            for prop in signal.extra_properties:
+                if 'id' in prop and 'answer' in prop and not hasattr(signal, prop['id']):
+                    tmp[prop['id']] = prop['answer']
+
+        return tmp
 
 
 class SignalDslService(DslService):
