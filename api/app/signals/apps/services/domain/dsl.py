@@ -59,7 +59,7 @@ class SignalContext:
         # add additonal question answers id to context
         if signal.extra_properties:
             for prop in signal.extra_properties:
-                if 'id' in prop and 'answer' in prop and not hasattr(signal, prop['id']):
+                if 'id' in prop and 'answer' in prop and prop['id'] not in tmp:
                     tmp[prop['id']] = prop['answer']
 
         return tmp
