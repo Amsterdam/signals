@@ -38,6 +38,14 @@ class SignalContext:
             }
         return tmp
 
+    def _get_extra_properties(self, signal: Signal):
+        tmp = {}
+        if signal.extra_properties:
+            for prop in signal.extra_properties:
+                if 'id' in prop and 'answer' in prop:
+                    tmp[prop['id']] = prop['answer']
+        return tmp
+
     @property
     def areas(self):
         if not self._areas:
@@ -53,6 +61,7 @@ class SignalContext:
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
+            'extra_properties': self._get_extra_properties(signal),
             'areas': self.areas
         }
 
