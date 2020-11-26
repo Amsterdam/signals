@@ -1,6 +1,7 @@
 from unittest import mock, skip
 
 from django.conf import settings
+from django.core.cache import cache
 from django.test import TestCase
 from rest_framework import exceptions
 
@@ -35,19 +36,22 @@ class TestJWTAuthBackend(TestCase):
         mocked_request = mock.Mock()
         mocked_request.is_authorized_for.return_value = True
         settings = get_settings()
-        claims = {settings['USER_ID_FIELD']: 'wrong_user@example.com'}
-        mock_token_data.return_value = claims, 'wrong_user@example.com'
-        mocked_cache.get.return_value = None
 
-        with self.assertRaises(exceptions.AuthenticationFailed):
-            jwt_auth_backend.authenticate(mocked_request)
+        for user_id_fields in settings['USER_ID_FIELDS']:
+            claims = {user_id_fields: 'wrong_user@example.com'}
+            mock_token_data.return_value = claims, 'wrong_user@example.com'
+            mocked_cache.get.return_value = None
 
-        mocked_cache.get.assert_called_once_with('wrong_user@example.com')
-        mocked_cache.set.assert_called_once_with(
-            'wrong_user@example.com',
-            backend.USER_DOES_NOT_EXIST,
-            5 * 60
-        )
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                jwt_auth_backend.authenticate(mocked_request)
+
+            mocked_cache.get.assert_called_once_with('wrong_user@example.com')
+            mocked_cache.set.assert_called_once_with(
+                'wrong_user@example.com',
+                backend.USER_DOES_NOT_EXIST,
+                5 * 60
+            )
+            mocked_cache.reset_mock()
 
     @mock.patch('signals.auth.tokens.JWTAccessToken.token_data')
     @mock.patch('signals.auth.backend.cache')
@@ -58,15 +62,17 @@ class TestJWTAuthBackend(TestCase):
         mocked_request = mock.Mock()
         mocked_request.is_authorized_for.return_value = True
         settings = get_settings()
-        claims = {settings['USER_ID_FIELD']: 'wrong_user@example.com'}
-        mock_token_data.return_value = claims, 'wrong_user@example.com'
+        for user_id_field in settings['USER_ID_FIELDS']:
+            claims = {user_id_field: 'wrong_user@example.com'}
+            mock_token_data.return_value = claims, 'wrong_user@example.com'
 
-        mocked_cache.get.return_value = backend.USER_DOES_NOT_EXIST
+            mocked_cache.get.return_value = backend.USER_DOES_NOT_EXIST
 
-        with self.assertRaises(exceptions.AuthenticationFailed):
-            jwt_auth_backend.authenticate(mocked_request)
-        mocked_cache.get.assert_called_once_with('wrong_user@example.com')
-        mocked_user_model.objects.get.assert_not_called()
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                jwt_auth_backend.authenticate(mocked_request)
+            mocked_cache.get.assert_called_once_with('wrong_user@example.com')
+            mocked_user_model.objects.get.assert_not_called()
+            mocked_cache.reset_mock()
 
     @mock.patch('signals.auth.tokens.JWTAccessToken.token_data')
     @mock.patch('django.core.cache.cache')
@@ -76,12 +82,14 @@ class TestJWTAuthBackend(TestCase):
         mocked_request = mock.Mock()
         mocked_request.is_authorized_for.return_value = True
         settings = get_settings()
-        claims = {settings['USER_ID_FIELD']: 'normie@example.com'}
-        mock_token_data.return_value = claims, 'normie@example.com'
 
-        user, scope = jwt_auth_backend.authenticate(mocked_request)
-        self.assertEqual(user, self.normal_user)
-        # self.assertEqual(scope, 'SIG/ALL')
+        for user_id_field in settings['USER_ID_FIELDS']:
+            claims = {user_id_field: 'normie@example.com'}
+            mock_token_data.return_value = claims, 'normie@example.com'
+
+            user, scope = jwt_auth_backend.authenticate(mocked_request)
+            self.assertEqual(user, self.normal_user)
+            # self.assertEqual(scope, 'SIG/ALL')
 
     @skip('TODO fix test')
     @mock.patch('signals.auth.backend.cache')
