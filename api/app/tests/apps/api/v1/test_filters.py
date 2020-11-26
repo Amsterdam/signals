@@ -552,6 +552,7 @@ class TestFilters(SignalsBaseApiTestCase):
         directing_departments.departments.add(department)
         directing_departments.save()
         parent_one.directing_departments_assignment = directing_departments
+        parent_one.save()
 
         parent_two = SignalFactory.create()
         SignalFactory.create_batch(2, parent=parent_two)
@@ -559,6 +560,43 @@ class TestFilters(SignalsBaseApiTestCase):
         params = {'directing_department': ['null', department.code]}
         result_ids = self._request_filter_signals(params)
         self.assertEqual(2, len(result_ids))
+
+    def test_SIG_3390_filter_directing_department(self):
+        department = DepartmentFactory.create()
+
+        parent_one = SignalFactory.create()
+        SignalFactory.create_batch(1, parent=parent_one)
+
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_one,
+            created_by='test@example.com',
+            relation_type='directing'
+        )
+
+        directing_departments.departments.add(department)
+        directing_departments.save()
+        parent_one.directing_departments_assignment = directing_departments
+        parent_one.save()
+
+        parent_two = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_two)
+
+        parent_three = SignalFactory.create()
+
+        directing_departments = SignalDepartments.objects.create(
+            _signal=parent_three,
+            created_by='test@example.com',
+            relation_type='directing'
+        )
+
+        parent_three.directing_departments_assignment = directing_departments
+        parent_three.save()
+
+        SignalFactory.create_batch(2, parent=parent_three)
+
+        params = {'directing_department': ['null', department.code]}
+        result_ids = self._request_filter_signals(params)
+        self.assertEqual(3, len(result_ids))
 
     def test_filter_category_id(self):
         """
