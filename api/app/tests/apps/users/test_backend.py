@@ -1,7 +1,6 @@
 from unittest import mock, skip
 
 from django.conf import settings
-from django.core.cache import cache
 from django.test import TestCase
 from rest_framework import exceptions
 

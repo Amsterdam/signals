@@ -45,7 +45,7 @@ class JWTAccessToken():
             if user_id:
                 try:
                     validate_email(user_id)  # SIA / Signalen uses email addresses as usernames
-                except ValidationError as e:
+                except ValidationError:
                     user_id = None
                 else:
                     break  # we identified the correct user_id_field and user email
