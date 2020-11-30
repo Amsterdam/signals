@@ -59,6 +59,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'reporter',
         'priority',
         'parent',
+        'type_assignment',
     ).prefetch_related(
         'category_assignment__category__departments',
         'children',

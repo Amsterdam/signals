@@ -10,7 +10,7 @@ from signals.apps.signals.models import Type
 
 class TestTypeModel(TestCase):
     def setUp(self):
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(type_assignment=None)
         self.signal.types.all().delete()  # These tests should work without a type set
 
     def test_add_type_system_user(self):
@@ -18,7 +18,8 @@ class TestTypeModel(TestCase):
         self.assertEqual(self.signal.types.count(), 0)
         self.assertIsNone(self.signal.type_assignment)
 
-        Type.objects.create(_signal=self.signal, name=Type.SIGNAL)  # Een melding
+        self.signal.type_assignment = Type.objects.create(_signal=self.signal, name=Type.SIGNAL)  # Een melding
+        self.signal.save()
 
         # Refresh the signal from the database
         self.signal.refresh_from_db()
@@ -34,7 +35,9 @@ class TestTypeModel(TestCase):
         self.assertEqual(self.signal.types.count(), 0)
         self.assertIsNone(self.signal.type_assignment)
 
-        Type.objects.create(_signal=self.signal, name=Type.SIGNAL, created_by='test@test.com')  # Een melding
+        self.signal.type_assignment = Type.objects.create(_signal=self.signal, name=Type.SIGNAL,
+                                                          created_by='test@test.com')  # Een melding
+        self.signal.save()
 
         # Refresh the signal from the database
         self.signal.refresh_from_db()
@@ -62,7 +65,9 @@ class TestTypeModel(TestCase):
             Type.objects.create(_signal=self.signal, name=Type.COMPLAINT)  # Een klacht
 
         with freeze_time(now):
-            Type.objects.create(_signal=self.signal, name=Type.MAINTENANCE)  # Groot onderhoud
+            self.signal.type_assignment = Type.objects.create(_signal=self.signal,
+                                                              name=Type.MAINTENANCE)  # Groot onderhoud
+            self.signal.save()
 
         self.assertEqual(self.signal.types.count(), 5)
 
@@ -96,7 +101,9 @@ class TestTypeModel(TestCase):
             Type.objects.create(_signal=self.signal, name=Type.SIGNAL)  # Een melding
 
         with freeze_time(now):
-            Type.objects.create(_signal=self.signal, name=Type.MAINTENANCE, created_by='test@test.com')  # noqa Groot onderhoud
+            self.signal.type_assignment = Type.objects.create(_signal=self.signal, name=Type.MAINTENANCE,
+                                                              created_by='test@test.com')  # Groot onderhoud
+            self.signal.save()
 
         self.assertEqual(self.signal.types.count(), 5)
 
