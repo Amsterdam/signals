@@ -90,8 +90,8 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
-        self.assertEqual(data['count'], 166)
-        self.assertEqual(len(data['results']), 166)
+        self.assertEqual(data['count'], 167)
+        self.assertEqual(len(data['results']), 167)
 
     def test_get_parent_category(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
