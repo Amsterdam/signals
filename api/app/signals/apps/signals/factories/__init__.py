@@ -9,6 +9,7 @@ from .note import NoteFactory
 from .priority import PriorityFactory
 from .question import QuestionFactory
 from .reporter import ReporterFactory
+from .routing_expression import RoutingExpressionFactory
 from .signal import SignalFactory, SignalFactoryValidLocation, SignalFactoryWithImage
 from .signal_departments import SignalDepartmentsFactory
 from .source import SourceFactory
@@ -33,6 +34,7 @@ __all__ = [
     'PriorityFactory',
     'QuestionFactory',
     'ReporterFactory',
+    'RoutingExpressionFactory',
     'SignalFactory',
     'SignalFactoryValidLocation',
     'SignalFactoryWithImage',
