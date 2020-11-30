@@ -105,7 +105,7 @@ def update_status_children_based_on_parent(signal_id):
         return
 
     signal = Signal.objects.get(pk=signal_id)
-    if signal.is_parent() and signal.status.state in [AFGEHANDELD, ]:
+    if signal.is_parent() and signal.status.state in [AFGEHANDELD, GEANNULEERD, ]:
         text = 'Hoofdmelding is afgehandeld'
 
         # Lets check the children
