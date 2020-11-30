@@ -304,3 +304,29 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
         self.assertEqual(self.child_signal_1.status.state, AFGEHANDELD)
         self.assertEqual(self.child_signal_2.status.state, child_signal_2_state)
         self.assertNotEqual(self.child_signal_2.status.state, GEANNULEERD)
+
+    def test_task_parent_status_geannuleerd(self):
+        """
+        Parent Signal status to GEANNULEERD should trigger the children to status GEANNULEERD
+        """
+        parent_signal_state = self.parent_signal.status.state
+        child_signal_1_state = self.child_signal_1.status.state
+        child_signal_2_state = self.child_signal_2.status.state
+
+        status = Status.objects.create(state=GEANNULEERD, text='Test', _signal=self.parent_signal)
+        self.parent_signal.status = status
+        self.parent_signal.save()
+
+        with self.settings(FEATURE_FLAGS=self.test_feature_flags_enabled):
+            update_status_children_based_on_parent(signal_id=self.parent_signal.id)
+
+        self.parent_signal.refresh_from_db()
+        self.child_signal_1.refresh_from_db()
+        self.child_signal_2.refresh_from_db()
+
+        self.assertNotEqual(self.parent_signal.status.state, parent_signal_state)
+        self.assertEqual(self.parent_signal.status.state, GEANNULEERD)
+        self.assertNotEqual(self.child_signal_1.status.state, child_signal_1_state)
+        self.assertEqual(self.child_signal_1.status.state, GEANNULEERD)
+        self.assertNotEqual(self.child_signal_2.status.state, child_signal_2_state)
+        self.assertEqual(self.child_signal_2.status.state, GEANNULEERD)

@@ -854,7 +854,9 @@ class TestTypeFilter(SignalsBaseApiTestCase):
         for type_code in self.signals.keys():
             with freeze_time(timezone.now() + timedelta(hours=hours)):
                 for signal in self.signals[type_code]:
-                    TypeFactory.create(_signal=signal, name=type_code)
+                    signal_type = TypeFactory.create(_signal=signal, name=type_code)
+                    signal.type_assignment = signal_type
+                    signal.save()
             hours += 1
 
     def test_filter_single_type(self):
