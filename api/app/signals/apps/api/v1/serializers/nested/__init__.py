@@ -29,6 +29,5 @@ __all__ = (
     '_NestedAttachmentModelSerializer',
     '_NestedTypeModelSerializer',
     '_NestedDepartmentModelSerializer',
-    '_NestedUserModelSerializer',
     '_NestedPublicDepartmentSerializer',
 )
