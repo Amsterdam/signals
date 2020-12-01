@@ -32,3 +32,4 @@ class RoutingExpression(models.Model):
     is_active = models.BooleanField(default=False)
 
     actions = RoutingExpressionManager()
+    objects = models.Manager()

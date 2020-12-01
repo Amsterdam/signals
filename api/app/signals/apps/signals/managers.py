@@ -576,7 +576,7 @@ class SignalManager(models.Manager):
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            departments = self._update_directing_departments_no_transaction(
+            departments = self._update_routing_departments_no_transaction(
                 data=data,
                 signal=locked_signal
             )

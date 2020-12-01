@@ -47,7 +47,7 @@ class SignalContext:
     def __call__(self, signal: Signal):
 
         t = signal.incident_date_start.strftime("%H:%M:%S")
-        return {
+        tmp = {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
             'location': signal.location.geometrie,
@@ -55,6 +55,14 @@ class SignalContext:
             'time': time.strptime(t, "%H:%M:%S"),
             'areas': self.areas
         }
+
+        # add additonal question answers id to context
+        if signal.extra_properties:
+            for prop in signal.extra_properties:
+                if 'id' in prop and 'answer' in prop and prop['id'] not in tmp:
+                    tmp[prop['id']] = prop['answer']
+
+        return tmp
 
 
 class SignalDslService(DslService):

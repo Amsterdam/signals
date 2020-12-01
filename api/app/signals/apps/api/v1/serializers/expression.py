@@ -39,7 +39,7 @@ class ExpressionSerializer(HALSerializer):
     def update(self, instance, validated_data):
         routing_data = validated_data.pop('routing_department', None)
         if routing_data:
-            RoutingExpression.objects.update_routing(instance, routing_data)
+            RoutingExpression.actions.update_routing(instance, routing_data)
             instance.refresh_from_db()
 
         return super(ExpressionSerializer, self).update(instance, validated_data)
