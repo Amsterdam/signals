@@ -40,6 +40,7 @@ class SignalFactory(DjangoModelFactory):
     )
     reporter = RelatedFactory('signals.apps.signals.factories.reporter.ReporterFactory', '_signal')
     priority = RelatedFactory('signals.apps.signals.factories.priority.PriorityFactory', '_signal')
+    type_assignment = RelatedFactory('signals.apps.signals.factories.type.TypeFactory', '_signal')
 
     incident_date_start = FuzzyDateTime(timezone.now() - timedelta(days=100), timezone.now())
     incident_date_end = LazyAttribute(lambda o: _incident_date_end(o.incident_date_start))
@@ -56,15 +57,7 @@ class SignalFactory(DjangoModelFactory):
         self.category_assignment = self.category_assignments.last()
         self.reporter = self.reporters.last()
         self.priority = self.priorities.last()
-
-    @post_generation
-    def set_default_type(self, create, extracted, **kwargs):
-        """
-        This will add the default Type to the signal for a factory created signal
-        """
-        if create:
-            from . import TypeFactory
-            TypeFactory(_signal=self)  # By default the type is set to "SIG (SIGNAL)"
+        self.type_assignment = self.types.last()
 
 
 class SignalFactoryWithImage(SignalFactory):

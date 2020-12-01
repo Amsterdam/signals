@@ -1,5 +1,7 @@
 from json import loads
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from jwcrypto.jws import InvalidJWSObject, InvalidJWSSignature
 from jwcrypto.jwt import JWT, JWTExpired, JWTMissingKey
 from rest_framework.exceptions import AuthenticationFailed
@@ -34,19 +36,30 @@ class JWTAccessToken():
         settings = get_settings()
         claims = loads(raw_claims)
 
-        user_id = None
-        try:
-            user_id = claims[settings['USER_ID_FIELD']]
-        except KeyError:
-            raise AuthenticationFailed("Field '{}' missing".format(settings['USER_ID_FIELD']))
+        # To temporarily support both authz tokens and KeyCloak tokens, we have
+        # to check the "sub" (authz) and "email" (KeyCloak and Dex) fields.
+        # Here we loop through the configured user id fields and check whether
+        # they are present and if so, if they contain an email address.
+        for user_id_field in settings['USER_ID_FIELDS']:
+            user_id = claims.get(user_id_field, None)
+            if user_id:
+                try:
+                    validate_email(user_id)  # SIA / Signalen uses email addresses as usernames
+                except ValidationError:
+                    user_id = None
+                else:
+                    break  # we identified the correct user_id_field and user email
+        else:
+            msg = 'Fields {} are missing or do not contain user email.'
+            raise AuthenticationFailed(msg.format(','.join(settings['USER_ID_FIELDS'])))
 
-        return claims, user_id
+        return claims, user_id  # only user_id is used, SIA contains its own authorization model
 
     @staticmethod  # noqa: C901
     def token_data(authz_header, skip_always=False):
         settings = get_settings()
         if not skip_always and settings['ALWAYS_OK']:
-            return {settings['USER_ID_FIELD']: "ALWAYS_OK"}, "ALWAYS_OK"
+            return {x: "ALWAYS_OK" for x in settings['USER_ID_FIELDS']}, "ALWAYS_OK"
         try:
             prefix, raw_jwt = authz_header.split()
         except:  # noqa

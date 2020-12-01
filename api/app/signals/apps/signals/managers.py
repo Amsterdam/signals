@@ -77,7 +77,7 @@ class SignalManager(models.Manager):
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
         type_data = type_data or {}  # If type_data is None a Type is created with the default "SIGNAL" value
-        Type.objects.create(**type_data, _signal_id=signal.pk)
+        signal_type = Type.objects.create(**type_data, _signal_id=signal.pk)
 
         # Set Signal to dependent model instance foreign keys
         signal.location = location
@@ -85,6 +85,7 @@ class SignalManager(models.Manager):
         signal.category_assignment = category_assignment
         signal.reporter = reporter
         signal.priority = priority
+        signal.type_assignment = signal_type
         signal.save()
 
         return signal
@@ -491,6 +492,9 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models import Type
 
         signal_type = Type.objects.create(**data, _signal_id=signal.pk)
+        signal.type_assignment = signal_type
+        signal.save()
+
         return signal_type
 
     def update_type(self, data, signal):
