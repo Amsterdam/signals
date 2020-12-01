@@ -52,11 +52,13 @@ def _new_categories(apps, schema_editor):
                 use_calendar_days = True if category_data['slo'][-1] == 'K' else False
 
                 ServiceLevelObjective.objects.create(category=category, n_days=n_days,
-                                                    use_calendar_days=use_calendar_days)
+                                                     use_calendar_days=use_calendar_days)
 
                 category.save()
         except Category.DoesNotExist:
-            pass # don't fail if category does not exists
+            # don't fail if category does not exists
+            pass
+
 
 class Migration(migrations.Migration):
     dependencies = [
