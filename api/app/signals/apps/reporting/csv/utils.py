@@ -1,7 +1,9 @@
 import csv
+import glob
 import logging
 import os
 import shutil
+import zipfile
 from typing import TextIO
 
 from django.db import connection
@@ -24,7 +26,11 @@ def zip_csv_files(using: str) -> None:
     now = timezone.now()
     src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
     dst_file = os.path.join(src_folder, f'{now:%H%M%S%Z}')
-    shutil.make_archive(dst_file, format='zip', base_dir=src_folder)
+
+    files_to_zip = glob.glob(f'{src_folder}/*.csv', recursive=False)
+    with zipfile.ZipFile(f'{dst_file}.zip', 'w') as zipper:
+        for file in files_to_zip:
+            zipper.write(filename=file, arcname=os.path.basename(file), compress_type=zipfile.ZIP_DEFLATED)
 
 
 def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
