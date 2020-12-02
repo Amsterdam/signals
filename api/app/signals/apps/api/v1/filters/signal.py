@@ -87,7 +87,7 @@ class SignalFilterSet(FilterSet):
 
         self._cleanup_form_data()
         queryset = super(SignalFilterSet, self).filter_queryset(queryset=queryset)
-        return queryset.distinct()
+        return queryset
 
     # Custom filter functions
 
@@ -154,7 +154,7 @@ class SignalFilterSet(FilterSet):
                     Q(directing_departments_assignment__isnull=True) |
                     Q(directing_departments_assignment__departments__isnull=True)
                 )
-            )
+            ).distinct()
         elif 'null' in choices and len(choices) > 1:
             # "?directing_department=ASC&directing_department=null" will select all parent Signals without a directing
             # department OR ASC as the directing department
@@ -165,13 +165,13 @@ class SignalFilterSet(FilterSet):
                     Q(directing_departments_assignment__departments__isnull=True) |
                     Q(directing_departments_assignment__departments__code__in=choices)
                 )
-            )
+            ).distinct()
         elif len(choices):
             # "?directing_department=ASC" will select all parent Signals where ASC is the directing department
             return queryset.filter(
                 parent_q_filter &
                 Q(directing_departments_assignment__departments__code__in=choices)
-            )
+            ).distinct()
         return queryset
 
     def feedback_filter(self, queryset, name, value):
@@ -218,10 +218,10 @@ class SignalFilterSet(FilterSet):
         while choices:
             q_filter |= q_objects[choices.pop()]
 
-        return queryset.filter(q_filter) if q_filter else queryset
+        return queryset.filter(q_filter).distinct() if q_filter else queryset
 
     def note_keyword_filter(self, queryset, name, value):
-        return queryset.filter(notes__text__icontains=value)
+        return queryset.filter(notes__text__icontains=value).distinct()
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
@@ -236,7 +236,7 @@ class SignalFilterSet(FilterSet):
         if False in choices:
             q_filter &= Q(updated_at__gt=F('children__updated_at'))  # noqa Selects all parent signals with NO changes in the child signals
 
-        return queryset.filter(q_filter)
+        return queryset.filter(q_filter).distinct()
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):
