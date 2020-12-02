@@ -13,7 +13,7 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.utils import save_csv_files
+from signals.apps.reporting.csv.utils import save_csv_files, zip_csv_files
 from signals.celery import app
 
 
@@ -93,3 +93,13 @@ def save_csv_files_endpoint():
         save_csv_file_endpoint(create_kto_feedback_csv)
     except EnvironmentError:
         pass
+
+
+@app.task
+def zip_csv_files_endpoint():
+    """
+    Create zip file of generated csv files
+
+    :returns:
+    """
+    zip_csv_files(using='datawarehouse')

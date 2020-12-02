@@ -1,9 +1,9 @@
 import glob
-import ntpath
 import os
 
 from django.conf import settings
 from django.http import FileResponse
+from django.utils import timezone
 from rest_framework import renderers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -37,10 +37,13 @@ class PrivateCsvViewSet(viewsets.ViewSet):
         if not settings.DWH_MEDIA_ROOT:
             return self._not_found(msg='Unconfigured Csv location')
 
-        if not os.path.exists(settings.DWH_MEDIA_ROOT):
+        now = timezone.now()
+        src_folder = f'{settings.DWH_MEDIA_ROOT}/{now:%Y}/{now:%m}/{now:%d}'
+
+        if not os.path.exists(src_folder):
             return self._not_found(msg='Incorrect Csv folder')
 
-        list_of_files = glob.glob(f'{settings.DWH_MEDIA_ROOT}/*.zip', recursive=True)
+        list_of_files = glob.glob(f'{src_folder}/*.zip', recursive=True)
         latest_file = None if not list_of_files else max(list_of_files, key=os.path.getctime)
 
         if not latest_file:
@@ -53,8 +56,8 @@ class PrivateCsvViewSet(viewsets.ViewSet):
         )
 
     def _path_leaf(self, path):
-        head, tail = ntpath.split(path)
-        return tail or ntpath.basename(head)
+        head, tail = os.path.split(path)
+        return tail or os.path.basename(head)
 
     def _not_found(self, msg):
         return Response(

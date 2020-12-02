@@ -14,6 +14,19 @@ from signals.apps.reporting.utils import _get_storage_backend
 logger = logging.getLogger(__name__)
 
 
+def zip_csv_files(using: str) -> None:
+    """
+    Writes zip file of the generated csv files in the {now:%Y}/{now:%m}/{now:%d} folder
+
+    :returns None:
+    """
+    storage = _get_storage_backend(using=using)
+    now = timezone.now()
+    src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
+    dst_file = os.path.join(src_folder, f'{now:%H%M%S%Z}')
+    shutil.make_archive(dst_file, format='zip', base_dir=src_folder)
+
+
 def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
     """
     Writes the CSV files to the configured storage backend

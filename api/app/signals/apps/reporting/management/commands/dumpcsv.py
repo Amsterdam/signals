@@ -1,3 +1,4 @@
+import argparse
 import os
 from timeit import default_timer as timer
 
@@ -17,7 +18,10 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.datawarehouse.tasks import save_csv_file_datawarehouse
+from signals.apps.reporting.csv.datawarehouse.tasks import (
+    save_csv_file_datawarehouse,
+    zip_csv_files_endpoint
+)
 
 REPORT_OPTIONS = {
     # Option, Func
@@ -33,10 +37,22 @@ REPORT_OPTIONS = {
 
 
 class Command(BaseCommand):
+    def _str2bool(self, v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
     def add_arguments(self, parser):
         parser.add_argument('--report', type=str,
                             help=f'Report type to export (if none given all reports will be exported), '
                                  f'choices are: {", ".join(REPORT_OPTIONS.keys())}')
+        parser.add_argument("--zip", type=self._str2bool, nargs='?', const=True, default=False,
+                            help="Also output zip file.")
 
     def handle(self, *args, **kwargs):
         start = timer()
@@ -63,6 +79,10 @@ class Command(BaseCommand):
             save_csv_file_datawarehouse(func)
             self.stdout.write('* ---------------------------------')
 
+        if kwargs['zip']:
+            self.stdout.write('* Making zipfile...')
+            zip_csv_files_endpoint()
+            self.stdout.write('* ---------------------------------')
         stop = timer()
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')
         self.stdout.write('Done!')

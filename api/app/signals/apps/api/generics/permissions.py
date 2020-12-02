@@ -95,11 +95,7 @@ class SignalChangeCategoryPermission(SIABasePermission):
 
 
 class ModelWritePermissions(DjangoModelPermissions):
-    """
-    In SIA we have binary permissions instead of the default add, change, delete permissions
-    provided by Django.
-
-    The 2 permissions are:
+    """'signals.sia_read'ions are:
         * sia_read
         * sia_{model_name}_write
     """
@@ -131,7 +127,7 @@ class SignalViewObjectPermission(DjangoModelPermissions):
 
 class SIAReportPermissions(SIABasePermission):
     perms_map = {
-        'GET': ['signals.sia_signal_report'],
+        'GET': ['signals.sia_read', 'signals.sia_signal_report'],
         'OPTIONS': [],
         'HEAD': []
     }
