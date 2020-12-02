@@ -1,0 +1,138 @@
+{
+    "response": {
+        "numFound": 2,
+        "start": 0,
+        "maxScore": 17.857077,
+        "docs": [
+            {
+                "bron": "BAG",
+                "woonplaatscode": "3631",
+                "type": "adres",
+                "woonplaatsnaam": "Weesp",
+                "wijkcode": "WK045700",
+                "huis_nlt": "72",
+                "openbareruimtetype": "Weg",
+                "buurtnaam": "Centrum",
+                "gemeentecode": "0457",
+                "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0457200000198514",
+                "weergavenaam": "Achtergracht 72, 1381BP Weesp",
+                "suggest": [
+                    "Achtergracht 72, 1381BP Weesp",
+                    "Achtergracht 72, 1381 BP Weesp"
+                ],
+                "straatnaam_verkort": "Achtergr",
+                "id": "adr-7e2e3bc9e00cbcab15e7e881d7dba5b0",
+                "gekoppeld_perceel": [
+                    "WEE02-A-5388"
+                ],
+                "gemeentenaam": "Weesp",
+                "buurtcode": "BU04570001",
+                "wijknaam": "Binnenstad",
+                "identificatie": "0457010000007975-0457200000198514",
+                "openbareruimte_id": "0457300000000001",
+                "waterschapsnaam": "HH Amstel, Gooi en Vecht",
+                "provinciecode": "PV27",
+                "postcode": "1381BP",
+                "provincienaam": "Noord-Holland",
+                "centroide_ll": "POINT(5.04040667 52.30607057)",
+                "geometrie_ll": "POINT(5.04040667 52.30607057)",
+                "nummeraanduiding_id": "0457200000198514",
+                "waterschapscode": "31",
+                "adresseerbaarobject_id": "0457010000007975",
+                "huisnummer": 72,
+                "provincieafkorting": "NH",
+                "geometrie_rd": "POINT(131347.551 479845.751)",
+                "centroide_rd": "POINT(131347.551 479845.751)",
+                "straatnaam": "Achtergracht",
+                "_version_": 1684939161129189376,
+                "typesortering": 4.0,
+                "sortering": 72.0,
+                "shard": "bag"
+            },
+            {
+                "bron": "BAG",
+                "woonplaatscode": "3594",
+                "type": "adres",
+                "woonplaatsnaam": "Amsterdam",
+                "wijkcode": "WK036308",
+                "huis_nlt": "72",
+                "openbareruimtetype": "Weg",
+                "buurtnaam": "Sarphatistrook",
+                "gemeentecode": "0363",
+                "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000215614",
+                "weergavenaam": "Nieuwe Achtergracht 72, 1018XZ Amsterdam",
+                "suggest": [
+                    "Nieuwe Achtergracht 72, 1018XZ Amsterdam",
+                    "Nieuwe Achtergracht 72, 1018 XZ Amsterdam"
+                ],
+                "straatnaam_verkort": "Nieuwe Achtergr",
+                "id": "adr-ee8da2d92fc63783f18ddd4fcfb99542",
+                "gekoppeld_perceel": [
+                    "ASD11-O-4685"
+                ],
+                "gemeentenaam": "Amsterdam",
+                "buurtcode": "BU03630801",
+                "wijknaam": "Weesperbuurt/Plantage",
+                "identificatie": "0363010000755151-0363200000215614",
+                "openbareruimte_id": "0363300000003900",
+                "waterschapsnaam": "HH Amstel, Gooi en Vecht",
+                "provinciecode": "PV27",
+                "postcode": "1018XZ",
+                "provincienaam": "Noord-Holland",
+                "centroide_ll": "POINT(4.90595549 52.36194655)",
+                "geometrie_ll": "POINT(4.90595549 52.36194655)",
+                "nummeraanduiding_id": "0363200000215614",
+                "waterschapscode": "31",
+                "adresseerbaarobject_id": "0363010000755151",
+                "huisnummer": 72,
+                "provincieafkorting": "NH",
+                "geometrie_rd": "POINT(122219 486115)",
+                "centroide_rd": "POINT(122219 486115)",
+                "straatnaam": "Nieuwe Achtergracht",
+                "_version_": 1684940541754605568,
+                "typesortering": 4.0,
+                "sortering": 72.0,
+                "shard": "bag"
+            }
+        ]
+    },
+    "highlighting": {
+        "adr-7e2e3bc9e00cbcab15e7e881d7dba5b0": {
+            "suggest": [
+                "<b>Achtergracht</b> <b>72</b>, 1381BP Weesp"
+            ]
+        },
+        "adr-ee8da2d92fc63783f18ddd4fcfb99542": {
+            "suggest": [
+                "Nieuwe <b>Achtergracht</b> <b>72</b>, 1018XZ Amsterdam"
+            ]
+        }
+    },
+    "spellcheck": {
+        "suggestions": [
+            "achtergracht",
+            {
+                "numFound": 2,
+                "startOffset": 0,
+                "endOffset": 12,
+                "suggestion": [
+                    "achtergrach",
+                    "achtergraft"
+                ]
+            }
+        ],
+        "collations": [
+            "collation",
+            {
+                "collationQuery": "achtergrach 72",
+                "hits": 2,
+                "misspellingsAndCorrections": [
+                    "achtergracht",
+                    "achtergrach",
+                    "72",
+                    "72"
+                ]
+            }
+        ]
+    }
+}
