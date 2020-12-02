@@ -16,7 +16,6 @@ from signals.apps.api.v1.fields.signal import (
     PrivateSignalLinksFieldWithArchives,
     PublicSignalLinksField
 )
-from signals.apps.api.v1.fields.signal_split import PrivateSignalSplitLinksField
 from signals.apps.api.v1.fields.stored_signal_filter import StoredSignalFilterLinksField
 
 __all__ = [
@@ -28,7 +27,6 @@ __all__ = [
     'PublicSignalLinksField',
     'PublicSignalAttachmentLinksField',
     'PrivateSignalAttachmentLinksField',
-    'PrivateSignalSplitLinksField',
     'StoredSignalFilterLinksField',
     'PrivateCategoryHyperlinkedIdentityField',
 ]

@@ -86,7 +86,7 @@ class PrivateCategorySerializer(HALSerializer):
     sla = serializers.SerializerMethodField()
     new_sla = PrivateCategorySLASerializer(write_only=True)
 
-    departments = serializers.SerializerMethodField()
+    departments = _NestedPrivateCategoryDepartmentSerializer(source='categorydepartment_set', many=True, read_only=True)
 
     class Meta:
         model = Category
@@ -104,20 +104,11 @@ class PrivateCategorySerializer(HALSerializer):
             'departments',
         )
         read_only_fields = (
-            'id',
             'slug',
-            'sla',
-            'departments',  # noqa Is read-only by default because we use the SerializerMethodField but also added here for readability
         )
 
     def get_sla(self, obj):
-        return PrivateCategorySLASerializer(obj.slo.all().order_by('-created_at').first()).data
-
-    def get_departments(self, obj):
-        return _NestedPrivateCategoryDepartmentSerializer(
-            CategoryDepartment.objects.filter(category_id=obj.pk).order_by('department__code'),
-            many=True
-        ).data
+        return PrivateCategorySLASerializer(obj.slo.first()).data
 
     def update(self, instance, validated_data):
         new_sla = validated_data.pop('new_sla') if 'new_sla' in validated_data else None

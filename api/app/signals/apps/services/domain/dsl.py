@@ -1,7 +1,8 @@
 import time
 
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
-from signals.apps.signals.models import Area, AreaType, Signal
+from signals.apps.signals.managers import SignalManager
+from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
 
 
 class DslService:
@@ -46,7 +47,7 @@ class SignalContext:
     def __call__(self, signal: Signal):
 
         t = signal.incident_date_start.strftime("%H:%M:%S")
-        return {
+        tmp = {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
             'location': signal.location.geometrie,
@@ -55,10 +56,37 @@ class SignalContext:
             'areas': self.areas
         }
 
+        # add additonal question answers id to context
+        if signal.extra_properties:
+            for prop in signal.extra_properties:
+                if 'id' in prop and 'answer' in prop and prop['id'] not in tmp:
+                    tmp[prop['id']] = prop['answer']
+
+        return tmp
+
 
 class SignalDslService(DslService):
     context_func = SignalContext()
+    signal_manager = SignalManager()
 
-    def evaluate(self, signal, code):
+    def process_routing_rules(self, signal):
         ctx = self.context_func(signal)
+        rules = RoutingExpression.objects.select_related('_expression', '_department')
+        for rule in rules.filter(is_active=True, _expression___type__name='routing').order_by('order'):
+            if self.evaluate(signal, rule._expression.code, ctx):
+                # assign relation to department
+                data = {
+                    'departments': [
+                        {
+                            'id': rule._department.id
+                        }
+                    ]
+                }
+                self.signal_manager.update_routing_departments(data, signal)
+                return True
+        return False
+
+    def evaluate(self, signal, code, ctx=None):
+        if not ctx:
+            ctx = self.context_func(signal)
         return super().evaluate(ctx, code)

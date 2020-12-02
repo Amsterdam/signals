@@ -175,7 +175,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_create_initial_child_signals_max_exceeded(self, validate_address):
         parent_signal = SignalFactory.create()
         SignalFactory.create(parent=parent_signal)

@@ -238,7 +238,7 @@ JWKS_TEST_KEY = """
 SIGNALS_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
     'JWKS_URL': os.getenv('JWKS_URL'),
-    'USER_ID_FIELD': os.getenv('USER_ID_FIELD', 'sub'),
+    'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'sub').split(','),
     'ALWAYS_OK': False,
 }
 
@@ -484,7 +484,6 @@ SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
 # Child settings
-SIGNAL_MIN_NUMBER_OF_CHILDREN = 2  # TODO: Remove when split functionality will be removed from the code
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
 # SIG-1017

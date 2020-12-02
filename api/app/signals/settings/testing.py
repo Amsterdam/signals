@@ -12,7 +12,7 @@ INSTALLED_APPS += [  # noqa
 SIGNALS_AUTHZ = {
     'JWKS': JWKS_TEST_KEY,  # noqa
     'ALWAYS_OK': True,
-    'USER_ID_FIELD': 'sub'
+    'USER_ID_FIELDS': 'sub,email'.split(',')
 }
 # Email integration settings
 EMAIL_INTEGRATIONS = dict(

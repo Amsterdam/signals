@@ -1,8 +1,8 @@
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """
-# ! Made sure that the status that is created also exists in the ZTC on staging. Otherwise it will
-# ! fail with setting the status.
+# Note on historical states: to leave the historical data intact, old states are
+# retained below (but made unreachable if at all possible).
 
 # Internal statusses
 LEEG = ''
@@ -12,7 +12,7 @@ BEHANDELING = 'b'
 ON_HOLD = 'h'
 AFGEHANDELD = 'o'
 GEANNULEERD = 'a'
-GESPLITST = 's'
+GESPLITST = 's'  # Historical state - new `signal.Signal` instances will not get this state ever.
 HEROPEND = 'reopened'
 VERZOEK_TOT_AFHANDELING = 'closure requested'
 INGEPLAND = 'ingepland'
@@ -58,7 +58,6 @@ ALLOWED_STATUS_CHANGES = {
     ],
     GEMELD: [
         GEMELD,  # SIG-1264
-        GESPLITST,
         AFWACHTING,
         BEHANDELING,
         TE_VERZENDEN,

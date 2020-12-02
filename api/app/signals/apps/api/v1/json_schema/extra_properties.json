@@ -1,4 +1,9 @@
 {
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://example.com/root.json",
+	"type": "array",
+	"title": "The Root Schema",
+
 	"definitions": {
 		"answer_string": {
 			"$id": "#/items/properties/answer",
@@ -75,7 +80,7 @@
 				}
 			}
 		},
-		"anser_array_of_strings": {
+		"answer_array_of_strings": {
 			"$id": "#/items/properties/answer",
 			"type": "array",
 			"title": "The Answer Schema",
@@ -93,11 +98,6 @@
 			}
 		}
 	},
-
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "http://example.com/root.json",
-	"type": "array",
-	"title": "The Root Schema",
 
 	"items": {
 		"$id": "#/items",
@@ -142,19 +142,22 @@
 						"#rel": "#/definitions/answer_array_of_objects"
 					},
 					{
-						"#rel": "#/definitions/anser_array_of_strings"
+						"#rel": "#/definitions/answer_array_of_strings"
 					}
 				]
 			},
 			"category_url": {
 				"$id": "#/items/properties/category_url",
-				"type": "string",
+				"format": "regex",
+              	"pattern": "^((https?://(www.|)([\\w\\d.:]*)|)(/[\\w\\d\\-/]+))$",
 				"title": "The Category_url Schema",
-				"default": "",
 				"examples": [
-					"/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/verkeerslicht"
-				],
-				"pattern": "^(.*)$"
+					"/signals/v1/public/terms/categories/overig/sub_categories/overig",
+					"https://api.data.amsterdam.nl/signals/v1/public/terms/categories/overig/sub_categories/overig",
+					"https://api.data.amsterdam.nl/signals/v1/public/terms/categories/overig/sub_categories/overig",
+					"https://127.0.0.1/signals/v1/public/terms/categories/overig/sub_categories/overig",
+					"https://127.0.0.1:8080/signals/v1/public/terms/categories/overig/sub_categories/overig"
+				]
 			}
 		}
 	}

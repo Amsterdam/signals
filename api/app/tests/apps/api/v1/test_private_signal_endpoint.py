@@ -5,7 +5,6 @@ from datetime import timedelta
 from unittest import skip
 from unittest.mock import patch
 
-from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.core.exceptions import ValidationError
@@ -101,7 +100,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
         self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.history_image = '/signals/v1/private/signals/{pk}/image'
-        self.split_endpoint = '/signals/v1/private/signals/{pk}/split'
         self.removed_from_category_endpoint = '/signals/v1/private/signals/category/removed'
 
         self.subcategory = CategoryFactory.create()
@@ -126,9 +124,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         )
         self.list_history_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_signals_{pk}_history.json')  # noqa
-        )
-        self.post_split_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, 'json_schema', 'post_signals_v1_private_signals_{pk}_split.json')
         )
 
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
@@ -261,6 +256,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertJsonSchema(self.list_history_schema, data)
 
     def test_history_splitmeldingen(self):
+        # While the split functionality is removed from SIA/Signalen there can
+        # stil be `signal.Signal` instances that were split, and still have to
+        # be handled or be shown in historical data.
+
         parent = SignalFactory.create(status__state='s')
         SignalFactory.create_batch(2, parent=parent)
 
@@ -1025,400 +1024,6 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.put(detail_endpoint, {}, format='json')
         self.assertEqual(response.status_code, 405)
 
-    def test_split(self):
-        self.assertEqual(Signal.objects.count(), 2)
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'category': {'category_url': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory},
-                    'type': {'code': 'MAI'}
-                }
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 201)
-
-        data = response.json()
-        self.assertEqual(len(data['children']), 2)
-        self.assertJsonSchema(self.post_split_schema, data)
-
-        for item in data['children']:
-            self.assertEqual(Signal.objects.count(), 4)
-
-            response = self.client.get(self.detail_endpoint.format(pk=item['id']))
-            self.assertEqual(response.status_code, 200)
-
-            response_json = response.json()
-            for key in [
-                'status', 'category', 'priority', 'location', 'reporter', 'notes', 'has_attachments'
-            ]:
-                self.assertIn(key, response_json)
-
-        self.assertEqual(4, Signal.objects.count())
-
-        self.signal_no_image.refresh_from_db()
-        self.assertEqual(2, len(self.signal_no_image.children.all()))
-        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
-
-    def test_split_children_type(self):
-        """When a signal is split its children must inherit certain properties."""
-        # Split the signal, take note of the returned children
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1 Request',
-                    'category': {'sub_category': self.link_subcategory},
-                    'type': {'code': 'REQ'}
-                },
-                {
-                    'text': 'Child #2 Maintenance',
-                    'category': {'sub_category': self.link_subcategory},
-                    'type': {'code': 'MAI'}
-                }
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 201)
-        split_json = response.json()
-
-        split_first_child = split_json['children'][0]
-        response = self.client.get(self.detail_endpoint.format(pk=split_first_child['id']))
-        split_first_child_json = response.json()
-
-        # Type should be REQ
-        self.assertEqual(split_first_child_json['type']['code'], 'REQ')
-
-        split_second_child = split_json['children'][1]
-        response = self.client.get(self.detail_endpoint.format(pk=split_second_child['id']))
-        split_second_child_json = response.json()
-
-        # Type should be MAI
-        self.assertEqual(split_second_child_json['type']['code'], 'MAI')
-
-    def test_split_children_must_inherit_these_properties(self):
-        """When a signal is split its children must inherit certain properties."""
-        # Split the signal, take note of the returned children
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory}
-                }
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 201)
-        split_json = response.json()
-
-        # Retrieve parent data
-        response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
-        parent_json = response.json()
-
-        for item in split_json['children']:
-            # Retrieve detailed data on each child:
-            response = self.client.get(self.detail_endpoint.format(pk=item['id']))
-            child_json = response.json()
-
-            # Check that status is correctly set
-            self.assertIsNotNone(child_json['status'])
-            self.assertEqual(child_json['status']['state'], workflow.GEMELD)
-
-            # Check that the location is correctly set
-            self.assertIsNotNone(child_json['location'])
-            self.assertEqual(parent_json['location']['address_text'],
-                             child_json['location']['address_text'])
-            self.assertEqual(parent_json['location']['address'],
-                             child_json['location']['address'])
-            self.assertEqual(parent_json['location']['geometrie'],
-                             child_json['location']['geometrie'])
-
-            # Check that the reporter is correctly set
-            self.assertIsNotNone(child_json['reporter'])
-            self.assertEqual(child_json['reporter']['email'], parent_json['reporter']['email'])
-
-            # Check that the priority is correctly set
-            self.assertIsNotNone(child_json['priority'])
-            self.assertEqual(
-                child_json['priority']['priority'],
-                parent_json['priority']['priority']
-            )
-
-            # Type should be inherited
-            self.assertEqual(
-                child_json['type']['code'],
-                parent_json['type']['code']
-            )
-
-            # Check category assignment
-            self.assertEqual(
-                child_json['category']['sub_slug'],
-                self.subcategory.slug
-            )
-            self.assertEqual(
-                child_json['category']['main_slug'],
-                self.subcategory.parent.slug
-            )
-
-        self.signal_no_image.refresh_from_db()
-        self.assertEqual(self.sia_read_write_user.email, self.signal_no_image.status.created_by)
-
-    def test_split_children_must_inherit_parent_images(self):
-        # Split the signal, take note of the returned children
-
-        def md5(fname):
-            import hashlib
-            hash_md5 = hashlib.md5()
-            with open(fname, "rb") as f:
-                for chunk in iter(lambda: f.read(4096), b""):
-                    hash_md5.update(chunk)
-            return hash_md5.hexdigest()
-
-        self.client.force_authenticate(user=self.sia_read_write_user)
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_with_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_subcategory}
-                }
-            ],
-            format='json'
-        )
-        self.assertEqual(response.status_code, 201)
-
-        self.signal_with_image.refresh_from_db()
-
-        md5_parent_image = md5(self.signal_with_image.image.path)
-        for child_signal in self.signal_with_image.children.all():
-            md5_child_image = md5(child_signal.image.path)
-
-            self.assertEqual(md5_parent_image, md5_child_image)
-
-        self.signal_with_image.refresh_from_db()
-        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
-
-    def test_split_children_must_inherit_parent_images_for_1st_child(self):
-        # Split the signal, take note of the returned children
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_with_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'reuse_parent_image': True,
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory}
-                }
-            ],
-            format='json'
-        )
-        self.assertEqual(response.status_code, 201)
-
-        self.signal_with_image.refresh_from_db()
-
-        child_signal_1 = self.signal_with_image.children.first()
-        self.assertNotEqual(child_signal_1.image, '')
-
-        child_signal_2 = self.signal_with_image.children.last()
-        self.assertEqual(child_signal_2.image, '')
-
-        self.assertEqual(self.sia_read_write_user.email, self.signal_with_image.status.created_by)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def _create_split_signal(self):
-        parent_signal = SignalFactory.create()
-        split_data = [
-            {
-                'text': 'Child signal 1',
-                'category': {'sub_category': self.subcategory},
-                'type': {'name': 'MAI'}
-            },
-            {
-                'text': 'Child signal 2',
-                'category': {'sub_category': self.subcategory}
-            }
-        ]
-        Signal.actions.split(split_data, parent_signal)
-
-        return parent_signal
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_get_split_signal(self):
-        """ A GET /<signal_id>/split on a split signal should return a 200 with its
-        children in the response body """
-        signal = self._create_split_signal()
-        response = self.client.get(self.split_endpoint.format(pk=signal.pk))
-
-        self.assertEqual(200, response.status_code)
-        json_response = response.json()
-
-        self.assertEqual(2, len(json_response['children']))
-        self.assertEqual('Child signal 1', json_response['children'][0]['text'])
-        self.assertEqual('Child signal 2', json_response['children'][1]['text'])
-
-        self.assertJsonSchema(self.post_split_schema, json_response)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_get_not_split_signal(self):
-        """ A GET /<signal_id>/split on a non-split signal should return a 404 """
-        signal = SignalFactory.create()
-        response = self.client.get(self.split_endpoint.format(pk=signal.pk))
-        self.assertEqual(404, response.status_code)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_post_split_signal(self):
-        """ A POST /<signal_id>/split on an already updated signal should return a 412 """
-        signal = self._create_split_signal()
-        data = [{"text": "Child 1"}, {"text": "Child 2"}]
-        response = self.client.post(self.split_endpoint.format(pk=signal.pk), data, format='json')
-        self.assertEqual(412, response.status_code)
-        self.assertEqual("Signal has already been split", response.json()["detail"])
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_child_cannot_be_split(self):
-        """Child signals cannot themselves have children (i.e. not be split)."""
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'category': {'sub_category': self.link_subcategory}
-                }
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 201)
-
-        data = response.json()
-        self.assertEqual(len(data['children']), 2)
-        self.assertJsonSchema(self.post_split_schema, data)
-
-        # Try to split each of the children, should produce HTTP 412 pre-
-        # condition failed.
-        for item in data['children']:
-            response = self.client.post(
-                self.split_endpoint.format(pk=item['id']),
-                [
-                    {
-                        'text': 'Child #1',
-                        'category': {'sub_category': self.link_subcategory}
-                    },
-                    {
-                        'text': 'Child #2',
-                        'category': {'category_url': self.link_subcategory}
-                    }
-                ],
-                format='json',
-            )
-            self.assertEqual(response.status_code, 412)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_empty_data(self):
-        self.assertEqual(Signal.objects.count(), 2)
-
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            None,
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()['children'],
-            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
-            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
-        )
-
-        self.assertEqual(Signal.objects.count(), 2)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_less_than_min_data(self):
-        self.assertEqual(Signal.objects.count(), 2)
-
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'category': {'sub_category': self.link_subcategory}
-                },
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()['children'],
-            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
-            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
-        )
-
-        self.assertEqual(Signal.objects.count(), 2)
-
-    @override_settings(SIGNAL_MIN_NUMBER_OF_CHILDREN=2, SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
-    def test_split_more_than_max_data(self):
-        self.assertEqual(Signal.objects.count(), 2)
-
-        response = self.client.post(
-            self.split_endpoint.format(pk=self.signal_no_image.id),
-            [
-                {
-                    'text': 'Child #1',
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #2',
-                    'category': {'category_url': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #3',
-                    'category': {'sub_category': self.link_subcategory}
-                },
-                {
-                    'text': 'Child #4',
-                    'category': {'category_url': self.link_subcategory}
-                },
-            ],
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()['children'],
-            f'A signal can only be split into min {settings.SIGNAL_MIN_NUMBER_OF_CHILDREN} and max '
-            f'{settings.SIGNAL_MAX_NUMBER_OF_CHILDREN} signals'
-        )
-
-        self.assertEqual(Signal.objects.count(), 2)
-
     def test_removed_from_category(self):
         after = timezone.now() - timedelta(minutes=10)
         querystring = urlencode({
@@ -1783,6 +1388,10 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(created_at_with_time_zone_str, data['created_at'])
 
     def test_update_directing_departments_on_parent_signal(self):
+        # While the split functionality is removed from SIA/Signalen there can
+        # stil be `signal.Signal` instances that were split, and still have to
+        # be handled or be shown in historical data.
+
         parent_signal = SignalFactoryValidLocation.create(status__state=workflow.GESPLITST)
 
         child_signal = SignalFactoryValidLocation.create()
@@ -1815,7 +1424,7 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response_data['directing_departments'][0]['is_intern'], department.is_intern)
 
         parent_signal.refresh_from_db()
-        self.assertEqual(parent_signal.directing_departments.count(), 1)
+        self.assertEqual(parent_signal.signal_departments.filter(relation_type='directing').count(), 1)
         self.assertIsNotNone(parent_signal.directing_departments_assignment)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.count(), 1)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.first().id, department.pk)
@@ -1940,7 +1549,6 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
     list_endpoint = '/signals/v1/private/signals/'
     detail_endpoint = '/signals/v1/private/signals/{pk}'
     history_endpoint = '/signals/v1/private/signals/{pk}/history'
-    split_endpoint = '/signals/v1/private/signals/{pk}/split'
 
     category_url_pattern = '/signals/v1/public/terms/categories/{}'
     subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
@@ -2347,3 +1955,196 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         response = self.client.get(self.child_endpoint.format(pk=self.parent_signal.pk))
         self.assertEqual(response.status_code, 403)
+
+
+class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        self.list_endpoint = '/signals/v1/private/signals/'
+        self.detail_endpoint = '/signals/v1/private/signals/{pk}'
+        self.subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+
+        # test signals
+        self.signal = SignalFactory.create()
+        self.department = DepartmentFactory.create()
+
+    def test_routing_add_remove(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'routing_departments': [
+                {
+                    'id': self.department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.routing_assignment.departments.count(), 1)
+
+        # remove routing
+        data = {
+            'routing_departments': []
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.routing_assignment.departments.count(), 0)
+
+    def test_routing_user_add_remove(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'routing_departments': [
+                {
+                    'id': self.department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        data = {
+            'assigned_user_id': self.sia_read_write_user.id
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)
+
+        # remove user assignment
+        data = {
+            'assigned_user_id': None
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignment.user, None)
+
+    def test_routing_add_and_check_user(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        read_client = self.client_class()
+        read_client.force_authenticate(user=self.sia_read_user)
+
+        response = read_client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        response = read_client.get(self.detail_endpoint.format(pk=self.signal.id))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'routing_departments': [
+                {
+                    'id': self.department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        # add user to department
+        self.sia_read_user.profile.departments.add(self.department)
+
+        response = read_client.get(self.list_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+
+        response = read_client.get(self.detail_endpoint.format(pk=self.signal.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_routing_remove_and_check_user(self):
+        # adds routing to signal, add user (from dept)
+        # change to another department -> user should be removed
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'routing_departments': [
+                {
+                    'id': self.department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        # add user to department
+        self.sia_read_user.profile.departments.add(self.department)
+
+        # assign user
+        data = {
+            'assigned_user_id': self.sia_read_write_user.id
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data['assigned_user_id'], self.sia_read_write_user.id)
+
+        new_department = DepartmentFactory.create()
+        data = {
+            'routing_departments': [
+                {
+                    'id': new_department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsNone(data['assigned_user_id'])
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignment, None)
+
+    def test_routing_change_category_and_check_user_and_routing(self):
+        # adds routing to signal, add user (from dept)
+        # change category assignment -> user, routing assignment should be removed
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        data = {
+            'routing_departments': [
+                {
+                    'id': self.department.id
+                }
+            ]
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.signal.refresh_from_db()
+
+        # add user to department
+        self.sia_read_user.profile.departments.add(self.department)
+
+        new_parentcategory = ParentCategoryFactory.create()
+        new_subcategory = CategoryFactory.create(
+            parent=new_parentcategory,
+            departments=[self.department],
+        )
+
+        link_subcategory = self.subcategory_url_pattern.format(
+            new_parentcategory.slug, new_subcategory.slug
+        )
+
+        data = {
+            'category': {
+                'text': 'change cat test',
+                'category_url': link_subcategory
+            }
+        }
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsNone(data['assigned_user_id'])
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.user_assignment, None)
+        self.assertEqual(self.signal.routing_assignment, None)

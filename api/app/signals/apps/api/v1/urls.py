@@ -10,7 +10,6 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PrivateDepartmentViewSet,
     PrivateExpressionViewSet,
     PrivateSignalAttachmentsViewSet,
-    PrivateSignalSplitViewSet,
     PrivateSignalViewSet,
     PrivateSourcesViewSet,
     PublicAreasViewSet,
@@ -90,9 +89,6 @@ urlpatterns = [
                 name='private-status-message-templates-child'),
 
         # Additional Signals endpoints
-        re_path(r'signals/(?P<pk>\d+)/split/?$',
-                PrivateSignalSplitViewSet.as_view({'get': 'retrieve', 'post': 'create'}),
-                name='private-signals-split'),
         re_path(r'signals/(?P<pk>\d+)/pdf/?$', GeneratePdfView.as_view(), name='signal-pdf-download'),
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),

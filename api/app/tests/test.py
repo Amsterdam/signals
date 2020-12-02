@@ -14,7 +14,6 @@ class SIAGroupMixin:
     def sia_test_group(self):
         if self._sia_test_group is None:
             permissions = Permission.objects.filter(codename__in=(
-                'sia_split',
                 'sia_signal_create_initial',
                 'sia_signal_create_note',
                 'sia_signal_change_status',

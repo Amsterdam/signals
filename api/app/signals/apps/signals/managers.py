@@ -77,7 +77,7 @@ class SignalManager(models.Manager):
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
         type_data = type_data or {}  # If type_data is None a Type is created with the default "SIGNAL" value
-        Type.objects.create(**type_data, _signal_id=signal.pk)
+        signal_type = Type.objects.create(**type_data, _signal_id=signal.pk)
 
         # Set Signal to dependent model instance foreign keys
         signal.location = location
@@ -85,6 +85,7 @@ class SignalManager(models.Manager):
         signal.category_assignment = category_assignment
         signal.reporter = reporter
         signal.priority = priority
+        signal.type_assignment = signal_type
         signal.save()
 
         return signal
@@ -116,146 +117,6 @@ class SignalManager(models.Manager):
 
             transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,
                                                                      signal_obj=signal))
-
-        return signal
-
-    def split(self, split_data, signal, user=None):  # noqa: C901
-        """ Split the original signal into 2 or more (see settings SIGNAL_MAX_NUMBER_OF_CHILDREN)
-            new signals
-
-        :param split_data: deserialized data dict containing data for new signals
-        :param signal: Signal object, the original Signal
-        :return: Signal object, the original Signal
-        """
-        # See: https://docs.djangoproject.com/en/2.1/topics/db/queries/#copying-model-instances
-        from .models import (Attachment, CategoryAssignment, Location, Priority, Reporter,
-                             Signal, Status, Type)
-        from signals.apps.signals import workflow
-
-        loop_counter = 0
-        with transaction.atomic():
-            parent_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)
-            for validated_data in split_data:
-                loop_counter += 1
-
-                # Create a new Signal, save it to get an ID in DB.
-                child_signal = Signal.objects.create(**{
-                    'text': validated_data['text'],
-                    'incident_date_start': parent_signal.incident_date_start,
-                    'parent': parent_signal,
-                })
-
-                # Set the relevant properties: location, status, reporter, priority, cate
-                # Deal with reverse foreign keys to child signal (for history tracking):
-                status = Status.objects.create(**{
-                    '_signal': child_signal,
-                    'state': workflow.GEMELD,
-                    'text': None,
-                    'user': None,  # i.e. SIA system
-                })
-
-                location_data = {'_signal': child_signal}
-                location_data.update({
-                    k: getattr(parent_signal.location, k) for k in [
-                        'geometrie',
-                        'stadsdeel',
-                        'buurt_code',
-                        'area_type_code',
-                        'area_code',
-                        'address',
-                        'created_by',
-                        'extra_properties',
-                        'bag_validated'
-                    ]
-                })
-                location = Location.objects.create(**location_data)
-
-                reporter_data = {'_signal': child_signal}
-                reporter_data.update({
-                    k: getattr(parent_signal.reporter, k) for k in ['email', 'phone', 'email_anonymized', 'phone_anonymized', 'sharing_allowed']  # noqa
-                })
-                reporter = Reporter.objects.create(**reporter_data)
-
-                priority = None
-                if parent_signal.priority:
-                    priority_data = {'_signal': child_signal}
-                    priority_data.update({
-                        k: getattr(parent_signal.priority, k) for k in ['priority', 'created_by']
-                    })
-                    priority = Priority.objects.create(**priority_data)
-
-                if 'category_url' in validated_data['category']:
-                    category = validated_data['category']['category_url']
-                elif 'sub_category' in validated_data['category']:
-                    # Only for backwards compatibility
-                    category = validated_data['category']['sub_category']
-
-                category_assignment_data = {
-                    '_signal': child_signal,
-                    'category': category,
-                }
-
-                category_assignment = CategoryAssignment.objects.create(**category_assignment_data)
-
-                if 'type' in validated_data:
-                    type_data = validated_data['type']  # Will create a type with the given name
-                    type_data['created_by'] = None  # noqa We also set the other fields to None. Shouldn't this be "user if user else None"?
-                elif parent_signal.type_assignment:
-                    type_data = {
-                        'name': parent_signal.type_assignment.name,   # noqa Will copy the type with name from the parent signal
-                        'created_by': None  # noqa We also set the other fields to None. Shouldn't this be "user if user else None"?
-                    }
-                else:
-                    type_data = {}  # Will create a default type with name "SIGNAL"
-
-                # Creates the Type for the child signal
-                Type.objects.create(**type_data, _signal_id=child_signal.pk)
-
-                # Deal with forward foreign keys from child signal
-                child_signal.location = location
-                child_signal.status = status
-                child_signal.reporter = reporter
-                child_signal.priority = priority
-                child_signal.category_assignment = category_assignment
-                child_signal.save()
-
-                # Ensure each child signal creation sends a DjangoSignal.
-                transaction.on_commit(lambda: create_child.send_robust(sender=self.__class__,
-                                                                       signal_obj=child_signal))
-
-                # Check if we need to copy the images of the parent
-                if 'reuse_parent_image' in validated_data and validated_data['reuse_parent_image']:
-                    parent_image_qs = parent_signal.attachments.filter(is_image=True)
-                    if parent_image_qs.exists():
-                        for parent_image in parent_image_qs.all():
-                            # Copy the original file and rename it by pre-pending the name with
-                            # split_{loop_counter}_{original_name}
-                            child_image_name = 'split_{}_{}'.format(
-                                loop_counter,
-                                parent_image.file.name.split('/').pop()
-                            )
-
-                            attachment = Attachment()
-                            attachment._signal = child_signal
-                            try:
-                                attachment.file.save(name=child_image_name,
-                                                     content=parent_image.file)
-                            except FileNotFoundError:
-                                pass
-                            else:
-                                attachment.save()
-
-            # Let's update the parent signal status to GESPLITST
-            status, prev_status = self._update_status_no_transaction({
-                'state': workflow.GESPLITST,
-                'text': 'Deze melding is opgesplitst.',
-                'created_by': user.email if user else None,
-            }, signal=parent_signal)
-
-            transaction.on_commit(lambda: update_status.send_robust(sender=self.__class__,
-                                                                    signal_obj=parent_signal,
-                                                                    status=status,
-                                                                    prev_status=prev_status))
 
         return signal
 
@@ -560,6 +421,7 @@ class SignalManager(models.Manager):
                         self._update_category_assignment_no_transaction(
                             data['category_assignment'], locked_signal)
 
+                    self._clear_routing_and_assigned_user_no_transaction(locked_signal)
                     to_send.append((update_category_assignment, {
                         'sender': sender,
                         'signal_obj': locked_signal,
@@ -598,16 +460,20 @@ class SignalManager(models.Manager):
                 }))
 
             if 'directing_departments_assignment' in data:
-                previous_directing_departments = locked_signal.directing_departments_assignment
-                directing_departments = self._update_directing_departments_no_transaction(
+                self._update_directing_departments_no_transaction(
                     data['directing_departments_assignment'], locked_signal
                 )
-                to_send.append((update_type, {
-                    'sender': sender,
-                    'signal_obj': locked_signal,
-                    'directing_departments': directing_departments,
-                    'prev_directing_departments': previous_directing_departments
-                }))
+
+            if 'routing_assignment' in data:
+                update_detail_data = data['routing_assignment']
+                self._update_routing_departments_no_transaction(
+                    update_detail_data, locked_signal
+                )
+
+            if 'user_assignment' in data:
+                self._update_user_signal_no_transaction(
+                    data, locked_signal
+                )
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
@@ -626,6 +492,9 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models import Type
 
         signal_type = Type.objects.create(**data, _signal_id=signal.pk)
+        signal.type_assignment = signal_type
+        signal.save()
+
         return signal_type
 
     def update_type(self, data, signal):
@@ -644,26 +513,75 @@ class SignalManager(models.Manager):
 
         return signal_type
 
-    def _update_directing_departments_no_transaction(self, data, signal):
-        from signals.apps.signals.models.directing_departments import DirectingDepartments
+    def _update_user_signal_no_transaction(self, data, signal):
+        from signals.apps.users.models import User, SignalUser
+        try:
+            user_id = data['user_assignment']['user']['id']
+            signal.user_assignment = SignalUser.objects.create(
+                _signal=signal,
+                user=None if not user_id else User.objects.get(pk=user_id),
+                created_by=data['created_by'] if 'created_by' in data else None
+            )
+            signal.save()
+        except Exception:
+            raise ValidationError('Could not set user assignment')
+        return signal.user_assignment
 
-        directing_departments = DirectingDepartments.objects.create(_signal=signal, created_by=data['created_by'])
+    def _update_signal_departments_no_transaction(self, data, signal, relation_type):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+
+        relation = SignalDepartments.objects.create(
+            _signal=signal,
+            relation_type=relation_type,
+            created_by=data['created_by'] if 'created_by' in data else None
+        )
+
+        # check if different dep id is set, reset assigned user
+        if signal.user_assignment and relation_type == SignalDepartments.REL_ROUTING:
+            if signal.routing_assignment and signal.routing_assignment.departments.exclude(
+                id__in=[dept.id for dept in relation.departments.all()]
+            ).exists():
+                signal.user_assignment = None
+
         for department_data in data['departments']:
-            directing_departments.departments.add(department_data['id'])
+            relation.departments.add(department_data['id'])
 
-        signal.directing_departments_assignment = directing_departments
+        if relation_type == SignalDepartments.REL_DIRECTING:
+            signal.directing_departments_assignment = relation
+        elif relation_type == SignalDepartments.REL_ROUTING:
+            signal.routing_assignment = relation
+        else:
+            raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
+        return relation
 
-        return directing_departments
+    def _update_directing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_DIRECTING)
 
-    def update_directing_departments(self, data, signal):
+    def _update_routing_departments_no_transaction(self, data, signal):
+        from signals.apps.signals.models.signal_departments import SignalDepartments
+        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
+
+    def _clear_routing_and_assigned_user_no_transaction(self, signal):
+        if signal.user_assignment:
+            signal.user_assignment = None
+        if signal.routing_assignment:
+            signal.routing_assignment = None
+        signal.save()
+        return signal
+
+    def update_routing_departments(self, data, signal):
         from signals.apps.signals.models import Signal
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            directing_departments = self._update_directing_departments_no_transaction(data=data, signal=locked_signal)
+            departments = self._update_routing_departments_no_transaction(
+                data=data,
+                signal=locked_signal
+            )
 
-        return directing_departments
+        return departments
 
     def _copy_attachment_no_transaction(self, source_attachment, signal):
         from signals.apps.signals.models import Attachment

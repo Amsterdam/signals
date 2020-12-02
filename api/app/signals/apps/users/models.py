@@ -36,3 +36,13 @@ class Profile(CreatedUpdatedModel):
 def create_user_profile(sender, instance, created, **kwargs):
     if created and not hasattr(instance, 'profile'):
         Profile.objects.create(user=instance)
+
+
+class SignalUser(CreatedUpdatedModel):
+    """
+    relation for assigning user to signal
+    """
+
+    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True) # noqa
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = models.EmailField(null=True, blank=True)
