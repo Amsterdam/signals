@@ -55,6 +55,7 @@ class TestRoutingMechanism(TestCase):
         self.dsl_service.process_routing_rules(signal_inside)
         signal_inside.refresh_from_db()
         self.assertIsNstort
+
     def test_context_func(self):
         # test signal outside center
         signal = SignalFactory.create()
