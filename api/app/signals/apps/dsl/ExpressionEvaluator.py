@@ -1,10 +1,10 @@
 from signals.apps.dsl.evaluators.meta_model import MetaModel
 
 GRAMMAR = '''
-RootExpression: expression=OrExpression;
+RootExpression: expression = OrExpression;
 OrExpression: lhs=AndExpression ('or' rhs=AndExpression)*;
 AndExpression: lhs=BinaryExpression ('and' rhs=BinaryExpression)*;
-BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')');
+BinaryExpression: InExpression | EqualityExpression | ('(' OrExpression ')') ;
 EqualityExpression: lhs=TermExpression op=EqualityOperand rhs=TermExpression;
 EqualityOperand: '==' | '!=' | '<=' | '<' | '>=' | '>';
 InExpression: lhs=TermStringExpression 'in' rhs=TermStringExpression ('.' rhs_prop=TermStringExpression)*;
