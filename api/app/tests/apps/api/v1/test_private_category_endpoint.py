@@ -263,7 +263,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         category = self.parent_category.children.first()
-        slo_count_at_star_of_tests = category.slo.count()
+        slo_count_at_start_of_tests = category.slo.count()
 
         url = f'/signals/v1/private/categories/{category.pk}'
         response = self.client.get(url)
@@ -276,7 +276,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         category.refresh_from_db()
-        self.assertEqual(category.slo.count(), slo_count_at_star_of_tests + 1)
+        self.assertEqual(category.slo.count(), slo_count_at_start_of_tests + 1)
         self._assert_category_data(category=category, data=response.json())
 
         # Patch SLO 5 times without changing any data to the SLO
@@ -287,4 +287,4 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
             self._assert_category_data(category=category, data=response.json())
 
         category.refresh_from_db()
-        self.assertEqual(category.slo.count(), slo_count_at_star_of_tests + 1)
+        self.assertEqual(category.slo.count(), slo_count_at_start_of_tests + 1)

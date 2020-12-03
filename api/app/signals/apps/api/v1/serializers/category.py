@@ -120,9 +120,8 @@ class PrivateCategorySerializer(HALSerializer):
             if slo_qs.count() > 0:
                 # Check if there are any changes to the SLA data
                 latest_slo = slo_qs.first()
-                create_new_slo = len(
-                    set(new_sla.values()) & {latest_slo.n_days, latest_slo.use_calendar_days, latest_slo.category_id}
-                ) != 3  # If we have an intersect of 3 we do not have any changed values
+                create_new_slo = any([new_sla['n_days'] != latest_slo.n_days,
+                                      new_sla['use_calendar_days'] != latest_slo.use_calendar_days])
 
             if create_new_slo:
                 ServiceLevelObjective.objects.create(**new_sla)
