@@ -4,41 +4,33 @@ from typing import Any
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.db.models import Q
-from django.template import loader
+from django.template import Context, Template, loader
 from django.utils.text import slugify
 
+from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
-from signals.apps.signals.workflow import (
-    AFGEHANDELD,
-    AFWACHTING,
-    BEHANDELING,
-    GEANNULEERD,
-    GEMELD,
-    GESPLITST,
-    HEROPEND,
-    INGEPLAND,
-    ON_HOLD,
-    VERZOEK_TOT_AFHANDELING,
-    VERZOEK_TOT_HEROPENEN
-)
 
 SIGNAL_MAIL_RULES = [
     {
         'name': 'Send mail signal created',
         'conditions': {
             'filters': {
-                'status__state__in': [GEMELD, ],
+                'status__state__in': [workflow.GEMELD, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
             },
             'functions': {
-                'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(state=GEMELD).count() == 1,
+                'prev_status_gemeld_only_once': lambda signal: signal.statuses.filter(
+                    state=workflow.GEMELD
+                ).count() == 1,
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
                 )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
+            'key': EmailTemplate.SIGNAL_CREATED,
             'subject': 'Bedankt voor uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_created.txt',
@@ -54,25 +46,26 @@ SIGNAL_MAIL_RULES = [
         'name': 'Send mail signal handled',
         'conditions': {
             'filters': {
-                'status__state__in': [AFGEHANDELD, ],
+                'status__state__in': [workflow.AFGEHANDELD, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
             },
             'functions': {
                 'prev_status_not_in': lambda signal: signal.statuses.exclude(
-                            id=signal.status_id
-                        ).order_by(
-                            '-created_at'
-                        ).values_list(
-                            'state',
-                            flat=True
-                        ).first() not in [VERZOEK_TOT_HEROPENEN, ],
+                    id=signal.status_id
+                ).order_by(
+                    '-created_at'
+                ).values_list(
+                    'state',
+                    flat=True
+                ).first() not in [workflow.VERZOEK_TOT_HEROPENEN, ],
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
                 )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
+            'key': EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
             'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_afgehandeld.txt',
@@ -88,17 +81,18 @@ SIGNAL_MAIL_RULES = [
         'name': 'Send mail signal scheduled',
         'conditions': {
             'filters': {
-                'status__state__in': [INGEPLAND, ],
+                'status__state__in': [workflow.INGEPLAND, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
             },
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
                 )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
+            'key': EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND,
             'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_ingepland.txt',
@@ -113,17 +107,18 @@ SIGNAL_MAIL_RULES = [
         'name': 'Send mail signal reopened',
         'conditions': {
             'filters': {
-                'status__state__in': [HEROPEND, ],
+                'status__state__in': [workflow.HEROPEND, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
             },
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
                 )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
+            'key': EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND,
             'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_heropend.txt',
@@ -142,22 +137,23 @@ SIGNAL_MAIL_RULES = [
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
                 'status__state__in': [
-                    GEMELD,  # no need for extra filtering, send_mail=True is enough
-                    AFWACHTING,
-                    BEHANDELING,
-                    ON_HOLD,
-                    VERZOEK_TOT_AFHANDELING,
-                    GEANNULEERD,  # TODO: do we GEANNULEERD to send emails?
+                    workflow.GEMELD,  # no need for extra filtering, send_mail=True is enough
+                    workflow.AFWACHTING,
+                    workflow.BEHANDELING,
+                    workflow.ON_HOLD,
+                    workflow.VERZOEK_TOT_AFHANDELING,
+                    workflow.GEANNULEERD,  # TODO: do we GEANNULEERD to send emails?
                 ],
                 'status__send_email__exact': True,  # on create_initial this is False (model default)
             },
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
-                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=GESPLITST)
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
                 )  # SIG-2931, special case for children of split signal --- still needed for historical data
             }
         },
         'kwargs': {
+            'key': EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL,
             'subject': 'Meer over uw melding {signal_id}',
             'templates': {
                 'txt': 'email/signal_status_changed_optional.txt',
@@ -250,9 +246,23 @@ class MailActions:
     def _mail(self, signal: Signal, mail_kwargs: dict):
         context = self._get_mail_context(signal=signal, mail_kwargs=mail_kwargs)
 
-        message = loader.get_template(mail_kwargs['templates']['txt']).render(context)
-        html_message = loader.get_template(mail_kwargs['templates']['html']).render(context)
-        subject = mail_kwargs['subject'].format(signal_id=signal.id)
+        try:
+            email_template = EmailTemplate.objects.get(key=mail_kwargs['key'])
+
+            subject = Template(email_template.title).render(Context(context))
+
+            rendered_context = {
+                'subject': subject,
+                'body': Template(email_template.body).render(Context(context))
+            }
+
+            html_message = loader.get_template('email/_base.html').render(rendered_context)
+            message = loader.get_template('email/_base.txt').render(rendered_context)
+        except EmailTemplate.DoesNotExist:
+            # TODO: Remove this part of the code when we migrated all templates in Amsterdam to the database
+            subject = mail_kwargs['subject'].format(signal_id=signal.id)
+            message = loader.get_template(mail_kwargs['templates']['txt']).render(context)
+            html_message = loader.get_template(mail_kwargs['templates']['html']).render(context)
 
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)
