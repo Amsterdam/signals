@@ -259,6 +259,7 @@ class MailActions:
             html_message = loader.get_template('email/_base.html').render(rendered_context)
             message = loader.get_template('email/_base.txt').render(rendered_context)
         except EmailTemplate.DoesNotExist:
+            # TODO: Remove this part of the code when we migrated all templates in Amsterdam to the database
             subject = mail_kwargs['subject'].format(signal_id=signal.id)
             message = loader.get_template(mail_kwargs['templates']['txt']).render(context)
             html_message = loader.get_template(mail_kwargs['templates']['html']).render(context)
