@@ -1,7 +1,7 @@
 from django.contrib.gis import geos
 from django.test import TestCase
 
-from signals.apps.services.domain.dsl import SignalDslService
+from signals.apps.services.domain.dsl import SignalContext, SignalDslService
 from signals.apps.signals.factories import (
     AreaFactory,
     DepartmentFactory,
@@ -58,3 +58,51 @@ class TestRoutingMechanism(TestCase):
         self.assertEqual(len(signal_inside.routing_assignment.departments.all()), 1)
         routing_dep = signal_inside.routing_assignment.departments.first()
         self.assertEqual(routing_dep.id, self.department.id)
+
+    def test_context_func(self):
+        # test signal outside center
+        signal = SignalFactory.create()
+        signal.extra_properties = [
+            {
+                "id": "key1",
+                "answer": {
+                    "id": "2",
+                    "info": "",
+                    "label": "value 1"
+                },
+            },
+            {
+                "id": "key2",
+                "answer": {
+                    "id": "2",
+                    "info": "",
+                    "value": "value 2"
+                },
+            },
+            {
+                "id": "key3_list",
+                "answer": [
+                    {
+                        "id": "2",
+                        "label": "value 3.1"
+                    },
+                    {
+                        "id": "3",
+                        "label": "value 3.2"
+                    }
+                ],
+            },
+            {
+                "id": "key4",
+                "answer": "value 4",
+            }
+        ]
+
+        ctx_func = SignalContext()
+        ctx = ctx_func(signal)
+        self.assertEqual(ctx['key1'], "value 1")
+        self.assertEqual(ctx['key2'], "value 2")
+        self.assertEqual(type(ctx['key3_list']), set)
+        self.assertTrue("value 3.1" in ctx['key3_list'])
+        self.assertTrue("value 3.2" in ctx['key3_list'])
+        self.assertEqual(ctx['key4'], "value 4")
