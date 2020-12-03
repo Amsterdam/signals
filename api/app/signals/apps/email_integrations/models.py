@@ -1,7 +1,9 @@
 from django.contrib.gis.db import models
 
+from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
-class EmailTemplate(models.Model):
+
+class EmailTemplate(CreatedUpdatedModel):
     SIGNAL_CREATED = 'signal_created'
     SIGNAL_STATUS_CHANGED_AFGEHANDELD = 'signal_status_changed_afgehandeld'
     SIGNAL_STATUS_CHANGED_INGEPLAND = 'signal_status_changed_ingepland'
@@ -17,9 +19,9 @@ class EmailTemplate(models.Model):
     ]
 
     key = models.CharField(max_length=100, choices=KEYS_CHOICES, db_index=True)
-
     title = models.CharField(max_length=255)
-    body = models.TextField()
+    body = models.TextField(help_text='Het is mogelijk om Markdown en template variabelen te gebruiken')
+    created_by = models.EmailField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'E-mail template'
