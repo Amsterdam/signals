@@ -100,3 +100,10 @@ class DslTest(TestCase):
             'location_2 in area."stadsdeel"."oost" and (testint > 0 or (testint == 1))'
         ).evaluate(self.context))
         self.assertFalse(c.compile('maincat in list and (time > 12:00 and time < 20:00)').evaluate(self.context))
+
+    def test_grammer_multiple_and_or(self):
+        c = self.compiler
+        c.compile('testint == 0 or testint == 1 or testint == 2')
+        c.compile('testint == 0 and testint == 1 and testint == 2')
+        c.compile('testint == 0 and testint == 1 or testint == 2')
+        c.compile('testint == 0 or testint == 1 and testint == 2')

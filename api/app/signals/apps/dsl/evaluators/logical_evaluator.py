@@ -21,15 +21,21 @@ class LogicalEvaluator(Evaluator):
                 raise Exception("logical operator: '{}' is not supported".format(self.op))
 
     def _and_handler(self, ctx):
-        lval = self.lhs.evaluate(ctx)
+        ret = self.lhs.evaluate(ctx)
         # short circuit
-        if not lval:
+        if not ret:
             return False
-        return self.rhs.evaluate(ctx)
+        for op in self.rhs:
+            if not op.evaluate(ctx):
+                return False
+        return True
 
     def _or_handler(self, ctx):
-        lval = self.lhs.evaluate(ctx)
+        ret = self.lhs.evaluate(ctx)
         # short circuit
-        if lval:
+        if ret:
             return True
-        return self.rhs.evaluate(ctx)
+        for op in self.rhs:
+            if op.evaluate(ctx):
+                return True
+        return False
