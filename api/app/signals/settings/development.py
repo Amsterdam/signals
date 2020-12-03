@@ -5,7 +5,7 @@ from signals.settings.base import *  # noqa
 SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
 SIGNALS_AUTHZ = {
     'JWKS_URL': os.getenv('JWKS_URL', 'http://dex:5556/keys'),

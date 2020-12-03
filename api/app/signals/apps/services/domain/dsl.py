@@ -60,7 +60,17 @@ class SignalContext:
         if signal.extra_properties:
             for prop in signal.extra_properties:
                 if 'id' in prop and 'answer' in prop and prop['id'] not in tmp:
-                    tmp[prop['id']] = prop['answer']
+                    answer = prop['answer']
+                    # UI elements can be a list of dicts with 'label' or 'value' keys
+                    # or a single dict with 'label' or 'value' keys
+                    if type(answer) is list:
+                        tmp[prop['id']] = set(
+                            [x.get('label', x.get('value', None)) for x in answer if type(x) is dict]
+                        )
+                    elif type(answer) is dict:
+                        tmp[prop['id']] = answer.get('label', answer.get('value', None))
+                    else:
+                        tmp[prop['id']] = prop['answer']
 
         return tmp
 
