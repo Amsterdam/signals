@@ -5,6 +5,7 @@ class AreaType(models.Model):
     class Meta:
         verbose_name = 'Gebiedstype'
         verbose_name_plural = 'Gebiedstypen'
+        ordering = ['code']
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -20,6 +21,7 @@ class Area(models.Model):
         verbose_name = 'Gebied'
         verbose_name_plural = 'Gebieden'
         unique_together = ('code', '_type')
+        ordering = ['_type', 'code']
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
