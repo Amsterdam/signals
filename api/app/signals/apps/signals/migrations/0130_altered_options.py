@@ -4,7 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0122_SLA_HISTORY'),
+        ('signals', '0129_new_subcategory_kerstbomen'),
     ]
 
     operations = [
