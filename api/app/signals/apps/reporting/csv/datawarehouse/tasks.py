@@ -103,3 +103,25 @@ def zip_csv_files_endpoint():
     :returns:
     """
     zip_csv_files(using='datawarehouse')
+
+
+@app.task
+def save_and_zip_csv_files_endpoint():
+    """
+    Create zip file of generated csv files
+
+    :returns:
+    """
+    save_csv_file_endpoint(create_signals_csv)
+    save_csv_file_endpoint(create_locations_csv)
+    save_csv_file_endpoint(create_reporters_csv)
+    save_csv_file_endpoint(create_category_assignments_csv)
+    save_csv_file_endpoint(create_statuses_csv)
+    save_csv_file_endpoint(create_category_sla_csv)
+    save_csv_file_endpoint(create_directing_departments_csv)
+
+    try:
+        save_csv_file_endpoint(create_kto_feedback_csv)
+    except EnvironmentError:
+        pass
+    zip_csv_files(using='datawarehouse')
