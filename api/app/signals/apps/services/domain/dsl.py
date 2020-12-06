@@ -83,20 +83,30 @@ class SignalDslService(DslService):
         ctx = self.context_func(signal)
         rules = RoutingExpression.objects.select_related('_expression', '_department')
         for rule in rules.filter(is_active=True, _expression___type__name='routing').order_by('order'):
-            if self.evaluate(signal, rule._expression.code, ctx):
-                # assign relation to department
-                data = {
-                    'departments': [
-                        {
-                            'id': rule._department.id
-                        }
-                    ]
-                }
-                self.signal_manager.update_routing_departments(data, signal)
-                return True
-        return False
+            evaluator = None
+            try:
+                evaluator = self._compile(rule._expression.code)
+            except Exception:
+                # compilation failed, invalidate rule
+                rule.is_active = False
+                rule.save()
 
-    def evaluate(self, signal, code, ctx=None):
-        if not ctx:
-            ctx = self.context_func(signal)
-        return super().evaluate(ctx, code)
+            if evaluator and rule.is_active:
+                eval_result = False
+                try:
+                    eval_result = evaluator.evaluate(ctx)
+                except Exception:
+                    # ignore runtime errors
+                    pass
+                if eval_result:
+                    # assign relation to department
+                    data = {
+                        'departments': [
+                            {
+                                'id': rule._department.id
+                            }
+                        ]
+                    }
+                    self.signal_manager.update_routing_departments(data, signal)
+                    return True
+        return False
