@@ -883,6 +883,21 @@ paths:
         - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/csv:
+    get:
+      description: Retrieve datawarehouse csv dump as zip file if authorised (requires reporting permission)
+      responses:
+        '200':
+          description: zip file containing csv files
+          content:
+        '401':
+          description: Not authenticated, may be caused by expired token
+        '404':
+          description: If no csv was generated
+      security:
+        - OAuth2:
+          - SIG/ALL
+
   /signals/v1/private/users/:
     get:
       description: Retrieve list of all users.
