@@ -288,6 +288,33 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(data['extra_properties'][0], 'Invalid input.')
         self.assertEqual(0, Signal.objects.count())
 
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_validate_extra_properties_enabled_invalid_category_url(self, validate_address):
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+
+        create_initial_data['extra_properties'] = [{'id': 'test_id', 'label': 'test_label', 'answer': 'test',
+                                                    'category_url': 'invalid value'}]
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        data = response.json()
+
+        self.assertEqual(400, response.status_code)
+        self.assertIn('extra_properties', data)
+        self.assertEqual(data['extra_properties'][0], 'Invalid input.')
+        self.assertEqual(0, Signal.objects.count())
+
+        create_initial_data['extra_properties'] = [{'id': 'test_id', 'label': 'test_label', 'answer': 'test',
+                                                    'category_url': ''}]
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+        data = response.json()
+
+        self.assertEqual(400, response.status_code)
+        self.assertIn('extra_properties', data)
+        self.assertEqual(data['extra_properties'][0], 'Invalid input.')
+        self.assertEqual(0, Signal.objects.count())
+
     def test_get_list(self):
         response = self.client.get(f'{self.list_endpoint}')
         self.assertEqual(response.status_code, 404)

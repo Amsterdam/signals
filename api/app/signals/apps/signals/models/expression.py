@@ -48,6 +48,7 @@ class Expression(models.Model):
             ('sia_expression_read', 'Inzien van expressies'),
             ('sia_expression_write', 'Wijzigen van expressies'),
         )
+        ordering = ['pk']
 
     name = models.CharField(max_length=255)
     code = models.TextField()

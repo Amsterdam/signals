@@ -1,8 +1,9 @@
-from django.contrib import admin
-from django.contrib.gis.admin import GeoModelAdmin
+from django.contrib import admin, messages
+from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import transaction
 from django.db.models import Q
 
+from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 from signals.apps.signals import workflow
 from signals.apps.signals.models import (
     Area,
@@ -10,7 +11,11 @@ from signals.apps.signals.models import (
     CategoryDepartment,
     CategoryQuestion,
     Department,
+    Expression,
+    ExpressionContext,
+    ExpressionType,
     Question,
+    RoutingExpression,
     Signal,
     Source,
     Status,
@@ -85,7 +90,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 admin.site.register(Department, DepartmentAdmin)
 
 
-class AreaAdmin(GeoModelAdmin):
+class AreaAdmin(OSMGeoAdmin):
     search_fields = ['name', 'code', '_type__name', '_type__code']
     list_display = ['name', 'code', '_type']
     list_filter = ['_type__code']
@@ -205,3 +210,45 @@ class SourceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Source, SourceAdmin)
+
+
+class RoutingExpressionAdmin(admin.ModelAdmin):
+    list_filter = ['_expression___type__name', '_department__code']
+    list_display = ['_expression', '_department', 'is_active']
+
+    def save_model(self, request, obj, form, change):
+        # if is_active is true, try to compile code, deactivate when invalid
+        try:
+            if obj.is_active:
+                expr = form.cleaned_data.get('_expression', None)
+                if expr:
+                    ExpressionEvaluator().compile(expr.code)
+        except Exception as e:
+            obj.is_active = False
+            messages.add_message(request, messages.WARNING, f'Rule deactivated due to error in expression: {str(e)}')
+
+        super(RoutingExpressionAdmin, self).save_model(request, obj, form, change)
+
+
+admin.site.register(RoutingExpression, RoutingExpressionAdmin)
+
+
+class ExpressionAdmin(admin.ModelAdmin):
+    list_filter = ['_type__name']
+
+
+admin.site.register(Expression, ExpressionAdmin)
+
+
+class ExpressionTypeAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(ExpressionType, ExpressionTypeAdmin)
+
+
+class ExpressionContextAdmin(admin.ModelAdmin):
+    list_filter = ['_type__name']
+
+
+admin.site.register(ExpressionContext, ExpressionContextAdmin)

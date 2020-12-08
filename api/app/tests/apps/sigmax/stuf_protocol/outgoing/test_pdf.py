@@ -20,10 +20,22 @@ class TestPDF(TestCase):
                 },
                 "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting"  # noqa
             },
+            {
+                "id": "niet_in_de_pdf",
+                "label": "Staat deze vraag in de PDF?",
+                "answer": {
+                    "id": "niet_in_de_pdf",
+                    "label": "Nee deze staat niet in de PDF"
+                },
+                "category_url": "/signals/v1/public/terms/categories/overig/sub_categories/overig"
+                # noqa
+            },
         ]
         signal = factories.SignalFactoryWithImage.create(
             incident_date_start=timezone.now(),
             extra_properties=extra_properties_data,
+            category_assignment__category__parent__name='Wegen, verkeer, straatmeubilair',
+            category_assignment__category__name='lantaarnpaal straatverlichting',
             reporter__email='foo@bar.com',
             reporter__phone='0612345678')
         factories.StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, text='waiting')
@@ -65,6 +77,9 @@ class TestPDF(TestCase):
         # Extra properties
         self.assertIn('Is de situatie gevaarlijk?', html)
         self.assertIn('Niet gevaarlijk', html)
+
+        self.assertNotIn('Staat deze vraag in de PDF?', html)
+        self.assertNotIn('Nee deze staat niet in de PDF', html)
 
         # # Uploaded photo.
         # images = signal.attachments.filter(is_image=True)

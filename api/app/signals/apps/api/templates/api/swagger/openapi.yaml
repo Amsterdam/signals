@@ -181,7 +181,7 @@ paths:
               summary: Will select all (parent) Signals where ASC is set explicitly as the directing department
             null:
               value: 'null'
-              summary: Will select all (parent) Signals without a directing department assignemt
+              summary: Will select all (parent) Signals without a directing department assignment
           required: false
         - name: area_type_code
           in: query
@@ -557,7 +557,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal split.
+          description: Forbidden, user not authorized to request signal PDF.
         '404':
           description: Signal not found.
       security:
@@ -584,7 +584,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal split.
+          description: Forbidden, user not authorized to request signal attachments.
         '404':
           description: Signal not found.
     post:
@@ -609,7 +609,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal split.
+          description: Forbidden, user not authorized to request signal attachments.
         '404':
           description: Signal not found.
       security:
@@ -642,57 +642,9 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal split.
+          description: Forbidden, user not authorized to request signal attachments.
         '404':
           description: Signal not found.
-
-  /signals/v1/private/signals/{id}/split:
-    parameters:
-      - name: id
-        in: path
-        description: ID of (parent) signal
-        required: true
-        schema:
-          type: integer
-    get:
-      description: Get split-off children of this signal.
-      responses:
-        '200':
-          description: >-
-            Object with URL references to the original signal en its children.
-        '401':
-          description: Not authenticated, may be caused by expired token.
-        '403':
-          description: Forbidden, user not authorized to view split signals.
-        '404':
-          description: Signal not found.
-      security:
-      - OAuth2:
-        - SIG/ALL
-    post:
-      description: >-
-        On a valid post to this endpoint a signal is split. This means its
-        status changes to 'split' (GESPLITS) after which it can no longer be
-        updated. Simultaneously a number of child signals are created.
-      responses:
-        '201':
-          description: Signal was successful split.
-        '412':
-          description: >-
-            Precondition failed, signal is itself a child or already a parent.
-        '400':
-          description: >-
-            Bad request. Also returned when a split into too many children is
-            attempted.
-        '401':
-          description: Not authenticated, may be caused by expired token.
-        '403':
-          description: Forbidden, user not authorized to request signal split.
-        '404':
-          description: Signal not found.
-      security:
-      - OAuth2:
-        - SIG/ALL
 
   /signals/v1/public/signals:
     post:
@@ -766,7 +718,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal split.
+          description: Forbidden, user not authorized to request signal attachments.
         '404':
           description: Signal not found.
 
@@ -915,8 +867,7 @@ paths:
                 $ref: '#/components/schemas/privateCategoryResponse'
         '400':
           description: >-
-            Bad request. Also returned when a split into too many children is
-            attempted.
+            Bad request.
         '401':
           description: Not authenticated, may be caused by expired token
         '404':
@@ -2045,6 +1996,9 @@ components:
           format: date-time
           nullable: true
           example: null
+        has_parent:
+          type: boolean
+          example: false
         has_children:
           type: boolean
           example: false

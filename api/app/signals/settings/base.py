@@ -12,6 +12,8 @@ from signals.settings.settings_databases import (
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+TRUE_VALUES = [True, 'True', 'true', '1']
+
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = False
@@ -161,7 +163,7 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
-if os.getenv('SWIFT_ENABLED', 'False') in ['True', 'true', '1']:
+if os.getenv('SWIFT_ENABLED', 'False') in TRUE_VALUES:
     # The default settings when using SwiftStorage to the general SIA ObjectStore
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
@@ -236,7 +238,7 @@ JWKS_TEST_KEY = """
 SIGNALS_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
     'JWKS_URL': os.getenv('JWKS_URL'),
-    'USER_ID_FIELD': os.getenv('USER_ID_FIELD', 'sub'),
+    'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'sub').split(','),
     'ALWAYS_OK': False,
 }
 
@@ -252,6 +254,7 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
 CELERY_EMAIL_CHUNK_SIZE = 1
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False') in TRUE_VALUES
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
@@ -263,9 +266,9 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') in TRUE_VALUES
 if not EMAIL_USE_TLS:
-    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True)
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True') in TRUE_VALUES
 CELERY_EMAIL_BACKEND = os.getenv('CELERY_EMAIL_BACKEND', None)
 EMAIL_REST_ENDPOINT = os.getenv('EMAIL_REST_ENDPOINT', None)
 EMAIL_REST_ENDPOINT_TIMEOUT = os.getenv('EMAIL_REST_ENDPOINT_TIMEOUT', 5)
@@ -486,8 +489,7 @@ SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
-# SIG-884
-SIGNAL_MIN_NUMBER_OF_CHILDREN = 2
+# Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
 # SIG-1017
@@ -509,14 +511,14 @@ SEARCH = {
 }
 
 FEATURE_FLAGS = {
-    'API_FILTER_EXTRA_PROPERTIES': True,
-    'API_SEARCH_ENABLED': True,
-    'SEARCH_BUILD_INDEX': True,
-    'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
+    'API_FILTER_EXTRA_PROPERTIES': os.getenv('API_FILTER_EXTRA_PROPERTIES', True) in TRUE_VALUES,
+    'API_SEARCH_ENABLED': os.getenv('API_SEARCH_ENABLED', True) in TRUE_VALUES,
+    'SEARCH_BUILD_INDEX': os.getenv('SEARCH_BUILD_INDEX', True) in TRUE_VALUES,
+    'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': os.getenv('API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL', True) in TRUE_VALUES,  # noqa
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': os.getenv('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True) in TRUE_VALUES,  # noqa
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': os.getenv('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True) in TRUE_VALUES,
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

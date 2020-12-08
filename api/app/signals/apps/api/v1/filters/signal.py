@@ -56,7 +56,7 @@ class SignalFilterSet(FilterSet):
     source = filters.MultipleChoiceFilter(choices=source_choices)
     stadsdeel = filters.MultipleChoiceFilter(field_name='location__stadsdeel', choices=stadsdelen_choices)
     status = filters.MultipleChoiceFilter(field_name='status__state', choices=status_choices)
-    type = filters.MultipleChoiceFilter(method='type_filter', choices=Type.CHOICES)
+    type = filters.MultipleChoiceFilter(field_name='type_assignment__name', choices=Type.CHOICES)
     updated_before = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='lte')
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
 
@@ -86,7 +86,8 @@ class SignalFilterSet(FilterSet):
                 )
 
         self._cleanup_form_data()
-        return super(SignalFilterSet, self).filter_queryset(queryset=queryset)
+        queryset = super(SignalFilterSet, self).filter_queryset(queryset=queryset)
+        return queryset
 
     # Custom filter functions
 
@@ -149,7 +150,10 @@ class SignalFilterSet(FilterSet):
             # "?directing_department=null" will select all parent Signals without a directing department
             return queryset.filter(
                 parent_q_filter &
-                Q(directing_departments_assignment__isnull=True)
+                (
+                    Q(directing_departments_assignment__isnull=True) |
+                    Q(directing_departments_assignment__departments__isnull=True)
+                )
             ).distinct()
         elif 'null' in choices and len(choices) > 1:
             # "?directing_department=ASC&directing_department=null" will select all parent Signals without a directing
@@ -158,6 +162,7 @@ class SignalFilterSet(FilterSet):
             return queryset.filter(
                 parent_q_filter & (
                     Q(directing_departments_assignment__isnull=True) |
+                    Q(directing_departments_assignment__departments__isnull=True) |
                     Q(directing_departments_assignment__departments__code__in=choices)
                 )
             ).distinct()
@@ -218,10 +223,6 @@ class SignalFilterSet(FilterSet):
     def note_keyword_filter(self, queryset, name, value):
         return queryset.filter(notes__text__icontains=value).distinct()
 
-    def type_filter(self, queryset, name, value):
-        return queryset.annotate(type_assignment_id=Max('types__id')).filter(types__id=F('type_assignment_id'),
-                                                                             types__name__in=value)
-
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
         choices = list(set(map(lambda x: True if x in [True, 'True', 'true', 1] else False, value)))
@@ -235,7 +236,7 @@ class SignalFilterSet(FilterSet):
         if False in choices:
             q_filter &= Q(updated_at__gt=F('children__updated_at'))  # noqa Selects all parent signals with NO changes in the child signals
 
-        return queryset.filter(q_filter)
+        return queryset.filter(q_filter).distinct()
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):

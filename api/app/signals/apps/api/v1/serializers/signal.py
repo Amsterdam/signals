@@ -154,7 +154,17 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         permission_classes=(SIAPermissions,),
     )
 
+    routing_departments = _NestedDepartmentModelSerializer(
+        source='routing_assignment.departments',
+        many=True,
+        required=False,
+        allow_null=True,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
+
+    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -191,7 +201,9 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'incident_date_start',
             'incident_date_end',
             'directing_departments',
+            'routing_departments',
             'attachments',
+            'assigned_user_id',
         )
         read_only_fields = (
             'id',
@@ -201,7 +213,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data): # noqa
         """
         Perform update on nested models.
 
@@ -231,6 +243,12 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
         if 'directing_departments_assignment' in validated_data and validated_data['directing_departments_assignment']:
             validated_data['directing_departments_assignment']['created_by'] = user_email
+
+        if 'routing_assignment' in validated_data and validated_data['routing_assignment']:
+            validated_data['routing_assignment']['created_by'] = user_email
+
+        if 'user_assignment' in validated_data and validated_data['user_assignment']:
+            validated_data['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal
@@ -285,7 +303,17 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         permission_classes=(SIAPermissions,),
     )
 
+    routing_departments = _NestedDepartmentModelSerializer(
+        source='routing_assignment.departments',
+        many=True,
+        required=False,
+        allow_null=True,
+        permission_classes=(SIAPermissions,),
+    )
+
     has_attachments = serializers.SerializerMethodField()
+
+    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -304,6 +332,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         write_only=True,
         queryset=Signal.objects.all()
     )
+    has_parent = serializers.SerializerMethodField()
     has_children = serializers.SerializerMethodField()
 
     attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
@@ -336,15 +365,18 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'extra_properties',
             'notes',
             'directing_departments',
+            'routing_departments',
             'attachments',
-
             'parent',
+            'has_parent',
             'has_children',
+            'assigned_user_id'
         )
         read_only_fields = (
             'created_at',
             'updated_at',
             'has_attachments',
+            'has_parent',
             'has_children',
         )
         extra_kwargs = {
@@ -354,6 +386,9 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     def get_has_attachments(self, obj):
         return obj.attachments.exists()
 
+    def get_has_parent(self, obj):
+        return obj.parent_id is not None  # True is a parent_id is set, False if not
+
     def get_has_children(self, obj):
         return obj.children.exists()
 
@@ -362,6 +397,11 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         if attrs.get('directing_departments_assignment') is not None:
             errors.update(
                 {'directing_departments_assignment': ['Directing departments cannot be set on initial creation']}
+            )
+
+        if attrs.get('routing_assignment') is not None:
+            errors.update(
+                {'routing_assignment': ['Signal departments relation cannot be set on initial creation']}
             )
 
         if attrs.get('status') is not None:

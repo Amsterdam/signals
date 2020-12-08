@@ -1,5 +1,5 @@
 import os
-from unittest import mock, skip
+from unittest import mock
 
 import requests
 from django.conf import settings
@@ -7,7 +7,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import LiveServerTestCase, TestCase, TransactionTestCase
+from django.test import LiveServerTestCase, TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -246,69 +246,6 @@ class TestSignalManager(TransactionTestCase):
             signal_obj=signal,
             note=note)
 
-    @mock.patch('signals.apps.signals.managers.create_child', autospec=True)
-    @mock.patch('signals.apps.signals.managers.update_status', autospec=True)
-    def test_split_signal(self, patched_update_status, patched_create_child):
-        self.assertEqual(Signal.objects.count(), 0)
-        self.assertEqual(Location.objects.count(), 0)
-        self.assertEqual(Status.objects.count(), 0)
-        self.assertEqual(CategoryAssignment.objects.count(), 0)
-        self.assertEqual(Priority.objects.count(), 0)
-
-        parent_signal = factories.SignalFactory.create()
-        prev_status = parent_signal.status
-
-        self.assertEqual(Signal.objects.count(), 1)
-        self.assertEqual(Location.objects.count(), 1)
-        self.assertEqual(Status.objects.count(), 1)
-        self.assertEqual(CategoryAssignment.objects.count(), 1)
-        self.assertEqual(Priority.objects.count(), 1)
-
-        sub_cat = factories.CategoryFactory.create()
-
-        Signal.actions.split(
-            split_data=[
-                {
-                    'text': 'child #1',
-                    'category': {
-                        'sub_category': sub_cat,
-                    }
-                },
-                {
-                    'text': 'child #2',
-                    'category': {
-                        'sub_category': sub_cat,
-                    }
-                }
-            ],
-            signal=parent_signal
-        )
-
-        self.assertEqual(Signal.objects.count(), 3)
-        self.assertEqual(Location.objects.count(), 3)
-        self.assertEqual(Status.objects.count(), 4)
-        self.assertEqual(CategoryAssignment.objects.count(), 3)
-        self.assertEqual(Priority.objects.count(), 3)
-
-        parent_signal.refresh_from_db()
-
-        self.assertTrue(parent_signal.is_parent())
-        self.assertFalse(parent_signal.is_child())
-        self.assertEqual(parent_signal.children.count(), 2)
-        self.assertEqual(parent_signal.status.state, workflow.GESPLITST)
-
-        parent_signal_statusses = list(Status.objects.filter(_signal=parent_signal).order_by('id'))
-        prev_status = parent_signal_statusses[0]
-        status = parent_signal_statusses[1]
-
-        patched_update_status.send_robust.assert_called_with(
-            sender=Signal.actions.__class__,
-            signal_obj=parent_signal,
-            status=status,
-            prev_status=prev_status)
-
-        self.assertEqual(patched_create_child.send_robust.call_count, 2)
-
 
 class TestSignalModel(TestCase):
 
@@ -345,8 +282,7 @@ class TestSignalModel(TestCase):
         mocked_isinstance.assert_called()
         self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
 
-    # Test for SIG-884
-
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_add_first_child(self):
         signal = factories.SignalFactory.create()
 
@@ -361,6 +297,7 @@ class TestSignalModel(TestCase):
         self.assertEqual(signal_from_db.siblings.count(), 0)  # Excluding the signal self
         self.assertEqual(signal_from_db.parent.children.count(), 1)  # All children of the parent
 
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_cannot_be_parent_and_child(self):
         signal_parent = factories.SignalFactory.create()
         signal_children = factories.SignalFactory.create_batch(3, parent=signal_parent)
@@ -372,6 +309,7 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'Cannot be a parent and a child at the once')
 
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_cannot_be_child_of_a_child(self):
         signal_parent = factories.SignalFactory.create()
         signal_children = factories.SignalFactory.create_batch(3, parent=signal_parent)
@@ -385,6 +323,7 @@ class TestSignalModel(TestCase):
         e = cm.exception
         self.assertEqual(e.message, 'A child of a child is not allowed')
 
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_max_children_reached(self):
         signal_parent = factories.SignalFactory.create()
         factories.SignalFactory.create_batch(3, parent=signal_parent)
@@ -394,21 +333,6 @@ class TestSignalModel(TestCase):
 
         e = cm.exception
         self.assertEqual(e.message, 'Maximum number of children reached for the parent Signal')
-
-    @skip('With the introduction of "deelmeldingen" this is no longer the case, TODO remove when the splits endpoint can be removed from the code')  # noqa
-    def test_split_signal_parent_status_cannot_change_from_gesplits(self):
-        status_gesplitst = factories.StatusFactory.create(state=workflow.GESPLITST)
-        signal_parent = factories.SignalFactory.create(status=status_gesplitst)
-        factories.SignalFactory.create_batch(3, parent=signal_parent)
-
-        status_behandeling = factories.StatusFactory.create(state=workflow.BEHANDELING)
-        signal_parent.status = status_behandeling
-
-        with self.assertRaises(ValidationError) as cm:
-            signal_parent.save()
-
-        e = cm.exception
-        self.assertEqual(e.message, 'The status of a parent Signal can only be "gesplitst"')
 
     def test_siblings_property(self):
         """ Siblings property should return siblings, not self """

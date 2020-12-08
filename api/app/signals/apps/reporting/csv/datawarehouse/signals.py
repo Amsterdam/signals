@@ -4,7 +4,7 @@ Dump CSV of SIA tables matching the old, agreed-upon, format.
 import logging
 import os
 
-from django.db.models import CharField, F, Max, Value
+from django.db.models import CharField, F, Value
 from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
@@ -21,10 +21,7 @@ def create_signals_csv(location: str) -> str:
     :returns: Path to CSV file
     """
     queryset = Signal.objects.annotate(
-        type_assignment_id=Max('types__id'),
         image=Value(None, output_field=CharField()),
-    ).filter(
-        types__id=F('type_assignment_id'),
     ).values(
         'id',
         'source',
@@ -48,11 +45,11 @@ def create_signals_csv(location: str) -> str:
         _priority=F('priority__priority'),
         priority_created_at=F('priority__created_at'),
         _parent=F('parent_id'),
-        type=F('types__name'),
-        type_created_at=F('types__created_at'),
+        type=F('type_assignment__name'),
+        type_created_at=F('type_assignment__created_at'),
         _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
                                    Value('null', output_field=CharField()))
-    )
+    ).order_by('created_at')
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals.csv'))
 

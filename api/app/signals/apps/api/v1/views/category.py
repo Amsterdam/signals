@@ -16,7 +16,7 @@ from signals.auth.backend import JWTAuthBackend
 
 
 class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.select_related('parent').prefetch_related('children').all()
     lookup_field = 'slug'
 
     def get_queryset(self):
@@ -38,7 +38,11 @@ class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
     serializer_class = PrivateCategorySerializer
     serializer_detail_class = PrivateCategorySerializer
 
-    queryset = Category.objects.all()
+    queryset = Category.objects.prefetch_related(
+        'slo',
+        'categorydepartment_set',
+        'categorydepartment_set__department',
+    ).all()
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions,)

@@ -24,8 +24,29 @@ from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 THIS_DIR = os.path.dirname(__file__)
 
 
+@override_settings(FEATURE_FLAGS={
+    'API_SEARCH_ENABLED': False,
+    'SEARCH_BUILD_INDEX': False,
+    'API_DETERMINE_STADSDEEL_ENABLED': True,
+    'API_FILTER_EXTRA_PROPERTIES': True,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
+    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
+    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
+})
 class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
+
+    prod_feature_flags_settings = {
+        'API_SEARCH_ENABLED': False,
+        'SEARCH_BUILD_INDEX': False,
+        'API_DETERMINE_STADSDEEL_ENABLED': True,
+        'API_FILTER_EXTRA_PROPERTIES': True,
+        'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
+        'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
+        'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
+        'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
+    }
 
     def setUp(self):
         self.main_category = ParentCategoryFactory.create(name='main', slug='main')
@@ -154,6 +175,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
+    @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_create_initial_child_signals_max_exceeded(self, validate_address):
         parent_signal = SignalFactory.create()
         SignalFactory.create(parent=parent_signal)
@@ -409,17 +431,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         # SIA production, this testcase reproduces the problem.
         SourceFactory.create(name='online', description='online')
 
-        production_flags = {
-            'API_DETERMINE_STADSDEEL_ENABLED': True,
-            'API_FILTER_EXTRA_PROPERTIES': True,
-            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
-            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
-            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
-            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
-        }
-
-        with self.settings(FEATURE_FLAGS=production_flags):
+        with self.settings(FEATURE_FLAGS=self.prod_feature_flags_settings):
             parent_signal = SignalFactory.create()
 
             signal_count = Signal.objects.count()
@@ -450,17 +462,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     def test_signal_ids_cannot_be_skipped(self, validate_address):
         SourceFactory.create(name='online', description='online')
 
-        production_flags = {
-            'API_DETERMINE_STADSDEEL_ENABLED': True,
-            'API_FILTER_EXTRA_PROPERTIES': True,
-            'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
-            'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-            'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
-            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
-            'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
-        }
-
-        with self.settings(FEATURE_FLAGS=production_flags):
+        with self.settings(FEATURE_FLAGS=self.prod_feature_flags_settings):
             parent_signal = SignalFactory.create()
 
             signal_count = Signal.objects.count()

@@ -21,9 +21,11 @@ class SignalExtraPropertiesField(JSONField):
         # SIG-1711: Only show extra properties that belong to the currently assigned category or
         #           the parent of the currently assigned category
         category = self.instance.category_assignment.category
-        category_urls = [url_from_category(category), ]
+        category_url = url_from_category(category)
+        category_urls = [category_url, f'{category_url}/']
         if category.is_child():
-            category_urls.append(url_from_category(category.parent))
+            category_url = url_from_category(category.parent)
+            category_urls += [category_url, f'{category_url}/']
 
         return filter(
             lambda x: 'category_url' in x and x['category_url'] in category_urls, representation

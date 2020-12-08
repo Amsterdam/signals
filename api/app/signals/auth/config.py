@@ -19,7 +19,7 @@ _available_settings = {
         'ES256', 'ES384', 'ES512',
         'RS256', 'RS384', 'RS512'
     ],
-    'USER_ID_FIELD': "",
+    'USER_ID_FIELDS': ''.split(','),  # fieldnames separated by comma's
     'ALWAYS_OK': False,
     'MIN_INTERVAL_KEYSET_UPDATE': 30
 }

@@ -38,6 +38,6 @@ class MapGeneratorTest(TestCase):
                 img_size=[648, 250]
             )
             self.assertIsNotNone(map)
-            self.assertEquals(map.size, (648, 250))
+            self.assertEqual(map.size, (648, 250))
         except Exception:
             self.fail('Mapgenerator raised unexpected exception!')

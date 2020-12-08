@@ -109,10 +109,10 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         what_in_history = [entry['what'] for entry in data]
         self.assertIn('UPDATE_CATEGORY_ASSIGNMENT', what_in_history)
-        self.assertEquals(1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
+        self.assertEqual(1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
 
         self.assertIn('UPDATE_SLA', what_in_history)
-        self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
+        self.assertEqual(1, what_in_history.count('UPDATE_SLA'))
 
         actions_in_history = [entry['action'] for entry in data]
         self.assertIn('Servicebelofte:', actions_in_history)
@@ -122,20 +122,29 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
                          sla_description_in_history[0])
 
     def test_sla_only_once_in_history(self):
-        # Update the Signal category, and check that we only have the original SLA hadnling message in the history
+        # Update the Signal category, and check that we only have the original SLA handling message in the history
         now = timezone.now()
         hours = 1
-        categories = Category.objects.filter(parent__isnull=False).order_by('?')[:5]
+
+        # Select 4 random subcategories that are not assigned to the signal yet
+        categories = Category.objects.filter(
+            parent__isnull=False,  # Must be a subcategory
+            is_active=True,  # The category must be active
+        ).exclude(
+            id__in=self.signal.category_assignments.values_list('category_id', flat=True)  # noqa Exclude all previously assinged categories
+        ).order_by(
+            '?'  # Order random
+        )[:5]  # Only 5 categories needed for this test
+        self.assertEqual(5, categories.count())
+
+        # Let's assign categories to the signal with an interval of 1 hour
         for category in categories:
             with freeze_time(now + timedelta(hours=hours)):
                 Signal.actions.update_category_assignment(
-                    {
-                        'category': category,
-                        'text': 'DIT IS EEN TEST',
-                    },
-                    self.signal
+                    {'category': category, 'text': 'DIT IS EEN TEST'}, self.signal
                 )
                 hours += 1
+        self.signal.refresh_from_db()
 
         # Get a baseline for the Signal history
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -146,14 +155,17 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         data = response.json()
         self.assertJsonSchema(self.list_history_schema, data)
 
+        # Search for the category assignments in the history
         what_in_history = [entry['what'] for entry in data]
         self.assertIn('UPDATE_CATEGORY_ASSIGNMENT', what_in_history)
-        self.assertEquals(6, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
+        self.assertEqual(categories.count() + 1, what_in_history.count('UPDATE_CATEGORY_ASSIGNMENT'))
 
+        # The UPDATE_SLA can only be in the history once
         self.assertIn('UPDATE_SLA', what_in_history)
-        self.assertEquals(1, what_in_history.count('UPDATE_SLA'))
+        self.assertEqual(1, what_in_history.count('UPDATE_SLA'))
 
-        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']  # noqa
+        # The description in the history for UPDATE_SLA should match the handling message of the first assigned category
+        sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']
         self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
                          sla_description_in_history[0])
 

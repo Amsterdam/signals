@@ -61,3 +61,6 @@ elasticsearch-dsl==6.4.0
 Arpeggio
 Click
 textX
+
+# Email templates
+mistune
