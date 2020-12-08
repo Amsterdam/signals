@@ -14,7 +14,7 @@ from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 THIS_DIR = os.path.dirname(__file__)
 
 
-class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestPrivateCSVEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     csv_endpoint = '/signals/v1/private/csv/'
 
     def setUp(self):

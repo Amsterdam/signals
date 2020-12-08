@@ -22,7 +22,7 @@ def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
-    :returns:
+    :returns: list of csv files
     """
     csv_files = list()
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -40,7 +40,7 @@ def save_csv_files_datawarehouse(using='datawarehouse'):
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
-    :returns:
+    :returns: list of csv files
     """
     csv_files = list()
     csv_files.extend(save_csv_file_datawarehouse(create_signals_csv, using=using))

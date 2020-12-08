@@ -892,6 +892,8 @@ paths:
           content:
         '401':
           description: Not authenticated, may be caused by expired token
+        '403':
+          description: Not authorized to access this endpoint.
         '404':
           description: If no csv was generated
       security:
