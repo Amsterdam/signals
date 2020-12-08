@@ -19,7 +19,7 @@ def zip_csv_files(files_to_zip: list, using: str) -> None:
     """
     Writes zip file of the generated csv files in the {now:%Y}/{now:%m}/{now:%d} folder
 
-    :returns None:
+    :returns:
     """
     storage = _get_storage_backend(using=using)
     now = timezone.now()

@@ -98,6 +98,7 @@ class ModelWritePermissions(DjangoModelPermissions):
     """
     In SIA we have binary permissions instead of the default add, change, delete permissions
     provided by Django.
+
     The 2 permissions are:
         * sia_read
         * sia_{model_name}_write
