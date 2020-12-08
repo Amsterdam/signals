@@ -2,9 +2,13 @@
 
 **This document is under review** 
 
+### Join the Signalen community mailinglist to stay up to date
+
+* Product owners for each development team coordinate in the product steering group. If you wish to contribute or keep up to date please join the [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/) and/or [Slack channel](https://samenorganiseren.slack.com/archives/C01AF8CN495).
+
 ### Want to add a new feature?
 
-* **At the moment we do not accept merge request with new features from anyone other than the core developers!**
+* See [signalen.org](https://signalen.org/en/using-signalen) for how to help with development or propose new features.
 
 #### **Did you find a bug?**
 
@@ -16,7 +20,7 @@
 
 * If you found an open issue addressing the bug you can always contribute by leaving additional information. Make sure your comment is adding new information that has not already have been described in the ticket
 
-* **Please do not put "feature request" into the GitHub Issues**
+* Please make new [feature requests](https://github.com/Signalen/product-steering/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE-REQUEST%5D) using the [feature request template](https://github.com/Signalen/product-steering/tree/main/.github/ISSUE_TEMPLATE) in the [product steering](https://github.com/Signalen/product-steering) repository if your requirement or wish is not listed.
 
 #### **Did you write a patch that fixes a bug?**
 
