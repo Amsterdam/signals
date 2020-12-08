@@ -18,7 +18,7 @@ from signals.celery import app
 
 
 @app.task
-def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
+def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse') -> None:
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
@@ -32,65 +32,26 @@ def save_csv_file_datawarehouse(func: Callable[[str], str]) -> None:
             pass
 
         # Store the CSV files to the correct location
-        save_csv_files(csv_files=csv_files, using='datawarehouse')
+        save_csv_files(csv_files=csv_files, using=using)
 
 
 @app.task
-def save_csv_files_datawarehouse():
+def save_csv_files_datawarehouse(using='datawarehouse'):
     """
     Create CSV files for Datawarehouse and save them on the storage backend.
 
     :returns:
     """
-    save_csv_file_datawarehouse(create_signals_csv)
-    save_csv_file_datawarehouse(create_locations_csv)
-    save_csv_file_datawarehouse(create_reporters_csv)
-    save_csv_file_datawarehouse(create_category_assignments_csv)
-    save_csv_file_datawarehouse(create_statuses_csv)
-    save_csv_file_datawarehouse(create_category_sla_csv)
-    save_csv_file_datawarehouse(create_directing_departments_csv)
+    save_csv_file_datawarehouse(create_signals_csv, using=using)
+    save_csv_file_datawarehouse(create_locations_csv, using=using)
+    save_csv_file_datawarehouse(create_reporters_csv, using=using)
+    save_csv_file_datawarehouse(create_category_assignments_csv, using=using)
+    save_csv_file_datawarehouse(create_statuses_csv, using=using)
+    save_csv_file_datawarehouse(create_category_sla_csv, using=using)
+    save_csv_file_datawarehouse(create_directing_departments_csv, using=using)
 
     try:
-        save_csv_file_datawarehouse(create_kto_feedback_csv)
-    except EnvironmentError:
-        pass
-
-
-@app.task
-def save_csv_file_endpoint(func: Callable[[str], str]) -> None:
-    """
-    Create CSV files for csv endpoint and save them on the storage backend.
-
-    :returns:
-    """
-    csv_files = list()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        try:
-            csv_files.append(func(tmp_dir))
-        except EnvironmentError:
-            pass
-
-        # Store the CSV files to the correct location
-        save_csv_files(csv_files=csv_files, using=None)
-
-
-@app.task
-def save_csv_files_endpoint():
-    """
-    Create CSV files for Datawarehouse and save them on the storage backend.
-
-    :returns:
-    """
-    save_csv_file_endpoint(create_signals_csv)
-    save_csv_file_endpoint(create_locations_csv)
-    save_csv_file_endpoint(create_reporters_csv)
-    save_csv_file_endpoint(create_category_assignments_csv)
-    save_csv_file_endpoint(create_statuses_csv)
-    save_csv_file_endpoint(create_category_sla_csv)
-    save_csv_file_endpoint(create_directing_departments_csv)
-
-    try:
-        save_csv_file_endpoint(create_kto_feedback_csv)
+        save_csv_file_datawarehouse(create_kto_feedback_csv, using=using)
     except EnvironmentError:
         pass
 
@@ -112,16 +73,5 @@ def save_and_zip_csv_files_endpoint():
 
     :returns:
     """
-    save_csv_file_endpoint(create_signals_csv)
-    save_csv_file_endpoint(create_locations_csv)
-    save_csv_file_endpoint(create_reporters_csv)
-    save_csv_file_endpoint(create_category_assignments_csv)
-    save_csv_file_endpoint(create_statuses_csv)
-    save_csv_file_endpoint(create_category_sla_csv)
-    save_csv_file_endpoint(create_directing_departments_csv)
-
-    try:
-        save_csv_file_endpoint(create_kto_feedback_csv)
-    except EnvironmentError:
-        pass
+    save_csv_files_datawarehouse(using=None)
     zip_csv_files(using='datawarehouse')

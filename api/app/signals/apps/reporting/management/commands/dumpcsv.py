@@ -1,4 +1,3 @@
-import argparse
 import os
 from timeit import default_timer as timer
 
@@ -37,22 +36,11 @@ REPORT_OPTIONS = {
 
 
 class Command(BaseCommand):
-    def _str2bool(self, v):
-        if isinstance(v, bool):
-            return v
-        if v.lower() in ('yes', 'true', 't', 'y', '1'):
-            return True
-        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-            return False
-        else:
-            raise argparse.ArgumentTypeError('Boolean value expected.')
-
     def add_arguments(self, parser):
         parser.add_argument('--report', type=str,
                             help=f'Report type to export (if none given all reports will be exported), '
                                  f'choices are: {", ".join(REPORT_OPTIONS.keys())}')
-        parser.add_argument("--zip", type=self._str2bool, nargs='?', const=True, default=False,
-                            help="Also output zip file.")
+        parser.add_argument("--zip", action="store_true", dest='zip', help="Also output zip file.")
 
     def handle(self, *args, **kwargs):
         start = timer()

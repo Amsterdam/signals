@@ -13,9 +13,7 @@ from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_c
 from signals.apps.reporting.csv.datawarehouse.tasks import (
     save_and_zip_csv_files_endpoint,
     save_csv_file_datawarehouse,
-    save_csv_file_endpoint,
-    save_csv_files_datawarehouse,
-    save_csv_files_endpoint
+    save_csv_files_datawarehouse
 )
 
 __all__ = [
@@ -29,7 +27,5 @@ __all__ = [
     'create_signals_csv',
     'save_csv_file_datawarehouse',
     'save_csv_files_datawarehouse',
-    'save_csv_file_endpoint',
-    'save_csv_files_endpoint',
     'save_and_zip_csv_files_endpoint',
 ]
