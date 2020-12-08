@@ -32,7 +32,7 @@ def save_csv_file_datawarehouse(func: Callable[[str], str], using='datawarehouse
             pass
 
         # Store the CSV files to the correct location
-        save_csv_files(csv_files=csv_files, using=using)
+        return save_csv_files(csv_files=csv_files, using=using)
 
 
 @app.task
@@ -42,28 +42,30 @@ def save_csv_files_datawarehouse(using='datawarehouse'):
 
     :returns:
     """
-    save_csv_file_datawarehouse(create_signals_csv, using=using)
-    save_csv_file_datawarehouse(create_locations_csv, using=using)
-    save_csv_file_datawarehouse(create_reporters_csv, using=using)
-    save_csv_file_datawarehouse(create_category_assignments_csv, using=using)
-    save_csv_file_datawarehouse(create_statuses_csv, using=using)
-    save_csv_file_datawarehouse(create_category_sla_csv, using=using)
-    save_csv_file_datawarehouse(create_directing_departments_csv, using=using)
+    csv_files = list()
+    csv_files.extend(save_csv_file_datawarehouse(create_signals_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_locations_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_reporters_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_category_assignments_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_statuses_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_category_sla_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_directing_departments_csv, using=using))
 
     try:
-        save_csv_file_datawarehouse(create_kto_feedback_csv, using=using)
+        csv_files.extend(save_csv_file_datawarehouse(create_kto_feedback_csv, using=using))
     except EnvironmentError:
         pass
+    return csv_files
 
 
 @app.task
-def zip_csv_files_endpoint():
+def zip_csv_files_endpoint(files: list):
     """
     Create zip file of generated csv files
 
     :returns:
     """
-    zip_csv_files(using='datawarehouse')
+    zip_csv_files(files_to_zip=files, using='datawarehouse')
 
 
 @app.task
@@ -73,5 +75,5 @@ def save_and_zip_csv_files_endpoint():
 
     :returns:
     """
-    save_csv_files_datawarehouse(using=None)
-    zip_csv_files(using='datawarehouse')
+    created_files = save_csv_files_datawarehouse(using=None)
+    zip_csv_files(files_to_zip=created_files, using='datawarehouse')

@@ -61,15 +61,16 @@ class Command(BaseCommand):
 
         reports = set(reports)
         self.stdout.write(f'Export: {", ".join(reports)}')
+        csv_files = list()
         for report in reports:
             self.stdout.write(f'* Exporting: {report}')
             func = REPORT_OPTIONS[report]
-            save_csv_file_datawarehouse(func)
+            csv_files.extend(save_csv_file_datawarehouse(func))
             self.stdout.write('* ---------------------------------')
 
         if kwargs['zip']:
             self.stdout.write('* Making zipfile...')
-            zip_csv_files_endpoint()
+            zip_csv_files_endpoint(files=csv_files)
             self.stdout.write('* ---------------------------------')
         stop = timer()
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')

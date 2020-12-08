@@ -1,5 +1,4 @@
 import csv
-import glob
 import logging
 import os
 import shutil
@@ -16,7 +15,7 @@ from signals.apps.reporting.utils import _get_storage_backend
 logger = logging.getLogger(__name__)
 
 
-def zip_csv_files(using: str) -> None:
+def zip_csv_files(files_to_zip: list, using: str) -> None:
     """
     Writes zip file of the generated csv files in the {now:%Y}/{now:%m}/{now:%d} folder
 
@@ -27,10 +26,15 @@ def zip_csv_files(using: str) -> None:
     src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
     dst_file = os.path.join(src_folder, f'{now:%H%M%S%Z}')
 
-    files_to_zip = glob.glob(f'{src_folder}/*.csv', recursive=False)
     with zipfile.ZipFile(f'{dst_file}.zip', 'w') as zipper:
         for file in files_to_zip:
-            zipper.write(filename=file, arcname=os.path.basename(file), compress_type=zipfile.ZIP_DEFLATED)
+            if file:
+                base_file = os.path.basename(file)
+                zipper.write(
+                    filename=os.path.join(src_folder, base_file),
+                    arcname=base_file,
+                    compress_type=zipfile.ZIP_DEFLATED
+                )
 
 
 def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
@@ -43,10 +47,11 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
     :returns None:
     """
     storage = _get_storage_backend(using=using)
-
+    stored_csv = list()
     for csv_file_path in csv_files:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
+            file_path = None
             if isinstance(storage, SwiftStorage):
                 file_path = f'{path}{file_name}' if path else file_name
                 storage.save(name=file_path, content=opened_csv_file)
@@ -55,6 +60,8 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
                 now = timezone.now()
                 file_path = f'{now:%Y}/{now:%m}/{now:%d}/{now:%H%M%S%Z}_{file_name}'
                 storage.save(name=file_path, content=opened_csv_file)
+            stored_csv.append(os.path.basename(file_path))
+    return stored_csv
 
 
 def queryset_to_csv_file(queryset: QuerySet, csv_file_path: str) -> TextIO:
