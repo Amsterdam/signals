@@ -49,7 +49,7 @@ def create_signals_csv(location: str) -> str:
         type_created_at=F('type_assignment__created_at'),
         _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
                                    Value('null', output_field=CharField()))
-    )
+    ).order_by('created_at')
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals.csv'))
 

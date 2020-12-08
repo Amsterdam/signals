@@ -9,6 +9,7 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils import timezone
+from django.utils.timezone import make_aware
 
 from signals.apps.reporting.app_settings import CSV_BATCH_SIZE as BATCH_SIZE
 from signals.apps.reporting.models.export import HorecaCSVExport
@@ -21,6 +22,7 @@ def _to_first_and_last_day_of_the_week(isoweek, isoyear):
     first_day_of_week = timezone.datetime.strptime(
         '{}-W{}-1'.format(isoyear, isoweek), '%G-W%V-%u'
     )
+    first_day_of_week = make_aware(first_day_of_week)
     last_day_of_week = first_day_of_week + timedelta(days=7)
     return first_day_of_week, last_day_of_week
 
