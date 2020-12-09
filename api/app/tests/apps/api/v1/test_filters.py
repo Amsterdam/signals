@@ -14,6 +14,7 @@ from signals.apps.signals.factories import (
     NoteFactory,
     ParentCategoryFactory,
     SignalFactory,
+    SignalUserFactory,
     StatusFactory,
     TypeFactory
 )
@@ -1073,3 +1074,45 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
         filter_params = {'has_changed_children': ['true', 0]}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), len(parents_with_changes) + len(parents_without_changes))
+
+
+class TestAssignedUserEmailFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.signal0 = SignalFactory.create()
+        self.signal1 = SignalFactory.create()
+        self.signal2 = SignalFactory.create()
+        self.su1 = SignalUserFactory.create(_signal=self.signal1)
+        self.su2 = SignalUserFactory.create(_signal=self.signal2)
+        self.signal1.user_assignment = self.su1
+        self.signal2.user_assignment = self.su2
+        self.signal1.save()
+        self.signal2.save()
+
+    def test_filter_assigned_user_email(self):
+        # all
+        result_ids = self._request_filter_signals({})
+        self.assertEqual(3, len(result_ids))
+        # filter on test1@example.com
+        result_ids = self._request_filter_signals({'assigned_user_email': f'{self.su1.user.email}'})
+        self.assertEqual(1, len(result_ids))
+        self.assertTrue(self.signal1.id in result_ids)
+        # filter on non-assigned
+        result_ids = self._request_filter_signals({'assigned_user_email': 'null'})
+        self.assertEqual(1, len(result_ids))
+        self.assertTrue(self.signal0.id in result_ids)
