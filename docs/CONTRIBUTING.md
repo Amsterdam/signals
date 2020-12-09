@@ -1,7 +1,5 @@
 # Contributing to the Signals project
 
-**This document is under review** 
-
 ### Join the Signalen community mailinglist to stay up to date
 
 * Product owners for each development team coordinate in the product steering group. If you wish to contribute or keep up to date please join the [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/) and/or [Slack channel](https://samenorganiseren.slack.com/archives/C01AF8CN495).
