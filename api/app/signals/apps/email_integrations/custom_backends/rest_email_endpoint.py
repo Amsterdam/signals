@@ -1,8 +1,9 @@
 import json
+import threading
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
-from djcelery_email.utils import chunked, email_to_dict
+from djcelery_email.utils import email_to_dict
 from requests import RequestException, Session
 
 
@@ -11,6 +12,7 @@ class RestEmailBackend(BaseEmailBackend):
         super(RestEmailBackend, self).__init__(fail_silently)
         self.init_kwargs = kwargs
         self.session = None
+        self._lock = threading.RLock()
         self.cert = None
         if hasattr(settings, 'EMAIL_REST_ENDPOINT_CLIENT_CERT') and hasattr(settings, 'EMAIL_REST_ENDPOINT_CLIENT_KEY'): # noqa
             self.cert = (settings.EMAIL_REST_ENDPOINT_CLIENT_CERT, settings.EMAIL_REST_ENDPOINT_CLIENT_KEY)
@@ -33,19 +35,32 @@ class RestEmailBackend(BaseEmailBackend):
         return True
 
     def open(self):
+        if self.session:
+            return False
+
         self.session = Session()
         self.session.cert = self.cert
+        return True
 
     def close(self):
+        if self.session is None:
+            return
         self.session.close()
         self.session = None
 
     def send_messages(self, email_messages):
-        messages_sent = 0
-
-        for chunk in chunked(email_messages, settings.CELERY_EMAIL_CHUNK_SIZE):
-            messages = [email_to_dict(msg) for msg in chunk]
-            for message in messages:
-                if self._send_email_rest_api(message):
-                    messages_sent += 1
-        return messages_sent
+        if not email_messages:
+            return 0
+        with self._lock:
+            session_created = self.open()
+            if not self.session or session_created is None:
+                # We failed silently on open().
+                # Trying to send would be pointless.
+                return 0
+            num_sent = 0
+            for message in email_messages:
+                if self._send_email_rest_api(email_to_dict(message)):
+                    num_sent += 1
+            if session_created:
+                self.close()
+        return num_sent
