@@ -22,6 +22,7 @@ class RestEmailBackend(BaseEmailBackend):
                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'},
                 data=json.dumps(message_attributes),
                 timeout=settings.EMAIL_REST_ENDPOINT_TIMEOUT,
+                verify=False
             )
             response.raise_for_status()
         except RequestException as e:
@@ -43,7 +44,8 @@ class RestEmailBackend(BaseEmailBackend):
         messages_sent = 0
 
         for chunk in chunked(email_messages, settings.CELERY_EMAIL_CHUNK_SIZE):
-            message_attributes = [email_to_dict(msg) for msg in chunk]
-            if self._send_email_rest_api(message_attributes):
-                messages_sent += 1
+            messages = [email_to_dict(msg) for msg in chunk]
+            for message in messages:
+                if self._send_email_rest_api(message):
+                    messages_sent += 1
         return messages_sent
