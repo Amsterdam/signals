@@ -164,7 +164,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
     has_attachments = serializers.SerializerMethodField()
 
-    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
+    assigned_user_email = serializers.EmailField(source='user_assignment.user.email', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -203,7 +203,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             'directing_departments',
             'routing_departments',
             'attachments',
-            'assigned_user_id',
+            'assigned_user_email',
         )
         read_only_fields = (
             'id',
@@ -313,7 +313,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
     has_attachments = serializers.SerializerMethodField()
 
-    assigned_user_id = serializers.IntegerField(source='user_assignment.user.id', required=False, allow_null=True)
+    assigned_user_email = serializers.EmailField(source='user_assignment.user.email', required=False, allow_null=True)
 
     extra_properties = SignalExtraPropertiesField(
         required=False,
@@ -370,7 +370,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'parent',
             'has_parent',
             'has_children',
-            'assigned_user_id'
+            'assigned_user_email'
         )
         read_only_fields = (
             'created_at',

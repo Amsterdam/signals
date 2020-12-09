@@ -516,10 +516,10 @@ class SignalManager(models.Manager):
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.users.models import User, SignalUser
         try:
-            user_id = data['user_assignment']['user']['id']
-            signal.user_assignment = SignalUser.objects.create(
+            user_email = data['user_assignment']['user']['email']
+            signal.user_assignment, _ = SignalUser.objects.get_or_create(
                 _signal=signal,
-                user=None if not user_id else User.objects.get(pk=user_id),
+                user=None if not user_email else User.objects.get(email=user_email),
                 created_by=data['created_by'] if 'created_by' in data else None
             )
             signal.save()
