@@ -17,7 +17,10 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.datawarehouse.tasks import save_csv_file_datawarehouse
+from signals.apps.reporting.csv.datawarehouse.tasks import (
+    save_csv_file_datawarehouse,
+    zip_csv_files_endpoint
+)
 
 REPORT_OPTIONS = {
     # Option, Func
@@ -37,6 +40,7 @@ class Command(BaseCommand):
         parser.add_argument('--report', type=str,
                             help=f'Report type to export (if none given all reports will be exported), '
                                  f'choices are: {", ".join(REPORT_OPTIONS.keys())}')
+        parser.add_argument("--zip", action="store_true", dest='zip', help="Also output zip file.")
 
     def handle(self, *args, **kwargs):
         start = timer()
@@ -57,12 +61,17 @@ class Command(BaseCommand):
 
         reports = set(reports)
         self.stdout.write(f'Export: {", ".join(reports)}')
+        csv_files = list()
         for report in reports:
             self.stdout.write(f'* Exporting: {report}')
             func = REPORT_OPTIONS[report]
-            save_csv_file_datawarehouse(func)
+            csv_files.extend(save_csv_file_datawarehouse(func))
             self.stdout.write('* ---------------------------------')
 
+        if kwargs['zip']:
+            self.stdout.write('* Making zipfile...')
+            zip_csv_files_endpoint(files=csv_files)
+            self.stdout.write('* ---------------------------------')
         stop = timer()
         self.stdout.write(f'Time: {stop - start:.2f} second(s)')
         self.stdout.write('Done!')

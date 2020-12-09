@@ -6,6 +6,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     NamespaceView,
     PrivateAreasViewSet,
     PrivateCategoryViewSet,
+    PrivateCsvViewSet,
     PrivateDepartmentViewSet,
     PrivateExpressionViewSet,
     PrivateSignalAttachmentsViewSet,
@@ -50,6 +51,7 @@ private_router.register(r'private/categories', PrivateCategoryViewSet, basename=
 private_router.register(r'private/areas', PrivateAreasViewSet, basename='private-areas')
 private_router.register(r'private/expressions', PrivateExpressionViewSet, basename='private-expression')
 private_router.register(r'private/sources', PrivateSourcesViewSet, basename='private-sources')
+private_router.register(r'private/csv', PrivateCsvViewSet, basename='private-csv')
 
 
 # Combined API
@@ -93,5 +95,6 @@ urlpatterns = [
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
+
     ])),
 ]

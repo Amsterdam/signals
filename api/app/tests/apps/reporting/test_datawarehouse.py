@@ -67,6 +67,46 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(sla_csv))
         self.assertTrue(path.getsize(directing_departments_csv))
 
+    @mock.patch.dict('os.environ', {}, clear=True)
+    @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
+    @freeze_time('2020-09-10T12:00:00+00:00')
+    def test_save_zip_csv_endpoint(self, mocked_get_storage_backend):
+        # Mocking the storage backend to local file system with tmp directory.
+        # In this test case we don't want to make usage of the remote Object
+        # Store.
+        mocked_get_storage_backend.return_value = FileSystemStorage(location=self.file_backend_tmp_dir)
+
+        # Creating a few objects in the database.
+        for i in range(3):
+            SignalFactory.create()
+
+        datawarehouse.save_and_zip_csv_files_endpoint()
+
+        # Checking if we have files on the correct locations and that they
+        # do have some content.
+        signals_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_signals.csv')
+        locations_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_locations.csv')
+        reporters_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_reporters.csv')
+        categories_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_categories.csv')
+        statuses_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_statuses.csv')
+        sla_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_sla.csv')
+        directing_departments_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_directing_departments.csv')  # noqa
+        zip_package = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC.zip')
+
+        self.assertTrue(path.exists(signals_csv))
+        self.assertTrue(path.getsize(signals_csv))
+        self.assertTrue(path.exists(locations_csv))
+        self.assertTrue(path.getsize(locations_csv))
+        self.assertTrue(path.exists(reporters_csv))
+        self.assertTrue(path.getsize(reporters_csv))
+        self.assertTrue(path.exists(categories_csv))
+        self.assertTrue(path.getsize(categories_csv))
+        self.assertTrue(path.exists(statuses_csv))
+        self.assertTrue(path.getsize(statuses_csv))
+        self.assertTrue(path.getsize(sla_csv))
+        self.assertTrue(path.getsize(directing_departments_csv))
+        self.assertTrue(path.getsize(zip_package))
+
     @override_settings(
         SWIFT={
             'datawarehouse': {

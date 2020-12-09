@@ -127,3 +127,11 @@ class SignalViewObjectPermission(DjangoModelPermissions):
         )
 
         return read_permisson and request.user.has_perm('signals.sia_read')
+
+
+class SIAReportPermissions(SIABasePermission):
+    perms_map = {
+        'GET': ['signals.sia_read', 'signals.sia_signal_report'],
+        'OPTIONS': [],
+        'HEAD': []
+    }
