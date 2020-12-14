@@ -1,12 +1,13 @@
 """
 Viewset base classes, not to be used directly.
 """
+from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.signals.models import Signal
 
 
-class PublicSignalGenericViewSet(GenericViewSet):
+class PublicSignalGenericViewSet(mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'signal_id'
     lookup_url_kwarg = 'signal_id'
 

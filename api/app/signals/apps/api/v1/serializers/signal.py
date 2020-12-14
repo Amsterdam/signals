@@ -470,8 +470,18 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
 
 class PublicSignalSerializerDetail(HALSerializer):
+    def __init__(self, *args, **kwargs):
+        super(PublicSignalSerializerDetail, self).__init__(*args, **kwargs)
+
+        if settings.PUBLIC_SIGNAL_HIDE_EXTRA_PROPERTIES:
+            # remove 'location' field if we did not override this
+            self.fields.pop('location')
+            self.fields.pop('category')
+
     status = _NestedPublicStatusModelSerializer(required=False)
     serializer_url_field = PublicSignalLinksField
+    location = _NestedLocationModelSerializer(required=False)
+    category = _NestedCategoryModelSerializer(source='category_assignment', required=False)
     _display = serializers.SerializerMethodField(method_name='get__display')
 
     class Meta:
@@ -485,6 +495,8 @@ class PublicSignalSerializerDetail(HALSerializer):
             'updated_at',
             'incident_date_start',
             'incident_date_end',
+            'location',
+            'category',
         )
 
     def get__display(self, obj):

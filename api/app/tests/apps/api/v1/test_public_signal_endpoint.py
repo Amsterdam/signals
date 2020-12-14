@@ -365,3 +365,64 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         signal = Signal.objects.get(pk=data['id'])
         self.assertEqual(signal.source, 'online')  # online is model default and is used for non-logged in users
+
+    @override_settings(PUBLIC_SIGNAL_HIDE_EXTRA_PROPERTIES=False)
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_list_use_extra_property_setting(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.create_initial_data)
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        self.assertTrue('location' in data)
+        self.assertTrue('category' in data)
+
+        # verify via UUID
+        signal = Signal.objects.get(pk=data['id'])
+        uuid = signal.signal_id
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertTrue('location' in data)
+        self.assertTrue('category' in data)
+
+        # verify list
+        response = self.client.get(f'{self.list_endpoint}')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        for returned_signal in data:
+            self.assertTrue('location' in returned_signal)
+            self.assertTrue('category' in returned_signal)
+
+    @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_list_use_default_extra_property_setting(self, validate_address):
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.create_initial_data)
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        data = response.json()
+        self.assertFalse('location' in data)
+        self.assertFalse('category' in data)
+
+        # verify via UUID
+        signal = Signal.objects.get(pk=data['id'])
+        uuid = signal.signal_id
+        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertFalse('location' in data)
+        self.assertFalse('category' in data)
+
+        # verify list
+        response = self.client.get(f'{self.list_endpoint}')
+        self.assertEqual(response.status_code, 404)

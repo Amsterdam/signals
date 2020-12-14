@@ -569,3 +569,6 @@ DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
 # Note: this assumes the configured image is available through the staticfiles
 # app.
 API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemeente-amsterdam.svg')
+
+# prevent location property from being removed from public signal list endpoint if set
+PUBLIC_SIGNAL_HIDE_EXTRA_PROPERTIES = os.getenv('PUBLIC_SIGNAL_HIDE_EXTRA_PROPERTIES', True) in TRUE_VALUES
