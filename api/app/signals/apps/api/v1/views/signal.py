@@ -103,6 +103,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'status',
         'priority',
         'address',
+        'assigned_user_email',
     )
     ordering_field_mappings = {
         'id': 'id',
@@ -114,6 +115,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'status': 'status__state',
         'priority': 'priority__priority',
         'address': 'location__address_text',
+        'assigned_user_email': 'user_assignment__user__email',
     }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
