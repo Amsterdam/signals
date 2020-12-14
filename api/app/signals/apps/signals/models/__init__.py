@@ -32,6 +32,7 @@ from signals.apps.signals.models.reporter import Reporter
 from signals.apps.signals.models.routing_expression import RoutingExpression
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.models.signal_departments import SignalDepartments
+from signals.apps.signals.models.signal_user import SignalUser
 from signals.apps.signals.models.slo import ServiceLevelObjective
 from signals.apps.signals.models.source import Source
 from signals.apps.signals.models.status import Status
@@ -55,6 +56,7 @@ __all__ = [
     'ExpressionContext',
     'Expression',
     'SignalDepartments',
+    'SignalUser',
     'History',
     'STADSDEEL_AMSTERDAMSE_BOS',
     'STADSDEEL_CENTRUM',

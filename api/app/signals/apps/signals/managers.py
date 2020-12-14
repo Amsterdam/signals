@@ -514,7 +514,8 @@ class SignalManager(models.Manager):
         return signal_type
 
     def _update_user_signal_no_transaction(self, data, signal):
-        from signals.apps.users.models import User, SignalUser
+        from signals.apps.signals.models.signal_user import SignalUser
+        from signals.apps.users.models import User
         try:
             user_email = data['user_assignment']['user']['email']
             signal.user_assignment, _ = SignalUser.objects.get_or_create(
