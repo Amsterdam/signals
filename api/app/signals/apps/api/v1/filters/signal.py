@@ -228,7 +228,7 @@ class SignalFilterSet(FilterSet):
         if value == 'null':
             return queryset.filter(user_assignment__user__isnull=True)
         else:
-            return queryset.filter(user_assignment__user__email=value)
+            return queryset.filter(user_assignment__user__email__iexact=value)
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
