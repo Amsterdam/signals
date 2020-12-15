@@ -164,7 +164,7 @@ CREATE VIEW "signals_history_view" AS
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0132_migrate_users_signaluser_data'),
+        ('signals', '0131_signaluser'),
     ]
 
     operations = [
