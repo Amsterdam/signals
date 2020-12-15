@@ -1,9 +1,6 @@
-from django.contrib.auth import get_user_model
 from factory import DjangoModelFactory, Sequence, SubFactory, post_generation
 
 from signals.apps.signals.models.signal_user import SignalUser
-
-User = get_user_model()
 
 
 class SignalUserFactory(DjangoModelFactory):
