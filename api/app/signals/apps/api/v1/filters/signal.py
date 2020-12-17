@@ -59,6 +59,7 @@ class SignalFilterSet(FilterSet):
     type = filters.MultipleChoiceFilter(field_name='type_assignment__name', choices=Type.CHOICES)
     updated_before = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='lte')
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
+    assigned_user_email = filters.CharFilter(method='assigned_user_email_filter')
 
     def _cleanup_form_data(self):
         """
@@ -222,6 +223,12 @@ class SignalFilterSet(FilterSet):
 
     def note_keyword_filter(self, queryset, name, value):
         return queryset.filter(notes__text__icontains=value).distinct()
+
+    def assigned_user_email_filter(self, queryset, name, value):
+        if value == 'null':
+            return queryset.filter(user_assignment__user__isnull=True)
+        else:
+            return queryset.filter(user_assignment__user__email__iexact=value)
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...

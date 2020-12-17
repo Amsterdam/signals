@@ -2007,7 +2007,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.signal.refresh_from_db()
 
         data = {
-            'assigned_user_id': self.sia_read_write_user.id
+            'assigned_user_email': self.sia_read_write_user.email
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2016,7 +2016,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         # remove user assignment
         data = {
-            'assigned_user_id': None
+            'assigned_user_email': None
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2081,12 +2081,12 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
 
         # assign user
         data = {
-            'assigned_user_id': self.sia_read_write_user.id
+            'assigned_user_email': self.sia_read_write_user.email
         }
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data['assigned_user_id'], self.sia_read_write_user.id)
+        self.assertEqual(data['assigned_user_email'], self.sia_read_write_user.email)
 
         new_department = DepartmentFactory.create()
         data = {
@@ -2099,7 +2099,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertIsNone(data['assigned_user_id'])
+        self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.user_assignment, None)
@@ -2143,7 +2143,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertIsNone(data['assigned_user_id'])
+        self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.user_assignment, None)

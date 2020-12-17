@@ -55,7 +55,7 @@ class Signal(CreatedUpdatedModel):
                                               related_name='routing_signal',
                                               null=True,
                                               on_delete=models.SET_NULL)
-    user_assignment = models.OneToOneField('users.SignalUser',
+    user_assignment = models.OneToOneField('signals.SignalUser',
                                            related_name='user_assignment_signal',
                                            null=True,
                                            on_delete=models.SET_NULL)

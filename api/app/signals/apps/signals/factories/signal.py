@@ -48,6 +48,7 @@ class SignalFactory(DjangoModelFactory):
 
     # SIG-884
     parent = None
+    user_assignment = RelatedFactory('signals.apps.signals.factories.signal_user.SignalUserFactory', '_signal', user=None) # noqa
 
     @post_generation
     def set_one_to_one_relations(self, create, extracted, **kwargs):
