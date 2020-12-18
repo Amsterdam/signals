@@ -6,13 +6,15 @@ from signals.apps.signals.factories import AreaFactory, AreaTypeFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
+JSON_SCHEMA_DIR = os.path.join(THIS_DIR, 'json_schema')
 
 
-class TestPublicAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
-    list_endpoint = '/signals/v1/public/areas/'
+class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    list_endpoint = '/signals/v1/private/areas/'
 
     def setUp(self):
-        super(TestPublicAreaEndpoint, self).setUp()
+        super(TestPrivateAreaEndpoint, self).setUp()
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.areas = {}
         self.area_types = AreaTypeFactory.create_batch(5)
@@ -20,7 +22,7 @@ class TestPublicAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             self.areas[area_type.code] = AreaFactory.create_batch(5, _type=area_type)
 
         self.list_areas_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_public_areas.json')
+            os.path.join(JSON_SCHEMA_DIR, 'get_signals_v1_private_areas.json')
         )
 
     def test_get_list(self):

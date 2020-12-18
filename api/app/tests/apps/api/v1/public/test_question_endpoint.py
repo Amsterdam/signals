@@ -4,16 +4,14 @@ from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactor
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
+JSON_SCHEMA_DIR = os.path.join(THIS_DIR, 'json_schema')
 
 
 class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
     def setUp(self):
         self.retrieve_sub_category_question_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'get_signals_v1_public_questions_categories_{slug}_sub_categories_{sub_slug}.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR,
+                         'get_signals_v1_public_questions_categories_{slug}_sub_categories_{sub_slug}.json')
         )
 
         question = QuestionFactory.create_batch(1)

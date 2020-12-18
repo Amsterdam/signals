@@ -5,30 +5,20 @@ from signals.apps.signals.models import Category
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
+JSON_SCHEMA_DIR = os.path.join(THIS_DIR, 'json_schema')
 
 
 class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
     def setUp(self):
         self.list_categories_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'get_signals_v1_public_terms_categories.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR, 'get_signals_v1_public_terms_categories.json')
         )
         self.retrieve_category_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'get_signals_v1_public_terms_categories_{slug}.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR, 'get_signals_v1_public_terms_categories_{slug}.json')
         )
         self.retrieve_sub_category_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'get_signals_v1_public_terms_categories_{slug}_sub_categories_{sub_slug}.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR,
+                         'get_signals_v1_public_terms_categories_{slug}_sub_categories_{sub_slug}.json')
         )
 
         self.parent_category = ParentCategoryFactory.create()

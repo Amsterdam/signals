@@ -1,7 +1,6 @@
 """
 Test and document the behavior of the Signal instance updates via patches.
 """
-import os
 import unittest
 from unittest import mock
 from urllib.parse import urlparse
@@ -20,8 +19,6 @@ from signals.apps.signals.managers import (
 )
 from signals.apps.signals.models import Category
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
-
-THIS_DIR = os.path.dirname(__file__)
 
 
 class TestAtomicityOfPatch(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

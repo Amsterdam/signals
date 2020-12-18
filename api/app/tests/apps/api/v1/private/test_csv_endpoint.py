@@ -1,4 +1,3 @@
-import os
 import shutil
 import tempfile
 from unittest import mock
@@ -10,8 +9,6 @@ from rest_framework import status
 
 from signals.apps.reporting.csv import datawarehouse
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
-
-THIS_DIR = os.path.dirname(__file__)
 
 
 class TestPrivateCSVEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

@@ -6,6 +6,7 @@ from signals.apps.signals.factories import SourceFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
+JSON_SCHEMA_DIR = os.path.join(THIS_DIR, 'json_schema')
 
 
 class TestPrivateSourceEndpointUnAuthorized(SignalsBaseApiTestCase):
@@ -24,7 +25,7 @@ class TestPrivateSourceEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.sources = SourceFactory.create_batch(5)
 
         self.list_sources_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, 'json_schema', 'get_signals_v1_private_sources.json')
+            os.path.join(JSON_SCHEMA_DIR, 'get_signals_v1_private_sources.json')
         )
 
     def test_get_list(self):

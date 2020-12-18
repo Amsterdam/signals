@@ -15,7 +15,9 @@ from tests.apps.signals.attachment_helpers import small_gif
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
+JSON_SCHEMA_DIR = os.path.join(THIS_DIR, 'json_schema')
+REQUEST_DATA_DIR = os.path.join(THIS_DIR, '..', 'request_data')
+SIGNALS_TEST_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'signals')
 
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):
@@ -23,7 +25,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     detail_endpoint = list_endpoint + "{uuid}"
     attachment_endpoint = detail_endpoint + "/attachments"
 
-    fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial_public.json')
+    fixture_file = os.path.join(REQUEST_DATA_DIR, 'create_initial_public.json')
 
     def setUp(self):
         with open(self.fixture_file, 'r') as f:
@@ -38,25 +40,13 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.create_initial_data['category'] = {'sub_category': self.link_test_cat_sub}
 
         self.retrieve_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'get_signals_v1_public_signals_{uuid}.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR, 'get_signals_v1_public_signals_{uuid}.json')
         )
         self.create_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'post_signals_v1_public_signals.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR, 'post_signals_v1_public_signals.json')
         )
         self.create_attachment_schema = self.load_json_schema(
-            os.path.join(
-                THIS_DIR,
-                'json_schema',
-                'post_signals_v1_public_signals_attachment.json'
-            )
+            os.path.join(JSON_SCHEMA_DIR, 'post_signals_v1_public_signals_attachment.json')
         )
 
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',
