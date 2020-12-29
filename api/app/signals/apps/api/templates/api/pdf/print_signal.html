@@ -99,7 +99,7 @@
         </table>
     </div>
 
-    <h1>{{ signal.sia_id }}</h1>
+    <h1>Signalen-{{ signal.id }}</h1>
     <div style="width: 680px; height: 250px; background-color: lightgray; margin-bottom: 25px; position:relative; top:0px; left:0px;">
         {% if img_data_uri %}
         <img src="{{img_data_uri}}" style="position:relative; top:0px; left:0px;"/>
@@ -114,7 +114,7 @@
         {% if signal.is_child %}
         <tr>
             <td>Hoofdmelding</td>
-            <td>: SIA-{{ signal.parent.id }}</td>
+            <td>: Signalen-{{ signal.parent.id }}</td>
         </tr>
         {% endif %}
         <tr>
@@ -127,7 +127,11 @@
         </tr>
         <tr>
             <td>Stadsdeel</td>
+            {% if signal.location.stadsdeel %}
             <td>: {{ signal.location.get_stadsdeel_display }}</td>
+            {% else %}
+            <td>: {{ signal.location.area_code }}</td>
+            {% endif %}
         </tr>
         <tr>
             <td>Adres</td>
@@ -178,7 +182,7 @@
     <h2>Foto's</h2>
     {% if images %}
         {% for image in images %}
-            <p><img src="{{ image.file.url }}" style="width:680px" alt=""></p>
+            <p><img src="{{base_url}}{{ image.file.url }}" style="width:680px" alt=""></p>
         {% endfor %}
         <br>
     {% elif jpg_data_urls %}  {# HOTFIX SIG-1473 #}
