@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.v1.validation.address.base import (
@@ -66,6 +67,7 @@ class AddressValidationMixin:
             except NoResultsException:
                 # For now we only log a warning and store the address unvalidated in the database
                 logger.warning('Address not found', stack_info=True)
-                raise ValidationError({"location": "Niet-bestaand adres."})
+                if not settings.ALLOW_INVALID_ADDRESS_AS_UNVERIFIED:
+                    raise ValidationError({"location": "Niet-bestaand adres."})
 
         return location_data

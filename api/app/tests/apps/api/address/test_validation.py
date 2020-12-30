@@ -3,15 +3,18 @@ from os.path import abspath, dirname, join
 from unittest.mock import MagicMock
 
 from django.conf import settings
+from django.contrib.gis.geos import Point
 from django.test import SimpleTestCase
 from requests.exceptions import ConnectionError
 from requests_mock.mocker import Mocker
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.v1.validation.address.bag import AddressValidation
 from signals.apps.api.v1.validation.address.base import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.v1.validation.address.pdok import PDOKAddressValidation
 
 
@@ -40,6 +43,26 @@ class TestPDOKAddressValidation(SimpleTestCase):
         self.assertRaises(NoResultsException, address_validation.validate_address, self.address_dict)
 
         address_validation._search.assert_called_with(self.address_dict)
+
+    def test_no_results_allow_unverified(self):
+        address_validation = PDOKAddressValidation()
+        address_validation._search = MagicMock(return_value=[])
+
+        validation_mixin = AddressValidationMixin()
+        validation_mixin.get_address_validation = MagicMock(return_value=address_validation)
+
+        location_data = {
+            'geometrie': Point(4.898466, 52.361585),
+            'address': self.address_dict,
+        }
+
+        with self.settings(ALLOW_INVALID_ADDRESS_AS_UNVERIFIED=False):
+            self.assertRaises(ValidationError, validation_mixin.validate_location, location_data)
+        with self.settings(ALLOW_INVALID_ADDRESS_AS_UNVERIFIED=True):
+            try:
+                validation_mixin.validate_location(location_data)
+            except ValidationError:
+                self.fail("Should nog raise exception because of setting")
 
     def test_address_found(self):
         address_validation = PDOKAddressValidation()
