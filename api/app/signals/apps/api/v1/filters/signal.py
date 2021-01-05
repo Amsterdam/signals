@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import FilterSet, filters
 
@@ -232,16 +233,20 @@ class SignalFilterSet(FilterSet):
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
-        choices = list(set(map(lambda x: True if x in [True, 'True', 'true', 1] else False, value)))
+        choices = list(set(map(lambda x: True if x in settings.TRUE_VALUES else False, value)))
         q_filter = Q(children__isnull=False)
         if len(choices) == 2:
-            return queryset.filter(q_filter)
+            return queryset.filter(q_filter).distinct()
 
         if True in choices:
-            q_filter &= Q(updated_at__lt=F('children__updated_at'))  # noqa Selects all parent signals with changes in the child signals
+            # At least one of the children must have a updated_at that is after the parents updated_at
+            q_filter &= Q(updated_at__lt=F('children__updated_at'))
 
         if False in choices:
-            q_filter &= Q(updated_at__gt=F('children__updated_at'))  # noqa Selects all parent signals with NO changes in the child signals
+            # All children must have a updated_at that is before the parents update_at
+            # Therefore we compare the max updated_at from the children against the parents updated_at
+            queryset = queryset.annotate(max_child_updated_at=Max('children__updated_at'))
+            q_filter &= Q(updated_at__gt=F('max_child_updated_at'))
 
         return queryset.filter(q_filter).distinct()
 
