@@ -18,7 +18,7 @@ from signals.apps.signals.factories import (
     StatusFactory,
     TypeFactory
 )
-from signals.apps.signals.models import Priority, SignalDepartments
+from signals.apps.signals.models import Priority, Signal, SignalDepartments
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
 from tests.test import SignalsBaseApiTestCase
 
@@ -1006,7 +1006,7 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
 
         with freeze_time(now + timedelta(hours=3)):
             # This way we have 1 child signal changed after the last update on the parent signal
-            parent_signal_to_keep.save()
+            Signal.actions.update_status(data={'text': 'test', 'state': 'b'}, signal=parent_signal_to_keep)
 
         # This parent should not show up in the filter
         parent_signal_to_reject = SignalFactory.create()
@@ -1035,7 +1035,7 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
 
         with freeze_time(now + timedelta(hours=6)):
             # This way the parent signal is changed last
-            parent_signal_to_keep.save()
+            Signal.actions.update_status(data={'text': 'test', 'state': 'b'}, signal=parent_signal_to_keep)
 
         # This parent should not show up in the filter
         parent_signal_to_reject = SignalFactory.create()
@@ -1046,7 +1046,7 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
 
         with freeze_time(now + timedelta(hours=3)):
             # This way we have 1 child signal changed after the last update on the parent signal
-            parent_signal_to_reject.save()
+            Signal.actions.update_status(data={'text': 'test', 'state': 'b'}, signal=parent_signal_to_reject)
 
         filter_params = {'has_changed_children': 'False'}
         ids = self._request_filter_signals(filter_params)
