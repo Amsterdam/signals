@@ -998,60 +998,60 @@ class TestParentSignalFilter(SignalsBaseApiTestCase):
     def test_retrieve_all_parents_with_changes_in_one_of_the_children(self):
         now = timezone.now()
 
-        parent_signal = SignalFactory.create()
+        parent_signal_to_keep = SignalFactory.create()
         for hour in range(5):
             # Create 4 child signals 1 hour apart
             with freeze_time(now + timedelta(hours=hour)):
-                SignalFactory.create(parent=parent_signal)
+                SignalFactory.create(parent=parent_signal_to_keep)
 
         with freeze_time(now + timedelta(hours=3)):
             # This way we have 1 child signal changed after the last update on the parent signal
-            parent_signal.save()
+            parent_signal_to_keep.save()
 
         # This parent should not show up in the filter
-        parent_signal_not_to_be_filtered = SignalFactory.create()
+        parent_signal_to_reject = SignalFactory.create()
         for hour in range(5):
             # Create 4 child signals 1 hour apart
             with freeze_time(now + timedelta(hours=hour)):
-                SignalFactory.create(parent=parent_signal_not_to_be_filtered)
+                SignalFactory.create(parent=parent_signal_to_reject)
 
         with freeze_time(now + timedelta(hours=6)):
             # This way the parent signal is changed last
-            parent_signal_not_to_be_filtered.save()
+            parent_signal_to_reject.save()
 
         filter_params = {'has_changed_children': True}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), 1)
-        self.assertEqual(ids, [parent_signal.id])
+        self.assertEqual(ids, [parent_signal_to_keep.id])
 
     def test_retrieve_all_parents_with_no_changes_in_children(self):
         now = timezone.now()
 
-        parent_signal = SignalFactory.create()
+        parent_signal_to_keep = SignalFactory.create()
         for hour in range(5):
             # Create 4 child signals 1 hour apart
             with freeze_time(now + timedelta(hours=hour)):
-                SignalFactory.create(parent=parent_signal)
+                SignalFactory.create(parent=parent_signal_to_keep)
 
         with freeze_time(now + timedelta(hours=6)):
             # This way the parent signal is changed last
-            parent_signal.save()
+            parent_signal_to_keep.save()
 
         # This parent should not show up in the filter
-        parent_signal_not_to_be_filtered = SignalFactory.create()
+        parent_signal_to_reject = SignalFactory.create()
         for hour in range(5):
             # Create 4 child signals 1 hour apart
             with freeze_time(now + timedelta(hours=hour)):
-                SignalFactory.create(parent=parent_signal_not_to_be_filtered)
+                SignalFactory.create(parent=parent_signal_to_reject)
 
-        with freeze_time(now + timedelta(hours=4)):
+        with freeze_time(now + timedelta(hours=3)):
             # This way we have 1 child signal changed after the last update on the parent signal
-            parent_signal_not_to_be_filtered.save()
+            parent_signal_to_reject.save()
 
         filter_params = {'has_changed_children': 'False'}
         ids = self._request_filter_signals(filter_params)
         self.assertEqual(len(ids), 1)
-        self.assertEqual(ids, [parent_signal.id])
+        self.assertEqual(ids, [parent_signal_to_keep.id])
 
     def test_retrieve_mixed_signals(self):
         # A bunch of normal signals that should never be retrieved by this filter

@@ -233,7 +233,7 @@ class SignalFilterSet(FilterSet):
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...
-        choices = list(set(map(lambda x: True if x in settings.TRUE_VALUES else False, value)))
+        choices = set(map(lambda x: True if x in settings.TRUE_VALUES else False, value))
         q_filter = Q(children__isnull=False)
         if len(choices) == 2:
             return queryset.filter(q_filter).distinct()
