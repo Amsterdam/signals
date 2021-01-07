@@ -62,7 +62,7 @@ class TestPDOKAddressValidation(SimpleTestCase):
             try:
                 validation_mixin.validate_location(location_data)
             except ValidationError:
-                self.fail("Should nog raise exception because of setting")
+                self.fail("Should not raise exception because of setting")
 
     def test_address_found(self):
         address_validation = PDOKAddressValidation()
