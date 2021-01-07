@@ -93,4 +93,5 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
             images=self.object.attachments.filter(is_image=True),
             user=self.request.user,
             logo_src=logo_src,
+            base_url=f'{self.request.scheme}://{self.request.get_host()}',
         )
