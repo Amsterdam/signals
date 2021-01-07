@@ -91,7 +91,7 @@ class TestDatawarehouse(testcases.TestCase):
         statuses_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_statuses.csv')
         sla_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_sla.csv')
         directing_departments_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_directing_departments.csv')  # noqa
-        zip_package = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC.zip')
+        zip_package = path.join(self.file_backend_tmp_dir, '2020/09/10', '20200910_120000UTC.zip')
 
         self.assertTrue(path.exists(signals_csv))
         self.assertTrue(path.getsize(signals_csv))
