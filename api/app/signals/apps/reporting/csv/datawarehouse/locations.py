@@ -23,7 +23,7 @@ def create_locations_csv(location: str) -> str:
         '_signal_id',
         lat=ExpressionWrapper(Func('geometrie', function='st_x'), output_field=FloatField()),
         lng=ExpressionWrapper(Func('geometrie', function='st_y'), output_field=FloatField()),
-        _stadsdeel=map_choices('stadsdeel', STADSDELEN),
+        _stadsdeel=Coalesce(map_choices('stadsdeel', STADSDELEN), Cast('area_code', output_field=CharField())),
         _address=Coalesce(Cast('address', output_field=CharField()), Value('null', output_field=CharField())),
         _extra_properties=Coalesce(Cast('extra_properties', output_field=CharField()),
                                    Value('null', output_field=CharField()))
