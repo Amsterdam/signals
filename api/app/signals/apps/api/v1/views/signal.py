@@ -24,6 +24,7 @@ from signals.apps.api.v1.serializers import (
     SignalGeoSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
+from signals.apps.signals import workflow
 from signals.apps.signals.models import History, Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -47,6 +48,62 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
 
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
+
+
+def _get_list_json():
+    from django.db import connection
+    fast_query = f"""
+    select jsonb_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(features.feature)
+    ) as result from (
+        select json_build_object(
+            'type', 'feature',
+            'geometry', st_asgeojson(l.geometrie)::jsonb,
+            'properties', json_build_object(
+                'id', to_jsonb(s.id),
+                'created_at', to_jsonb(s.created_at),
+                'status', to_jsonb(status.state),
+                'category', json_build_object(
+                    'sub', to_jsonb(cat.name),
+                    'main', to_jsonb(maincat.name)
+                )
+            )
+        ) as feature
+        from
+            signals_signal s
+            left join signals_categoryassignment ca on s.category_assignment_id = ca.id
+            left join signals_category cat on ca.category_id = cat.id
+            left join signals_category maincat on cat.parent_id = maincat.id,
+            signals_location l,
+            signals_status status
+        where
+            s.location_id = l.id
+            and s.status_id = status.id
+            and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}')
+        order by s.id desc
+        limit 4000 offset 0
+    ) as features
+    """
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(fast_query)
+        row = cursor.fetchone()
+        return row
+    except Exception:
+        cursor.close
+
+
+class PublicSignalListViewSet(PublicSignalGenericViewSet):
+    def list(self, *args, **kwargs):
+        return Response(_get_list_json())
+
+    def create(self, request):
+        raise Http404
+
+    def retrieve(self, request, signal_id):
+        raise Http404
 
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
