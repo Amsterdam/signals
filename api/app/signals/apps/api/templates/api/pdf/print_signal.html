@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Melding {{ signal.sia_id }} </title>
+    <title>Melding Signalen-{{ signal.id }} </title>
     <style type="text/css">
         * {
             font-family: Avenir Next LT W01 Demi,arial,sans-serif;
@@ -91,7 +91,7 @@
                 </td>
                 <td width="60%" style="vertical-align: top;">
                     <p>
-                        <span style="line-height:1.3em">Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}SIA Systeem{% endif %}<br>
+                        <span style="line-height:1.3em">Geprint door {% if not user.is_anonymous %}{{ user.username }}{% else %}Signalen Systeem{% endif %}<br>
                         {% now "l, j F Y H:i" %}</span>
                     </p>
                 </td>
@@ -195,7 +195,7 @@
         {% endfor %}
         <br>
     {% else %}
-        <p>Er zijn geen foto's beschikbaar omdat de melder in SIA geen foto's heeft meegeleverd.</p>
+        <p>Er zijn geen foto's beschikbaar omdat de melder in Signalen geen foto's heeft meegeleverd.</p>
     {% endif %}
 
     <div class="divider">&nbsp;</div>
@@ -203,7 +203,7 @@
     {% for history in signal.history.all %}
     <table class="history" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
         <tr>
-            <td class="changed" style="width: 200px; vertical-align:top; overflow-wrap: break-word;">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"SIA systeem" }}</td>
+            <td class="changed" style="width: 200px; vertical-align:top; overflow-wrap: break-word;">Gewijzigd op {{ history.when|date:"d-m-Y" }} om {{ history.when|date:"H:i:s" }} door {{ history.who|default:"Signalen systeem" }}</td>
             <td class="title" style="vertical-align:top">
                 {{ history.get_action }}<br>
                 {% if history.get_description %}
