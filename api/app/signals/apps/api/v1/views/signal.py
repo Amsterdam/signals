@@ -56,7 +56,7 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
 
 
 class PublicSignalListViewSet(PublicSignalGenericViewSet):
-    # django-drf has too much overhead these kinds of 'fast' request.
+    # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
     # The downside is that this query has to be (potentially) maintained when changing one of the
@@ -100,7 +100,7 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
         try:
             cursor.execute(fast_query)
             row = cursor.fetchone()
-            return Response(row)
+            return Response(row[0])
         except Exception as e:
             cursor.close
             logger.error('failed to retrieve signals json from db', exc_info=e)
