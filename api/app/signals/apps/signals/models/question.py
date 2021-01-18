@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 
 
 class Question(models.Model):
@@ -27,7 +26,7 @@ class Question(models.Model):
 
     key = models.CharField(max_length=255)
     field_type = models.CharField(max_length=32, choices=FIELD_TYPE_CHOICES, default=PLAIN_TEXT)
-    meta = JSONField(blank=True, default=dict)
+    meta = models.JSONField(blank=True, default=dict)
     required = models.BooleanField(default=False)
 
     class Meta:

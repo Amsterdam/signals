@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 
 from signals.apps.services.domain.deadlines import DeadlineCalculationService
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -18,7 +17,7 @@ class CategoryAssignment(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     text = models.CharField(max_length=10000, null=True, blank=True)
 
-    extra_properties = JSONField(null=True)  # TODO: candidate for removal
+    extra_properties = models.JSONField(null=True)  # TODO: candidate for removal
 
     # These deadline fields are used to track whether a Signal (complaint) is
     # handled within the allotted time. By calculating these deadlines it is

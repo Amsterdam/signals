@@ -4,7 +4,6 @@ import logging
 from urllib.parse import urlencode
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 class StoredSignalFilter(CreatedUpdatedModel):
     name = models.CharField(max_length=10000)
     created_by = models.EmailField(null=True, blank=True)
-    options = JSONField(default=dict)
+    options = models.JSONField(default=dict)
     refresh = models.BooleanField(default=False)
 
     class Meta:

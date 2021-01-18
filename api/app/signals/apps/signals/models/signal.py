@@ -52,6 +52,7 @@ class Signal(CreatedUpdatedModel):
 
     user_assignment = models.OneToOneField('signals.SignalUser', related_name='user_assignment_signal', null=True,
                                            on_delete=models.SET_NULL)
+    extra_properties = models.JSONField(null=True)
 
     type_assignment = models.OneToOneField('signals.Type', related_name='signal', null=True, on_delete=models.SET_NULL)
 
