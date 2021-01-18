@@ -240,6 +240,13 @@ paths:
             example:
               true: true
               false: false
+        - name: reporter_email
+          in: query
+          description: Filter signals based on the email address of its reporter.
+          required: false
+          schema:
+            type: string
+            format: email
 
       responses:
         '200':
@@ -494,7 +501,7 @@ paths:
     parameters:
       - name: id
         in: path
-        description: ID of signal whose child signsl are requested
+        description: ID of signal whose child signals are requested
         required: true
         schema:
           type: integer
