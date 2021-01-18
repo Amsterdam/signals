@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from django.utils import timezone
-from factory import DjangoModelFactory, Sequence, SubFactory
+from factory import Sequence, SubFactory
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyDateTime, FuzzyInteger
 
 from signals.apps.signals.models import ServiceLevelObjective

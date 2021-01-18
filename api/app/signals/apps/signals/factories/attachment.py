@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
-from factory import DjangoModelFactory, Sequence, SubFactory, post_generation
-from factory.django import FileField, ImageField
+from factory import Sequence, SubFactory, post_generation
+from factory.django import DjangoModelFactory, FileField, ImageField
 
 from signals.apps.signals.models import Attachment
 
