@@ -49,8 +49,8 @@ class SignalManager(models.Manager):
         :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
-        from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
-        from .utils.location import _get_stadsdeel_code, _get_area
+        from .models import CategoryAssignment, Location, Priority, Reporter, Status, Type
+        from .utils.location import _get_area, _get_stadsdeel_code
 
         signal = self.create(**signal_data)
 
@@ -152,7 +152,7 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         from .models import Location
-        from .utils.location import _get_stadsdeel_code, _get_area
+        from .utils.location import _get_area, _get_stadsdeel_code
 
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None

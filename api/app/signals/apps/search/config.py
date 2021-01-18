@@ -9,9 +9,9 @@ class SearchConfig(AppConfig):
 
     def ready(self):
         from . import signal_receivers  # noqa
-        from .settings import app_settings
-
         from elasticsearch_dsl import connections
+
+        from .settings import app_settings
 
         host = app_settings.CONNECTION['HOST'] or 'localhost'
         connections.create_connection(hosts=[host, ])
