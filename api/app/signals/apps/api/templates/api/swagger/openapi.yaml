@@ -889,7 +889,6 @@ paths:
       responses:
         '200':
           description: zip file containing csv files
-          content:
         '401':
           description: Not authenticated, may be caused by expired token
         '403':
@@ -1815,7 +1814,7 @@ components:
           example: {}
         parent:
           description: Makes the given Signal a parent of the newly created (child) Signal
-          type: int
+          type: integer
         directing_departments:
           description: A list of directing departments that can be set on a parent Signal. For each object in the list only the id is required.
           type: array
@@ -3274,9 +3273,9 @@ components:
           type: array
           description: A list of Attachments, paginated
           items:
-            $ref: '#/components/schemas/V1PrivateSignalAttachmentGet'
+            $ref: '#/components/schemas/V1PrivateSignalAttachmentDetail'
 
-    V1PrivateSignalAttachmentGet:
+    V1PrivateSignalAttachmentDetail:
       description: Attachment
       type: object
       properties:
