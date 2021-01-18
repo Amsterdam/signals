@@ -1177,3 +1177,13 @@ class TestReporterEmailFilter(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals({'reporter_email': 'KEEP@exaMple.Com'})
         self.assertEqual(1, len(result_ids))
         self.assertEqual([self.signal_to_keep.id], result_ids)
+
+    def test_filter_after_anonymization(self):
+        result_ids = self._request_filter_signals({'reporter_email': 'reject@example.com'})
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual([self.signal_to_reject.id], result_ids)
+
+        # anonymize signal, make sure it is no longer retrieved
+        self.signal_to_reject.reporter.anonymize()
+        result_ids = self._request_filter_signals({'reporter_email': 'reject@example.com'})
+        self.assertEqual(0, len(result_ids))
