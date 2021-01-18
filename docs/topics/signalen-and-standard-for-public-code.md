@@ -4,18 +4,18 @@ This document describes the progress of implementing [The Standard for Public Co
 
 ## [Code in the Open](https://standard.publiccode.net/criteria/code-in-the-open.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 All source code for any policy and software in use (unless used for fraud detection) MUST be published and publicly accessible. | yes? | What policy is Signalen based upon? Lacks public dataset for easily running the machine learning model.
-Contributors MUST NOT upload sensitive information regarding users, their organization or third parties to the repository. Examples of sensitive information include configurations, usernames and passwords, public keys and other real credentials used in the production system. | yes |
+Contributors MUST NOT upload sensitive information regarding users, their organization or third parties to the repository.  | yes |
 Any source code not currently in use (such as new versions, proposals or older versions) SHOULD be published. | yes | Git history and tags per release. Backend is currently starting to publish tags again.
 The source code MAY provide the general public with insight into which source code or policy underpins any specific interaction they have with your organization. | |
 
 ## [Bundle policy and source code](https://standard.publiccode.net/criteria/bundle-policy-and-code.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
@@ -27,55 +27,63 @@ Continuous integration tests SHOULD validate that the source code and the policy
 
 ## [Create reusable and portable code](https://standard.publiccode.net/criteria/reusable-and-portable-codebases.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 The codebase MUST be developed to be reusable in different contexts. | almost | VNG is specifically tasked with this.
 The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes? | Lacks public dataset for easily running the machine learning model.
-The codebase MUST be in use by multiple parties. | almost |
+The codebase SHOULD be in use by multiple parties. | almost |
 The roadmap SHOULD be influenced by the needs of multiple parties. | yes |
-Code SHOULD be general purpose and SHOULD be configurable. | 95% | E-mail sender and signature is not configurable yet [backend#44](https://github.com/Signalen/backend/issues/44).
+Configuration SHOULD be used to make code adapt to context specific needs. | 95% | E-mail sender and signature is not configurable yet [backend#44](https://github.com/Signalen/backend/issues/44).
 Codebases SHOULD include a publiccode.yml metadata description so that they’re easily discoverable. | no | Created [backend#64](https://github.com/Signalen/backend/issues/64).
-Code and its documentation SHOULD NOT contain situation-specific information. For example, personal and organizational data as well as tokens and passwords used in the production system should never be included. | partial | The software is easily configurable, the default configuration is Amsterdam-specific.
+Code and its documentation SHOULD NOT contain situation-specific information.  | partial | The software is easily configurable, the default configuration is Amsterdam-specific.
 
-## [Welcome contributions](https://standard.publiccode.net/criteria/open-to-contributions.html)
+## [Welcome contributors](https://standard.publiccode.net/criteria/open-to-contributions.html)
 
-- [ ]
+- [ ] compliant with this criterion.
+
+Requirement | meets | links and notes
+-----|-----|-----
+The codebase MUST allow anyone to submit suggestions for changes to the codebase. | yes |
+The codebase MUST include contribution guidelines explaining how contributors can get involved, for example in a CONTRIBUTING file. | no | The docs/CONTRIBUTING.md still says "we do not accept merge requests".
+The codebase SHOULD advertise the committed engagement of involved organizations in the development and maintenance. | (maybe) | The signalen.org website shows the logos.
+The codebase SHOULD document the governance of the codebase, contributions and its community, for example in a GOVERNANCE file. | no |
+The codebase SHOULD have a publicly available roadmap. | no | There is a [product steering group](https://github.com/orgs/Signalen/projects/2), but no roadmap yet.
+The codebase MAY include a code of conduct for contributors. |  |
+
+The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md?
+
+
+## [Make contributing easy](https://standard.publiccode.net/criteria/make-contributing-easy.html)
+
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 The codebase MUST have a public issue tracker that accepts suggestions from anyone. | yes | Amsterdam has a second private issue tracker.
-The codebase MUST allow anyone to submit suggestions for changes to the codebase. | yes |
-The documentation MUST link to both the public issue tracker and submitted codebase changes, for example in a README file. | no | The two different issue trackers in the Amsterdam and Signalen namespaces make this a bit challenging. Maybe disable the issue tracker on the Amsterdam repo and link to the Signalen one?
 The codebase MUST include an email address for security issues and responsible disclosure. | no | Consider a SECURITY.md file.
-The codebase MUST include contribution guidelines explaining how contributors can get involved, for example in a CONTRIBUTING file. | no | The docs/CONTRIBUTING.md still says "we do not accept merge requests".
+The documentation MUST link to both the public issue tracker and submitted codebase changes, for example in a README file. | no | The two different issue trackers in the Amsterdam and Signalen namespaces make this a bit challenging. Maybe disable the issue tracker on the Amsterdam repo and link to the Signalen one?
 The project MUST have communication channels for users and developers, for example email lists. | (maybe) | Add link to Slack on signalen.org and [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/)?
-The codebase SHOULD have a publicly available roadmap. | no | There is a [product steering group](https://github.com/orgs/Signalen/projects/2), but no roadmap yet.
-The codebase SHOULD advertise the committed engagement of involved organizations in the development and maintenance. | (maybe) | The signalen.org website shows the logos.
-The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md?
-The codebase SHOULD document the governance of the codebase, contributions and its community, for example in a GOVERNANCE file. | no |
-The codebase MAY include a code of conduct for contributors. |  |
-
-
+The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. |  |
 
 ## [Maintain version control](https://standard.publiccode.net/criteria/version-control-and-history.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
-You MUST have a way to maintain version control for your code. | yes |
+You MUST have a way to maintain version control for the code. | yes |
 All files in a codebase MUST be version controlled. | yes |
 All decisions MUST be documented in commit messages. | no | Commit messages often refer to private issues.
 Every commit message MUST link to discussions and issues wherever possible. | partial | Sometimes these are private connections.
 You SHOULD group relevant changes in commits. | yes | Commits are grouped by pull request.
-You SHOULD mark different versions of your codebase, for example using revision tags or textual labels. | yes | Amsterdam tags new releases on Github using Github releases in the frontend repository. We will start doing this again for the backend as well.
+You SHOULD mark different versions of the codebase, for example using revision tags or textual labels. | yes | Amsterdam tags new releases on Github using Github releases in the frontend repository. We will start doing this again for the backend as well.
 You SHOULD prefer file formats that can easily be version controlled. | yes | Git-friendliness is in the culture.
 
 ## [Require review of contributions](https://standard.publiccode.net/criteria/require-review.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
@@ -91,36 +99,36 @@ Reviews MAY be performed by multiple reviewers. | |
 
 ## [Document your objectives](https://standard.publiccode.net/criteria/document-objectives.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 The codebase MUST contain documentation of its objectives – like a mission and goal statement – that is understandable by designers and developers so that they can use or contribute to the codebase. |  | See signalen.org and [technical goals](https://github.com/Amsterdam/signals/blob/master/docs/topics/application-design.md).
-The codebase SHOULD contain documentation on its objectives understandable by policy makers and management. | |
+The codebase SHOULD contain documentation of its objectives understandable by policy makers and management. | |
 The codebase MAY contain documentation of its objectives for the general public. | |
 
 
 ## [Document your code](https://standard.publiccode.net/criteria/documenting.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
-All of the functionality of your codebase – policy as well as source – MUST be described in language clearly understandable for those that understand the purpose of the code. | | The documentation is pretty scattered.
-The documentation of your codebase MUST contain: a description of how to install and run the source code, examples demonstrating the key functionality. | | There are no docs for system administrators. There is documentation on [helm-charts](https://github.com/Signalen/helm-charts), and developer documentation for [frontend](https://github.com/Signalen/frontend/blob/develop/README.md) and [backend](https://github.com/Signalen/backend/blob/master/README.md).
-The documentation of your codebase SHOULD contain: a high level description that is clearly understandable for a wide audience of stakeholders, like the general public and journalists, a section describing how to install and run a standalone version of the source code, including, if necessary, a test dataset, examples for all functionality. |  yes | Signalen.org website.
+All of the functionality of the codebase – policy as well as source – MUST be described in language clearly understandable for those that understand the purpose of the code. | | The documentation is pretty scattered.
+The documentation of the codebase MUST contain: a description of how to install and run the source code, examples demonstrating the key functionality. | | There are no docs for system administrators. There is documentation on [helm-charts](https://github.com/Signalen/helm-charts), and developer documentation for [frontend](https://github.com/Signalen/frontend/blob/develop/README.md) and [backend](https://github.com/Signalen/backend/blob/master/README.md).
+The documentation of the codebase SHOULD contain: a high level description that is clearly understandable for a wide audience of stakeholders, like the general public and journalists, a section describing how to install and run a standalone version of the source code, including, if necessary, a test dataset, examples for all functionality. |  yes | Signalen.org website.
 There SHOULD be continuous integration tests for the quality of your documentation. | no | Link-checker does not check external links. Markdown in code repositories is not automatically checked.
-The documentation of your codebase MAY contain examples that make users want to immediately start using your codebase. | |
-You MAY use the examples in your documentation to test your code. | |
+The documentation of the codebase MAY contain examples that make users want to immediately start using the codebase. |  |
+You MAY use the examples in your documentation to test the code. |  |
 
 ## [Use plain English](https://standard.publiccode.net/criteria/understandable-english-first.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 All code and documentation MUST be in English. | no | Some workflow contains Dutch states without English translation; If signalen.org is the source for some documentation (and not only a marketing asset), then it should be also available in English.
-Any translation MUST be up to date with the English version and vice-versa. | | See above
+Any translation MUST be up to date with the English version and vice versa. | | See above
 There SHOULD be no acronyms, abbreviations, puns or legal/domain specific terms in the codebase without an explanation preceding it or a link to an explanation. | | Glossary needs expanding.
 The name of the project or codebase SHOULD be descriptive and free from acronyms, abbreviations, puns or branding. | yes | SIA --> Signalen
 Documentation SHOULD aim for a lower secondary education reading level, as recommended by the Web Content Accessibility Guidelines. | | Tech documentation will be harder, but a check on signalen.org is needed.
@@ -128,7 +136,7 @@ Any code, documentation and tests MAY have a translation. | |
 
 ## [Use open standards](https://standard.publiccode.net/criteria/open-standards.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
@@ -141,7 +149,7 @@ The codebase SHOULD contain a list of all the standards used with links to where
 
 ## [Use continuous integration](https://standard.publiccode.net/criteria/continuous-integration.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
@@ -155,20 +163,20 @@ Policy and documentation MAY have testing for style and broken links. |  |
 
 ## [Publish with an open license](https://standard.publiccode.net/criteria/open-licenses.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
 All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE), would be nice to add SPDX license identifiers to files.
 Software source code MUST be licensed under an OSI-approved open source license. | yes | [MPL-2.0](https://opensource.org/licenses/MPL-2.0)
 All code MUST be published with a license file. | yes |
+Contributors MUST NOT be required to transfer copyright of their contributions to the codebase. |  |
 All source code files in the codebase SHOULD include a copyright notice and a license header. | no |
 Codebases MAY have multiple licenses for different types of code and documentation. |  |
-Documentation MAY be published under Creative Commons licenses that are NOT ‘no derivatives’ or ‘non-commercial’. |  |
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
@@ -177,9 +185,9 @@ Contributions SHOULD pass automated tests on style. | yes |
 Your codebase SHOULD include inline comments and documentation for non-trivial sections. | mostly | There are many links to non-public resources/tickets.
 You MAY include sections in your style guide on understandable English. |  |
 
-## [Pay attention to codebase maturity](https://standard.publiccode.net/criteria/advertise-maturity.html)
+## [Document codebase maturity](https://standard.publiccode.net/criteria/document-maturity.html)
 
-- [ ]
+- [ ] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
