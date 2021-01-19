@@ -52,7 +52,6 @@ The codebase SHOULD document the governance of the codebase, contributions and i
 The codebase SHOULD have a publicly available roadmap. | no | There is a [product steering group](https://github.com/orgs/Signalen/projects/2), but no roadmap yet.
 The codebase MAY include a code of conduct for contributors. |  |
 
-The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md?
 
 
 ## [Make contributing easy](https://standard.publiccode.net/criteria/make-contributing-easy.html)
@@ -65,7 +64,7 @@ The codebase MUST have a public issue tracker that accepts suggestions from anyo
 The codebase MUST include an email address for security issues and responsible disclosure. | no | Consider a SECURITY.md file.
 The documentation MUST link to both the public issue tracker and submitted codebase changes, for example in a README file. | no | The two different issue trackers in the Amsterdam and Signalen namespaces make this a bit challenging. Maybe disable the issue tracker on the Amsterdam repo and link to the Signalen one?
 The project MUST have communication channels for users and developers, for example email lists. | (maybe) | Add link to Slack on signalen.org and [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/)?
-The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. |  |
+The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md?
 
 ## [Maintain version control](https://standard.publiccode.net/criteria/version-control-and-history.html)
 
