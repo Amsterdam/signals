@@ -1,5 +1,11 @@
 version: '3'
 services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - 1025:1025
+      - 8025:8025
+
   dex:
     image: quay.io/dexidp/dex:v2.23.0
     user: root
@@ -52,7 +58,11 @@ services:
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
-      - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=mailhog
+      - EMAIL_PORT=1025
+      - EMAIL_USE_TLS=False
+      - EMAIL_USE_SSL=False
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SWIFT_ENABLED=False
     volumes:

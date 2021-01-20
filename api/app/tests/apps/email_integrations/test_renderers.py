@@ -18,7 +18,7 @@ class TestPlaintextRenderer(TestCase):
 
     def test_links(self):
         markdown = '[Example](https://www.example.com)'
-        expected = 'Example\n\n'
+        expected = 'Example https://www.example.com\n\n'
 
         self.assertEqual(expected, self.render_plaintext(markdown))
 

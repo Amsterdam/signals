@@ -13,7 +13,7 @@ class PlaintextRenderer(BaseRenderer):
         return text
 
     def link(self, link, text=None, title=None):
-        return text
+        return f'{text} {link}'
 
     def image(self, src, alt='', title=None):
         return alt
