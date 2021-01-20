@@ -1145,3 +1145,45 @@ class TestAssignedUserEmailFilter(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals({'assigned_user_email': 'null'})
         self.assertEqual(1, len(result_ids))
         self.assertTrue(self.signal0.id in result_ids)
+
+
+class TestReporterEmailFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.signal_to_keep = SignalFactory.create(reporter__email='keep@example.com')
+        self.signal_to_reject = SignalFactory.create(reporter__email='reject@example.com')
+
+    def test_filter_reporter_email(self):
+        result_ids = self._request_filter_signals({'reporter_email': 'keep@example.com'})
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual([self.signal_to_keep.id], result_ids)
+
+    def test_filter_reporter_email_capitalized(self):
+        result_ids = self._request_filter_signals({'reporter_email': 'KEEP@exaMple.Com'})
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual([self.signal_to_keep.id], result_ids)
+
+    def test_filter_after_anonymization(self):
+        result_ids = self._request_filter_signals({'reporter_email': 'reject@example.com'})
+        self.assertEqual(1, len(result_ids))
+        self.assertEqual([self.signal_to_reject.id], result_ids)
+
+        # anonymize signal, make sure it is no longer retrieved
+        self.signal_to_reject.reporter.anonymize()
+        result_ids = self._request_filter_signals({'reporter_email': 'reject@example.com'})
+        self.assertEqual(0, len(result_ids))

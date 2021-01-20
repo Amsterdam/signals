@@ -61,6 +61,7 @@ class SignalFilterSet(FilterSet):
     updated_before = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='lte')
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
     assigned_user_email = filters.CharFilter(method='assigned_user_email_filter')
+    reporter_email = filters.CharFilter(field_name='reporter__email', lookup_expr='iexact')
 
     def _cleanup_form_data(self):
         """
