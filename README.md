@@ -128,3 +128,7 @@ Make sure you assign superuser permissions to the default user with:
 ```console
 docker-compose run --rm api python manage.py createsuperuser --username signals.admin@example.com --email signals.admin@example.com
 ```
+
+## Under Foundation for Public Code incubating codebase stewardship
+
+Signalen is in incubation [codebase stewardship](https://publiccode.net/codebase-stewardship/) with the [Foundation for Public Code](https://publiccode.net).
