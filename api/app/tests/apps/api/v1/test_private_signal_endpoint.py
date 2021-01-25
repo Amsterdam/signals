@@ -81,7 +81,7 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
     'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
-class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """
     Test basic properties of the V1 /signals/v1/private/signals endpoint.
 
@@ -272,6 +272,29 @@ class TestPrivateSignalViewSet(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # SIA should not show 2 entries because the Signal was split instead of "opgedeeld"
         self.assertEqual(len(data), 0)
+
+    @skip('TODO: This issue should be fixed. It is now possible to see the history of a Signal without the correct '
+          'permissions')
+    def test_history_no_permissions(self):
+        """
+        The sia_read_user does not have a link with any department and also is not configured with the permission
+        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        """
+        self.client.logout()
+        self.client.force_authenticate(user=self.sia_read_user)
+
+        # The "sia_read_user" should not be able to get any information for this Signal
+        response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
+        self.assertEqual(response.status_code, 403)
+
+        # TODO: Fix this issue, it is possible now that a user cannot see any details of a Signal BUT CAN access the
+        #       history of that Signal. This should not be possible!
+        response = self.client.get(self.history_endpoint.format(pk=self.signal_no_image.id))
+        self.assertEqual(response.status_code, 403)
+
+        # Make sure the "sia_read_write_user" is logged in again for other tests
+        self.client.logout()
+        self.client.force_authenticate(user=self.sia_read_write_user)
 
     # -- write tests --
 
