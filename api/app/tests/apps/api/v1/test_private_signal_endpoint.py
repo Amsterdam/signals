@@ -273,8 +273,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # SIA should not show 2 entries because the Signal was split instead of "opgedeeld"
         self.assertEqual(len(data), 0)
 
-    @skip('TODO: This issue should be fixed. It is now possible to see the history of a Signal without the correct '
-          'permissions')
     def test_history_no_permissions(self):
         """
         The sia_read_user does not have a link with any department and also is not configured with the permission
@@ -287,8 +285,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
         self.assertEqual(response.status_code, 403)
 
-        # TODO: Fix this issue, it is possible now that a user cannot see any details of a Signal BUT CAN access the
-        #       history of that Signal. This should not be possible!
         response = self.client.get(self.history_endpoint.format(pk=self.signal_no_image.id))
         self.assertEqual(response.status_code, 403)
 

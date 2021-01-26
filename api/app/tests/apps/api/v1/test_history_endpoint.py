@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 
+from django.contrib.auth.models import Permission
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -31,6 +32,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 401)
 
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
@@ -42,6 +44,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_history_endpoint_rendering(self):
         history_entries = History.objects.filter(_signal__id=self.signal.pk)
 
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
@@ -55,6 +58,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_history_entry_contents(self):
         keys = ['identifier', 'when', 'what', 'action', 'description', 'who', '_signal']
 
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
@@ -69,6 +73,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_update_shows_up(self):
         # Get a baseline for the Signal history
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         n_entries = len(response.json())
@@ -99,6 +104,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_sla_in_history(self):
         # Get a baseline for the Signal history
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
@@ -147,6 +153,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
 
         # Get a baseline for the Signal history
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
         self.assertEqual(response.status_code, 200)
@@ -168,6 +175,15 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']
         self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
                          sla_description_in_history[0])
+
+    def test_history_no_permissions(self):
+        """
+        The sia_read_user does not have a link with any department and also is not configured with the permission
+        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
+        self.assertEqual(response.status_code, 403)
 
 
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
@@ -192,6 +208,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def test_submit_feedback_check_history(self):
         # get a user privileged to read from API
         read_user = self.sia_read_user
+        read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=read_user)
         history_url = self.history_endpoint.format(id=self.signal.id)
 
@@ -248,6 +265,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
 
         # check the rendering
         read_user = self.sia_read_user
+        read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=read_user)
         history_url = self.history_endpoint.format(id=self.signal.id)
 
@@ -262,3 +280,12 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertIn(f'Waarom: {text}', history_entry['description'])
         self.assertIn(f'Toelichting: {text_extra}', history_entry['description'])
         self.assertIn('Toestemming contact opnemen: Nee', history_entry['description'])
+
+    def test_history_no_permissions(self):
+        """
+        The sia_read_user does not have a link with any department and also is not configured with the permission
+        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        """
+        self.client.force_authenticate(user=self.sia_read_user)
+        response = self.client.get(self.history_endpoint.format(id=self.signal.id) + '?what=RECEIVE_FEEDBACK')
+        self.assertEqual(response.status_code, 403)
