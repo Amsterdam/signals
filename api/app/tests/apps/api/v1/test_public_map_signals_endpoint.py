@@ -35,7 +35,7 @@ class TestMapSignalEndpoints(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data['features']), 2)
-        datadict = {k[1]['properties']['id']: k[1] for k in enumerate(data['features'])}
+        datadict = {feature['properties']['id']: feature for feature in data['features']}
         obj = datadict[self.signal1.id]
         self.assertEqual(round(obj['geometry']['coordinates'][0], 5), round(self.signal1.location.geometrie.x, 5))
         self.assertEqual(round(obj['geometry']['coordinates'][1], 5), round(self.signal1.location.geometrie.y, 5))
@@ -52,5 +52,6 @@ class TestMapSignalEndpoints(SignalsBaseApiTestCase):
 
 class TestMapSignalDefaultSettingEndpoints(SignalsBaseApiTestCase):
     def test_map_signals_list_defalt(self):
+        # Default configuration has this endpoint disabled by removing it from the URL definitions.
         response = self.client.get('/signals/v1/public/map-signals/')
         self.assertEqual(response.status_code, 404)

@@ -68,7 +68,7 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
             'features', json_agg(features.feature)
         ) as result from (
             select json_build_object(
-                'type', 'feature',
+                'type', 'Feature',
                 'geometry', st_asgeojson(l.geometrie)::jsonb,
                 'properties', json_build_object(
                     'id', to_jsonb(s.id),
