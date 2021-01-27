@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import include, path, re_path
 
 from signals.apps.api.v1.routers import SignalsRouterVersion1
@@ -16,6 +17,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PublicCategoryViewSet,
     PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
+    PublicSignalListViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
     StatusMessageTemplatesViewSet,
@@ -36,6 +38,9 @@ public_categories = public_router.register(r'public/terms/categories', PublicCat
                                            basename='public-maincategory')
 public_categories.register(r'sub_categories', PublicCategoryViewSet, basename='public-subcategory',
                            parents_query_lookups=['parent__slug'])
+
+if settings.ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT:
+    public_router.register(r'public/map-signals', PublicSignalListViewSet, basename='public-list-signals')
 
 # Private API
 private_router = SignalsRouterVersion1()

@@ -1,4 +1,7 @@
+import logging
+
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django.db import connection
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -24,8 +27,11 @@ from signals.apps.api.v1.serializers import (
     SignalGeoSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+
+logger = logging.getLogger(__name__)
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
@@ -47,6 +53,65 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
 
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
+
+
+class PublicSignalListViewSet(PublicSignalGenericViewSet):
+    # django-drf has too much overhead with these kinds of 'fast' request.
+    # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
+    # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
+    # The downside is that this query has to be (potentially) maintained when changing one of the
+    # following models: sginal, categoryassignment, category, location, status
+    def list(self, *args, **kwargs):
+        fast_query = f"""
+        select jsonb_build_object(
+            'type', 'FeatureCollection',
+            'features', json_agg(features.feature)
+        ) as result from (
+            select json_build_object(
+                'type', 'Feature',
+                'geometry', st_asgeojson(l.geometrie)::jsonb,
+                'properties', json_build_object(
+                    'id', to_jsonb(s.id),
+                    'created_at', to_jsonb(s.created_at),
+                    'status', to_jsonb(status.state),
+                    'category', json_build_object(
+                        'sub', to_jsonb(cat.name),
+                        'main', to_jsonb(maincat.name)
+                    )
+                )
+            ) as feature
+            from
+                signals_signal s
+                left join signals_categoryassignment ca on s.category_assignment_id = ca.id
+                left join signals_category cat on ca.category_id = cat.id
+                left join signals_category maincat on cat.parent_id = maincat.id,
+                signals_location l,
+                signals_status status
+            where
+                s.location_id = l.id
+                and s.status_id = status.id
+                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}')
+            order by s.id desc
+            limit 4000 offset 0
+        ) as features
+        """
+
+        cursor = connection.cursor()
+        try:
+            cursor.execute(fast_query)
+            row = cursor.fetchone()
+            return Response(row[0])
+        except Exception as e:
+            cursor.close
+            logger.error('failed to retrieve signals json from db', exc_info=e)
+
+    def create(self, request):
+        # this endpoint only returns list, and is not intended to be used for other purposes
+        raise Http404
+
+    def retrieve(self, request, signal_id):
+        # this endpoint only returns list, and is not intended to be used for other purposes
+        raise Http404
 
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
