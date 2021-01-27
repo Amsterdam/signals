@@ -5,7 +5,7 @@ attrs==19.3.0
 Babel==2.8.0
 billiard==3.6.2.0
 cairocffi==1.1.0
-CairoSVG==2.4.2
+CairoSVG==2.5.1
 celery==4.4.0
 certifi==2019.11.28
 cffi==1.14.0
@@ -64,7 +64,7 @@ jsonschema==3.2.0
 jwcrypto==0.6.0
 keystoneauth1==3.18.0
 kombu==4.6.7
-lxml==4.5.0
+lxml==4.6.2
 MarkupSafe==1.1.1
 mccabe==0.6.1
 mistune==2.0.0a6

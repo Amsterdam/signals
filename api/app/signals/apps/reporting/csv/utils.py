@@ -24,7 +24,7 @@ def zip_csv_files(files_to_zip: list, using: str) -> None:
     storage = _get_storage_backend(using=using)
     now = timezone.now()
     src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
-    dst_file = os.path.join(src_folder, f'{now:%H%M%S%Z}')
+    dst_file = os.path.join(src_folder, f'{now:%Y%m%d_%H%M%S%Z}')
 
     with zipfile.ZipFile(f'{dst_file}.zip', 'w') as zipper:
         for file in files_to_zip:

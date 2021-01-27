@@ -28,7 +28,8 @@ from signals.apps.api.v1.serializers import (
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
-from signals.apps.signals.models import History, Signal
+from signals.apps.signals.models import Signal
+
 from signals.auth.backend import JWTAuthBackend
 
 logger = logging.getLogger(__name__)
@@ -201,9 +202,10 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                 )
 
     @action(detail=True, url_path=r'history/?$')
-    def history(self, request, pk=None):
+    def history(self, *args, **kwargs):
         """History endpoint filterable by action."""
-        history_entries = History.objects.filter(_signal__id=pk)
+        signal = self.get_object()
+        history_entries = signal.history.all()
         what = self.request.query_params.get('what', None)
         if what:
             history_entries = history_entries.filter(what=what)

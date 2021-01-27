@@ -495,8 +495,8 @@ SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 # SIG-1017
 FEEDBACK_ENV_FE_MAPPING = {
     'LOCAL': 'http://dummy_link',
-    'ACCEPTANCE': 'https://acc.meldingen.amsterdam.nl',
-    'PRODUCTION': 'https://meldingen.amsterdam.nl',
+    'ACCEPTANCE': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://acc.meldingen.amsterdam.nl'),
+    'PRODUCTION': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://meldingen.amsterdam.nl'),
 }
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa

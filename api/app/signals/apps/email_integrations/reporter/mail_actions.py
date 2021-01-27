@@ -249,11 +249,14 @@ class MailActions:
         try:
             email_template = EmailTemplate.objects.get(key=mail_kwargs['key'])
 
-            subject = Template(email_template.title).render(Context(context))
+            # do not escape as subject is not rendered as HTML
+            subject = Template(email_template.title).render(Context(context, autoescape=False))
 
             rendered_context = {
-                'subject': subject,
-                'body': Template(email_template.body).render(Context(context))
+                'subject': Template(email_template.title).render(Context(context)),
+
+                # do not escape HTML as this is handled by Markdown filter
+                'body': Template(email_template.body).render(Context(context, autoescape=False))
             }
 
             html_message = loader.get_template('email/_base.html').render(rendered_context)

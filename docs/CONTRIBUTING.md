@@ -53,3 +53,14 @@ In addition to the standards outlined in PEP 8, we have a few guidelines:
 * Line-length can exceed 79 characters, to 120, when convenient.
 * Line-length can exceed 120 characters, when doing otherwise would be terribly inconvenient.
 * Always use single-quoted strings (e.g. 'some string used as an example'), unless a single-quote occurs within the string (e.g. "don't use single quotes for these kind of strings").
+
+## Under Foundation for Public Code incubating codebase stewardship
+
+Signalen is in incubation [codebase stewardship](https://publiccode.net/codebase-stewardship/) with the [Foundation for Public Code](https://publiccode.net).
+
+The [codebase stewardship activities](https://about.publiccode.net/activities/codebase-stewardship/activities.html) by the Foundation for Public Code on this codebase include:
+
+* facilitating the community and its members
+* help all contributors contribute in line with the contributing guidelines and the [Standard for Public Code](https://standard.publiccode.net/)
+* work with the community to tell their stories, create their brand and market their products
+* support the technical and product steering teams
