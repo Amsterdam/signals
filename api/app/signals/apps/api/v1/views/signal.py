@@ -29,7 +29,6 @@ from signals.apps.api.v1.serializers import (
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
-
 from signals.auth.backend import JWTAuthBackend
 
 logger = logging.getLogger(__name__)
