@@ -8,7 +8,7 @@ from django.core.exceptions import SuspiciousFileOperation
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
 
-from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
@@ -52,6 +52,7 @@ def _get_data_uri(static_file):
 class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
+    object_permission_classes = (SignalViewObjectPermission, )
     pagination_class = None
     map_generator = MapGenerator()
 
@@ -59,6 +60,19 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
 
     template_name = 'api/pdf/print_signal.html'
     extra_context = {'now': timezone.datetime.now(), }
+
+    def check_object_permissions(self, request, obj):
+        for permission_class in self.object_permission_classes:
+            permission = permission_class()
+            if not permission.has_object_permission(request, self, obj):
+                self.permission_denied(
+                    request, message=getattr(permission, 'message', None)
+                )
+
+    def get_object(self):
+        obj = super().get_object()
+        self.check_object_permissions(request=self.request, obj=obj)
+        return obj
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
