@@ -14,5 +14,6 @@ class PDFTemplateResponse(TemplateResponse):
 
     @property
     def rendered_content(self):
-        html = weasyprint.HTML(string=super(PDFTemplateResponse, self).rendered_content)
+        base_url = self._request.build_absolute_uri('/')
+        html = weasyprint.HTML(string=super(PDFTemplateResponse, self).rendered_content, base_url=base_url)
         return html.write_pdf()
