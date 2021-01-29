@@ -6,7 +6,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from signals.apps.api.generics import mixins
-from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.v1.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
@@ -36,6 +36,18 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, mixins.CreateModelMixi
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions,)
+    object_permission_classes = (SignalViewObjectPermission, )
+
+    def get_queryset(self, *args, **kwargs):
+        user = self.request.user
+        pk = self.kwargs.get('parent_lookup__signal__pk')
+        signal_accessible = Signal.objects.filter(id=pk).filter_for_user(user).exists()
+
+        if not user.is_superuser and not user.has_perm('signals.sia_can_view_all_categories'):
+            if not signal_accessible:
+                from django.core.exceptions import PermissionDenied
+                raise PermissionDenied('just \'cuz')
+        return super().get_queryset()
 
     def get_signal(self):
         pk = self.kwargs.get('parent_lookup__signal__pk')
