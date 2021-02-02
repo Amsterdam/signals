@@ -8,6 +8,7 @@ ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
 SIGNALS_AUTHZ = {
+    'JWKS': JWKS_TEST_KEY,  # noqa
     'JWKS_URL': os.getenv('JWKS_URL', 'http://dex:5556/keys'),
     'ALWAYS_OK': os.getenv('ALWAYS_OK', 'False') in ['True', 'true', '1'],
     'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(',')
