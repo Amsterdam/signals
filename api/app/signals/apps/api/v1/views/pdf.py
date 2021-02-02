@@ -1,18 +1,23 @@
 import base64
 import io
+import logging
 import os
 
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
+from django.core.files.storage import default_storage
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
+from PIL import Image, UnidentifiedImageError
 
 from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend
+
+logger = logging.getLogger(__name__)
 
 
 def _get_data_uri(static_file):
@@ -61,6 +66,8 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
     template_name = 'api/pdf/print_signal.html'
     extra_context = {'now': timezone.datetime.now(), }
 
+    max_size = 800
+
     def check_object_permissions(self, request, obj):
         for permission_class in self.object_permission_classes:
             permission = permission_class()
@@ -73,6 +80,49 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         obj = super().get_object()
         self.check_object_permissions(request=self.request, obj=obj)
         return obj
+
+    def _resize(self, image):
+        # Consider image orientation:
+        if image.width > image.height:
+            # landscape
+            width = self.max_size
+            height = int((self.max_size / image.width) * image.height)
+        else:
+            # portrait
+            width = int((self.max_size / image.height) * image.width)
+            height = self.max_size
+
+        return image.resize(size=(width, height), resample=Image.LANCZOS).convert('RGB')
+
+    def _get_context_data_images(self, signal):
+        jpg_data_urls = []
+        for att in signal.attachments.all():
+            # Attachment is_image property is currently not reliable
+            _, ext = os.path.splitext(att.file.name)
+            if ext not in ['.gif', '.jpg', '.jpeg', '.png']:
+                continue  # unsupported image format, or not image format
+
+            try:
+                with default_storage.open(att.file.name) as file:
+                    buffer = io.BytesIO(file.read())
+                image = Image.open(buffer)
+            except (UnidentifiedImageError, FileNotFoundError):
+                continue  # Protect against missing files and bad data.
+            except:  # noqa:E722
+                msg = f'Cannot open image attachment pk={att.pk}'
+                logger.warn(msg, exc_info=True)
+                continue
+
+            if image.width > self.max_size or image.height > self.max_size:
+                image = self._resize(image)
+
+            new_buffer = io.BytesIO()
+            image.save(new_buffer, format='JPEG')
+            encoded = 'data:image/jpg;base64,' + base64.b64encode(new_buffer.getvalue()).decode('utf-8')
+
+            jpg_data_urls.append(encoded)
+
+        return jpg_data_urls
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
@@ -101,10 +151,13 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
                 rd_coordinates.x + 340.00,
                 rd_coordinates.y + 125.00,
             )
+        jpg_data_urls = self._get_context_data_images(self.object)
+
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
-            images=self.object.attachments.filter(is_image=True),
+            # images=self.object.attachments.filter(is_image=True),
+            jpg_data_urls=jpg_data_urls,
             user=self.request.user,
             logo_src=logo_src,
         )
