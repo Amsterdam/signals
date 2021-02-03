@@ -45,6 +45,9 @@ def _get_stadsdeel_code(geometry: PointField, default: Optional[str] = None) -> 
 
 
 class AddressFormatter:
+    """
+    Based on the format classes found in django.utils.dateformat
+    """
     re_formatchars = re.compile(r'(?<!\\)([OhltTpPW])')
     re_escaped = re.compile(r'\\(.)')
 
