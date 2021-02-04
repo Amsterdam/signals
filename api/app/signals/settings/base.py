@@ -561,6 +561,10 @@ DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
 # app.
 API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemeente-amsterdam.svg')
 
+# Large images are resized to max dimension of `API_PDF_RESIZE_IMAGES_TO`
+# along the largest side, aspect ratio is maintained.
+API_PDF_RESIZE_IMAGES_TO = 800
+
 # Enable public map geo endpoint
 ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT = os.getenv('ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT', False) in TRUE_VALUES
 

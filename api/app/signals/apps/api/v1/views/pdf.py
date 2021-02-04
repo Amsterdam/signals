@@ -66,7 +66,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
     template_name = 'api/pdf/print_signal.html'
     extra_context = {'now': timezone.datetime.now(), }
 
-    max_size = 800
+    max_size = settings.API_PDF_RESIZE_IMAGES_TO
 
     def check_object_permissions(self, request, obj):
         for permission_class in self.object_permission_classes:
@@ -102,13 +102,20 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
             if ext not in ['.gif', '.jpg', '.jpeg', '.png']:
                 continue  # unsupported image format, or not image format
 
+            # Since we want a PDF to be output, we catch, log and ignore errors
+            # while opening attachments. A missing image is not as bad as a
+            # complete failure to render the requested PDF.
             try:
                 with default_storage.open(att.file.name) as file:
                     buffer = io.BytesIO(file.read())
                 image = Image.open(buffer)
-            except (UnidentifiedImageError, FileNotFoundError):
-                continue  # Protect against missing files and bad data.
+            except UnidentifiedImageError:
+                # PIL cannot open the attached file it is probably not an image.
+                msg = f'Cannot open image attachment pk={att.pk}'
+                logger.warn(msg)
+                continue
             except:  # noqa:E722
+                # Attachment cannot be opened - log the exception.
                 msg = f'Cannot open image attachment pk={att.pk}'
                 logger.warn(msg, exc_info=True)
                 continue
@@ -118,7 +125,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
 
             new_buffer = io.BytesIO()
             image.save(new_buffer, format='JPEG')
-            encoded = 'data:image/jpg;base64,' + base64.b64encode(new_buffer.getvalue()).decode('utf-8')
+            encoded = f'data:image/jpg;base64,{base64.b64encode(new_buffer.getvalue()).decode("utf-8")}'
 
             jpg_data_urls.append(encoded)
 
@@ -156,7 +163,6 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
-            # images=self.object.attachments.filter(is_image=True),
             jpg_data_urls=jpg_data_urls,
             user=self.request.user,
             logo_src=logo_src,
