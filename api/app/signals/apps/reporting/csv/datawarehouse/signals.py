@@ -65,7 +65,7 @@ def create_signals_csv(location: str) -> str:
 
 def create_signals_assigned_user_csv(location: str) -> str:
     """
-    Create the CSV file with all `Signal - assgined user relation` objects.
+    Create the CSV file with all `Signal - assigned user relation` objects.
 
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
