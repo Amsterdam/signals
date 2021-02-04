@@ -112,7 +112,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'signals.context_processors.settings_in_context',
-            ]
+            ],
+            'builtins': [
+                'signals.apps.email_integrations.templatetags.location',
+            ],
         },
     }
 ]

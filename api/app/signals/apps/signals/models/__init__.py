@@ -21,8 +21,7 @@ from signals.apps.signals.models.location import (
     STADSDEEL_ZUID,
     STADSDEEL_ZUIDOOST,
     STADSDELEN,
-    Location,
-    get_address_text
+    Location
 )
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.models.note import Note
@@ -70,7 +69,6 @@ __all__ = [
     'STADSDEEL_ZUIDOOST',
     'STADSDELEN',
     'Location',
-    'get_address_text',
     'CreatedUpdatedModel',
     'Note',
     'Question',

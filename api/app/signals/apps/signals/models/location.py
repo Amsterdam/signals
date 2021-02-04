@@ -5,6 +5,7 @@ from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.postgres.fields import JSONField
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
+from signals.apps.signals.utils.location import AddressFormatter
 
 STADSDEEL_CENTRUM = 'A'
 STADSDEEL_WESTPOORT = 'B'
@@ -43,27 +44,6 @@ AREA_STADSDEEL_TRANSLATION = {
     'weesp': STADSDEEL_WEESP,
 }
 
-_ADDRESS_FIELD_PREFIXES = (
-    ('openbare_ruimte', ''),
-    ('huisnummer', ' '),
-    ('huisletter', ''),
-    ('huisnummer_toevoeging', '-'),
-    ('postcode', ' '),
-    ('woonplaats', ' ')
-)
-
-
-def get_address_text(location, field_prefixes=_ADDRESS_FIELD_PREFIXES):
-    """Generate address text, shortened if needed."""
-
-    address_text = ''
-    if location.address and isinstance(location.address, dict):
-        for field, prefix in field_prefixes:
-            if field in location.address and location.address[field]:
-                address_text += prefix + str(location.address[field])
-
-    return address_text
-
 
 class Location(CreatedUpdatedModel):
     """All location related information."""
@@ -90,18 +70,12 @@ class Location(CreatedUpdatedModel):
 
     @property
     def short_address_text(self):
-        # no postal code, no municipality
-        field_prefixes = copy.deepcopy(_ADDRESS_FIELD_PREFIXES)
-        field_prefixes = field_prefixes[:-2]
-
-        return get_address_text(self, field_prefixes)
-
-    def set_address_text(self):
-        self.address_text = get_address_text(self)
+        # openbare_ruimte huisnummerhuiletter-huisnummer_toevoeging
+        return AddressFormatter(address=self.address).format('O hlT') if self.address else ''
 
     def save(self, *args, **kwargs):
         # Set address_text
-        self.set_address_text()
+        self.address_text = AddressFormatter(address=self.address).format('O hlT p W') if self.address else ''
         super().save(*args, **kwargs)
 
     def get_rd_coordinates(self):
@@ -120,23 +94,14 @@ def _get_description_of_update_location(location_id):
     location = Location.objects.get(id=location_id)
 
     # Craft a message for UI
-    desc = 'Stadsdeel: {}\n'.format(
-        location.get_stadsdeel_display()) if location.stadsdeel else ''
+    desc = f'Stadsdeel: {location.get_stadsdeel_display()}' if location.stadsdeel else ''
 
     # Deal with address text or coordinates
     if location.address and isinstance(location.address, dict):
-        field_prefixes = (
-            ('openbare_ruimte', ''),
-            ('huisnummer', ' '),
-            ('huisletter', ''),
-            ('huisnummer_toevoeging', '-'),
-            ('woonplaats', '\n')
-        )
-        desc += get_address_text(location, field_prefixes)
+        # openbare_ruimte huisnummerhuisletter-huisummer_toevoeging woonplaats
+        address_formatter = AddressFormatter(address=location.address)
+        desc = f'{desc}\n{address_formatter.format("O hlT")}\n{address_formatter.format("W")}'
     else:
-        desc += 'Locatie is gepind op de kaart\n{}, {}'.format(
-            location.geometrie[0],
-            location.geometrie[1],
-        )
+        desc = f'{desc}Locatie is gepind op de kaart\n{location.geometrie[0]}, {location.geometrie[1]}'
 
     return desc
