@@ -13,6 +13,7 @@ from signals.apps.signals.factories import (
     DepartmentFactory,
     NoteFactory,
     ParentCategoryFactory,
+    SignalDepartmentsFactory,
     SignalFactory,
     SignalUserFactory,
     StatusFactory,
@@ -1143,6 +1144,59 @@ class TestAssignedUserEmailFilter(SignalsBaseApiTestCase):
         self.assertTrue(self.signal1.id in result_ids)
         # filter on non-assigned
         result_ids = self._request_filter_signals({'assigned_user_email': 'null'})
+        self.assertEqual(1, len(result_ids))
+        self.assertTrue(self.signal0.id in result_ids)
+
+
+class TestSignalDepartmentRoutingFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        self.signal0 = SignalFactory.create()
+        self.signal1 = SignalFactory.create()
+        self.signal2 = SignalFactory.create()
+        self.dep1 = DepartmentFactory.create()
+        self.dep2 = DepartmentFactory.create()
+
+        rel1 = SignalDepartmentsFactory.create(
+            _signal=self.signal1,
+            relation_type=SignalDepartments.REL_ROUTING,
+            departments=[self.dep1])
+
+        rel2 = SignalDepartmentsFactory.create(
+            _signal=self.signal2,
+            relation_type=SignalDepartments.REL_ROUTING,
+            departments=[self.dep2])
+
+        self.signal1.routing_assignment = rel1
+        self.signal2.routing_assignment = rel2
+        self.signal1.save()
+        self.signal2.save()
+
+    def test_filter_assigned_routing_department(self):
+        # all
+        result_ids = self._request_filter_signals({})
+        self.assertEqual(3, len(result_ids))
+        # filter on dep1 code
+        result_ids = self._request_filter_signals({'routing_department_code': f'{self.dep1.code}'})
+        self.assertEqual(1, len(result_ids))
+        self.assertTrue(self.signal1.id in result_ids)
+        # filter on non-assigned
+        result_ids = self._request_filter_signals({'routing_department_code': 'null'})
         self.assertEqual(1, len(result_ids))
         self.assertTrue(self.signal0.id in result_ids)
 
