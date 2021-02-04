@@ -24,7 +24,7 @@ from signals.apps.signals.models import Category, Priority, Type
 class SignalFilterSet(FilterSet):
     id = filters.NumberFilter()
     address_text = filters.CharFilter(field_name='location__address_text', lookup_expr='icontains')
-    area_code = filters.ChoiceFilter(field_name='location__area_code', choices=area_choices)
+    area_code = filters.MultipleChoiceFilter(field_name='location__area_code', choices=area_choices)
     area_type_code = filters.ChoiceFilter(field_name='location__area_type_code', choices=area_type_choices)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code', choices=buurt_choices)
     category_id = filters.MultipleChoiceFilter(field_name='category_assignment__category_id',
