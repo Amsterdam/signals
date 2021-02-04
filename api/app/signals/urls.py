@@ -1,9 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
-from django.views.decorators.csrf import csrf_exempt
-
-from signals.apps.graphql.views import SIAGraphQLView
 
 urlpatterns = [
     path('status/', include('signals.apps.health.urls')),
@@ -14,9 +11,6 @@ urlpatterns = [
 
     # SOAP stand-in endpoints
     path('signals/sigmax/', include('signals.apps.sigmax.urls')),
-
-    # GraphQL endpoint
-    path('signals/graphql', csrf_exempt(SIAGraphQLView.as_view(graphiql=True))),
 ]
 
 if settings.DEBUG:

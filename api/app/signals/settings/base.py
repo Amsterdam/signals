@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'djcelery_email',
-    'graphene_django',
     'imagekit',
     'raven.contrib.django.raven_compat',
     'rest_framework',
@@ -537,17 +536,6 @@ API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE = os.getenv(
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE', 'Interne melding'
 )
 API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO = os.getenv('API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO', 'Interne melding')
-
-# GraphQL Settings
-GRAPHENE = {
-    'SCHEMA': 'signals.apps.graphql.schema.schema',
-    'MIDDLEWARE': (
-        'signals.apps.graphql.middleware.AuthenticationMiddleware',
-    ),
-    'CAMELCASE_ERRORS': True,
-    'RELAY_CONNECTION_ENFORCE_FIRST_OR_LAST': True,
-    'RELAY_CONNECTION_MAX_LIMIT': 50,
-}
 
 # Default pdok municipalities
 DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
