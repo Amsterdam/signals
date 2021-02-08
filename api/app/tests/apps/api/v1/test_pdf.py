@@ -1,6 +1,17 @@
-from django.contrib.auth.models import Permission
+from io import BytesIO
+from unittest.mock import MagicMock
 
-from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
+from django.contrib.auth.models import Permission
+from django.test import override_settings
+from PIL import Image
+
+from signals.apps.api.v1.views import GeneratePdfView
+from signals.apps.signals.factories import (
+    AttachmentFactory,
+    CategoryFactory,
+    DepartmentFactory,
+    SignalFactory
+)
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -34,6 +45,51 @@ class TestPDFView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(path=url)
 
         self.assertEqual(response.status_code, 401)
+
+    @override_settings(API_PDF_RESIZE_IMAGES_TO=800)
+    def test_resize_image_too_wide(self):
+        too_wide = MagicMock()
+        too_wide.width = 1600
+        too_wide.height = 800
+        gpv = GeneratePdfView()
+        gpv._resize(too_wide)
+
+        too_wide.resize.assert_called_with(size=(800, 400), resample=Image.LANCZOS)
+
+    @override_settings(API_PDF_RESIZE_IMAGES_TO=800)
+    def test_resize_iamge_too_heigh(self):
+        too_heigh = MagicMock()
+        too_heigh.width = 800
+        too_heigh.height = 1600
+        gpv = GeneratePdfView()
+        gpv._resize(too_heigh)
+
+        too_heigh.resize.assert_called_with(size=(400, 800), resample=Image.LANCZOS)
+
+    def test_get_context_data_no_images(self):
+        AttachmentFactory(_signal=self.signal, file__filename='blah.txt', file__data=b'blah', is_image=False)
+        gpv = GeneratePdfView()
+        jpg_data_urls = gpv._get_context_data_images(self.signal)
+        self.assertEqual(len(jpg_data_urls), 0)
+
+    def test_get_context_data_invalid_images(self):
+        AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=b'blah', is_image=True)
+        gpv = GeneratePdfView()
+        jpg_data_urls = gpv._get_context_data_images(self.signal)
+        self.assertEqual(len(jpg_data_urls), 0)
+
+    @override_settings(API_PDF_RESIZE_IMAGES_TO=80)
+    def test_get_context_data_valid_image(self):
+        image = Image.new("RGB", (100, 100), (0, 0, 0))
+        buffer = BytesIO()
+        image.save(buffer, format='JPEG')
+
+        AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=buffer.getvalue())
+        gpv = GeneratePdfView()
+        jpg_data_urls = gpv._get_context_data_images(self.signal)
+        self.assertEqual(len(jpg_data_urls), 1)
+        self.assertEqual(jpg_data_urls[0][:22], 'data:image/jpg;base64,')
+        self.assertGreater(len(jpg_data_urls[0]), 22)
 
 
 class TestPDFPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

@@ -1,5 +1,5 @@
 from .area import AreaFactory, AreaTypeFactory
-from .attachment import ImageAttachmentFactory
+from .attachment import AttachmentFactory, ImageAttachmentFactory
 from .category import CategoryFactory, ParentCategoryFactory
 from .category_assignment import CategoryAssignmentFactory
 from .department import DepartmentFactory
@@ -22,6 +22,7 @@ from .type import TypeFactory
 __all__ = [
     'AreaFactory',
     'AreaTypeFactory',
+    'AttachmentFactory',
     'CategoryAssignmentFactory',
     'CategoryFactory',
     'ImageAttachmentFactory',
