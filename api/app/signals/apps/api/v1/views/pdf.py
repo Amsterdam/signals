@@ -105,27 +105,29 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
             # Since we want a PDF to be output, we catch, log and ignore errors
             # while opening attachments. A missing image is not as bad as a
             # complete failure to render the requested PDF.
-            try:
-                with default_storage.open(att.file.name) as file:
-                    buffer = io.BytesIO(file.read())
-                image = Image.open(buffer)
-            except UnidentifiedImageError:
-                # PIL cannot open the attached file it is probably not an image.
-                msg = f'Cannot open image attachment pk={att.pk}'
-                logger.warn(msg)
-                continue
-            except:  # noqa:E722
-                # Attachment cannot be opened - log the exception.
-                msg = f'Cannot open image attachment pk={att.pk}'
-                logger.warn(msg, exc_info=True)
-                continue
+            with io.BytesIO() as buffer:
+                try:
+                    with default_storage.open(att.file.name) as file:
+                        buffer.write(file.read())
+                        image = Image.open(buffer)
+                except UnidentifiedImageError:
+                    # PIL cannot open the attached file it is probably not an image.
+                    msg = f'Cannot open image attachment pk={att.pk}'
+                    logger.warning(msg)
+                    continue
+                except:  # noqa:E722
+                    # Attachment cannot be opened - log the exception.
+                    msg = f'Cannot open image attachment pk={att.pk}'
+                    logger.warning(msg, exc_info=True)
+                    continue
 
-            if image.width > self.max_size or image.height > self.max_size:
-                image = self._resize(image)
+                if image.width > self.max_size or image.height > self.max_size:
+                    image = self._resize(image)
 
-            new_buffer = io.BytesIO()
-            image.save(new_buffer, format='JPEG')
-            encoded = f'data:image/jpg;base64,{base64.b64encode(new_buffer.getvalue()).decode("utf-8")}'
+                with io.BytesIO() as new_buffer:
+                    new_buffer = io.BytesIO()
+                    image.save(new_buffer, format='JPEG')
+                    encoded = f'data:image/jpg;base64,{base64.b64encode(new_buffer.getvalue()).decode("utf-8")}'
 
             jpg_data_urls.append(encoded)
 
