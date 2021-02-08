@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.reporter.mail_actions import SIGNAL_MAIL_RULES, MailActions
-from signals.apps.signals.factories import SignalFactoryValidLocation
+from signals.apps.signals.factories import SignalFactory
 from tests.apps.signals.valid_locations import STADHUIS
 
 
@@ -23,7 +23,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
         longitude = valid_location.pop('lon')
         latitude = valid_location.pop('lat')
 
-        signal = SignalFactoryValidLocation.create(
+        signal = SignalFactory.create(
             reporter__email='test@example.com',
             location__geometrie=Point(longitude, latitude),
             location__buurt_code=valid_location.pop('buurt_code'),
