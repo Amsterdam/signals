@@ -926,6 +926,11 @@ paths:
           description: Filter users by role, accepts one or more role names.
           schema:
             type: string
+        - name: "profile_department_code"
+          in: query
+          description: Filter users by department, accepts one or more department codes.
+          schema:
+            type: string
       responses:
         '200':
           description: List of all users.
