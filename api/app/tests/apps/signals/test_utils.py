@@ -100,3 +100,8 @@ class TestAddressFormatter(TransactionTestCase):
 
         formatted_address_str = address_formatter.format(format_str='Z')
         self.assertEqual(formatted_address_str, 'Z')
+
+    def test_address_none_type(self):
+        address_formatter = AddressFormatter(address=None)
+        formatted_address_str = address_formatter.format(format_str='O')
+        self.assertEqual(formatted_address_str, '')
