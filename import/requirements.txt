@@ -3,7 +3,7 @@ astroid==1.6.5
 atomicwrites==1.1.5
 attrs==18.1.0
 certifi==2018.4.16
-cffi==1.11.5
+cffi==1.14.0
 chardet==3.0.4
 coreapi==2.3.3
 coreschema==0.0.4
@@ -16,8 +16,8 @@ django-debug-toolbar==1.9.1
 django-extensions==2.0.7
 django-filter==1.1.0
 django-rest-swagger==2.2.0
-djangorestframework==3.9.2
-djangorestframework-gis==0.14
+djangorestframework==3.11.0
+djangorestframework-gis==0.15
 git+https://github.com/Amsterdam/drf_amsterdam.git#egg=drf_amsterdam
 drf-extensions==0.3.1
 drf-yasg==1.8.0
