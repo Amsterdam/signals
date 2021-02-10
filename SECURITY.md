@@ -4,9 +4,9 @@ Signalen development team is strongly committed to responsible reporting and dis
 
 ## Reporting security issues
 
-**Short version: please report security issues by emailing security@signalen.org.**
+**Short version: please report security issues by emailing signalen-security@lists.publiccode.net.**
 
-If you discover security issues in Signalen we request you to disclose these in a *responsible* way by e-mailing to security@signalen.org.
+If you discover security issues in Signalen we request you to disclose these in a *responsible* way by e-mailing to signalen-security@lists.publiccode.net.
 
 It is extremely useful if you have a reproducible test case and/or clear steps on how to reproduce the vulnerability.
 
