@@ -58,31 +58,32 @@ class AddressFormatter:
         """
         Openbare ruimte
         """
-        return self.address['openbare_ruimte'] if 'openbare_ruimte' in self.address else ''
+        return self.address['openbare_ruimte'] if self.address and 'openbare_ruimte' in self.address else ''
 
     def h(self):
         """
         Huisnummer
         """
-        return self.address['huisnummer'] if 'huisnummer' in self.address else ''
+        return self.address['huisnummer'] if self.address and 'huisnummer' in self.address else ''
 
     def l(self):  # noqa E743
         """
         Huisletter
         """
-        return self.address['huisletter'] if 'huisletter' in self.address else ''
+        return self.address['huisletter'] if self.address and 'huisletter' in self.address else ''
 
     def t(self):
         """
         Huisnummer toevoeging  without a hyphen
         """
-        return self.address['huisnummer_toevoeging'] if 'huisnummer_toevoeging' in self.address else ''
+        return self.address['huisnummer_toevoeging'] if self.address and 'huisnummer_toevoeging' in self.address else ''
 
     def T(self):  # noqa E743
         """
         Huisnummer toevoeging with a hyphen
         """
-        if 'huisnummer_toevoeging' in self.address and len(self.address['huisnummer_toevoeging'].strip()) > 0:
+        if self.address and 'huisnummer_toevoeging' in self.address \
+                and len(self.address['huisnummer_toevoeging'].strip()) > 0:
             return f'-{self.address["huisnummer_toevoeging"]}'
         else:
             return ''
@@ -92,20 +93,21 @@ class AddressFormatter:
         Postcode without a space between the digits and the characters
         """
         # Returns a postal code in the following format "1234AA"
-        return self.address['postcode'] if 'postcode' in self.address else ''
+        return self.address['postcode'] if self.address and 'postcode' in self.address else ''
 
     def P(self):  # noqa E743
         """
         Postcode with a space between the digits and the characters
         """
         # Returns a postal code in the following format "1234 AA"
-        return str(re.sub('(^[0-9]+)', r' \1 ', self.address['postcode'])).strip() if 'postcode' in self.address else ''
+        return str(re.sub('(^[0-9]+)', r' \1 ', self.address['postcode'])).strip() \
+            if self.address and 'postcode' in self.address else ''
 
     def W(self):  # noqa E743
         """
         Woonplaats
         """
-        return self.address['woonplaats'] if 'woonplaats' in self.address else ''
+        return self.address['woonplaats'] if self.address and 'woonplaats' in self.address else ''
 
     def format(self, format_str):
         formatted_string = []
