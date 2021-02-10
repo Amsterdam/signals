@@ -21,6 +21,7 @@ from signals.apps.api.generics.permissions import (
     SignalViewObjectPermission
 )
 from signals.apps.api.v1.filters import SignalFilterSet, SignalPromotedToParentFilter
+from signals.apps.api.v1.renderers import SerializedJsonRenderer
 from signals.apps.api.v1.serializers import (
     AbridgedChildSignalSerializer,
     HistoryHalSerializer,
@@ -69,6 +70,7 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
     # The downside is that this query has to be (potentially) maintained when changing one of the
     # following models: sginal, categoryassignment, category, location, status
+
     def list(self, *args, **kwargs):
         fast_query = f"""
         select jsonb_build_object(
