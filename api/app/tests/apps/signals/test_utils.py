@@ -103,5 +103,27 @@ class TestAddressFormatter(TransactionTestCase):
 
     def test_address_none_type(self):
         address_formatter = AddressFormatter(address=None)
+
         formatted_address_str = address_formatter.format(format_str='O')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='h')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='l')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='t')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='T')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='p')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='P')
+        self.assertEqual(formatted_address_str, '')
+
+        formatted_address_str = address_formatter.format(format_str='W')
         self.assertEqual(formatted_address_str, '')
