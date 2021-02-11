@@ -676,6 +676,39 @@ class TestAttachmentModel(LiveServerTestCase):
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
+    def test_is_image_gif(self):
+        attachment = Attachment()
+        attachment.file = self.gif_upload
+        attachment._signal = self.signal
+        attachment.mimetype = "image/gif"
+        attachment.save()
+
+        self.assertTrue(attachment.is_image)
+
+    def test_is_image_doc_provided(self):
+        with open(self.doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.doc", f.read(), content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/msword"
+            attachment._signal = self.signal
+            attachment.save()
+
+            self.assertFalse(attachment.is_image)
+
+    def test_is_image_doc_renamed_to_gif(self):
+        with open(self.doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.gif", f.read(), content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/msword"
+            attachment._signal = self.signal
+            attachment.save()
+
+            self.assertFalse(attachment.is_image)
+
 
 class TestCategoryTranslation(TestCase):
     def setUp(self):
