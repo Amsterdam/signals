@@ -565,6 +565,9 @@ API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemee
 # along the largest side, aspect ratio is maintained.
 API_PDF_RESIZE_IMAGES_TO = 800
 
+# Maximum size for attachments
+API_MAX_UPLOAD_SIZE = os.getenv('API_MAX_UPLOAD_SIZE', 8388608)  # 8MB = 8*1024*1024
+
 # Enable public map geo endpoint
 ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT = os.getenv('ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT', False) in TRUE_VALUES
 
