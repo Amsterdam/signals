@@ -8,7 +8,7 @@ import weasyprint
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from signals.apps.services.domain.images import get_context_data_images
+from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.models import Signal
 
 # Because weasyprint can produce a lot of warnings (unsupported
@@ -31,7 +31,7 @@ def _render_html(signal: Signal):
         rd_coordinates.y + 125.00,
     )
     # HOTFIX for SIG-1473
-    jpg_data_uris = get_context_data_images(signal, 800)
+    jpg_data_uris = DataUriImageEncodeService.get_context_data_images(signal, 800)
 
     context = {
         'signal': signal,

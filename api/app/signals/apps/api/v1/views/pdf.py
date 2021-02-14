@@ -11,7 +11,7 @@ from django.views.generic.detail import SingleObjectMixin
 
 from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
-from signals.apps.services.domain.images import get_context_data_images
+from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend
@@ -107,7 +107,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
                 rd_coordinates.x + 340.00,
                 rd_coordinates.y + 125.00,
             )
-        jpg_data_uris = get_context_data_images(self.object, self.max_size)
+        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
 
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
