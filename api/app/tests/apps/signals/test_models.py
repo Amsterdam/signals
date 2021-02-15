@@ -757,15 +757,15 @@ class TestCategoryTranslation(TestCase):
 
 
 class TestStatusMessageTemplate(TestCase):
-    def setUp(self):
-        self.category = factories.CategoryFactory.create(is_active=True)
-
+    @override_settings(STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES=5)
     def test_save_too_many_instances(self):
-        factories.StatusMessageTemplateFactory.create_batch(15, category=self.category, state='m')
+        category = factories.CategoryFactory.create(is_active=True)
+        factories.StatusMessageTemplateFactory.create_batch(5, category=category, state='m')
+
         with self.assertRaises(ValidationError):
             StatusMessageTemplate.objects.create(
-                category=self.category, state='m', title='title', text='text', order=999
+                category=category, state='m', title='title', text='text', order=999
             )
 
-        qs = StatusMessageTemplate.objects.filter(category=self.category, state='m')
-        self.assertEqual(qs.count(), 15)
+        qs = StatusMessageTemplate.objects.filter(category=category, state='m')
+        self.assertEqual(qs.count(), 5)
