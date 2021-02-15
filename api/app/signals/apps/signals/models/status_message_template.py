@@ -5,8 +5,6 @@ from django.db import models
 from signals.apps.signals import workflow
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
-MAX_INSTANCES = 20  # Max instances we allow per Category/State combination
-
 
 class StatusMessageTemplate(CreatedUpdatedModel):
     """
