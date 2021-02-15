@@ -44,7 +44,8 @@ class StatusMessageTemplate(CreatedUpdatedModel):
         qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
         if self.pk is None and qs.count() >= settings.STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES:
-            msg = f'Only {MAX_INSTANCES} StatusMessageTemplate instances allowed per Category/State combination'
+            msg = f'Only {settings.STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES} StatusMessageTemplate instances allowed per ' \
+                  f'Category/State combination'
             raise ValidationError(msg)
 
         # Save the instance
