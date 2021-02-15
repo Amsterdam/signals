@@ -1,10 +1,9 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
-
-MAX_INSTANCES = 15  # Max instances we allow per Category/State combination
 
 
 class StatusMessageTemplate(CreatedUpdatedModel):
@@ -44,8 +43,9 @@ class StatusMessageTemplate(CreatedUpdatedModel):
         self.full_clean()
         qs = StatusMessageTemplate.objects.filter(category_id=self.category_id, state=self.state)
 
-        if self.pk is None and qs.count() >= MAX_INSTANCES:
-            msg = f'Only {MAX_INSTANCES} StatusMessageTemplate instances allowed per Category/State combination'
+        if self.pk is None and qs.count() >= settings.STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES:
+            msg = f'Only {settings.STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES} StatusMessageTemplate instances allowed ' \
+                  'per Category/State combination'
             raise ValidationError(msg)
 
         # Save the instance
