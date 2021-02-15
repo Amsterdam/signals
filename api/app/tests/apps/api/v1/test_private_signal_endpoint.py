@@ -29,6 +29,7 @@ from signals.apps.signals.factories import (
     SignalFactoryValidLocation,
     SignalFactoryWithImage
 )
+from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
 from tests.apps.signals.attachment_helpers import (
     add_image_attachments,
@@ -1974,6 +1975,125 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         response = self.client.get(self.child_endpoint.format(pk=self.parent_signal.pk))
         self.assertEqual(response.status_code, 403)
+
+    def test_shows_children_can_view_all_children_true_superuser(self):
+        """
+        If a SuperUser access the children endpoint the "can_view_signal" should all be True
+        """
+        self.client.force_authenticate(user=self.superuser)
+
+        parent_signal = SignalFactory.create()
+        children = SignalFactory.create_batch(2, parent=parent_signal)
+
+        response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], len(children))
+        self.assertTrue(response_json['results'][0]['can_view_signal'])
+        self.assertTrue(response_json['results'][1]['can_view_signal'])
+
+    def test_shows_children_can_view_all_children_true_permission_can_view_all_categories(self):
+        """
+        If a User with the special "sia_can_view_all_categories" permission access the children endpoint
+        the "can_view_signal" should all be True
+        """
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        parent_signal = SignalFactory.create()
+        SignalFactory.create_batch(2, parent=parent_signal)
+
+        response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 2)
+        self.assertTrue(response_json['results'][0]['can_view_signal'])
+        self.assertTrue(response_json['results'][1]['can_view_signal'])
+
+    def test_shows_children_can_view_all_children_true(self):
+        """
+        User has permissions to view all Signals in certain categories, and all children belong to one of those
+        categories, then the "can_view_signal" should all be True
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category_1 = CategoryFactory.create(parent=parent_category)
+        child_category_2 = CategoryFactory.create(parent=parent_category)
+
+        department = DepartmentFactory.create()
+
+        CategoryDepartmentFactory.create(category=child_category_1, department=department, can_view=True)
+        CategoryDepartmentFactory.create(category=child_category_2, department=department, can_view=True)
+
+        self.sia_read_write_user.profile.departments.add(department)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        parent_signal = SignalFactory.create(category_assignment__category=child_category_1)
+        SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_1)
+        SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_2)
+
+        response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 2)
+        self.assertTrue(response_json['results'][0]['can_view_signal'])
+        self.assertTrue(response_json['results'][1]['can_view_signal'])
+
+    def test_shows_children_can_view_all_children_false(self):
+        """
+        User has no permissions to view all Signals in certain categories, and all children belong to one of those
+        categories, then the "can_view_signal" should all be False
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category_1 = CategoryFactory.create(parent=parent_category)
+        child_category_2 = CategoryFactory.create(parent=parent_category)
+
+        department = DepartmentFactory.create()
+        CategoryDepartmentFactory.create(category=child_category_1, department=department, can_view=True)
+
+        self.sia_read_write_user.profile.departments.add(department)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        parent_signal = SignalFactory.create(category_assignment__category=child_category_1)
+        SignalFactory.create_batch(2, parent=parent_signal, category_assignment__category=child_category_2)
+
+        response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 2)
+        self.assertFalse(response_json['results'][0]['can_view_signal'])
+        self.assertFalse(response_json['results'][1]['can_view_signal'])
+
+    def test_shows_children_can_view_all_children_mixed(self):
+        """
+        User has permissions to view all Signals in certain categories, and all not ll children belong to one of those
+        categories, then the "can_view_signal" should all be mixed (True and False)
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category_1 = CategoryFactory.create(parent=parent_category)
+        child_category_2 = CategoryFactory.create(parent=parent_category)
+
+        department = DepartmentFactory.create()
+
+        CategoryDepartmentFactory.create(category=child_category_1, department=department, can_view=True)
+
+        self.sia_read_write_user.profile.departments.add(department)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        parent_signal = SignalFactory.create(category_assignment__category=child_category_1)
+        SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_1)
+        SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_2)
+
+        response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 2)
+        self.assertTrue(response_json['results'][0]['can_view_signal'])
+        self.assertFalse(response_json['results'][1]['can_view_signal'])
 
 
 class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsBaseApiTestCase):
