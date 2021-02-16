@@ -2069,7 +2069,7 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_shows_children_can_view_all_children_mixed(self):
         """
-        User has permissions to view all Signals in certain categories, and all not ll children belong to one of those
+        User has permissions to view all Signals in certain categories, and some children belong to one of those
         categories, then the "can_view_signal" should all be mixed (True and False)
         """
         parent_category = ParentCategoryFactory.create()
@@ -2084,7 +2084,7 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         parent_signal = SignalFactory.create(category_assignment__category=child_category_1)
-        SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_1)
+        child_1 = SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_1)
         SignalFactory.create(parent=parent_signal, category_assignment__category=child_category_2)
 
         response = self.client.get(self.child_endpoint.format(pk=parent_signal.pk))
@@ -2092,8 +2092,14 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         response_json = response.json()
         self.assertEqual(response_json['count'], 2)
-        self.assertTrue(response_json['results'][0]['can_view_signal'])
-        self.assertFalse(response_json['results'][1]['can_view_signal'])
+
+        for item in response_json['results']:
+            if item['id'] == child_1.id:
+                # The currently logged in User should have permissions to view first child
+                self.assertTrue(item['can_view_signal'])
+            else:
+                # The currently logged in User should NOT have permissions to view the second child
+                self.assertFalse(item['can_view_signal'])
 
 
 class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsBaseApiTestCase):
