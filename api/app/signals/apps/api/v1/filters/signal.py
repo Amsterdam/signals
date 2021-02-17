@@ -14,6 +14,7 @@ from signals.apps.api.v1.filters.utils import (
     department_choices,
     feedback_choices,
     kind_choices,
+    punctuality_choices,
     source_choices,
     stadsdelen_choices,
     status_choices
@@ -65,6 +66,7 @@ class SignalFilterSet(FilterSet):
     routing_department_code = filters.MultipleChoiceFilter(
         field_name='routing_assignment__departments__code', choices=department_choices
     )
+    punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices)
 
     def _cleanup_form_data(self):
         """
@@ -253,6 +255,18 @@ class SignalFilterSet(FilterSet):
             q_filter &= Q(updated_at__gt=F('max_child_updated_at'))
 
         return queryset.filter(q_filter).distinct()
+
+# punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices)
+    def punctuality_filter(self, queryset, name, value):
+        if value == 'none':
+            return queryset
+
+        if value == 'on_time':
+            queryset.annotate()
+        elif value == 'late':
+            pass
+        elif value == 'late_factor_3':
+            pass
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):
