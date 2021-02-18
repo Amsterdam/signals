@@ -62,6 +62,9 @@ class SignalFilterSet(FilterSet):
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
     assigned_user_email = filters.CharFilter(method='assigned_user_email_filter')
     reporter_email = filters.CharFilter(field_name='reporter__email', lookup_expr='iexact')
+    routing_department_code = filters.MultipleChoiceFilter(
+        field_name='routing_assignment__departments__code', choices=department_choices
+    )
 
     def _cleanup_form_data(self):
         """
