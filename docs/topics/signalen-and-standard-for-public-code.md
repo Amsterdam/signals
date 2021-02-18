@@ -35,7 +35,7 @@ The codebase MUST be developed to be reusable in different contexts. | almost | 
 The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes? | Lacks public dataset for easily running the machine learning model.
 The codebase SHOULD be in use by multiple parties. | almost |
 The roadmap SHOULD be influenced by the needs of multiple parties. | yes |
-Configuration SHOULD be used to make code adapt to context specific needs. | 95% | E-mail sender and signature is not configurable yet [backend#44](https://github.com/Signalen/backend/issues/44).
+Configuration SHOULD be used to make code adapt to context specific needs. | yes |
 Codebases SHOULD include a publiccode.yml metadata description so that they’re easily discoverable. | no | Created [backend#64](https://github.com/Signalen/backend/issues/64).
 Code and its documentation SHOULD NOT contain situation-specific information.  | partial | The software is easily configurable, the default configuration is Amsterdam-specific.
 
@@ -46,13 +46,11 @@ Code and its documentation SHOULD NOT contain situation-specific information.  |
 Requirement | meets | links and notes
 -----|-----|-----
 The codebase MUST allow anyone to submit suggestions for changes to the codebase. | yes |
-The codebase MUST include contribution guidelines explaining how contributors can get involved, for example in a CONTRIBUTING file. | no | The docs/CONTRIBUTING.md still says "we do not accept merge requests".
+The codebase MUST include contribution guidelines explaining how contributors can get involved, for example in a CONTRIBUTING file. | yes |
 The codebase SHOULD advertise the committed engagement of involved organizations in the development and maintenance. | (maybe) | The signalen.org website shows the logos.
 The codebase SHOULD document the governance of the codebase, contributions and its community, for example in a GOVERNANCE file. | no |
 The codebase SHOULD have a publicly available roadmap. | no | There is a [product steering group](https://github.com/orgs/Signalen/projects/2), but no roadmap yet.
 The codebase MAY include a code of conduct for contributors. |  |
-
-
 
 ## [Make contributing easy](https://standard.publiccode.net/criteria/make-contributing-easy.html)
 
@@ -61,10 +59,10 @@ The codebase MAY include a code of conduct for contributors. |  |
 Requirement | meets | links and notes
 -----|-----|-----
 The codebase MUST have a public issue tracker that accepts suggestions from anyone. | yes | Amsterdam has a second private issue tracker.
-The codebase MUST include an email address for security issues and responsible disclosure. | no | Consider a SECURITY.md file.
+The codebase MUST include an email address for security issues and responsible disclosure. | no | Consider a SECURITY.md file, see [backend#112](https://github.com/Signalen/backend/issues/112).
 The documentation MUST link to both the public issue tracker and submitted codebase changes, for example in a README file. | no | The two different issue trackers in the Amsterdam and Signalen namespaces make this a bit challenging. Maybe disable the issue tracker on the Amsterdam repo and link to the Signalen one?
-The project MUST have communication channels for users and developers, for example email lists. | (maybe) | Add link to Slack on signalen.org and [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/)?
-The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md?
+The project MUST have communication channels for users and developers, for example email lists. | yes | Link to Slack and [email list](https://lists.publiccode.net/mailman/postorius/lists/signalen-discuss.lists.publiccode.net/) on signalen.org.
+The documentation SHOULD include instructions for how to report potentially security sensitive issues on a closed channel. | no | Document the process in SECURITY.md, see [backend#112](https://github.com/Signalen/backend/issues/112).
 
 ## [Maintain version control](https://standard.publiccode.net/criteria/version-control-and-history.html)
 
@@ -93,7 +91,7 @@ Contributions SHOULD conform to the standards, architecture and decisions set ou
 Reviews SHOULD include running both the code and the tests of the codebase. | yes |
 Contributions SHOULD be reviewed by someone in a different context than the contributor. | some | VNG pull requests all reviewed by Amsterdam, frontend & backend cross-review rare, Amsterdam pull requests often not cross-reviewed by VNG. PO acceptance testing is part of review, but during acceptance.
 Version control systems SHOULD not accept non-reviewed contributions in release versions. | yes | Sometimes the "Github administrator" override is used when no reviewer is available.
-Reviews SHOULD happen within two business days. | some |
+Reviews SHOULD happen within two business days. | some | This is usually done, but there are exceptions.
 Reviews MAY be performed by multiple reviewers. | |
 
 ## [Document your objectives](https://standard.publiccode.net/criteria/document-objectives.html)
@@ -169,8 +167,8 @@ Requirement | meets | links and notes
 All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE), would be nice to add SPDX license identifiers to files.
 Software source code MUST be licensed under an OSI-approved open source license. | yes | [MPL-2.0](https://opensource.org/licenses/MPL-2.0)
 All code MUST be published with a license file. | yes |
-Contributors MUST NOT be required to transfer copyright of their contributions to the codebase. |  |
-All source code files in the codebase SHOULD include a copyright notice and a license header. | no |
+Contributors MUST NOT be required to transfer copyright of their contributions to the codebase. | yes |
+All source code files in the codebase SHOULD include a copyright notice and a license header. | no | See [signals#623](https://github.com/Amsterdam/signals/pull/623).
 Codebases MAY have multiple licenses for different types of code and documentation. |  |
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
