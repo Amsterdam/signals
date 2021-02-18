@@ -1164,7 +1164,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             self.assertEqual(data['count'], 0)
 
     def test_signal_promoted_to_parent(self):
-        response = self.client.get(f'{self.list_endpoint}promoted/', format='json')
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/', format='json')
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
@@ -1175,7 +1175,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         signal = SignalFactory.create()
         SignalFactory.create(parent=signal)
 
-        response = self.client.get(f'{self.list_endpoint}promoted/', format='json')
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/', format='json')
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
@@ -1198,7 +1198,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         with freeze_time(timezone.now() - timedelta(hours=6)):
             SignalFactory.create(parent=signal)
 
-        response = self.client.get(f'{self.list_endpoint}promoted/',
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
                                    data={'after': after.isoformat()},
                                    format='json')
         self.assertEqual(response.status_code, 200)
@@ -1215,7 +1215,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             signal = SignalFactory.create()
 
         after = timezone.now() - timedelta(hours=12)
-        response = self.client.get(f'{self.list_endpoint}promoted/',
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
                                    data={'after': after.isoformat()},
                                    format='json')
         self.assertEqual(response.status_code, 200)
@@ -1226,7 +1226,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         with freeze_time(timezone.now() - timedelta(hours=6)):
             SignalFactory.create(parent=signal)
 
-        response = self.client.get(f'{self.list_endpoint}promoted/',
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
                                    data={'after': after.isoformat()},
                                    format='json')
         self.assertEqual(response.status_code, 200)

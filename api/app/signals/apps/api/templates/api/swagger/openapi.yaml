@@ -812,7 +812,7 @@ paths:
       - OAuth2:
         - SIG/ALL
 
-  /signals/v1/private/signals/promoted:
+  /signals/v1/private/signals/promoted/parent:
     get:
       description: >-
         Signals that became a Parent are listed here.

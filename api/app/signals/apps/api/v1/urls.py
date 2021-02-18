@@ -99,7 +99,7 @@ urlpatterns = [
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),
 
-        re_path(r'signals/promoted/?$', SignalPromotedToParentViewSet.as_view({'get': 'list'}),
+        re_path(r'signals/promoted/parent/?$', SignalPromotedToParentViewSet.as_view({'get': 'list'}),
                 name='signal-became-parent-since'),
 
         # Search
