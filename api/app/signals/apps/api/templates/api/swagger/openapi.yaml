@@ -812,7 +812,7 @@ paths:
       - OAuth2:
         - SIG/ALL
 
-  /signals/v1/private/signals/promoted/parent:
+  /signals/v1/private/signals/promoted:
     get:
       description: >-
         Signals that became a Parent are listed here.
@@ -820,7 +820,7 @@ paths:
       parameters:
         - name: after
           in: query
-          description: Timestamp after which dropped signals are to found.
+          description: Timestamp after which promoted signals are to be found.
           schema:
             type: string
       responses:
