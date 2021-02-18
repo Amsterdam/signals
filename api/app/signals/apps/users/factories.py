@@ -3,8 +3,6 @@ import faker
 from django.conf import settings
 from django.contrib.auth.models import Group
 
-from signals.apps.users.models import Profile
-
 fake = faker.Faker()
 
 
