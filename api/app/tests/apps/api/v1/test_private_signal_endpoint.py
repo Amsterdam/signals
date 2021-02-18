@@ -1163,6 +1163,77 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             data = response.json()
             self.assertEqual(data['count'], 0)
 
+    def test_signal_promoted_to_parent(self):
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/', format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        SignalFactory.create_batch(4)  # Should not show up inn the response because they are normal Signals
+
+        signal = SignalFactory.create()
+        SignalFactory.create(parent=signal)
+
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/', format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['id'], signal.id)
+
+    def test_signal_promoted_to_parent_after_date_x(self):
+        with freeze_time(timezone.now() - timedelta(hours=24)):
+            signal = SignalFactory.create()
+
+        after = timezone.now() - timedelta(hours=12)
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
+                                   data={'after': after.isoformat()},
+                                   format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        with freeze_time(timezone.now() - timedelta(hours=6)):
+            SignalFactory.create(parent=signal)
+
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
+                                   data={'after': after.isoformat()},
+                                   format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['id'], signal.id)
+
+    def test_signal_promoted_to_parent_not_in_viewable_category_for_user(self):
+        # self.sia_read_user is not a superuser, has no department or the can_view_all_categories permission
+        self.client.force_authenticate(self.sia_read_user)
+
+        with freeze_time(timezone.now() - timedelta(hours=24)):
+            signal = SignalFactory.create()
+
+        after = timezone.now() - timedelta(hours=12)
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
+                                   data={'after': after.isoformat()},
+                                   format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
+        with freeze_time(timezone.now() - timedelta(hours=6)):
+            SignalFactory.create(parent=signal)
+
+        response = self.client.get(f'{self.list_endpoint}promoted/parent/',
+                                   data={'after': after.isoformat()},
+                                   format='json')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+
     def test_update_location_renders_correctly_in_history(self):
         """Test that location updates have correct description field in history.
 

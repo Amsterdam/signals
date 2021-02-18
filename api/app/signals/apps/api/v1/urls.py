@@ -20,6 +20,7 @@ from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled
     PublicSignalListViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
+    SignalPromotedToParentViewSet,
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
@@ -97,6 +98,9 @@ urlpatterns = [
         re_path(r'signals/(?P<pk>\d+)/pdf/?$', GeneratePdfView.as_view(), name='signal-pdf-download'),
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),
+
+        re_path(r'signals/promoted/parent/?$', SignalPromotedToParentViewSet.as_view({'get': 'list'}),
+                name='signal-became-parent-since'),
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),

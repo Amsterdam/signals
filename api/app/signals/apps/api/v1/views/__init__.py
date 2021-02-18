@@ -19,7 +19,8 @@ from signals.apps.api.v1.views.questions import PublicQuestionViewSet
 from signals.apps.api.v1.views.signal import (
     PrivateSignalViewSet,
     PublicSignalListViewSet,
-    PublicSignalViewSet
+    PublicSignalViewSet,
+    SignalPromotedToParentViewSet
 )
 from signals.apps.api.v1.views.source import PrivateSourcesViewSet
 from signals.apps.api.v1.views.status_message_template import StatusMessageTemplatesViewSet
@@ -32,6 +33,7 @@ __all__ = (
     'PublicSignalListViewSet',
     'PrivateSignalViewSet',
     'SignalCategoryRemovedAfterViewSet',
+    'SignalPromotedToParentViewSet',
     'PrivateCategoryViewSet',
     'PrivateCsvViewSet',
     'PublicQuestionViewSet',
