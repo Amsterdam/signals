@@ -32,7 +32,7 @@ class TestUserProfileDepartmentFilter(SignalsBaseApiTestCase):
 
     def test_filter_user_profile_department(self):
         # all (implicit admin user)
-        result_ids = self._request_filter_signals({})
+        result_ids = self._request_filter_users({})
         self.assertEqual(3 + 1, len(result_ids))
 
         # filter on dep1 code
