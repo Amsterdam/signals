@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models import Count, F, Max, Q
+from django.db.models import Count, F, Max, Min, Q
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.v1.filters.utils import (
@@ -24,7 +24,7 @@ from signals.apps.signals.models import Category, Priority, Type
 class SignalFilterSet(FilterSet):
     id = filters.NumberFilter()
     address_text = filters.CharFilter(field_name='location__address_text', lookup_expr='icontains')
-    area_code = filters.ChoiceFilter(field_name='location__area_code', choices=area_choices)
+    area_code = filters.MultipleChoiceFilter(field_name='location__area_code', choices=area_choices)
     area_type_code = filters.ChoiceFilter(field_name='location__area_type_code', choices=area_type_choices)
     buurt_code = filters.MultipleChoiceFilter(field_name='location__buurt_code', choices=buurt_choices)
     category_id = filters.MultipleChoiceFilter(field_name='category_assignment__category_id',
@@ -62,6 +62,9 @@ class SignalFilterSet(FilterSet):
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
     assigned_user_email = filters.CharFilter(method='assigned_user_email_filter')
     reporter_email = filters.CharFilter(field_name='reporter__email', lookup_expr='iexact')
+    routing_department_code = filters.MultipleChoiceFilter(
+        field_name='routing_assignment__departments__code', choices=department_choices
+    )
 
     def _cleanup_form_data(self):
         """
@@ -278,3 +281,22 @@ class SignalCategoryRemovedAfterFilterSet(FilterSet):
             Q(categories__id__in=categories_to_check) &
             ~Q(category_assignment__category_id__in=categories_to_check)
         )
+
+
+class SignalPromotedToParentFilter(FilterSet):
+    after = filters.IsoDateTimeFilter(method='after_filter')
+
+    def after_filter(self, queryset, name, value):
+        """
+        Filters a Parent Signal on the created date of the first child Signal
+        """
+        return queryset.annotate(
+            min_child_created_at=Min('children__created_at')
+        ).filter(
+            min_child_created_at__gte=value
+        )
+
+    def filter_queryset(self, queryset):
+        queryset = super(SignalPromotedToParentFilter, self).filter_queryset(queryset=queryset)
+        # Only return Signals of categories that a user can access
+        return queryset.filter_for_user(user=self.request.user).distinct()

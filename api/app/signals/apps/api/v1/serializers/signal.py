@@ -577,6 +577,8 @@ class AbridgedChildSignalSerializer(HALSerializer):
     status = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
 
+    can_view_signal = serializers.SerializerMethodField()
+
     class Meta:
         model = Signal
         fields = (
@@ -585,6 +587,7 @@ class AbridgedChildSignalSerializer(HALSerializer):
             'status',
             'category',
             'updated_at',
+            'can_view_signal'
         )
 
     def get_status(self, obj):
@@ -606,3 +609,6 @@ class AbridgedChildSignalSerializer(HALSerializer):
             'main': obj.category_assignment.category.parent.name,
             'main_slug': obj.category_assignment.category.parent.slug,
         }
+
+    def get_can_view_signal(self, obj):
+        return Signal.objects.filter(pk=obj.pk).filter_for_user(self.context['request'].user).exists()

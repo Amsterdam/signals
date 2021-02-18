@@ -1,11 +1,10 @@
-import imghdr
 import logging
 
 from django.contrib.gis.db import models
 from imagekit import ImageSpec
 from imagekit.cachefiles import ImageCacheFile
 from imagekit.processors import ResizeToFit
-from PIL import ImageFile
+from PIL import Image, ImageFile, UnidentifiedImageError
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
@@ -69,10 +68,19 @@ class Attachment(CreatedUpdatedModel):
 
         return cache_file
 
+    def _check_if_file_is_image(self):
+        try:
+            # Open the file with Pillow
+            Image.open(self.file)
+        except UnidentifiedImageError:
+            # Raised when Pillow does not recognize an image
+            return False
+        return True
+
     def save(self, *args, **kwargs):
         if self.pk is None:
             # Check if file is image
-            self.is_image = imghdr.what(self.file) is not None
+            self.is_image = self._check_if_file_is_image()
 
             if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type

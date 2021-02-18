@@ -812,6 +812,24 @@ paths:
       - OAuth2:
         - SIG/ALL
 
+  /signals/v1/private/signals/promoted/parent:
+    get:
+      description: >-
+        Signals that became a Parent are listed here.
+        **URL may be changed**
+      parameters:
+        - name: after
+          in: query
+          description: Timestamp after which promoted signals are to be found.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of Signal ID's.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
   /signals/v1/private/categories/:
     get:
       description: List of all categories available in the system

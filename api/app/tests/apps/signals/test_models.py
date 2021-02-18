@@ -676,6 +676,39 @@ class TestAttachmentModel(LiveServerTestCase):
         resp = requests.get(self.live_server_url + attachment.file.url)
         self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
+    def test_is_image_gif(self):
+        attachment = Attachment()
+        attachment.file = self.gif_upload
+        attachment._signal = self.signal
+        attachment.mimetype = "image/gif"
+        attachment.save()
+
+        self.assertTrue(attachment.is_image)
+
+    def test_is_image_doc_provided(self):
+        with open(self.doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.doc", f.read(), content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/msword"
+            attachment._signal = self.signal
+            attachment.save()
+
+            self.assertFalse(attachment.is_image)
+
+    def test_is_image_doc_renamed_to_gif(self):
+        with open(self.doc_upload_location, "rb") as f:
+            doc_upload = SimpleUploadedFile("file.gif", f.read(), content_type="application/msword")
+
+            attachment = Attachment()
+            attachment.file = doc_upload
+            attachment.mimetype = "application/msword"
+            attachment._signal = self.signal
+            attachment.save()
+
+            self.assertFalse(attachment.is_image)
+
 
 class TestCategoryTranslation(TestCase):
     def setUp(self):
@@ -724,15 +757,15 @@ class TestCategoryTranslation(TestCase):
 
 
 class TestStatusMessageTemplate(TestCase):
-    def setUp(self):
-        self.category = factories.CategoryFactory.create(is_active=True)
-
+    @override_settings(STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES=5)
     def test_save_too_many_instances(self):
-        factories.StatusMessageTemplateFactory.create_batch(15, category=self.category, state='m')
+        category = factories.CategoryFactory.create(is_active=True)
+        factories.StatusMessageTemplateFactory.create_batch(5, category=category, state='m')
+
         with self.assertRaises(ValidationError):
             StatusMessageTemplate.objects.create(
-                category=self.category, state='m', title='title', text='text', order=999
+                category=category, state='m', title='title', text='text', order=999
             )
 
-        qs = StatusMessageTemplate.objects.filter(category=self.category, state='m')
-        self.assertEqual(qs.count(), 15)
+        qs = StatusMessageTemplate.objects.filter(category=category, state='m')
+        self.assertEqual(qs.count(), 5)

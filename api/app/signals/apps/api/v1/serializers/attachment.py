@@ -1,8 +1,8 @@
 from datapunt_api.rest import DisplayField, HALSerializer
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.api.app_settings import SIGNALS_API_MAX_UPLOAD_SIZE
 from signals.apps.api.v1.fields import (
     PrivateSignalAttachmentLinksField,
     PublicSignalAttachmentLinksField
@@ -45,8 +45,8 @@ class SignalAttachmentSerializer(HALSerializer):
         return attachment
 
     def validate_file(self, file):
-        if file.size > SIGNALS_API_MAX_UPLOAD_SIZE:
-            msg = f'Bestand mag maximaal {SIGNALS_API_MAX_UPLOAD_SIZE} bytes groot zijn.'
+        if file.size > settings.API_MAX_UPLOAD_SIZE:
+            msg = f'Bestand mag maximaal {settings.API_MAX_UPLOAD_SIZE} bytes groot zijn.'
             raise ValidationError(msg)
         return file
 

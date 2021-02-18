@@ -561,8 +561,18 @@ DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')
 # app.
 API_PDF_LOGO_STATIC_FILE = os.getenv('API_PDF_LOGO_STATIC_FILE', 'api/logo-gemeente-amsterdam.svg')
 
+# Large images are resized to max dimension of `API_PDF_RESIZE_IMAGES_TO`
+# along the largest side, aspect ratio is maintained.
+API_PDF_RESIZE_IMAGES_TO = 800
+
+# Maximum size for attachments
+API_MAX_UPLOAD_SIZE = os.getenv('API_MAX_UPLOAD_SIZE', 8388608)  # 8MB = 8*1024*1024
+
 # Enable public map geo endpoint
 ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT = os.getenv('ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT', False) in TRUE_VALUES
 
 # Allow 'invalid' address as unverified
 ALLOW_INVALID_ADDRESS_AS_UNVERIFIED = os.getenv('ALLOW_INVALID_ADDRESS_AS_UNVERIFIED', False) in TRUE_VALUES
+
+# Max instances we allow per Category/State combination
+STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES', 20)

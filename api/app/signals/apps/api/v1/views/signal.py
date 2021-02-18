@@ -8,15 +8,17 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import (
+    SIAPermissions,
     SignalCreateInitialPermission,
     SignalViewObjectPermission
 )
-from signals.apps.api.v1.filters import SignalFilterSet
+from signals.apps.api.v1.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.v1.serializers import (
     AbridgedChildSignalSerializer,
     HistoryHalSerializer,
@@ -24,7 +26,8 @@ from signals.apps.api.v1.serializers import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
-    SignalGeoSerializer
+    SignalGeoSerializer,
+    SignalIdListSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
@@ -273,3 +276,16 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class SignalPromotedToParentViewSet(GenericViewSet, mixins.ListModelMixin):
+    serializer_class = SignalIdListSerializer
+    pagination_class = HALPagination
+
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = SignalPromotedToParentFilter
+
+    queryset = Signal.objects.prefetch_related('children').only('id').filter(children__isnull=False).order_by('-id')
