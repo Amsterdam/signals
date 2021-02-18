@@ -32,7 +32,7 @@ class TestUserProfileDepartmentFilter(SignalsBaseApiTestCase):
 
     def test_filter_user_profile_department(self):
         # all (implicit admin user)
-        result_ids = self._request_filter_signals({})
+        result_ids = self._request_filter_users({})
         self.assertEqual(3 + 1, len(result_ids))
 
         # filter on dep1 code
@@ -51,8 +51,3 @@ class TestUserProfileDepartmentFilter(SignalsBaseApiTestCase):
         self.assertEqual(2, len(result_ids))
         self.assertTrue(self.user1.id in result_ids)
         self.assertTrue(self.user2.id in result_ids)
-
-        # TODO FIXME: filter on non-assigned
-        # result_ids = self._request_filter_users({'profile_department_code': 'null'})
-        # self.assertEqual(1, len(result_ids))
-        # self.assertTrue(self.user3.id in result_ids)
