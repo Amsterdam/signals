@@ -62,7 +62,9 @@ class SignalFilterSet(FilterSet):
     updated_after = filters.IsoDateTimeFilter(field_name='updated_at', lookup_expr='gte')
     assigned_user_email = filters.CharFilter(method='assigned_user_email_filter')
     reporter_email = filters.CharFilter(field_name='reporter__email', lookup_expr='iexact')
-    routing_department_code = filters.CharFilter(method='routing_department_code_filter')
+    routing_department_code = filters.MultipleChoiceFilter(
+        field_name='routing_assignment__departments__code', choices=department_choices
+    )
 
     def _cleanup_form_data(self):
         """
@@ -232,12 +234,6 @@ class SignalFilterSet(FilterSet):
             return queryset.filter(user_assignment__user__isnull=True)
         else:
             return queryset.filter(user_assignment__user__email__iexact=value)
-
-    def routing_department_code_filter(self, queryset, name, value):
-        if value == 'null':
-            return queryset.filter(routing_assignment__departments__isnull=True)
-        else:
-            return queryset.filter(routing_assignment__departments__code__in=[value])
 
     def has_changed_children_filter(self, queryset, name, value):
         # we have a MultipleChoiceFilter ...

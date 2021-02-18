@@ -1195,6 +1195,10 @@ class TestSignalDepartmentRoutingFilter(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals({'routing_department_code': f'{self.dep1.code}'})
         self.assertEqual(1, len(result_ids))
         self.assertTrue(self.signal1.id in result_ids)
+        # mutiple choice
+        result_ids = self._request_filter_signals({'routing_department_code': [self.dep1.code, self.dep2.code]})
+        self.assertEqual(2, len(result_ids))
+        self.assertTrue(self.signal1.id in result_ids)
         # filter on non-assigned
         result_ids = self._request_filter_signals({'routing_department_code': 'null'})
         self.assertEqual(1, len(result_ids))
