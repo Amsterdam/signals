@@ -59,9 +59,6 @@ class UserProfileFactory(factory.DjangoModelFactory):
     class Meta:
         model = Profile
 
-    user_id = factory.sequence(lambda n: n)
-    user = factory.SubFactory('signals.apps.users.factories.UserFactory')
-
     @factory.post_generation
     def departments(self, create, extracted, **kwargs):
         if not create:
