@@ -3,6 +3,8 @@ import faker
 from django.conf import settings
 from django.contrib.auth.models import Group
 
+from signals.apps.users.models import Profile
+
 fake = faker.Faker()
 
 
@@ -51,3 +53,21 @@ class GroupFactory(factory.DjangoModelFactory):
     name = factory.LazyAttribute(
         lambda o: fake.word()
     )
+
+
+class UserProfileFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Profile
+
+    user_id = factory.sequence(lambda n: n)
+    user = factory.SubFactory('signals.apps.users.factories.UserFactory')
+
+    @factory.post_generation
+    def departments(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # A list of groups were passed in, use them
+            for department in extracted:
+                self.departments.add(department)
