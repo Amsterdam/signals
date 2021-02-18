@@ -6,7 +6,7 @@ from tests.test import SignalsBaseApiTestCase
 class TestUserProfileDepartmentFilter(SignalsBaseApiTestCase):
     LIST_ENDPOINT = '/signals/v1/private/users/'
 
-    def _request_filter_signals(self, filter_params: dict):
+    def _request_filter_users(self, filter_params: dict):
         """ Does a filter request and returns the signal ID's present in the request """
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
