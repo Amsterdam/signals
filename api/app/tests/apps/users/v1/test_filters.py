@@ -36,23 +36,23 @@ class TestUserProfileDepartmentFilter(SignalsBaseApiTestCase):
         self.assertEqual(3 + 1, len(result_ids))
 
         # filter on dep1 code
-        result_ids = self._request_filter_signals({'profile_department_code': f'{self.dep1.code}'})
+        result_ids = self._request_filter_users({'profile_department_code': f'{self.dep1.code}'})
         self.assertEqual(1, len(result_ids))
         self.assertTrue(self.user1.id in result_ids)
 
         # filter on dep2 code
-        result_ids = self._request_filter_signals({'profile_department_code': f'{self.dep2.code}'})
+        result_ids = self._request_filter_users({'profile_department_code': f'{self.dep2.code}'})
         self.assertEqual(2, len(result_ids))
         self.assertTrue(self.user1.id in result_ids)
         self.assertTrue(self.user2.id in result_ids)
 
         # mutiple choice
-        result_ids = self._request_filter_signals({'profile_department_code': [self.dep1.code, self.dep2.code]})
+        result_ids = self._request_filter_users({'profile_department_code': [self.dep1.code, self.dep2.code]})
         self.assertEqual(2, len(result_ids))
         self.assertTrue(self.user1.id in result_ids)
         self.assertTrue(self.user2.id in result_ids)
 
         # TODO FIXME: filter on non-assigned
-        # result_ids = self._request_filter_signals({'profile_department_code': 'null'})
+        # result_ids = self._request_filter_users({'profile_department_code': 'null'})
         # self.assertEqual(1, len(result_ids))
         # self.assertTrue(self.user3.id in result_ids)
