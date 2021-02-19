@@ -180,15 +180,10 @@
 
     <div class="divider">&nbsp;</div>
     <h2>Foto's</h2>
-    {% if images %}
-        {% for image in images %}
-            <p><img src="{{ image.file.url }}" style="width:680px" alt=""></p>
-        {% endfor %}
-        <br>
-    {% elif jpg_data_urls %}  {# HOTFIX SIG-1473 #}
-        {% for data_url in jpg_data_urls %}
-            {% if data_url %}
-                <p><img src="{{ data_url|safe }}" style="width:680px" alt=""></p>
+    {% if jpg_data_uris %}
+        {% for data_uri in jpg_data_uris %}
+            {% if data_uri %}
+                <p><img src="{{ data_uri|safe }}" style="width:680px" alt=""></p>
             {% else %}
                 <p>Image not available</p>
             {% endif %}

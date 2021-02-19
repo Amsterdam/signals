@@ -6,13 +6,12 @@ import os
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
-from django.core.files.storage import default_storage
 from django.utils import timezone
 from django.views.generic.detail import SingleObjectMixin
-from PIL import Image, UnidentifiedImageError
 
 from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
+from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend
@@ -81,58 +80,6 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
         self.check_object_permissions(request=self.request, obj=obj)
         return obj
 
-    def _resize(self, image):
-        # Consider image orientation:
-        if image.width > image.height:
-            # landscape
-            width = self.max_size
-            height = int((self.max_size / image.width) * image.height)
-        else:
-            # portrait
-            width = int((self.max_size / image.height) * image.width)
-            height = self.max_size
-
-        return image.resize(size=(width, height), resample=Image.LANCZOS).convert('RGB')
-
-    def _get_context_data_images(self, signal):
-        jpg_data_urls = []
-        for att in signal.attachments.all():
-            # Attachment is_image property is currently not reliable
-            _, ext = os.path.splitext(att.file.name)
-            if ext not in ['.gif', '.jpg', '.jpeg', '.png']:
-                continue  # unsupported image format, or not image format
-
-            # Since we want a PDF to be output, we catch, log and ignore errors
-            # while opening attachments. A missing image is not as bad as a
-            # complete failure to render the requested PDF.
-            with io.BytesIO() as buffer:
-                try:
-                    with default_storage.open(att.file.name) as file:
-                        buffer.write(file.read())
-                        image = Image.open(buffer)
-                except UnidentifiedImageError:
-                    # PIL cannot open the attached file it is probably not an image.
-                    msg = f'Cannot open image attachment pk={att.pk}'
-                    logger.warning(msg)
-                    continue
-                except:  # noqa:E722
-                    # Attachment cannot be opened - log the exception.
-                    msg = f'Cannot open image attachment pk={att.pk}'
-                    logger.warning(msg, exc_info=True)
-                    continue
-
-                if image.width > self.max_size or image.height > self.max_size:
-                    image = self._resize(image)
-
-                with io.BytesIO() as new_buffer:
-                    new_buffer = io.BytesIO()
-                    image.save(new_buffer, format='JPEG')
-                    encoded = f'data:image/jpg;base64,{base64.b64encode(new_buffer.getvalue()).decode("utf-8")}'
-
-            jpg_data_urls.append(encoded)
-
-        return jpg_data_urls
-
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
         logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
@@ -160,12 +107,12 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
                 rd_coordinates.x + 340.00,
                 rd_coordinates.y + 125.00,
             )
-        jpg_data_urls = self._get_context_data_images(self.object)
+        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
 
         return super(GeneratePdfView, self).get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
-            jpg_data_urls=jpg_data_urls,
+            jpg_data_uris=jpg_data_uris,
             user=self.request.user,
             logo_src=logo_src,
         )
