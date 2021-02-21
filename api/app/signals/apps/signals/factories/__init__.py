@@ -13,6 +13,7 @@ from .routing_expression import RoutingExpressionFactory
 from .signal import SignalFactory, SignalFactoryValidLocation, SignalFactoryWithImage
 from .signal_departments import SignalDepartmentsFactory
 from .signal_user import SignalUserFactory
+from .slo import ServiceLevelObjectiveFactory
 from .source import SourceFactory
 from .status import StatusFactory
 from .status_message_template import StatusMessageTemplateFactory
@@ -37,6 +38,7 @@ __all__ = [
     'QuestionFactory',
     'ReporterFactory',
     'RoutingExpressionFactory',
+    'ServiceLevelObjectiveFactory',
     'SignalFactory',
     'SignalFactoryValidLocation',
     'SignalFactoryWithImage',

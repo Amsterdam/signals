@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 
+from signals.apps.services.domain.deadlines import DeadlineCalculationService
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 
@@ -17,6 +18,16 @@ class CategoryAssignment(CreatedUpdatedModel):
 
     extra_properties = JSONField(null=True)  # TODO: candidate for removal
 
+    # Note on the deadline fields: nulls are allowed for historic data because
+    # historic service level objectives are not generally available.
+    deadline = models.DateTimeField(null=True)
+    deadline_factor_3 = models.DateTimeField(null=True)
+
     def __str__(self):
         """String representation."""
         return '{sub} - {signal}'.format(sub=self.category, signal=self._signal)
+
+    def save(self, *args, **kwargs):
+        self.deadline, self.deadline_factor_3 = DeadlineCalculationService.from_signal_and_category(
+            self._signal, self.category)
+        super().save(*args, **kwargs)

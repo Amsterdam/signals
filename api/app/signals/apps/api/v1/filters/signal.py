@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models import Count, F, Max, Min, Q
+from django.utils.timezone import now
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.v1.filters.utils import (
@@ -256,17 +257,19 @@ class SignalFilterSet(FilterSet):
 
         return queryset.filter(q_filter).distinct()
 
-# punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices)
     def punctuality_filter(self, queryset, name, value):
-        if value == 'none':
-            return queryset
+        # historical data will not have deadlines calculated for it
+        if value == 'null':
+            return queryset.filter(category_assignment__deadline__isnull=True)
 
+        # current data will have deadlines and delayed by a factor 3 deadlines
+        local_now = now()
         if value == 'on_time':
-            queryset.annotate()
+            return queryset.filter(category_assignment__deadline__gt=local_now)
         elif value == 'late':
-            pass
+            return queryset.filter(category_assignment__deadline__lt=local_now)
         elif value == 'late_factor_3':
-            pass
+            return queryset.filter(category_assignment__deadline_factor_3__lt=local_now)
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):

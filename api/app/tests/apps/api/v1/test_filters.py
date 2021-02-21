@@ -1245,3 +1245,36 @@ class TestReporterEmailFilter(SignalsBaseApiTestCase):
         self.signal_to_reject.reporter.anonymize()
         result_ids = self._request_filter_signals({'reporter_email': 'reject@example.com'})
         self.assertEqual(0, len(result_ids))
+
+
+class TestPunctualityFilter(SignalsBaseApiTestCase):
+    LIST_ENDPOINT = '/signals/v1/private/signals/'
+
+    def _request_filter_signals(self, filter_params: dict):
+        """ Does a filter request and returns the signal ID's present in the request """
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
+
+        self.assertEqual(200, resp.status_code)
+
+        resp_json = resp.json()
+        ids = [res["id"] for res in resp_json["results"]]
+
+        self.assertEqual(resp_json["count"], len(ids))
+
+        return ids
+
+    def setUp(self):
+        pass
+
+    def test_filter_null(self):
+        pass  # historic CategoryAssignments may not have a ServiceLevelObjective
+
+    def test_filter_on_time(self):
+        pass
+
+    def test_filter_late(self):
+        pass
+
+    def test_filter_late_factor_3(self):
+        pass
