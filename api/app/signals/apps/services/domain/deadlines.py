@@ -22,10 +22,13 @@ class DeadlineCalculationService:
         return created_at
 
     @staticmethod
-    def get_end(start, n_days, use_calendar_days, factor):
+    def get_end(start, n_days, factor):
         # When promise to complainant is given in working days we cannot just add
         # the number of working days to the day the complaint was received. Non-
         # working days need to be taken into account.
+
+        # Note in normal operation this function is never called with a weekend
+        # day (see the get_deadline method for why that is the case).
         n_days = n_days * factor
         n_weeks, days_remaining = divmod(n_days, 5)  # 5 days per workweek
 
@@ -40,6 +43,6 @@ class DeadlineCalculationService:
         if use_calendar_days:
             return created_at + timedelta(days=(n_days * factor))
         start = DeadlineCalculationService.get_start(created_at)
-        deadline = DeadlineCalculationService.get_end(start, n_days, use_calendar_days, factor)
+        deadline = DeadlineCalculationService.get_end(start, n_days, factor)
 
         return deadline

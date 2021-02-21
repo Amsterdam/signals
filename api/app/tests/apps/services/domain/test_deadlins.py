@@ -60,17 +60,26 @@ FULL_TEST_CASES = [
 class TestDeadlineCalculationService(TestCase):
     def test_get_start(self):
         TEST_CASES = [
-            (datetime(2021, 2, 15, 12, 0, 0), datetime(2021, 2, 15, 12, 0, 0)),  # monday 12:00 -> tuesday 12:00
-            (datetime(2021, 2, 16, 12, 0, 0), datetime(2021, 2, 16, 12, 0, 0)),  # tuesday 12:00 -> tuesday 12:00
-            (datetime(2021, 2, 20, 12, 0, 0), datetime(2021, 2, 22, 0, 0, 0)),  # saturday 12:00 -> monday 00:00
-            (datetime(2021, 2, 21, 12, 0, 0), datetime(2021, 2, 22, 0, 0, 0)),  # sunday 12:00 -> monday 00:00
+            (datetime(2021, 2, 15, 12, 0, 0), datetime(2021, 2, 15, 12, 0, 0)),  # Monday 12:00 -> Monday 12:00
+            (datetime(2021, 2, 16, 12, 0, 0), datetime(2021, 2, 16, 12, 0, 0)),  # Tuesday 12:00 -> Tuesday 12:00
+            (datetime(2021, 2, 20, 12, 0, 0), datetime(2021, 2, 22, 0, 0, 0)),  # Saturday 12:00 -> Monday 00:00
+            (datetime(2021, 2, 21, 12, 0, 0), datetime(2021, 2, 22, 0, 0, 0)),  # Sunday 12:00 -> Monday 00:00
         ]
         for created_at, start in TEST_CASES:
             calculated_start = DeadlineCalculationService.get_start(created_at)
             self.assertEqual(calculated_start, start)
 
     def test_get_end(self):
-        pass
+        # We do not test weekends here (get_end is only called with weekdays)
+        TEST_CASES = [
+            # Columns below: created_at, n_days, factor, deadline
+            (datetime(2021, 2, 15, 12, 0, 0), 1, 1, datetime(2021, 2, 16, 12, 0, 0)),  # Monday 12:00 -> Tuesday 12:00
+            (datetime(2021, 2, 19, 12, 0, 0), 1, 1, datetime(2021, 2, 22, 12, 0, 0)),  # Friday 12:00 -> Monday 12:00
+            (datetime(2021, 2, 22, 0, 0, 0), 1, 1, datetime(2021, 2, 23, 0, 0, 0)),  # Monday 00:00 -> Tuesday 00:00
+        ]
+        for start, n_days, factor, end in TEST_CASES:
+            calculated_end = DeadlineCalculationService.get_end(start, n_days, factor)
+            self.assertEqual(calculated_end, end)
 
     def test_get_deadline(self):
         # Go through testcases check that we get the correct answers.
