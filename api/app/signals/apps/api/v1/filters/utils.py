@@ -73,7 +73,7 @@ def kind_choices():
 
 
 def punctuality_choices():
-    return (('on_time', 'on_time'), ('late', 'late'), ('late_factor_3', 'late_factor_3'), ('none', 'none'))
+    return (('on_time', 'on_time'), ('late', 'late'), ('late_factor_3', 'late_factor_3'), ('null', 'null'))
 
 
 def status_choices():

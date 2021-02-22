@@ -20,6 +20,7 @@ from signals.apps.api.v1.filters.utils import (
     stadsdelen_choices,
     status_choices
 )
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Category, Priority, Type
 
 
@@ -262,7 +263,15 @@ class SignalFilterSet(FilterSet):
         if value == 'null':
             return queryset.filter(category_assignment__deadline__isnull=True)
 
-        # current data will have deadlines and delayed by a factor 3 deadlines
+        # When work on a Signal was finished, it can no longer be late and are
+        # excluded. Furthermore Signals with no deadlines (historic data)
+        # are excluded from this filter.
+        queryset = queryset.exclude(
+            category_assignment__deadline__isnull=True
+        ).exclude(
+            status__state__in=[workflow.AFGEHANDELD, workflow.GEANNULEERD, workflow.GESPLITST]
+        )
+
         local_now = now()
         if value == 'on_time':
             return queryset.filter(category_assignment__deadline__gt=local_now)

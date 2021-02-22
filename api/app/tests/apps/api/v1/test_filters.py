@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from random import shuffle
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -6,6 +6,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.feedback.factories import FeedbackFactory
+from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     AreaFactory,
     CategoryAssignmentFactory,
@@ -13,6 +14,7 @@ from signals.apps.signals.factories import (
     DepartmentFactory,
     NoteFactory,
     ParentCategoryFactory,
+    ServiceLevelObjectiveFactory,
     SignalDepartmentsFactory,
     SignalFactory,
     SignalUserFactory,
@@ -1265,16 +1267,97 @@ class TestPunctualityFilter(SignalsBaseApiTestCase):
         return ids
 
     def setUp(self):
-        pass
+        # Test case uses signals that were created at 12:00 on a Friday and
+        # have a either no SLO, a SLO of 1 calendar day, or a SLO of 1 working
+        # days.
+        tzinfo = timezone.get_default_timezone()
+
+        self.cat_no_slo = CategoryFactory.create()
+        self.cat_slo_w = CategoryFactory.create()
+        self.slo_w = ServiceLevelObjectiveFactory.create(
+            n_days=1, use_calendar_days=False, category=self.cat_slo_w)
+        self.cat_slo_c = CategoryFactory.create()
+        self.slo_c = ServiceLevelObjectiveFactory.create(
+            n_days=1, use_calendar_days=True, category=self.cat_slo_c)
+
+        self.created_at = datetime(2021, 2, 19, 12, 0, 0, tzinfo=tzinfo)
+        with freeze_time(self.created_at):
+            self.assertEqual(datetime.now(tz=tzinfo), self.created_at)
+            # State workflow.AFGEHANDELD, workflow.GEANNULEERD and
+            # workflow.GESPLITST must cannot be late because work on them finished.
+            self.signal_no_slo = SignalFactory.create(
+                category_assignment__category=self.cat_no_slo, status__state=workflow.GEMELD)
+            self.signal_no_slo_2 = SignalFactory.create(
+                category_assignment__category=self.cat_no_slo, status__state=workflow.AFGEHANDELD)
+            self.signal_slo_w = SignalFactory.create(
+                category_assignment__category=self.cat_slo_w, status__state=workflow.GEMELD)
+            self.signal_slo_w_2 = SignalFactory.create(
+                category_assignment__category=self.cat_slo_w, status__state=workflow.AFGEHANDELD)
+            self.signal_slo_c = SignalFactory.create(
+                category_assignment__category=self.cat_slo_c, status__state=workflow.GEMELD)
+            self.signal_slo_c_2 = SignalFactory.create(
+                category_assignment__category=self.cat_slo_c, status__state=workflow.AFGEHANDELD)
 
     def test_filter_null(self):
-        pass  # historic CategoryAssignments may not have a ServiceLevelObjective
+        params = {'punctuality': 'null'}
+        with freeze_time(self.created_at + timedelta(seconds=60)):
+            ids = self._request_filter_signals(params)
+        self.assertEqual([self.signal_no_slo.id, self.signal_no_slo_2.id], ids)
 
     def test_filter_on_time(self):
-        pass
+        params = {'punctuality': 'on_time'}
+
+        # Both Signals that have a deadline are on time:
+        with freeze_time(self.created_at + timedelta(seconds=60)):
+            ids = self._request_filter_signals(params)
+        on_time = set([self.signal_slo_w.id, self.signal_slo_c.id])
+        self.assertEqual(on_time, set(ids))
+
+        # Signal with SLO in working days is on time (deadline after weekend)
+        # the Signal with a SLO in calendar days is late:
+        with freeze_time(self.created_at + timedelta(days=1, seconds=60)):
+            ids = self._request_filter_signals(params)
+        on_time = set([self.signal_slo_w.id])
+        self.assertEqual(on_time, set(ids))
 
     def test_filter_late(self):
-        pass
+        params = {'punctuality': 'late'}
+
+        # Both Signals that have a deadline are on time:
+        with freeze_time(self.created_at + timedelta(seconds=60)):
+            ids = self._request_filter_signals(params)
+        self.assertEqual([], ids)
+
+        # Signal with SLO in working days is on time (deadline after weekend)
+        # the Signal with a SLO in calendar days is late:
+        with freeze_time(self.created_at + timedelta(days=1, seconds=60)):
+            ids = self._request_filter_signals(params)
+        late = [self.signal_slo_c.id]
+        self.assertEqual(late, ids)
+
+        # Both are late
+        with freeze_time(self.created_at + timedelta(days=100)):
+            ids = self._request_filter_signals(params)
+        late = [self.signal_slo_c.id, self.signal_slo_w.id]
+        self.assertEqual(set(late), set(ids))
 
     def test_filter_late_factor_3(self):
-        pass
+        params = {'punctuality': 'late_factor_3'}
+
+        # Both Signals that have a deadline are on time:
+        with freeze_time(self.created_at + timedelta(seconds=60)):
+            ids = self._request_filter_signals(params)
+        self.assertEqual([], ids)
+
+        # Signal with SLO in working days is on time (deadline after weekend)
+        # the Signal with a SLO in calendar days is late:
+        with freeze_time(self.created_at + timedelta(days=3, seconds=60)):
+            ids = self._request_filter_signals(params)
+        late_factor_3 = [self.signal_slo_c.id]
+        self.assertEqual(late_factor_3, ids)
+
+        # Both are late
+        with freeze_time(self.created_at + timedelta(days=100)):
+            ids = self._request_filter_signals(params)
+        late = [self.signal_slo_c.id, self.signal_slo_w.id]
+        self.assertEqual(set(late), set(ids))
