@@ -180,5 +180,5 @@ Also DataDog can also be used to track application errors. To enable [ddtrace]
 `DD_AGENT_HOST` to the DataDog agent and override the run command:
 
 ```bash
-ddtrace-run uwsgi ...
+ddtrace-run uwsgi --enable-threads ...
 ```
