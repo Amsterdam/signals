@@ -17,6 +17,9 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
     text = serializers.CharField(required=False)
     departments = serializers.SerializerMethodField()
 
+    deadline = serializers.DateTimeField(read_only=True)
+    deadline_factor_3 = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = CategoryAssignment
         fields = (
@@ -29,6 +32,8 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
             'departments',
             'created_by',
             'text',
+            'deadline',
+            'deadline_factor_3'
         )
         read_only_fields = (
             'sub',
@@ -37,6 +42,8 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
             'main_slug',
             'created_by',
             'departments',
+            'deadline',
+            'deadline_factor_3'
         )
 
     def to_internal_value(self, data):
