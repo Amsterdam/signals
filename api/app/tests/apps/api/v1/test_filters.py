@@ -1284,7 +1284,7 @@ class TestPunctualityFilter(SignalsBaseApiTestCase):
         with freeze_time(self.created_at):
             self.assertEqual(datetime.now(tz=tzinfo), self.created_at)
             # State workflow.AFGEHANDELD, workflow.GEANNULEERD and
-            # workflow.GESPLITST must cannot be late because work on them finished.
+            # workflow.GESPLITST cannot be late because work on them finished.
             self.signal_no_slo = SignalFactory.create(
                 category_assignment__category=self.cat_no_slo, status__state=workflow.GEMELD)
             self.signal_no_slo_2 = SignalFactory.create(
@@ -1302,7 +1302,7 @@ class TestPunctualityFilter(SignalsBaseApiTestCase):
         params = {'punctuality': 'null'}
         with freeze_time(self.created_at + timedelta(seconds=60)):
             ids = self._request_filter_signals(params)
-        self.assertEqual([self.signal_no_slo.id, self.signal_no_slo_2.id], ids)
+        self.assertEqual([self.signal_no_slo.id], ids)
 
     def test_filter_on_time(self):
         params = {'punctuality': 'on_time'}

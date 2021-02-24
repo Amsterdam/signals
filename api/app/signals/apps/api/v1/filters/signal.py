@@ -259,18 +259,16 @@ class SignalFilterSet(FilterSet):
         return queryset.filter(q_filter).distinct()
 
     def punctuality_filter(self, queryset, name, value):
-        # historical data will not have deadlines calculated for it
+        # When work on a Signal was finished, it can no longer be late and are excluded.
+        queryset = queryset.exclude(status__state__in=[workflow.AFGEHANDELD, workflow.GEANNULEERD, workflow.GESPLITST])
+
+        # Historical data will not have deadlines calculated for it and can be
+        # filtered for by using this filter's "null" option.
         if value == 'null':
             return queryset.filter(category_assignment__deadline__isnull=True)
 
-        # When work on a Signal was finished, it can no longer be late and are
-        # excluded. Furthermore Signals with no deadlines (historic data)
-        # are excluded from this filter.
-        queryset = queryset.exclude(
-            category_assignment__deadline__isnull=True
-        ).exclude(
-            status__state__in=[workflow.AFGEHANDELD, workflow.GEANNULEERD, workflow.GESPLITST]
-        )
+        # Not interested in historical data without deadlines:
+        queryset = queryset.exclude(category_assignment__deadline__isnull=True)
 
         local_now = now()
         if value == 'on_time':

@@ -2,10 +2,10 @@ import copy
 import json
 import os
 from datetime import timedelta
-import dateutil
 from unittest import skip
 from unittest.mock import patch
 
+import dateutil
 from django.contrib.auth.models import Permission
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.core.exceptions import ValidationError
@@ -1526,30 +1526,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.get(history_endpoint + '?' + querystring)
 
         self.assertEqual(len(response.json()), 1)
-
-    def test_deadlines_available_via_api_detail_endpoint(self):
-        # self.signal has a category that has no ServiceLevelObjective associated
-        # with it, so deadlines should be None
-        result = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
-        result_json = result.json()
-
-        deadline = result_json['category']['deadline']
-        deadline_factor_3 = result_json['category']['deadline_factor_3']
-        self.assertEqual(deadline, None)
-        self.assertEqual(deadline_factor_3, None)
-
-        # Create a category with ServiceLevelObjective
-        cat = CategoryFactory.create()
-        ServiceLevelObjectiveFactory.create(n_days=1, use_calendar_days=False, category=cat)
-        signal = SignalFactory.create(category_assignment__category=cat)
-
-        result = self.client.get(self.detail_endpoint.format(pk=signal.id))
-        result_json = result.json()
-
-        deadline = dateutil.parser.parse(result_json['category']['deadline'])
-        deadline_factor_3 = dateutil.parser.parse(result_json['category']['deadline_factor_3'])
-        self.assertEqual(deadline, signal.category_assignment.deadline)
-        self.assertEqual(deadline_factor_3, signal.category_assignment.deadline_factor_3)
 
     def test_deadlines_available_via_api_detail_endpoint(self):
         # self.signal has a category that has no ServiceLevelObjective associated
