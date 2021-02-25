@@ -7,7 +7,6 @@ from signals.apps.signals.models import (
     Department,
     Expression,
     ExpressionType,
-    Signal,
     Source
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
