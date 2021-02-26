@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models import Count, F, Max, Min, Q
+from django.utils.timezone import now
 from django_filters.rest_framework import FilterSet, filters
 
 from signals.apps.api.v1.filters.utils import (
@@ -14,10 +15,12 @@ from signals.apps.api.v1.filters.utils import (
     department_choices,
     feedback_choices,
     kind_choices,
+    punctuality_choices,
     source_choices,
     stadsdelen_choices,
     status_choices
 )
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Category, Priority, Type
 
 
@@ -65,6 +68,7 @@ class SignalFilterSet(FilterSet):
     routing_department_code = filters.MultipleChoiceFilter(
         field_name='routing_assignment__departments__code', choices=department_choices
     )
+    punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices)
 
     def _cleanup_form_data(self):
         """
@@ -253,6 +257,26 @@ class SignalFilterSet(FilterSet):
             q_filter &= Q(updated_at__gt=F('max_child_updated_at'))
 
         return queryset.filter(q_filter).distinct()
+
+    def punctuality_filter(self, queryset, name, value):
+        # When work on a Signal was finished, it can no longer be late and it is excluded.
+        queryset = queryset.exclude(status__state__in=[workflow.AFGEHANDELD, workflow.GEANNULEERD, workflow.GESPLITST])
+
+        # Historical data will not have deadlines calculated for it and can be
+        # filtered for by using this filter's "null" option.
+        if value == 'null':
+            return queryset.filter(category_assignment__deadline__isnull=True)
+
+        # Not interested in historical data without deadlines:
+        queryset = queryset.exclude(category_assignment__deadline__isnull=True)
+
+        local_now = now()
+        if value == 'on_time':
+            return queryset.filter(category_assignment__deadline__gt=local_now)
+        elif value == 'late':
+            return queryset.filter(category_assignment__deadline__lt=local_now)
+        elif value == 'late_factor_3':
+            return queryset.filter(category_assignment__deadline_factor_3__lt=local_now)
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):

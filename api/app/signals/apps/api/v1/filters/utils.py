@@ -72,6 +72,10 @@ def kind_choices():
             ('child_signal', 'child_signal'), ('signal', 'signal'), )
 
 
+def punctuality_choices():
+    return (('on_time', 'on_time'), ('late', 'late'), ('late_factor_3', 'late_factor_3'), ('null', 'null'))
+
+
 def status_choices():
     return [(c, f'{n} ({c})') for c, n in STATUS_CHOICES]
 

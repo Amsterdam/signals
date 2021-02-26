@@ -181,7 +181,29 @@
                                             "type": "null"
                                         }
                                     ]
-								}
+								},
+								"deadline": {
+									"anyOf": [
+                                        {
+                                            "type": "string",
+											"format": "date-time"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+								},
+								"deadline_factor_3": {
+									"anyOf": [
+                                        {
+                                            "type": "string",
+											"format": "date-time"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+								}						
 							},
 							"required": [
 								"sub",
@@ -189,7 +211,9 @@
 								"main",
 								"main_slug",
 								"departments",
-								"created_by"
+								"created_by",
+								"deadline",
+								"deadline_factor_3"
 							]
 						},
 						"id": {

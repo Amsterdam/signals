@@ -247,7 +247,22 @@ paths:
           schema:
             type: string
             format: email
-
+        - name: punctuality
+          in: query
+          description: Filter signals that are being worked on to check that
+            they are within allotted time "on_time", late in general "late", or
+            late by a factor of three "late_factor_3". This filter accepts only
+            one choice. It is also possible to look for Signals that have no
+            deadline associated with them using "null" as a value. Signals in
+            states "AFGEHANDELD", "GEANNULEERD", or "GESPLITST" will not match.
+          required: false
+          schema:
+            type: string
+            enum:
+              - "null"
+              - "on_time"
+              - "late"
+              - "late_factor_3"
       responses:
         '200':
           description: List of signals
@@ -1675,6 +1690,18 @@ components:
           type: string
           nullable: true
           example: null
+        deadline:
+          description: Deadline if available. Note
+            this field may be moved based on user feedback.
+          type: string
+          format: date-time
+          nullable: true
+        deadline_factor_3:
+          description: Deadline delayed by a factor three if available. Note
+            this field may be moved based on user feedback.
+          type: string
+          format: date-time
+          nullable: true
 
     _NestedReporterRequestData:
       description: JSON Data
