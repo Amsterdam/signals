@@ -31,8 +31,8 @@ FULL_TEST_CASES = [
     # One calendar day throughout the week
     (datetime(2021, 2, 15, 12, 0, 0), 1, True, 1, datetime(2021, 2, 16, 12, 0, 0)),  # Monday 12:00 -> Tuesday 12:00
     (datetime(2021, 2, 16, 12, 0, 0), 1, True, 1, datetime(2021, 2, 17, 12, 0, 0)),  # Tuesday 12:00 -> Wednesday 12:00
-    (datetime(2021, 2, 19, 12, 0, 0), 1, True, 1, datetime(2021, 2, 20, 12, 0, 0)),  # Friday 12:00 -> Monday 12:00
-    (datetime(2021, 2, 20, 12, 0, 0), 1, True, 1, datetime(2021, 2, 21, 12, 0, 0)),  # Saturday 12:00 -> Saturday 12:00
+    (datetime(2021, 2, 19, 12, 0, 0), 1, True, 1, datetime(2021, 2, 20, 12, 0, 0)),  # Friday 12:00 -> Saturday 12:00
+    (datetime(2021, 2, 20, 12, 0, 0), 1, True, 1, datetime(2021, 2, 21, 12, 0, 0)),  # Saturday 12:00 -> Sunday 12:00
     (datetime(2021, 2, 21, 12, 0, 0), 1, True, 1, datetime(2021, 2, 22, 12, 0, 0)),  # Sunday 12:00 -> Monday 12:00
 
     # One calendar day throughout the week, factor 3

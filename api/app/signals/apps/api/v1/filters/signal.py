@@ -259,7 +259,7 @@ class SignalFilterSet(FilterSet):
         return queryset.filter(q_filter).distinct()
 
     def punctuality_filter(self, queryset, name, value):
-        # When work on a Signal was finished, it can no longer be late and are excluded.
+        # When work on a Signal was finished, it can no longer be late and it is excluded.
         queryset = queryset.exclude(status__state__in=[workflow.AFGEHANDELD, workflow.GEANNULEERD, workflow.GESPLITST])
 
         # Historical data will not have deadlines calculated for it and can be

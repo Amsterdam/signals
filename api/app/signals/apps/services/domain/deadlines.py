@@ -66,7 +66,7 @@ class DeadlineCalculationService:
         """
         Get deadline and factor 3 delayed deadline for a Signal and a Category.
         """
-        if not category.slo.order_by('created_at').exists():
+        if not category.slo.exists():
             return None, None
         current_slo = category.slo.order_by('created_at').last()
 
