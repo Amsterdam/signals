@@ -30,9 +30,6 @@ node {
             docker.withRegistry("${DOCKER_REGISTRY_HOST}", "docker_registry_auth") {
                 def api = docker.build("datapunt/signals:${env.BUILD_NUMBER}", "api")
                 api.push()
-
-                def importer = docker.build("datapunt/signals_importer:${env.BUILD_NUMBER}", "import")
-                importer.push()
             }
         }
     }
@@ -85,11 +82,6 @@ if (BRANCH == "master") {
                     api.pull()
                     api.push("production")
                     api.push("latest")
-
-                    def importer = docker.image("datapunt/signals_importer:${env.BUILD_NUMBER}")
-                    importer.pull()
-                    importer.push("production")
-                    importer.push("latest")
                 }
             }
         }
