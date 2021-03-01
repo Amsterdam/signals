@@ -5,7 +5,7 @@ import unittest
 from django.contrib.auth.models import Group, Permission
 
 from signals.apps.signals.factories import DepartmentFactory
-from signals.apps.users.factories import GroupFactory
+from signals.apps.users.factories import GroupFactory, UserFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -331,3 +331,40 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(change_log_data['who'], self.superuser.username)
         self.assertIn('Voornaam gewijzigd:\n Patched', change_log_data['action'])
         self.assertIn(f'Rol wijziging:\n {group.name}', change_log_data['action'])
+
+    def test_get_users_no_view_user_permission(self):
+        """
+        Check if a user that has no "view_user" rights is not able to retrieve the list of users
+        """
+        user = UserFactory.create()
+        user.user_permissions.add(self.sia_read)
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get('/signals/v1/private/users/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_user_no_view_user_permission(self):
+        user = UserFactory.create()
+        user.user_permissions.add(self.sia_read)
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(f'/signals/v1/private/users/{self.sia_read_write_user.pk}')
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_currently_logged_in_user_no_view_user_permission(self):
+        user = UserFactory.create()
+        user.user_permissions.add(self.sia_read)
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get('/signals/v1/private/me/')
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        self.assertEqual(response_data['id'], user.pk)
+        self.assertEqual(response_data['username'], user.username)
+        self.assertEqual(response_data['email'], user.email)
+        self.assertTrue(response_data['is_active'])
+        self.assertFalse(response_data['is_staff'])
+        self.assertFalse(response_data['is_superuser'])
+        self.assertEqual(len(response_data['roles']), 0)
+        self.assertEqual(len(response_data['permissions']), 1)

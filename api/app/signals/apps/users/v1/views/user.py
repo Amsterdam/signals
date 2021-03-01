@@ -6,10 +6,10 @@ from django.db.models.functions import Lower
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
-from signals.apps.api.generics.permissions import SIAPermissions
+from signals.apps.api.generics.permissions import SIAPermissions, SIAUserPermissions
 from signals.apps.users.v1.filters import UserFilterSet
 from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
 from signals.apps.users.v1.serializers.user import PrivateUserHistoryHalSerializer
@@ -38,7 +38,7 @@ class UserViewSet(DatapuntViewSetWritable):
     ).order_by(Lower('username'))
 
     authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SIAPermissions & DjangoModelPermissions,)
+    permission_classes = (SIAUserPermissions,)
 
     serializer_detail_class = UserDetailHALSerializer
     serializer_class = UserListHALSerializer
@@ -58,14 +58,6 @@ class UserViewSet(DatapuntViewSetWritable):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def me(self, request):
-        """
-        Detail for the currently logged in user
-        """
-        serializer = self.serializer_detail_class(request.user,
-                                                  context=self.get_serializer_context())
-        return Response(serializer.data)
-
     @action(detail=True)
     def history(self, request, pk=None):
         """
@@ -75,3 +67,19 @@ class UserViewSet(DatapuntViewSetWritable):
         user = self.get_object()
         serializer = PrivateUserHistoryHalSerializer(user.logs, many=True)
         return Response(serializer.data)
+
+
+class LoggedInUserView(RetrieveAPIView):
+    """
+    Detail for the currently logged in user
+    """
+    queryset = User.objects.none()
+
+    authentication_classes = (JWTAuthBackend,)
+    permission_classes = (SIAPermissions,)
+
+    serializer_class = UserDetailHALSerializer
+    pagination_class = None
+
+    def get_object(self):
+        return self.request.user
