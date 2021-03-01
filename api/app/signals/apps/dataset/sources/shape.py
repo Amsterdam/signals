@@ -65,7 +65,7 @@ class ShapeBoundariesLoader(AreaLoader):
         polygon_type = OGRGeomType('Polygon')
         multipolygon_type = OGRGeomType('MultiPolygon')
 
-        # Collect possible separate geometries representing the area of a signle
+        # Collect possible separate geometries representing the area of a single
         # municipality.
         for feature in ds[0]:
             code = feature.get(self.code_field)
@@ -74,7 +74,7 @@ class ShapeBoundariesLoader(AreaLoader):
             # Transform to WGS84 and merge if needed.
             transformed = feature.geom.transform('WGS84', clone=True)
             if code in geom_by_code:
-                geom_by_code[code].union(transformed)
+                geom_by_code[code] = geom_by_code[code].union(transformed)
             else:
                 geom_by_code[code] = transformed
 
