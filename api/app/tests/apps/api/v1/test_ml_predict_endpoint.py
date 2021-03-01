@@ -7,7 +7,6 @@ from rest_framework.exceptions import APIException
 
 from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.models import Category
-from signals.apps.signals.models.category_translation import CategoryTranslation
 from tests.test import SignalsBaseApiTestCase
 
 
@@ -39,20 +38,6 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
             self.test_subcategory.slug,
         )
 
-        self.test_subcategory_translated = CategoryFactory.create()
-        self.link_test_subcategory_translated = '{}/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(  # noqa
-            self.test_host,
-            self.test_subcategory_translated.parent.slug,
-            self.test_subcategory_translated.slug,
-        )
-
-        self.link_test_subcategory_translation = CategoryTranslation.objects.create(
-            old_category=self.test_subcategory_translated,
-            new_category=self.test_subcategory,
-            text='For testing purposes we translate this category',
-            created_by='someone@example.com',
-        )
-
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
     def test_predict(self, patched):
         patched.return_value = self.link_test_subcategory
@@ -64,20 +49,6 @@ class TestMlPredictCategory(SignalsBaseApiTestCase):
 
         response_json = response.json()
 
-        self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory)
-
-    @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
-    def test_predict_translated(self, patched):
-        patched.return_value = self.link_test_subcategory_translated
-
-        data = {'text': 'Give me the subcategory, because of translations'}
-        response = self.client.get(self.endpoint, data=data, format='json')
-
-        self.assertEqual(response.status_code, 200)
-
-        response_json = response.json()
-
-        # This should be the translated category URL
         self.assertEqual(response_json['_links']['self']['href'], self.link_test_subcategory)
 
     @patch('signals.apps.api.v1.public.views.MLPredictCategoryView._ml_predict')
@@ -145,18 +116,6 @@ class TestLegacyMlPredictCategory(SignalsBaseApiTestCase):
         self.link_test_subcategory = f'{self.test_host}/signals/v1/public/terms/categories/' \
                                      f'{self.test_subcategory.parent.slug}/sub_categories/{self.test_subcategory.slug}'
 
-        self.test_subcategory_translated = CategoryFactory.create(is_active=False)
-        self.link_test_subcategory_translated = f'{self.test_host}/signals/v1/public/terms/categories/' \
-                                                f'{self.test_subcategory_translated.parent.slug}/sub_categories/' \
-                                                f'{self.test_subcategory_translated.slug}'
-
-        self.link_test_subcategory_translation = CategoryTranslation.objects.create(
-            old_category=self.test_subcategory_translated,
-            new_category=self.test_subcategory,
-            text='For testing purposes we translate this category',
-            created_by='someone@example.com',
-        )
-
     @patch('signals.apps.api.v1.views.LegacyMlPredictCategoryView.ml_tool_client.predict')
     def test_predict(self, patched_ml_tool_client):
         response = mock.Mock()
@@ -168,24 +127,6 @@ class TestLegacyMlPredictCategory(SignalsBaseApiTestCase):
         patched_ml_tool_client.return_value = response
 
         data = {'text': 'Give me the subcategory'}
-        response = self.client.post(self.endpoint, data=data, format='json')
-
-        self.assertEqual(response.status_code, 200)
-
-        response_json = response.json()
-        self.assertEqual(response_json['subrubriek'][0][0], self.link_test_subcategory)
-
-    @patch('signals.apps.api.v1.views.LegacyMlPredictCategoryView.ml_tool_client.predict')
-    def test_predict_translated(self, patched_ml_tool_client):
-        response = mock.Mock()
-        response.status_code = 200
-        response.json = MagicMock(return_value={
-            'hoofdrubriek': [[self.link_test_subcategory_translated], [0.5]],
-            'subrubriek': [[self.link_test_subcategory_translated], [0.5]]
-        })
-        patched_ml_tool_client.return_value = response
-
-        data = {'text': 'Give me the subcategory, because of translations'}
         response = self.client.post(self.endpoint, data=data, format='json')
 
         self.assertEqual(response.status_code, 200)

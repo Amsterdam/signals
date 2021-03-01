@@ -21,7 +21,6 @@ from signals.apps.signals.models import (
     Status,
     StatusMessageTemplate
 )
-from signals.apps.signals.models.category_translation import CategoryTranslation
 
 
 class CategoryQuestionInline(admin.StackedInline):
@@ -97,18 +96,6 @@ class AreaAdmin(OSMGeoAdmin):
 
 
 admin.site.register(Area, AreaAdmin)
-
-
-class CategoryTranslationAdmin(admin.ModelAdmin):
-    fields = ('old_category', 'new_category', 'text', 'created_by')
-    readonly_fields = ('created_by',)
-
-    def save_model(self, request, obj, form, change):
-        obj.created_by = request.user.email
-        super().save_model(request, obj, form, change)
-
-
-admin.site.register(CategoryTranslation, CategoryTranslationAdmin)
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):
