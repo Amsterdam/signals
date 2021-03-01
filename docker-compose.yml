@@ -113,14 +113,6 @@ services:
     command:
       - /initialize.sh
 
-  import:
-    build: ./import
-    links:
-      - database
-    environment:
-      - DB_NAME=meldingen
-      - DB_PASSWORD=insecure
-
 volumes:
   dex-data:
   postgres-data:
