@@ -277,23 +277,6 @@ EMAIL_REST_ENDPOINT_TIMEOUT = os.getenv('EMAIL_REST_ENDPOINT_TIMEOUT', 5)
 EMAIL_REST_ENDPOINT_CLIENT_CERT = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_CERT', None)
 EMAIL_REST_ENDPOINT_CLIENT_KEY = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_KEY', None)
 
-# Email integration settings
-EMAIL_INTEGRATIONS = dict(
-    FLEX_HORECA=dict(
-        RECIPIENT_LIST=[os.getenv('EMAIL_FLEX_HORECA_INTEGRATION_ADDRESS', None), ],
-        APPLICABLE_RULES=dict(
-            WEEKDAYS=os.getenv('EMAIL_FLEX_HORECA_WEEKDAYS', '5,6,7'),  # fri, sat, sun
-            END_TIME=os.getenv('EMAIL_FLEX_HORECA_END_TIME', '04:00'),  # 04:00 o'clock
-        )
-    ),
-    TOEZICHT_OR_NIEUW_WEST=dict(
-        RECIPIENT_LIST=[os.getenv('EMAIL_TOEZICHT_OR_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
-    ),
-    VTH_NIEUW_WEST=dict(
-        RECIPIENT_LIST=[os.getenv('EMAIL_VTH_NIEUW_WEST_INTEGRATION_ADDRESS', None), ],
-    ),
-)
-
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@meldingen.amsterdam.nl')
 
 # Django cache settings

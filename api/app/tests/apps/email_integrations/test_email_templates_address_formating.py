@@ -4,8 +4,9 @@ from django.contrib.gis.geos import Point
 from django.core import mail
 from django.test import TestCase
 
+from signals.apps.email_integrations.mail_actions import MailActions
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.email_integrations.reporter.mail_actions import SIGNAL_MAIL_RULES, MailActions
+from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
 from signals.apps.signals.factories import SignalFactory
 from tests.apps.signals.valid_locations import STADHUIS
 

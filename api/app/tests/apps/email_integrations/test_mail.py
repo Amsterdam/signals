@@ -7,7 +7,8 @@ from django.template import loader
 from django.test import TestCase
 from freezegun import freeze_time
 
-from signals.apps.email_integrations.reporter.mail_actions import SIGNAL_MAIL_RULES, MailActions
+from signals.apps.email_integrations.mail_actions import MailActions
+from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
 from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
@@ -21,12 +22,12 @@ class TestMailActionTriggers(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create()
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.MailActions')
+    @mock.patch('signals.apps.email_integrations.mail_actions.MailActions')
     def test_triggered_on_create_initial(self, patched_actions):
         create_initial.send_robust(sender=self.__class__, signal_obj=self.signal)
         patched_actions.apply.called_once()
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.MailActions')
+    @mock.patch('signals.apps.email_integrations.mail_actions.MailActions')
     def test_triggered_on_update_status(self, patched_actions):
         prev_status = self.signal.status
         new_status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
@@ -152,7 +153,7 @@ class TestMailRuleConditions(TestCase):
         signal.status = status
         signal.save()
 
-        MailActions().apply(signal_id=signal.id, send_mail=True)
+        MailActions(mail_rules=SIGNAL_MAIL_RULES).apply(signal_id=signal.id, send_mail=True)
         self.assertEqual(len(mail.outbox), 0)
 
         # we want no history entry when no email was sent
@@ -241,7 +242,7 @@ class TestMailRuleConditions(TestCase):
         self.assertEqual(len(actions), 0)
 
         # Check mail contents
-        ma = MailActions()
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
         ma.apply(signal_id=self.signal_no_email.id)
         self.assertEqual(0, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 0)
@@ -315,7 +316,7 @@ class TestMailRuleConditions(TestCase):
 
             with mock.patch.dict('os.environ', local_env):
                 mail.outbox = []
-                ma = MailActions()
+                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
                 ma.apply(signal_id=self.signal.id)
 
                 self.assertEqual(len(mail.outbox), 1)
@@ -342,7 +343,7 @@ class TestMailRuleConditions(TestCase):
         for environment, fe_location in env_fe_mapping.items():
             with mock.patch.dict('os.environ', {}, clear=True):
                 mail.outbox = []
-                ma = MailActions()
+                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
                 ma.apply(signal_id=self.signal.id)
 
                 self.assertEqual(len(mail.outbox), 1)
@@ -400,7 +401,7 @@ class TestOptionalMails(TestCase):
         # TODO: equivalent for parent signal cannot be tested yet (as it can
         # only have status.state=workflow.GESPLITST).
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_GEMELD(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.GEMELD, send_email=True)
@@ -435,7 +436,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_AFWACHTING(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.AFWACHTING, send_email=True)
@@ -470,7 +471,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_BEHANDELING(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.BEHANDELING, send_email=True)
@@ -505,7 +506,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_ON_HOLD(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.ON_HOLD, send_email=True)
@@ -541,7 +542,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_VERZOEK_TOT_AFHANDELING(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.VERZOEK_TOT_AFHANDELING, send_email=True)
@@ -576,7 +577,7 @@ class TestOptionalMails(TestCase):
         rules = self._get_mail_rules(['Send mail optional'])._get_actions(self.child_signal)
         self.assertEqual(len(rules), 0)
 
-    @mock.patch('signals.apps.email_integrations.reporter.mail_actions.django_send_mail')
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
     def test_send_optional_mail_GEANNULEERD(self, patched_send_mail):
         signal = self.signal
         new_status = StatusFactory.create(_signal=signal, state=workflow.GEANNULEERD, send_email=True)

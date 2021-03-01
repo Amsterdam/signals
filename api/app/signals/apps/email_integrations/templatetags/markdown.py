@@ -2,7 +2,7 @@ import mistune
 from django import template
 from django.utils.safestring import mark_safe
 
-from signals.apps.email_integrations.renderers import PlaintextRenderer
+from signals.apps.email_integrations.markdown.renderers import PlaintextRenderer
 
 render_markdown = mistune.create_markdown(escape=True)
 render_plaintext = mistune.create_markdown(renderer=PlaintextRenderer())
