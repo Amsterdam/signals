@@ -1,12 +1,7 @@
-from django.contrib.gis.geos import Point
 from django.test import TransactionTestCase
-from django.utils import timezone
 
-from signals.apps.signals import factories, workflow
+from signals.apps.signals import factories
 from signals.apps.signals.models import Status
-from signals.apps.signals.models.category_assignment import CategoryAssignment
-from signals.apps.signals.models.location import STADSDEEL_CENTRUM
-from signals.apps.signals.models.priority import Priority
 from signals.apps.signals.models.signal import Signal
 from signals.apps.signals.tasks import update_status_children_based_on_parent
 from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, GEANNULEERD

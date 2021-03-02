@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework.fields import JSONField
 
-from signals.apps.api.ml_tool.utils import url_from_category
+from signals.apps.api.ml_tool.utils import get_url_from_category
 
 
 class SignalExtraPropertiesField(JSONField):
@@ -21,10 +21,10 @@ class SignalExtraPropertiesField(JSONField):
         # SIG-1711: Only show extra properties that belong to the currently assigned category or
         #           the parent of the currently assigned category
         category = self.instance.category_assignment.category
-        category_url = url_from_category(category)
+        category_url = get_url_from_category(category)
         category_urls = [category_url, f'{category_url}/']
         if category.is_child():
-            category_url = url_from_category(category.parent)
+            category_url = get_url_from_category(category.parent)
             category_urls += [category_url, f'{category_url}/']
 
         return filter(

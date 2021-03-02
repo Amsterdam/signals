@@ -77,8 +77,6 @@ urlpatterns = [
         re_path(r'signals/(?P<signal_id>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
-        # V1 disabled for now
-        # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),
     ])),
 
     # Private additions
