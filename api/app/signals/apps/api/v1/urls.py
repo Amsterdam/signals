@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import include, path, re_path
 
 from signals.apps.api.v1.routers import SignalsRouterVersion1
-from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled for now
+from signals.apps.api.v1.views import (
     GeneratePdfView,
     NamespaceView,
     PrivateAreasViewSet,
@@ -77,8 +77,6 @@ urlpatterns = [
         re_path(r'signals/(?P<signal_id>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
-        # V1 disabled for now
-        # path('category/prediction', MLPredictCategoryView.as_view({'get': 'retrieve'}), name='ml-predict-category'),
     ])),
 
     # Private additions

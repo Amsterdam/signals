@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core import validators
 from requests import ConnectTimeout
 
-from signals.apps.api.ml_tool.proxy.exceptions import GatewayTimeout
+from signals.apps.api.generics.exceptions import GatewayTimeoutException
 
 
 class MLToolClient:
@@ -23,6 +23,6 @@ class MLToolClient:
             data = json.dumps({'text': text})
             response = requests.post(self.endpoint, data=data, timeout=self.timeout)
         except (ConnectTimeout, ):
-            raise GatewayTimeout()
+            raise GatewayTimeoutException()
         else:
             return response

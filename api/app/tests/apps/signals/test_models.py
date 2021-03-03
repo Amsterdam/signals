@@ -25,7 +25,6 @@ from signals.apps.signals.models import (
     Status,
     StatusMessageTemplate
 )
-from signals.apps.signals.models.category_translation import CategoryTranslation
 from tests.apps.signals import valid_locations
 from tests.apps.signals.attachment_helpers import small_gif
 
@@ -708,52 +707,6 @@ class TestAttachmentModel(LiveServerTestCase):
             attachment.save()
 
             self.assertFalse(attachment.is_image)
-
-
-class TestCategoryTranslation(TestCase):
-    def setUp(self):
-        self.category_1 = factories.CategoryFactory.create(is_active=True)
-        self.category_2 = factories.CategoryFactory.create(is_active=True)
-        self.category_not_active = factories.CategoryFactory.create(is_active=False)
-
-    def test_create_translation(self):
-        category_translation = CategoryTranslation.objects.create(
-            old_category=self.category_1,
-            new_category=self.category_2,
-            text='Just a text we want to use',
-            created_by='me@example.com',
-        )
-
-        self.assertEqual(category_translation.old_category, self.category_1)
-        self.assertEqual(category_translation.new_category, self.category_2)
-        self.assertEqual(category_translation.text, 'Just a text we want to use')
-        self.assertEqual(category_translation.created_by, 'me@example.com')
-        self.assertEqual(str(category_translation),
-                         f'Zet categorie "{self.category_1.slug}" om naar "{self.category_2.slug}"')
-
-    def test_create_translation_to_itself(self):
-        with self.assertRaises(ValidationError) as cm:
-            CategoryTranslation.objects.create(
-                old_category=self.category_1,
-                new_category=self.category_1,
-                text='Just a text we want to use',
-                created_by='me@example.com',
-            )
-
-        e = cm.exception
-        self.assertEqual(e.messages[0], 'Cannot have old and new category the same.')
-
-    def test_create_translation_to_inactive_category(self):
-        with self.assertRaises(ValidationError) as cm:
-            CategoryTranslation.objects.create(
-                old_category=self.category_1,
-                new_category=self.category_not_active,
-                text='Just a text we want to use',
-                created_by='me@example.com',
-            )
-
-        e = cm.exception
-        self.assertEqual(e.messages[0], 'New category must be active')
 
 
 class TestStatusMessageTemplate(TestCase):
