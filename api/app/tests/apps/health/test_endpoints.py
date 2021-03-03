@@ -28,8 +28,7 @@ class TestHealthEndpoints(TestCase):
 
     def test_status_data_success(self):
         # We need two Signal objects.
-        SignalFactory.create()
-        SignalFactory.create()
+        SignalFactory.create_batch(2)
 
         response = self.client.get('/status/data')
 
@@ -41,12 +40,6 @@ class TestHealthEndpoints(TestCase):
 
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, b'Too few items in the database')
-
-    def test_status_data_categories_success(self):
-        response = self.client.get('/status/data/categories')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'Data OK Category')
 
     @override_settings(HEALTH_MODEL='signals.THIS_MODEL_DOES_NOT_EXISTS')
     def test_status_data_lookup_error(self):
