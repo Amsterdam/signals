@@ -16,6 +16,7 @@ coreschema==0.0.4
 coverage==5.0.3
 cryptography==3.3.2
 cssselect2==0.2.2
+ddtrace==0.46.0
 debtcollector==2.0.0
 defusedxml==0.6.0
 distlib==0.3.1
