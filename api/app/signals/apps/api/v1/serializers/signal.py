@@ -86,7 +86,7 @@ class _SignalListSerializer(serializers.ListSerializer):
 
         # We know that all provided parent's are the same so just get the parent from the first child
         signal = attrs[0]['parent']
-        if signal.is_child():
+        if signal.is_child:
             raise ValidationError('The given parent Signal is itself a child, therefore it cannot have children')
 
         number_of_children_in_db = signal.children.count()
@@ -224,7 +224,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         - Atomic update (all fail/succeed), django signals on full success (see
           underlying update_multiple method of actions SignalManager).
         """
-        if not instance.is_parent() and validated_data.get('directing_departments_assignment') is not None:
+        if not instance.is_parent and validated_data.get('directing_departments_assignment') is not None:
             raise serializers.ValidationError('Directing departments can only be set on a parent Signal')
 
         user_email = self.context['request'].user.email
@@ -262,6 +262,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     """
     serializer_url_field = PrivateSignalLinksField
     _display = DisplayField()
+
+    signal_id = serializers.UUIDField(source='uuid', required=False, read_only=True)
 
     location = _NestedLocationModelSerializer(
         permission_classes=(SIAPermissions,)
@@ -475,6 +477,7 @@ class PublicSignalSerializerDetail(HALSerializer):
     status = _NestedPublicStatusModelSerializer(required=False)
     serializer_url_field = PublicSignalLinksField
     _display = serializers.SerializerMethodField(method_name='get__display')
+    signal_id = serializers.UUIDField(source='uuid')
 
     class Meta:
         model = Signal

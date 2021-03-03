@@ -161,7 +161,7 @@ def _get_csv_rows_per_category(category, created_at__range):
         headers = _create_extra_properties_headers(signal.extra_properties, headers)
         rows.append([
             signal.pk,
-            signal.signal_id,
+            signal.uuid,
             signal.source,
             signal.text,
             signal.text_extra,

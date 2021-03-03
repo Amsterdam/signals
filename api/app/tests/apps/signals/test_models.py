@@ -4,9 +4,7 @@ import os
 from unittest import mock
 
 import requests
-from django.conf import settings
 from django.contrib.gis.geos import Point
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import LiveServerTestCase, TestCase, TransactionTestCase, override_settings
@@ -255,34 +253,6 @@ class TestSignalModel(TestCase):
 
         self.assertEqual('SIA-999', signal.sia_id)
 
-    def test_get_fqdn_image_crop_url_no_image(self):
-        signal = factories.SignalFactory.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        self.assertEqual(image_url, None)
-
-    def test_get_fqdn_image_crop_url_with_local_image(self):
-        Site.objects.update_or_create(
-            id=settings.SITE_ID,
-            defaults={'domain': settings.SITE_DOMAIN, 'name': settings.SITE_NAME})
-        signal = factories.SignalFactoryWithImage.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        self.assertEqual('http://localhost:8000{}'.format(signal.image_crop.url), image_url)
-
-    @mock.patch('imagekit.cachefiles.ImageCacheFile.url', new_callable=mock.PropertyMock)
-    @mock.patch('signals.apps.signals.models.signal.isinstance', return_value=True)
-    def test_get_fqdn_image_crop_url_with_swift_image(self, mocked_isinstance, mocked_url):
-        mocked_url.return_value = 'https://objectstore.com/url/coming/from/swift/image.jpg'
-        signal = factories.SignalFactoryWithImage.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        mocked_isinstance.assert_called()
-        self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
-
     @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_add_first_child(self):
         signal = factories.SignalFactory.create()
@@ -384,14 +354,6 @@ class TestSignalModel(TestCase):
         created_at = signal.created_at.astimezone(timezone.get_current_timezone())
 
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
-
-    @mock.patch("uuid.uuid4")
-    def test_uuid_assignment(self, mocked_uuid4):
-        """ UUID should be assigned on construction of Signal """
-
-        signal = Signal(signal_id=None)
-        self.assertIsNotNone(signal.signal_id)
-        mocked_uuid4.assert_called_once()
 
 
 class TestStatusModel(TestCase):

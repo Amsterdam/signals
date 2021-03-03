@@ -2087,7 +2087,7 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 404)
 
         # Check that accessing child endpoint on normal signal results in 404
-        self.assertFalse(self.normal_signal.is_parent())
+        self.assertFalse(self.normal_signal.is_parent)
         response = self.client.get(self.child_endpoint.format(pk=self.normal_signal.pk))
         self.assertEqual(response.status_code, 404)
 

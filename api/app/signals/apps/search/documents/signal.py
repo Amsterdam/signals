@@ -98,7 +98,7 @@ class SignalDocument(DocumentBase):
             ),
             _display=str(obj),
             id=obj.id,
-            signal_id=obj.signal_id,
+            signal_id=obj.uuid,
             text=obj.text,
             incident_date_start=obj.incident_date_start,
             category_assignment={

@@ -24,6 +24,7 @@ def create_signals_csv(location: str) -> str:
     """
     queryset = Signal.objects.annotate(
         image=Value(None, output_field=CharField()),
+        upload=Value(None, output_field=CharField()),
     ).values(
         'id',
         'source',
@@ -43,7 +44,7 @@ def create_signals_csv(location: str) -> str:
         'reporter_id',
         'status_id',
 
-        signal_uuid=F('signal_id'),
+        signal_uuid=F('uuid'),
         _priority=F('priority__priority'),
         priority_created_at=F('priority__created_at'),
         _parent=F('parent_id'),

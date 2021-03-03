@@ -21,13 +21,13 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
             ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
         ])
 
-        if value.is_child():
+        if value.is_child:
             result.update({
                 'sia:parent':
                 dict(href=self.get_url(value.parent, "private-signals-detail", request, None))
             })
 
-        if value.is_parent():
+        if value.is_parent:
             result.update({'sia:children': [
                 dict(href=self.get_url(child, "private-signals-detail", request, None))
                 for child in value.children.all()
