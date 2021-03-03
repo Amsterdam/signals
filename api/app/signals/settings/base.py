@@ -213,9 +213,6 @@ DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
-HEALTH_DATA_SUB_CATEGORY_MINIMUM_COUNT = 76
-HEALTH_DATA_MAIN_CATEGORY_MINIMUM_COUNT = 9
-
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
 # This is a test public/private key def and added for testing .
 JWKS_TEST_KEY = """
