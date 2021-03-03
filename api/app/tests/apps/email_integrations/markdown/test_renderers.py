@@ -1,7 +1,7 @@
 import mistune
 from django.test import TestCase
 
-from signals.apps.email_integrations.renderers import PlaintextRenderer
+from signals.apps.email_integrations.markdown.renderers import PlaintextRenderer
 
 
 class TestPlaintextRenderer(TestCase):
