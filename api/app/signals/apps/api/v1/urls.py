@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import include, path, re_path
 
 from signals.apps.api.v1.routers import SignalsRouterVersion1
-from signals.apps.api.v1.views import (  # MLPredictCategoryView,  # V1 disabled for now
+from signals.apps.api.v1.views import (
     GeneratePdfView,
     NamespaceView,
     PrivateAreasViewSet,

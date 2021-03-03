@@ -136,3 +136,15 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self, request=None):
+        """
+        Returns the public absolute URL for the Category
+        """
+        from rest_framework.reverse import reverse
+        if self.is_child():
+            kwargs = {'parent_lookup_parent__slug': self.parent.slug, 'slug': self.slug}
+            return reverse('v1:public-subcategory-detail', kwargs=kwargs, request=request)
+        else:
+            kwargs = {'slug': self.slug}
+            return reverse('v1:public-maincategory-detail', kwargs=kwargs, request=request)
