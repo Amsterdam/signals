@@ -105,6 +105,8 @@ class APIGebiedenLoader(AreaLoader):
         requests_session = self._get_session()
 
         with transaction.atomic():
+            Area.objects.filter(_type=self.area_type).delete()
+
             for detail_url in self._iterate_urls(requests_session, self.list_endpoint):
                 self._load_area_detail(requests_session, detail_url)
 
