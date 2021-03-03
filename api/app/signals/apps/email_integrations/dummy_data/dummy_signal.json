@@ -1,0 +1,167 @@
+{
+	"id": "TEST-ID-1234",
+	"created_at": "2021-03-02 00:00:00+00:00",
+	"updated_at": "2021-03-02 00:00:00+00:00",
+	"signal_id": "00000000-0000-0000-0000-000000000000",
+	"source": "Telefoon – ASC",
+	"text": "Et eveniet dolor reprehenderit. Eligendi qui minus laudantium et aliquid. Nostrum rerum doloremque tenetur enim dolores non et. Aspernatur quidem nesciunt. Laboriosam et quia ut amet.",
+	"text_extra": "Atque dignissimos repellat modi et consectetur vitae dicta in quis. Ducimus temporibus officia at quo dolorum eius. Excepturi beatae aliquam voluptas illum quisquam quibusdam.",
+	"location": {
+		"created_at": "2021-02-26 14:13:43.057929+00:00",
+		"updated_at": "2021-02-26 14:13:43.057959+00:00",
+		"_signal": "809764",
+		"geometrie": "SRID=4326;POINT (4.90022563 52.36768424)",
+		"stadsdeel": "A",
+		"area_type_code": null,
+		"area_code": null,
+		"buurt_code": "A04i",
+		"address": "{\"postcode\": \"1011PN\", \"huisletter\": \"\", \"huisnummer\": 1, \"woonplaats\": \"Amsterdam\", \"openbare_ruimte\": \"Amstel\", \"huisnummer_toevoeging\": \"\"}",
+		"address_text": "Amstel 1 1011PN Amsterdam",
+		"created_by": "signals.admin@example.com",
+		"extra_properties": "{\"original_address\": {\"postcode\": \"1011PN\", \"huisletter\": \"\", \"huisnummer\": 1, \"woonplaats\": \"Amsterdam\", \"openbare_ruimte\": \"Amstel\", \"huisnummer_toevoeging\": \"\"}}",
+		"bag_validated": "True"
+	},
+	"status": {
+		"created_at": "2021-02-26 14:15:08.787905+00:00",
+		"updated_at": "2021-02-26 14:15:08.787934+00:00",
+		"_signal": "809764",
+		"text": "quis non assumenda",
+		"user": "signals.admin@example.com",
+		"target_api": null,
+		"state": "m",
+		"extern": false,
+		"extra_properties": null,
+		"send_email": true
+	},
+	"category_assignment": {
+		"created_at": "2021-02-26 14:13:43.083183+00:00",
+		"updated_at": "2021-02-26 14:13:43.083216+00:00",
+		"_signal": "809764",
+		"category": {
+			"parent": "86",
+			"slug": "overig",
+			"name": "Overig",
+			"handling": "I5DMC",
+			"handling_message": "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen weten hoe en wanneer uw melding wordt afgehandeld.  Urgente situaties pakken wij zo snel mogelijk op. Dat doen we via e-mail.",
+			"is_active": "True",
+			"description": "Dit is een restcategorie voor als niet gelijk duidelijk is waar deze melding thuishoort. Een melding mag NOOIT afgehandeld worden zolang hij in deze categorie staat en moet altijd eerst gehercategoriseerd worden naar de best passende categorie.",
+			"departments": [
+				{
+					"code": "ASC",
+					"name": "Actie Service Centrum",
+					"is_intern": "True",
+					"can_direct": "True"
+				},
+				{
+					"code": "AB",
+					"name": "Amsterdamse Bos",
+					"is_intern": "True",
+					"can_direct": "False"
+				},
+				{
+					"code": "CCA",
+					"name": "CCA",
+					"is_intern": "True",
+					"can_direct": "False"
+				},
+				{
+					"code": "STL",
+					"name": "Stadsloket",
+					"is_intern": "True",
+					"can_direct": "False"
+				},
+				{
+					"code": "THO",
+					"name": "THOR",
+					"is_intern": "True",
+					"can_direct": "False"
+				}
+			],
+			"questions": [
+
+			]
+		},
+		"created_by": "signals.admin@example.com",
+		"text": null,
+		"extra_properties": null,
+		"deadline": "2021-03-05 14:13:42.936766+00:00",
+		"deadline_factor_3": "2021-03-19 14:13:42.936766+00:00"
+	},
+	"reporter": {
+		"created_at": "2021-02-26 14:13:43.093839+00:00",
+		"updated_at": "2021-02-26 14:13:43.093875+00:00",
+		"email": "Mikel.Kirlin28@example.net",
+		"phone": "+31666226038",
+		"email_anonymized": false,
+		"phone_anonymized": false,
+		"sharing_allowed": true
+	},
+	"priority": {
+		"created_at": "2021-02-26 14:13:43.101759+00:00",
+		"updated_at": "2021-02-26 14:13:43.101802+00:00",
+		"priority": "normal",
+		"created_by": "signals.admin@example.com"
+	},
+	"directing_departments_assignment": null,
+	"routing_assignment": null,
+	"user_assignment": null,
+	"type_assignment": {
+		"name": "SIG",
+		"created_by": "signals.admin@example.com",
+		"created_at": "2021-02-26 14:13:43.110266+00:00"
+	},
+	"incident_date_start": "2021-02-26 14:13:42.666000+00:00",
+	"incident_date_end": null,
+	"operational_date": null,
+	"expire_date": null,
+	"upload": null,
+	"extra_properties": null,
+	"parent": null,
+	"categories": [
+		{
+			"id": "76",
+			"parent": "86",
+			"slug": "overig",
+			"name": "Overig",
+			"handling": "I5DMC",
+			"handling_message": "Uw melding wordt ingepland: wij laten u binnen 5 werkdagen weten hoe en wanneer uw melding wordt afgehandeld.  Urgente situaties pakken wij zo snel mogelijk op. Dat doen we via e-mail.",
+			"is_active": true,
+			"description": "Dit is een restcategorie voor als niet gelijk duidelijk is waar deze melding thuishoort. Een melding mag NOOIT afgehandeld worden zolang hij in deze categorie staat en moet altijd eerst gehercategoriseerd worden naar de best passende categorie.",
+			"departments": [
+				{
+					"code": "ASC",
+					"name": "Actie Service Centrum",
+					"is_intern": true,
+					"can_direct": true
+				},
+				{
+					"code": "AB",
+					"name": "Amsterdamse Bos",
+					"is_intern": true,
+					"can_direct": false
+				},
+				{
+					"code": "CCA",
+					"name": "CCA",
+					"is_intern": true,
+					"can_direct": false
+				},
+				{
+					"code": "STL",
+					"name": "Stadsloket",
+					"is_intern": true,
+					"can_direct": false
+				},
+				{
+					"code": "THO",
+					"name": "THOR",
+					"is_intern": true,
+					"can_direct": false
+				}
+			],
+			"questions": [
+
+			]
+		}
+	]
+}
