@@ -438,7 +438,7 @@ REST_FRAMEWORK = dict(
     ),
     DEFAULT_THROTTLE_RATES={
         # 'nouser': '5/hour',
-        'nouser': '60/hour'
+        # 'nouser': '60/hour'
     },
     DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
     DEFAULT_VERSION='v1',

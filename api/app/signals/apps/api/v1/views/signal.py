@@ -5,9 +5,10 @@ from django.db import connection
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, throttle_classes
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics import mixins
@@ -43,6 +44,7 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
     def list(self, *args, **kwargs):
         raise Http404
 
+    @throttle_classes([AnonRateThrottle])
     def create(self, request):
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
