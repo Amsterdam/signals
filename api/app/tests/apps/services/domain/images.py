@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2021 Gemeente Amsterdam
 from io import BytesIO
 from unittest.mock import MagicMock
 

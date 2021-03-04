@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import os
 
 from django.db.models import BooleanField, Case, CharField, Q, Value, When

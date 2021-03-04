@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from django.test.signals import setting_changed
 

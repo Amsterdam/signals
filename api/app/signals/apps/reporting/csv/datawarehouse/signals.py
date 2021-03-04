@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 """
 Dump CSV of SIA tables matching the old, agreed-upon, format.
 """

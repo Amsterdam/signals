@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 # Address and coordinates found through meldingingen.amsterdam.nl front-end.
 # Buurt code extracted from geosearch endpoint.
 

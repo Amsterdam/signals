@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon

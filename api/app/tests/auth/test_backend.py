@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import time
 from unittest import skip
 from unittest.mock import patch

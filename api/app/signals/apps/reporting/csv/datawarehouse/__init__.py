@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from signals.apps.reporting.csv.datawarehouse.categories import (
     create_category_assignments_csv,
     create_category_sla_csv

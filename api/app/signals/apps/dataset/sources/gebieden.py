@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 """
 Handle data from the Amsterdam Datapunt "Gebieden API"
 

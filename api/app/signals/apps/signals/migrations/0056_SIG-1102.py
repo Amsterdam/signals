@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 """SIG-1102 Migrate ON_HOLD to INGEPLAND"""
 from django.db import migrations, models
 

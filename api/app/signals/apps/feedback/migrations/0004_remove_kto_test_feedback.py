@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 """
 For testing purposes we added a few Feedback instances to the database. Now we remove them
 

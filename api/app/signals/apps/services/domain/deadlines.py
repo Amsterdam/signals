@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2021 Gemeente Amsterdam
 """
 Calculate deadline for solving complaints.
 

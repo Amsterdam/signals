@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.views.generic.base import ContextMixin
 from rest_framework.generics import GenericAPIView
 

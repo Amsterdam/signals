@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.core.exceptions import ValidationError as DjangoCoreValidationError
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response

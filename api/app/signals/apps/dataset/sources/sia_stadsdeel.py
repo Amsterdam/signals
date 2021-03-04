@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 """
 Load handdrawn outline of "Het Amsterdamse Bos" (stored along with the SIA
 source), do some spatial queries and store as "SIA stadsdeel" (City District for
