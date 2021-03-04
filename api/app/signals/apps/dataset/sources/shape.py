@@ -27,8 +27,7 @@ class ShapeBoundariesLoader(AreaLoader):
 
         self.area_type, _ = AreaType.objects.get_or_create(
             name=options['type'],
-            code=options['type'],
-            description=f"{options['type']} data",
+            defaults={'code': options['type'], 'description': f"{options['type']} data"}
         )
         self.directory = directory  # Data downloaded / processed here. Caller is responsible to clean-up directory.
         self.DATASET_URL = options['url']
