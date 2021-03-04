@@ -8,10 +8,8 @@ from rest_framework import status
 from rest_framework.decorators import action, throttle_classes
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.viewsets import GenericViewSet
 
-from signals.throttling import NoUserRateThrottle
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPagination
@@ -35,6 +33,7 @@ from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+from signals.throttling import NoUserRateThrottle
 
 logger = logging.getLogger(__name__)
 
