@@ -29,6 +29,7 @@ from signals.apps.api.v1.views import (
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.users.v1.views import (
+    AutocompleteUsernameListView,
     LoggedInUserView,
     PermissionViewSet,
     RoleViewSet,
@@ -110,5 +111,9 @@ urlpatterns = [
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
 
+        # Used for autocompletion
+        path('autocomplete/', include([
+            re_path('usernames/?$', AutocompleteUsernameListView.as_view(), name='autocomplete-usernames'),
+        ])),
     ])),
 ]

@@ -368,3 +368,146 @@ class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertFalse(response_data['is_superuser'])
         self.assertEqual(len(response_data['roles']), 0)
         self.assertEqual(len(response_data['permissions']), 1)
+
+
+class TestAutocompleteUsernameListView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    endpoint = '/signals/v1/private/autocomplete/usernames/'
+
+    def setUp(self):
+        UserFactory.create(username='bart.test@example.com')
+        UserFactory.create(username='Cuong.test@example.com')
+        UserFactory.create(username='David.test@example.nl')
+        UserFactory.create(username='Thijs.test@example.nl')
+
+    def test_get_usernames_not_authenticated(self):
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_usernames_filter_too_short(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'a'})
+        self.assertEqual(response.status_code, 400)
+
+        data = response.json()
+        self.assertEqual(data['username'][0], 'Zorg dat deze waarde ten minste 3 tekens bevat (het zijn er nu 1).')
+
+        response = self.client.get(self.endpoint, data={'username': 'ab'})
+        self.assertEqual(response.status_code, 400)
+
+        data = response.json()
+        self.assertEqual(data['username'][0], 'Zorg dat deze waarde ten minste 3 tekens bevat (het zijn er nu 2).')
+
+    def test_get_usernames_response_format(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(data['_links']['self']['href'], f'http://testserver{self.endpoint}')
+        self.assertIsNone(data['_links']['next']['href'])
+        self.assertIsNone(data['_links']['previous']['href'])
+
+        self.assertEqual(data['count'], 5)
+        self.assertEqual(len(data['results']), 5)
+
+        for result in data['results']:
+            keys = list(result.keys())
+            self.assertEqual(len(keys), 1)
+            self.assertEqual(keys[0], 'username')
+
+    def test_get_usernames(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 5)
+        self.assertEqual(len(data['results']), 5)
+
+        self.assertEqual(data['results'][0]['username'], 'bart.test@example.com')
+        self.assertEqual(data['results'][1]['username'], 'Cuong.test@example.com')
+        self.assertEqual(data['results'][2]['username'], 'David.test@example.nl')
+        self.assertEqual(data['results'][3]['username'], self.sia_read_write_user.username)
+        self.assertEqual(data['results'][4]['username'], 'Thijs.test@example.nl')
+
+    def test_get_usernames_filter_david(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'david.test@example.nl'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(len(data['results']), 1)
+
+        self.assertEqual(data['results'][0]['username'], 'David.test@example.nl')
+
+    def test_get_usernames_filter_example_nl(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'example.nl'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 2)
+        self.assertEqual(len(data['results']), 2)
+
+        self.assertEqual(data['results'][0]['username'], 'David.test@example.nl')
+        self.assertEqual(data['results'][1]['username'], 'Thijs.test@example.nl')
+
+    def test_get_usernames_filter_example_com(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'example.com'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 3)
+        self.assertEqual(len(data['results']), 3)
+
+        self.assertEqual(data['results'][0]['username'], 'bart.test@example.com')
+        self.assertEqual(data['results'][1]['username'], 'Cuong.test@example.com')
+        self.assertEqual(data['results'][2]['username'], self.sia_read_write_user.username)
+
+    def test_get_usernames_filter_test(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'test'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 4)
+        self.assertEqual(len(data['results']), 4)
+
+        self.assertEqual(data['results'][0]['username'], 'bart.test@example.com')
+        self.assertEqual(data['results'][1]['username'], 'Cuong.test@example.com')
+        self.assertEqual(data['results'][2]['username'], 'David.test@example.nl')
+        self.assertEqual(data['results'][3]['username'], 'Thijs.test@example.nl')
+
+    def test_get_usernames_filter_mixed_up_and_lower_case(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'tESt'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 4)
+        self.assertEqual(len(data['results']), 4)
+
+        self.assertEqual(data['results'][0]['username'], 'bart.test@example.com')
+        self.assertEqual(data['results'][1]['username'], 'Cuong.test@example.com')
+        self.assertEqual(data['results'][2]['username'], 'David.test@example.nl')
+        self.assertEqual(data['results'][3]['username'], 'Thijs.test@example.nl')
+
+    def test_get_usernames_no_usernames_found(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(self.endpoint, data={'username': 'qwerty1234567890'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['count'], 0)
+        self.assertEqual(len(data['results']), 0)
