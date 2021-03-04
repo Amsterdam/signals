@@ -96,11 +96,11 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
             where
                 s.location_id = l.id
                 and s.status_id = status.id
-                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}', '{workflow.GEANNULEERD}', '{workflow.VERZOEK_TOT_HEROPENEN}') # noqa
+                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}', '{workflow.GEANNULEERD}', '{workflow.VERZOEK_TOT_HEROPENEN}')
             order by s.id desc
             limit 4000 offset 0
         ) as features
-        """
+        """ # noqa
 
         cursor = connection.cursor()
         try:
