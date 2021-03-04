@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.viewsets import GenericViewSet
 
+from signals.throttling import NoUserRateThrottle
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPagination
@@ -44,7 +45,7 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
     def list(self, *args, **kwargs):
         raise Http404
 
-    @throttle_classes([AnonRateThrottle])
+    @throttle_classes([NoUserRateThrottle])
     def create(self, request):
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
