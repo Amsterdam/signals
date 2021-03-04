@@ -10,4 +10,3 @@ class EmailIntegrationsConfig(AppConfig):
     def ready(self):
         # The signal receivers
         import signals.apps.email_integrations.signal_receivers  # noqa
-

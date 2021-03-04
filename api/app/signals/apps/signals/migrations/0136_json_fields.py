@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0134_deadlines'),
+        ('signals', '0135_delete_categorytranslation'),
     ]
 
     operations = [
