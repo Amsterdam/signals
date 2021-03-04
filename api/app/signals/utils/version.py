@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 def get_version(version: tuple = None) -> str:
     """Return version string (x.y[.z]) from given version tuple.
 

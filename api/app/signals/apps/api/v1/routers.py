@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from rest_framework import routers
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from string import digits
 
 from factory import DjangoModelFactory, Sequence, SubFactory, post_generation

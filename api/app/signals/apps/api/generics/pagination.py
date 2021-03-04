@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 

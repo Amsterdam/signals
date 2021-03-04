@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
 
 from signals.apps.api.v1.serializers.source import SourceSerializer

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 """Category changes see SIG-1148."""
 from django.db import migrations
 from django.utils.text import slugify

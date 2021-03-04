@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from rest_framework import serializers
