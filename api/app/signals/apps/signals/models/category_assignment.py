@@ -36,7 +36,7 @@ class CategoryAssignment(CreatedUpdatedModel):
     # was assigned. Before we had problems with history "changing" when the
     # handling message for a category was updated (because it was queried from
     # the category table each time the history is shown).
-    stored_handling_message = models.CharField(null=True)
+    stored_handling_message = models.TextField(null=True)
 
     def __str__(self):
         """String representation."""
