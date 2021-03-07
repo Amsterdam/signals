@@ -17,6 +17,7 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.models import Category, History, Signal
 from signals.apps.signals.models.category_assignment import CategoryAssignment
+from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -226,6 +227,23 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         category_assignments = list(CategoryAssignment.objects.filter(_signal_id=signal.id).order_by('id'))
         self.assertEqual(category_assignments[0].stored_handling_message, message_1)
         self.assertEqual(category_assignments[2].stored_handling_message, message_2)
+
+    def test_null_stored_handling_message(self):
+        # SIG-3555 old complaints/Signals will have no stored handling messages on their associated CategoryAssignments.
+        # This test fakes that by setting one category's handling message to null and checks that the correct
+        # placeholder is returned.
+        message_1 = None
+
+        cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
+        signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(f'/signals/v1/private/signals/{signal.id}/history' + '?what=UPDATE_SLA')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertEqual(response_json[0]['description'], EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE)
 
     def test_history_no_permissions(self):
         """
