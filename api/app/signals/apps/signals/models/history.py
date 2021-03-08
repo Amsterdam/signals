@@ -7,6 +7,8 @@ from signals.apps.signals.models.location import _get_description_of_update_loca
 from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
 
+EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE = 'Service belofte onbekend.'
+
 
 class History(models.Model):
     identifier = models.CharField(primary_key=True, max_length=255)
@@ -74,6 +76,10 @@ class History(models.Model):
             return _get_description_of_receive_feedback(feedback_id)
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return f'Melding {self.extra}'
+        elif self.what == 'UPDATE_SLA':
+            if self.description is None:
+                return EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
+            return self.description
         else:
             return self.description
 
