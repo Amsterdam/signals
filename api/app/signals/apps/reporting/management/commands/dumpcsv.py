@@ -17,7 +17,10 @@ from signals.apps.reporting.csv.datawarehouse.directing_departments import (
 from signals.apps.reporting.csv.datawarehouse.kto_feedback import create_kto_feedback_csv
 from signals.apps.reporting.csv.datawarehouse.locations import create_locations_csv
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
-from signals.apps.reporting.csv.datawarehouse.signals import create_signals_csv
+from signals.apps.reporting.csv.datawarehouse.signals import (
+    create_signals_assigned_user_csv,
+    create_signals_csv
+)
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
 from signals.apps.reporting.csv.datawarehouse.tasks import (
     save_csv_file_datawarehouse,
@@ -27,6 +30,7 @@ from signals.apps.reporting.csv.datawarehouse.tasks import (
 REPORT_OPTIONS = {
     # Option, Func
     'signals': create_signals_csv,
+    'signals_assigned_user': create_signals_assigned_user_csv,
     'locations': create_locations_csv,
     'reporters': create_reporters_csv,
     'category_assignments': create_category_assignments_csv,
