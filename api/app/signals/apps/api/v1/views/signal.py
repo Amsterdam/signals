@@ -64,7 +64,7 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
 
 class PublicSignalListViewSet(PublicSignalGenericViewSet):
     serializer_class = PublicEmptySerializer
-
+    renderer_classes = [SerializedJsonRenderer]
     # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
