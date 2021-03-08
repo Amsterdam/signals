@@ -26,6 +26,7 @@ from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    PublicEmptySerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
     SignalGeoSerializer,
@@ -61,6 +62,8 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
 
 
 class PublicSignalListViewSet(PublicSignalGenericViewSet):
+    serializer_class = PublicEmptySerializer
+
     # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
@@ -95,11 +98,11 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
             where
                 s.location_id = l.id
                 and s.status_id = status.id
-                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}')
+                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}', '{workflow.GEANNULEERD}', '{workflow.VERZOEK_TOT_HEROPENEN}')
             order by s.id desc
             limit 4000 offset 0
         ) as features
-        """
+        """ # noqa
 
         cursor = connection.cursor()
         try:
