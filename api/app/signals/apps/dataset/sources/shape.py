@@ -26,9 +26,8 @@ class ShapeBoundariesLoader(AreaLoader):
         assert type_string in self.PROVIDES
 
         self.area_type, _ = AreaType.objects.get_or_create(
-            name=options['type'],
             code=options['type'],
-            description=f"{options['type']} data",
+            defaults={'name': options['type'], 'description': f"{options['type']} data"}
         )
         self.directory = directory  # Data downloaded / processed here. Caller is responsible to clean-up directory.
         self.DATASET_URL = options['url']
