@@ -54,8 +54,8 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, signal_id):
-        signal = Signal.objects.get(signal_id=signal_id)
+    def retrieve(self, request, uuid):
+        signal = Signal.objects.get(uuid=uuid)
 
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
@@ -252,9 +252,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         # return a HTTP 404 if we ask for a child signal's children.
         signal = self.get_object()
-        if signal.is_child():
+        if signal.is_child:
             raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
-        elif not signal.is_parent():
+        elif not signal.is_parent:
             raise NotFound(detail=f'Signal {pk} has no children.')
 
         # Return the child signals for a parent signal in an abridged version

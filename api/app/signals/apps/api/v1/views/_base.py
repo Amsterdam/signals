@@ -9,8 +9,8 @@ from signals.apps.signals.models import Signal
 
 
 class PublicSignalGenericViewSet(GenericViewSet):
-    lookup_field = 'signal_id'
-    lookup_url_kwarg = 'signal_id'
+    lookup_field = 'uuid'
+    lookup_url_kwarg = 'uuid'
 
     queryset = Signal.objects.all()
 

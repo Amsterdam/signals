@@ -150,9 +150,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_get_by_uuid(self):
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
-        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=signal.uuid), format='json')
 
         self.assertEqual(200, response.status_code)
         self.assertJsonSchema(self.retrieve_schema, response.json())
@@ -161,9 +160,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         # SIA must not publicly expose what step in the resolution process a certain
         # Signal/melding is
         signal = SignalFactory.create(status__state=workflow.GEMELD)
-        uuid = signal.signal_id
 
-        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=signal.uuid), format='json')
         response_json = response.json()
 
         self.assertEqual(200, response.status_code)
@@ -171,9 +169,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(response_json['status']['state'], 'OPEN')
 
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
-        uuid = signal.signal_id
 
-        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=signal.uuid), format='json')
         response_json = response.json()
 
         self.assertEqual(200, response.status_code)
@@ -184,9 +181,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         # SIA must not publicly expose what step in the resolution process a certain
         # Signal/melding is via the _display string.
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
-        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=signal.uuid), format='json')
         response_json = response.json()
 
         self.assertEqual(200, response.status_code)
@@ -198,9 +194,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_get_by_uuid_cannot_access_properties(self):
         # SIA must not publicly expose operational date, expire_date and attachments
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
-        response = self.client.get(self.detail_endpoint.format(uuid=uuid), format='json')
+        response = self.client.get(self.detail_endpoint.format(uuid=signal.uuid), format='json')
         response_json = response.json()
 
         self.assertEqual(200, response.status_code)
@@ -211,11 +206,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
         data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
 
-        response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
+        response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
 
         self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_attachment_schema, response.json())
@@ -227,13 +221,12 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_add_attachment_nonimagetype(self):
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
         doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
         with open(doc_upload, encoding='latin-1') as f:
             data = {"file": f}
 
-            response = self.client.post(self.attachment_endpoint.format(uuid=uuid), data)
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
 
         self.assertEqual(201, response.status_code)
         self.assertJsonSchema(self.create_attachment_schema, response.json())
@@ -244,9 +237,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_cannot_access_attachments(self):
         # SIA must not publicly expose attachments
         signal = SignalFactory.create()
-        uuid = signal.signal_id
 
-        response = self.client.get(self.attachment_endpoint.format(uuid=uuid))
+        response = self.client.get(self.attachment_endpoint.format(uuid=signal.uuid))
         self.assertEqual(response.status_code, 405)
 
     @patch('signals.apps.api.v1.validation.address.base.BaseAddressValidation.validate_address',

@@ -9,7 +9,7 @@ from signals.apps.signals.models import Attachment
 
 
 class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
-    lookup_field = 'signal_id'
+    lookup_field = 'uuid'
 
     def to_representation(self, value: Attachment):
         request = self.context.get('request')

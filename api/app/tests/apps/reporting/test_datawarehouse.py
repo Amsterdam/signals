@@ -154,7 +154,7 @@ class TestDatawarehouse(testcases.TestCase):
             reader = csv.DictReader(opened_csv_file)
             for row in reader:
                 self.assertEqual(row['id'], str(signal.id))
-                self.assertEqual(row['signal_uuid'], str(signal.signal_id))
+                self.assertEqual(row['signal_uuid'], str(signal.uuid))
                 self.assertEqual(row['source'], str(signal.source))
                 self.assertEqual(row['text'], str(signal.text))
                 self.assertEqual(row['text_extra'], str(signal.text_extra))
@@ -171,7 +171,7 @@ class TestDatawarehouse(testcases.TestCase):
 
                 self.assertEqual(row['operational_date'], '')
                 self.assertEqual(row['expire_date'], '')
-                self.assertEqual(row['image'], str(signal.image))
+                self.assertEqual(row['image'], '')
                 self.assertEqual(row['upload'], '')
                 self.assertDictEqual(json.loads(row['extra_properties']), signal.extra_properties)
 
