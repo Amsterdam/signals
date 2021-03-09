@@ -77,6 +77,11 @@ class Signal(CreatedUpdatedModel):
             models.Index(fields=['id', 'parent']),
         ]
 
+    def __init__(self, *args, **kwargs):
+        super(Signal, self).__init__(*args, **kwargs)
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+
     def __str__(self):
         """
         Identifying string.
