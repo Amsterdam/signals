@@ -33,7 +33,6 @@ THIS_DIR = os.path.dirname(__file__)
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -46,11 +45,13 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         'API_FILTER_EXTRA_PROPERTIES': True,
         'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
         'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
-        'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True,
         'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
     }
 
     def setUp(self):
+        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='Telefoon – ASC', is_active=True)
+
         self.main_category = ParentCategoryFactory.create(name='main', slug='main')
         self.link_main_category = '/signals/v1/public/terms/categories/main'
 
@@ -371,8 +372,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         initial_data = copy.deepcopy(self.initial_data_base)
         initial_data['source'] = 'this-source-does-not-exists-so-the-create-should-fail'
 
-        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
-            response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Signal.objects.count(), signal_count)
@@ -387,8 +387,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         initial_data = copy.deepcopy(self.initial_data_base)
         initial_data['source'] = source.name
 
-        with self.settings(FEATURE_FLAGS={'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': True}):
-            response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Signal.objects.count(), signal_count + 1)

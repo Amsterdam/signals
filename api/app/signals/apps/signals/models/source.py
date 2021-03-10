@@ -7,6 +7,7 @@ class Source(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(max_length=3000)
     order = models.PositiveIntegerField(null=True)
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('order', 'name', )

@@ -31,7 +31,8 @@ from signals.apps.signals.factories import (
     ServiceLevelObjectiveFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    SourceFactory
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
@@ -83,7 +84,6 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -111,6 +111,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.link_subcategory = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
             self.subcategory.parent.slug, self.subcategory.slug
         )
+
+        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='valid-source', is_active=True)
 
         # Load fixture of initial data, augment with above test categories.
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
@@ -1585,7 +1588,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -1595,6 +1597,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     test_host = 'http://testserver'
 
     def setUp(self):
+        SourceFactory.create(name='valid-source')
         self.signal = SignalFactory.create()
 
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
@@ -1684,7 +1687,6 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, SIAReadWriteUserMixin,
@@ -1697,6 +1699,9 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
     subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
 
     def setUp(self):
+        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='test-api', is_active=True)
+
         self.department = DepartmentFactory.create(
             code='TST',
             name='Department for testing #1',
