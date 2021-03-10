@@ -3,7 +3,6 @@
 import os
 from unittest import mock
 
-import requests
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -569,75 +568,6 @@ class TestAttachmentModel(LiveServerTestCase):
         self.signal = factories.SignalFactory.create()
 
         self.gif_upload = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-
-    def test_cropping_image_cache_file(self):
-        attachment = Attachment()
-        attachment.file = self.gif_upload
-        attachment._signal = self.signal
-        attachment.mimetype = "image/gif"
-        attachment.save()
-
-        self.assertIsInstance(attachment.image_crop.url, str)
-        self.assertTrue(attachment.image_crop.url.endswith(".jpg"))
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original image is not reachable")
-
-        resp = requests.get(self.live_server_url + attachment.image_crop.url)
-        self.assertEqual(200, resp.status_code, "Cropped image is not reachable")
-
-    def test_cache_file_with_word_doc(self):
-        with open(self.doc_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("file.doc", f.read(), content_type="application/msword")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment.mimetype = "application/msword"
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
-
-    def test_cache_file_with_json_file(self):
-        with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(),
-                                            content_type="application/json")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment.mimetype = "application/json"
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
-
-    def test_cache_file_without_mimetype(self):
-        with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(),
-                                            content_type="application/json")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        self.assertEqual("application/json", attachment.mimetype, "Mimetype should be set "
-                                                                  "automatically when not set "
-                                                                  "explicitly")
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
     def test_is_image_gif(self):
         attachment = Attachment()
