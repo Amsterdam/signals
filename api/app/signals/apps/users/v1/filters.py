@@ -38,3 +38,11 @@ class UserFilterSet(FilterSet):
             'username': {'apply': Lower}  # Will apply the Lower function when ordering
         }
     )
+
+
+class UserNameListFilterSet(FilterSet):
+    username = filters.CharFilter(lookup_expr='icontains', min_length=3)
+    is_active = filters.BooleanFilter(field_name='is_active')
+    profile_department_code = filters.ModelMultipleChoiceFilter(queryset=_get_department_queryset(),
+                                                                to_field_name='code',
+                                                                field_name='profile__departments__code')

@@ -177,3 +177,9 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
 
     def get_description(self, log):
         return None
+
+
+class UserNameListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', )
