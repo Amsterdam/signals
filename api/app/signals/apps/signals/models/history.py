@@ -7,7 +7,7 @@ from signals.apps.signals.models.location import _get_description_of_update_loca
 from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
 
-EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE = 'Service belofte onbekend.'
+EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE = 'Servicebelofte onbekend'
 
 
 class History(models.Model):
