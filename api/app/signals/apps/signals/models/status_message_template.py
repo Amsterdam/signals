@@ -51,4 +51,4 @@ class StatusMessageTemplate(CreatedUpdatedModel):
             raise ValidationError(msg)
 
         # Save the instance
-        super(StatusMessageTemplate, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

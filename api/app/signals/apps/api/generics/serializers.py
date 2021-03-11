@@ -11,7 +11,7 @@ class SIAModelSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, data=empty, **kwargs):
         if 'permission_classes' in kwargs:
             self.permission_classes = kwargs.pop('permission_classes')
-        super(SIAModelSerializer, self).__init__(instance=instance, data=data, **kwargs)
+        super().__init__(instance=instance, data=data, **kwargs)
 
     def check_permissions(self):
         if not self.permission_classes:
@@ -38,4 +38,4 @@ class SIAModelSerializer(serializers.ModelSerializer):
         """
         self.check_permissions()
 
-        return super(SIAModelSerializer, self).validate(attrs=attrs)
+        return super().validate(attrs=attrs)

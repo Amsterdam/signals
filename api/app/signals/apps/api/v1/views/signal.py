@@ -195,9 +195,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     def get_queryset(self, *args, **kwargs):
         if self._is_request_to_detail_endpoint():
-            return super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+            return super().get_queryset(*args, **kwargs)
         else:
-            qs = super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+            qs = super().get_queryset(*args, **kwargs)
             return qs.filter_for_user(user=self.request.user)
 
     def check_object_permissions(self, request, obj):

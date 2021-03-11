@@ -23,7 +23,7 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         self.parent_category = ParentCategoryFactory.create(questions=question2)
         CategoryFactory.create_batch(1, parent=self.parent_category, questions=question)
         self.parent_category.refresh_from_db()
-        super(TestCategoryQuestionEndpoints, self).setUp()
+        super().setUp()
 
     def test_category_question_list(self):
         endpoint_url = '/signals/v1/public/questions/'

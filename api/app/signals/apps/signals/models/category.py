@@ -126,7 +126,7 @@ class Category(models.Model):
         return self.parent is not None
 
     def clean(self):
-        super(Category, self).clean()
+        super().clean()
 
         if self.pk and self.slug:
             if not Category.objects.filter(id=self.pk, slug=self.slug).exists():

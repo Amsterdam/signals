@@ -216,7 +216,7 @@ class RoutingExpressionAdmin(admin.ModelAdmin):
             obj.is_active = False
             messages.add_message(request, messages.WARNING, f'Rule deactivated due to error in expression: {str(e)}')
 
-        super(RoutingExpressionAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(RoutingExpression, RoutingExpressionAdmin)

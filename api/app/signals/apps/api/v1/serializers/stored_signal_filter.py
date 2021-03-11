@@ -53,4 +53,4 @@ class StoredSignalFilterSerializer(HALSerializer):
         validated_data.update({
             'created_by': self.context['request'].user.email
         })
-        return super(StoredSignalFilterSerializer, self).create(validated_data=validated_data)
+        return super().create(validated_data=validated_data)

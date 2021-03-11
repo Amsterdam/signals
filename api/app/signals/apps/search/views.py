@@ -50,4 +50,4 @@ class SearchView(DatapuntViewSet):
     def list(self, request, *args, **kwargs):
         if not SignalDocument.ping():
             raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
-        return super(SearchView, self).list(request=request, *args, **kwargs)
+        return super().list(request=request, *args, **kwargs)

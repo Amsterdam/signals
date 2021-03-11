@@ -45,7 +45,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })
 
-        return super(_NestedStatusModelSerializer, self).validate(attrs=attrs)
+        return super().validate(attrs=attrs)
 
 
 class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):

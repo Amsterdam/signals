@@ -14,7 +14,7 @@ class TestPublicAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/public/areas/'
 
     def setUp(self):
-        super(TestPublicAreaEndpoint, self).setUp()
+        super().setUp()
 
         self.areas = {}
         self.area_types = AreaTypeFactory.create_batch(5)

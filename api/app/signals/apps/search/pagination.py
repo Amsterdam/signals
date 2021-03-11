@@ -10,7 +10,7 @@ class ElasticPage(Page):
 
     def __init__(self, object_list, number, paginator):
         self.count = paginator.object_list._response.hits.total
-        super(ElasticPage, self).__init__(object_list, number, paginator)
+        super().__init__(object_list, number, paginator)
 
 
 class ElasticPaginator(Paginator):
@@ -18,7 +18,7 @@ class ElasticPaginator(Paginator):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
-        super(ElasticPaginator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def page(self, number):
         number = self.validate_number(number)

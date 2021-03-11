@@ -78,7 +78,7 @@ class Signal(CreatedUpdatedModel):
         ]
 
     def __init__(self, *args, **kwargs):
-        super(Signal, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not self.uuid:
             self.uuid = uuid.uuid4()
 
@@ -140,4 +140,4 @@ class Signal(CreatedUpdatedModel):
 
     def save(self, *args, **kwargs):
         self._validate()
-        super(Signal, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

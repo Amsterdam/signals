@@ -8,7 +8,7 @@ class LinkHeaderPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
     def __init__(self, page_query_param=None, page_size=None, *args, **kwargs):
-        super(LinkHeaderPagination, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.page_query_param = page_query_param or self.page_query_param
         self.page_size = page_size or self.page_size

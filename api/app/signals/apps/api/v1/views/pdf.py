@@ -111,7 +111,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
             )
         jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
 
-        return super(GeneratePdfView, self).get_context_data(
+        return super().get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
             jpg_data_uris=jpg_data_uris,

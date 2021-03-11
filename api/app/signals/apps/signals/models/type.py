@@ -30,7 +30,7 @@ class Type(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        super(Type, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 def _history_translated_action(name):

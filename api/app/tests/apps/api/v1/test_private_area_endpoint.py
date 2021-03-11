@@ -14,7 +14,7 @@ class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/areas/'
 
     def setUp(self):
-        super(TestPrivateAreaEndpoint, self).setUp()
+        super().setUp()
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.areas = {}

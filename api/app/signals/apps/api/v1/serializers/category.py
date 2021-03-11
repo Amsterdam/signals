@@ -129,7 +129,7 @@ class PrivateCategorySerializer(HALSerializer):
                 ServiceLevelObjective.objects.create(**new_sla)
                 instance.refresh_from_db()
 
-        return super(PrivateCategorySerializer, self).update(instance, validated_data)
+        return super().update(instance, validated_data)
 
 
 class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):

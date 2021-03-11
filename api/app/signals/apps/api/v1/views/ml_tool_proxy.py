@@ -19,7 +19,7 @@ class LegacyMlPredictCategoryView(APIView):
         # When we cannot translate we return the 'overig-overig' category url
         self.default_category = Category.objects.get(slug='overig', parent__isnull=False, parent__slug='overig')
 
-        super(LegacyMlPredictCategoryView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def default_category_url(self):
