@@ -195,7 +195,7 @@ admin.site.register(Signal, SignalAdmin)
 
 
 class SourceAdmin(admin.ModelAdmin):
-    fields = ('name', 'description', 'order', )
+    fields = ('name', 'description', 'is_active', 'order', )
 
 
 admin.site.register(Source, SourceAdmin)
