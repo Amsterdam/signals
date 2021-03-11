@@ -216,7 +216,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         attachment = Attachment.objects.last()
         self.assertEqual("image/gif", attachment.mimetype)
-        self.assertIsInstance(attachment.image_crop.url, str)
         self.assertIsNone(attachment.created_by)
 
     def test_add_attachment_nonimagetype(self):
