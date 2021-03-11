@@ -3,6 +3,7 @@
 import json
 
 from django.core.management import BaseCommand
+from django.utils.text import slugify
 
 from signals.apps.signals.models import Category
 
@@ -44,11 +45,11 @@ class Command(BaseCommand):
                 parent_id = fields.pop('parent')
                 if parent_id:
                     fields['parent'] = self._get_parent(parent_id)
-                cat = self._get_cat(fields['slug'], fields.get('parent', None))
+                cat = self._get_cat(slugify(fields['name']), fields.get('parent', None))
                 if cat is not None:
                     self.stdout.write(f'Updating: {fields["slug"]}')
                     for attr, value in fields.items():
-                        if hasattr(cat, attr):
+                        if attr != 'slug' and hasattr(cat, attr):
                             setattr(cat, attr, value)
                     cat.save()
                 else:
