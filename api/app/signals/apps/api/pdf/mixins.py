@@ -19,5 +19,4 @@ class PDFTemplateResponseMixin(TemplateResponseMixin):
         response_kwargs.update({
             'filename': self.get_pdf_filename(),
         })
-        return super(PDFTemplateResponseMixin, self).render_to_response(context=context,
-                                                                        **response_kwargs)
+        return super().render_to_response(context=context, **response_kwargs)

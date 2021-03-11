@@ -20,7 +20,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         CategoryFactory.create_batch(5, parent=self.parent_category)
         self.parent_category.refresh_from_db()
 
-        super(TestPrivateCategoryEndpoint, self).setUp()
+        super().setUp()
 
     def _assert_category_data(self, category, data):
         private_url = f'http://testserver/signals/v1/private/categories/{category.pk}'

@@ -15,4 +15,4 @@ class CategoryDepartment(models.Model):
             # If is_responsible is set to True than can_view must also be True
             self.can_view = True
 
-        super(CategoryDepartment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

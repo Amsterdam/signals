@@ -47,7 +47,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
 
     @enforce_request_version_v1
     def to_internal_value(self, data):
-        return super(CategoryHyperlinkedRelatedField, self).to_internal_value(data=data)
+        return super().to_internal_value(data=data)
 
 
 class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):

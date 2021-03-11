@@ -37,7 +37,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         CategoryFactory.create_batch(5, parent=self.parent_category)
         self.parent_category.refresh_from_db()
 
-        super(TestCategoryTermsEndpoints, self).setUp()
+        super().setUp()
 
     def test_category_list(self):
         url = '/signals/v1/public/terms/categories/'

@@ -64,5 +64,5 @@ class SignalsRouterVersion1(ExtendedDefaultRouter):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(SignalsRouterVersion1, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trailing_slash = '/?'

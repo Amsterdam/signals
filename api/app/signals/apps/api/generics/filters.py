@@ -83,10 +83,10 @@ class FieldMappingOrderingFilter(OrderingFilter):
 class OrderingExtraKwargsFilter(filters.OrderingFilter):
     def __init__(self, *args, **kwargs):
         self.extra_kwargs = kwargs.pop('extra_kwargs')
-        super(OrderingExtraKwargsFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_ordering_value(self, param):
-        value = super(OrderingExtraKwargsFilter, self).get_ordering_value(param=param)
+        value = super().get_ordering_value(param=param)
 
         descending = param.startswith('-')
         param = param[1:] if descending else param

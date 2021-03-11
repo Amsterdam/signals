@@ -33,7 +33,7 @@ class StatusMessageTemplatesViewSet(mixins.RetrieveModelMixin, mixins.CreateMode
         return obj
 
     def get_serializer_context(self):
-        context = super(StatusMessageTemplatesViewSet, self).get_serializer_context()
+        context = super().get_serializer_context()
         context.update({'category': self.get_object()})
         return context
 

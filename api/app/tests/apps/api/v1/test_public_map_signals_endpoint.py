@@ -30,7 +30,7 @@ class TestMapSignalEndpoints(SignalsBaseApiTestCase):
         self.endpoint_url = '/public/map-signals/'
         self.signal1 = SignalFactoryValidLocation.create()
         self.signal2 = SignalFactoryValidLocation.create()
-        super(TestMapSignalEndpoints, self).setUp()
+        super().setUp()
 
     def test_map_signals_list(self):
         response = self.client.get(self.endpoint_url)

@@ -11,7 +11,7 @@ from requests import RequestException, Session
 
 class RestEmailBackend(BaseEmailBackend):
     def __init__(self, fail_silently=False, **kwargs):
-        super(RestEmailBackend, self).__init__(fail_silently)
+        super().__init__(fail_silently)
         self.init_kwargs = kwargs
         self.session = None
         self._lock = threading.RLock()

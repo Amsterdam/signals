@@ -426,7 +426,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         if errors:
             raise serializers.ValidationError(errors)
 
-        return super(PrivateSignalSerializerList, self).validate(attrs=attrs)
+        return super().validate(attrs=attrs)
 
     def create(self, validated_data):
         # Set default status
@@ -544,7 +544,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                 raise ValidationError('Extra properties present: {}'.format(
                     ', '.join(present_keys - allowed_keys)
                 ))
-        return super(PublicSignalCreateSerializer, self).validate(data)
+        return super().validate(data)
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')

@@ -98,7 +98,7 @@ class SignalFilterSet(FilterSet):
                 )
 
         self._cleanup_form_data()
-        queryset = super(SignalFilterSet, self).filter_queryset(queryset=queryset)
+        queryset = super().filter_queryset(queryset=queryset)
         return queryset
 
     # Custom filter functions
@@ -323,6 +323,6 @@ class SignalPromotedToParentFilter(FilterSet):
         )
 
     def filter_queryset(self, queryset):
-        queryset = super(SignalPromotedToParentFilter, self).filter_queryset(queryset=queryset)
+        queryset = super().filter_queryset(queryset=queryset)
         # Only return Signals of categories that a user can access
         return queryset.filter_for_user(user=self.request.user).distinct()

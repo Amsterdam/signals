@@ -61,4 +61,4 @@ class Reporter(CreatedUpdatedModel):
         if self.phone_anonymized:
             self.phone = None
 
-        super(Reporter, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

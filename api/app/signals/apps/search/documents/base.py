@@ -13,10 +13,10 @@ class CustomSearch(Search):
 
     def __init__(self, **kwargs):
         self._queryset = kwargs.pop('queryset', None)
-        super(CustomSearch, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _clone(self):
-        s = super(CustomSearch, self)._clone()
+        s = super()._clone()
         s._queryset = self._queryset
         return s
 

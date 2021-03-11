@@ -23,7 +23,7 @@ class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
 
     def get_queryset(self):
         if self.get_parents_query_dict():
-            return super(PublicCategoryViewSet, self).get_queryset()
+            return super().get_queryset()
         return self.queryset.filter(parent__isnull=True)
 
     def get_serializer(self, *args, **kwargs):

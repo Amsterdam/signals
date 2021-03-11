@@ -20,7 +20,7 @@ def convert_validation_error(error):
 class CreateModelMixin(mixins.CreateModelMixin):
     def perform_create(self, serializer):
         try:
-            return super(CreateModelMixin, self).perform_create(serializer=serializer)
+            return super().perform_create(serializer=serializer)
         except DjangoValidationError as e:
             raise convert_validation_error(e)
 
@@ -44,7 +44,7 @@ class DestroyModelMixin(mixins.DestroyModelMixin):
 class UpdateModelMixin(mixins.UpdateModelMixin):
     def perform_update(self, serializer):
         try:
-            return super(UpdateModelMixin, self).perform_update(serializer=serializer)
+            return super().perform_update(serializer=serializer)
         except DjangoValidationError as e:
             raise convert_validation_error(e)
 
