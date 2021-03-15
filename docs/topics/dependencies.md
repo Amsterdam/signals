@@ -14,10 +14,10 @@ Some exceptions include:
 | library | mitigation | notes |
 |---------|------------|-------|
 | jwcrypto | codebase is active, developers can work with upstream |needs documenting (token valadation and user authentication code)|
-| [pygelf](https://pypi.org/project/pygelf/) | developers could maintain if needed | is still used in datapunt? |
+| [pygelf](https://pypi.org/project/pygelf/) | developers could maintain if needed | or pygelf and its configuration could be dropped as it is not essential  |
 | drf-amsterdam | Signalen developers maintain this | |
 | [entrypoints](https://pypi.org/project/entrypoints/) | developers could maintain |(maybe not even needed) |
-| [freezegun](https://pypi.org/project/freezegun/) | developers could maintain | will be updated to 1.x soon; used by tests |
+| [freezegun](https://pypi.org/project/freezegun/) | developers could maintain | will be updated to 1.x soon; used by tests to control the clock |
 | wheel | mitigation not-needed | This library is the reference implementation of the Python wheel packaging standard, as defined in PEP 427.
 | xmlunittest | can work with upstream if needed | only used by tests |
 
