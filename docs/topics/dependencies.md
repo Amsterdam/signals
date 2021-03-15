@@ -18,6 +18,6 @@ Some exceptions include:
 | drf-amsterdam | Signalen developers maintain this | |
 | [entrypoints](https://pypi.org/project/entrypoints/) | developers could maintain |(maybe not even needed) |
 | [freezegun](https://pypi.org/project/freezegun/) | developers could maintain | will be updated to 1.x soon; used by tests |
-| wheel | not-needed | This library is the reference implementation of the Python wheel packaging standard, as defined in PEP 427.
+| wheel | mitigation not-needed | This library is the reference implementation of the Python wheel packaging standard, as defined in PEP 427.
 | xmlunittest | can work with upstream if needed | only used by tests |
 
