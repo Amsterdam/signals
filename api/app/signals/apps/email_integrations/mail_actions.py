@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import copy
+import logging
 from typing import Any
 
 from django.conf import settings
@@ -11,6 +12,8 @@ from django.utils.text import slugify
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
+
+logger = logging.getLogger(__name__)
 
 
 class MailActions:
@@ -82,10 +85,8 @@ class MailActions:
             html_message = loader.get_template('email/_base.html').render(rendered_context)
             message = loader.get_template('email/_base.txt').render(rendered_context)
         except EmailTemplate.DoesNotExist:
-            # TODO: Remove this part of the code when we migrated all templates in Amsterdam to the database
-            subject = mail_kwargs['subject'].format(signal_id=signal.id)
-            message = loader.get_template(mail_kwargs['templates']['txt']).render(context)
-            html_message = loader.get_template(mail_kwargs['templates']['html']).render(context)
+            logger.warning(f'EmailTemplate {mail_kwargs["key"]} does not exists, no mail send to the reporter!')
+            return False
 
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)
