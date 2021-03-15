@@ -55,6 +55,7 @@ services:
       - database
       - rabbit
       - elasticsearch
+      - mailhog
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
