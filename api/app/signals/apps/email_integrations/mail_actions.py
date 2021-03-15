@@ -9,6 +9,7 @@ from django.template import Context, Template, loader
 from django.utils.text import slugify
 
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
 
 
@@ -56,18 +57,11 @@ class MailActions:
         return found_actions_to_apply
 
     def _get_mail_context(self, signal: Signal, mail_kwargs: dict):
-        context = {
-            'signal': signal,
-            'status': signal.status,
-            'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
-        }
-
+        additional_context = {}
         if 'context' in mail_kwargs and callable(mail_kwargs['context']):
-            context.update(mail_kwargs['context'](signal))
-        elif 'context' in mail_kwargs and isinstance(mail_kwargs['context'], dict):
-            context.update(mail_kwargs['context'])
+            additional_context.update(mail_kwargs['context'](signal))
 
-        return context
+        return make_email_context(signal=signal, additional_context=additional_context)
 
     def _mail(self, signal: Signal, mail_kwargs: dict):
         context = self._get_mail_context(signal=signal, mail_kwargs=mail_kwargs)
