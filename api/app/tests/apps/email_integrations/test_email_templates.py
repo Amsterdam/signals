@@ -16,9 +16,9 @@ class TestEmailTemplates(TestCase):
     def setUp(self):
         self.email_template = EmailTemplate.objects.create(
             key=EmailTemplate.SIGNAL_CREATED,
-            title='Template title {{ signal.id }}',
-            body='# Template title\n Thanks a lot for reporting **{{ signal.id }}** '
-                 '{{ signal.text }}\n{{ ORGANIZATION_NAME }}',
+            title='Template title {{ signal_id }}',
+            body='# Template title\n Thanks a lot for reporting **{{ signal_id }}** '
+                 '{{ text }}\n{{ ORGANIZATION_NAME }}',
         )
 
     def test_email_template(self):
