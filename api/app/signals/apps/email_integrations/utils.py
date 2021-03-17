@@ -4,10 +4,14 @@ import re
 from typing import Optional
 
 from django.conf import settings
+from django.template import Context, Template
+from django.utils.timezone import now
 
+from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals.models import Signal
+from tests.apps.signals.valid_locations import STADHUIS
 
 
 def _create_feedback_and_mail_context(signal: Signal):
@@ -60,3 +64,36 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         context.update(additional_context)
 
     return context
+
+
+def validate_email_template(email_template: EmailTemplate) -> bool:
+    """
+    Used to validate an EmailTemplate
+    """
+    return validate_template(template=email_template.title) and validate_template(template=email_template.body)
+
+
+def validate_template(template: str) -> bool:
+    """
+    Used to validate an template string with a dummy context
+    """
+    context = {
+        'signal_id': 123,
+        'formatted_signal_id': 'SIA-123',
+        'created_at': now(),
+        'text': 'Deze tekst wordt gebruikt in de validatie van een EmailTemplate.',
+        'text_extra': 'Er is ruimte voor meer tekst.',
+        'address': STADHUIS,
+        'status_text': 'Gemeld',
+        'status_state': 'm',
+        'handling_message': 'Hartelijk dank voor uw melding. Wij gaan hier spoedig mee aan de slag',
+        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME
+    }
+
+    try:
+        body_template = Template(template)
+        body_template.render(context=Context(context, autoescape=True))
+    except Exception:
+        return False
+    else:
+        return True
