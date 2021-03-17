@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
+import copy
 import uuid
 from unittest import mock
 
@@ -379,6 +380,65 @@ class TestMailRuleConditions(BaseTestMailCase):
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+
+    def test_send_mail_reporter_created_send_mail_false(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id, send_mail=False)
+
+        # No mail should be sent
+        self.assertEqual(len(mail.outbox), 0)
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_send_mail_reporter_created_no_note(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # We do not want to add a note so we should remove the 'history_entry_text'
+        COPIED_SIGNAL_MAIL_RULES = [copy.deepcopy(r)
+                                    for r in SIGNAL_MAIL_RULES if r['name'] == 'Send mail signal created']
+        COPIED_SIGNAL_MAIL_RULES[0]['additional_info'].pop('history_entry_text')
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=COPIED_SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_send_mail_reporter_created_no_additional_context(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # We do not want to add a note so we should remove the 'history_entry_text'
+        COPIED_SIGNAL_MAIL_RULES = [copy.deepcopy(r)
+                                    for r in SIGNAL_MAIL_RULES if r['name'] == 'Send mail signal created']
+        COPIED_SIGNAL_MAIL_RULES[0]['kwargs'].pop('context')
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=COPIED_SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
 
 
 class TestOptionalMails(BaseTestMailCase):

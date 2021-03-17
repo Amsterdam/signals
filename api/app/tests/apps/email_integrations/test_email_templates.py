@@ -22,6 +22,8 @@ class TestEmailTemplates(TestCase):
         )
 
     def test_email_template(self):
+        self.assertEqual(str(self.email_template), 'Template title {{ signal_id }}')
+
         signal = SignalFactory.create(reporter__email=self.get_email())
 
         ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
