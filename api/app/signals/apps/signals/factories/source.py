@@ -11,3 +11,5 @@ class SourceFactory(DjangoModelFactory):
 
     name = Sequence(lambda n: f'Bron {n}')
     description = Sequence(lambda n: f'Beschrijving bron {n}')
+    order = Sequence(lambda n: n)
+    is_active = True
