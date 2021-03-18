@@ -7,3 +7,4 @@
 * [Glossary](topics/glossary.md)
 * [Technical roadmap](topics/technical-roadmap.md)
 * [Dummy data for local development or testing](topics/dummy-data.md)
+* [Open Source dependencies](topics/dependencies.md)
