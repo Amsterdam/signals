@@ -6,11 +6,12 @@ Dump CSV of SIA tables matching the old, agreed-upon, format.
 import logging
 import os
 
+from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import CharField, F, Value
 from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, SignalDepartments
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,32 @@ def create_signals_assigned_user_csv(location: str) -> str:
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals_assigned_user.csv'))
 
     ordered_field_names = ['id', 'assigned_to', ]
+    reorder_csv(csv_file.name, ordered_field_names)
+
+    return csv_file.name
+
+
+def create_signals_routing_departments_csv(location: str) -> str:
+    """
+    Create the CSV file with all `Signal - department relation (filled by routing rules)` objects.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    queryset = SignalDepartments.objects.values(
+        'id',
+        'created_at',
+        'updated_at',
+        '_signal_id',
+        _departments=StringAgg('departments__name', delimiter=', '),
+    ).filter(relation_type=SignalDepartments.REL_ROUTING).order_by(
+        '_signal_id',
+        '-created_at',
+    )
+
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'routing_departments.csv'))
+
+    ordered_field_names = ['id', 'created_at', 'updated_at', '_signal_id', 'departments', ]
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name

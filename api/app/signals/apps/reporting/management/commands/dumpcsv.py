@@ -19,7 +19,8 @@ from signals.apps.reporting.csv.datawarehouse.locations import create_locations_
 from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_csv
 from signals.apps.reporting.csv.datawarehouse.signals import (
     create_signals_assigned_user_csv,
-    create_signals_csv
+    create_signals_csv,
+    create_signals_routing_departments_csv
 )
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
 from signals.apps.reporting.csv.datawarehouse.tasks import (
@@ -38,6 +39,7 @@ REPORT_OPTIONS = {
     'category_sla': create_category_sla_csv,
     'feedback': create_kto_feedback_csv,
     'directing_departments': create_directing_departments_csv,
+    'routing_departments': create_signals_routing_departments_csv,
 }
 
 
