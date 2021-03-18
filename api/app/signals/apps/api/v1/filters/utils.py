@@ -9,7 +9,7 @@ from signals.apps.signals.models import (
     Department,
     Expression,
     ExpressionType,
-    Signal
+    Source
 )
 from signals.apps.signals.workflow import STATUS_CHOICES
 
@@ -83,7 +83,7 @@ def status_choices():
 
 
 def source_choices():
-    return [(choice, f'{choice}') for choice in Signal.objects.order_by('source').values_list('source', flat=True).distinct()]  # noqa
+    return [(choice, f'{choice}') for choice in Source.objects.order_by('name').values_list('name', flat=True).distinct()]  # noqa
 
 
 def stadsdelen_choices():
