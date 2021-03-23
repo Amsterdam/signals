@@ -29,6 +29,8 @@ class Command(BaseCommand):
         )
 
         for signal in no_deadlines.iterator(chunk_size=1000):
+            if signal.category_assignment is None:
+                continue
             category = signal.category_assignment.category
 
             # We have to bypass the "Actions" manager here, because it will
