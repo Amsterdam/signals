@@ -11,13 +11,12 @@ signals/complaints that are open that have no deadline. Each of these is
 re-assigned to its category, triggering the deadline calculation and solving
 the problem with the punctuality filter.
 """
-
 from django.core.management import BaseCommand
 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import CategoryAssignment, Signal
 
-HISTORY_MESSAGE = 'Afhandel-deadline uitgerekend.'
+HISTORY_MESSAGE = 'Afhandeltermijn uitgerekend.'
 
 
 class Command(BaseCommand):
