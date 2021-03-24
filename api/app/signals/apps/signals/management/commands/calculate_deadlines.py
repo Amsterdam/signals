@@ -16,7 +16,7 @@ from django.core.management import BaseCommand
 from signals.apps.signals import workflow
 from signals.apps.signals.models import CategoryAssignment, Signal
 
-HISTORY_MESSAGE = 'Afhandeltermijn uitgerekend.'
+HISTORY_MESSAGE = 'Afhandeltermijn uitgerekend'
 
 
 class Command(BaseCommand):
