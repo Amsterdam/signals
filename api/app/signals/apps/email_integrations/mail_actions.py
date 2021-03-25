@@ -85,8 +85,12 @@ class MailActions:
             html_message = loader.get_template('email/_base.html').render(rendered_context)
             message = loader.get_template('email/_base.txt').render(rendered_context)
         except EmailTemplate.DoesNotExist:
-            logger.warning(f'EmailTemplate {mail_kwargs["key"]} does not exists, no mail send to the reporter!')
-            return False
+            logger.warning(f'EmailTemplate {mail_kwargs["key"]} does not exists')
+
+            # A mail needs to be sent, so if there is no template in the DB we sent a default simple e-mail message
+            subject = mail_kwargs['subject'].format(signal_id=signal.id)
+            message = loader.get_template('email/signal_default.txt').render(context)
+            html_message = loader.get_template('email/signal_default.html').render(context)
 
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)

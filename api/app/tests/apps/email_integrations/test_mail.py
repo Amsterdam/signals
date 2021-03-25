@@ -675,3 +675,53 @@ class TestOptionalMails(BaseTestMailCase):
         self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
         patched_send_mail.assert_called_once()
         self.assertEqual(Note.objects.count(), 1)
+
+
+class TestNoDatabaseTemplatesMails(TestCase):
+    """
+    No email templates are added to the database so that these test cases will trigger the default template
+    """
+    def setUp(self):
+        super().setUp()
+
+        def get_email():
+            return f'{uuid.uuid4()}@example.com'
+
+        self.signal = SignalFactory.create(reporter__email=get_email())
+
+    def _get_mail_rules(self, action_names):
+        """
+        Get MailActions object instantiated with specific mail rules.
+        """
+        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
+        return MailActions(mail_rules=mail_rules)
+
+    def test_send_default_mail_template(self):
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(Note.objects.count(), 1)
+
+    def test_do_not_send_default_mail_template(self):
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEANNULEERD, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        actions = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 0)
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(len(activated), 0)
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
