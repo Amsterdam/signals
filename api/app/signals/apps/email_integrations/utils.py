@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from django.conf import settings
+from django.core.validators import URLValidator
 from django.template import Context, Template
 from django.utils.timezone import now
 
@@ -26,6 +27,18 @@ def _create_feedback_and_mail_context(signal: Signal):
     }
 
 
+# Pattern used to filter links from the Signal text and text_extra
+# Let's use the regex that is also used by Django to validate a URL (URLValidator)
+# We only removed the ^ and the \Z because we want to search in a text for URL's
+URL_PATTERN = re.compile(
+    r'(?:[a-z0-9\.\-\+]*)://'
+    r'(?:[^\s:@/]+(?::[^\s:@/]*)?@)?'
+    r'(?:' + URLValidator.ipv4_re + '|' + URLValidator.ipv6_re + '|' + URLValidator.host_re + ')'
+    r'(?::\d{2,5})?'
+    r'(?:[/?#][^\s]*)?', re.IGNORECASE
+)
+
+
 def make_email_context(signal: Signal, additional_context: Optional[dict] = None) -> dict:
     """
     Makes a context dictionary containing all values needed for the email templates
@@ -33,16 +46,12 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
 
     For backwards compatibility the Signal and the Status are still added to the context
     """
-
-    # Pattern used to filter links from the Signal text and text_extra
-    url_pattern = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-
     context = {
         'signal_id': signal.id,
         'formatted_signal_id': signal.sia_id,
         'created_at': signal.created_at,
-        'text': re.sub(url_pattern, '', signal.text),
-        'text_extra': re.sub(url_pattern, '', signal.text_extra),
+        'text': re.sub(URL_PATTERN, '', signal.text),
+        'text_extra': re.sub(URL_PATTERN, '', signal.text_extra),
         'address': signal.location.address,
         'status_text': signal.status.text,
         'status_state': signal.status.state,

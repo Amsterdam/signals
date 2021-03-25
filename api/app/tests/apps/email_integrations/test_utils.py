@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import re
+
 from django.conf import settings
 from django.test import TestCase
+from faker import Faker
 
 from signals.apps.email_integrations.factories import EmailTemplateFactory
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import (
+    URL_PATTERN,
     make_email_context,
     validate_email_template,
     validate_template
@@ -14,6 +18,85 @@ from signals.apps.signals.factories import SignalFactory
 
 
 class TestUtils(TestCase):
+    def test_regex(self):
+        """
+        Check if a URL matches the URL_PATTERN
+        Check if the URL is replaced by ''
+        Check if the URL is replaced by '' if we put it in a random text
+
+        We test with a couple of examples we can think of and a couple of examples created by the Faker
+        """
+        test_schemas = ['http://', 'https://', 'ftp://', 'sftp://', ]
+        test_uris = [
+            'test-domain.com',
+            'www.test-domain.com/',
+            'test-domain.com?query=param',
+            'test-domain.com/?query=param',
+            'www.test-domain.com/with/path?query=param',
+            'test-domain.com/with/path/?query=param',
+            'test-domain.com?query=param&extra=param',
+            'test-domain.com/?query=param&extra=param',
+            'www.test-domain.com/with/path?query=param&extra=param',
+            'test-domain.com/with/path/?query=param&extra=param',
+            'test-domain.com:8080',
+            'www.test-domain.com:8080/',
+            'user:password@test-domain.com',
+            'user:password@test-domain.com/',
+            'user:password@test-domain.com:8080',
+            'user:password@www.test-domain.com:8080/',
+            'test-domain.com:8080?query=param',
+            'test-domain.com:8080/?query=param&extra=param',
+            'user:password@test-domain.com?query=param',
+            'user:password@test-domain.com/?query=param&extra=param',
+            'user:password@test-domain.com:8080?query=param',
+            'user:password@test-domain.com:8080/?query=param&extra=param',
+            'test-domain.co.uk',
+            'www.test-domain.co.uk/',
+            'úêï.google',
+            'www.úêï.google/',
+            'strangetld.lol',
+            'strangetld.fun',
+            'strangetld.wow',
+            'strangetld.unicorn',
+            'www.example.com/just/a/path/',
+            'test.com',
+        ]
+
+        fake = Faker()
+        fake_text = fake.text()
+        position_to_insert = fake_text.find('.')
+
+        for schema in test_schemas:
+            for uri in test_uris:
+                test_url = f'{schema}{uri}'
+                self.assertRegex(test_url, URL_PATTERN)
+                self.assertEqual(0, len(re.sub(URL_PATTERN, '', test_url)))
+
+                fake_text_url = f'{fake_text[:position_to_insert+1]} {test_url} {fake_text[position_to_insert+2:]}'
+                self.assertRegex(fake_text_url, URL_PATTERN)
+                self.assertNotIn(test_url, re.sub(URL_PATTERN, '', fake_text_url))
+                self.assertNotEqual(fake_text_url, re.sub(URL_PATTERN, '', fake_text_url))
+
+        # test some randomly generated URL's/URI's
+        for _ in range(25):
+            fake_url = fake.url()
+            self.assertRegex(fake_url, URL_PATTERN)
+            self.assertEqual(0, len(re.sub(URL_PATTERN, '', fake_url)))
+
+            fake_text_url = f'{fake_text[:position_to_insert+1]} {fake_url} {fake_text[position_to_insert+2:]}'
+            self.assertRegex(fake_text_url, URL_PATTERN)
+            self.assertNotIn(fake_url, re.sub(URL_PATTERN, '', fake_text_url))
+            self.assertNotEqual(fake_text_url, re.sub(URL_PATTERN, '', fake_text_url))
+
+            fake_uri = fake.uri()
+            self.assertRegex(fake_uri, URL_PATTERN)
+            self.assertEqual(0, len(re.sub(URL_PATTERN, '', fake_uri)))
+
+            fake_text_uri = f'{fake_text[:position_to_insert+1]} {fake_uri} {fake_text[position_to_insert+2:]}'
+            self.assertRegex(fake_text_uri, URL_PATTERN)
+            self.assertNotIn(fake_uri, re.sub(URL_PATTERN, '', fake_text_uri))
+            self.assertNotEqual(fake_text_uri, re.sub(URL_PATTERN, '', fake_text_uri))
+
     def test_make_email_context(self):
         signal = SignalFactory.create()
         context = make_email_context(signal=signal)

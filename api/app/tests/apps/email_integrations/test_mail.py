@@ -396,7 +396,7 @@ class TestMailRuleConditions(BaseTestMailCase):
         # No mail should be sent
         self.assertEqual(len(mail.outbox), 0)
 
-        # we want a history entry when a email was sent
+        # we want no history entry because no mail was sent
         self.assertEqual(Note.objects.count(), 0)
 
     def test_send_mail_reporter_created_no_note(self):
@@ -426,7 +426,7 @@ class TestMailRuleConditions(BaseTestMailCase):
         actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
         self.assertEqual(len(actions), 1)
 
-        # We do not want to add a note so we should remove the 'history_entry_text'
+        # We do not want to add extra context so we should remove the 'context'
         COPIED_SIGNAL_MAIL_RULES = [copy.deepcopy(r)
                                     for r in SIGNAL_MAIL_RULES if r['name'] == 'Send mail signal created']
         COPIED_SIGNAL_MAIL_RULES[0]['kwargs'].pop('context')
