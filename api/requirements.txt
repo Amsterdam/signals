@@ -104,7 +104,7 @@ python-keystoneclient==3.22.0
 python-magic==0.4.15
 python-swiftclient==3.9.0
 pytz==2019.3
-PyYAML==5.3
+PyYAML==5.4
 raven==6.10.0
 requests==2.22.0
 requests-mock==1.5.2
