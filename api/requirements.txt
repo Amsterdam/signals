@@ -63,7 +63,7 @@ jsonschema==3.2.0
 jwcrypto==0.6.0
 keystoneauth1==3.18.0
 kombu==4.6.7
-lxml==4.6.2
+lxml==4.6.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
 mistune==2.0.0a6
