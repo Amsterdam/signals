@@ -160,15 +160,15 @@ Policy and documentation MAY have testing for style and broken links. |  |
 
 ## [Publish with an open license](https://standard.publiccode.net/criteria/open-licenses.html)
 
-- [ ] compliant with this criterion.
+- [x] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
-All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE), would be nice to add SPDX license identifiers to files.
+All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE)
 Software source code MUST be licensed under an OSI-approved open source license. | yes | [MPL-2.0](https://opensource.org/licenses/MPL-2.0)
 All code MUST be published with a license file. | yes |
 Contributors MUST NOT be required to transfer copyright of their contributions to the codebase. | yes |
-All source code files in the codebase SHOULD include a copyright notice and a license header. | no | See [signals#623](https://github.com/Amsterdam/signals/pull/623).
+All source code files in the codebase SHOULD include a copyright notice and a license header. | yes | Added: [signals#623](https://github.com/Amsterdam/signals/pull/623) and checked with CI: [signals#764](https://github.com/Amsterdam/signals/pull/764)
 Codebases MAY have multiple licenses for different types of code and documentation. |  |
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
