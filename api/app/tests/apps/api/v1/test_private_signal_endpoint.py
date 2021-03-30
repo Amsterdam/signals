@@ -1618,7 +1618,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsInstance(self.signal.attachments.filter(is_image=True).first(), Attachment)
 
-    def test_attachment_upload(self):
+    def test_attachment_upload_extension_not_allowed(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)
         doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
 
@@ -1627,10 +1627,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
             response = self.client.post(endpoint, data)
 
-        self.assertEqual(response.status_code, 201)
-        self.assertIsInstance(self.signal.attachments.first(), Attachment)
-        self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
-        self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
+        self.assertEqual(response.status_code, 400)
 
     def test_create_has_attachments_false(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')

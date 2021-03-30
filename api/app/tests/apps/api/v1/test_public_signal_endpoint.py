@@ -218,7 +218,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual("image/gif", attachment.mimetype)
         self.assertIsNone(attachment.created_by)
 
-    def test_add_attachment_nonimagetype(self):
+    def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create()
 
         doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
@@ -227,11 +227,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
 
-        self.assertEqual(201, response.status_code)
-        self.assertJsonSchema(self.create_attachment_schema, response.json())
-
-        attachment = Attachment.objects.last()
-        self.assertEqual("application/msword", attachment.mimetype)
+        self.assertEqual(response.status_code, 400)
 
     def test_cannot_access_attachments(self):
         # SIA must not publicly expose attachments
