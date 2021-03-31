@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import copy
+import logging
 from typing import Any
 
 from django.conf import settings
@@ -9,7 +10,10 @@ from django.template import Context, Template, loader
 from django.utils.text import slugify
 
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
+
+logger = logging.getLogger(__name__)
 
 
 class MailActions:
@@ -56,18 +60,11 @@ class MailActions:
         return found_actions_to_apply
 
     def _get_mail_context(self, signal: Signal, mail_kwargs: dict):
-        context = {
-            'signal': signal,
-            'status': signal.status,
-            'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
-        }
-
+        additional_context = {}
         if 'context' in mail_kwargs and callable(mail_kwargs['context']):
-            context.update(mail_kwargs['context'](signal))
-        elif 'context' in mail_kwargs and isinstance(mail_kwargs['context'], dict):
-            context.update(mail_kwargs['context'])
+            additional_context.update(mail_kwargs['context'](signal))
 
-        return context
+        return make_email_context(signal=signal, additional_context=additional_context)
 
     def _mail(self, signal: Signal, mail_kwargs: dict):
         context = self._get_mail_context(signal=signal, mail_kwargs=mail_kwargs)
@@ -88,10 +85,12 @@ class MailActions:
             html_message = loader.get_template('email/_base.html').render(rendered_context)
             message = loader.get_template('email/_base.txt').render(rendered_context)
         except EmailTemplate.DoesNotExist:
-            # TODO: Remove this part of the code when we migrated all templates in Amsterdam to the database
+            logger.warning(f'EmailTemplate {mail_kwargs["key"]} does not exists')
+
+            # A mail needs to be sent, so if there is no template in the DB we sent a default simple e-mail message
             subject = mail_kwargs['subject'].format(signal_id=signal.id)
-            message = loader.get_template(mail_kwargs['templates']['txt']).render(context)
-            html_message = loader.get_template(mail_kwargs['templates']['html']).render(context)
+            message = loader.get_template('email/signal_default.txt').render(context)
+            html_message = loader.get_template('email/signal_default.html').render(context)
 
         return django_send_mail(subject=subject, message=message, from_email=self._from_email,
                                 recipient_list=[signal.reporter.email, ], html_message=html_message)

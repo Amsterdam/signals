@@ -28,10 +28,6 @@ SIGNAL_MAIL_RULES = [
         'kwargs': {
             'key': EmailTemplate.SIGNAL_CREATED,
             'subject': 'Bedankt voor uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_created.txt',
-                'html': 'email/signal_created.html'
-            },
             'context': lambda signal: dict(afhandelings_text=signal.category_assignment.category.handling_message)
         },
         'additional_info': {
@@ -63,10 +59,6 @@ SIGNAL_MAIL_RULES = [
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
             'subject': 'Meer over uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_status_changed_afgehandeld.txt',
-                'html': 'email/signal_status_changed_afgehandeld.html'
-            },
             'context': lambda signal: _create_feedback_and_mail_context(signal)
         },
         'additional_info': {
@@ -89,11 +81,7 @@ SIGNAL_MAIL_RULES = [
         },
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND,
-            'subject': 'Meer over uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_status_changed_ingepland.txt',
-                'html': 'email/signal_status_changed_ingepland.html'
-            }
+            'subject': 'Meer over uw melding {signal_id}'
         },
         'additional_info': {
             'history_entry_text': 'Automatische e-mail bij inplannen is verzonden aan de melder.'
@@ -115,11 +103,7 @@ SIGNAL_MAIL_RULES = [
         },
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND,
-            'subject': 'Meer over uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_status_changed_heropend.txt',
-                'html': 'email/signal_status_changed_heropend.html'
-            }
+            'subject': 'Meer over uw melding {signal_id}'
         },
         'additional_info': {
             'history_entry_text': 'Automatische e-mail bij heropenen is verzonden aan de melder.'
@@ -151,10 +135,6 @@ SIGNAL_MAIL_RULES = [
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL,
             'subject': 'Meer over uw melding {signal_id}',
-            'templates': {
-                'txt': 'email/signal_status_changed_optional.txt',
-                'html': 'email/signal_status_changed_optional.html',
-            },
             'context': lambda signal: dict(afhandelings_text=signal.status.text)
         },
         'additional_info': {

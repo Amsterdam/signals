@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {{ formatted_signal_id }}</title>
+</head>
+<body>
+    <p>
+        <h1>Geachte heer, mevrouw,</h1>
+    </p>
+
+    <p>
+        Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze mail leest u de stand van zaken van uw melding.
+    </p>
+
+    <p>
+        <b>U liet ons het volgende weten</b>
+        {{ signal.text }}
+    </p>
+
+    <p>
+        <b>Stand van zaken</b>
+        {{ status_text }}
+    </p>
+
+    <p>
+        <b>Gegevens van uw melding</b>
+        <br/>
+        Nummer: <i>{{ formatted_signal_id }}</i>
+        Gemeld op: <i>{{ created_at|date:"DATETIME_FORMAT" }}</i><br/>
+        Locatie: <i>{% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %} </i><br/>
+    </p>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        {{ ORGANIZATION_NAME }}
+    </p>
+</body>
+</html>

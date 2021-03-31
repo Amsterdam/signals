@@ -18,8 +18,8 @@ class TestEmailTemplateAddressFormatting(TestCase):
     def test_address_formatting(self):
         EmailTemplate.objects.create(
             key=EmailTemplate.SIGNAL_CREATED,
-            title='Template title {{ signal.id }}',
-            body='{{ signal.location|format_address:"O hl, P W" }}',
+            title='Template title {{ signal_id }}',
+            body='{{ location|format_address:"O hl, P W" }}',
         )
 
         valid_location = copy.deepcopy(STADHUIS)

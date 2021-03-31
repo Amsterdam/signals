@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
+import copy
 import uuid
 from unittest import mock
 
 from django.conf import settings
 from django.core import mail
-from django.template import loader
 from django.test import TestCase
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.mail_actions import MailActions
+from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
 from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
@@ -20,8 +21,34 @@ from signals.apps.signals.managers import create_initial, update_status
 from signals.apps.signals.models import Note
 
 
-class TestMailActionTriggers(TestCase):
+class BaseTestMailCase(TestCase):
     def setUp(self):
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_CREATED,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ handling_message }} {{ ORGANIZATION_NAME }}')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ positive_feedback_url }} '
+                                          '{{ negative_feedback_url }}{{ ORGANIZATION_NAME }}')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ ORGANIZATION_NAME }}')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ ORGANIZATION_NAME }}')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ status_text }} {{ ORGANIZATION_NAME }}')
+
+
+class TestMailActionTriggers(BaseTestMailCase):
+    def setUp(self):
+        super().setUp()
+
         self.signal = SignalFactory.create()
 
     @mock.patch('signals.apps.email_integrations.mail_actions.MailActions')
@@ -36,24 +63,23 @@ class TestMailActionTriggers(TestCase):
         self.signal.status = new_status
         self.signal.save()
 
-        update_status.send_robust(sender=self.__class__,
-                                  signal_obj=self.signal,
-                                  status=new_status,
+        update_status.send_robust(sender=self.__class__, signal_obj=self.signal, status=new_status,
                                   prev_status=prev_status)
 
 
-class TestMailRuleConditions(TestCase):
+class TestMailRuleConditions(BaseTestMailCase):
 
     @freeze_time('2018-10-10T10:00+00:00')
     def setUp(self):
+        super().setUp()
+
         def get_email():
             return f'{uuid.uuid4()}@example.com'
 
         self.signal = SignalFactory.create(reporter__email=get_email())
         self.signal_no_email = SignalFactory.create(reporter__email='')
         self.parent_signal = SignalFactory.create(reporter__email=get_email())
-        self.child_signal = SignalFactory.create(reporter__email=get_email(),
-                                                 parent=self.parent_signal)
+        self.child_signal = SignalFactory.create(reporter__email=get_email(), parent=self.parent_signal)
 
     def _get_mail_rules(self, action_names):
         """
@@ -111,7 +137,7 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
@@ -122,24 +148,50 @@ class TestMailRuleConditions(TestCase):
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
 
+    def test_send_mail_reporter_created_text_contains_url(self):
+        """
+        URL's in the signal text are removed from the context and do not end up in the email
+        """
+        self.signal.text = 'These links should be removed: https://www.example.com/just/a/path/ and http://test.com'
+        self.signal.save()
+
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('These links should be removed:  and ', mail.outbox[0].body)
+        self.assertNotIn('https://www.example.com/just/a/path/', mail.outbox[0].body)
+        self.assertNotIn('http://test.com', mail.outbox[0].body)
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 1)
+
     def test_send_mail_reporter_created_custom_handling_message(self):
         # Make sure a category's handling messages makes it to the reporter via
         # the mail generated on creation of a nuisance complaint.
-        category = self.signal.category_assignment.category
-        category.handling_message = 'This text should end up in the mail to the reporter'
-        category.save()
+        category_assignment = self.signal.category_assignment
+        category_assignment.stored_handling_message = 'This text should end up in the mail to the reporter'
+        category_assignment.save()
         self.signal.refresh_from_db()
 
         MailActions(mail_rules=SIGNAL_MAIL_RULES).apply(signal_id=self.signal.id)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
 
         self.assertIn('10 oktober 2018 12:00', mail.outbox[0].body)
-        self.assertIn(category.handling_message, mail.outbox[0].body)
+        self.assertIn(category_assignment.stored_handling_message, mail.outbox[0].body)
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
@@ -181,7 +233,7 @@ class TestMailRuleConditions(TestCase):
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(1, Feedback.objects.count())
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.id}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn(settings.ORGANIZATION_NAME, mail.outbox[0].body)
@@ -194,26 +246,6 @@ class TestMailRuleConditions(TestCase):
         # this should not lead to an email being sent.
         StatusFactory.create(_signal=self.signal, state=workflow.VERZOEK_TOT_HEROPENEN)
         status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
-        self.signal.status = status
-        self.signal.save()
-
-        # no mail rule should activate
-        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-        activated = ma._get_actions(self.signal)
-        self.assertEqual(len(activated), 0)
-
-        # Check mail contents
-        ma.apply(signal_id=self.signal.id)
-        self.assertEqual(0, Feedback.objects.count())
-        self.assertEqual(len(mail.outbox), 0)
-
-        # we want no history entry when no email was sent
-        self.assertEqual(Note.objects.count(), 0)
-
-    def test_send_mail_reporter_status_changed_afgehandeld_no_status_afgehandeld(self):
-        # Note: SignalFactory always creates a signal with GEMELD status.
-        # TODO: test is redundant, remove
-        status = StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
         self.signal.status = status
         self.signal.save()
 
@@ -276,24 +308,19 @@ class TestMailRuleConditions(TestCase):
         feedback = Feedback.objects.get(_signal__id=self.signal.id)
 
         message = mail.outbox[0]
-        self.assertEqual(message.subject, f'Meer over uw melding {self.signal.id}')
+        self.assertEqual(message.subject, f'Uw melding {self.signal.id}')
         self.assertEqual(message.to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
         positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
-        context = {'negative_feedback_url': negative_feedback_url,
-                   'positive_feedback_url': positive_feedback_url,
-                   'signal': self.signal,
-                   'status': status,
-                   'ORGANIZATION_NAME': settings.ORGANIZATION_NAME, }
-        txt_message = loader.get_template('email/signal_status_changed_afgehandeld.txt').render(context)
-        html_message = loader.get_template('email/signal_status_changed_afgehandeld.html').render(context)
 
-        self.assertEqual(message.body, txt_message)
+        self.assertIn(positive_feedback_url, message.body)
+        self.assertIn(negative_feedback_url, message.body)
 
         content, mime_type = message.alternatives[0]
         self.assertEqual(mime_type, 'text/html')
-        self.assertEqual(content, html_message)
+        self.assertIn(positive_feedback_url, content)
+        self.assertIn(negative_feedback_url, content)
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
@@ -308,9 +335,7 @@ class TestMailRuleConditions(TestCase):
 
         # Check that generated emails contain the correct links for all
         # configured environments:
-        env_fe_mapping = getattr(settings,
-                                 'FEEDBACK_ENV_FE_MAPPING',
-                                 feedback_settings.FEEDBACK_ENV_FE_MAPPING)
+        env_fe_mapping = getattr(settings, 'FEEDBACK_ENV_FE_MAPPING', feedback_settings.FEEDBACK_ENV_FE_MAPPING)
         self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
 
         for environment, fe_location in env_fe_mapping.items():
@@ -356,10 +381,71 @@ class TestMailRuleConditions(TestCase):
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
+    def test_send_mail_reporter_created_send_mail_false(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
 
-class TestOptionalMails(TestCase):
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id, send_mail=False)
+
+        # No mail should be sent
+        self.assertEqual(len(mail.outbox), 0)
+
+        # we want no history entry because no mail was sent
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_send_mail_reporter_created_no_note(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # We do not want to add a note so we should remove the 'history_entry_text'
+        COPIED_SIGNAL_MAIL_RULES = [copy.deepcopy(r)
+                                    for r in SIGNAL_MAIL_RULES if r['name'] == 'Send mail signal created']
+        COPIED_SIGNAL_MAIL_RULES[0]['additional_info'].pop('history_entry_text')
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=COPIED_SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_send_mail_reporter_created_no_additional_context(self):
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # We do not want to add extra context so we should remove the 'context'
+        COPIED_SIGNAL_MAIL_RULES = [copy.deepcopy(r)
+                                    for r in SIGNAL_MAIL_RULES if r['name'] == 'Send mail signal created']
+        COPIED_SIGNAL_MAIL_RULES[0]['kwargs'].pop('context')
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=COPIED_SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+
+
+class TestOptionalMails(BaseTestMailCase):
     @freeze_time('2018-10-10T10:00+00:00')
     def setUp(self):
+        super().setUp()
+
         def get_email():
             return f'{uuid.uuid4()}@example.com'
 
@@ -589,3 +675,53 @@ class TestOptionalMails(TestCase):
         self._get_mail_rules(['Send mail optional']).apply(signal_id=signal.pk, send_mail=True)
         patched_send_mail.assert_called_once()
         self.assertEqual(Note.objects.count(), 1)
+
+
+class TestNoDatabaseTemplatesMails(TestCase):
+    """
+    No email templates are added to the database so that these test cases will trigger the default template
+    """
+    def setUp(self):
+        super().setUp()
+
+        def get_email():
+            return f'{uuid.uuid4()}@example.com'
+
+        self.signal = SignalFactory.create(reporter__email=get_email())
+
+    def _get_mail_rules(self, action_names):
+        """
+        Get MailActions object instantiated with specific mail rules.
+        """
+        mail_rules = [r for r in SIGNAL_MAIL_RULES if r['name'] in set(action_names)]
+        return MailActions(mail_rules=mail_rules)
+
+    def test_send_default_mail_template(self):
+        actions = self._get_mail_rules(['Send mail signal created'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(Note.objects.count(), 1)
+
+    def test_do_not_send_default_mail_template(self):
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.GEANNULEERD, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        actions = self._get_mail_rules(['Send mail optional'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 0)
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(len(activated), 0)
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
