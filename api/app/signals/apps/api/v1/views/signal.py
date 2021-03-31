@@ -4,6 +4,7 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.db import connection
+from django.db.models import Count, F, Max
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -269,6 +270,47 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
+
+    @action(detail=True, url_path=r'reporter_context_brief/?$')
+    def reporter_context_brief(self, request, pk=None):
+        # ADD: CHECK GLOBAL CONFIG TO SEE WHETHER THIS FEATURE IS ENABLED
+        # something with API_ENABLE_REPORTER_CONTEXT (as a feature flag) -> 404
+        # Based on a user's department a signal may not be accessible.
+        signal_exists = Signal.objects.filter(id=pk).exists()
+        signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()
+
+        if signal_exists and not signal_accessible:
+            raise PermissionDenied()
+
+        reporter = Signal.objects.get(id=pk).reporter
+        signals = Signal.objects.filter(reporter__email__iexact=reporter.email)
+
+        signal_count = signals.count()
+
+        negative_count = signals.annotate(
+            feedback_count=Count('feedback')
+        ).filter(
+            feedback_count__gte=1
+        ).annotate(
+            feedback_max_created_at=Max('feedback__created_at'),
+            feedback_max_submitted_at=Max('feedback__submitted_at')
+        ).filter(
+            feedback__is_satisfied=False,
+            feedback__submitted_at__isnull=False,
+            feedback__created_at=F('feedback_max_created_at'),
+            feedback__submitted_at=F('feedback_max_submitted_at')
+        ).count()
+
+        open_count = signals.exclude(
+            status__state__in=[workflow.GEANNULEERD, workflow.AFGEHANDELD, workflow.GESPLITST]).count()
+
+        output = {
+            'signal_count': signal_count,
+            'negative_count': negative_count,
+            'open_count': open_count,
+        }
+
+        return Response(data=output)
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):
