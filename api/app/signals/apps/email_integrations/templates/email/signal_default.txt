@@ -5,8 +5,6 @@ Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een m
 U liet ons het volgende weten
 {{ afhandelings_text }}
 
-Informatie over uw melding
-
 Stand van zaken
 {{ status_text }}
 
