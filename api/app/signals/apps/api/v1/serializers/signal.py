@@ -617,3 +617,11 @@ class AbridgedChildSignalSerializer(HALSerializer):
 
     def get_can_view_signal(self, obj):
         return Signal.objects.filter(pk=obj.pk).filter_for_user(self.context['request'].user).exists()
+
+
+class ReporterContextSignalSerializer(HALSerializer):
+    most_recent_is_satisfied = serializers.NullBooleanField()
+
+    class Meta:
+        model = Signal
+        fields = ('id', 'created_at', 'most_recent_is_satisfied')

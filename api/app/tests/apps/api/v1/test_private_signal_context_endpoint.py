@@ -13,9 +13,7 @@ from signals.apps.signals.models import Signal
 from tests.test import SuperUserMixin
 
 
-class TestReporterContextReporterBrief(APITestCase, SuperUserMixin):
-    brief_endpoint = '/signals/v1/private/signals/{pk}/reporter_context_brief'
-
+class ReporterContextDataMixin:
     def setUp(self):
         now = timezone.now()
 
@@ -40,6 +38,13 @@ class TestReporterContextReporterBrief(APITestCase, SuperUserMixin):
         # Some other signals that should not be selected
         SignalFactory.create_batch(size=5, reporter__email='reporter_b@example.com')
 
+        self.anonymous_signal_1 = SignalFactory.create(reporter__email=None)
+        self.anonymous_signal_2 = SignalFactory.create(reporter__email='')
+
+
+class TestReporterContextReporterBrief(ReporterContextDataMixin, APITestCase, SuperUserMixin):
+    brief_endpoint = '/signals/v1/private/signals/{pk}/reporter_context_brief'
+
     def test_reporter_context_brief(self):
         start = Signal.objects.filter(reporter__email__exact=self.reporter_a_email).first()
         url = self.brief_endpoint.format(pk=start.id)
@@ -53,6 +58,31 @@ class TestReporterContextReporterBrief(APITestCase, SuperUserMixin):
         self.assertEqual(response_json['negative_count'], self.n_unhappy_a)
         self.assertEqual(response_json['open_count'], self.n_open_a)
 
+    def test_anonymous_signals(self):
+        self.client.force_authenticate(user=self.superuser)
 
-class TestReporterContext(APITestCase, SuperUserMixin):
-    pass
+        url = self.brief_endpoint.format(pk=self.anonymous_signal_1.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {})
+
+        url = self.brief_endpoint.format(pk=self.anonymous_signal_2.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {})
+
+
+class TestReporterContext(ReporterContextDataMixin, APITestCase, SuperUserMixin):
+    endpoint = '/signals/v1/private/signals/{pk}/reporter_context/'
+
+    def test_reporter_context(self):
+        start = Signal.objects.filter(reporter__email__exact=self.reporter_a_email).first()
+        url = self.endpoint.format(pk=start.id)
+
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertIn('results', response_json)
+        self.assertEqual(response_json['count'], self.n_open_a + self.n_unhappy_a + self.n_closed_a)

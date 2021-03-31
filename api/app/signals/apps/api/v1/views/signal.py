@@ -4,7 +4,7 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.db import connection
-from django.db.models import Count, F, Max
+from django.db.models import Count, F, Max, OuterRef, Subquery
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -30,10 +30,12 @@ from signals.apps.api.v1.serializers import (
     PublicEmptySerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
+    ReporterContextSignalSerializer,
     SignalGeoSerializer,
     SignalIdListSerializer
 )
 from signals.apps.api.v1.views._base import PublicSignalGenericViewSet
+from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
@@ -283,6 +285,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             raise PermissionDenied()
 
         reporter = Signal.objects.get(id=pk).reporter
+        if reporter.email is None or reporter.email == '':
+            return Response({})
         signals = Signal.objects.filter(reporter__email__iexact=reporter.email)
 
         signal_count = signals.count()
@@ -311,6 +315,40 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         }
 
         return Response(data=output)
+
+    @action(detail=True, url_path=r'reporter_context/?$')
+    def reporter_context(self, request, pk=None):
+        # https://stackoverflow.com/questions/30528268/annotate-with-latest-related-object-in-django
+
+        # Based on a user's department a signal may not be accessible.
+        signal_exists = Signal.objects.filter(id=pk).exists()
+        signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()
+
+        if signal_exists and not signal_accessible:
+            raise PermissionDenied()
+
+        # Only interested in Signals/complaints with the same reporter as this
+        # Signal/complaint.
+        reporter = Signal.objects.get(id=pk).reporter
+        if reporter.email is None or reporter.email == '':
+            return Response({})
+        signals = Signal.objects.filter(reporter__email__iexact=reporter.email)
+
+        most_recent_is_satisfied = Subquery(
+            Feedback.objects.filter(_signal_id=OuterRef('id')).order_by('-created_at').values('is_satisfied')[:1]
+        )
+        annotated = signals.annotate(is_satisfied=most_recent_is_satisfied)
+
+        paginator = HALPagination()
+        page = paginator.paginate_queryset(annotated, self.request, view=self)
+        serializer = ReporterContextSignalSerializer()
+
+        if page is not None:
+            serializer = ReporterContextSignalSerializer(page, many=True, context=self.get_serializer_context())
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = ReporterContextSignalSerializer(annotated, many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):

@@ -26,6 +26,7 @@ from signals.apps.api.v1.serializers.signal import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
+    ReporterContextSignalSerializer,
     SignalGeoSerializer,
     SignalIdListSerializer
 )
@@ -51,6 +52,7 @@ __all__ = [
     'PrivateSignalSerializerList',
     'PublicSignalSerializerDetail',
     'PublicSignalCreateSerializer',
+    'ReporterContextSignalSerializer',
     'SignalGeoSerializer',
     'SignalIdListSerializer',
     'StoredSignalFilterSerializer',
