@@ -26,7 +26,8 @@ class TestUtils(TestCase):
 
         We test with a couple of examples we can think of and a couple of examples created by the Faker
         """
-        test_schemas = ['http://', 'https://', 'ftp://', 'sftp://', ]
+        test_schemas = ['http://', 'https://', 'ftp://', 'sftp://', 'file://', 'chrome://', 'chrome-extension://',
+                        'dns://', 'git://', 'irc://', 'ldap://', 'smb://', 'z39.50r://', 'z39.50s://']
         test_uris = [
             'test-domain.com',
             'www.test-domain.com/',
