@@ -105,7 +105,6 @@ class TestUtils(TestCase):
                'google.com www.nu.nl end of the test'
         self.assertRegex(text, URL_PATTERN)
 
-        self.assertIn('https://acc.meldingen.amsterdam.nl/manage/incident/7459', text)
         self.assertIn('https://tweakers.net/reviews/8534/desktop-best-buy-guide-januari-2021.html', text)
         self.assertIn('google.com', text)
         self.assertIn('www.nu.nl', text)
@@ -113,7 +112,6 @@ class TestUtils(TestCase):
         text_with_no_links = re.sub(URL_PATTERN, '', text)
         self.assertNotRegex(text_with_no_links, URL_PATTERN)
 
-        self.assertNotIn('https://acc.meldingen.amsterdam.nl/manage/incident/7459', text_with_no_links)
         self.assertNotIn('https://tweakers.net/reviews/8534/desktop-best-buy-guide-januari-2021.html', text_with_no_links)  # noqa
         self.assertNotIn('google.com', text_with_no_links)
         self.assertNotIn('www.nu.nl', text_with_no_links)
