@@ -3,8 +3,9 @@
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django.conf import settings
 from django.db import connection
-from django.db.models import Count, F, Max, OuterRef, Subquery
+from django.db.models import Count, F, Max, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -275,6 +276,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=True, url_path=r'reporter_context_brief/?$')
     def reporter_context_brief(self, request, pk=None):
+        if not settings.API_ENABLE_SIGNAL_REPORTER_CONTEXT:
+            raise Http404  # This feature is configured off
+
         # ADD: CHECK GLOBAL CONFIG TO SEE WHETHER THIS FEATURE IS ENABLED
         # something with API_ENABLE_REPORTER_CONTEXT (as a feature flag) -> 404
         # Based on a user's department a signal may not be accessible.
@@ -318,7 +322,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=True, url_path=r'reporter_context/?$')
     def reporter_context(self, request, pk=None):
-        # https://stackoverflow.com/questions/30528268/annotate-with-latest-related-object-in-django
+        if not settings.API_ENABLE_SIGNAL_REPORTER_CONTEXT:
+            raise Http404  # This feature is configured off
 
         # Based on a user's department a signal may not be accessible.
         signal_exists = Signal.objects.filter(id=pk).exists()
@@ -332,22 +337,23 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         reporter = Signal.objects.get(id=pk).reporter
         if reporter.email is None or reporter.email == '':
             return Response({})
-        signals = Signal.objects.filter(reporter__email__iexact=reporter.email)
 
-        most_recent_is_satisfied = Subquery(
-            Feedback.objects.filter(_signal_id=OuterRef('id')).order_by('-created_at').values('is_satisfied')[:1]
+        feedback_qs = Feedback.objects.order_by('-created_at')
+        signal_qs = (
+            Signal.objects.filter(reporter__email__iexact=reporter.email)
+            .select_related('status')
+            .prefetch_related(Prefetch('feedback', queryset=feedback_qs, to_attr='newest_feedback'))
         )
-        annotated = signals.annotate(is_satisfied=most_recent_is_satisfied)
 
         paginator = HALPagination()
-        page = paginator.paginate_queryset(annotated, self.request, view=self)
+        page = paginator.paginate_queryset(signal_qs, self.request, view=self)
         serializer = ReporterContextSignalSerializer()
 
         if page is not None:
             serializer = ReporterContextSignalSerializer(page, many=True, context=self.get_serializer_context())
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = ReporterContextSignalSerializer(annotated, many=True, context=self.get_serializer_context())
+        serializer = ReporterContextSignalSerializer(signal_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):

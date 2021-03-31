@@ -557,3 +557,6 @@ ALLOW_INVALID_ADDRESS_AS_UNVERIFIED = os.getenv('ALLOW_INVALID_ADDRESS_AS_UNVERI
 
 # Max instances we allow per Category/State combination
 STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES', 20)
+
+# Enable Signal context by Reporter endpoints by setting the following to True
+API_ENABLE_SIGNAL_REPORTER_CONTEXT = os.getenv('API_ENABLE_SIGNAL_REPORTER_CONTEXT', False) in TRUE_VALUES

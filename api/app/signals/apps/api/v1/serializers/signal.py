@@ -620,8 +620,31 @@ class AbridgedChildSignalSerializer(HALSerializer):
 
 
 class ReporterContextSignalSerializer(HALSerializer):
-    most_recent_is_satisfied = serializers.NullBooleanField()
+    serializer_url_field = PrivateSignalLinksField
+
+    newest_feedback = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
-        fields = ('id', 'created_at', 'most_recent_is_satisfied')
+        fields = (
+            '_links',
+            'id',
+            'created_at',
+            'status',
+            'newest_feedback'
+        )
+
+    def get_status(self, obj):
+        return {
+            'state': obj.status.state,
+            'state_display': obj.status.get_state_display(),
+        }
+
+    def get_newest_feedback(self, obj):
+        if obj.newest_feedback:
+            return {
+                'is_satisfied': obj.newest_feedback[0].is_satisfied,
+                'submitted_at': obj.newest_feedback[0].submitted_at,
+            }
+        return None

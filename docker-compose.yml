@@ -105,6 +105,7 @@ services:
       - DWH_MEDIA_ROOT=/dwh_media
       - ELASTICSEARCH_HOST=elasticsearch:9200
       - INITIALIZE_WITH_DUMMY_DATA=0
+      - API_ENABLE_SIGNAL_REPORTER_CONTEXT=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
