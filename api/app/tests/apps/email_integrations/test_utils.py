@@ -27,7 +27,8 @@ class TestUtils(TestCase):
         We test with a couple of examples we can think of and a couple of examples created by the Faker
         """
         test_schemas = ['http://', 'https://', 'ftp://', 'sftp://', 'file://', 'chrome://', 'chrome-extension://',
-                        'dns://', 'git://', 'irc://', 'ldap://', 'smb://', 'z39.50r://', 'z39.50s://']
+                        'dns://', 'git://', 'irc://', 'ldap://', 'smb://', 'z39.50r://', 'z39.50s://', '', ]
+
         test_uris = [
             'test-domain.com',
             'www.test-domain.com/',
@@ -97,6 +98,25 @@ class TestUtils(TestCase):
             self.assertRegex(fake_text_uri, URL_PATTERN)
             self.assertNotIn(fake_uri, re.sub(URL_PATTERN, '', fake_text_uri))
             self.assertNotEqual(fake_text_uri, re.sub(URL_PATTERN, '', fake_text_uri))
+
+        # Case found during testing on the ACC environment
+        text = 'Just a couple of links in a piece of text, ' \
+               'https://tweakers.net/reviews/8534/desktop-best-buy-guide-januari-2021.html and some more text. ' \
+               'google.com www.nu.nl end of the test'
+        self.assertRegex(text, URL_PATTERN)
+
+        self.assertIn('https://acc.meldingen.amsterdam.nl/manage/incident/7459', text)
+        self.assertIn('https://tweakers.net/reviews/8534/desktop-best-buy-guide-januari-2021.html', text)
+        self.assertIn('google.com', text)
+        self.assertIn('www.nu.nl', text)
+
+        text_with_no_links = re.sub(URL_PATTERN, '', text)
+        self.assertNotRegex(text_with_no_links, URL_PATTERN)
+
+        self.assertNotIn('https://acc.meldingen.amsterdam.nl/manage/incident/7459', text_with_no_links)
+        self.assertNotIn('https://tweakers.net/reviews/8534/desktop-best-buy-guide-januari-2021.html', text_with_no_links)  # noqa
+        self.assertNotIn('google.com', text_with_no_links)
+        self.assertNotIn('www.nu.nl', text_with_no_links)
 
     def test_make_email_context(self):
         signal = SignalFactory.create()
