@@ -33,6 +33,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument('data_file', type=str)
 
+    # load_categories will create new slug if the Name property changes. The load_categories command
+    # is not intended to be used for renaming categories. It's intended for loading new catagories
+    # and make un-used categories inactive. Typically this is used during training/debug sessions
+    # and / or adding new categories. It will however re-use the slug if the Name -> Slug
+    # transformation remains the same.
     def handle(self, *args, **options) -> None:
         self.processed_cats = set()
         with open(options['data_file']) as f:
