@@ -31,7 +31,7 @@ def _create_feedback_and_mail_context(signal: Signal):
 # Let's use the regex that is also used by Django to validate a URL (URLValidator)
 # We only removed the ^ and the \Z because we want to search in a text for URL's
 URL_PATTERN = re.compile(
-    r'(?:[a-z0-9\.\-\+]*)://'
+    r'(?:[a-z0-9\.\-\+]*://)?'
     r'(?:[^\s:@/]+(?::[^\s:@/]*)?@)?'
     r'(?:' + URLValidator.ipv4_re + '|' + URLValidator.ipv6_re + '|' + URLValidator.host_re + ')'
     r'(?::\d{2,5})?'
