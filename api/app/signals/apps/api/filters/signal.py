@@ -79,10 +79,6 @@ class SignalFilterSet(FilterSet):
         self.form.cleaned_data.pop('category_slug', None)
         self.form.cleaned_data.pop('maincategory_slug', None)
 
-        if not self.form.cleaned_data.get('area_code', None) or not self.form.cleaned_data.get('area_type_code', None):
-            self.form.cleaned_data.pop('area_code', None)
-            self.form.cleaned_data.pop('area_type_code', None)
-
     def filter_queryset(self, queryset):
         """
         Add custom category filtering to the filter_queryset
