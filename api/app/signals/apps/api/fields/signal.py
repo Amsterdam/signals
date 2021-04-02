@@ -19,6 +19,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
                                                        kwargs={'parent_lookup__signal__pk': value.pk},
                                                        request=request))),
             ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
+            ('sia:context', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
         ])
 
         if value.is_child:
@@ -43,6 +44,25 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
 
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "v1:private-signals-detail", request, None))),
+        ])
+
+        return result
+
+
+class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
+
+    def to_representation(self, value: Signal) -> OrderedDict:
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
+            ('self', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
+            ('sia:context-reporter-detail', dict(href=self.get_url(
+                value, 'v1:private-signal-context-reporter', request, None
+            ))),
+            ('sia:context-geography-detail', dict(href=self.get_url(
+                value, 'v1:private-signal-context-geography', request, None
+            ))),
         ])
 
         return result
