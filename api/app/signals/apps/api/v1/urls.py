@@ -26,6 +26,7 @@ from signals.apps.api.v1.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.v1.views.signal import SignalContextViewSet
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.users.v1.views import (
@@ -107,6 +108,13 @@ urlpatterns = [
 
         re_path(r'signals/promoted/parent/?$', SignalPromotedToParentViewSet.as_view({'get': 'list'}),
                 name='signal-became-parent-since'),
+
+        re_path(r'signals/(?P<pk>\d+)/context/?$', SignalContextViewSet.as_view({'get': 'retrieve'}),
+                name='private-signal-context'),
+        re_path(r'signals/(?P<pk>\d+)/context/reporter/?$', SignalContextViewSet.as_view({'get': 'reporter'}),
+                name='private-signal-context-reporter'),
+        re_path(r'signals/(?P<pk>\d+)/context/geography/?$', SignalContextViewSet.as_view({'get': 'geography'}),
+                name='private-signal-context-geography'),
 
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),

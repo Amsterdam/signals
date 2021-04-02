@@ -47,6 +47,9 @@ class Feedback(models.Model):
     objects = models.Manager()
     actions = FeedbackManager()
 
+    class Meta:
+        ordering = ('_signal', '-created_at')
+
     @property
     def is_too_late(self):
         """Feedback still on time"""
