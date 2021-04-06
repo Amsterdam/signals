@@ -172,7 +172,7 @@ class TestUtils(TestCase):
 
         email_template_invalid = EmailTemplateFactory.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
                                                              title='{{ text|lower:"a" }}',  # TemplateSyntaxError
-                                                             body='{{ created_at|date:"B" }}')  # NotImplementedError
+                                                             body='{{ created_at|date:"PO" }}')  # NotImplementedError
         result = validate_email_template(email_template_invalid)
         self.assertFalse(result)
 

@@ -1,10 +1,12 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2021 Gemeente Amsterdam
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0136_categoryassignment_stored_handling_message_and_HISTORY'),
+        ('signals', '0138_source_is_active'),
     ]
 
     operations = [
