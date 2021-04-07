@@ -19,7 +19,7 @@ from signals.apps.api.v1.views.pdf import GeneratePdfView
 from signals.apps.api.v1.views.questions import PublicQuestionViewSet
 from signals.apps.api.v1.views.signal import (
     PrivateSignalViewSet,
-    PublicSignalListViewSet,
+    PublicSignalMapViewSet,
     PublicSignalViewSet,
     SignalPromotedToParentViewSet
 )
@@ -31,7 +31,7 @@ __all__ = (
     'PublicSignalAttachmentsViewSet',
     'PrivateSignalAttachmentsViewSet',
     'PublicSignalViewSet',
-    'PublicSignalListViewSet',
+    'PublicSignalMapViewSet',
     'PrivateSignalViewSet',
     'SignalCategoryRemovedAfterViewSet',
     'SignalPromotedToParentViewSet',

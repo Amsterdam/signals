@@ -9,8 +9,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ViewSet
 
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
@@ -27,7 +28,6 @@ from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
-    PublicEmptySerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
     SignalGeoSerializer,
@@ -62,14 +62,13 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
         return Response(data)
 
 
-class PublicSignalListViewSet(PublicSignalGenericViewSet):
-    serializer_class = PublicEmptySerializer
-    renderer_classes = [SerializedJsonRenderer]
+class PublicSignalMapViewSet(ViewSet):
+    renderer_classes = [SerializedJsonRenderer, BrowsableAPIRenderer]
     # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
     # The downside is that this query has to be (potentially) maintained when changing one of the
-    # following models: sginal, categoryassignment, category, location, status
+    # following models: signal, categoryassignment, category, location, status
 
     def list(self, *args, **kwargs):
         fast_query = f"""
@@ -115,13 +114,9 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
             cursor.close
             logger.error('failed to retrieve signals json from db', exc_info=e)
 
-    def create(self, request):
-        # this endpoint only returns list, and is not intended to be used for other purposes
-        raise Http404
-
-    def retrieve(self, request, signal_id):
-        # this endpoint only returns list, and is not intended to be used for other purposes
-        raise Http404
+    def get_view_name(self):
+        # Overridden to avoid: "Public Signal Map List" that is the default behavior here.
+        return 'Public Signal Map'
 
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):

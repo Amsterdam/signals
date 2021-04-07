@@ -19,7 +19,7 @@ from signals.apps.api.v1.views import (
     PublicCategoryViewSet,
     PublicQuestionViewSet,
     PublicSignalAttachmentsViewSet,
-    PublicSignalListViewSet,
+    PublicSignalMapViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
     SignalPromotedToParentViewSet,
@@ -49,7 +49,7 @@ public_categories.register(r'sub_categories', PublicCategoryViewSet, basename='p
                            parents_query_lookups=['parent__slug'])
 
 if settings.ENABLE_PUBLIC_GEO_SIGNAL_ENDPOINT:
-    public_router.register(r'public/map-signals', PublicSignalListViewSet, basename='public-list-signals')
+    public_router.register(r'public/map-signals', PublicSignalMapViewSet, basename='public-list-signals')
 
 # Private API
 private_router = SignalsRouterVersion1()
