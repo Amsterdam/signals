@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.test import TransactionTestCase
 
 from signals.apps.signals import factories
@@ -18,7 +20,6 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
             'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in search behavior here
-            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,  # we are not interested in search behavior here
             'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
             'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,  # THIS IS WHAT WE WANT TO TEST
         }
@@ -28,7 +29,6 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
             'API_SEARCH_ENABLED': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in search behavior here
-            'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,  # we are not interested in search behavior here
             'SEARCH_BUILD_INDEX': False,  # we are not interested in search behavior here
             'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,  # THIS IS WHAT WE WANT TO TEST
         }

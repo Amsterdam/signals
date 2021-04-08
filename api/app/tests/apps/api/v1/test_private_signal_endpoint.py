@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import copy
 import json
 import os
@@ -29,7 +31,8 @@ from signals.apps.signals.factories import (
     ServiceLevelObjectiveFactory,
     SignalFactory,
     SignalFactoryValidLocation,
-    SignalFactoryWithImage
+    SignalFactoryWithImage,
+    SourceFactory
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
@@ -81,7 +84,6 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -109,6 +111,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.link_subcategory = '/signals/v1/public/terms/categories/{}/sub_categories/{}'.format(
             self.subcategory.parent.slug, self.subcategory.slug
         )
+
+        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='valid-source', is_active=True)
 
         # Load fixture of initial data, augment with above test categories.
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
@@ -1583,7 +1588,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -1593,6 +1597,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     test_host = 'http://testserver'
 
     def setUp(self):
+        SourceFactory.create(name='valid-source')
         self.signal = SignalFactory.create()
 
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'create_initial.json')
@@ -1613,7 +1618,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsInstance(self.signal.attachments.filter(is_image=True).first(), Attachment)
 
-    def test_attachment_upload(self):
+    def test_attachment_upload_extension_not_allowed(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)
         doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
 
@@ -1622,10 +1627,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
             response = self.client.post(endpoint, data)
 
-        self.assertEqual(response.status_code, 201)
-        self.assertIsInstance(self.signal.attachments.first(), Attachment)
-        self.assertIsNone(self.signal.attachments.filter(is_image=True).first())
-        self.assertEqual(self.sia_read_write_user.email, self.signal.attachments.first().created_by)
+        self.assertEqual(response.status_code, 400)
 
     def test_create_has_attachments_false(self):
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
@@ -1682,7 +1684,6 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, SIAReadWriteUserMixin,
@@ -1695,6 +1696,9 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
     subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
 
     def setUp(self):
+        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='test-api', is_active=True)
+
         self.department = DepartmentFactory.create(
             code='TST',
             name='Department for testing #1',
@@ -2085,7 +2089,7 @@ class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 404)
 
         # Check that accessing child endpoint on normal signal results in 404
-        self.assertFalse(self.normal_signal.is_parent())
+        self.assertFalse(self.normal_signal.is_parent)
         response = self.client.get(self.child_endpoint.format(pk=self.normal_signal.pk))
         self.assertEqual(response.status_code, 404)
 

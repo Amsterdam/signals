@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.db import migrations
 
 # SIG-2250 Added a default type for all signals

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 """
 Fixing the parent of category "prullenbak-kapot" from "schoon" to "wegen-verkeer-straatmeubilair"
 """

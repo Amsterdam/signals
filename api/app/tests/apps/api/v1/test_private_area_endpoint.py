@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import os
 
 from rest_framework import status
@@ -12,7 +14,7 @@ class TestPrivateAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/areas/'
 
     def setUp(self):
-        super(TestPrivateAreaEndpoint, self).setUp()
+        super().setUp()
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.areas = {}

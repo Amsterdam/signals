@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
@@ -127,7 +129,7 @@ class PrivateCategorySerializer(HALSerializer):
                 ServiceLevelObjective.objects.create(**new_sla)
                 instance.refresh_from_db()
 
-        return super(PrivateCategorySerializer, self).update(instance, validated_data)
+        return super().update(instance, validated_data)
 
 
 class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from signals.apps.api.v1.filters.area import AreaFilterSet
 from signals.apps.api.v1.filters.department import DepartmentFilterSet
 from signals.apps.api.v1.filters.question import QuestionFilterSet

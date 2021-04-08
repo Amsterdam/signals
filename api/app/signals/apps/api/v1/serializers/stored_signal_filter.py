@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -51,4 +53,4 @@ class StoredSignalFilterSerializer(HALSerializer):
         validated_data.update({
             'created_by': self.context['request'].user.email
         })
-        return super(StoredSignalFilterSerializer, self).create(validated_data=validated_data)
+        return super().create(validated_data=validated_data)

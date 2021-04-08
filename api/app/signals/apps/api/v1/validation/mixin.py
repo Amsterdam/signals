@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from django.conf import settings
 
 from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
@@ -22,4 +24,4 @@ class SignalValidationMixin(AddressValidationMixin):
                 and 'parent' in attrs and attrs['parent']):
             attrs['source'] = settings.API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO
 
-        return super(SignalValidationMixin, self).validate(attrs)
+        return super().validate(attrs)

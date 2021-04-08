@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.core.exceptions import ValidationError as DjangoCoreValidationError
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -17,7 +19,7 @@ class LegacyMlPredictCategoryView(APIView):
         # When we cannot translate we return the 'overig-overig' category url
         self.default_category = Category.objects.get(slug='overig', parent__isnull=False, parent__slug='overig')
 
-        super(LegacyMlPredictCategoryView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def default_category_url(self):

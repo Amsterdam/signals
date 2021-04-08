@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
 from random import shuffle
 
@@ -18,6 +20,7 @@ from signals.apps.signals.factories import (
     SignalDepartmentsFactory,
     SignalFactory,
     SignalUserFactory,
+    SourceFactory,
     StatusFactory,
     TypeFactory
 )
@@ -83,6 +86,8 @@ class TestFilters(SignalsBaseApiTestCase):
         self.signals = TestFilters.signals
         self.sub_categories = TestFilters.sub_categories
         self.states = TestFilters.states
+        SourceFactory.create(name='online')
+        SourceFactory.create(name='ACC')
 
     def _request_filter_signals(self, filter_params: dict):
         """ Does a filter request and returns the signal ID's present in the request """

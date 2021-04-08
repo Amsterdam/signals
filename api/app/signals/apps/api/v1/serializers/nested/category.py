@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from rest_framework import serializers
 
 from signals.apps.api.generics.serializers import SIAModelSerializer
@@ -52,13 +54,13 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
         elif 'sub_category' in data and 'category_url' in data:
             raise serializers.ValidationError('Only the "sub_category" OR "category_url" can be given')
 
-        return super(_NestedCategoryModelSerializer, self).to_internal_value(data=data)
+        return super().to_internal_value(data=data)
 
     def validate(self, attrs):
         if 'category' not in attrs:
             raise serializers.ValidationError('Either the "sub_category" OR the "category_url" must be given')
 
-        return super(_NestedCategoryModelSerializer, self).validate(attrs=attrs)
+        return super().validate(attrs=attrs)
 
     def get_departments(self, obj):
         return ', '.join(

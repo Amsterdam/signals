@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -49,4 +51,4 @@ class StatusMessageTemplate(CreatedUpdatedModel):
             raise ValidationError(msg)
 
         # Save the instance
-        super(StatusMessageTemplate, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

@@ -1,10 +1,9 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 import os
 from unittest import mock
 
-import requests
-from django.conf import settings
 from django.contrib.gis.geos import Point
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import LiveServerTestCase, TestCase, TransactionTestCase, override_settings
@@ -253,34 +252,6 @@ class TestSignalModel(TestCase):
 
         self.assertEqual('SIA-999', signal.sia_id)
 
-    def test_get_fqdn_image_crop_url_no_image(self):
-        signal = factories.SignalFactory.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        self.assertEqual(image_url, None)
-
-    def test_get_fqdn_image_crop_url_with_local_image(self):
-        Site.objects.update_or_create(
-            id=settings.SITE_ID,
-            defaults={'domain': settings.SITE_DOMAIN, 'name': settings.SITE_NAME})
-        signal = factories.SignalFactoryWithImage.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        self.assertEqual('http://localhost:8000{}'.format(signal.image_crop.url), image_url)
-
-    @mock.patch('imagekit.cachefiles.ImageCacheFile.url', new_callable=mock.PropertyMock)
-    @mock.patch('signals.apps.signals.models.signal.isinstance', return_value=True)
-    def test_get_fqdn_image_crop_url_with_swift_image(self, mocked_isinstance, mocked_url):
-        mocked_url.return_value = 'https://objectstore.com/url/coming/from/swift/image.jpg'
-        signal = factories.SignalFactoryWithImage.create()
-
-        image_url = signal.get_fqdn_image_crop_url()
-
-        mocked_isinstance.assert_called()
-        self.assertEqual('https://objectstore.com/url/coming/from/swift/image.jpg', image_url)
-
     @override_settings(SIGNAL_MAX_NUMBER_OF_CHILDREN=3)
     def test_split_signal_add_first_child(self):
         signal = factories.SignalFactory.create()
@@ -382,14 +353,6 @@ class TestSignalModel(TestCase):
         created_at = signal.created_at.astimezone(timezone.get_current_timezone())
 
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
-
-    @mock.patch("uuid.uuid4")
-    def test_uuid_assignment(self, mocked_uuid4):
-        """ UUID should be assigned on construction of Signal """
-
-        signal = Signal(signal_id=None)
-        self.assertIsNotNone(signal.signal_id)
-        mocked_uuid4.assert_called_once()
 
 
 class TestStatusModel(TestCase):
@@ -605,75 +568,6 @@ class TestAttachmentModel(LiveServerTestCase):
         self.signal = factories.SignalFactory.create()
 
         self.gif_upload = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-
-    def test_cropping_image_cache_file(self):
-        attachment = Attachment()
-        attachment.file = self.gif_upload
-        attachment._signal = self.signal
-        attachment.mimetype = "image/gif"
-        attachment.save()
-
-        self.assertIsInstance(attachment.image_crop.url, str)
-        self.assertTrue(attachment.image_crop.url.endswith(".jpg"))
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original image is not reachable")
-
-        resp = requests.get(self.live_server_url + attachment.image_crop.url)
-        self.assertEqual(200, resp.status_code, "Cropped image is not reachable")
-
-    def test_cache_file_with_word_doc(self):
-        with open(self.doc_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("file.doc", f.read(), content_type="application/msword")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment.mimetype = "application/msword"
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
-
-    def test_cache_file_with_json_file(self):
-        with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(),
-                                            content_type="application/json")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment.mimetype = "application/json"
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
-
-    def test_cache_file_without_mimetype(self):
-        with open(self.json_upload_location, "rb") as f:
-            doc_upload = SimpleUploadedFile("upload.json", f.read(),
-                                            content_type="application/json")
-
-            attachment = Attachment()
-            attachment.file = doc_upload
-            attachment._signal = self.signal
-            attachment.save()
-
-        with self.assertRaises(Attachment.NotAnImageException):
-            attachment.image_crop()
-
-        self.assertEqual("application/json", attachment.mimetype, "Mimetype should be set "
-                                                                  "automatically when not set "
-                                                                  "explicitly")
-
-        resp = requests.get(self.live_server_url + attachment.file.url)
-        self.assertEqual(200, resp.status_code, "Original file is not reachable")
 
     def test_is_image_gif(self):
         attachment = Attachment()

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.core.exceptions import ImproperlyConfigured
 from django_filters.rest_framework import filters
 from rest_framework.filters import OrderingFilter
@@ -81,10 +83,10 @@ class FieldMappingOrderingFilter(OrderingFilter):
 class OrderingExtraKwargsFilter(filters.OrderingFilter):
     def __init__(self, *args, **kwargs):
         self.extra_kwargs = kwargs.pop('extra_kwargs')
-        super(OrderingExtraKwargsFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_ordering_value(self, param):
-        value = super(OrderingExtraKwargsFilter, self).get_ordering_value(param=param)
+        value = super().get_ordering_value(param=param)
 
         descending = param.startswith('-')
         param = param[1:] if descending else param

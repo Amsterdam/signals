@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from io import StringIO
 from unittest.mock import patch
 
@@ -16,7 +18,7 @@ class TestCommand(TransactionTestCase):
         self.assertNotEqual(out.getvalue(), '')
         self.assertEqual(err.getvalue(), '')
 
-        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 8)
+        self.assertEqual(patched_save_csv_files_datawarehouse.call_count, 10)
 
 
 class TestCSVHorecaCommand(TransactionTestCase):

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -43,7 +45,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })
 
-        return super(_NestedStatusModelSerializer, self).validate(attrs=attrs)
+        return super().validate(attrs=attrs)
 
 
 class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):

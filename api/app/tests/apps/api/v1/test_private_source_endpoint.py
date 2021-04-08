@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 
 from rest_framework import status
@@ -18,7 +20,7 @@ class TestPrivateSourceEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/sources/'
 
     def setUp(self):
-        super(TestPrivateSourceEndpoint, self).setUp()
+        super().setUp()
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.sources = SourceFactory.create_batch(5)

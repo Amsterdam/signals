@@ -1,9 +1,8 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
 from django.contrib.gis.db import models
-from imagekit import ImageSpec
-from imagekit.cachefiles import ImageCacheFile
-from imagekit.processors import ResizeToFit
 from PIL import Image, ImageFile, UnidentifiedImageError
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -39,34 +38,6 @@ class Attachment(CreatedUpdatedModel):
             models.Index(fields=['is_image']),
             models.Index(fields=['_signal', 'is_image']),
         ]
-
-    class NotAnImageException(Exception):
-        pass
-
-    class CroppedImage(ImageSpec):
-        processors = [ResizeToFit(800, 800), ]
-        format = 'JPEG'
-        options = {'quality': 80}
-
-    @property
-    def image_crop(self):
-        return self._crop_image()
-
-    def _crop_image(self):
-        if not self.is_image:
-            raise Attachment.NotAnImageException("Attachment is not an image. Use is_image to check"
-                                                 " if attachment is an image before asking for the "
-                                                 "cropped version.")
-
-        generator = Attachment.CroppedImage(source=self.file)
-        cache_file = ImageCacheFile(generator)
-
-        try:
-            cache_file.generate()
-        except FileNotFoundError as e:
-            logger.warn("File not found when generating cache file: " + str(e))
-
-        return cache_file
 
     def _check_if_file_is_image(self):
         try:

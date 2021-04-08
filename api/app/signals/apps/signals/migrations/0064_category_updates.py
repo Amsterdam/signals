@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 """
 Disable 4 categories see SIG-1279 and SIG-1280.
 """

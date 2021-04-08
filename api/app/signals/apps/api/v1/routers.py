@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from rest_framework import routers
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 
@@ -62,5 +64,5 @@ class SignalsRouterVersion1(ExtendedDefaultRouter):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(SignalsRouterVersion1, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.trailing_slash = '/?'

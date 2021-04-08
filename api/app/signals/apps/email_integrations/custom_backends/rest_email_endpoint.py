@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import json
 import threading
 
@@ -9,7 +11,7 @@ from requests import RequestException, Session
 
 class RestEmailBackend(BaseEmailBackend):
     def __init__(self, fail_silently=False, **kwargs):
-        super(RestEmailBackend, self).__init__(fail_silently)
+        super().__init__(fail_silently)
         self.init_kwargs = kwargs
         self.session = None
         self._lock = threading.RLock()

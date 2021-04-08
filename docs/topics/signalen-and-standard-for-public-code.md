@@ -160,15 +160,15 @@ Policy and documentation MAY have testing for style and broken links. |  |
 
 ## [Publish with an open license](https://standard.publiccode.net/criteria/open-licenses.html)
 
-- [ ] compliant with this criterion.
+- [x] compliant with this criterion.
 
 Requirement | meets | links and notes
 -----|-----|-----
-All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE), would be nice to add SPDX license identifiers to files.
+All code and documentation MUST be licensed such that it may be freely reusable, changeable and redistributable. | Yes | [Mozilla license](https://github.com/Amsterdam/signals/blob/master/LICENSE)
 Software source code MUST be licensed under an OSI-approved open source license. | yes | [MPL-2.0](https://opensource.org/licenses/MPL-2.0)
 All code MUST be published with a license file. | yes |
 Contributors MUST NOT be required to transfer copyright of their contributions to the codebase. | yes |
-All source code files in the codebase SHOULD include a copyright notice and a license header. | no | See [signals#623](https://github.com/Amsterdam/signals/pull/623).
+All source code files in the codebase SHOULD include a copyright notice and a license header. | yes | Added: [signals#623](https://github.com/Amsterdam/signals/pull/623) and checked with CI: [signals#764](https://github.com/Amsterdam/signals/pull/764)
 Codebases MAY have multiple licenses for different types of code and documentation. |  |
 
 ## [Use a coherent style](https://standard.publiccode.net/criteria/style.html)
@@ -189,6 +189,6 @@ You MAY include sections in your style guide on understandable English. |  |
 Requirement | meets | links and notes
 -----|-----|-----
 A codebase MUST be versioned. | yes | Semantic versioning and tagged as such. Backend is currently starting to publish tags again.
-A codebase that is ready to use MUST only depend on other codebases that are also ready to use. |  | Probably, but dependency double-check would be good.
+A codebase that is ready to use MUST only depend on other codebases that are also ready to use. | yes | [Open Source dependencies](./dependencies.md)
 A codebase that is not yet ready to use MUST have one of these labels: prototype - to test the look and feel, and to internally prove the concept of the technical possibilities, alpha - to do guided tests with a limited set of users, beta - to open up testing to a larger section of the general public, for example to test if the codebase works at scale, pre-release version - code that is ready to be released but hasn’t received formal approval yet. | N/A |
-A codebase SHOULD contain a log of changes from version to version, for example in the CHANGELOG. | some | There is no changelog, but there are release notes for [backend](https://github.com/Amsterdam/signals/releases) and [frontend](https://github.com/Amsterdam/signals-frontend/releases).
+A codebase SHOULD contain a log of changes from version to version, for example in the CHANGELOG. | yes | There is no changelog, but there are release notes for [backend](https://github.com/Amsterdam/signals/releases) and [frontend](https://github.com/Amsterdam/signals-frontend/releases).

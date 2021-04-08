@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -8,8 +10,14 @@ from freezegun import freeze_time
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.feedback.models import Feedback
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation
+from signals.apps.signals.factories import (
+    CategoryFactory,
+    SignalFactory,
+    SignalFactoryValidLocation
+)
 from signals.apps.signals.models import Category, History, Signal
+from signals.apps.signals.models.category_assignment import CategoryAssignment
+from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from tests.test import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -175,6 +183,67 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         sla_description_in_history = [entry['description'] for entry in data if entry['action'] == 'Servicebelofte:']
         self.assertEqual(self.signal.category_assignments.all().order_by('created_at')[0].category.handling_message,
                          sla_description_in_history[0])
+
+    def test_handling_message_in_history_is_constant(self):
+        # SIG-3555 because history is not tracked for the Category model and its
+        # handling_message. Changing the handling_message will also change the
+        # history of every Signal that has that Category associated with.
+        # This test demonstrates the problem.
+        message_1 = 'MESSAGE 1'
+        message_2 = 'MESSAGE 2'
+
+        cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
+        cat2 = CategoryFactory.create(name='cat2')
+        signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        # Retrieve signal history before changing the Category handling message.
+        response = self.client.get(f'/signals/v1/private/signals/{signal.id}/history' + '?what=UPDATE_SLA')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(len(response_json), 1)
+        self.assertEqual(response_json[0]['description'], message_1)
+
+        # Change handling message on category
+        cat1.handling_message = message_2
+        cat1.save()
+        cat1.refresh_from_db()
+
+        # Assign different category and then the same again, check handling messages.
+        Signal.actions.update_category_assignment({'category': cat2}, signal)
+        signal.refresh_from_db()
+        Signal.actions.update_category_assignment({'category': cat1}, signal)
+        response = self.client.get(f'/signals/v1/private/signals/{signal.id}/history' + '?what=UPDATE_SLA')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(len(response_json), 1)
+        self.assertEqual(response_json[0]['description'], message_1)
+
+        # check that the correct handling messages are stored:
+        category_assignments = list(CategoryAssignment.objects.filter(_signal_id=signal.id).order_by('id'))
+        self.assertEqual(category_assignments[0].stored_handling_message, message_1)
+        self.assertEqual(category_assignments[2].stored_handling_message, message_2)
+
+    def test_null_stored_handling_message(self):
+        # SIG-3555 old complaints/Signals will have no stored handling messages on their associated CategoryAssignments.
+        # This test fakes that by setting one category's handling message to null and checks that the correct
+        # placeholder is returned.
+        message_1 = None
+
+        cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
+        signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        response = self.client.get(f'/signals/v1/private/signals/{signal.id}/history' + '?what=UPDATE_SLA')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertEqual(response_json[0]['description'], EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE)
 
     def test_history_no_permissions(self):
         """

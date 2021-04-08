@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
@@ -121,12 +123,12 @@ class SignalViewObjectPermission(DjangoModelPermissions):
         if request.user.is_superuser or request.user.has_perm('signals.sia_can_view_all_categories'):  # noqa
             return True
 
-        read_permisson = (
+        read_permission = (
             self.permission_service.has_permission_via_category(request.user, obj) or
             self.permission_service.has_permission_via_routing(request.user, obj)
         )
 
-        return read_permisson and request.user.has_perm('signals.sia_read')
+        return read_permission and request.user.has_perm('signals.sia_read')
 
 
 class SIAReportPermissions(SIABasePermission):
@@ -134,4 +136,16 @@ class SIAReportPermissions(SIABasePermission):
         'GET': ['signals.sia_read', 'signals.sia_signal_report'],
         'OPTIONS': [],
         'HEAD': []
+    }
+
+
+class SIAUserPermissions(SIABasePermission):
+    perms_map = {
+        'GET': ['signals.sia_read', 'auth.view_user'],
+        'OPTIONS': [],
+        'HEAD': [],
+        'POST': ['signals.sia_write', 'auth.add_user'],
+        'PUT': ['signals.sia_write', 'auth.change_user'],
+        'PATCH': ['signals.sia_write', 'auth.change_user'],
+        'DELETE': ['signals.sia_write', 'auth.delete_user'],
     }

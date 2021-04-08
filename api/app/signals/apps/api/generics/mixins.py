@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import mixins
@@ -18,7 +20,7 @@ def convert_validation_error(error):
 class CreateModelMixin(mixins.CreateModelMixin):
     def perform_create(self, serializer):
         try:
-            return super(CreateModelMixin, self).perform_create(serializer=serializer)
+            return super().perform_create(serializer=serializer)
         except DjangoValidationError as e:
             raise convert_validation_error(e)
 
@@ -42,7 +44,7 @@ class DestroyModelMixin(mixins.DestroyModelMixin):
 class UpdateModelMixin(mixins.UpdateModelMixin):
     def perform_update(self, serializer):
         try:
-            return super(UpdateModelMixin, self).perform_update(serializer=serializer)
+            return super().perform_update(serializer=serializer)
         except DjangoValidationError as e:
             raise convert_validation_error(e)
 

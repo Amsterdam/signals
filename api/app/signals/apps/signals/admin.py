@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib import admin, messages
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import transaction
@@ -193,7 +195,7 @@ admin.site.register(Signal, SignalAdmin)
 
 
 class SourceAdmin(admin.ModelAdmin):
-    fields = ('name', 'description', 'order', )
+    fields = ('name', 'description', 'is_active', 'order', )
 
 
 admin.site.register(Source, SourceAdmin)
@@ -214,7 +216,7 @@ class RoutingExpressionAdmin(admin.ModelAdmin):
             obj.is_active = False
             messages.add_message(request, messages.WARNING, f'Rule deactivated due to error in expression: {str(e)}')
 
-        super(RoutingExpressionAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(RoutingExpression, RoutingExpressionAdmin)

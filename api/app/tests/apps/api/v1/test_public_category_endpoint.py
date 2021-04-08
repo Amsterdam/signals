@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import os
 
 from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory
@@ -35,7 +37,7 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         CategoryFactory.create_batch(5, parent=self.parent_category)
         self.parent_category.refresh_from_db()
 
-        super(TestCategoryTermsEndpoints, self).setUp()
+        super().setUp()
 
     def test_category_list(self):
         url = '/signals/v1/public/terms/categories/'

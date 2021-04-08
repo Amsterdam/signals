@@ -1,12 +1,11 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.core.exceptions import ValidationError
 
 from signals.apps.email_integrations.models import EmailTemplate
-
-# from django.core.exceptions import ValidationError
-
-# from signals.apps.email_integrations.reporter.mail_actions import Context, MailActions, Template
-# from signals.apps.signals.factories import SignalFactoryValidLocation
+from signals.apps.email_integrations.utils import validate_email_template, validate_template
 
 
 class EmailTemplateAdminForm(forms.ModelForm):
@@ -14,36 +13,36 @@ class EmailTemplateAdminForm(forms.ModelForm):
         model = EmailTemplate
         exclude = ('created_by', )
 
-    def _validate_template_rendering(self, data):
-        """
-        This function will validate if the given data can be rendered as an actual e-mail message or subject
-        """
-        # TODO: Fix this correctly, for now disabled.
-        return
-        # test_signal = SignalFactoryValidLocation()  # Not stored in the DB only used to provided in the Context
-        # mail_actions = MailActions()  # noqa Only used to determine the action and get the correct context, will not send any e-mail
-        # for action in mail_actions._get_actions(signal=test_signal):
-        #     context = mail_actions._get_mail_context(signal=test_signal, mail_kwargs=mail_actions._kwargs[action])
-        #
-        #     try:
-        #         Template(data).render(Context(context, autoescape=False))
-        #     except Exception:  # Catch all error's and show a "default" message
-        #         raise ValidationError('Er heeft zich een fout voorgedaan bij het valideren van de gegeven data')
-
     def clean_title(self):
-        self._validate_template_rendering(self.cleaned_data['title'])
+        if not validate_template(template=self.cleaned_data['title']):
+            raise ValidationError('De titel is niet valide')
+
         return self.cleaned_data['title']
 
     def clean_body(self):
-        self._validate_template_rendering(self.cleaned_data['body'])
+        if not validate_template(template=self.cleaned_data['body']):
+            raise ValidationError('De body is niet valide')
+
         return self.cleaned_data['body']
 
 
 @admin.register(EmailTemplate)
 class EmailTemplate(admin.ModelAdmin):
+    change_form_template = 'admin/change_email_template_form.html'
+
     list_display = ('key', 'title', )
     readonly_fields = ('created_by', )
     form = EmailTemplateAdminForm
+
+    actions = ['validate_templates']
+
+    def validate_templates(self, request, queryset):
+        for email_template in queryset.all():
+            if validate_email_template(email_template=email_template):
+                self.message_user(request, f"De E-mail template '{email_template}', is valide.", messages.SUCCESS)
+            else:
+                self.message_user(request, f"De E-mail template '{email_template}', is NIET valide.", messages.ERROR)
+    validate_templates.short_description = 'Geselecteerde E-mail templates valideren'
 
     def save_model(self, request, obj, form, change):
         obj.created_by = request.user.email

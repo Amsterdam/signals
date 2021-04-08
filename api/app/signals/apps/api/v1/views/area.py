@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSet
 from django.http import Http404

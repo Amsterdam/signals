@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from datapunt_api.serializers import HALSerializer
 from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField

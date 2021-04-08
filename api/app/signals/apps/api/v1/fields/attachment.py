@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from collections import OrderedDict
 
 from rest_framework import serializers
@@ -7,7 +9,7 @@ from signals.apps.signals.models import Attachment
 
 
 class PublicSignalAttachmentLinksField(serializers.HyperlinkedIdentityField):
-    lookup_field = 'signal_id'
+    lookup_field = 'uuid'
 
     def to_representation(self, value: Attachment):
         request = self.context.get('request')

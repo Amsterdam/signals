@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
 from django.db.models import Case, When
@@ -11,10 +13,10 @@ class CustomSearch(Search):
 
     def __init__(self, **kwargs):
         self._queryset = kwargs.pop('queryset', None)
-        super(CustomSearch, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _clone(self):
-        s = super(CustomSearch, self)._clone()
+        s = super()._clone()
         s._queryset = self._queryset
         return s
 

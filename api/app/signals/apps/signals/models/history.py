@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
+
+EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE = 'Servicebelofte onbekend'
 
 
 class History(models.Model):
@@ -72,6 +76,10 @@ class History(models.Model):
             return _get_description_of_receive_feedback(feedback_id)
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return f'Melding {self.extra}'
+        elif self.what == 'UPDATE_SLA':
+            if self.description is None:
+                return EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
+            return self.description
         else:
             return self.description
 

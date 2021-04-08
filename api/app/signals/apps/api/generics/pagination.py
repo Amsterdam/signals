@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -6,7 +8,7 @@ class LinkHeaderPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
     def __init__(self, page_query_param=None, page_size=None, *args, **kwargs):
-        super(LinkHeaderPagination, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.page_query_param = page_query_param or self.page_query_param
         self.page_size = page_size or self.page_size

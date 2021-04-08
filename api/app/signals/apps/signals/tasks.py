@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 import logging
 
 from django.conf import settings
@@ -85,7 +87,7 @@ def update_status_children_based_on_parent(signal_id):
         return
 
     signal = Signal.objects.get(pk=signal_id)
-    if signal.is_parent() and signal.status.state in [AFGEHANDELD, GEANNULEERD, ]:
+    if signal.is_parent and signal.status.state in [AFGEHANDELD, GEANNULEERD, ]:
         text = 'Hoofdmelding is afgehandeld'
 
         # Lets check the children

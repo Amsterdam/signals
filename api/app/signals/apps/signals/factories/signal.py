@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import uuid
 from datetime import timedelta
 
@@ -27,7 +29,7 @@ class SignalFactory(DjangoModelFactory):
     class Meta:
         model = Signal
 
-    signal_id = FuzzyAttribute(uuid.uuid4)
+    uuid = FuzzyAttribute(uuid.uuid4)
     text = LazyFunction(fake.paragraph)
     text_extra = LazyFunction(fake.paragraph)
 

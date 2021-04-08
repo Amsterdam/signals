@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from django.urls import include, path, re_path
 
@@ -26,7 +28,13 @@ from signals.apps.api.v1.views import (
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
-from signals.apps.users.v1.views import PermissionViewSet, RoleViewSet, UserViewSet
+from signals.apps.users.v1.views import (
+    AutocompleteUsernameListView,
+    LoggedInUserView,
+    PermissionViewSet,
+    RoleViewSet,
+    UserViewSet
+)
 
 # Public API
 public_router = SignalsRouterVersion1()
@@ -74,7 +82,7 @@ urlpatterns = [
 
     # Public additions
     path('v1/public/', include([
-        re_path(r'signals/(?P<signal_id>[-\w]+)/attachments/?$',
+        re_path(r'signals/(?P<uuid>[-\w]+)/attachments/?$',
                 PublicSignalAttachmentsViewSet.as_view({'post': 'create'}), name='public-signals-attachments'),
         re_path(r'questions/?$', PublicQuestionViewSet.as_view({'get': 'list'}), name='question-detail'),
     ])),
@@ -82,7 +90,7 @@ urlpatterns = [
     # Private additions
     path('v1/private/', include([
         # Returns the details of the currently logged in user
-        re_path('me/?$', UserViewSet.as_view({'get': 'me'}), name='auth-me'),
+        re_path('me/?$', LoggedInUserView.as_view(), name='auth-me'),
 
         # Get/Replace the status message templates per category
         re_path(r'terms/categories/(?P<slug>[-\w]+)/status-message-templates/?$',
@@ -103,5 +111,9 @@ urlpatterns = [
         # Search
         re_path('search/?$', SearchView.as_view({'get': 'list'}), name='elastic-search'),
 
+        # Used for autocompletion
+        path('autocomplete/', include([
+            re_path('usernames/?$', AutocompleteUsernameListView.as_view(), name='autocomplete-usernames'),
+        ])),
     ])),
 ]

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -21,7 +23,7 @@ class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
 
     def get_queryset(self):
         if self.get_parents_query_dict():
-            return super(PublicCategoryViewSet, self).get_queryset()
+            return super().get_queryset()
         return self.queryset.filter(parent__isnull=True)
 
     def get_serializer(self, *args, **kwargs):

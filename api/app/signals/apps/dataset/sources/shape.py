@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import os
 import zipfile
 from urllib.parse import urlsplit
@@ -24,9 +26,8 @@ class ShapeBoundariesLoader(AreaLoader):
         assert type_string in self.PROVIDES
 
         self.area_type, _ = AreaType.objects.get_or_create(
-            name=options['type'],
             code=options['type'],
-            description=f"{options['type']} data",
+            defaults={'name': options['type'], 'description': f"{options['type']} data"}
         )
         self.directory = directory  # Data downloaded / processed here. Caller is responsible to clean-up directory.
         self.DATASET_URL = options['url']

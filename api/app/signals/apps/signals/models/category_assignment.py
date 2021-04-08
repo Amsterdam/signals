@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 
@@ -30,6 +32,12 @@ class CategoryAssignment(CreatedUpdatedModel):
     deadline = models.DateTimeField(null=True)
     deadline_factor_3 = models.DateTimeField(null=True)
 
+    # SIG-3555 store handling message as it was at the moment the category
+    # was assigned. Before we had problems with history "changing" when the
+    # handling message for a category was updated (because it was queried from
+    # the category table each time the history is shown).
+    stored_handling_message = models.TextField(null=True)
+
     def __str__(self):
         """String representation."""
         return '{sub} - {signal}'.format(sub=self.category, signal=self._signal)
@@ -41,4 +49,5 @@ class CategoryAssignment(CreatedUpdatedModel):
         # Note: this may be moved to the API layer of SIA/Signalen.
         self.deadline, self.deadline_factor_3 = DeadlineCalculationService.from_signal_and_category(
             self._signal, self.category)
+        self.stored_handling_message = self.category.handling_message  # SIG-3555
         super().save(*args, **kwargs)

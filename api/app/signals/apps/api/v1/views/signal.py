@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
@@ -24,6 +26,7 @@ from signals.apps.api.v1.serializers import (
     HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList,
+    PublicEmptySerializer,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
     SignalGeoSerializer,
@@ -53,14 +56,16 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, signal_id):
-        signal = Signal.objects.get(signal_id=signal_id)
+    def retrieve(self, request, uuid):
+        signal = Signal.objects.get(uuid=uuid)
 
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
 
 class PublicSignalListViewSet(PublicSignalGenericViewSet):
+    serializer_class = PublicEmptySerializer
+
     # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
     # Using pgsql ability to generate geojson, the request time reduces to 30ms (> 130x speedup!)
@@ -95,11 +100,11 @@ class PublicSignalListViewSet(PublicSignalGenericViewSet):
             where
                 s.location_id = l.id
                 and s.status_id = status.id
-                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}')
+                and status.state not in ('{workflow.AFGEHANDELD}', '{workflow.AFGEHANDELD_EXTERN}', '{workflow.GEANNULEERD}', '{workflow.VERZOEK_TOT_HEROPENEN}')
             order by s.id desc
             limit 4000 offset 0
         ) as features
-        """
+        """ # noqa
 
         cursor = connection.cursor()
         try:
@@ -192,9 +197,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     def get_queryset(self, *args, **kwargs):
         if self._is_request_to_detail_endpoint():
-            return super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+            return super().get_queryset(*args, **kwargs)
         else:
-            qs = super(PrivateSignalViewSet, self).get_queryset(*args, **kwargs)
+            qs = super().get_queryset(*args, **kwargs)
             return qs.filter_for_user(user=self.request.user)
 
     def check_object_permissions(self, request, obj):
@@ -249,9 +254,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         # return a HTTP 404 if we ask for a child signal's children.
         signal = self.get_object()
-        if signal.is_child():
+        if signal.is_child:
             raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
-        elif not signal.is_parent():
+        elif not signal.is_parent:
             raise NotFound(detail=f'Signal {pk} has no children.')
 
         # Return the child signals for a parent signal in an abridged version

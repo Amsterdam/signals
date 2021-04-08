@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import uuid
 
 from django.conf import settings
@@ -14,12 +16,14 @@ class TestEmailTemplates(TestCase):
     def setUp(self):
         self.email_template = EmailTemplate.objects.create(
             key=EmailTemplate.SIGNAL_CREATED,
-            title='Template title {{ signal.id }}',
-            body='# Template title\n Thanks a lot for reporting **{{ signal.id }}** '
-                 '{{ signal.text }}\n{{ ORGANIZATION_NAME }}',
+            title='Template title {{ signal_id }}',
+            body='# Template title\n Thanks a lot for reporting **{{ signal_id }}** '
+                 '{{ text }}\n{{ ORGANIZATION_NAME }}',
         )
 
     def test_email_template(self):
+        self.assertEqual(str(self.email_template), 'Template title {{ signal_id }}')
+
         signal = SignalFactory.create(reporter__email=self.get_email())
 
         ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)

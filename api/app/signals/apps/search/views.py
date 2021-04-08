@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
 from elasticsearch_dsl.query import MultiMatch
 
@@ -48,4 +50,4 @@ class SearchView(DatapuntViewSet):
     def list(self, request, *args, **kwargs):
         if not SignalDocument.ping():
             raise GatewayTimeoutException(detail='The elastic cluster is unreachable')
-        return super(SearchView, self).list(request=request, *args, **kwargs)
+        return super().list(request=request, *args, **kwargs)

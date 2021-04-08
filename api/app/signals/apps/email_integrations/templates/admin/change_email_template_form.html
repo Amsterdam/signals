@@ -1,0 +1,44 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_field_sets %}
+    <div>
+        <h1>Extra informatie</h1>
+        {% verbatim %}
+        <p>
+            Bij het maken van de templates zijn er gegevens beschikbaar van de melding. Deze kunt u
+            gebruiken door de variabelen in de tekst te plaatsen tussen '{{' en '}}'. Bijvoorbeeld:
+            {{ signal_id }} of {{ created_at|date:"j F y" }}.
+            <br/><br/>
+            Hieronder vind u in een overzicht welke gegevens dit zijn.
+        </p>
+        {% endverbatim %}
+
+        <h2>Variabelen</h2>
+        <ul>
+            <li>signal_id</li>
+            <li>formatted_signal_id</li>
+            <li>created_at</li>
+            <li>text</li>
+            <li>text_extra</li>
+            <li>address</li>
+            <li>status_text</li>
+            <li>status_state</li>
+            <li>handling_message</li>
+            <li>ORGANIZATION_NAME</li>
+        </ul>
+
+        <h2>Verouderde variabelen</h2>
+        <p>
+            Mocht uw template nog een van de volgende variabellen gebruiken zet dit dan z.s.m. om.
+            Deze zullen z.s.m. worden verwijderd!
+        </p>
+        <ul>
+            <li>signal</li>
+            <li>status</li>
+            <li>location</li>
+        </ul>
+    </div>
+
+    {{ block.super }}
+{% endblock %}

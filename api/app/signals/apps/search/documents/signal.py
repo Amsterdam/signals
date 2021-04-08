@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
 from elasticsearch_dsl import Date, InnerDoc, Keyword, Nested, Object, Text
@@ -96,7 +98,7 @@ class SignalDocument(DocumentBase):
             ),
             _display=str(obj),
             id=obj.id,
-            signal_id=obj.signal_id,
+            signal_id=obj.uuid,
             text=obj.text,
             incident_date_start=obj.incident_date_start,
             category_assignment={

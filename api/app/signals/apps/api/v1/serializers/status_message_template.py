@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import copy
 from collections import OrderedDict
 
@@ -24,7 +26,7 @@ class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
         ]
 
     def to_representation(self, data):
-        representation = super(StateStatusMessageTemplateListSerializer, self).to_representation(
+        representation = super().to_representation(
             data=data
         )
         return self._transform_representation(representation)
@@ -81,4 +83,4 @@ class StateStatusMessageTemplateSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         attrs.update({'category': self.context['category'].pk})
-        return super(StateStatusMessageTemplateSerializer, self).validate(attrs)
+        return super().validate(attrs)

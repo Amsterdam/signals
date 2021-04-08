@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from rest_framework.serializers import ValidationError
 
@@ -8,11 +10,9 @@ class SignalSourceValidator:
     requires_context = True
 
     def __call__(self, value, serializer_field):  # noqa: C901
-        # Check if the given source is valid against the known sources in the database
-        # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
-        if settings.FEATURE_FLAGS.get('API_VALIDATE_SOURCE_AGAINST_SOURCE_MODEL', True):
-            if not Source.objects.filter(name__iexact=value).exists():
-                raise ValidationError('Invalid source given, value not known')
+        # Check if the given source is a valid active known source in the database
+        if not Source.objects.filter(name__iexact=value, is_active=True).exists():
+            raise ValidationError('Invalid source given, value not known')
 
         # No need to check the given source this will be overwritten when creating the child Signal
         # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file

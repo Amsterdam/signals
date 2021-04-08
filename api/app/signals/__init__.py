@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 # This will make sure the app is always imported when
 # Django starts so that shared_task will use this app.
 from signals.celery import app as celery_app
@@ -16,7 +18,7 @@ __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 # `/signals/v1/...` will always have major API version number `1`.
 
 # Application version (Major, minor, patch)
-VERSION = (0, 15, 0)
+VERSION = (0, 21, 4)
 
 # API versions (Major, minor, patch)
 API_VERSIONS = {

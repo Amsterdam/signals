@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.conf import settings
 from rest_framework.fields import JSONField
 
@@ -5,14 +7,14 @@ from rest_framework.fields import JSONField
 class SignalExtraPropertiesField(JSONField):
     def __init__(self, *args, **kwargs):
         self.instance = None
-        super(SignalExtraPropertiesField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_attribute(self, instance):
         self.instance = instance
         return instance.extra_properties
 
     def to_representation(self, value):
-        representation = super(SignalExtraPropertiesField, self).to_representation(value=value)
+        representation = super().to_representation(value=value)
         if not settings.FEATURE_FLAGS.get('API_FILTER_EXTRA_PROPERTIES', False):
             return representation
 

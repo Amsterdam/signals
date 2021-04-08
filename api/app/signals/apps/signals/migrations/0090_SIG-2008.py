@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 """
 This migration is fixing the "is_responsible" and "can_view" flags (setting the to True) for all added
 departments where these flags are currently False.

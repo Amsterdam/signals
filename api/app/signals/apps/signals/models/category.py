@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from urllib.parse import urlparse
 
 from django.contrib.gis.db import models
@@ -124,7 +126,7 @@ class Category(models.Model):
         return self.parent is not None
 
     def clean(self):
-        super(Category, self).clean()
+        super().clean()
 
         if self.pk and self.slug:
             if not Category.objects.filter(id=self.pk, slug=self.slug).exists():

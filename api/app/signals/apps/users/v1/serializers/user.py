@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, User
@@ -102,7 +104,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         profile_data = validated_data.pop('profile', None)
 
         validated_data['email'] = validated_data['username']  # noqa The email address and username are basically the same. TODO refactor this behavior in the user model
-        instance = super(UserDetailHALSerializer, self).create(validated_data=validated_data)
+        instance = super().create(validated_data=validated_data)
 
         if profile_data:
             profile_detail_serializer = ProfileDetailSerializer()
@@ -124,8 +126,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
         if groups or isinstance(groups, (list, tuple)):
             instance.groups.set(groups)
 
-        instance = super(UserDetailHALSerializer, self).update(instance=instance,
-                                                               validated_data=validated_data)
+        instance = super().update(instance=instance, validated_data=validated_data)
 
         return instance
 
@@ -175,3 +176,9 @@ class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
 
     def get_description(self, log):
         return None
+
+
+class UserNameListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', )

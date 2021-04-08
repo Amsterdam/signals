@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 
@@ -13,4 +15,4 @@ class CategoryDepartment(models.Model):
             # If is_responsible is set to True than can_view must also be True
             self.can_view = True
 
-        super(CategoryDepartment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

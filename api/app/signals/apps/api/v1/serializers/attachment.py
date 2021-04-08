@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+import os
+
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
 from rest_framework import serializers
@@ -48,6 +52,12 @@ class SignalAttachmentSerializer(HALSerializer):
         if file.size > settings.API_MAX_UPLOAD_SIZE:
             msg = f'Bestand mag maximaal {settings.API_MAX_UPLOAD_SIZE} bytes groot zijn.'
             raise ValidationError(msg)
+
+        _, ext = os.path.splitext(file.name)
+        if ext.lower() not in ['.gif', '.jpg', '.jpeg', '.png']:
+            msg = 'Bestandsextensie is niet toegestaan. Geldige extensies zijn: .gif, .jpg, .jpeg en .png.'
+            raise ValidationError(msg)
+
         return file
 
 

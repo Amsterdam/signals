@@ -1,0 +1,18 @@
+Geachte heer, mevrouw,
+
+Op {{ created_at|date:"j F Y" }} om {{ created_at|date:"H.i" }} uur hebt u een melding gedaan bij de gemeente. In deze mail leest u de stand van zaken van uw melding.
+
+U liet ons het volgende weten
+{{ afhandelings_text }}
+
+Stand van zaken
+{{ status_text }}
+
+Gegevens van uw melding
+- Nummer: {{ formatted_signal_id }}
+- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
+- Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from django.views.generic.base import TemplateResponseMixin
 
 from signals.apps.api.pdf.response import PDFTemplateResponse
@@ -17,5 +19,4 @@ class PDFTemplateResponseMixin(TemplateResponseMixin):
         response_kwargs.update({
             'filename': self.get_pdf_filename(),
         })
-        return super(PDFTemplateResponseMixin, self).render_to_response(context=context,
-                                                                        **response_kwargs)
+        return super().render_to_response(context=context, **response_kwargs)

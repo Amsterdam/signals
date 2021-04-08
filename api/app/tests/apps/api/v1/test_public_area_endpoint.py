@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import os
 
 from rest_framework import status
@@ -12,7 +14,7 @@ class TestPublicAreaEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/public/areas/'
 
     def setUp(self):
-        super(TestPublicAreaEndpoint, self).setUp()
+        super().setUp()
 
         self.areas = {}
         self.area_types = AreaTypeFactory.create_batch(5)

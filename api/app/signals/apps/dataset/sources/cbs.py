@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from signals.apps.dataset.sources.shape import ShapeBoundariesLoader
 from signals.apps.signals.models import AreaType
 
@@ -38,9 +40,8 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
         assert type_string in self.PROVIDES
 
         self.area_type, _ = AreaType.objects.get_or_create(
-            name=type_string,
             code=type_string,
-            description=f'{type_string} from CBS "Wijk- en buurtkaart" data.',
+            defaults={'name': type_string, 'description': f'{type_string} from CBS "Wijk- en buurtkaart" data.'}
         )
 
         dataset_info = self.DATASET_INFO[type_string]

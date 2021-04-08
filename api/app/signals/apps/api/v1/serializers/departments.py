@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
@@ -136,7 +138,7 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
         if 'active_categorydepartment_set' in validated_data:
             categorydepartment_set_validated_data = validated_data.pop('active_categorydepartment_set')
 
-        instance = super(PrivateDepartmentSerializerDetail, self).create(validated_data)
+        instance = super().create(validated_data)
 
         if categorydepartment_set_validated_data:
             self._save_category_department(
@@ -154,6 +156,6 @@ class PrivateDepartmentSerializerDetail(HALSerializer):
                 validated_data=validated_data.pop('active_categorydepartment_set')
             )
 
-        instance = super(PrivateDepartmentSerializerDetail, self).update(instance, validated_data)
+        instance = super().update(instance, validated_data)
         instance.refresh_from_db()
         return instance
