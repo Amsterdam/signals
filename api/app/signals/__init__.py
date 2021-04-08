@@ -7,6 +7,16 @@ from signals.utils.version import get_version
 
 __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 
+# Workaround an import issue in Django REST Framework Extensions, see:
+# https://github.com/chibisov/drf-extensions/issues/294
+# These lines can be removed when a new version is released (> 0.6.0)
+from django.db.models.sql import datastructures  # noqa
+from django.core.exceptions import EmptyResultSet  # noqa
+
+datastructures.EmptyResultSet = EmptyResultSet
+# ---
+
+
 # Versioning
 # ==========
 #

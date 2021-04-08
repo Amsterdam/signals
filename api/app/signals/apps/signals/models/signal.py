@@ -4,7 +4,6 @@ import uuid
 
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from pytz import utc
@@ -25,7 +24,7 @@ class Signal(CreatedUpdatedModel):
     incident_date_end = models.DateTimeField(null=True)  # Date of the incident.
     operational_date = models.DateTimeField(null=True)  # Date action is expected
     expire_date = models.DateTimeField(null=True)  # Date we should have reported back to reporter.
-    extra_properties = JSONField(null=True)
+    extra_properties = models.JSONField(null=True)
 
     # Assignments
     parent = models.ForeignKey(to='self', related_name='children', null=True, blank=True, on_delete=models.SET_NULL)

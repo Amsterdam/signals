@@ -2,7 +2,8 @@
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from string import digits
 
-from factory import DjangoModelFactory, Sequence, SubFactory, post_generation
+from factory import Sequence, SubFactory, post_generation
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
 from signals.apps.signals.models import Reporter

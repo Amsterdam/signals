@@ -11,18 +11,16 @@ from signals.settings import DEFAULT_SIGNAL_AREA_TYPE
 
 # Declaring custom Django signals for our `SignalManager`.
 
-create_initial = DjangoSignal(providing_args=['signal_obj'])
-create_child = DjangoSignal(providing_args=['signal_obj'])
-add_attachment = DjangoSignal(providing_args=['signal_obj', 'attachment'])
-update_location = DjangoSignal(providing_args=['signal_obj', 'location', 'prev_location'])
-update_status = DjangoSignal(providing_args=['signal_obj', 'status', 'prev_status'])
-update_category_assignment = DjangoSignal(providing_args=['signal_obj',
-                                                          'category_assignment',
-                                                          'prev_category_assignment'])
-update_reporter = DjangoSignal(providing_args=['signal_obj', 'reporter', 'prev_reporter'])
-update_priority = DjangoSignal(providing_args=['signal_obj', 'priority', 'prev_priority'])
-create_note = DjangoSignal(providing_args=['signal_obj', 'note'])
-update_type = DjangoSignal(providing_args=['signal_obj', 'type', 'prev_type'])
+create_initial = DjangoSignal()
+create_child = DjangoSignal()
+add_attachment = DjangoSignal()
+update_location = DjangoSignal()
+update_status = DjangoSignal()
+update_category_assignment = DjangoSignal()
+update_reporter = DjangoSignal()
+update_priority = DjangoSignal()
+create_note = DjangoSignal()
+update_type = DjangoSignal()
 
 
 def send_signals(to_send):
@@ -51,8 +49,8 @@ class SignalManager(models.Manager):
         :param type_data: deserialized data dict (Default: None)
         :returns: Signal object
         """
-        from .models import Location, Status, CategoryAssignment, Reporter, Priority, Type
-        from .utils.location import _get_stadsdeel_code, _get_area
+        from .models import CategoryAssignment, Location, Priority, Reporter, Status, Type
+        from .utils.location import _get_area, _get_stadsdeel_code
 
         signal = self.create(**signal_data)
 
@@ -154,7 +152,7 @@ class SignalManager(models.Manager):
         :returns: Location object
         """
         from .models import Location
-        from .utils.location import _get_stadsdeel_code, _get_area
+        from .utils.location import _get_area, _get_stadsdeel_code
 
         # SIG-2513 Determine the stadsdeel
         default_stadsdeel = data['stadsdeel'] if 'stadsdeel' in data else None

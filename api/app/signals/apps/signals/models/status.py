@@ -3,7 +3,6 @@
 import logging
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 
 from signals.apps.signals import workflow
@@ -33,7 +32,7 @@ class Status(CreatedUpdatedModel):
     # TODO, do we need this field or can we remove it?
     extern = models.BooleanField(default=False, help_text='Wel of niet status extern weergeven')
 
-    extra_properties = JSONField(null=True, blank=True)
+    extra_properties = models.JSONField(null=True, blank=True)
 
     # SIG-2620 Flag to determine if a status can send an email
     send_email = models.BooleanField(default=False)

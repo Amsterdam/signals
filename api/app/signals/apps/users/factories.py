@@ -4,11 +4,12 @@ import factory
 import faker
 from django.conf import settings
 from django.contrib.auth.models import Group
+from factory.django import DjangoModelFactory
 
 fake = faker.Faker()
 
 
-class UserFactory(factory.DjangoModelFactory):
+class UserFactory(DjangoModelFactory):
 
     class Meta:
         model = settings.AUTH_USER_MODEL
@@ -45,7 +46,7 @@ class SuperUserFactory(UserFactory):
     is_staff = True
 
 
-class GroupFactory(factory.DjangoModelFactory):
+class GroupFactory(DjangoModelFactory):
     class Meta:
         model = Group
         django_get_or_create = ('name',)

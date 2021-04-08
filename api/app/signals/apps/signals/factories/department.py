@@ -2,7 +2,8 @@
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 from string import ascii_uppercase
 
-from factory import DjangoModelFactory, LazyFunction
+from factory import LazyFunction
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText
 from faker import Faker
 
