@@ -25,7 +25,7 @@ class TestLoadCategories(TestCase):
         self.assertEqual(3, len(categories))
 
         renamed = categories.get(slug='test-parent-cat1')
-        self.assertEqual(renamed.name, 'test parent cat1 (renamed)')
+        self.assertEqual(renamed.description, 'renamed')
 
     def test_load_categories_with_existing_entries(self):
         main = Category.objects.create(**{
@@ -73,4 +73,4 @@ class TestLoadCategories(TestCase):
         self.assertEqual(3, len(categories))
 
         renamed = categories.get(slug='test-parent-cat1')
-        self.assertEqual(renamed.name, 'test parent cat1 (renamed)')
+        self.assertEqual(renamed.description, 'renamed')
