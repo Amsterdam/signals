@@ -11,13 +11,13 @@ from requests.exceptions import ConnectionError
 from requests_mock.mocker import Mocker
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.api.v1.validation.address.bag import AddressValidation
-from signals.apps.api.v1.validation.address.base import (
+from signals.apps.api.validation.address.bag import AddressValidation
+from signals.apps.api.validation.address.base import (
     AddressValidationUnavailableException,
     NoResultsException
 )
-from signals.apps.api.v1.validation.address.mixin import AddressValidationMixin
-from signals.apps.api.v1.validation.address.pdok import PDOKAddressValidation
+from signals.apps.api.validation.address.mixin import AddressValidationMixin
+from signals.apps.api.validation.address.pdok import PDOKAddressValidation
 
 
 class TestPDOKAddressValidation(SimpleTestCase):

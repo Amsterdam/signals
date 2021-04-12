@@ -5,10 +5,7 @@ from elasticsearch_dsl.query import MultiMatch
 
 from signals.apps.api.generics.exceptions import GatewayTimeoutException
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.api.v1.serializers import (
-    PrivateSignalSerializerDetail,
-    PrivateSignalSerializerList
-)
+from signals.apps.api.serializers import PrivateSignalSerializerDetail, PrivateSignalSerializerList
 from signals.apps.search.documents.signal import SignalDocument
 from signals.apps.search.pagination import ElasticHALPagination
 from signals.apps.signals.models import Signal
