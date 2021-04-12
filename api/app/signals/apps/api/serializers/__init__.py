@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-"""
-V1 API Serializers.
-"""
 from signals.apps.api.serializers.attachment import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer,

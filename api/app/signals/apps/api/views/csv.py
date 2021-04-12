@@ -28,7 +28,7 @@ class PassthroughRenderer(BaseRenderer):
 
 class PrivateCsvViewSet(ViewSet):
     """
-    V1 private ViewSet to retrieve generated csv files
+    Private ViewSet to retrieve generated csv files
     https://stackoverflow.com/a/51936269
     """
 

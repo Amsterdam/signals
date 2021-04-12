@@ -7,7 +7,7 @@ from signals.apps.api.filters.utils import area_code_choices, area_type_code_cho
 
 class AreaFilterSet(FilterSet):
     """
-    FilterSet used in the V1 API of areas, options to filter on:
+    FilterSet used in the API endpoint for areas, options to filter on:
     - code
     - type_code
     """

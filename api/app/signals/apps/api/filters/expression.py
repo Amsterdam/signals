@@ -7,7 +7,7 @@ from signals.apps.api.filters.utils import expression_choices, expression_type_c
 
 class ExpressionFilterSet(FilterSet):
     """
-    FilterSet used in the V1 API of expressions, options to filter on:
+    FilterSet used in the API endpoint for expressions, options to filter on:
     - expression name
     - expression type
     """

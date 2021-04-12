@@ -10,7 +10,7 @@ from signals.auth.backend import JWTAuthBackend
 
 class PrivateSourcesViewSet(DatapuntViewSet):
     """
-    V1 Private ViewSet to display all sources in the database
+    Private ViewSet to display all sources in the database
     """
     serializer_class = SourceSerializer
     serializer_detail_class = SourceSerializer
