@@ -63,6 +63,8 @@ Contributors may wish to familiarize themselves with the open standards used wit
 * [Oauth2](https://oauth.net/2/)
 * [OpenID Connect](https://openid.net/connect/)
 * [JSON](https://tools.ietf.org/html/std90)
+* [JSONSchema](https://json-schema.org/)
+* [GeoJSON](https://geojson.org/)
 * [SMTP](https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol#Related_requests_for_comments)
 
 ## Under Foundation for Public Code incubating codebase stewardship
