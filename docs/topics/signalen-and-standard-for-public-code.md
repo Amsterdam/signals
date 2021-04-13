@@ -31,9 +31,9 @@ Continuous integration tests SHOULD validate that the source code and the policy
 
 Requirement | meets | links and notes
 -----|-----|-----
-The codebase MUST be developed to be reusable in different contexts. | almost | VNG is specifically tasked with this.
-The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes? | Lacks public dataset for easily running the machine learning model.
-The codebase SHOULD be in use by multiple parties. | almost |
+The codebase MUST be developed to be reusable in different contexts. | yes |
+The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes |
+The codebase SHOULD be in use by multiple parties. | yes |
 The roadmap SHOULD be influenced by the needs of multiple parties. | yes |
 Configuration SHOULD be used to make code adapt to context specific needs. | yes |
 Codebases SHOULD include a publiccode.yml metadata description so that they’re easily discoverable. | no | Created [backend#64](https://github.com/Signalen/backend/issues/64).
