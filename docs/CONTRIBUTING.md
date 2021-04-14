@@ -54,6 +54,19 @@ In addition to the standards outlined in PEP 8, we have a few guidelines:
 * Line-length can exceed 120 characters, when doing otherwise would be terribly inconvenient.
 * Always use single-quoted strings (e.g. 'some string used as an example'), unless a single-quote occurs within the string (e.g. "don't use single quotes for these kind of strings").
 
+## Standards
+
+Contributors may wish to familiarize themselves with the open standards used within the codebase, including:
+
+* [StUF-ZKN](https://www.gemmaonline.nl/index.php/Sectormodel_Zaken:_StUF-ZKN)
+* [OpenAPI2](https://swagger.io/specification/v2/)
+* [Oauth2](https://oauth.net/2/)
+* [OpenID Connect](https://openid.net/connect/)
+* [JSON](https://tools.ietf.org/html/std90)
+* [JSONSchema](https://json-schema.org/)
+* [GeoJSON](https://geojson.org/)
+* [SMTP](https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol#Related_requests_for_comments)
+
 ## Under Foundation for Public Code incubating codebase stewardship
 
 Signalen is in incubation [codebase stewardship](https://publiccode.net/codebase-stewardship/) with the [Foundation for Public Code](https://publiccode.net).
