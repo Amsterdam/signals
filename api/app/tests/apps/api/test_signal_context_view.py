@@ -2,10 +2,13 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import timedelta
 
+from django.test import override_settings
+from django.urls import include, path, re_path
 from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
+from signals.apps.api.views import NamespaceView, SignalContextViewSet
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
@@ -13,6 +16,32 @@ from signals.apps.signals.models import Signal
 from tests.test import SuperUserMixin
 
 
+class NameSpace:
+    pass
+
+
+urlpatterns = [
+    path('', include(([
+        re_path(r'v1/relations/?$',
+                NamespaceView.as_view(),
+                name='signal-namespace'),
+        re_path(r'v1/private/signals/(?P<pk>\d+)/context/?$',
+                SignalContextViewSet.as_view({'get': 'retrieve'}),
+                name='private-signal-context'),
+        re_path(r'v1/private/signals/(?P<pk>\d+)/context/reporter/?$',
+                SignalContextViewSet.as_view({'get': 'reporter'}),
+                name='private-signal-context-reporter'),
+        re_path(r'v1/private/signals/(?P<pk>\d+)/context/geography/?$',
+                SignalContextViewSet.as_view({'get': 'geography'}),
+                name='private-signal-context-geography'),
+    ], 'signals'), namespace='v1')),
+]
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = urlpatterns
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestSignalContextView(SuperUserMixin, APITestCase):
     def setUp(self):
         now = timezone.now()
@@ -99,3 +128,33 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         for signal in self.anonymous_signals:
             response = self.client.get(f'/signals/v1/private/signals/{signal.pk}/context/geography/')
             self.assertEqual(response.status_code, 200)
+
+
+class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
+    """
+    By default the context and reporter context detail are enabled (for now)
+    The geography context is disabled until it is implemented
+    """
+    def setUp(self):
+        self.signal = SignalFactory.create(reporter__email=None, status__state=workflow.BEHANDELING)
+
+    def test_get_signal_context(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        signal_id = self.signal.pk
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_signal_context_reporter_detail(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        signal_id = self.signal.pk
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/reporter/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_signal_context_geography_detail(self):
+        self.client.force_authenticate(user=self.superuser)
+
+        signal_id = self.signal.pk
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
+        self.assertEqual(response.status_code, 404)
