@@ -11,9 +11,9 @@ from rest_framework.test import APITestCase
 from signals.apps.api.views import NamespaceView, SignalContextViewSet
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
 from signals.apps.signals.models import Signal
-from tests.test import SuperUserMixin
+from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
 
 
 class NameSpace:
@@ -155,3 +155,64 @@ class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
         signal_id = self.signal.pk
         response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
         self.assertEqual(response.status_code, 404)
+
+
+class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    # Accessing SignalContext must follow the same access rules as the signals.
+    # Specifically: rules around categories and departments must be followed.
+    # ... but like with child signals brief information about Signals of the
+    # same reporter must be available, even if those signals would not be
+    # accessible.
+    detail_endpoint = '/signals/v1/private/signals/{}'
+    context_endpoint = '/signals/v1/private/signals/{}/context/'
+    context_reporter_endpoint = '/signals/v1/private/signals/{}/context/reporter/'
+
+    def setUp(self):
+        email = 'reporter@example.com'
+
+        self.department_yes = DepartmentFactory.create(name='department_yes')
+        self.department_no = DepartmentFactory.create(name='department_no')
+        self.category_yes = CategoryFactory.create(departments=[self.department_yes])
+        self.category_no = CategoryFactory.create(departments=[self.department_no])
+        self.signal_yes = SignalFactory.create(category_assignment__category=self.category_yes, reporter__email=email)
+        self.signal_no = SignalFactory.create(category_assignment__category=self.category_no, reporter__email=email)
+
+        self.sia_read_write_user.profile.departments.add(self.department_yes)
+
+    def test_cannot_access_without_proper_department(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = self.detail_endpoint.format(self.signal_no.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+        url = self.context_endpoint.format(self.signal_no.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        url = self.context_reporter_endpoint.format(self.signal_no.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_can_access_with_proper_department(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = self.detail_endpoint.format(self.signal_yes.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        url = self.context_endpoint.format(self.signal_yes.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        url = self.context_reporter_endpoint.format(self.signal_yes.id)
+        response = self.client.get(url)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json['count'], 2)
+
+        for entry in response_json['results']:
+            if entry['id'] == self.signal_yes.id:
+                self.assertEqual(entry['can_view_signal'], True)
+            elif entry['id'] == self.signal_no.id:
+                self.assertEqual(entry['can_view_signal'], False)
