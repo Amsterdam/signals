@@ -22,11 +22,11 @@ from signals.apps.api.views import (
     PublicSignalMapViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
+    SignalContextViewSet,
     SignalPromotedToParentViewSet,
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
-from signals.apps.api.views.signal import SignalContextViewSet
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
 from signals.apps.users.v1.views import (
