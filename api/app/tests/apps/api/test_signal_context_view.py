@@ -71,7 +71,7 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertEqual(response_data['geography']['signal_count'], 0)
+        self.assertEqual(response_data['geography'], None)
 
         self.assertEqual(response_data['reporter']['signal_count'], 5)
         self.assertEqual(response_data['reporter']['open_count'], 2)
@@ -104,12 +104,9 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
             self.assertEqual(response.status_code, 200)
 
             response_data = response.json()
-            self.assertEqual(response_data['geography']['signal_count'], 0)
+            self.assertEqual(response_data['geography'], None)
 
-            self.assertEqual(response_data['reporter']['signal_count'], 1)
-            self.assertEqual(response_data['reporter']['open_count'], 1)
-            self.assertEqual(response_data['reporter']['positive_count'], 0)
-            self.assertEqual(response_data['reporter']['negative_count'], 0)
+            self.assertEqual(response_data['reporter'], None)
 
     def test_get_anonymous_signals_context_reporter_detail(self):
         self.client.force_authenticate(user=self.superuser)

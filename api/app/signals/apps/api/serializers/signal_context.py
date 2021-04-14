@@ -97,24 +97,20 @@ class SignalContextSerializer(HALSerializer):
         )
 
     def get_geography(self, obj):
-        return {
-            'signal_count': 0,
-        }
+        return None
 
     def get_reporter(self, obj):
         if not obj.reporter.email:
-            signals_for_reporter_count = 1
-            open_signals_for_reporter_count = 1 if obj.status.state not in [workflow.GEANNULEERD, workflow.AFGEHANDELD, workflow.GESPLITST] else 0 # noqa
-            satisfied_count = not_satisfied_count = 0
-        else:
-            reporter_email = obj.reporter.email
+            return None
 
-            signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).count()
-            open_signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).exclude(
-                status__state__in=[workflow.GEANNULEERD, workflow.AFGEHANDELD, workflow.GESPLITST]
-            ).count()
-            satisfied_count = Signal.objects.reporter_feedback_satisfied_count(email=reporter_email)
-            not_satisfied_count = Signal.objects.reporter_feedback_not_satisfied_count(email=reporter_email)
+        reporter_email = obj.reporter.email
+
+        signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).count()
+        open_signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).exclude(
+            status__state__in=[workflow.GEANNULEERD, workflow.AFGEHANDELD, workflow.GESPLITST]
+        ).count()
+        satisfied_count = Signal.objects.reporter_feedback_satisfied_count(email=reporter_email)
+        not_satisfied_count = Signal.objects.reporter_feedback_not_satisfied_count(email=reporter_email)
 
         return {
             'signal_count': signals_for_reporter_count,
