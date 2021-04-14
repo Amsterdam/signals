@@ -3,6 +3,7 @@
 import logging
 
 from datapunt_api.rest import HALPagination
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -56,7 +57,7 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
                 email=signal.reporter.email
             )
         else:
-            signals_for_reporter_qs = Signal.objects.none()
+            raise NotFound(detail=f'Signal {pk} has no reporter contact detail.')
 
         page = self.paginate_queryset(signals_for_reporter_qs)
         if page is not None:

@@ -113,11 +113,7 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
 
         for signal in self.anonymous_signals:
             response = self.client.get(f'/signals/v1/private/signals/{signal.pk}/context/reporter/')
-            self.assertEqual(response.status_code, 200)
-
-            response_data = response.json()
-            self.assertEqual(response_data['count'], 0)
-            self.assertEqual(len(response_data['results']), 0)
+            self.assertEqual(response.status_code, 404)
 
     def test_get_anonymous_signals_context_geography_detail(self):
         self.client.force_authenticate(user=self.superuser)
@@ -134,6 +130,8 @@ class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
     """
     def setUp(self):
         self.signal = SignalFactory.create(reporter__email=None, status__state=workflow.BEHANDELING)
+        self.signal_with_email = SignalFactory.create(
+            reporter__email='test123@example.com', status__state=workflow.BEHANDELING)
 
     def test_get_signal_context(self):
         self.client.force_authenticate(user=self.superuser)
@@ -145,8 +143,10 @@ class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
     def test_get_signal_context_reporter_detail(self):
         self.client.force_authenticate(user=self.superuser)
 
-        signal_id = self.signal.pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/reporter/')
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal.pk}/context/reporter/')
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get(f'/signals/v1/private/signals/{self.signal_with_email.pk}/context/reporter/')
         self.assertEqual(response.status_code, 200)
 
     def test_get_signal_context_geography_detail(self):
