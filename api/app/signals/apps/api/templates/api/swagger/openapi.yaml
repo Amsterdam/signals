@@ -688,7 +688,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal attachments.
+          description: Forbidden, user not authorized to request signal context.
         '404':
           description: The endpoint is not available OR no context is available for the given signal
       security:
@@ -715,7 +715,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal attachments.
+          description: Forbidden, user not authorized to request signal reporter context.
         '404':
           description: The endpoint is not available OR no context is available for the given signal
       security:
@@ -738,7 +738,7 @@ paths:
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
-          description: Forbidden, user not authorized to request signal attachments.
+          description: Forbidden, user not authorized to request signal geography context.
         '404':
           description: The endpoint is not available OR no context is available for the given signal
       security:
@@ -3603,8 +3603,9 @@ components:
             state_display:
               type: string
               example: 'Gemeld'
-        latest_feedback:
+        feedback:
           type: object
+          description: The latest given feedback, can also be null if there is no feedback
           nullable: true
           properties:
             is_satisfied:

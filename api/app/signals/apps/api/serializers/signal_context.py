@@ -11,7 +11,7 @@ from signals.apps.signals.models import Signal
 class SignalContextReporterSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
-    latest_feedback = serializers.SerializerMethodField()
+    feedback = serializers.SerializerMethodField()
     can_view_signal = serializers.SerializerMethodField()
 
     class Meta:
@@ -21,7 +21,7 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             'created_at',
             'category',
             'status',
-            'latest_feedback',
+            'feedback',
             'can_view_signal',
         )
 
@@ -42,7 +42,10 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         return {'state': obj.status.state, 'state_display': obj.status.get_state_display(), }
 
-    def get_latest_feedback(self, obj):
+    def get_feedback(self, obj):
+        """
+        Returns the lastest feedback object if it exists else None
+        """
         if obj.feedback.exists():
             latest_feedback = obj.feedback.first()
             return {'is_satisfied': latest_feedback.is_satisfied, 'submitted_at': latest_feedback.submitted_at, }
