@@ -3,40 +3,9 @@
 from datapunt_api.rest import HALSerializer
 from rest_framework import serializers
 
-from signals.apps.api.fields import PrivateSignalLinksField, PrivateSignalWithContextLinksField
+from signals.apps.api.fields import PrivateSignalWithContextLinksField
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
-
-
-class ReporterContextSignalSerializer(HALSerializer):
-    serializer_url_field = PrivateSignalLinksField
-
-    newest_feedback = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Signal
-        fields = (
-            '_links',
-            'id',
-            'created_at',
-            'status',
-            'newest_feedback'
-        )
-
-    def get_status(self, obj):
-        return {
-            'state': obj.status.state,
-            'state_display': obj.status.get_state_display(),
-        }
-
-    def get_newest_feedback(self, obj):
-        if obj.newest_feedback:
-            return {
-                'is_satisfied': obj.newest_feedback[0].is_satisfied,
-                'submitted_at': obj.newest_feedback[0].submitted_at,
-            }
-        return None
 
 
 class SignalContextReporterSerializer(serializers.ModelSerializer):

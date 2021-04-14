@@ -26,7 +26,6 @@ from signals.apps.api.serializers.signal import (
     SignalIdListSerializer
 )
 from signals.apps.api.serializers.signal_context import (
-    ReporterContextSignalSerializer,
     SignalContextReporterSerializer,
     SignalContextSerializer
 )
