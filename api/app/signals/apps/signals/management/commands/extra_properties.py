@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2021 Gemeente Amsterdam
 import json
 import os
 from timeit import default_timer as timer
@@ -5,7 +7,6 @@ from timeit import default_timer as timer
 from django.core.management import BaseCommand
 from jsonschema import ValidationError, validate
 
-from signals.apps.api.ml_tool.utils import url_from_category
 from signals.apps.signals.models import CategoryAssignment, Signal
 
 lookup_dict = {
@@ -365,7 +366,7 @@ class Command(BaseCommand):
 
         # JSON Schema to validate the JSON Blob
         filename = os.path.join(
-            os.path.dirname(__file__), '..', '..', '..', 'api', 'v1', 'json_schema', 'extra_properties.json'
+            os.path.dirname(__file__), '..', '..', '..', 'api', 'json_schema', 'extra_properties.json'
         )
         with open(filename) as f:
             self.schema = json.load(f)
@@ -457,7 +458,7 @@ class Command(BaseCommand):
 
         first_category_assignment = CategoryAssignment.objects.filter(_signal_id=signal.id).order_by('created_at')[0]
         for extra_property in signal.extra_properties:
-            first_category_assignment_url = url_from_category(first_category_assignment.category)
+            first_category_assignment_url = first_category_assignment.category.get_absolute_url()
             extra_properties.append(self._fix_category_url(extra_property, first_category_assignment_url))
 
         # Validate the extra properties before storing
