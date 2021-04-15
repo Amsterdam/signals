@@ -7,7 +7,6 @@ django-celery-results
 django-cors-headers
 django-extensions
 django-filter
-django-imagekit
 django-rest-swagger
 django-storage-swift
 django-storages
