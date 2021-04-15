@@ -4,6 +4,7 @@
 Views dealing with 'signals.Attachment' model directly.
 """
 from datapunt_api.rest import DatapuntViewSet
+from django.core.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -47,8 +48,7 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, mixins.CreateModelMixi
 
         if not user.is_superuser and not user.has_perm('signals.sia_can_view_all_categories'):
             if not signal_accessible:
-                from django.core.exceptions import PermissionDenied
-                raise PermissionDenied('just \'cuz')
+                raise PermissionDenied()
         return super().get_queryset()
 
     def get_signal(self):

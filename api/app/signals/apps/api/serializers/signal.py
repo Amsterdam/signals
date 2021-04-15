@@ -10,12 +10,12 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from signals.apps.api.fields import (
+    PrivateSignalAttachmentRelatedField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
-    PublicSignalLinksField
+    PublicSignalLinksField,
+    SignalExtraPropertiesField
 )
-from signals.apps.api.fields.attachment import PrivateSignalAttachmentRelatedField
-from signals.apps.api.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
     SignalChangeCategoryPermission,

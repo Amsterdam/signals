@@ -21,6 +21,7 @@ from signals.apps.api.views.signal import (
     PublicSignalViewSet,
     SignalPromotedToParentViewSet
 )
+from signals.apps.api.views.signal_context import SignalContextViewSet
 from signals.apps.api.views.source import PrivateSourcesViewSet
 from signals.apps.api.views.status_message_template import StatusMessageTemplatesViewSet
 from signals.apps.api.views.stored_signal_filter import StoredSignalFilterViewSet
@@ -48,4 +49,5 @@ __all__ = (
     'PrivateExpressionViewSet',
     'PrivateSourcesViewSet',
     'PublicCategoryViewSet',
+    'SignalContextViewSet',
 )

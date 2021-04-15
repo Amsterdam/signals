@@ -22,6 +22,7 @@ from signals.apps.api.views import (
     PublicSignalMapViewSet,
     PublicSignalViewSet,
     SignalCategoryRemovedAfterViewSet,
+    SignalContextViewSet,
     SignalPromotedToParentViewSet,
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
@@ -117,3 +118,25 @@ urlpatterns = [
         ])),
     ])),
 ]
+
+if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT']:
+    signal_context_urls = [
+        re_path(r'v1/private/signals/(?P<pk>\d+)/context/?$',
+                SignalContextViewSet.as_view({'get': 'retrieve'}),
+                name='private-signal-context'),
+    ]
+    if 'API_SIGNAL_CONTEXT_REPORTER' not in settings.FEATURE_FLAGS \
+            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_REPORTER']:
+        signal_context_urls += [
+            re_path(r'v1/private/signals/(?P<pk>\d+)/context/reporter/?$',
+                    SignalContextViewSet.as_view({'get': 'reporter'}),
+                    name='private-signal-context-reporter')
+        ]
+    if 'API_SIGNAL_CONTEXT_GEOGRAPHY' not in settings.FEATURE_FLAGS \
+            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_GEOGRAPHY']:
+        signal_context_urls += [
+            re_path(r'v1/private/signals/(?P<pk>\d+)/context/geography/?$',
+                    SignalContextViewSet.as_view({'get': 'geography'}),
+                    name='private-signal-context-geography')
+        ]
+    urlpatterns += signal_context_urls

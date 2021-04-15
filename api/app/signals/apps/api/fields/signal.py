@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from collections import OrderedDict
 
+from django.conf import settings
 from rest_framework import serializers
 
 from signals.apps.signals.models import Signal
@@ -19,6 +20,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
                                                        kwargs={'parent_lookup__signal__pk': value.pk},
                                                        request=request))),
             ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
+            ('sia:context', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
         ])
 
         if value.is_child:
@@ -44,6 +46,33 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, "v1:private-signals-detail", request, None))),
         ])
+
+        return result
+
+
+class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
+
+    def to_representation(self, value: Signal) -> OrderedDict:
+        request = self.context.get('request')
+
+        result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
+            ('self', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
+        ])
+
+        if 'API_SIGNAL_CONTEXT_REPORTER' not in settings.FEATURE_FLAGS \
+                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_REPORTER']:
+            result.update({
+                'sia:context-reporter-detail':
+                dict(href=self.get_url(value, 'v1:private-signal-context-reporter', request, None))
+            })
+
+        if 'API_SIGNAL_CONTEXT_GEOGRAPHY' not in settings.FEATURE_FLAGS \
+                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_GEOGRAPHY']:
+            result.update({
+                'sia:context-geography-detail':
+                dict(href=self.get_url(value, 'v1:private-signal-context-geography', request, None))
+            })
 
         return result
 
