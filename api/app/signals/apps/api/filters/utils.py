@@ -29,7 +29,9 @@ def area_type_choices():
 
 
 def area_choices():
-    return [(c, f'{n} ({t})') for c, t, n in Area.objects.values_list('code', '_type__name', 'name')]
+    return [
+        ('null', 'null'),
+    ] + [(c, f'{n} ({t})') for c, t, n in Area.objects.values_list('code', '_type__name', 'name')]
 
 
 boolean_true_choices = [(True, 'True'), ('true', 'true'), ('True', 'True'), (1, '1')]

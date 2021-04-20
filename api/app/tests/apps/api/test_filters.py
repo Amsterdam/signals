@@ -969,18 +969,22 @@ class TestAreaFilter(SignalsBaseApiTestCase):
             location__area_code=self.area.code,
             location__area_type_code=self.area._type.code,
         )
+        # no area code, but with geo location
         SignalFactory.create(location__geometrie=self.pt_out_center)
 
     def test_filter_areas(self):
         # all
         result_ids = self._request_filter_signals({})
         self.assertEqual(2, len(result_ids))
-        # filter on type_code or area code
+        # only non-assigned
+        result_ids = self._request_filter_signals({'area_code': 'null'})
+        self.assertEqual(1, len(result_ids))
+        # filter on type_code
         result_ids = self._request_filter_signals({'area_type_code': 'district'})
-        self.assertEqual(2, len(result_ids))
+        self.assertEqual(1, len(result_ids))
         # filter on type_code or area code
         result_ids = self._request_filter_signals({'area_code': self.area.code})
-        self.assertEqual(2, len(result_ids))
+        self.assertEqual(1, len(result_ids))
         # filter on both
         result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
         self.assertEqual(1, len(result_ids))
