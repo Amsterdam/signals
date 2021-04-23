@@ -55,7 +55,7 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
                 'category_assignment__category__departments'
             ).filter_reporter(
                 email=signal.reporter.email
-            )
+            ).order_by('-created_at')
         else:
             raise NotFound(detail=f'Signal {pk} has no reporter contact detail.')
 
