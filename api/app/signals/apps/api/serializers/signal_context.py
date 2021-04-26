@@ -13,6 +13,7 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     feedback = serializers.SerializerMethodField()
     can_view_signal = serializers.SerializerMethodField()
+    has_children = serializers.SerializerMethodField()
 
     class Meta:
         model = Signal
@@ -23,6 +24,7 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
             'status',
             'feedback',
             'can_view_signal',
+            'has_children',
         )
 
     def get_category(self, obj):
@@ -52,6 +54,9 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
 
     def get_can_view_signal(self, obj):
         return Signal.objects.filter(pk=obj.pk).filter_for_user(self.context['request'].user).exists()
+
+    def get_has_children(self, obj):
+        return obj.children.exists()
 
 
 class SignalContextSerializer(HALSerializer):
