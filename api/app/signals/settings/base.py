@@ -291,14 +291,12 @@ RAVEN_CONFIG = {
 }
 
 # Django Logging settings
-GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
-GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'root': {
         'level': 'INFO',
-        'handlers': ['console', 'gelf', 'sentry'],
+        'handlers': ['console', 'sentry'],
     },
     'formatters': {
         'console': {
@@ -325,17 +323,11 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
-        'gelf': {
-            'class': 'graypy.GELFUDPHandler',
-            'host': GELF_HOST,
-            'port': GELF_PORT,
-            'filters': ['static_fields'],
-        }
     },
     'loggers': {
         'signals': {
             'level': 'WARNING',
-            'handlers': ['console', 'gelf'],
+            'handlers': ['console'],
             'propagate': True,
         },
         'django': {

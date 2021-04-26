@@ -43,10 +43,6 @@ ddtrace
 lxml
 WeasyPrint
 
-# GELF
-graypy
-pygelf
-
 # Images
 Pillow
 
