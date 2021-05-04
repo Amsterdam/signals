@@ -9,7 +9,7 @@ from signals.apps.api.fields import (
     PrivateSignalAttachmentLinksField,
     PublicSignalAttachmentLinksField
 )
-from signals.apps.services.domain.filescanner import BadFileError, UploadScannerService
+from signals.apps.services.domain.filescanner import FileRejectedError, UploadScannerService
 from signals.apps.signals.models import Attachment, Signal
 
 
@@ -54,8 +54,8 @@ class SignalAttachmentSerializer(HALSerializer):
 
         try:
             UploadScannerService.scan_file(file)
-        except BadFileError as e:
-            raise ValidationError(e.args[0])
+        except FileRejectedError as e:
+            raise ValidationError(str(e))
 
         return file
 
