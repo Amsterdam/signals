@@ -15,6 +15,8 @@ from signals.apps.signals.factories import (
     SignalFactory
 )
 
+# Note these testcases contain naive datetimes, but they are converted to
+# timezone aware datetimes in the tests below (see TestDeadlineCalculationService).
 FULL_TEST_CASES = [
     # Columns below: created_at, n_days, use_calendar_days, factor, deadline
     # One working day throughout week
