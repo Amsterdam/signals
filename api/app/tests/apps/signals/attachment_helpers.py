@@ -15,7 +15,7 @@ small_gif = (
 
 def add_non_image_attachments(signal, n=1):
     """ Adds n file attachments to signal. Returns added attachments """
-    doc_upload_location = os.path.join(os.path.dirname(__file__), 'sia-ontwerp-testfile.doc')
+    doc_upload_location = os.path.join(os.path.dirname(__file__), 'test-data', 'sia-ontwerp-testfile.doc')
     attachments = []
 
     for _ in range(n):

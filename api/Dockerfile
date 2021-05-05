@@ -2,7 +2,7 @@ FROM amsterdam/python:3.8.2-buster
 MAINTAINER datapunt@amsterdam.nl
 
 # libgdk-pixbuf is needed to generate PDF files with rendered JPEG images.
-RUN apt-get update && apt-get install -y libgdk-pixbuf2.0-0
+RUN apt-get update && apt-get install -y libgdk-pixbuf2.0-0 libmagic1
 
 ENV PYTHONUNBUFFERED 1
 

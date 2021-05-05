@@ -1620,7 +1620,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
     def test_attachment_upload_extension_not_allowed(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)
-        doc_upload = os.path.join(SIGNALS_TEST_DIR, 'sia-ontwerp-testfile.doc')
+        doc_upload = os.path.join(SIGNALS_TEST_DIR, 'test-data', 'sia-ontwerp-testfile.doc')
 
         with open(doc_upload, encoding='latin-1') as f:
             data = {"file": f}
