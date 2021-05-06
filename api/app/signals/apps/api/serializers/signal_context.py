@@ -82,10 +82,13 @@ class SignalContextSerializer(HALSerializer):
 
         reporter_email = obj.reporter.email
 
-        signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).count()
+        signals_for_reporter_count = Signal.objects.filter_reporter(
+            email=reporter_email
+        ).filter(parent__isnull=True).count()
         open_signals_for_reporter_count = Signal.objects.filter_reporter(email=reporter_email).exclude(
             status__state__in=[workflow.GEANNULEERD, workflow.AFGEHANDELD, workflow.GESPLITST]
-        ).count()
+        ).filter(parent__isnull=True).count()
+        # Not filtering parent__isnull=True, as feedback is not requested for child signals.
         satisfied_count = Signal.objects.reporter_feedback_satisfied_count(email=reporter_email)
         not_satisfied_count = Signal.objects.reporter_feedback_not_satisfied_count(email=reporter_email)
 
