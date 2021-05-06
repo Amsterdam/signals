@@ -24,9 +24,10 @@ class DeadlineCalculationService:
         # received during the weekend, work will only start on Monday. The
         # deadline calculation needs to take this into account.
         weekday = created_at.date().weekday()
+        tzinfo = created_at.tzinfo
 
         if weekday > 4:
-            return datetime.combine(created_at.date(), time(0, 0, 0)) + timedelta(days=7-weekday)
+            return datetime.combine(created_at.date(), time(0, 0, 0), tzinfo=tzinfo) + timedelta(days=7-weekday)
         return created_at
 
     @staticmethod

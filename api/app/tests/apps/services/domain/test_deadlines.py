@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.timezone import get_default_timezone
 from freezegun import freeze_time
 
@@ -14,6 +15,8 @@ from signals.apps.signals.factories import (
     SignalFactory
 )
 
+# Note these testcases contain naive datetimes, but they are converted to
+# timezone aware datetimes in the tests below (see TestDeadlineCalculationService).
 FULL_TEST_CASES = [
     # Columns below: created_at, n_days, use_calendar_days, factor, deadline
     # One working day throughout week
@@ -67,11 +70,18 @@ FULL_TEST_CASES = [
 ]
 
 
+def is_aware(d):
+    """Datetime object `d` is timezone aware."""
+    return d.tzinfo is not None and d.tzinfo.utcoffset(d) is not None
+
+
 class TestDeadlineCalculationService(TestCase):
     def test_get_start(self):
         """
         Test start of work period for ServiceLevelObjectives in working days.
         """
+        tzinfo = timezone.get_default_timezone()
+
         TEST_CASES = [
             (datetime(2021, 2, 15, 12, 0, 0), datetime(2021, 2, 15, 12, 0, 0)),  # Monday 12:00 -> Monday 12:00
             (datetime(2021, 2, 16, 12, 0, 0), datetime(2021, 2, 16, 12, 0, 0)),  # Tuesday 12:00 -> Tuesday 12:00
@@ -79,13 +89,23 @@ class TestDeadlineCalculationService(TestCase):
             (datetime(2021, 2, 21, 12, 0, 0), datetime(2021, 2, 22, 0, 0, 0)),  # Sunday 12:00 -> Monday 00:00
         ]
         for created_at, start in TEST_CASES:
+            # Make sure we run these tests using "aware" datetime objects.
+            created_at = created_at.replace(tzinfo=tzinfo)
+            start = start.replace(tzinfo=tzinfo)
+            self.assertTrue(is_aware(created_at))
+            self.assertTrue(is_aware(start))
+
+            # Perform actual test.
             calculated_start = DeadlineCalculationService.get_start(created_at)
             self.assertEqual(calculated_start, start)
+            self.assertTrue(is_aware(calculated_start))  # check that timezone information is retained
 
     def test_get_end(self):
         """
         Test end of work period for ServiceLevelObjectives in working days.
         """
+        tzinfo = timezone.get_default_timezone()
+
         # We do not test weekends here (get_end is only called with weekdays)
         TEST_CASES = [
             # Columns below: created_at, n_days, factor, deadline
@@ -94,8 +114,16 @@ class TestDeadlineCalculationService(TestCase):
             (datetime(2021, 2, 22, 0, 0, 0), 1, 1, datetime(2021, 2, 23, 0, 0, 0)),  # Monday 00:00 -> Tuesday 00:00
         ]
         for start, n_days, factor, end in TEST_CASES:
+            # Make sure we run these tests using "aware" datetime objects.
+            start = start.replace(tzinfo=tzinfo)
+            end = end.replace(tzinfo=tzinfo)
+            self.assertTrue(is_aware(start))
+            self.assertTrue(is_aware(end))
+
+            # Perform actual test.
             calculated_end = DeadlineCalculationService.get_end(start, n_days, factor)
             self.assertEqual(calculated_end, end)
+            self.assertTrue(is_aware(calculated_end))
 
     def test_get_deadline(self):
         """
@@ -105,11 +133,21 @@ class TestDeadlineCalculationService(TestCase):
         - this tests both ServiceLevelObjectives given in calendar days and
           those given in working days.
         """
+        tzinfo = timezone.get_default_timezone()
+
         # Go through testcases check that we get the correct answers.
         for created_at, n_days, use_calendar_days, factor, deadline in FULL_TEST_CASES:
+            # Make sure we run these tests using "aware" datetime objects.
+            created_at = created_at.replace(tzinfo=tzinfo)
+            deadline = deadline.replace(tzinfo=tzinfo)
+            self.assertTrue(is_aware(created_at))
+            self.assertTrue(is_aware(deadline))
+
+            # Perform actual test.
             calculated_deadline = DeadlineCalculationService.get_deadline(
                 created_at, n_days, use_calendar_days, factor)
             self.assertEqual(calculated_deadline, deadline)
+            self.assertTrue(is_aware(calculated_deadline))
 
     def test_from_signal_and_category(self):
         """
@@ -129,6 +167,8 @@ class TestDeadlineCalculationService(TestCase):
         deadline, deadline_factor_3 = DeadlineCalculationService.from_signal_and_category(signal, cat)
         self.assertEqual(deadline, true_deadline)
         self.assertEqual(deadline_factor_3, true_deadline_factor_3)
+        self.assertTrue(is_aware(deadline))
+        self.assertTrue(is_aware(deadline_factor_3))
 
     def test_category_assignment_model(self):
         """
@@ -148,3 +188,5 @@ class TestDeadlineCalculationService(TestCase):
         self.assertEqual(cas._signal.created_at, start)
         self.assertEqual(cas.deadline, true_deadline)
         self.assertEqual(cas.deadline_factor_3, true_deadline_factor_3)
+        self.assertTrue(is_aware(cas.deadline))
+        self.assertTrue(is_aware(cas.deadline_factor_3))
