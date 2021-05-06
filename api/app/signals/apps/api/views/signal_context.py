@@ -53,6 +53,8 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
             ).prefetch_related(
                 'feedback',
                 'category_assignment__category__departments'
+            ).filter(
+                parent__isnull=True
             ).filter_reporter(
                 email=signal.reporter.email
             ).order_by('-created_at')
