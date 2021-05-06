@@ -62,6 +62,9 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.anonymous_signals = [SignalFactory.create(reporter__email=None, status__state=workflow.BEHANDELING),
                                   SignalFactory.create(reporter__email='', status__state=workflow.BEHANDELING)]
         self.reporter_2_signals = SignalFactory.create_batch(size=5, reporter__email=self.reporter_2_email)
+        # Child signals ("deelmeldingen") should not show up in the reporter context, as they are used internally.
+        self.child_signals = SignalFactory.create_batch(
+            2, reporter__email=self.reporter_1_email, parent=self.reporter_1_signals.first())
 
     def test_get_signal_context(self):
         self.client.force_authenticate(user=self.superuser)
