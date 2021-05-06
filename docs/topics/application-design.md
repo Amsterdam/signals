@@ -151,6 +151,8 @@ system management tasks to the API as well.
 SIA uses a machine learning component to perform classification on incoming
 incident reports. This component is not part of the Django project and its
 source is not available, but it is running on Datapunt infrastructure. 
+The current categorizaiton is an evolution of the version Maarten Sekuel
+[described in his blog](https://medium.com/maarten-sukel/how-to-use-machine-learning-for-the-classification-of-citizen-service-requests-b71159a85f36).
 
 ### Usage of Django Celery (Task queue)
 Some actions that SIA must perform are potentially slow, and these are off-loaded
