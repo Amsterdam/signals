@@ -153,7 +153,7 @@ Requirement | meets | links and notes
 All functionality in the source code MUST have automated tests. | mostly | In addition to unit testing, there are end-to-end tests which run on master and release branches (frontend); there are coverage reports, results require manual download.
 Contributions MUST pass all automated tests before they are admitted into the codebase. | yes |
 Contributions MUST be small. | yes | Each pull request contains a single feature or fix, but this policy is not explicit in CONTRIBUTING.md nor explictily checked by reviewer.
-The codebase MUST have active contributors. | yes | Amsterdam & VNG
+The codebase MUST have active contributors. | yes | Amsterdam & VNG, [pulse](https://github.com/Amsterdam/signals/pulse/monthly)
 Source code test and documentation coverage SHOULD be monitored. | no | Coverage statics are not monitored but tests will fail when coverage is below a threshold.
 Policy and documentation MAY have testing for consistency with the source and vice versa. |  |
 Policy and documentation MAY have testing for style and broken links. |  |
