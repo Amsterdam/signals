@@ -2,7 +2,9 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import logging
 
+import requests
 from django.conf import settings
+from django.contrib.gis.geos import Point
 
 from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.workflow import GEMELD
@@ -31,6 +33,18 @@ class AutoCreateChildrenService:
         'glas': 'container-glas-vol',
         'default': 'container-is-vol',
     }
+
+    @staticmethod
+    def _get_container_location(id_number, default=None):
+        endpoint = f'https://api.data.amsterdam.nl/v1/huishoudelijkafval/container/?idNummer={id_number}'
+        response = requests.get(endpoint)
+        response_json = response.json()
+        if response.status_code == 200 and len(response_json['_embedded']['container']) == 1:
+            coordinates = response_json['_embedded']['container'][0]['geometrie']['coordinates']
+            geometry = Point(coordinates[0], coordinates[1], srid=28992)
+            geometry.transform(ct=4326)
+            return geometry
+        return default
 
     @staticmethod
     def _translate_type_2_category(container_type):
@@ -66,6 +80,7 @@ class AutoCreateChildrenService:
     @staticmethod
     def _create_child(signal, container_data):
         category = AutoCreateChildrenService._translate_type_2_category(container_data['type'])
+        geometry = AutoCreateChildrenService._get_container_location(container_data['id'], signal.location.geometrie)
 
         signal_data = {
             'text': signal.text,
@@ -84,7 +99,7 @@ class AutoCreateChildrenService:
             ]
         }
         location_data = {
-            'geometrie': signal.location.geometrie,  # TODO get the location of the selected object
+            'geometrie': geometry,
         }
         status_data = {
             'state': GEMELD,

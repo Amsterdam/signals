@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import copy
+from unittest import mock
 
 from django.test import TestCase, override_settings
 
@@ -34,10 +35,19 @@ class TestAutoCreateChildrenServiceService(TestCase):
             "category_url": "/signals/v1/public/terms/categories/afval/sub_categories/container-is-vol"
         }]
 
-    def test_create_children(self):
+    @mock.patch(
+        'signals.apps.services.domain.auto_create_children.AutoCreateChildrenService._get_container_location',
+        autospec=True
+    )
+    def test_create_children(self, mocked):
         extra_properties = copy.deepcopy(self.extra_properties)
         signal = SignalFactory.create(extra_properties=extra_properties,
                                       category_assignment__category=self.category_container_is_vol)
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
+
+        mocked.return_value = signal.location.geometrie
 
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
@@ -49,6 +59,9 @@ class TestAutoCreateChildrenServiceService(TestCase):
     def test_no_containers_selected(self):
         signal = SignalFactory.create(extra_properties=None,
                                       category_assignment__category=self.category_container_is_vol)
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
 
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
@@ -64,6 +77,9 @@ class TestAutoCreateChildrenServiceService(TestCase):
         signal = SignalFactory.create(extra_properties=None,
                                       category_assignment__category=self.category_container_is_vol)
 
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
+
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
         signal.refresh_from_db()
@@ -71,12 +87,21 @@ class TestAutoCreateChildrenServiceService(TestCase):
         self.assertFalse(signal.is_parent)
         self.assertEqual(signal.children.count(), 0)
 
-    def test_multiple_extra_properties_for_containers(self):
+    @mock.patch(
+        'signals.apps.services.domain.auto_create_children.AutoCreateChildrenService._get_container_location',
+        autospec=True
+    )
+    def test_multiple_extra_properties_for_containers(self, mocked):
         extra_properties = copy.deepcopy(self.extra_properties)
         extra_properties.append(copy.deepcopy(extra_properties[0]))
 
         signal = SignalFactory.create(extra_properties=extra_properties,
                                       category_assignment__category=self.category_container_is_vol)
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
+
+        mocked.return_value = signal.location.geometrie
 
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
@@ -90,6 +115,9 @@ class TestAutoCreateChildrenServiceService(TestCase):
         signal = SignalFactory.create(extra_properties=extra_properties,
                                       category_assignment__category=self.category_container_is_vol,
                                       status__state='i')
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
 
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
@@ -105,6 +133,9 @@ class TestAutoCreateChildrenServiceService(TestCase):
         extra_properties = copy.deepcopy(self.extra_properties)
         signal = SignalFactory.create(extra_properties=extra_properties,
                                       category_assignment__category=self.category_container_is_vol)
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
 
         AutoCreateChildrenService.run(signal_id=signal.pk)
 
