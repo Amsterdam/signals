@@ -1611,6 +1611,7 @@ components:
         - QUE
         - COM
         - MAI
+      example: 'SIG'
 
     _NestedLocationRequestData:
       description: JSON Data
@@ -1713,10 +1714,10 @@ components:
         text:
           type: string
         state:
-          type: string
           $ref: '#/components/schemas/StatusStateChoices'
         target_api:
           type: string
+          nullable: true
           enum:
             - sigmax
             - null
@@ -1732,7 +1733,6 @@ components:
           nullable: true
           example: null
         state:
-          type: string
           $ref: '#/components/schemas/StatusStateChoices'
         target_api:
           type: string
@@ -1843,7 +1843,6 @@ components:
       type: object
       properties:
         priority:
-          type: string
           $ref: '#/components/schemas/PriorityPriorityChoices'
 
     _NestedPriorityResponseData:
@@ -1851,7 +1850,6 @@ components:
       type: object
       properties:
         priority:
-          type: string
           $ref: '#/components/schemas/PriorityPriorityChoices'
         created_by:
           type: string
@@ -1885,7 +1883,6 @@ components:
       type: object
       properties:
         code:
-          type: string
           $ref: '#/components/schemas/TypeCodeChoices'
 
     _NestedTypeResponseData:
@@ -1893,9 +1890,7 @@ components:
       type: object
       properties:
         code:
-          type: string
           $ref: '#/components/schemas/TypeCodeChoices'
-          example: 'SIG'
         created_at:
           type: string
           format: date-time
@@ -2537,6 +2532,10 @@ components:
                   identified by the `category_id` (true) or not (false).
                   Defaults to false.
                 type: boolean
+        note:
+          type: string
+          nullable: true
+          description: Note field, used internally.
 
     privateCategoryListResponse:
       description: JSON data describing the category response
@@ -2570,7 +2569,6 @@ components:
           type: array
           description: A list of categories, paginated
           items:
-            type: object
             $ref: '#/components/schemas/privateCategoryResponse'
 
     privateCategoryPatch:
@@ -2632,7 +2630,6 @@ components:
           type: array
           description: A list of categories, paginated
           items:
-            type: object
             $ref: '#/components/schemas/privateDepartmentResponse'
 
     privateDepartmentResponse:

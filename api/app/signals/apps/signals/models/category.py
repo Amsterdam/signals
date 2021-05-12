@@ -97,7 +97,9 @@ class Category(models.Model):
                                        through='signals.CategoryQuestion',
                                        through_fields=('category', 'question'))
 
-    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message', ))
+    note = models.TextField(blank=True, null=True)
+
+    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message'))
 
     objects = CategoryManager()
 

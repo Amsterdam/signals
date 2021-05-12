@@ -84,6 +84,9 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         else:
             self.assertEqual(0, len(data['departments']))
 
+        self.assertIn('note', data)
+        self.assertEqual(data['note'], category.note)
+
     def test_list_categories(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
@@ -167,6 +170,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
                 'use_calendar_days': True
             },
             'handling_message': 'Patched handling message',
+            'note': 'Very important note!',
         }
 
         response = self.client.patch(url, data=data, format='json')
@@ -213,6 +217,9 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+
+        response = self.client.patch(url, data={'note': 'This is a note'})  # must not show up in category history
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.patch(url, data={'name': 'Patched name'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
