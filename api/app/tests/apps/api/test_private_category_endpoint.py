@@ -85,6 +85,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
             self.assertEqual(0, len(data['departments']))
 
         self.assertIn('note', data)
+        self.assertEqual(data['note'], category.note)
 
     def test_list_categories(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
