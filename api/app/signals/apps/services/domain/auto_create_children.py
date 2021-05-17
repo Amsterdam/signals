@@ -21,9 +21,9 @@ class AutoCreateChildrenService:
         - A signal is not a parent or a child signal
         - A signal has the status "GEMELD" ("m")
         - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol", "container-voor-plastic-afval-is-vol" or "container-glas-vol"
-        - A signal must contain at least 2 or more containers
+        - A signal must contain at least 2 or more containers but not more than the value of the setting SIGNAL_MAX_NUMBER_OF_CHILDREN
         
-        For now this is only used to create child signals when multiple containers (more than 1) are selected.
+        For now this is only used to create child signals when multiple containers are selected.
     """  # noqa
 
     _type_2_category_slug = {
@@ -36,6 +36,14 @@ class AutoCreateChildrenService:
 
     @staticmethod
     def _get_container_location(id_number, default=None):
+        """
+        Get the location of the given container. If the container cannot be found the default will be returned
+
+        API: https://api.data.amsterdam.nl/v1/huishoudelijkafval/container
+        Schema: https://schemas.data.amsterdam.nl/datasets/huishoudelijkafval/huishoudelijkafval
+
+        An example of a response can be found in tests/apps/services/domain/json/huidhoudelijkafval.json
+        """
         endpoint = f'https://api.data.amsterdam.nl/v1/huishoudelijkafval/container/?idNummer={id_number}'
         response = requests.get(endpoint)
         response_json = response.json()
@@ -55,16 +63,45 @@ class AutoCreateChildrenService:
 
     @staticmethod
     def _container_data(signal):
-        answers = []
-        if signal.extra_properties:
-            for extra_property in signal.extra_properties:
-                if extra_property.get('id', '').lower() == 'extra_container':
-                    for answer in extra_property['answer']:
-                        answers.append(answer)
-        return answers
+        """
+        Example of container data in the extra_properties of a Signal:
+
+        "extra_properties": [
+            {
+                "id": "extra_container",
+                "label": "Container(s)",
+                "answer": [
+                    {
+                        "id": "REK00853",
+                        "type": "Rest",
+                        "description": "Restafval container"
+                    }
+                ],
+                "category_url": "/signals/v1/public/terms/categories/afval/sub_categories/container-is-vol"
+            }
+        ]
+        """
+        if not signal.extra_properties:
+            return []
+
+        containers = {}
+        for extra_property in signal.extra_properties:
+            if extra_property.get('id', '').lower() == 'extra_container':
+                for container in extra_property['answer']:
+                    containers[str(container['id']).lower()] = container
+
+        return containers.values()
 
     @staticmethod
     def _is_applicable(signal):
+        """
+        - A signal is not a parent or a child signal
+        - A signal has the status "GEMELD" ("m")
+        - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol", "container-voor-plastic-afval-is-vol" or "container-glas-vol"
+        - A signal must contain at least 2 or more containers but not more than the value of the setting SIGNAL_MAX_NUMBER_OF_CHILDREN
+        
+        For now this is only used to create child signals when multiple containers are selected.
+        """  # noqa
         if signal.is_parent or signal.is_child or signal.status.state != GEMELD:
             return False
 
@@ -72,7 +109,11 @@ class AutoCreateChildrenService:
         if category_slug not in set(AutoCreateChildrenService._type_2_category_slug.values()):
             return False
 
-        if len(AutoCreateChildrenService._container_data(signal)) < 2:
+        selected_containers = len(AutoCreateChildrenService._container_data(signal))
+        if selected_containers < 2:
+            return False
+
+        if selected_containers > settings.SIGNAL_MAX_NUMBER_OF_CHILDREN:
             return False
 
         return True
@@ -107,13 +148,9 @@ class AutoCreateChildrenService:
         category_data = {
             'category': category,
         }
-        reporter_data = {
-            'email': signal.reporter.email,
-            'phone': signal.reporter.phone,
-        }
 
         # Create the child signal using the actions manager
-        Signal.actions.create_initial(signal_data, location_data, status_data, category_data, reporter_data)
+        Signal.actions.create_initial(signal_data, location_data, status_data, category_data, {})
 
     @staticmethod
     def run(signal_id):
