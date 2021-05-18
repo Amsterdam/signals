@@ -20,12 +20,16 @@ class AutoCreateChildrenService:
         - The feature flag "AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER" is enabled
         - A signal is not a parent or a child signal
         - A signal has the status "GEMELD" ("m")
-        - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol", "container-voor-plastic-afval-is-vol" or "container-glas-vol"
+        - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol",
+          "container-voor-plastic-afval-is-vol", "container-glas-vol", "container-glas-kapot",
+          "container-is-kapot", "container-voor-papier-is-stuk", or "container-voor-plastic-afval-is-kapot".
         - A signal must contain at least 2 or more containers but not more than the value of the setting SIGNAL_MAX_NUMBER_OF_CHILDREN
         
         For now this is only used to create child signals when multiple containers are selected.
     """  # noqa
 
+    # These are the default categories used to create child Signals based on the
+    # type of refuse.
     _type_2_category_slug = {
         'rest': 'container-is-vol',
         'papier': 'container-voor-papier-is-vol',
@@ -33,6 +37,15 @@ class AutoCreateChildrenService:
         'glas': 'container-glas-vol',
         'default': 'container-is-vol',
     }
+
+    # These are the categories that trigger the creation of child Signals, child
+    # signals will be mapped to the categories listed in _type_2_category_slug.
+    _trigger_types = set(_type_2_category_slug.values()).union(set([
+        'container-glas-kapot',
+        'container-is-kapot',
+        'container-voor-papier-is-stuk',
+        'container-voor-plastic-afval-is-kapot',
+    ]))
 
     @staticmethod
     def _get_container_location(id_number, default=None):
@@ -97,7 +110,9 @@ class AutoCreateChildrenService:
         """
         - A signal is not a parent or a child signal
         - A signal has the status "GEMELD" ("m")
-        - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol", "container-voor-plastic-afval-is-vol" or "container-glas-vol"
+        - A signal belongs to the sub category "container-is-vol", "container-voor-papier-is-vol",
+          "container-voor-plastic-afval-is-vol", "container-glas-vol", "container-glas-kapot",
+          "container-is-kapot", "container-voor-papier-is-stuk", or "container-voor-plastic-afval-is-kapot".
         - A signal must contain at least 2 or more containers but not more than the value of the setting SIGNAL_MAX_NUMBER_OF_CHILDREN
         
         For now this is only used to create child signals when multiple containers are selected.
@@ -106,7 +121,7 @@ class AutoCreateChildrenService:
             return False
 
         category_slug = signal.category_assignment.category.slug
-        if category_slug not in set(AutoCreateChildrenService._type_2_category_slug.values()):
+        if category_slug not in AutoCreateChildrenService._trigger_types:
             return False
 
         selected_containers = len(AutoCreateChildrenService._container_data(signal))

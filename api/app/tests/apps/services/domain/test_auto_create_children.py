@@ -232,3 +232,32 @@ class TestAutoCreateChildrenServiceService(TestCase):
 
         self.assertFalse(signal.is_parent)
         self.assertEqual(signal.children.count(), 0)
+
+    def test_signal_kapot_to_vol(self):
+        """
+        Check that complaints in one of the broken container categories get
+        children in one of the full container categories.
+        """
+        extra_properties = copy.deepcopy(self.extra_properties)
+
+        full_slugs = set(AutoCreateChildrenService._type_2_category_slug.values())
+        broken_slugs = AutoCreateChildrenService._trigger_types - full_slugs
+
+        for sub_slug in broken_slugs:
+            cat = Category.objects.get(slug=sub_slug, parent__isnull=False)
+            cat_url = cat.get_absolute_url()
+            extra_properties[0]['category_url'] = cat_url
+            signal = SignalFactory.create(extra_properties=extra_properties, category_assignment__category=cat)
+
+            self.assertFalse(signal.is_parent)
+            self.assertEqual(signal.children.count(), 0)
+
+            AutoCreateChildrenService.run(signal_id=signal.pk)
+
+            signal.refresh_from_db()
+
+            self.assertTrue(signal.is_parent)
+            self.assertEqual(signal.children.count(), 4)
+
+            for child in signal.children.all():
+                self.assertIn(child.category_assignment.category.slug, full_slugs)
