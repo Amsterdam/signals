@@ -9,6 +9,7 @@ from signals.apps.signals.managers import create_initial, update_status
 @receiver(create_initial, dispatch_uid='signals_create_initial')
 def signals_create_initial_handler(sender, signal_obj, **kwargs):
     tasks.apply_routing(signal_obj.id)
+    tasks.apply_auto_create_children(signal_id=signal_obj.id)
 
 
 @receiver(update_status, dispatch_uid='signals_update_status')

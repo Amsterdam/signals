@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
+from signals.apps.services.domain.auto_create_children import AutoCreateChildrenService
 from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.models import Reporter
 from signals.apps.signals.models.signal import Signal
@@ -96,3 +97,13 @@ def update_status_children_based_on_parent(signal_id):
             # All children must get the state "GEANNULEERD"
             data = dict(state=GEANNULEERD, text=text)
             Signal.actions.update_status(data=data, signal=child)
+
+
+@app.task
+def apply_auto_create_children(signal_id):
+    """
+    !!! This will be refactored when the "uitvraag" will be moved to the API !!!
+
+    :param signal_id:
+    """
+    AutoCreateChildrenService.run(signal_id=signal_id)

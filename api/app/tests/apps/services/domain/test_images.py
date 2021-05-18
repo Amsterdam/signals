@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 from PIL import Image
 
-from signals.apps.services.images import DataUriImageEncodeService
+from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
