@@ -168,8 +168,9 @@ class AutoCreateChildrenService:
         child_signal = Signal.actions.create_initial(signal_data, location_data, status_data, category_data, {})
 
         # Copy attachments to the child signal
-        if signal.attachments.exists():
-            Signal.actions.copy_attachments(data=signal.attachments.all(), signal=child_signal)
+        attachments_qs = signal.attachments.filter(is_image=True)
+        if attachments_qs.count():
+            Signal.actions.copy_attachments(data=attachments_qs.all(), signal=child_signal)
 
     @staticmethod
     def run(signal_id):
