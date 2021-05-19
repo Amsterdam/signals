@@ -8,7 +8,7 @@ from unittest import mock
 from django.test import TestCase, override_settings
 
 from signals.apps.services.domain.auto_create_children import AutoCreateChildrenService
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from signals.apps.signals.models import Category
 
 THIS_DIR = os.path.dirname(__file__)
@@ -261,3 +261,30 @@ class TestAutoCreateChildrenServiceService(TestCase):
 
             for child in signal.children.all():
                 self.assertIn(child.category_assignment.category.slug, full_slugs)
+
+    @mock.patch(
+        'signals.apps.services.domain.auto_create_children.AutoCreateChildrenService._get_container_location',
+        autospec=True
+    )
+    def test_create_children_and_copy_attachments(self, mocked):
+        extra_properties = copy.deepcopy(self.extra_properties)
+        signal = SignalFactoryWithImage.create(extra_properties=extra_properties,
+                                               category_assignment__category=self.category_container_is_vol)
+
+        attachment_count = signal.attachments.filter(is_image=True).count()
+
+        self.assertFalse(signal.is_parent)
+        self.assertEqual(signal.children.count(), 0)
+        self.assertEqual(attachment_count, 1)
+
+        mocked.return_value = signal.location.geometrie
+
+        AutoCreateChildrenService.run(signal_id=signal.pk)
+
+        signal.refresh_from_db()
+
+        self.assertTrue(signal.is_parent)
+        self.assertEqual(signal.children.count(), 4)
+
+        for child in signal.children.all():
+            self.assertEqual(child.attachments.filter(is_image=True).count(), attachment_count)
