@@ -1,8 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
+from django.contrib.gis.db.models.functions import Distance
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
+from rest_framework_gis.fields import GeometryField
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
+from signals.apps.api import app_settings
 from signals.apps.api.fields import PrivateSignalWithContextLinksField
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -74,7 +80,20 @@ class SignalContextSerializer(HALSerializer):
         )
 
     def get_geography(self, obj):
-        return None
+        signals_for_geography_qs = Signal.objects.annotate(
+            distance_from_point=Distance('location__geometrie', obj.location.geometrie),
+        ).filter(
+            (Q(parent__isnull=True) & Q(children__isnull=True)) | Q(parent__isnull=False),
+            distance_from_point__lte=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_RADIUS,
+            category_assignment__category_id=obj.category_assignment.category.pk,
+            created_at__gte=(
+                timezone.now() - timezone.timedelta(weeks=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
+            ),
+        ).exclude(pk=obj.pk)
+
+        return {
+            'signal_count': signals_for_geography_qs.count(),
+        }
 
     def get_reporter(self, obj):
         if not obj.reporter.email:
@@ -98,3 +117,23 @@ class SignalContextSerializer(HALSerializer):
             'positive_count': satisfied_count,
             'negative_count': not_satisfied_count,
         }
+
+
+class SignalContextGeoSerializer(GeoFeatureModelSerializer):
+    location = GeometryField(source='location.geometrie')
+
+    class Meta:
+        model = Signal
+        id_field = False
+        geo_field = 'location'
+        fields = ['id', 'created_at']
+
+    def get_properties(self, instance, fields):
+        properties = super(SignalContextGeoSerializer, self).get_properties(instance, fields)
+        properties.update({
+            'status': {
+                'state': instance.status.state,
+                'state_display': instance.status.get_state_display(),
+            }
+        })
+        return properties

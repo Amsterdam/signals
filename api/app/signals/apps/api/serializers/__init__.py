@@ -26,6 +26,7 @@ from signals.apps.api.serializers.signal import (
     SignalIdListSerializer
 )
 from signals.apps.api.serializers.signal_context import (
+    SignalContextGeoSerializer,
     SignalContextReporterSerializer,
     SignalContextSerializer
 )
@@ -52,8 +53,8 @@ __all__ = [
     'PublicSignalAttachmentSerializer',
     'PublicSignalCreateSerializer',
     'PublicSignalSerializerDetail',
-    'ReporterContextSignalSerializer',
     'SignalAttachmentSerializer',
+    'SignalContextGeoSerializer',
     'SignalContextReporterSerializer',
     'SignalContextSerializer',
     'SignalGeoSerializer',

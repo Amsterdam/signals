@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import timedelta
 
+from django.contrib.gis.geos import Point
 from django.test import override_settings
 from django.urls import include, path, re_path
 from django.utils import timezone
@@ -13,6 +14,7 @@ from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
 from signals.apps.signals.models import Signal
+from tests.apps.signals.valid_locations import ARENA, STADHUIS
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
 
 
@@ -49,9 +51,15 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.reporter_1_email = 'reporter_1@example.com'
         self.reporter_2_email = 'reporter_2@example.com'
 
+        self.test_category = CategoryFactory.create()
+
         with freeze_time(now - timedelta(days=5)):
-            SignalFactory.create_batch(2, reporter__email=self.reporter_1_email, status__state=workflow.BEHANDELING)
-            SignalFactory.create_batch(3, reporter__email=self.reporter_1_email, status__state=workflow.AFGEHANDELD)
+            SignalFactory.create_batch(2, reporter__email=self.reporter_1_email, status__state=workflow.BEHANDELING,
+                                       location__geometrie=Point(STADHUIS['lon'], STADHUIS['lat']),
+                                       category_assignment__category=self.test_category)
+            SignalFactory.create_batch(3, reporter__email=self.reporter_1_email, status__state=workflow.AFGEHANDELD,
+                                       location__geometrie=Point(ARENA['lon'], ARENA['lat']),
+                                       category_assignment__category=self.test_category)
 
         self.reporter_1_signals = Signal.objects.filter(reporter__email=self.reporter_1_email)
 
@@ -74,7 +82,8 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertEqual(response_data['geography'], None)
+        self.assertIsNotNone(response_data['geography']['signal_count'])
+        self.assertEqual(response_data['geography']['signal_count'], 1)
 
         self.assertEqual(response_data['reporter']['signal_count'], 5)
         self.assertEqual(response_data['reporter']['open_count'], 2)
@@ -99,6 +108,16 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
         self.assertEqual(response.status_code, 200)
 
+        response_json = response.json()
+        self.assertEqual(len(response_json['features']), 1)
+
+        signal_id = self.reporter_1_signals[3].pk
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(len(response_json['features']), 2)
+
     def test_get_anonymous_signals_context(self):
         self.client.force_authenticate(user=self.superuser)
 
@@ -107,7 +126,7 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
             self.assertEqual(response.status_code, 200)
 
             response_data = response.json()
-            self.assertEqual(response_data['geography'], None)
+            self.assertIsNotNone(response_data['geography'])
 
             self.assertEqual(response_data['reporter'], None)
 
@@ -157,7 +176,7 @@ class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
 
         signal_id = self.signal.pk
         response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
