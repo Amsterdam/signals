@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import zipfile
+from glob import glob
 from typing import TextIO
 
 from django.db import connection
@@ -37,6 +38,23 @@ def zip_csv_files(files_to_zip: list, using: str) -> None:
                     arcname=base_file,
                     compress_type=zipfile.ZIP_DEFLATED
                 )
+
+
+def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
+    """
+    rotate csv zip file in the {now:%Y}/{now:%m}/{now:%d} folder
+
+    :returns:
+    """
+    storage = _get_storage_backend(using=using)
+    now = timezone.now()
+    src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
+    if os.path.exists(src_folder):
+        list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
+        if len(list_of_files) > max_csv_amount:
+            list_of_files.sort(key=os.path.getmtime)
+            for file_to_be_deleted in list_of_files[:len(list_of_files) - max_csv_amount]:
+                os.remove(file_to_be_deleted)
 
 
 def save_csv_files(csv_files: list, using: str, path: str = None) -> None:

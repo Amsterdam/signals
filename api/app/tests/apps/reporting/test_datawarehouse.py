@@ -6,12 +6,14 @@ import os
 import shutil
 import tempfile
 from datetime import datetime
+from glob import glob
 from os import path
 from unittest import mock
 
 import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
+from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.feedback.factories import FeedbackFactory
@@ -108,6 +110,24 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(sla_csv))
         self.assertTrue(path.getsize(directing_departments_csv))
         self.assertTrue(path.getsize(zip_package))
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    @mock.patch('signals.apps.reporting.csv.utils._get_storage_backend')
+    def test_save_and_rotate_zip(self, mocked_get_storage_backend):
+        # Mocking the storage backend to local file system with tmp directory.
+        # In this test case we don't want to make usage of the remote Object
+        # Store.
+        mocked_get_storage_backend.return_value = FileSystemStorage(location=self.file_backend_tmp_dir)
+
+        # Creating a few objects in the database.
+        for i in range(3):
+            SignalFactory.create()
+        datawarehouse.save_and_zip_csv_files_endpoint.delay(1)
+        datawarehouse.save_and_zip_csv_files_endpoint.delay(1)
+        now = timezone.now()
+        src_folder = f'{self.file_backend_tmp_dir}/{now:%Y}/{now:%m}/{now:%d}'
+        list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
+        self.assertEqual(1, len(list_of_files))
 
     @override_settings(
         SWIFT={
