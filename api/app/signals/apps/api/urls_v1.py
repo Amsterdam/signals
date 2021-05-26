@@ -132,11 +132,11 @@ if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS[
                     SignalContextViewSet.as_view({'get': 'reporter'}),
                     name='private-signal-context-reporter')
         ]
-    if 'API_SIGNAL_CONTEXT_GEOGRAPHY' not in settings.FEATURE_FLAGS \
-            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_GEOGRAPHY']:
+    if 'API_SIGNAL_CONTEXT_NEAR' not in settings.FEATURE_FLAGS \
+            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_NEAR']:
         signal_context_urls += [
-            re_path(r'v1/private/signals/(?P<pk>\d+)/context/geography/?$',
-                    SignalContextViewSet.as_view({'get': 'geography'}),
-                    name='private-signal-context-geography')
+            re_path(r'v1/private/signals/(?P<pk>\d+)/context/near/geography/?$',
+                    SignalContextViewSet.as_view({'get': 'near'}),
+                    name='private-signal-context-near-geography')
         ]
     urlpatterns += signal_context_urls

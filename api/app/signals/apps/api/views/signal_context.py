@@ -3,17 +3,21 @@
 import logging
 
 from datapunt_api.rest import HALPagination
+from django.contrib.gis.db.models.functions import Distance
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from signals.apps.api import app_settings
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import (
+    SignalContextGeoSerializer,
     SignalContextReporterSerializer,
-    SignalContextSerializer,
-    SignalGeoSerializer
+    SignalContextSerializer
 )
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
@@ -33,14 +37,27 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     def get_queryset(self, *args, **kwargs):
         return Signal.objects.filter_for_user(user=self.request.user)
 
-    def geography(self, request, pk=None):
+    def near(self, request, pk=None):
+        signal = self.get_object()
+
+        signals_for_geography_qs = Signal.objects.annotate(
+            distance_from_point=Distance('location__geometrie', signal.location.geometrie),
+        ).filter(
+            (Q(parent__isnull=True) & Q(children__isnull=True)) | Q(parent__isnull=False),
+            distance_from_point__lte=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_RADIUS,
+            category_assignment__category_id=signal.category_assignment.category.pk,
+            created_at__gte=(
+                timezone.now() - timezone.timedelta(weeks=app_settings.SIGNAL_CONTEXT_GEOGRAPHY_CREATED_DELTA_WEEKS)
+            ),
+        ).exclude(pk=signal.pk)
+
         paginator = LinkHeaderPagination(page_query_param='geopage', page_size=4000)
-        page = paginator.paginate_queryset(Signal.objects.none(), self.request, view=self)
+        page = paginator.paginate_queryset(signals_for_geography_qs, self.request, view=self)
         if page is not None:
-            serializer = SignalGeoSerializer(page, many=True, context=self.get_serializer_context())
+            serializer = SignalContextGeoSerializer(page, many=True, context=self.get_serializer_context())
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = SignalGeoSerializer(page, many=True, context=self.get_serializer_context())
+        serializer = SignalContextGeoSerializer(page, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
     def reporter(self, request, pk=None):

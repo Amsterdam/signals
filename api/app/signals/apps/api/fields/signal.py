@@ -67,11 +67,11 @@ class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
                 dict(href=self.get_url(value, 'v1:private-signal-context-reporter', request, None))
             })
 
-        if 'API_SIGNAL_CONTEXT_GEOGRAPHY' not in settings.FEATURE_FLAGS \
-                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_GEOGRAPHY']:
+        if 'API_SIGNAL_CONTEXT_NEAR' not in settings.FEATURE_FLAGS \
+                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_NEAR']:
             result.update({
                 'sia:context-geography-detail':
-                dict(href=self.get_url(value, 'v1:private-signal-context-geography', request, None))
+                dict(href=self.get_url(value, 'v1:private-signal-context-near-geography', request, None))
             })
 
         return result
