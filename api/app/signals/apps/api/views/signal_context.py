@@ -37,7 +37,7 @@ class SignalContextViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     def get_queryset(self, *args, **kwargs):
         return Signal.objects.filter_for_user(user=self.request.user)
 
-    def geography(self, request, pk=None):
+    def near(self, request, pk=None):
         signal = self.get_object()
 
         signals_for_geography_qs = Signal.objects.annotate(

@@ -68,18 +68,18 @@ class SignalContextReporterSerializer(serializers.ModelSerializer):
 class SignalContextSerializer(HALSerializer):
     serializer_url_field = PrivateSignalWithContextLinksField
 
-    geography = serializers.SerializerMethodField(method_name='get_geography')
+    near = serializers.SerializerMethodField(method_name='get_near')
     reporter = serializers.SerializerMethodField(method_name='get_reporter')
 
     class Meta:
         model = Signal
         fields = (
             '_links',
-            'geography',
+            'near',
             'reporter',
         )
 
-    def get_geography(self, obj):
+    def get_near(self, obj):
         signals_for_geography_qs = Signal.objects.annotate(
             distance_from_point=Distance('location__geometrie', obj.location.geometrie),
         ).filter(

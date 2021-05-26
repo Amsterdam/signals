@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from django.contrib.gis.geos import Point
+from django.db.models import Q
 from django.test import override_settings
 from django.urls import include, path, re_path
 from django.utils import timezone
@@ -14,7 +15,7 @@ from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
 from signals.apps.signals.models import Signal
-from tests.apps.signals.valid_locations import ARENA, STADHUIS
+from tests.apps.signals.valid_locations import ARENA, BLAUWE_THEEHUIS, FILMMUSEUM_EYE, STADHUIS
 from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
 
 
@@ -33,9 +34,9 @@ urlpatterns = [
         re_path(r'v1/private/signals/(?P<pk>\d+)/context/reporter/?$',
                 SignalContextViewSet.as_view({'get': 'reporter'}),
                 name='private-signal-context-reporter'),
-        re_path(r'v1/private/signals/(?P<pk>\d+)/context/geography/?$',
-                SignalContextViewSet.as_view({'get': 'geography'}),
-                name='private-signal-context-geography'),
+        re_path(r'v1/private/signals/(?P<pk>\d+)/context/near/geography/?$',
+                SignalContextViewSet.as_view({'get': 'near'}),
+                name='private-signal-context-near-geography'),
     ], 'signals'), namespace='v1')),
 ]
 
@@ -53,26 +54,79 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
 
         self.test_category = CategoryFactory.create()
 
+        stadhuis_point = Point(STADHUIS['lon'], STADHUIS['lat'])
+        arena_point = Point(ARENA['lon'], ARENA['lat'])
+        filmhuis_eye_point = Point(FILMMUSEUM_EYE['lon'], FILMMUSEUM_EYE['lat'])
+        blauwe_theehuis_point = Point(BLAUWE_THEEHUIS['lon'], BLAUWE_THEEHUIS['lat'])
+
         with freeze_time(now - timedelta(days=5)):
-            SignalFactory.create_batch(2, reporter__email=self.reporter_1_email, status__state=workflow.BEHANDELING,
-                                       location__geometrie=Point(STADHUIS['lon'], STADHUIS['lat']),
-                                       category_assignment__category=self.test_category)
-            SignalFactory.create_batch(3, reporter__email=self.reporter_1_email, status__state=workflow.AFGEHANDELD,
-                                       location__geometrie=Point(ARENA['lon'], ARENA['lat']),
-                                       category_assignment__category=self.test_category)
+            signal = SignalFactory.create(reporter__email=self.reporter_1_email,
+                                          status__state=workflow.BEHANDELING,
+                                          location__geometrie=stadhuis_point,
+                                          location__buurt_code=STADHUIS['buurt_code'],
+                                          category_assignment__category=self.test_category)
+            FeedbackFactory.create(_signal=signal, submitted_at=now, is_satisfied=False)
 
-        self.reporter_1_signals = Signal.objects.filter(reporter__email=self.reporter_1_email)
+            # Child signals ("deelmeldingen") should not show up in the reporter context, as they are used internally.
+            self.child_signals = SignalFactory.create_batch(size=2,
+                                                            reporter__email=self.reporter_1_email,
+                                                            parent=signal,
+                                                            location__geometrie=stadhuis_point,
+                                                            location__buurt_code=ARENA['buurt_code'],
+                                                            category_assignment__category=self.test_category)
 
-        FeedbackFactory.create(_signal=self.reporter_1_signals[0], submitted_at=now, is_satisfied=False)
-        FeedbackFactory.create(_signal=self.reporter_1_signals[2], submitted_at=now, is_satisfied=False)
-        FeedbackFactory.create(_signal=self.reporter_1_signals[4], submitted_at=now, is_satisfied=True)
+        with freeze_time(now - timedelta(days=4)):
+            SignalFactory.create(reporter__email=self.reporter_1_email,
+                                 status__state=workflow.BEHANDELING,
+                                 location__geometrie=stadhuis_point,
+                                 location__buurt_code=STADHUIS['buurt_code'],
+                                 category_assignment__category=self.test_category)
 
-        self.anonymous_signals = [SignalFactory.create(reporter__email=None, status__state=workflow.BEHANDELING),
-                                  SignalFactory.create(reporter__email='', status__state=workflow.BEHANDELING)]
-        self.reporter_2_signals = SignalFactory.create_batch(size=5, reporter__email=self.reporter_2_email)
-        # Child signals ("deelmeldingen") should not show up in the reporter context, as they are used internally.
-        self.child_signals = SignalFactory.create_batch(
-            2, reporter__email=self.reporter_1_email, parent=self.reporter_1_signals.first())
+        with freeze_time(now - timedelta(days=3)):
+            signal = SignalFactory.create(reporter__email=self.reporter_1_email,
+                                          status__state=workflow.AFGEHANDELD,
+                                          location__geometrie=arena_point,
+                                          location__area_code='arena',
+                                          location__buurt_code=ARENA['buurt_code'],
+                                          category_assignment__category=self.test_category)
+            FeedbackFactory.create(_signal=signal, submitted_at=now, is_satisfied=False)
+
+            SignalFactory.create(reporter__email=self.reporter_1_email,
+                                 status__state=workflow.AFGEHANDELD,
+                                 location__geometrie=filmhuis_eye_point,
+                                 location__buurt_code=FILMMUSEUM_EYE['buurt_code'],
+                                 category_assignment__category=self.test_category)
+
+            signal = SignalFactory.create(reporter__email=self.reporter_1_email,
+                                          status__state=workflow.AFGEHANDELD,
+                                          location__geometrie=blauwe_theehuis_point,
+                                          location__buurt_code=BLAUWE_THEEHUIS['buurt_code'],
+                                          category_assignment__category=self.test_category)
+            FeedbackFactory.create(_signal=signal, submitted_at=now, is_satisfied=True)
+
+        self.reporter_1_signals = Signal.objects.filter(
+            (Q(parent__isnull=True) & Q(children__isnull=True)) | Q(children__isnull=False),
+            reporter__email=self.reporter_1_email
+        )
+
+        self.anonymous_signals = [
+            SignalFactory.create(reporter__email=None,
+                                 status__state=workflow.BEHANDELING,
+                                 location__geometrie=filmhuis_eye_point,
+                                 location__buurt_code=FILMMUSEUM_EYE['buurt_code'],
+                                 category_assignment__category=self.test_category),
+            SignalFactory.create(reporter__email='',
+                                 status__state=workflow.BEHANDELING,
+                                 location__geometrie=blauwe_theehuis_point,
+                                 location__buurt_code=BLAUWE_THEEHUIS['buurt_code'],
+                                 category_assignment__category=self.test_category)
+        ]
+
+        self.reporter_2_signals = SignalFactory.create_batch(size=5,
+                                                             reporter__email=self.reporter_2_email,
+                                                             location__geometrie=filmhuis_eye_point,
+                                                             location__buurt_code=FILMMUSEUM_EYE['buurt_code'],
+                                                             category_assignment__category=self.test_category)
 
     def test_get_signal_context(self):
         self.client.force_authenticate(user=self.superuser)
@@ -82,8 +136,8 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertIsNotNone(response_data['geography']['signal_count'])
-        self.assertEqual(response_data['geography']['signal_count'], 1)
+        self.assertIsNotNone(response_data['near']['signal_count'])
+        self.assertEqual(response_data['near']['signal_count'], 3)
 
         self.assertEqual(response_data['reporter']['signal_count'], 5)
         self.assertEqual(response_data['reporter']['open_count'], 2)
@@ -105,18 +159,18 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.client.force_authenticate(user=self.superuser)
 
         signal_id = self.reporter_1_signals[2].pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
-        self.assertEqual(response.status_code, 200)
-
-        response_json = response.json()
-        self.assertEqual(len(response_json['features']), 1)
-
-        signal_id = self.reporter_1_signals[3].pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/near/geography')
         self.assertEqual(response.status_code, 200)
 
         response_json = response.json()
         self.assertEqual(len(response_json['features']), 2)
+
+        signal_id = self.reporter_1_signals[3].pk
+        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/near/geography')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertEqual(len(response_json['features']), 0)
 
     def test_get_anonymous_signals_context(self):
         self.client.force_authenticate(user=self.superuser)
@@ -126,7 +180,7 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
             self.assertEqual(response.status_code, 200)
 
             response_data = response.json()
-            self.assertIsNotNone(response_data['geography'])
+            self.assertIsNotNone(response_data['near'])
 
             self.assertEqual(response_data['reporter'], None)
 
@@ -141,42 +195,8 @@ class TestSignalContextView(SuperUserMixin, APITestCase):
         self.client.force_authenticate(user=self.superuser)
 
         for signal in self.anonymous_signals:
-            response = self.client.get(f'/signals/v1/private/signals/{signal.pk}/context/geography/')
+            response = self.client.get(f'/signals/v1/private/signals/{signal.pk}/context/near/geography/')
             self.assertEqual(response.status_code, 200)
-
-
-class TestSignalContextDefaultSettingsView(SuperUserMixin, APITestCase):
-    """
-    By default the context and reporter context detail are enabled (for now)
-    The geography context is disabled until it is implemented
-    """
-    def setUp(self):
-        self.signal = SignalFactory.create(reporter__email=None, status__state=workflow.BEHANDELING)
-        self.signal_with_email = SignalFactory.create(
-            reporter__email='test123@example.com', status__state=workflow.BEHANDELING)
-
-    def test_get_signal_context(self):
-        self.client.force_authenticate(user=self.superuser)
-
-        signal_id = self.signal.pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_signal_context_reporter_detail(self):
-        self.client.force_authenticate(user=self.superuser)
-
-        response = self.client.get(f'/signals/v1/private/signals/{self.signal.pk}/context/reporter/')
-        self.assertEqual(response.status_code, 404)
-
-        response = self.client.get(f'/signals/v1/private/signals/{self.signal_with_email.pk}/context/reporter/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_signal_context_geography_detail(self):
-        self.client.force_authenticate(user=self.superuser)
-
-        signal_id = self.signal.pk
-        response = self.client.get(f'/signals/v1/private/signals/{signal_id}/context/geography')
-        self.assertEqual(response.status_code, 200)
 
 
 class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

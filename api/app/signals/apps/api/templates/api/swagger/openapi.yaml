@@ -722,7 +722,7 @@ paths:
         - OAuth2:
             - SIG/ALL
 
-  /signals/v1/private/signals/{id}/context/geography/:
+  /signals/v1/private/signals/{id}/context/near/geography/:
     parameters:
       - name: id
         in: path
@@ -731,10 +731,14 @@ paths:
         schema:
           type: integer
     get:
-      description: Not yet implemented!
+      description: A context overview of Signals near the selected Signal
       responses:
         '200':
-          description: Not yet implemented!
+          description: Context overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateContextNearGeographyResponse'
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
@@ -3539,12 +3543,13 @@ components:
                 href:
                   type: string
                   description: URI to the detailed context based on geography
-                  example: http://127.0.0.1:8000/signals/v1/private/signals/1/context/geography/
-        geography:
+                  example: http://127.0.0.1:8000/signals/v1/private/signals/1/context/near/geography/
+        near:
           type: object
-          nullable: true
-          description: Not yet implemented!
-          example: null
+          properties:
+            signal_count:
+              type: integer
+              example: 10
         reporter:
           type: object
           properties:
@@ -3661,6 +3666,55 @@ components:
           description: A list of signals context, paginated
           items:
             $ref: '#/components/schemas/privateContextReporterResponse'
+
+    privateContextNearGeographyResponse:
+      description: Geography
+      type: object
+      properties:
+        'type':
+          type: string
+          example: "FeatureCollection"
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              'type':
+                type: string
+                example: "Feature"
+              geometry:
+                type: object
+                properties:
+                  'type':
+                    type: string
+                    example: "Point"
+                  coordinates:
+                    type: array
+                    items:
+                      type: integer
+                    minItems: 0
+                    maxItems: 2
+                    example: [ 4.890986949631043, 52.41875227274259 ]
+              'properties':
+                type: object
+                properties:
+                  id:
+                    description: The ID of the Signal
+                    type: integer
+                    example: 1
+                  status:
+                    type: object
+                    properties:
+                      state:
+                        format: string
+                        example: "m"
+                      state_display:
+                        format: string
+                        example: "Gemeld"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2020-01-01T00:00:00+00:00"
 
   securitySchemes:
     OAuth2:
