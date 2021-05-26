@@ -208,6 +208,7 @@ class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase
     detail_endpoint = '/signals/v1/private/signals/{}'
     context_endpoint = '/signals/v1/private/signals/{}/context/'
     context_reporter_endpoint = '/signals/v1/private/signals/{}/context/reporter/'
+    context_near_endpoint = '/signals/v1/private/signals/{}/context/near/geography/'
 
     def setUp(self):
         email = 'reporter@example.com'
@@ -236,6 +237,10 @@ class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
+        url = self.context_near_endpoint.format(self.signal_no.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
     def test_can_access_with_proper_department(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
@@ -258,3 +263,7 @@ class TestSignalContextPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase
                 self.assertEqual(entry['can_view_signal'], True)
             elif entry['id'] == self.signal_no.id:
                 self.assertEqual(entry['can_view_signal'], False)
+
+        url = self.context_near_endpoint.format(self.signal_yes.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
