@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import tempfile
+import time
 from datetime import datetime
 from glob import glob
 from os import path
@@ -122,8 +123,11 @@ class TestDatawarehouse(testcases.TestCase):
         # Creating a few objects in the database.
         for i in range(3):
             SignalFactory.create()
-        datawarehouse.save_and_zip_csv_files_endpoint.delay(1)
-        datawarehouse.save_and_zip_csv_files_endpoint.delay(1)
+        datawarehouse.save_and_zip_csv_files_endpoint(max_csv_amount=1)
+        # we need to wait for 1 sec in order to ensure that we will get an different resulting zip file name
+        # else it will generate the same file twice
+        time.sleep(1)
+        datawarehouse.save_and_zip_csv_files_endpoint(max_csv_amount=1)
         now = timezone.now()
         src_folder = f'{self.file_backend_tmp_dir}/{now:%Y}/{now:%m}/{now:%d}'
         list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
