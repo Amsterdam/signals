@@ -13,7 +13,6 @@ from unittest import mock
 import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
-from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.feedback.factories import FeedbackFactory
@@ -127,10 +126,11 @@ class TestDatawarehouse(testcases.TestCase):
             datawarehouse.save_and_zip_csv_files_endpoint(max_csv_amount=1)
         with freeze_time('2020-09-10T15:00:00+00:00'):
             datawarehouse.save_and_zip_csv_files_endpoint(max_csv_amount=1)
-        now = timezone.now()
-        src_folder = f'{self.file_backend_tmp_dir}/{now:%Y}/{now:%m}/{now:%d}'
+
+        src_folder = f'{self.file_backend_tmp_dir}/2020/09/10'
         list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
         self.assertEqual(1, len(list_of_files))
+        self.assertTrue(list_of_files[0].endswith('20200910_150000UTC.zip'))
 
     @override_settings(
         SWIFT={
