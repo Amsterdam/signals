@@ -120,6 +120,8 @@ urlpatterns = [
 
     # Reporting
     path('v1/', include('signals.apps.reporting.urls')),
+    # Questionnaires
+    path('v1/', include('signals.apps.questionnaires.urls')),
 ]
 
 if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT']:
