@@ -1,5 +1,6 @@
 {
 	"info": {
+		"_postman_id": "ad398fea-9b6f-4cf1-8a06-63e12e1075ac",
 		"name": "Signals",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -19,7 +20,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "3b10d82b-81cf-474f-bbf6-c77837dca2f9",
 												"exec": [
 													""
 												],
@@ -81,7 +81,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "91133401-7f32-4301-90d2-f9f02094dde1",
 												"exec": [
 													""
 												],
@@ -138,20 +137,141 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Categories",
 							"item": [
+								{
+									"name": "Status message templates",
+									"item": [
+										{
+											"name": "Patch (Afval/Asbest-Accu)",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearer_token}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"name": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "[\n    {\n        \"state\": \"b\",\n        \"templates\": [\n            {\n                \"title\": \"{{ $randomLoremWords }}\",\n                \"text\": \"{{ $randomLoremSentences }}\"\n            },\n            {\n                \"title\": \"{{ $randomLoremWords }}\",\n                \"text\": \"{{ $randomLoremSentences }}\"\n            }\n        ]\n    }\n]"
+												},
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/terms/categories/afval/sub_categories/asbest-accu/status-message-templates/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"terms",
+														"categories",
+														"afval",
+														"sub_categories",
+														"asbest-accu",
+														"status-message-templates",
+														""
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "List (Afval/Asbest-Accu)",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearer_token}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"name": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n\t\n}"
+												},
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/terms/categories/afval/sub_categories/asbest-accu/status-message-templates/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"terms",
+														"categories",
+														"afval",
+														"sub_categories",
+														"asbest-accu",
+														"status-message-templates",
+														""
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
 								{
 									"name": "List",
 									"event": [
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -161,7 +281,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "20a06ec2-430a-4519-8da9-31160b79acc6",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"postman.setEnvironmentVariable('category_id', jsonData.results[0].id)"
@@ -212,7 +331,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -274,7 +392,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -333,7 +450,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "9889b311-5f88-4670-a819-cb681f9d64b7",
 												"exec": [
 													""
 												],
@@ -390,9 +506,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Departments",
@@ -406,7 +520,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "6baf4ad0-fd6b-491e-a455-61e8abd0cec8",
 														"exec": [
 															""
 														],
@@ -416,7 +529,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "5007ef49-49a7-44f7-bcf3-bee99b018b9c",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"postman.setEnvironmentVariable('department_id', jsonData.results[0].id)"
@@ -466,7 +578,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "048db119-eb37-4903-a9ce-cd926428f3ca",
 														"exec": [
 															""
 														],
@@ -476,7 +587,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "c49192a9-c7cb-4879-bbff-c4a09627b0f5",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"postman.setEnvironmentVariable('department_id', jsonData.results[0].id)"
@@ -514,9 +624,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Create",
@@ -524,7 +632,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "7119846c-1756-4ccc-989f-d72549976f15",
 												"exec": [
 													"pm.variables.set('random_department_code', 'R' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10))"
 												],
@@ -534,7 +641,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "75989cad-b1d9-46f5-9957-6919d34e34e5",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"postman.setEnvironmentVariable('department_id', jsonData.id)"
@@ -594,7 +700,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "17c90e34-2ea0-4f8b-b8b3-629c6aa61af6",
 												"exec": [
 													""
 												],
@@ -604,7 +709,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "5cc47b04-aefa-4212-acad-d8de45cbbe79",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"postman.setEnvironmentVariable('department_id', jsonData.results[0].id)"
@@ -720,9 +824,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Permissions",
@@ -758,9 +860,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Me",
@@ -774,7 +874,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "ef579548-2156-4c7f-ba18-397409b42f09",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"postman.setEnvironmentVariable('me_filter_id', jsonData.id)"
@@ -828,7 +927,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "d57c98ef-d688-4155-ba94-4322339e0d39",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"if (jsonData.results.length) {",
@@ -906,7 +1004,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "5dda5094-2bec-425c-907d-0a8d87894b1b",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"postman.setEnvironmentVariable('me_filter_id', jsonData.id)"
@@ -954,9 +1051,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "detail",
@@ -989,9 +1084,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Roles",
@@ -1002,7 +1095,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "b59faf4f-27ef-42ce-935a-11684ab581b7",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"if (jsonData.results.length) {",
@@ -1048,7 +1140,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "ca3a9553-49ba-4624-b0f4-09a6742a7909",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"postman.setEnvironmentVariable('role_id', jsonData.id)"
@@ -1101,7 +1192,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "85da1f0b-2eba-48bb-b58f-2604cd3247c5",
 												"exec": [
 													""
 												],
@@ -1153,7 +1243,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "31e0b1bb-daad-46c6-b847-4049aa00b2a4",
 												"exec": [
 													""
 												],
@@ -1190,9 +1279,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Search",
@@ -1203,7 +1290,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "e3aa6b7b-cb3a-4f67-9442-ba7627afec29",
 												"exec": [
 													""
 												],
@@ -1265,9 +1351,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Signals",
@@ -1281,7 +1365,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "590cc697-4948-4191-97a8-5062b26b3387",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1350,7 +1433,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "e89008d6-f298-4cd6-9fd2-acd41c8338d3",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1419,7 +1501,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "bdd1a267-c549-40a7-a3f1-3a2262f53bfe",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1488,7 +1569,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "312cc9d8-a357-4612-b0ab-5308fb594c5d",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1557,7 +1637,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "293e3f80-2762-4b49-bf5d-9134a3de4ab8",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1626,7 +1705,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "27fdde3d-4340-430f-bcb6-4f0a79b29733",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1695,7 +1773,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "043f34a2-958e-4d81-b570-d6cd92232e44",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1764,7 +1841,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "5fad7ee0-6e7c-4868-9475-f3dcaf7fd223",
 														"exec": [
 															"pm.request.headers.remove('Authorization')",
 															"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -1827,9 +1903,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Filter",
@@ -1840,7 +1914,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "81a2d3d5-9ab0-48b1-ba7c-ca14fc194af4",
 														"exec": [
 															""
 														],
@@ -1908,7 +1981,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "cc33e039-57b4-4635-be19-0504249ece13",
 														"exec": [
 															""
 														],
@@ -1964,9 +2036,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Removed from category",
@@ -1977,7 +2047,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "e908233b-6965-4b78-b6e8-6d82daeb3125",
 														"exec": [
 															"var now = new Date()",
 															"var dateOffset = (24*60*60*1000) * 5; //5 days",
@@ -2024,7 +2093,7 @@
 													}
 												},
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/private/signals/category/removed/?after={{isoTimestampMinusFiveDays}}&before={{$isoTimestamp}}",
+													"raw": "{{endpoint}}/signals/v1/private/signals/promoted/parent/",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -2033,19 +2102,9 @@
 														"v1",
 														"private",
 														"signals",
-														"category",
-														"removed",
+														"promoted",
+														"parent",
 														""
-													],
-													"query": [
-														{
-															"key": "after",
-															"value": "{{isoTimestampMinusFiveDays}}"
-														},
-														{
-															"key": "before",
-															"value": "{{$isoTimestamp}}"
-														}
 													]
 												}
 											},
@@ -2057,7 +2116,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "7c1fadc2-3d92-4108-9902-b92904322524",
 														"exec": [
 															"var now = new Date()",
 															"var dateOffset = (24*60*60*1000) * 5; //5 days",
@@ -2131,9 +2189,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Attachments",
@@ -2144,7 +2200,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "d156fe9b-a287-449b-ba46-743ed4dd6575",
 														"exec": [
 															""
 														],
@@ -2154,7 +2209,6 @@
 												{
 													"listen": "test",
 													"script": {
-														"id": "86ed3910-dfcc-43ce-8dd4-6efd14fdcc8e",
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"if (jsonData.results.length) {",
@@ -2225,7 +2279,7 @@
 												"header": [
 													{
 														"key": "Authorization",
-														"value": "Bearer {{bearer_token}}",
+														"value": "Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjM4OWE5ZjY4LWUyNGUtNDcxNi1hMTFjLTFlZWY0NzgwNGNjNiJ9.eyJpc3MiOiJodHRwczovL2FwaS5kYXRhLmFtc3RlcmRhbS5ubC9vYXV0aDIvYXV0aG9yaXplIiwic3ViIjoiZC52YW4uYnVpdGVuQGFtc3RlcmRhbS5ubCIsImlhdCI6MTU3NzEwNjAyMCwibmJmIjoxNTc3MTA2MDEwLCJleHAiOjE1NzcxNDIwMjAsImp0aSI6ImJlZWFhMTI4LTA3NTctNDVmNC1hZjRjLWM2YmJlYzYwZDZkNCIsInNjb3BlcyI6WyJTSUcvQUxMIl19.I6daztW0JNthiiKzRpgyQWtVZtAtIAkSwvsRxiDqSoTIx8pRibbrdsbE51lf2CnfwHnNIQPBA3piHq_WQg0XaQ",
 														"type": "text"
 													},
 													{
@@ -2257,9 +2311,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Geography Filter",
@@ -2270,7 +2322,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "97d4d2df-b78f-4570-9445-fc8a657241ac",
 														"exec": [
 															""
 														],
@@ -2339,7 +2390,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "f1737d85-9a92-4f8f-b5d3-be18fa7fe779",
 														"exec": [
 															""
 														],
@@ -2396,9 +2446,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Create",
@@ -2406,7 +2454,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													"pm.request.headers.remove('Authorization')",
 													"authorizatio_token = postman.getEnvironmentVariable(\"authorization\")",
@@ -2420,7 +2467,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "405d9ad3-51de-418c-9934-e9b4257e60cc",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"postman.setEnvironmentVariable('signal_id', jsonData.id)"
@@ -2457,7 +2503,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"text\": \"{{$randomLoremSentences}}\",\n    \"text_extra\": \"{{$randomLoremSentences}}\",\n    \"location\": {\n        \"geometrie\": {\n            \"type\": \"Point\",\n            \"coordinates\": [\n                4.90022563,\n                52.36768424\n            ]\n        },\n        \"stadsdeel\": \"A\",\n        \"buurt_code\": \"A04i\",\n        \"address\": {\n            \"openbare_ruimte\": \"Amstel\",\n            \"huisnummer\": 1,\n            \"huisletter\": \"\",\n            \"huisnummer_toevoeging\": \"\",\n            \"postcode\": \"1011PN\",\n            \"woonplaats\": \"Amsterdam\"\n        }\n    },\n    \"category\": {\n        \"sub_category\": \"/signals/v1/public/terms/categories/overig/sub_categories/overig\"\n    },\n    \"reporter\": {\n        \"email\": \"{{$randomExampleEmail}}\",\n        \"phone\": \"{{random_phonenumber}}\",\n        \"sharing_allowed\": true\n    },\n    \"created_at\": \"{{$isoTimestamp}}\",\n    \"incident_date_start\": \"{{$isoTimestamp}}\",\n    \"source\": \"source-x\"\n}\n",
+											"raw": "{\n    \"text\": \"Just a text containtin http://google.com links https://nu.nl \\n Also on the next line there is a http://example.com link\",\n    \"text_extra\": \"{{$randomLoremSentences}}\",\n    \"location\": {\n        \"geometrie\": {\n            \"type\": \"Point\",\n            \"coordinates\": [\n                4.90022563,\n                52.36768424\n            ]\n        },\n        \"stadsdeel\": \"A\",\n        \"buurt_code\": \"A04i\",\n        \"address\": {\n            \"openbare_ruimte\": \"Amstel\",\n            \"huisnummer\": 1,\n            \"huisletter\": \"\",\n            \"huisnummer_toevoeging\": \"\",\n            \"postcode\": \"1011PN\",\n            \"woonplaats\": \"Amsterdam\"\n        }\n    },\n    \"category\": {\n        \"sub_category\": \"/signals/v1/public/terms/categories/overig/sub_categories/overig\"\n    },\n    \"reporter\": {\n        \"email\": \"{{$randomExampleEmail}}\",\n        \"phone\": \"{{random_phonenumber}}\",\n        \"sharing_allowed\": true\n    },\n    \"created_at\": \"{{$isoTimestamp}}\",\n    \"incident_date_start\": \"{{$isoTimestamp}}\",\n    \"source\": \"Telefoon – Adoptant\"\n}\n",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2486,7 +2532,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -2552,7 +2597,7 @@
 										"header": [
 											{
 												"key": "Authorization",
-												"value": "Bearer {{bearer_token}}",
+												"value": "Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjM4OWE5ZjY4LWUyNGUtNDcxNi1hMTFjLTFlZWY0NzgwNGNjNiJ9.eyJpc3MiOiJodHRwczovL2FwaS5kYXRhLmFtc3RlcmRhbS5ubC9vYXV0aDIvYXV0aG9yaXplIiwic3ViIjoiZC52YW4uYnVpdGVuQGFtc3RlcmRhbS5ubCIsImlhdCI6MTU3NzEwNjAyMCwibmJmIjoxNTc3MTA2MDEwLCJleHAiOjE1NzcxNDIwMjAsImp0aSI6ImJlZWFhMTI4LTA3NTctNDVmNC1hZjRjLWM2YmJlYzYwZDZkNCIsInNjb3BlcyI6WyJTSUcvQUxMIl19.I6daztW0JNthiiKzRpgyQWtVZtAtIAkSwvsRxiDqSoTIx8pRibbrdsbE51lf2CnfwHnNIQPBA3piHq_WQg0XaQ",
 												"type": "text"
 											},
 											{
@@ -2593,7 +2638,7 @@
 											{
 												"key": "Authorization",
 												"type": "text",
-												"value": "Bearer {{bearer_token}}"
+												"value": "Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjM4OWE5ZjY4LWUyNGUtNDcxNi1hMTFjLTFlZWY0NzgwNGNjNiJ9.eyJpc3MiOiJodHRwczovL2FwaS5kYXRhLmFtc3RlcmRhbS5ubC9vYXV0aDIvYXV0aG9yaXplIiwic3ViIjoiZC52YW4uYnVpdGVuQGFtc3RlcmRhbS5ubCIsImlhdCI6MTU3NzEwNjAyMCwibmJmIjoxNTc3MTA2MDEwLCJleHAiOjE1NzcxNDIwMjAsImp0aSI6ImJlZWFhMTI4LTA3NTctNDVmNC1hZjRjLWM2YmJlYzYwZDZkNCIsInNjb3BlcyI6WyJTSUcvQUxMIl19.I6daztW0JNthiiKzRpgyQWtVZtAtIAkSwvsRxiDqSoTIx8pRibbrdsbE51lf2CnfwHnNIQPBA3piHq_WQg0XaQ"
 											},
 											{
 												"key": "Referer",
@@ -2634,7 +2679,7 @@
 											{
 												"key": "Authorization",
 												"type": "text",
-												"value": "Bearer {{bearer_token}}"
+												"value": "Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjM4OWE5ZjY4LWUyNGUtNDcxNi1hMTFjLTFlZWY0NzgwNGNjNiJ9.eyJpc3MiOiJodHRwczovL2FwaS5kYXRhLmFtc3RlcmRhbS5ubC9vYXV0aDIvYXV0aG9yaXplIiwic3ViIjoiZC52YW4uYnVpdGVuQGFtc3RlcmRhbS5ubCIsImlhdCI6MTU3NzEwNjAyMCwibmJmIjoxNTc3MTA2MDEwLCJleHAiOjE1NzcxNDIwMjAsImp0aSI6ImJlZWFhMTI4LTA3NTctNDVmNC1hZjRjLWM2YmJlYzYwZDZkNCIsInNjb3BlcyI6WyJTSUcvQUxMIl19.I6daztW0JNthiiKzRpgyQWtVZtAtIAkSwvsRxiDqSoTIx8pRibbrdsbE51lf2CnfwHnNIQPBA3piHq_WQg0XaQ"
 											},
 											{
 												"key": "Referer",
@@ -2675,7 +2720,7 @@
 											{
 												"key": "Authorization",
 												"type": "text",
-												"value": "Bearer {{bearer_token}}"
+												"value": "Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjM4OWE5ZjY4LWUyNGUtNDcxNi1hMTFjLTFlZWY0NzgwNGNjNiJ9.eyJpc3MiOiJodHRwczovL2FwaS5kYXRhLmFtc3RlcmRhbS5ubC9vYXV0aDIvYXV0aG9yaXplIiwic3ViIjoiZC52YW4uYnVpdGVuQGFtc3RlcmRhbS5ubCIsImlhdCI6MTU3NzEwNjAyMCwibmJmIjoxNTc3MTA2MDEwLCJleHAiOjE1NzcxNDIwMjAsImp0aSI6ImJlZWFhMTI4LTA3NTctNDVmNC1hZjRjLWM2YmJlYzYwZDZkNCIsInNjb3BlcyI6WyJTSUcvQUxMIl19.I6daztW0JNthiiKzRpgyQWtVZtAtIAkSwvsRxiDqSoTIx8pRibbrdsbE51lf2CnfwHnNIQPBA3piHq_WQg0XaQ"
 											},
 											{
 												"key": "Referer",
@@ -2705,9 +2750,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Sources",
@@ -2718,7 +2761,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "928a178b-f6fc-4ca4-980f-fc98a77398b0",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"if (jsonData.results.length) {",
@@ -2764,7 +2806,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "45f6245e-8c6e-4de9-b24a-18f950ebf169",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"if (jsonData.results.length) {",
@@ -2804,9 +2845,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Users",
@@ -2842,13 +2881,153 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
+						},
+						{
+							"name": "Questionnaires",
+							"item": [
+								{
+									"name": "Questionnaire",
+									"item": [
+										{
+											"name": "List",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"var jsonData = JSON.parse(responseBody)",
+															"postman.setEnvironmentVariable('questionnaire_id', jsonData.results[0].id)"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/questionnaires/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"questionnaires",
+														""
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Get",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearer_token}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/questionnaires/{{questionnaire_id}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"questionnaires",
+														"{{questionnaire_id}}"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Quesiton",
+									"item": [
+										{
+											"name": "List",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"var jsonData = JSON.parse(responseBody)",
+															"postman.setEnvironmentVariable('question_id', jsonData.results[0].id)"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/question/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"question",
+														""
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Detail",
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/private/question/{{question_id}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"private",
+														"question",
+														"{{question_id}}"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				},
 				{
 					"name": "Public",
@@ -2862,7 +3041,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "6b3d647f-fb5c-492d-a892-827368dbb434",
 												"exec": [
 													""
 												],
@@ -2924,7 +3102,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "e13c3277-a0aa-43ff-b4f6-96628ca755c3",
 												"exec": [
 													""
 												],
@@ -2981,9 +3158,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Categories",
@@ -2994,7 +3169,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -3027,12 +3201,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
+											"raw": "{\n\t\n}"
 										},
 										"url": {
 											"raw": "{{endpoint}}/signals/v1/public/terms/categories/",
@@ -3057,7 +3226,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -3090,12 +3258,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
+											"raw": "{\n\t\n}"
 										},
 										"url": {
 											"raw": "{{endpoint}}/signals/v1/public/terms/categories/afval",
@@ -3120,7 +3283,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												"id": "ebeec82a-9f41-4571-b086-a39f398a335e",
 												"exec": [
 													""
 												],
@@ -3153,12 +3315,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n\t\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
+											"raw": "{\n\t\n}"
 										},
 										"url": {
 											"raw": "{{endpoint}}/signals/v1/public/terms/categories/afval/sub_categories/asbest-accu",
@@ -3179,9 +3336,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Feedback",
@@ -3195,7 +3350,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "f7ab07ea-fd7b-4c95-8bec-0fe69dcc8769",
 														"exec": [
 															""
 														],
@@ -3252,9 +3406,7 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								},
 								{
 									"name": "Form",
@@ -3265,7 +3417,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "7dbf6188-4d7b-458e-828e-e29dad1f0e31",
 														"exec": [
 															""
 														],
@@ -3328,7 +3479,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														"id": "ba8fbeae-1509-458d-9e9d-5f8ed3703959",
 														"exec": [
 															""
 														],
@@ -3382,13 +3532,9 @@
 											},
 											"response": []
 										}
-									],
-									"protocolProfileBehavior": {},
-									"_postman_isSubFolder": true
+									]
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Questions",
@@ -3399,7 +3545,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "ab58f68c-df9e-4094-81b9-480d8c949c56",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"if (jsonData.results.length) {",
@@ -3445,7 +3590,6 @@
 										{
 											"listen": "test",
 											"script": {
-												"id": "274c6635-2a3d-4016-9cc5-eae05d8cafc5",
 												"exec": [
 													"var jsonData = JSON.parse(responseBody)",
 													"if (jsonData.results.length) {",
@@ -3485,9 +3629,7 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
 						},
 						{
 							"name": "Signals",
@@ -3522,23 +3664,183 @@
 									},
 									"response": []
 								}
-							],
-							"protocolProfileBehavior": {},
-							"_postman_isSubFolder": true
+							]
+						},
+						{
+							"name": "Questionnaires",
+							"item": [
+								{
+									"name": "Questionnaire",
+									"item": [
+										{
+											"name": "List",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"var jsonData = JSON.parse(responseBody)",
+															"postman.setEnvironmentVariable('questionnaire_uuid', jsonData.results[0].uuid)"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/questionnaires/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"questionnaires",
+														""
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Get",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearer_token}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/questionnaires/{{questionnaire_uuid}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"questionnaires",
+														"{{questionnaire_uuid}}"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Question",
+									"item": [
+										{
+											"name": "List",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"var jsonData = JSON.parse(responseBody)",
+															"postman.setEnvironmentVariable('question_key', jsonData.results[0].key)",
+															"postman.setEnvironmentVariable('question_uuid', jsonData.results[0].key)"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/question/",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"question",
+														""
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Detail (Key)",
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/question/{{question_key}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"question",
+														"{{question_key}}"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Detail (UUID)",
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/question/{{question_uuid}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"question",
+														"{{question_uuid}}"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
 						}
-					],
-					"protocolProfileBehavior": {},
-					"_postman_isSubFolder": true
+					]
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
 	],
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "45952a6b-c154-4ddd-8441-ae219c648d7e",
 				"type": "text/javascript",
 				"exec": [
 					"random_phonenumber = '+316'",
@@ -3552,7 +3854,6 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "fa3efd13-c2a0-4072-8a9e-391908e1f15a",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -3562,9 +3863,8 @@
 	],
 	"variable": [
 		{
-			"id": "68acdcc6-dbdb-4dd9-a627-a34391c4fe6c",
 			"key": "random_phonenumber",
-			"value": "+31653926456"
+			"value": "+31636345533"
 		}
 	]
 }
