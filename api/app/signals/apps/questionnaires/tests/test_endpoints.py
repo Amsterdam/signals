@@ -7,7 +7,7 @@ from django.test import override_settings
 from django.urls import include, path
 from rest_framework.test import APITestCase
 
-from signals.apps.questionnaires.models import Questionnaire, Question
+from signals.apps.questionnaires.models import Question, Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
