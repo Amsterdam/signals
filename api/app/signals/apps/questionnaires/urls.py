@@ -4,10 +4,10 @@ from django.urls import include, path
 
 from signals.apps.api.routers import SignalsRouterVersion1
 from signals.apps.questionnaires.views import (
-    PrivateQuestionViewSet,
-    PublicQuestionViewSet,
     PrivateQuestionnaireViewSet,
-    PublicQuestionnaireViewSet
+    PrivateQuestionViewSet,
+    PublicQuestionnaireViewSet,
+    PublicQuestionViewSet
 )
 
 router = SignalsRouterVersion1()

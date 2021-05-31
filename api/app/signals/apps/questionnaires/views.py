@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import uuid
+
 from datapunt_api.rest import DatapuntViewSet, DatapuntViewSetWritable
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
@@ -9,13 +10,13 @@ from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.questionnaires.models import Question, Questionnaire
 from signals.apps.questionnaires.serializers import (
     PrivateQuestionDetailedSerializer,
-    PrivateQuestionSerializer,
-    PublicQuestionDetailedSerializer,
-    PublicQuestionSerializer,
     PrivateQuestionnaireDetailedSerializer,
     PrivateQuestionnaireSerializer,
+    PrivateQuestionSerializer,
+    PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
-    PublicQuestionnaireSerializer
+    PublicQuestionnaireSerializer,
+    PublicQuestionSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 
