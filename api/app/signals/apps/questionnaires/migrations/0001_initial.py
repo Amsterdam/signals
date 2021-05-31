@@ -17,14 +17,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Question',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(
+                    auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                )),
                 ('key', models.CharField(blank=True, max_length=255, null=True, unique=True)),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('field_type', models.CharField(
-                    choices=[('integer', 'Integer'), ('plain_text', 'PlainText')], max_length=255)),
+                    choices=[('integer', 'Integer'), ('plain_text', 'PlainText')], max_length=255
+                )),
                 ('payload', models.JSONField(blank=True, null=True)),
                 ('required', models.BooleanField(default=False)),
+                ('root', models.ForeignKey(
+                    blank=True,
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -34,7 +44,11 @@ class Migration(migrations.Migration):
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('first_question', models.ForeignKey(
-                    null=True, on_delete=django.db.models.deletion.CASCADE, to='questionnaires.question')),
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -48,7 +62,10 @@ class Migration(migrations.Migration):
                 ('ttl_seconds', models.IntegerField(default=7200)),
                 ('frozen', models.BooleanField(default=False)),
                 ('questionnaire', models.ForeignKey(
-                    null=True, on_delete=django.db.models.deletion.CASCADE, to='questionnaires.questionnaire')),
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.questionnaire'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -56,11 +73,19 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('answer', models.JSONField(blank=True)),
+                ('answer', models.JSONField(blank=True, null=True)),
                 ('question', models.ForeignKey(
-                    null=True, on_delete=django.db.models.deletion.CASCADE, to='questionnaires.question')),
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
                 ('session', models.ForeignKey(
-                    null=True, on_delete=django.db.models.deletion.CASCADE, to='questionnaires.session')),
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='answers',
+                    to='questionnaires.session'
+                )),
             ],
         ),
     ]
