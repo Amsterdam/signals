@@ -5,9 +5,10 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from signals.apps.questionnaires.fields import (
     QuestionHyperlinkedIdentityField,
     QuestionnairePrivateHyperlinkedIdentityField,
-    QuestionnairePublicHyperlinkedIdentityField
+    QuestionnairePublicHyperlinkedIdentityField,
+    SessionPublicHyperlinkedIdentityField,
 )
-from signals.apps.questionnaires.models import Question, Questionnaire
+from signals.apps.questionnaires.models import Question, Questionnaire, Session
 
 
 class PublicQuestionSerializer(HALSerializer):
@@ -106,3 +107,30 @@ class PrivateQuestionnaireSerializer(HALSerializer):
 
 class PrivateQuestionnaireDetailedSerializer(PrivateQuestionnaireSerializer):
     first_question = PrivateQuestionDetailedSerializer()
+
+
+class PublicSessionSerializer(HALSerializer):
+    serializer_url_field = SessionPublicHyperlinkedIdentityField
+
+    _display = DisplayField()
+
+    class Meta:
+        model = Session
+        fields = (
+            '_links',
+            '_display',
+            'uuid',
+            'started_at',
+            'submit_before',
+            'ttl_seconds',
+            'created_at',
+        )
+        read_only_fields = (
+            'id',
+            'uuid',
+            'created_at',
+        )
+
+
+class PublicSessionDetailedSerializer(PublicSessionSerializer):
+    ...

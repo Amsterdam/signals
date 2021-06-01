@@ -3,11 +3,14 @@
 import uuid
 
 from datapunt_api.rest import DatapuntViewSet, DatapuntViewSetWritable
+from django.utils import timezone
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.questionnaires.models import Question, Questionnaire
+from signals.apps.questionnaires.exceptions import Gone
+from signals.apps.questionnaires.models import Question, Questionnaire, Session
+from signals.apps.questionnaires.rest import HALViewSetRetrieve
 from signals.apps.questionnaires.serializers import (
     PrivateQuestionDetailedSerializer,
     PrivateQuestionnaireDetailedSerializer,
@@ -16,7 +19,7 @@ from signals.apps.questionnaires.serializers import (
     PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
     PublicQuestionnaireSerializer,
-    PublicQuestionSerializer
+    PublicQuestionSerializer, PublicSessionSerializer, PublicSessionDetailedSerializer,
 )
 from signals.auth.backend import JWTAuthBackend
 
@@ -124,3 +127,27 @@ class PrivateQuestionViewSet(DatapuntViewSetWritable):
     def destroy(self, request, *args, **kwargs):
         # Not yet implemented
         raise MethodNotAllowed('Method not allowed!')
+
+
+class PublicSessionViewSet(HALViewSetRetrieve):
+    lookup_field = 'uuid'
+    lookup_url_kwarg = 'uuid'
+
+    queryset = Session.objects.all()
+    queryset_detail = Session.objects.all()
+
+    serializer_class = PublicSessionSerializer
+    serializer_detail_class = PublicSessionDetailedSerializer
+
+    authentication_classes = ()
+
+    def get_object(self):
+        obj = super(PublicSessionViewSet, self).get_object()
+
+        now = timezone.now()
+        if obj.submit_before and obj.submit_before < now:
+            raise Gone('Expired!')
+        elif (obj.created_at + timezone.timedelta(seconds=obj.ttl_seconds)) < now:
+            raise Gone('Expired!')
+
+        return obj
