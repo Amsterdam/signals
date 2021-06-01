@@ -57,3 +57,25 @@ class QuestionHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         ])
 
         return result
+
+
+class SessionPublicHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+    lookup_field = 'uuid'
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+        _format = self.context.get('format', None)
+
+        namespace = f'{request.resolver_match.namespace}:'
+
+        result = OrderedDict([
+            ('self', dict(href=self.get_url(value, f'{namespace}public-session-detail', request, _format))),
+        ])
+
+        questionnaire = value.questionnaire
+        if questionnaire:
+            questionnaire_href = self.reverse(f'{namespace}public-questionnaire-detail',
+                                              kwargs={'uuid': questionnaire.uuid}, request=request, format=_format)
+            result.update({'sia:questionnaire': dict(href=questionnaire_href)})
+
+        return result

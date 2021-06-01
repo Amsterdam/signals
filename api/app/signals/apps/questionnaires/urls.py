@@ -7,7 +7,8 @@ from signals.apps.questionnaires.views import (
     PrivateQuestionnaireViewSet,
     PrivateQuestionViewSet,
     PublicQuestionnaireViewSet,
-    PublicQuestionViewSet
+    PublicQuestionViewSet,
+    PublicSessionViewSet,
 )
 
 router = SignalsRouterVersion1()
@@ -17,6 +18,8 @@ router.register(r'private/question', PrivateQuestionViewSet, basename='private-q
 
 router.register(r'public/questionnaires', PublicQuestionnaireViewSet, basename='public-questionnaire')
 router.register(r'private/questionnaires', PrivateQuestionnaireViewSet, basename='private-questionnaire')
+
+router.register(r'public/sessions', PublicSessionViewSet, basename='public-session')
 
 urlpatterns = [
     path('', include((router.urls, 'signals.apps.questionnaires'), namespace='questionnaires')),
