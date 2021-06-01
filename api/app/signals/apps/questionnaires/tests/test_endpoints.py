@@ -9,7 +9,11 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
-from signals.apps.questionnaires.models import Question, Questionnaire, Session
+from signals.apps.questionnaires.factories import (
+    QuestionFactory,
+    QuestionnaireFactory,
+    SessionFactory
+)
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -33,7 +37,7 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/questionnaires/'
 
     def setUp(self):
-        self.questionnaire = Questionnaire.objects.create()
+        self.questionnaire = QuestionnaireFactory.create()
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/public_get_questionnaire_detail.json')
@@ -83,7 +87,7 @@ class TestPrivateQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             email='signals.admin@example.com', is_superuser=True,
             defaults={'first_name': 'John', 'last_name': 'Doe', 'is_staff': True}
         )
-        self.questionnaire = Questionnaire.objects.create()
+        self.questionnaire = QuestionnaireFactory.create()
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/private_get_questionnaire_detail.json')
@@ -162,7 +166,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/question/'
 
     def setUp(self):
-        self.question, _ = Question.objects.get_or_create(key='test')
+        self.question = QuestionFactory.create()
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/public_get_question_detail.json')
@@ -206,7 +210,7 @@ class TestPrivateQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
             email='signals.admin@example.com', is_superuser=True,
             defaults={'first_name': 'John', 'last_name': 'Doe', 'is_staff': True}
         )
-        self.question, _ = Question.objects.get_or_create(key='test')
+        self.question = QuestionFactory.create()
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/private_get_question_detail.json')
@@ -285,8 +289,8 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/sessions/'
 
     def setUp(self):
-        self.questionnaire = Questionnaire.objects.create()
-        self.session = Session.objects.create(questionnaire=self.questionnaire)
+        self.questionnaire = QuestionnaireFactory.create()
+        self.session = SessionFactory.create(questionnaire=self.questionnaire)
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/public_get_session_detail.json')
@@ -301,15 +305,15 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_session_detail_gone(self):
         now = timezone.now()
         with freeze_time(now - timezone.timedelta(days=1)):
-            session = Session.objects.create(questionnaire=self.questionnaire)
+            session = SessionFactory.create(questionnaire=self.questionnaire)
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 410)
 
         now = timezone.now()
         with freeze_time(now - timezone.timedelta(days=1)):
-            session = Session.objects.create(questionnaire=self.questionnaire,
-                                             submit_before=now-timezone.timedelta(hours=1))
+            session = SessionFactory.create(questionnaire=self.questionnaire,
+                                            submit_before=now-timezone.timedelta(hours=1))
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 410)

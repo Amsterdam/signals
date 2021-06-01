@@ -115,6 +115,9 @@
 								},
 								{
 									"type": "null"
+								},
+								{
+									"type": "object"
 								}
 							]
 						},

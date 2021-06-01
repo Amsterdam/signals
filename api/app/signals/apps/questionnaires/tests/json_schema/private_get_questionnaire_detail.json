@@ -94,6 +94,9 @@
 								},
 								{
 									"type": "null"
+								},
+								{
+									"type": "object"
 								}
 							]
 						},

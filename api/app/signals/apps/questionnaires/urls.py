@@ -8,7 +8,7 @@ from signals.apps.questionnaires.views import (
     PrivateQuestionViewSet,
     PublicQuestionnaireViewSet,
     PublicQuestionViewSet,
-    PublicSessionViewSet,
+    PublicSessionViewSet
 )
 
 router = SignalsRouterVersion1()

@@ -19,7 +19,9 @@ from signals.apps.questionnaires.serializers import (
     PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
     PublicQuestionnaireSerializer,
-    PublicQuestionSerializer, PublicSessionSerializer, PublicSessionDetailedSerializer,
+    PublicQuestionSerializer,
+    PublicSessionDetailedSerializer,
+    PublicSessionSerializer
 )
 from signals.auth.backend import JWTAuthBackend
 

@@ -6,7 +6,7 @@ from signals.apps.questionnaires.fields import (
     QuestionHyperlinkedIdentityField,
     QuestionnairePrivateHyperlinkedIdentityField,
     QuestionnairePublicHyperlinkedIdentityField,
-    SessionPublicHyperlinkedIdentityField,
+    SessionPublicHyperlinkedIdentityField
 )
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
 

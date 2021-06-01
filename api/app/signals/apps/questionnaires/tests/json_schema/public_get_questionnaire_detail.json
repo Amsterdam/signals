@@ -79,6 +79,9 @@
 								},
 								{
 									"type": "null"
+								},
+								{
+									"type": "object"
 								}
 							]
 						},

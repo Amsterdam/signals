@@ -118,6 +118,9 @@
 								},
 								{
 									"type": "null"
+								},
+								{
+									"type": "object"
 								}
 							]
 						},
