@@ -52,6 +52,9 @@
 				},
 				{
 					"type": "null"
+				},
+				{
+					"type": "object"
 				}
 			]
 		},

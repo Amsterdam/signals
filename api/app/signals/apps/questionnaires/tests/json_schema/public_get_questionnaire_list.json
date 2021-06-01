@@ -145,6 +145,9 @@
 												},
 												{
 													"type": "null"
+												},
+												{
+													"type": "object"
 												}
 											]
 										},
