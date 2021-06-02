@@ -8,7 +8,7 @@ from jsonschema.exceptions import ValidationError as js_validation_error
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
-from signals.apps.questionnaires.models import Answer, Session
+from signals.apps.questionnaires.models import Answer, Question, Session
 
 
 class QuestionnairesService:
@@ -47,6 +47,10 @@ class QuestionnairesService:
 
     @staticmethod
     def create_answer(answer_payload, question, questionnaire, session=None):
+        # TODO: check that question is actually part of the questionnaire!!!
+        # TODO: consider case where second question of questionnaire is answered
+        # first when there is no session should we disallow this??
+
         # First check that we have a session create it if not. Furthermore check
         # that our session is neither expired nor frozen.
         if session is None:
@@ -68,13 +72,29 @@ class QuestionnairesService:
         return Answer.objects.create(session=session, question=question, payload=answer_payload)
 
     @staticmethod
-    def get_next_question_key(answer, question):
+    def get_next_question(answer, question):
+        # TODO rename get_next_question, and make references by uuid and key work
         answer_payload = answer.payload
+        next_key = None
+
         if 'next' in question.payload and question.payload['next']:
             for rule in question.payload['next']:
-                if answer_payload == rule['payload']:
-                    return rule['key']
-        return None
+                if 'payload' in rule and answer_payload == rule['payload']:
+                    next_key = rule['key']
+                    break
+                elif 'payload' not in rule:
+                    next_key = rule['key']
+                    break
+
+        if next_key is not None:
+            try:
+                question = Question.objects.get(key=next_key)
+            except Question.DoesNotExist:
+                return None  # TODO: consider raising an exception
+        else:
+            question = None
+
+        return question
 
     @staticmethod
     def get_answers(session):
