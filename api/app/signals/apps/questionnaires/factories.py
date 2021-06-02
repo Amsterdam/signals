@@ -42,11 +42,11 @@ class SessionFactory(DjangoModelFactory):
 class AnswerFactory(DjangoModelFactory):
     session = SubFactory(SessionFactory)
     question = SelfAttribute('session.questionnaire.first_question')
-    answer = None
+    payload = None
 
     @post_generation
     def set_question_and_answer(obj, create, extracted, **kwargs):
-        obj.answer = f'Answer to: {obj.question.payload["shortLabel"]}.'
+        obj.payload = f'Answer to: {obj.question.payload["shortLabel"]}.'
 
     class Meta:
         model = Answer

@@ -30,8 +30,8 @@ admin.site.register(Questionnaire, QuestionnaireAdmin)
 
 
 class SessionAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'started_at', 'submit_before', 'ttl_seconds', 'created_at',)
-    readonly_fields = ('uuid', 'started_at', 'submit_before', 'ttl_seconds', 'created_at',)
+    fields = ('uuid', 'started_at', 'submit_before', 'duration', 'created_at',)
+    readonly_fields = ('uuid', 'started_at', 'submit_before', 'duration', 'created_at',)
     list_display = ('uuid', 'started_at', 'submit_before', 'created_at',)
     ordering = ('-created_at',)
     list_per_page = 20

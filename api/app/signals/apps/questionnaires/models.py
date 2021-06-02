@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+from datetime import timedelta
 import uuid
 
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 
-from signals.apps.questionnaires.fieldtypes import field_type_choices
+from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 
-SESSION_TTL = 2 * 60 * 60  # Two hours default
+SESSION_DURATION = 2 * 60 * 60  # Two hours default
 
 
 class Question(models.Model):
@@ -19,6 +21,20 @@ class Question(models.Model):
     required = models.BooleanField(default=False)
 
     root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
+
+    def _clean_payload(self, value):
+        field_type_class = get_field_type_class(self)
+        if field_type_class is None:
+            raise ValidationError('field_type')
+        return field_type_class().clean(value)
+
+    def clean(self):
+        if self.payload:
+            self.payload = self._clean_payload(self.payload)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Questionnaire(models.Model):
@@ -35,7 +51,7 @@ class Answer(models.Model):
     session = models.ForeignKey('Session', on_delete=models.CASCADE, null=True, related_name='answers')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
 
-    answer = models.JSONField(blank=True, null=True)
+    payload = models.JSONField(blank=True, null=True)
 
 
 class Session(models.Model):
@@ -44,7 +60,7 @@ class Session(models.Model):
 
     started_at = models.DateTimeField(blank=True, null=True)
     submit_before = models.DateTimeField(blank=True, null=True)
-    ttl_seconds = models.IntegerField(default=SESSION_TTL)
+    duration = models.DurationField(default=timedelta(seconds=SESSION_DURATION))
 
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)

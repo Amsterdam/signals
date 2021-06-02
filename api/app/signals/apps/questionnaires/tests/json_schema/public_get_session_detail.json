@@ -49,8 +49,8 @@
 				}
 			]
 		},
-		"ttl_seconds": {
-			"type": "integer"
+		"duration": {
+			"type": "string"
 		},
 		"started_at": {
 			"anyOf": [
@@ -68,7 +68,7 @@
 		"_display",
 		"uuid",
 		"submit_before",
-		"ttl_seconds",
+		"duration",
 		"started_at"
 	]
 }
