@@ -122,7 +122,7 @@ class PublicSessionSerializer(HALSerializer):
             'uuid',
             'started_at',
             'submit_before',
-            'ttl_seconds',
+            'duration',
             'created_at',
         )
         read_only_fields = (

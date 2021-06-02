@@ -149,7 +149,7 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         now = timezone.now()
         if obj.submit_before and obj.submit_before < now:
             raise Gone('Expired!')
-        elif (obj.created_at + timezone.timedelta(seconds=obj.ttl_seconds)) < now:
+        elif obj.created_at + obj.duration < now:
             raise Gone('Expired!')
 
         return obj

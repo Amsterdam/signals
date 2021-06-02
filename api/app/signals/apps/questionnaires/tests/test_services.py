@@ -43,8 +43,8 @@ def _question_graph_with_decision_and_null_keys():
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
         'next': [
-            {'key': q2.key, 'answer': 'yes'},
-            {'key': q3.key, 'answer': 'no'},
+            {'key': str(q2.uuid), 'answer': 'yes'},
+            {'key': str(q3.uuid), 'answer': 'no'},
         ],
     })
 
