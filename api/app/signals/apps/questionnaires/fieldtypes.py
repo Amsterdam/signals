@@ -4,9 +4,6 @@ import inspect
 import sys
 
 import jsonschema
-from django.core.exceptions import ValidationError as django_validation_error
-from jsonschema.exceptions import SchemaError as js_schema_error
-from jsonschema.exceptions import ValidationError as js_validation_error
 
 
 class FieldType:
@@ -15,17 +12,6 @@ class FieldType:
     def clean(self, payload):
         jsonschema.validate(payload, self.payload_schema)  # !! what is the output? probably
         return payload
-
-    def validate_submission(self, data):
-        try:
-            jsonschema.validate(data, self.submission_schema)
-        except js_schema_error:
-            msg = f'JSONSchema for {self.__name__} is not valid.'
-            raise django_validation_error(msg)
-        except js_validation_error:
-            msg = 'Submitted answer does not validate.'
-            raise django_validation_error(msg)
-        return data
 
 
 class PlainText(FieldType):
@@ -43,7 +29,7 @@ class PlainText(FieldType):
                     'type': 'object',
                     'properties': {
                         'key': {'type': 'string'},
-                        'answer': submission_schema  # leave out "answer" if next is unconditional
+                        'payload': submission_schema  # leave out "payload" if next is unconditional
                     },
                     'required': ['key'],
                     'additionalProperties': False
@@ -70,7 +56,7 @@ class Integer(FieldType):
                     'type': 'object',
                     'properties': {
                         'key': {'type': 'string'},
-                        'answer': submission_schema  # leave out "answer" if next is unconditional
+                        'payload': submission_schema  # leave out "payload" if next is unconditional
                     },
                     'required': ['key'],
                     'additionalProperties': False
