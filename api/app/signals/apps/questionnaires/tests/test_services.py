@@ -1,8 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+from datetime import timedelta
+
 from django.test import TestCase
 
-from signals.apps.questionnaires.factories import QuestionFactory
+from signals.apps.questionnaires.factories import QuestionFactory, QuestionnaireFactory
+from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Question
+from signals.apps.questionnaires.services import QuestionnairesService
 
 
 def _question_graph_with_decision():
@@ -10,8 +14,8 @@ def _question_graph_with_decision():
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
         'next': [
-            {'key': 'q_yes', 'answer': 'yes'},
-            {'key': 'q_no', 'answer': 'no'},
+            {'key': 'q_yes', 'payload': 'yes'},
+            {'key': 'q_no', 'payload': 'no'},
         ],
     })
 
@@ -43,8 +47,8 @@ def _question_graph_with_decision_and_null_keys():
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
         'next': [
-            {'key': str(q2.uuid), 'answer': 'yes'},
-            {'key': str(q3.uuid), 'answer': 'no'},
+            {'key': str(q2.uuid), 'payload': 'yes'},
+            {'key': str(q3.uuid), 'payload': 'no'},
         ],
     })
 
@@ -72,23 +76,50 @@ def _question_graph_with_cycle():
 
 
 class TestQuestionGraphs(TestCase):
-    def test_question_graph_with_decision(self):
+    def test_all_question_graph(self):
         _question_graph_with_decision()
         _question_graph_with_decision_and_null_keys()
         _question_graph_with_cycle()
 
 
-class TestAnswerService(TestCase):
-    pass
-
-
 class TestQuestionnaireService(TestCase):
-    pass
+    def setUp(self):
+        self.q_yesno, self.q_yes, self.q_no = _question_graph_with_decision()
+        self.questionnaire = QuestionnaireFactory.create(first_question=self.q_yesno)
 
+    def test_create_answers(self):
+        # We will answer the questionnaire, until we reach a None next question.
+        # In the first step we have no Session reference yet.
+        questionnaire = self.questionnaire
+        question = questionnaire.first_question
+        answer_str = 'yes'
 
-class TestQuestionService(TestCase):
-    pass
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
 
+        session = answer.session
+        session_id = session.id
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-class TestSessionService(TestCase):
-    pass
+        next_key = QuestionnairesService.get_next_question_key(answer, question)
+        self.assertEqual(next_key, 'q_yes')
+
+        question2 = Question.objects.get(key=next_key)
+        answer2_str = 'yes'
+
+        answer2 = QuestionnairesService.create_answer(
+            answer_payload=answer2_str,
+            question=question2,
+            questionnaire=questionnaire,
+            session=session
+        )
+        self.assertIsInstance(answer2, Answer)
+        self.assertEqual(answer2.question, question2)
+        self.assertEqual(answer2.session_id, session_id)
+
+        next_key2 = QuestionnairesService.get_next_question_key(answer2, question2)
+        self.assertIsNone(next_key2)

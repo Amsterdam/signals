@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datetime import timedelta
 import uuid
+from datetime import timedelta
 
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
