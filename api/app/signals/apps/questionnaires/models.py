@@ -7,6 +7,7 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
+from signals.apps.questionnaires.managers import QuestionManager
 
 SESSION_DURATION = 2 * 60 * 60  # Two hours default
 
@@ -22,6 +23,8 @@ class Question(models.Model):
 
     root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
+    objects = QuestionManager()
+
     def _clean_payload(self, value):
         field_type_class = get_field_type_class(self)
         if field_type_class is None:
@@ -35,6 +38,10 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    @property
+    def ref(self):
+        return self.key if self.key else self.uuid
 
 
 class Questionnaire(models.Model):

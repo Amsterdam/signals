@@ -80,15 +80,15 @@ class QuestionnairesService:
         if 'next' in question.payload and question.payload['next']:
             for rule in question.payload['next']:
                 if 'payload' in rule and answer_payload == rule['payload']:
-                    next_key = rule['key']
+                    next_key = rule['ref']
                     break
                 elif 'payload' not in rule:
-                    next_key = rule['key']
+                    next_key = rule['ref']
                     break
 
         if next_key is not None:
             try:
-                question = Question.objects.get(key=next_key)
+                question = Question.objects.get_by_reference(ref=next_key)
             except Question.DoesNotExist:
                 return None  # TODO: consider raising an exception
         else:

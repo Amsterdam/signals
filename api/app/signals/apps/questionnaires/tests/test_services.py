@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import unittest
 from datetime import timedelta
 
 from django.test import TestCase
@@ -15,8 +14,8 @@ def _question_graph_with_decision():
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
         'next': [
-            {'key': 'q_yes', 'payload': 'yes'},
-            {'key': 'q_no', 'payload': 'no'},
+            {'ref': 'q_yes', 'payload': 'yes'},
+            {'ref': 'q_no', 'payload': 'no'},
         ],
     })
 
@@ -48,8 +47,8 @@ def _question_graph_with_decision_null_keys():
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
         'next': [
-            {'key': str(q2.uuid), 'payload': 'yes'},
-            {'key': str(q3.uuid), 'payload': 'no'},
+            {'ref': str(q2.uuid), 'payload': 'yes'},
+            {'ref': str(q3.uuid), 'payload': 'no'},
         ],
     })
 
@@ -61,7 +60,7 @@ def _question_graph_with_cycle():
         'shortLabel': 'First question.',
         'label': 'First question.',
         'next': [
-            {'key': 'two'}
+            {'ref': 'two'}
         ],
     })
 
@@ -69,7 +68,7 @@ def _question_graph_with_cycle():
         'shortLabel': 'First question.',
         'label': 'First question.',
         'next': [
-            {'key': 'one'}
+            {'ref': 'one'}
         ],
     })
 
@@ -106,7 +105,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.key, 'q_yes')
+        self.assertEqual(question2.ref, q_yes.key)
 
         answer2_str = 'yes'
 
@@ -123,7 +122,6 @@ class TestQuestionnaireService(TestCase):
         next_key2 = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_key2)
 
-    @unittest.skip('UUID references not yet supported')
     def test_create_answers_null_keys(self):
         q_yesno, q_yes, q_no = _question_graph_with_decision_null_keys()
         questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
@@ -145,7 +143,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.key, 'q_yes')
+        self.assertEqual(question2.ref, q_yes.uuid)
 
         answer2_str = 'yes'
 
