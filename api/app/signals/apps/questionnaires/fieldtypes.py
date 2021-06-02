@@ -28,10 +28,10 @@ class PlainText(FieldType):
                 'items': {
                     'type': 'object',
                     'properties': {
-                        'key': {'type': 'string'},
+                        'ref': {'type': 'string'},
                         'payload': submission_schema  # leave out "payload" if next is unconditional
                     },
-                    'required': ['key'],
+                    'required': ['ref'],
                     'additionalProperties': False
                 }
             }  # Leave next out completely if this is the last question
@@ -55,10 +55,10 @@ class Integer(FieldType):
                 'items': {
                     'type': 'object',
                     'properties': {
-                        'key': {'type': 'string'},
+                        'ref': {'type': 'string'},
                         'payload': submission_schema  # leave out "payload" if next is unconditional
                     },
-                    'required': ['key'],
+                    'required': ['ref'],
                     'additionalProperties': False
                 }
             }
