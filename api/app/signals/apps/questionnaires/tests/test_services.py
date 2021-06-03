@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import timedelta
 
+from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
 from signals.apps.questionnaires.factories import QuestionFactory, QuestionnaireFactory
@@ -18,12 +19,10 @@ def _question_graph_with_decision():
             {'ref': 'q_no', 'payload': 'no'},
         ],
     })
-
     q2 = QuestionFactory.create(key='q_yes', payload={
         'shortLabel': 'yes',
         'label': 'The yes question. Happy now?'
     })
-
     q3 = QuestionFactory.create(key='q_no', payload={
         'shortLabel': 'no',
         'label': 'The no question. Still unhappy?'
@@ -37,12 +36,10 @@ def _question_graph_with_decision_null_keys():
         'shortLabel': 'yes',
         'label': 'The yes question. Happy now?'
     })
-
     q3 = QuestionFactory.create(key=None, payload={
         'shortLabel': 'no',
         'label': 'The no question. Still unhappy?'
     })
-
     q1 = QuestionFactory.create(key=None, payload={
         'shortLabel': 'Yes or no?',
         'label': 'Yes or no, what do you choose?',
@@ -50,6 +47,66 @@ def _question_graph_with_decision_null_keys():
             {'ref': str(q2.uuid), 'payload': 'yes'},
             {'ref': str(q3.uuid), 'payload': 'no'},
         ],
+    })
+
+    return q1, q2, q3
+
+
+def _question_graph_with_decision_with_default():
+    q1 = QuestionFactory.create(key='q_yesno', payload={
+        'shortLabel': 'Yes or no?',
+        'label': 'Yes or no, what do you choose?',
+        'next': [
+            {'ref': 'q_yes', 'payload': 'yes'},
+            {'ref': 'q_no', 'payload': 'no'},
+            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
+        ],
+    })
+    q2 = QuestionFactory.create(key='q_yes', payload={
+        'shortLabel': 'yes',
+        'label': 'The yes question. Happy now?'
+    })
+    q3 = QuestionFactory.create(key='q_no', payload={
+        'shortLabel': 'no',
+        'label': 'The no question. Still unhappy?'
+    })
+
+    return q1, q2, q3
+
+
+def _question_graph_no_required_answers():
+    q1 = QuestionFactory.create(key='one', required=False, payload={
+        'shortLabel': 'First not required',
+        'label': 'First not required',
+        'next': [
+            {'ref': 'two'},
+        ]
+    })
+    q2 = QuestionFactory(key='two', required=False, payload={
+        'shortLabel': 'Second not required',
+        'label': 'Second not required',
+    })
+
+    return q1, q2
+
+
+def _question_graph_with_decision_with_default_no_required_answers():
+    q1 = QuestionFactory.create(key='q_yesno', required=False, payload={
+        'shortLabel': 'Yes or no?',
+        'label': 'Yes or no, what do you choose?',
+        'next': [
+            {'ref': 'q_yes', 'payload': 'yes'},
+            {'ref': 'q_no', 'payload': 'no'},
+            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
+        ],
+    })
+    q2 = QuestionFactory.create(key='q_yes', payload={
+        'shortLabel': 'yes',
+        'label': 'The yes question. Happy now?'
+    })
+    q3 = QuestionFactory.create(key='q_no', payload={
+        'shortLabel': 'no',
+        'label': 'The no question. Still unhappy?'
     })
 
     return q1, q2, q3
@@ -63,10 +120,9 @@ def _question_graph_with_cycle():
             {'ref': 'two'}
         ],
     })
-
     q2 = QuestionFactory.create(key='two', payload={
-        'shortLabel': 'First question.',
-        'label': 'First question.',
+        'shortLabel': 'Second question.',
+        'label': 'Second question.',
         'next': [
             {'ref': 'one'}
         ],
@@ -110,17 +166,13 @@ class TestQuestionnaireService(TestCase):
         answer2_str = 'yes'
 
         answer2 = QuestionnairesService.create_answer(
-            answer_payload=answer2_str,
-            question=question2,
-            questionnaire=questionnaire,
-            session=session
-        )
+            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
         self.assertIsInstance(answer2, Answer)
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_key2 = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_key2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        self.assertIsNone(next_question)
 
     def test_create_answers_null_keys(self):
         q_yesno, q_yes, q_no = _question_graph_with_decision_null_keys()
@@ -148,17 +200,13 @@ class TestQuestionnaireService(TestCase):
         answer2_str = 'yes'
 
         answer2 = QuestionnairesService.create_answer(
-            answer_payload=answer2_str,
-            question=question2,
-            questionnaire=questionnaire,
-            session=session
-        )
+            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
         self.assertIsInstance(answer2, Answer)
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_key2 = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_key2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        self.assertIsNone(next_question)
 
     def test_get_next_question_ref(self):
         q_payload_no_next = {}
@@ -166,6 +214,9 @@ class TestQuestionnaireService(TestCase):
         q_payload_next_unconditional = {'next': [{'ref': 'UNCONDITIONAL'}]}
         q_payload_next_conditional = {
             'next': [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
+        }
+        q_payload_next_conditional_with_default = {
+            'next': [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}, {'ref': 'DEFAULT'}]
         }
 
         get_next = QuestionnairesService.get_next_question_ref
@@ -175,11 +226,94 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(get_next('BLAH', q_payload_next_unconditional), 'UNCONDITIONAL')
         self.assertEqual(get_next('yes', q_payload_next_conditional), 'YES')
         self.assertEqual(get_next('no', q_payload_next_conditional), 'NO')
+        self.assertEqual(get_next('WILL NOT MATCH', q_payload_next_conditional_with_default), 'DEFAULT')
 
     def test_question_not_required(self):
-        # I
-        pass
+        # set up our questions and questionnaires
+        q1, q2 = _question_graph_no_required_answers()
+        questionnaire = QuestionnaireFactory.create(first_question=q1)
 
-    def test_question_requires_integer(self):
-        # II
-        pass
+        question = questionnaire.first_question
+        answer_str = None
+
+        # We will answer the questionnaire, until we reach a None next question.
+        # In the first step we have no Session reference yet.
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
+
+        session = answer.session
+        session_id = session.id
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
+
+        question2 = QuestionnairesService.get_next_question(answer, question)
+        self.assertEqual(question2.ref, q2.ref)
+
+        answer2_str = None
+
+        answer2 = QuestionnairesService.create_answer(
+            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
+        self.assertIsInstance(answer2, Answer)
+        self.assertEqual(answer2.question, question2)
+        self.assertEqual(answer2.session_id, session_id)
+
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        self.assertIsNone(next_question)
+
+    def test_question_with_default_next(self):
+        # set up our questions and questionnaires
+        q_yesno, q_yes, q_no = _question_graph_with_decision_with_default()
+        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+
+        question = questionnaire.first_question
+        answer_str = 'WILL NOT MATCH ANYTHING'  # to trigger default
+
+        # We will answer the questionnaire, until we reach a None next question.
+        # In the first step we have no Session reference yet.
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
+
+        session = answer.session
+        session_id = session.id
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
+
+        question2 = QuestionnairesService.get_next_question(answer, question)
+        self.assertEqual(question2.ref, q_yes.ref)  # get the default option
+
+        answer2_str = 'Yippee'
+
+        answer2 = QuestionnairesService.create_answer(
+            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
+        self.assertIsInstance(answer2, Answer)
+        self.assertEqual(answer2.question, question2)
+        self.assertEqual(answer2.session_id, session_id)
+
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        self.assertIsNone(next_question)
+
+    def test_validate_answer_payload(self):
+        integer_question = QuestionFactory(field_type='integer', payload={'label': 'integer', 'shortLabel': 'integer'})
+        plaintext_question = QuestionFactory(
+            field_type='plain_text', payload={'label': 'plain_text', 'shortLabel': 'plain_text'})
+        validate_answer = QuestionnairesService.validate_answer_payload
+
+        # Check integer fieldtype
+        self.assertEqual(validate_answer(123456, integer_question), 123456)
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload('THESE ARE CHARACTERS', integer_question)
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, integer_question)
+
+        # check plain_text fieldtype
+        self.assertEqual(validate_answer('THIS IS TEXT', plaintext_question), 'THIS IS TEXT')
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload(123456, plaintext_question)
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
