@@ -32,6 +32,12 @@ class QuestionnairesService:
 
     @staticmethod
     def validate_answer_payload(answer_payload, question):
+        # If a question is not required the answer payload must be JSON null,
+        # anything else gets the schema check.
+        if not question.required and answer_payload is None:
+            return answer_payload
+
+        # Schema check
         field_type_class = get_field_type_class(question)
 
         try:
@@ -72,29 +78,30 @@ class QuestionnairesService:
         return Answer.objects.create(session=session, question=question, payload=answer_payload)
 
     @staticmethod
-    def get_next_question(answer, question):
-        # TODO rename get_next_question, and make references by uuid and key work
-        answer_payload = answer.payload
-        next_key = None
-
-        if 'next' in question.payload and question.payload['next']:
-            for rule in question.payload['next']:
+    def get_next_question_ref(answer_payload, question_payload):
+        # TODO: consider whether we want case sensitive matches in case of
+        # character strings
+        if 'next' in question_payload and question_payload['next']:
+            for rule in question_payload['next']:
                 if 'payload' in rule and answer_payload == rule['payload']:
-                    next_key = rule['ref']
-                    break
+                    return rule['ref']
                 elif 'payload' not in rule:
-                    next_key = rule['ref']
-                    break
+                    return rule['ref']
 
-        if next_key is not None:
+        return None
+
+    @staticmethod
+    def get_next_question(answer, question):
+        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.payload)
+        if next_ref is not None:
             try:
-                question = Question.objects.get_by_reference(ref=next_key)
+                next_question = Question.objects.get_by_reference(ref=next_ref)
             except Question.DoesNotExist:
                 return None  # TODO: consider raising an exception
         else:
-            question = None
+            next_question = None
 
-        return question
+        return next_question
 
     @staticmethod
     def get_answers(session):
