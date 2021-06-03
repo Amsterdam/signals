@@ -159,3 +159,27 @@ class TestQuestionnaireService(TestCase):
 
         next_key2 = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_key2)
+
+    def test_get_next_question_ref(self):
+        q_payload_no_next = {}
+        q_payload_next_none = {'next': None}
+        q_payload_next_unconditional = {'next': [{'ref': 'UNCONDITIONAL'}]}
+        q_payload_next_conditional = {
+            'next': [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
+        }
+
+        get_next = QuestionnairesService.get_next_question_ref
+        self.assertEqual(get_next('yes', q_payload_no_next), None)
+        self.assertEqual(get_next('yes', q_payload_next_none), None)
+        self.assertEqual(get_next('WILL NOT MATCH', q_payload_next_conditional), None)
+        self.assertEqual(get_next('BLAH', q_payload_next_unconditional), 'UNCONDITIONAL')
+        self.assertEqual(get_next('yes', q_payload_next_conditional), 'YES')
+        self.assertEqual(get_next('no', q_payload_next_conditional), 'NO')
+
+    def test_question_not_required(self):
+        # I
+        pass
+
+    def test_question_requires_integer(self):
+        # II
+        pass
