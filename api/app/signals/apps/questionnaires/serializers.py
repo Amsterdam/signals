@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.questionnaires.fields import (
+    EmptyHyperlinkedIdentityField,
     QuestionHyperlinkedIdentityField,
     QuestionnairePrivateHyperlinkedIdentityField,
     QuestionnairePublicHyperlinkedIdentityField,
     SessionPublicHyperlinkedIdentityField
 )
-from signals.apps.questionnaires.models import Question, Questionnaire, Session
+from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.rest import UUIDRelatedField
+from signals.apps.questionnaires.services import QuestionnairesService
 
 
 class PublicQuestionSerializer(HALSerializer):
@@ -133,4 +137,54 @@ class PublicSessionSerializer(HALSerializer):
 
 
 class PublicSessionDetailedSerializer(PublicSessionSerializer):
-    ...
+    pass
+
+
+class PublicAnswerSerializer(HALSerializer):
+    serializer_url_field = EmptyHyperlinkedIdentityField
+
+    _display = DisplayField()
+
+    session = UUIDRelatedField(uuid_field='uuid', queryset=Session.objects.retrieve_valid_sessions(), required=False)
+    questionnaire = UUIDRelatedField(uuid_field='uuid', queryset=Questionnaire.objects.all(), required=False)
+
+    class Meta:
+        model = Answer
+        fields = (
+            '_links',
+            '_display',
+            'payload',
+            'session',
+            'questionnaire',
+            'created_at',
+        )
+        read_only_fields = (
+            'created_at',
+        )
+
+    def validate(self, attrs):
+        attrs = super(PublicAnswerSerializer, self).validate(attrs=attrs)
+
+        if 'session' in attrs and 'questionnaire' in attrs:
+            raise ValidationError('session and questionnaire cannot be used both!')
+        elif 'session' not in attrs and 'questionnaire' not in attrs:
+            raise ValidationError('Either the session or questionnaire is mandatory!')
+
+        # TODO: Add a check to see if the question belongs to the questionnaire that is being processed
+
+        return attrs
+
+    def create(self, validated_data):
+        question = self.context['question']
+        payload = validated_data.pop('payload')
+
+        if 'session' in validated_data:
+            session = validated_data.pop('session')
+            questionnaire = session.questionnaire
+        else:
+            session = None
+            questionnaire = validated_data.pop('questionnaire')
+
+        return QuestionnairesService.create_answer(
+            answer_payload=payload, question=question, questionnaire=questionnaire, session=session
+        )

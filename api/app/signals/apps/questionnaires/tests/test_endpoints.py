@@ -10,10 +10,12 @@ from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from signals.apps.questionnaires.factories import (
+    AnswerFactory,
     QuestionFactory,
     QuestionnaireFactory,
     SessionFactory
 )
+from signals.apps.questionnaires.models import Answer, Session
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -163,16 +165,20 @@ class TestPrivateQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/public/question/'
+    base_endpoint = '/public/questions/'
 
     def setUp(self):
-        self.question = QuestionFactory.create()
+        self.questionnaire = QuestionnaireFactory.create()
+        self.question = self.questionnaire.first_question
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/public_get_question_detail.json')
         )
         self.list_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/public_get_question_list.json')
+        )
+        self.post_answer_schema = self.load_json_schema(
+            os.path.join(THIS_DIR, 'json_schema/public_post_question_answer_response.json')
         )
 
     def test_question_list(self):
@@ -199,10 +205,306 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.delete(f'{self.base_endpoint}{self.question.uuid}')
         self.assertEqual(response.status_code, 405)
 
+    def test_answer_question_create(self):
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!', 'questionnaire': self.questionnaire.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        response_data = response.json()
+        self.assertJsonSchema(self.post_answer_schema, response_data)
+
+        self.assertEqual(1, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        answer = Answer.objects.first()
+        session = Session.objects.first()
+
+        self.assertEqual(data['payload'], response_data['payload'])
+        self.assertEqual(data['payload'], answer.payload)
+        self.assertEqual(str(session.uuid), str(response_data['session']))
+        self.assertIsNone(response_data['next_question'])
+
+        self.assertEqual(answer.session.pk, session.pk)
+        self.assertEqual(self.questionnaire.pk, session.questionnaire.pk)
+        self.assertEqual(self.question.pk, answer.question.pk)
+
+    def test_answer_question_create_existing_session(self):
+        session = SessionFactory.create(questionnaire=self.questionnaire)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!', 'session': session.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        response_data = response.json()
+        self.assertJsonSchema(self.post_answer_schema, response_data)
+
+        self.assertEqual(1, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        answer = Answer.objects.first()
+        session = Session.objects.first()
+
+        self.assertEqual(data['payload'], response_data['payload'])
+        self.assertEqual(data['payload'], answer.payload)
+        self.assertEqual(str(session.uuid), str(response_data['session']))
+        self.assertIsNone(response_data['next_question'])
+
+        self.assertEqual(answer.session.pk, session.pk)
+        self.assertEqual(self.questionnaire.pk, session.questionnaire.pk)
+        self.assertEqual(self.question.pk, answer.question.pk)
+
+    def test_answer_a_complete_questionnaire(self):
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        questionnaire = QuestionnaireFactory.create(
+            first_question__key='test-question-1',
+            first_question__payload={'shortLabel': 'Short label',
+                                     'label': 'Long label',
+                                     'next': [{'ref': 'test-question-2'}]}
+        )
+
+        second_question = QuestionFactory.create(
+            key='test-question-2',
+            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-3'}]}
+        )
+        third_question = QuestionFactory.create(
+            key='test-question-3',
+            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-4'}]}
+        )
+        fourth_question = QuestionFactory.create(
+            key='test-question-4',
+            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-5'}]}
+        )
+        fifth_question = QuestionFactory.create(
+            key='test-question-5',
+            payload={'shortLabel': 'Short label', 'label': 'Long label'}
+        )
+
+        data = {'payload': 'answer-1', 'questionnaire': questionnaire.uuid}
+        first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
+        response = self.client.post(first_post_answer_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        response_data = response.json()
+        self.assertJsonSchema(self.post_answer_schema, response_data)
+        self.assertIsNotNone(response_data['next_question'])
+
+        self.assertEqual(1, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        next_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
+        session = Session.objects.first()
+
+        for x in range(2, 6):
+            data = {'payload': f'answer-{x}', 'session': session.uuid}
+            response = self.client.post(next_post_answer_endpoint, data=data, format='json')
+            self.assertEqual(response.status_code, 201)
+
+            response_data = response.json()
+            self.assertJsonSchema(self.post_answer_schema, response_data)
+
+            self.assertEqual(x, Answer.objects.count())
+            self.assertEqual(1, Session.objects.count())
+
+            if x < 5:
+                self.assertIsNotNone(response_data['next_question'])
+                next_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
+            else:
+                self.assertIsNone(response_data['next_question'])
+                next_post_answer_endpoint = None
+
+        answer_qs = Answer.objects.filter(
+            question_id__in=[
+                questionnaire.first_question.id,
+                second_question.id,
+                third_question.id,
+                fourth_question.id,
+                fifth_question.id,
+            ],
+            session_id=session.pk,
+        )
+
+        self.assertTrue(answer_qs.exists())
+        self.assertEqual(5, answer_qs.count())
+
+    def test_answer_a_complete_questionnaire_branching_flow(self):
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        questionnaire = QuestionnaireFactory.create(
+            first_question__key='test-question-1',
+            first_question__payload={'shortLabel': 'Short label',
+                                     'label': 'Long label',
+                                     'next': [
+                                         {'payload': 'yes', 'ref': 'test-question-2'},
+                                         {'payload': 'no', 'ref': 'test-question-3'},
+                                         {'ref': 'test-question-4'},  # Default
+                                     ]}
+        )
+
+        second_question = QuestionFactory.create(
+            key='test-question-2',
+            payload={'shortLabel': 'Short label', 'label': 'Long label'}
+        )
+        third_question = QuestionFactory.create(
+            key='test-question-3',
+            payload={'shortLabel': 'Short label', 'label': 'Long label'}
+        )
+        fourth_question = QuestionFactory.create(
+            key='test-question-4',
+            payload={'shortLabel': 'Short label', 'label': 'Long label'}
+        )
+
+        first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
+
+        # Flow: question 1 -> question 2 -> done
+        data = {'payload': 'yes', 'questionnaire': questionnaire.uuid}
+        response = self.client.post(first_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_data['next_question']['uuid'], str(second_question.uuid))
+
+        data = {'payload': 'test', 'session': response_data['session']}
+        second_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
+        response = self.client.post(second_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response_data['next_question'])
+
+        # Flow: question 1 -> question 3 -> done
+        data = {'payload': 'no', 'questionnaire': questionnaire.uuid}
+        response = self.client.post(first_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_data['next_question']['uuid'], str(third_question.uuid))
+
+        data = {'payload': 'test', 'session': response_data['session']}
+        response = self.client.post(second_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response_data['next_question'])
+
+        # Flow: question 1 -> question 4 -> done
+        data = {'payload': 'default', 'questionnaire': questionnaire.uuid}
+        response = self.client.post(first_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_data['next_question']['uuid'], str(fourth_question.uuid))
+
+        data = {'payload': 'test', 'session': response_data['session']}
+        second_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
+        response = self.client.post(second_post_answer_endpoint, data=data, format='json')
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response_data['next_question'])
+
+        self.assertEqual(3, Session.objects.count())
+        self.assertEqual(6, Answer.objects.count())
+
+    def test_answer_question_create_invalid_data(self):
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        data = {'payload': {'value': 'This is my answer for testing!'}, }
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!',
+                'session': '00000000-0000-0000-0000-000000000000',
+                'questionnaire': '00000000-0000-0000-0000-000000000000'}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(0, Session.objects.count())
+
+        session = SessionFactory.create(questionnaire=self.questionnaire)
+        data = {'payload': 'This is my answer for testing!',
+                'session': session.uuid,
+                'questionnaire': session.questionnaire.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+    def test_answer_question_create_frozen_session(self):
+        session = SessionFactory.create(questionnaire=self.questionnaire, frozen=True)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!', 'session': session.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+    def test_answer_question_create_session_submit_before_passed(self):
+        now = timezone.now()
+        with freeze_time(now - timezone.timedelta(hours=4)):
+            session = SessionFactory.create(questionnaire=self.questionnaire,
+                                            submit_before=now - timezone.timedelta(hours=2))
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!', 'session': session.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+    def test_answer_question_create_session_started_duration_passed(self):
+        now = timezone.now()
+        with freeze_time(now - timezone.timedelta(hours=4)):
+            session = SessionFactory.create(questionnaire=self.questionnaire,
+                                            started_at=now - timezone.timedelta(hours=3))
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+        data = {'payload': 'This is my answer for testing!', 'session': session.uuid}
+        response = self.client.post(f'{self.base_endpoint}{self.question.uuid}/answer', data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(0, Answer.objects.count())
+        self.assertEqual(1, Session.objects.count())
+
+    def test_answer_question_list_not_allowed(self):
+        response = self.client.get(f'{self.base_endpoint}{self.question.uuid}/answer')
+        self.assertEqual(response.status_code, 405)
+
+    def test_answer_question_detail_not_allowed(self):
+        answer = AnswerFactory.create()
+
+        response = self.client.get(f'{self.base_endpoint}{self.question.uuid}/answer/{answer.pk}')
+        self.assertEqual(response.status_code, 404)
+
+    def test_answer_question_update_not_allowed(self):
+        response = self.client.patch(f'{self.base_endpoint}{self.question.uuid}/answer', data={})
+        self.assertEqual(response.status_code, 405)
+
+    def test_answer_question_delete_not_allowed(self):
+        response = self.client.delete(f'{self.base_endpoint}{self.question.uuid}/answer')
+        self.assertEqual(response.status_code, 405)
+
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPrivateQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/private/question/'
+    base_endpoint = '/private/questions/'
 
     def setUp(self):
         user_model = get_user_model()
@@ -210,7 +512,8 @@ class TestPrivateQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
             email='signals.admin@example.com', is_superuser=True,
             defaults={'first_name': 'John', 'last_name': 'Doe', 'is_staff': True}
         )
-        self.question = QuestionFactory.create()
+        self.questionnaire = QuestionnaireFactory.create()
+        self.question = self.questionnaire.first_question
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, 'json_schema/private_get_question_detail.json')

@@ -4,8 +4,10 @@ import uuid
 
 from datapunt_api.rest import DatapuntViewSet, DatapuntViewSetWritable
 from django.utils import timezone
+from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.questionnaires.exceptions import Gone
@@ -16,6 +18,7 @@ from signals.apps.questionnaires.serializers import (
     PrivateQuestionnaireDetailedSerializer,
     PrivateQuestionnaireSerializer,
     PrivateQuestionSerializer,
+    PublicAnswerSerializer,
     PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
     PublicQuestionnaireSerializer,
@@ -23,6 +26,7 @@ from signals.apps.questionnaires.serializers import (
     PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
+from signals.apps.questionnaires.services import QuestionnairesService
 from signals.auth.backend import JWTAuthBackend
 
 
@@ -106,6 +110,28 @@ class PublicQuestionViewSet(DatapuntViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+
+    @action(detail=True, url_path=r'answer/?$', methods=['POST', ], serializer_class=PublicAnswerSerializer)
+    def answer(self, request, *args, **kwargs):
+        question = self.get_object()
+
+        context = self.get_serializer_context()
+        context.update({'question': question})
+
+        serializer = PublicAnswerSerializer(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        next_question_data = None
+        next_question = QuestionnairesService.get_next_question(answer=serializer.instance, question=question)
+        if next_question:
+            question_serializer = PublicQuestionSerializer(next_question, context=self.get_serializer_context())
+            next_question_data = question_serializer.data
+
+        data = serializer.data
+        data.update({'next_question': next_question_data})
+
+        return Response(data, status=201)
 
 
 class PrivateQuestionViewSet(DatapuntViewSetWritable):

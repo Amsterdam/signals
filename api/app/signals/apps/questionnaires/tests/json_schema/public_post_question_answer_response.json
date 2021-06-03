@@ -3,68 +3,46 @@
 	"type": "object",
 	"properties": {
 		"_links": {
-			"type": "object",
-			"properties": {
-				"self": {
-					"type": "object",
-					"properties": {
-						"href": {
-							"type": "string"
-						}
-					},
-					"required": [
-						"href"
-					]
+			"type": "object"
+		},
+		"_display": {
+			"type": "string"
+		},
+		"payload": {
+			"anyOf": [
+				{
+					"type": "string"
 				},
-				"next": {
-					"type": "object",
-					"properties": {
-						"href": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							]
-						}
-					},
-					"required": [
-						"href"
-					]
+				{
+					"type": "null"
 				},
-				"previous": {
-					"type": "object",
-					"properties": {
-						"href": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							]
-						}
-					},
-					"required": [
-						"href"
-					]
+				{
+					"type": "object"
 				}
-			},
-			"required": [
-				"self",
-				"next",
-				"previous"
 			]
 		},
-		"count": {
-			"type": "integer"
+		"session": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
 		},
-		"results": {
-			"type": "array",
-			"items": [
+		"created_at": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"next_question": {
+			"anyOf": [
 				{
 					"type": "object",
 					"properties": {
@@ -72,17 +50,6 @@
 							"type": "object",
 							"properties": {
 								"self": {
-									"type": "object",
-									"properties": {
-										"href": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"href"
-									]
-								},
-								"sia:uuid-self": {
 									"type": "object",
 									"properties": {
 										"href": {
@@ -107,14 +74,11 @@
 							},
 							"required": [
 								"self",
-								"sia:uuid-self"
+								"sia:post-answer"
 							]
 						},
 						"_display": {
 							"type": "string"
-						},
-						"id": {
-							"type": "integer"
 						},
 						"uuid": {
 							"type": "string"
@@ -137,28 +101,28 @@
 						},
 						"required": {
 							"type": "boolean"
-						},
-						"created_at": {
-							"type": "string"
 						}
 					},
 					"required": [
 						"_links",
 						"_display",
-						"id",
 						"uuid",
 						"field_type",
 						"payload",
-						"required",
-						"created_at"
+						"required"
 					]
+				},
+				{
+					"type": "null"
 				}
 			]
 		}
 	},
 	"required": [
 		"_links",
-		"count",
-		"results"
+		"_display",
+		"payload",
+		"session",
+		"created_at"
 	]
 }
