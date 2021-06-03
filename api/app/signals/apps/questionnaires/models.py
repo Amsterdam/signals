@@ -7,7 +7,7 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
-from signals.apps.questionnaires.managers import QuestionManager
+from signals.apps.questionnaires.managers import QuestionManager, SessionManager
 
 SESSION_DURATION = 2 * 60 * 60  # Two hours default
 
@@ -71,3 +71,5 @@ class Session(models.Model):
 
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
+
+    objects = SessionManager()

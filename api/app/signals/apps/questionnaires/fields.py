@@ -5,6 +5,11 @@ from collections import OrderedDict
 from rest_framework import serializers
 
 
+class EmptyHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+    def to_representation(self, value):
+        return OrderedDict()
+
+
 class QuestionnairePublicHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     lookup_field = 'uuid'
 
@@ -34,7 +39,7 @@ class QuestionnairePrivateHyperlinkedIdentityField(serializers.HyperlinkedIdenti
 
         return OrderedDict([
             ('self', dict(href=private_href)),
-            ('public', dict(href=public_href)),
+            ('sia:public-self', dict(href=public_href)),
         ])
 
 
@@ -50,10 +55,13 @@ class QuestionHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         self_href = self.get_url(value, f'{namespace}public-question-detail', request, _format)
         self_uuid_href = self.reverse(f'{namespace}public-question-detail', kwargs={'key': value.uuid}, request=request,
                                       format=_format)
+        post_answer_href = self.reverse(f'{namespace}public-question-answer', kwargs={'key': value.key or value.uuid},
+                                        request=request, format=_format)
 
         result = OrderedDict([
             ('self', dict(href=self_href)),
-            ('self-uuid', dict(href=self_uuid_href)),
+            ('sia:uuid-self', dict(href=self_uuid_href)),
+            ('sia:post-answer', dict(href=post_answer_href)),
         ])
 
         return result
@@ -68,14 +76,12 @@ class SessionPublicHyperlinkedIdentityField(serializers.HyperlinkedIdentityField
 
         namespace = f'{request.resolver_match.namespace}:'
 
+        questionnaire_href = self.reverse(f'{namespace}public-questionnaire-detail',
+                                          kwargs={'uuid': value.questionnaire.uuid}, request=request, format=_format)
+
         result = OrderedDict([
             ('self', dict(href=self.get_url(value, f'{namespace}public-session-detail', request, _format))),
+            ('sia:questionnaire', dict(href=questionnaire_href))
         ])
-
-        questionnaire = value.questionnaire
-        if questionnaire:
-            questionnaire_href = self.reverse(f'{namespace}public-questionnaire-detail',
-                                              kwargs={'uuid': questionnaire.uuid}, request=request, format=_format)
-            result.update({'sia:questionnaire': dict(href=questionnaire_href)})
 
         return result

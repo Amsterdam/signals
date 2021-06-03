@@ -46,7 +46,7 @@
 										"href"
 									]
 								},
-								"self-uuid": {
+								"sia:uuid-self": {
 									"type": "object",
 									"properties": {
 										"href": {
@@ -60,7 +60,7 @@
 							},
 							"required": [
 								"self",
-								"self-uuid"
+								"sia:uuid-self"
 							]
 						},
 						"_display": {
