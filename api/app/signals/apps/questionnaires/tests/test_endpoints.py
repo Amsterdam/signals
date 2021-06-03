@@ -36,7 +36,7 @@ test_urlconf.urlpatterns = urlpatterns
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/public/questionnaires/'
+    base_endpoint = '/public/qa/questionnaires/'
 
     def setUp(self):
         self.questionnaire = QuestionnaireFactory.create()
@@ -81,7 +81,7 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPrivateQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/private/questionnaires/'
+    base_endpoint = '/private/qa/questionnaires/'
 
     def setUp(self):
         user_model = get_user_model()
@@ -165,7 +165,7 @@ class TestPrivateQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/public/questions/'
+    base_endpoint = '/public/qa/questions/'
 
     def setUp(self):
         self.questionnaire = QuestionnaireFactory.create()
@@ -504,7 +504,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPrivateQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/private/questions/'
+    base_endpoint = '/private/qa/questions/'
 
     def setUp(self):
         user_model = get_user_model()
@@ -589,7 +589,7 @@ class TestPrivateQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
-    base_endpoint = '/public/sessions/'
+    base_endpoint = '/public/qa/sessions/'
 
     def setUp(self):
         self.questionnaire = QuestionnaireFactory.create()

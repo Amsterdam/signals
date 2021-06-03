@@ -13,13 +13,13 @@ from signals.apps.questionnaires.views import (
 
 router = SignalsRouterVersion1()
 
-router.register(r'public/questions', PublicQuestionViewSet, basename='public-question')
-router.register(r'private/questions', PrivateQuestionViewSet, basename='private-question')
+router.register(r'public/qa/questions', PublicQuestionViewSet, basename='public-question')
+router.register(r'private/qa/questions', PrivateQuestionViewSet, basename='private-question')
 
-router.register(r'public/questionnaires', PublicQuestionnaireViewSet, basename='public-questionnaire')
-router.register(r'private/questionnaires', PrivateQuestionnaireViewSet, basename='private-questionnaire')
+router.register(r'public/qa/questionnaires', PublicQuestionnaireViewSet, basename='public-questionnaire')
+router.register(r'private/qa/questionnaires', PrivateQuestionnaireViewSet, basename='private-questionnaire')
 
-router.register(r'public/sessions', PublicSessionViewSet, basename='public-session')
+router.register(r'public/qa/sessions', PublicSessionViewSet, basename='public-session')
 
 urlpatterns = [
     path('', include((router.urls, 'signals.apps.questionnaires'), namespace='questionnaires')),
