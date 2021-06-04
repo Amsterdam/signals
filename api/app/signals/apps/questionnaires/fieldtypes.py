@@ -93,6 +93,6 @@ def field_type_choices():
 
 
 def get_field_type_class(question):
-    '''Grab FieldType subclass that defines this question's behavior.'''
+    """Grab FieldType subclass that defines this question's behavior."""
     _, field_type_classes = init()
     return field_type_classes.get(question.field_type, None)
