@@ -8,10 +8,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
-from signals.apps.questionnaires.factories import (
-    QuestionnaireFactory,
-    SessionFactory
-)
+from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
