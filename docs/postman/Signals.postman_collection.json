@@ -2907,7 +2907,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/private/questionnaires/",
+													"raw": "{{endpoint}}/signals/v1/private/qa/questionnaires/",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -2915,6 +2915,7 @@
 														"signals",
 														"v1",
 														"private",
+														"qa",
 														"questionnaires",
 														""
 													]
@@ -2949,7 +2950,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/private/questionnaires/{{questionnaire_id}}",
+													"raw": "{{endpoint}}/signals/v1/private/qa/questionnaires/{{questionnaire_id}}",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -2957,6 +2958,7 @@
 														"signals",
 														"v1",
 														"private",
+														"qa",
 														"questionnaires",
 														"{{questionnaire_id}}"
 													]
@@ -2987,7 +2989,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/private/question/",
+													"raw": "{{endpoint}}/signals/v1/private/qa/question/",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -2995,6 +2997,7 @@
 														"signals",
 														"v1",
 														"private",
+														"qa",
 														"question",
 														""
 													]
@@ -3008,7 +3011,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/private/question/{{question_id}}",
+													"raw": "{{endpoint}}/signals/v1/private/qa/question/{{question_id}}",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3016,6 +3019,7 @@
 														"signals",
 														"v1",
 														"private",
+														"qa",
 														"question",
 														"{{question_id}}"
 													]
@@ -3690,7 +3694,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/public/questionnaires/",
+													"raw": "{{endpoint}}/signals/v1/public/qa/questionnaires/",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3698,6 +3702,7 @@
 														"signals",
 														"v1",
 														"public",
+														"qa",
 														"questionnaires",
 														""
 													]
@@ -3732,7 +3737,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/public/questionnaires/{{questionnaire_uuid}}",
+													"raw": "{{endpoint}}/signals/v1/public/qa/questionnaires/{{questionnaire_uuid}}",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3740,6 +3745,7 @@
 														"signals",
 														"v1",
 														"public",
+														"qa",
 														"questionnaires",
 														"{{questionnaire_uuid}}"
 													]
@@ -3753,6 +3759,98 @@
 									"name": "Question",
 									"item": [
 										{
+											"name": "Answer",
+											"item": [
+												{
+													"name": "List (Start a Session)",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"var jsonData = JSON.parse(responseBody)",
+																	"postman.setEnvironmentVariable('session_uuid', jsonData.results.session)"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "POST",
+														"header": [],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"payload\": \"{{$randomLoremSentence}}\",\n    \"questionnaire\": \"{{questionnaire_uuid}}\"\n}",
+															"options": {
+																"raw": {
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{endpoint}}/signals/v1/public/qa/question/{{question_key}}/answer",
+															"host": [
+																"{{endpoint}}"
+															],
+															"path": [
+																"signals",
+																"v1",
+																"public",
+																"qa",
+																"question",
+																"{{question_key}}",
+																"answer"
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "List (Continue a Session)",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "POST",
+														"header": [],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"payload\": \"{{$randomLoremSentence}}\",\n    \"session\": \"{{session_uuid}}\"\n}",
+															"options": {
+																"raw": {
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{endpoint}}/signals/v1/public/qa/question/{{question_key}}/answer",
+															"host": [
+																"{{endpoint}}"
+															],
+															"path": [
+																"signals",
+																"v1",
+																"public",
+																"qa",
+																"question",
+																"{{question_key}}",
+																"answer"
+															]
+														}
+													},
+													"response": []
+												}
+											]
+										},
+										{
 											"name": "List",
 											"event": [
 												{
@@ -3761,7 +3859,7 @@
 														"exec": [
 															"var jsonData = JSON.parse(responseBody)",
 															"postman.setEnvironmentVariable('question_key', jsonData.results[0].key)",
-															"postman.setEnvironmentVariable('question_uuid', jsonData.results[0].key)"
+															"postman.setEnvironmentVariable('question_uuid', jsonData.results[0].uuid)"
 														],
 														"type": "text/javascript"
 													}
@@ -3771,7 +3869,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/public/question/",
+													"raw": "{{endpoint}}/signals/v1/public/qa/question/",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3779,6 +3877,7 @@
 														"signals",
 														"v1",
 														"public",
+														"qa",
 														"question",
 														""
 													]
@@ -3792,7 +3891,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/public/question/{{question_key}}",
+													"raw": "{{endpoint}}/signals/v1/public/qa/question/{{question_key}}",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3800,6 +3899,7 @@
 														"signals",
 														"v1",
 														"public",
+														"qa",
 														"question",
 														"{{question_key}}"
 													]
@@ -3813,7 +3913,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{endpoint}}/signals/v1/public/question/{{question_uuid}}",
+													"raw": "{{endpoint}}/signals/v1/public/qa/question/{{question_uuid}}",
 													"host": [
 														"{{endpoint}}"
 													],
@@ -3821,8 +3921,57 @@
 														"signals",
 														"v1",
 														"public",
+														"qa",
 														"question",
 														"{{question_uuid}}"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Session",
+									"item": [
+										{
+											"name": "Get",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearer_token}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{endpoint}}/signals/v1/public/qa/questionnaires/{{session__uuid}}",
+													"host": [
+														"{{endpoint}}"
+													],
+													"path": [
+														"signals",
+														"v1",
+														"public",
+														"qa",
+														"questionnaires",
+														"{{session__uuid}}"
 													]
 												}
 											},
