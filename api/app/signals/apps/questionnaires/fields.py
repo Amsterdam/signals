@@ -4,84 +4,47 @@ from collections import OrderedDict
 
 from rest_framework import serializers
 
+from signals.apps.questionnaires.mixins import HyperlinkedRelatedFieldMixin
+
 
 class EmptyHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         return OrderedDict()
 
 
-class QuestionnairePublicHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class QuestionnairePublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     lookup_field = 'uuid'
 
     def to_representation(self, value):
-        request = self.context.get('request')
-        _format = self.context.get('format', None)
-
-        namespace = f'{request.resolver_match.namespace}:'
-
-        result = OrderedDict([
-            ('self', dict(href=self.get_url(value, f'{namespace}public-questionnaire-detail', request, _format))),
-        ])
-
-        return result
+        return OrderedDict([('self', dict(href=self.get_url(value, 'public-questionnaire-detail'))), ])
 
 
-class QuestionnairePrivateHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class QuestionnairePrivateHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
-        request = self.context.get('request')
-        _format = self.context.get('format', None)
-
-        namespace = f'{request.resolver_match.namespace}:'
-
-        private_href = self.get_url(value, f'{namespace}private-questionnaire-detail', request, _format)
-        public_href = self.reverse(f'{namespace}public-questionnaire-detail', kwargs={'uuid': value.uuid},
-                                   request=request, format=_format)
-
         return OrderedDict([
-            ('self', dict(href=private_href)),
-            ('sia:public-self', dict(href=public_href)),
+            ('self', dict(href=self.get_url(value, 'private-questionnaire-detail'))),
+            ('sia:public-self', dict(href=self._reverse(f'public-questionnaire-detail', kwargs={'uuid': value.uuid}))),
         ])
 
 
-class QuestionHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     lookup_field = 'key'
 
     def to_representation(self, value):
-        request = self.context.get('request')
-        _format = self.context.get('format', None)
-
-        namespace = f'{request.resolver_match.namespace}:'
-
-        self_href = self.get_url(value, f'{namespace}public-question-detail', request, _format)
-        self_uuid_href = self.reverse(f'{namespace}public-question-detail', kwargs={'key': value.uuid}, request=request,
-                                      format=_format)
-        post_answer_href = self.reverse(f'{namespace}public-question-answer', kwargs={'key': value.key or value.uuid},
-                                        request=request, format=_format)
-
-        result = OrderedDict([
-            ('self', dict(href=self_href)),
-            ('sia:uuid-self', dict(href=self_uuid_href)),
-            ('sia:post-answer', dict(href=post_answer_href)),
+        return OrderedDict([
+            ('self', dict(href=self.get_url(value, 'public-question-detail'))),
+            ('sia:uuid-self', dict(href=self._reverse('public-question-detail', kwargs={'key': value.uuid}))),
+            ('sia:post-answer', dict(href=self._reverse('public-question-answer',
+                                                       kwargs={'key': value.key or value.uuid}))),
         ])
 
-        return result
 
-
-class SessionPublicHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     lookup_field = 'uuid'
 
     def to_representation(self, value):
-        request = self.context.get('request')
-        _format = self.context.get('format', None)
-
-        namespace = f'{request.resolver_match.namespace}:'
-
-        questionnaire_href = self.reverse(f'{namespace}public-questionnaire-detail',
-                                          kwargs={'uuid': value.questionnaire.uuid}, request=request, format=_format)
-
-        result = OrderedDict([
-            ('self', dict(href=self.get_url(value, f'{namespace}public-session-detail', request, _format))),
-            ('sia:questionnaire', dict(href=questionnaire_href))
+        return OrderedDict([
+            ('self', dict(href=self.get_url(value, 'public-session-detail'))),
+            ('sia:questionnaire', dict(href=self._reverse('public-questionnaire-detail',
+                                                          kwargs={'uuid': value.questionnaire.uuid})))
         ])
-
-        return result
