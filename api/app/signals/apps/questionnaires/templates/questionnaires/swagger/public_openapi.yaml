@@ -1,0 +1,413 @@
+openapi: 3.0.0
+
+info:
+  title: Questionnaires public endpoints
+  description: >-
+    *** THIS APP IS STILL IN DEVELOPMENT ***
+
+
+    A questionnaires app for the Signals project.
+    This swagger file contains all public endpoints of the app.
+  contact:
+    email: "datapunt@amsterdam.nl"
+  version: "0.1.0-dev"
+
+servers:
+  - url: https://127.0.0.1:{port}/signals/v1
+    description: Used for local development
+    variables:
+      port:
+        enum:
+          - '8000'
+          - '8080'
+          - '80'
+        default: '8000'
+
+  - url: /signals/v1
+
+paths:
+  /public/qa/questionnaires:
+    get:
+      responses:
+        '200':
+          description: List of Questionnaires
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicQuestionnaires'
+      security:
+        - OAuth2:
+            - SIG/ALL
+
+  /public/qa/questionnaires/{UUID}:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Questionnaire
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    get:
+      responses:
+        '200':
+          description: Detail of the requested Questionnaire
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicQuestionnaire'
+        '404':
+          description: Question not found
+
+  /public/qa/questions:
+    get:
+      responses:
+        '200':
+          description: List of Questions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicQuestions'
+
+  /public/qa/questions/{UUID}:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Question
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    get:
+      responses:
+        '200':
+          description: Detail of the selected Question
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicQuestion'
+        '404':
+          description: Question not found
+
+  /public/qa/questions/{UUID}/answer:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Question
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      description: Answer a specific question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/PublicAnswerQuestionRequestWithQuestionnaire'
+                - $ref: '#/components/schemas/PublicAnswerQuestionRequestWithSession'
+            examples:
+              questionnaire:
+                value: {'payload': 'test', 'questionnaire': '00000000-0000-0000-0000-000000000000'}
+              session:
+                value: {'payload': 'test', 'session': '00000000-0000-0000-0000-000000000000'}
+
+      responses:
+        '201':
+          description: The created answer also containing the next question
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicAnswerQuestion'
+        '400':
+          description: Request invalid
+        '404':
+          description: Question not found
+
+  /public/qa/sessions:
+    get:
+      responses:
+        '200':
+          description: List of Questionnaires
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSessions'
+
+components:
+  schemas:
+    HALPaginationLinks:
+      type: object
+      properties:
+        self:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of current page
+              format: uri
+        next:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of the next page
+              format: uri
+              nullable: true
+        previous:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of the previous page
+              format: uri
+              nullable: true
+
+    PublicQuestionnaires:
+      description: JSON serialization of paginated list of Questionnaires
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/HALPaginationLinks'
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 50
+        results:
+          type: array
+          description: A list of Questionnaires, paginated
+          items:
+            $ref: '#/components/schemas/PublicQuestionnaire'
+
+    PublicQuestionnaire:
+      description: Information about a Questionnaire
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the Questionnaire
+                      type: string
+                      format: uri
+        _display:
+          description: Display name of the Questionnaire
+          type: string
+        uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        first_question:
+          $ref: '#/components/schemas/PublicQuestion'
+
+    PublicQuestions:
+      description: JSON serialization of paginated list of Questions
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/HALPaginationLinks'
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 50
+        results:
+          type: array
+          description: A list of Questions, paginated
+          items:
+            $ref: '#/components/schemas/PublicQuestion'
+
+    PublicQuestion:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the Question, using the KEY
+                      type: string
+                      format: uri
+                sia:uuid-self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the Question, using the UUID
+                      type: string
+                      format: uri
+                sia:post-answer:
+                  type: object
+                  properties:
+                    href:
+                      description: URI where the answer can be posted
+                      type: string
+                      format: uri
+        _display:
+          description: Display name of the Question
+          type: string
+        key:
+          type: string
+          nullable: true
+          example: 'a-key-describing-the-question'
+        uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        field_type:
+          type: string
+          enum:
+            - 'plain_text'
+            - 'integer'
+          example: 'plain_text'
+        payload:
+          type: string
+          nullable: true
+          example: {'label': 'A describing label', 'shortLabel': 'short label'}
+        required:
+          type: boolean
+          example: false
+
+    PublicAnswerQuestion:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the Question
+                      type: string
+                      format: uri
+        _display:
+          description: Display name of the Answer
+          type: string
+        payload:
+          description: The actual answer to the question
+          type: string
+        session:
+          description: The UUID of the Session (cannot be passed if a Questionnaire is used)
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        questionnaire:
+          description: The UUID of the Questionnaire (cannot be passed if a Session is used)
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        created_at:
+          type: string
+          example: '2021-01-01T00:00:00+00:00'
+        next_question:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/PublicQuestion'
+
+    PublicAnswerQuestionRequestWithQuestionnaire:
+      type: object
+      properties:
+        payload:
+          type: string
+          example: 'This is an example of an answer to the question'
+        questionnaire:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+
+    PublicAnswerQuestionRequestWithSession:
+      type: object
+      properties:
+        payload:
+          type: string
+          example: 'This is an example of an answer to the question'
+        session:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+
+    PublicSessions:
+      description: JSON serialization of paginated list of Sessions
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/HALPaginationLinks'
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 50
+        results:
+          type: array
+          description: A list of Sessions, paginated
+          items:
+            $ref: '#/components/schemas/PublicSession'
+
+    PublicSession:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            _link:
+              description: HAL JSON links
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the Session
+                      type: string
+                      format: uri
+                sia:questionnaire:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the questionnaire that the Session is linked to
+                      type: string
+                      format: uri
+        _display:
+          description: Display name of the Session
+          type: string
+        uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        started_at:
+          description: When a Session started receiving answers
+          type: string
+          nullable: true
+          example: null
+        submit_before:
+          description: A Session must be completed before this datetime
+          type: string
+          nullable: false
+          example: '2021-01-01T00:00:00+00:00'
+        duration:
+          description: A Session has a specific duration (only applies if there is no submit_before)
+          type: string
+          example: '02:00:00'
+        created_at:
+          type: string
+          example: '2021-01-01T00:00:00+00:00'
