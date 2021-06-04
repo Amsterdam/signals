@@ -289,18 +289,6 @@ components:
       properties:
         _links:
           type: object
-          properties:
-            _link:
-              description: HAL JSON links
-              type: object
-              properties:
-                self:
-                  type: object
-                  properties:
-                    href:
-                      description: URI of the Question
-                      type: string
-                      format: uri
         _display:
           description: Display name of the Answer
           type: string
