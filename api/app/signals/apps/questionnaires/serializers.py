@@ -3,15 +3,15 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.questionnaires.fields import (
+from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.rest_framework.fields import (
     EmptyHyperlinkedIdentityField,
     QuestionHyperlinkedIdentityField,
     QuestionnairePrivateHyperlinkedIdentityField,
     QuestionnairePublicHyperlinkedIdentityField,
-    SessionPublicHyperlinkedIdentityField
+    SessionPublicHyperlinkedIdentityField,
+    UUIDRelatedField
 )
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
-from signals.apps.questionnaires.rest import UUIDRelatedField
 from signals.apps.questionnaires.services import QuestionnairesService
 
 
