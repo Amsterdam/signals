@@ -25,6 +25,9 @@ class Question(models.Model):
 
     objects = QuestionManager()
 
+    def __str__(self):
+        return f'{self.key or self.uuid} ({self.field_type})'
+
     def _clean_payload(self, value):
         field_type_class = get_field_type_class(self)
         if field_type_class is None:
