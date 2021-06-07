@@ -2,22 +2,16 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import uuid
 
-from datapunt_api.rest import DatapuntViewSet, DatapuntViewSetWritable
+from datapunt_api.rest import DatapuntViewSet
 from django.utils import timezone
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.questionnaires.exceptions import Gone
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
-from signals.apps.questionnaires.rest import HALViewSetRetrieve
+from signals.apps.questionnaires.rest_framework.exceptions import Gone
+from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 from signals.apps.questionnaires.serializers import (
-    PrivateQuestionDetailedSerializer,
-    PrivateQuestionnaireDetailedSerializer,
-    PrivateQuestionnaireSerializer,
-    PrivateQuestionSerializer,
     PublicAnswerSerializer,
     PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
@@ -27,7 +21,6 @@ from signals.apps.questionnaires.serializers import (
     PublicSessionSerializer
 )
 from signals.apps.questionnaires.services import QuestionnairesService
-from signals.auth.backend import JWTAuthBackend
 
 
 class PublicQuestionnaireViewSet(DatapuntViewSet):
@@ -41,29 +34,6 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
     serializer_detail_class = PublicQuestionnaireDetailedSerializer
 
     authentication_classes = ()
-
-
-class PrivateQuestionnaireViewSet(DatapuntViewSetWritable):
-    queryset = Questionnaire.objects.all()
-    queryset_detail = Questionnaire.objects.all()
-
-    serializer_class = PrivateQuestionnaireSerializer
-    serializer_detail_class = PrivateQuestionnaireDetailedSerializer
-
-    authentication_classes = (JWTAuthBackend, )
-    permission_classes = (SIAPermissions, )
-
-    def create(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
-
-    def update(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
-
-    def destroy(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
 
 
 class PublicQuestionViewSet(DatapuntViewSet):
@@ -132,29 +102,6 @@ class PublicQuestionViewSet(DatapuntViewSet):
         data.update({'next_question': next_question_data})
 
         return Response(data, status=201)
-
-
-class PrivateQuestionViewSet(DatapuntViewSetWritable):
-    queryset = Question.objects.all()
-    queryset_detail = Question.objects.all()
-
-    serializer_class = PrivateQuestionSerializer
-    serializer_detail_class = PrivateQuestionDetailedSerializer
-
-    authentication_classes = (JWTAuthBackend, )
-    permission_classes = (SIAPermissions, )
-
-    def create(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
-
-    def update(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
-
-    def destroy(self, request, *args, **kwargs):
-        # Not yet implemented
-        raise MethodNotAllowed('Method not allowed!')
 
 
 class PublicSessionViewSet(HALViewSetRetrieve):
