@@ -13,14 +13,6 @@ from signals.apps.questionnaires.models import Answer, Question, Session
 
 class QuestionnairesService:
     @staticmethod
-    def is_expired(session):
-        if session.submit_before and session.submit_before <= timezone.now():
-            return True
-        elif session.started_at + session.duration <= timezone.now():
-            return True
-        return False
-
-    @staticmethod
     def create_session(questionnaire, submit_before=None, ttl_seconds=None):
         if ttl_seconds:
             return Session.objects.create(
@@ -66,7 +58,7 @@ class QuestionnairesService:
             session.started_at = timezone.now()
             session.save()
 
-        if QuestionnairesService.is_expired(session):
+        if session.is_expired:
             raise SessionExpired(f'Session {session.uuid} expired.')
 
         if session.frozen:

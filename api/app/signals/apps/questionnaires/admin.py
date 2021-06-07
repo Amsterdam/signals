@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.contrib import admin, messages
-from django.utils import timezone
 from django.utils.html import format_html
 from rest_framework.reverse import reverse
 
@@ -64,32 +63,40 @@ class SessionAdmin(admin.ModelAdmin):
     view_questionnaire_link.short_description = "Questionnaire"
 
     def too_late(self, obj):
-        now = timezone.now()
-        return (
-            not obj.frozen and (
-                (obj.submit_before and obj.submit_before < now) or
-                (obj.started_at and obj.started_at + obj.duration < now)
-            )
-        )
+        return obj.too_late
     too_late.boolean = True
 
     def freeze(self, request, queryset):
-        if request.user.has_perm('questionnaires.change_session') and queryset.filter(frozen=False).exists():
-            queryset.update(frozen=True)
-            messages.add_message(request, messages.SUCCESS, 'Sessions frozen')
-        elif request.user.has_perm('questionnaires.change_session') and not queryset.filter(frozen=False).exists():
-            messages.add_message(request, messages.WARNING, 'All selected Sessions are already frozen')
-        else:
+        if not request.user.has_perm('questionnaires.change_session'):
             messages.add_message(request, messages.ERROR, 'You have no permission to freeze Sessions')
+            return
+
+        total_count = queryset.count()
+        frozen_pre_count = queryset.filter(frozen=True).count()
+        if total_count == frozen_pre_count:
+            messages.add_message(request, messages.WARNING, 'All selected Session objects are already frozen')
+            return
+
+        queryset.exclude(frozen=True).update(frozen=True)
+
+        frozen_post_count = queryset.filter(frozen=True).count()
+        messages.add_message(request, messages.SUCCESS, f'{frozen_post_count-frozen_pre_count} Sessions frozen')
 
     def unfreeze(self, request, queryset):
-        if request.user.has_perm('questionnaires.change_session') and queryset.filter(frozen=True).exists():
-            queryset.update(frozen=False)
-            messages.add_message(request, messages.SUCCESS, 'Sessions unfrozen')
-        elif request.user.has_perm('questionnaires.change_session') and not queryset.filter(frozen=True).exists():
-            messages.add_message(request, messages.WARNING, 'All selected Sessions are not frozen')
-        else:
-            messages.add_message(request, messages.ERROR, 'You have no permission to unfreeze Sessions')
+        if not request.user.has_perm('questionnaires.change_session'):
+            messages.add_message(request, messages.ERROR, 'You have no permission to freeze Sessions')
+            return
+
+        total_count = queryset.count()
+        not_frozen_pre_count = queryset.filter(frozen=False).count()
+        if total_count == not_frozen_pre_count:
+            messages.add_message(request, messages.WARNING, 'All selected Session objects are already not frozen')
+            return
+
+        queryset.update(frozen=False)
+
+        unfrozen_post_count = queryset.filter(frozen=False).count()
+        messages.add_message(request, messages.SUCCESS, f'{unfrozen_post_count-not_frozen_pre_count} Sessions unfrozen')
 
 
 admin.site.register(Session, SessionAdmin)
