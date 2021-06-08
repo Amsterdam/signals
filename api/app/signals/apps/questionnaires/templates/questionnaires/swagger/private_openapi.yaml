@@ -172,6 +172,16 @@ components:
           type: string
           pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
           example: '00000000-0000-0000-0000-000000000000'
+        name:
+          type: string
+          example: "Questionnaire #1"
+        descriptionn:
+          type: string
+          nullable: true
+          example: "Describing the Questionnaire"
+        is_active:
+          type: boolean
+          example: true
         created_at:
           type: string
           example: '2021-01-01T00:00:00+00:00'
