@@ -5,7 +5,7 @@ from rest_framework.exceptions import MethodNotAllowed
 
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.questionnaires.models import Question, Questionnaire
-from signals.apps.questionnaires.serializers import (
+from signals.apps.questionnaires.rest_framework.serializers import (
     PrivateQuestionDetailedSerializer,
     PrivateQuestionnaireDetailedSerializer,
     PrivateQuestionnaireSerializer,
