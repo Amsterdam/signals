@@ -22,6 +22,14 @@ class QuestionManager(models.Manager):
             return Question.objects.get(uuid=question_uuid)
 
 
+class QuestionnaireManager(models.Manager):
+    def active(self):
+        """
+        Returns only Questionnaires with the is_active set to True
+        """
+        return self.get_queryset().filter(is_active=True)
+
+
 class SessionManager(models.Manager):
     def retrieve_valid_sessions(self):
         """

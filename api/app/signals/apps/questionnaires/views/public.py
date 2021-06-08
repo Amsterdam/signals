@@ -27,8 +27,8 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
 
-    queryset = Questionnaire.objects.all()
-    queryset_detail = Questionnaire.objects.all()
+    queryset = Questionnaire.objects.active()
+    queryset_detail = Questionnaire.objects.active()
 
     serializer_class = PublicQuestionnaireSerializer
     serializer_detail_class = PublicQuestionnaireDetailedSerializer

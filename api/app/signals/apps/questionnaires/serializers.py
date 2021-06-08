@@ -146,7 +146,7 @@ class PublicAnswerSerializer(HALSerializer):
     _display = DisplayField()
 
     session = UUIDRelatedField(uuid_field='uuid', queryset=Session.objects.retrieve_valid_sessions(), required=False)
-    questionnaire = UUIDRelatedField(uuid_field='uuid', queryset=Questionnaire.objects.all(), required=False)
+    questionnaire = UUIDRelatedField(uuid_field='uuid', queryset=Questionnaire.objects.active(), required=False)
 
     class Meta:
         model = Answer

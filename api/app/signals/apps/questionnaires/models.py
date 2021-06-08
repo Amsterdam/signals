@@ -8,7 +8,11 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
-from signals.apps.questionnaires.managers import QuestionManager, SessionManager
+from signals.apps.questionnaires.managers import (
+    QuestionManager,
+    QuestionnaireManager,
+    SessionManager
+)
 
 SESSION_DURATION = 2 * 60 * 60  # Two hours default
 
@@ -53,6 +57,15 @@ class Questionnaire(models.Model):
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
     first_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
+
+    name = models.CharField(max_length=255, help_text='The name of the Questionnaire')
+    description = models.TextField(blank=True, null=True, help_text='Describe the Questionnaire')
+    is_active = models.BooleanField(default=False)
+
+    objects = QuestionnaireManager()
+
+    def __str__(self):
+        return f'Questionnaire "{self.name or self.uuid}" ({"" if self.is_active else "not"} active)'
 
 
 class Answer(models.Model):
