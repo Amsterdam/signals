@@ -36,7 +36,7 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.session = SessionFactory.create(questionnaire=self.questionnaire)
 
         self.detail_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, '../../json_schema/public_get_session_detail.json')
+            os.path.join(THIS_DIR, '../json_schema/public_get_session_detail.json')
         )
 
     def test_session_detail(self):
