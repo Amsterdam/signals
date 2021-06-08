@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from factory import SelfAttribute, Sequence, SubFactory, post_generation
+from factory import LazyFunction, SelfAttribute, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
+from faker import Faker
 
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+
+fake = Faker()
 
 
 class QuestionFactory(DjangoModelFactory):
@@ -24,6 +27,10 @@ class QuestionFactory(DjangoModelFactory):
 
 class QuestionnaireFactory(DjangoModelFactory):
     first_question = SubFactory(QuestionFactory)
+
+    name = LazyFunction(fake.sentence)
+    description = LazyFunction(fake.paragraph)
+    is_active = True
 
     class Meta:
         model = Questionnaire
