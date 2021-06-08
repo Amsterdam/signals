@@ -10,8 +10,7 @@ from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
-from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
-from signals.apps.questionnaires.serializers import (
+from signals.apps.questionnaires.rest_framework.serializers import (
     PublicAnswerSerializer,
     PublicQuestionDetailedSerializer,
     PublicQuestionnaireDetailedSerializer,
@@ -20,6 +19,7 @@ from signals.apps.questionnaires.serializers import (
     PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
+from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 from signals.apps.questionnaires.services import QuestionnairesService
 
 
