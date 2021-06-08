@@ -77,6 +77,9 @@ class PublicQuestionnaireSerializer(HALSerializer):
             '_links',
             '_display',
             'uuid',
+            'name',
+            'description',
+            'is_active',
             'first_question'
         )
         read_only_fields = fields  # No create or update allowed
@@ -99,6 +102,9 @@ class PrivateQuestionnaireSerializer(HALSerializer):
             '_display',
             'id',
             'uuid',
+            'name',
+            'description',
+            'is_active',
             'created_at',
             'first_question'
         )

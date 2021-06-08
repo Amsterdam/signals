@@ -108,6 +108,22 @@
 						"uuid": {
 							"type": "string"
 						},
+						"name": {
+							"type": "string"
+						},
+						"description": {
+							"anyOf": [
+								{
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+							]
+						},
+						"is_active": {
+							"type": "boolean"
+						},
 						"first_question": {
 							"anyOf": [
 								{
@@ -190,6 +206,9 @@
 						"_links",
 						"_display",
 						"uuid",
+						"name",
+						"description",
+						"is_active",
 						"first_question"
 					]
 				}
