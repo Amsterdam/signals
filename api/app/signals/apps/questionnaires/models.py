@@ -4,7 +4,6 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -62,7 +61,7 @@ class Answer(models.Model):
     session = models.ForeignKey('Session', on_delete=models.CASCADE, null=True, related_name='answers')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
 
-    payload = JSONField(blank=True, null=True)
+    payload = models.JSONField(blank=True, null=True)
 
 
 class Session(models.Model):
