@@ -131,6 +131,14 @@ def _question_graph_with_cycle():
     return q1, q2
 
 
+def _question_graph_one_question():
+    q1 = QuestionFactory.create(key='only', payload={
+        'shortLabel': 'Only question.',
+        'label': 'Only question.',
+    })
+    return q1
+
+
 class TestQuestionGraphs(TestCase):
     def test_all_question_graph(self):
         _question_graph_with_decision()
@@ -138,7 +146,7 @@ class TestQuestionGraphs(TestCase):
         _question_graph_with_cycle()
 
 
-class TestQuestionnaireService(TestCase):
+class TestQuestionnairesService(TestCase):
     def test_create_answers(self):
         # set up our questions and questionnaires
         q_yesno, q_yes, q_no = _question_graph_with_decision()
@@ -172,7 +180,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
+        self.assertEqual(next_question.key, 'submit')
 
     def test_create_answers_null_keys(self):
         q_yesno, q_yes, q_no = _question_graph_with_decision_null_keys()
@@ -206,7 +214,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
+        self.assertEqual(next_question.key, 'submit')
 
     def test_get_next_question_ref(self):
         q_payload_no_next = {}
@@ -261,7 +269,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
+        self.assertEqual(next_question.key, 'submit')
 
     def test_question_with_default_next(self):
         # set up our questions and questionnaires
@@ -296,7 +304,7 @@ class TestQuestionnaireService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
+        self.assertEqual(next_question.key, 'submit')
 
     def test_validate_answer_payload(self):
         integer_question = QuestionFactory(field_type='integer', payload={'label': 'integer', 'shortLabel': 'integer'})
@@ -317,3 +325,37 @@ class TestQuestionnaireService(TestCase):
             QuestionnairesService.validate_answer_payload(123456, plaintext_question)
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
+
+    def test_submit(self):
+        q1 = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(first_question=q1)
+
+        question = questionnaire.first_question
+        answer_str = 'ONLY'
+
+        # We will answer the questionnaire, until we reach a None next question.
+        # In the first step we have no Session reference yet.
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
+
+        session = answer.session
+        session_id = session.id
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
+
+        question2 = QuestionnairesService.get_next_question(answer, question)
+        self.assertEqual(question2.ref, 'submit')
+
+        answer2_str = None
+
+        answer2 = QuestionnairesService.create_answer(
+            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
+        self.assertIsInstance(answer2, Answer)
+        self.assertEqual(answer2.question, question2)
+        self.assertEqual(answer2.session_id, session_id)
+
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        self.assertIsNone(next_question)

@@ -68,6 +68,21 @@ class Integer(FieldType):
     }
 
 
+class Submmit(FieldType):
+    choice = ('submit', 'Submit')
+    submission_schema = {"type": "null"}
+
+    payload_schema = {
+        'type': 'object',
+        'properties': {
+            'label': {'type': 'string'},
+            'shortLabel': {'type': 'string'},
+        },
+        'required': ['label', 'shortLabel'],
+        'additionalProperties': False,
+    }
+
+
 def init():
     """Initialize field type mapping caches."""
     current_module = sys.modules[__name__]

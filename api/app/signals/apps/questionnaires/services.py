@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
+from django.db import transaction
 from django.utils import timezone
 from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
@@ -67,7 +68,15 @@ class QuestionnairesService:
         # Check submitted answer
         answer_payload = QuestionnairesService.validate_answer_payload(answer_payload, question)
 
-        return Answer.objects.create(session=session, question=question, payload=answer_payload)
+        # Check whether the (equivalent of) a submit button was used, if so
+        # freeze the session.
+        with transaction.atomic():
+            if question.key == 'submit':
+                session.frozen = True
+                session.save()
+            answer = Answer.objects.create(session=session, question=question, payload=answer_payload)
+
+        return answer
 
     @staticmethod
     def get_next_question_ref(answer_payload, question_payload):
@@ -85,13 +94,14 @@ class QuestionnairesService:
     @staticmethod
     def get_next_question(answer, question):
         next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.payload)
-        if next_ref is not None:
+
+        if next_ref is None and question.key != 'submit':
+            next_question = Question.objects.get_by_reference(ref='submit')
+        else:
             try:
                 next_question = Question.objects.get_by_reference(ref=next_ref)
             except Question.DoesNotExist:
                 return None  # TODO: consider raising an exception
-        else:
-            next_question = None
 
         return next_question
 

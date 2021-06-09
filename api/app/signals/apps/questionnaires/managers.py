@@ -14,9 +14,18 @@ class QuestionManager(models.Manager):
         """
         from signals.apps.questionnaires.models import Question
 
+        if ref == 'submit':
+            question, _ = Question.objects.get_or_create(
+                key='submit',
+                field_type='submit',
+                payload={'label': 'Verstuur', 'shortLabel': 'Verstuur'},
+                required=True
+            )
+            return question
+
         try:
             question_uuid = uuid.UUID(ref)
-        except ValueError:
+        except (ValueError, TypeError):
             return Question.objects.get(key=ref)
         else:
             return Question.objects.get(uuid=question_uuid)
