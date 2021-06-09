@@ -11,7 +11,8 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = []
+    dependencies = [
+    ]
 
     operations = [
         migrations.CreateModel(
@@ -21,12 +22,18 @@ class Migration(migrations.Migration):
                 ('key', models.CharField(blank=True, max_length=255, null=True, unique=True)),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('field_type', models.CharField(choices=[('integer', 'Integer'), ('plain_text', 'PlainText')],
-                                                max_length=255)),
+                ('field_type', models.CharField(
+                    choices=[('integer', 'Integer'), ('plain_text', 'PlainText'), ('submit', 'Submit')], max_length=255
+                )),
                 ('payload', models.JSONField(blank=True, null=True)),
                 ('required', models.BooleanField(default=False)),
-                ('root', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
-                                           related_name='+', to='questionnaires.question')),
+                ('root', models.ForeignKey(
+                    blank=True,
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -38,8 +45,12 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(help_text='The name of the Questionnaire', max_length=255)),
                 ('description', models.TextField(blank=True, help_text='Describe the Questionnaire', null=True)),
                 ('is_active', models.BooleanField(default=False)),
-                ('first_question', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                                     related_name='+', to='questionnaires.question')),
+                ('first_question', models.ForeignKey(
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -52,8 +63,11 @@ class Migration(migrations.Migration):
                 ('submit_before', models.DateTimeField(blank=True, null=True)),
                 ('duration', models.DurationField(default=datetime.timedelta(seconds=7200))),
                 ('frozen', models.BooleanField(default=False)),
-                ('questionnaire', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+',
-                                                    to='questionnaires.questionnaire')),
+                ('questionnaire', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.questionnaire'
+                )),
             ],
         ),
         migrations.CreateModel(
@@ -62,10 +76,18 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('payload', models.JSONField(blank=True, null=True)),
-                ('question', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                               related_name='+', to='questionnaires.question')),
-                ('session', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                              related_name='answers', to='questionnaires.session')),
+                ('question', models.ForeignKey(
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='+',
+                    to='questionnaires.question'
+                )),
+                ('session', models.ForeignKey(
+                    null=True,
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='answers',
+                    to='questionnaires.session'
+                )),
             ],
         ),
     ]
