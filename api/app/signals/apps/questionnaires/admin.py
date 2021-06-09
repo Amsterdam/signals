@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.contrib import admin, messages
+from django.contrib.gis.db.models import JSONField
 from django.utils.html import format_html
 from rest_framework.reverse import reverse
 
+from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
 
 
@@ -18,16 +20,20 @@ class QuestionAdmin(admin.ModelAdmin):
 
     ordering = ('-created_at',)
 
+    formfield_overrides = {
+        JSONField: {'widget': PrettyJSONWidget}
+    }
+
 
 admin.site.register(Question, QuestionAdmin)
 
 
 class QuestionnaireAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'first_question', 'created_at',)
+    fields = ('uuid', 'name', 'description', 'first_question', 'is_active', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
     raw_id_fields = ('first_question',)
 
-    list_display = ('uuid', 'created_at',)
+    list_display = ('name', 'uuid', 'created_at',)
     list_per_page = 20
     list_select_related = True
 
