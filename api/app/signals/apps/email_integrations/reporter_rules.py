@@ -3,7 +3,10 @@
 from django.db.models import Q
 
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.email_integrations.utils import _create_feedback_and_mail_context
+from signals.apps.email_integrations.utils import (
+    _create_feedback_and_mail_context,
+    create_reaction_request_and_mail_context
+)
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -63,6 +66,29 @@ SIGNAL_MAIL_RULES = [
         },
         'additional_info': {
             'history_entry_text': 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
+        }
+    },
+    {
+        'name': 'Send mail signal reaction request',
+        'conditions': {
+            'filters': {
+                'status__state__in': [workflow.REACTIE_GEVRAAGD, ],
+                'reporter__email__isnull': False,
+                'reporter__email__gt': 0,
+            },
+            'functions': {
+                'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
+                    Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
+                )  # SIG-2931, special case for children of split signal --- still needed for historical data
+            }
+        },
+        'kwargs': {
+            'key': EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD,
+            'subject': 'Meer over uw melding {signal_id}',
+            'context': lambda signal: create_reaction_request_and_mail_context(signal)
+        },
+        'additional_info': {
+            'history_entry_text': 'Melder is per e-mail om een reactie gevraagd.'
         }
     },
     {

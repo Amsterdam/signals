@@ -15,3 +15,4 @@ def signals_create_initial_handler(sender, signal_obj, **kwargs):
 @receiver(update_status, dispatch_uid='signals_update_status')
 def update_status_handler(sender, signal_obj, status, prev_status, *args, **kwargs):
     tasks.update_status_children_based_on_parent(signal_id=signal_obj.pk)
+    tasks.request_reaction(signal_id=signal_obj.pk)

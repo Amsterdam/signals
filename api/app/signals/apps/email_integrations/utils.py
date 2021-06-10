@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import re
+from datetime import timedelta
 from typing import Optional
 
 from django.conf import settings
@@ -10,7 +11,12 @@ from django.utils.timezone import now
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
-from signals.apps.feedback.utils import get_feedback_urls
+from signals.apps.feedback.utils import (
+    NoFrontendAppConfigured,
+    get_fe_application_location,
+    get_feedback_urls
+)
+from signals.apps.questionnaires.models import Question, Questionnaire, Session
 from signals.apps.signals.models import Signal
 from tests.apps.signals.valid_locations import STADHUIS
 
@@ -25,6 +31,43 @@ def _create_feedback_and_mail_context(signal: Signal):
         'negative_feedback_url': negative_feedback_url,
         'positive_feedback_url': positive_feedback_url,
     }
+
+
+def _get_reaction_url(session):
+    """Get URL in frontend application for reaction form."""
+    try:
+        fe_location = get_fe_application_location()
+    except NoFrontendAppConfigured:
+        return 'http://dummy_link/reaction/123/'
+    reaction_url = f'{fe_location}/reaction/{session.uuid}'
+
+    return reaction_url
+
+
+def create_reaction_request_and_mail_context(signal: Signal):
+    """
+    Util function to create a question, questionnaire and prepared session for reaction request mails
+    """
+    # Prepare, question, questionnaire and session to receive the reaction.
+    question = Question.objects.create(
+        required=True,
+        field_type='plain_text',
+        payload={
+            'shortLabel': 'Reactie melder',
+            'label': signal.status.text,  # <-- this should not be empty, max 200 characters
+        },
+    )
+    questionnaire = Questionnaire.objects.create(
+        first_question=question,
+        name='Reactie gevraagd',
+    )
+    session = Session.objects.create(
+        submit_before=now() + timedelta(days=5),
+        questionnaire=questionnaire,
+    )
+
+    reaction_url = _get_reaction_url(session)
+    return {'reaction_url': reaction_url}
 
 
 # Pattern used to filter links from the Signal text and text_extra

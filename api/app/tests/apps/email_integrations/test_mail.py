@@ -44,6 +44,11 @@ class BaseTestMailCase(TestCase):
                                      title='Uw melding {{ signal_id }}',
                                      body='{{ text }} {{ created_at }} {{ status_text }} {{ ORGANIZATION_NAME }}')
 
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD,
+                                     title='Uw melding {{signal_id}}',
+                                     body='{{ text }} {{ created_at }} {{ status_text }}'
+                                          '{{ reaction_url }} {{ORGANIZATION_NAME }}')
+
 
 class TestMailActionTriggers(BaseTestMailCase):
     def setUp(self):
@@ -65,6 +70,7 @@ class TestMailActionTriggers(BaseTestMailCase):
 
         update_status.send_robust(sender=self.__class__, signal_obj=self.signal, status=new_status,
                                   prev_status=prev_status)
+        patched_actions.apply.called_once()
 
 
 class TestMailRuleConditions(BaseTestMailCase):
@@ -97,7 +103,7 @@ class TestMailRuleConditions(BaseTestMailCase):
         ma.apply(signal_id=signal.id)
 
     def _find_messages(self, signal):
-        # We use the unique email adresses to correlate a signal in the tests
+        # We use the unique email addresses to correlate a signal in the tests
         # and the eventual email. This does not work for anonymous reporters,
         # so our tests there are less robust.
         return [msg for msg in mail.outbox if signal.reporter.email in msg.to]
@@ -439,6 +445,80 @@ class TestMailRuleConditions(BaseTestMailCase):
         # Check mail contents
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_reaction_requested_email(self):
+        # "Reactie gevraagd" flow. Reporter is asked for additional information.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text='Was het mooi weer?')
+        self.signal.status = status
+        self.signal.save()
+
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal reaction request'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_reaction_requested_links_in_different_environments(self):
+        """Test that generated reaction requested links contain the correct host."""
+        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD)
+        self.signal.status = status
+        self.signal.save()
+
+        # Check that generated emails contain the correct links for all
+        # configured environments:
+        env_fe_mapping = getattr(settings, 'FEEDBACK_ENV_FE_MAPPING', feedback_settings.FEEDBACK_ENV_FE_MAPPING)
+        self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
+
+        for environment, fe_location in env_fe_mapping.items():
+            local_env = {'ENVIRONMENT': environment}
+
+            with mock.patch.dict('os.environ', local_env):
+                mail.outbox = []
+                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+                ma.apply(signal_id=self.signal.id)
+
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn(fe_location, message.body)
+                self.assertIn(fe_location, message.alternatives[0][0])
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+
+    def test_reaction_requested_links_environment_env_var_not_set(self):
+        """Deals with the case where nothing is overridden and `environment` not set."""
+
+        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD)
+        self.signal.status = status
+        self.signal.save()
+
+        # Check that generated emails contain the correct links for all
+        # configured environments:
+        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
+        self.assertEqual(len(env_fe_mapping), 1)
+
+        for environment, fe_location in env_fe_mapping.items():
+            with mock.patch.dict('os.environ', {}, clear=True):
+                mail.outbox = []
+                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+                ma.apply(signal_id=self.signal.id)
+
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn('http://dummy_link', message.body)
+                self.assertIn('http://dummy_link', message.alternatives[0][0])
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
 
 class TestOptionalMails(BaseTestMailCase):
