@@ -14,3 +14,5 @@ CSRF_COOKIE_SECURE = True
 # Filter extra properties is not yet enabled for production
 FEATURE_FLAGS['API_FILTER_EXTRA_PROPERTIES'] = False  # noqa F405
 SIGNALS_AUTHZ['USER_ID_FIELDS'] = os.getenv('USER_ID_FIELDS', 'sub,email').split(',')  # noqa F405
+REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = ('signals.throttling.NoUserRateThrottle',) # noqa
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour')} # noqa
