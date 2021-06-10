@@ -6,3 +6,7 @@ class SessionExpired(Exception):
 
 class SessionFrozen(Exception):
     pass
+
+
+class WrongState(Exception):
+    pass

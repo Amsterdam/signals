@@ -62,7 +62,7 @@ class Questionnaire(models.Model):
 
     name = models.CharField(max_length=255, help_text='The name of the Questionnaire')
     description = models.TextField(blank=True, null=True, help_text='Describe the Questionnaire')
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     objects = QuestionnaireManager()
 
