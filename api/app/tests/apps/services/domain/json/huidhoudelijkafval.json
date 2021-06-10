@@ -1,0 +1,107 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://api.data.amsterdam.nl/v1/huishoudelijkafval/container/"
+    },
+    "next": {
+      "href": null
+    },
+    "previous": {
+      "href": null
+    }
+  },
+  "_embedded": {
+    "container": [
+      {
+        "_links": {
+          "schema": "https://schemas.data.amsterdam.nl/datasets/huishoudelijkafval/huishoudelijkafval#container",
+          "self": {
+            "href": "https://api.data.amsterdam.nl/v1/huishoudelijkafval/container/49312/",
+            "title": "49312"
+          },
+          "type": {
+            "href": "https://api.data.amsterdam.nl/v1/huishoudelijkafval/containertype/3310/",
+            "title": "3310"
+          },
+          "cluster": {
+            "href": "https://api.data.amsterdam.nl/v1/huishoudelijkafval/cluster/122179.514%7C483933.663/",
+            "title": "122179.514|483933.663"
+          },
+          "locatie": {
+            "href": "https://api.data.amsterdam.nl/v1/huishoudelijkafval/containerlocatie/49311/",
+            "title": "49311"
+          },
+          "gbdBuurt": {
+            "href": "https://api.data.amsterdam.nl/v1/gebieden/buurten/03630000000839/",
+            "title": "03630000000839",
+            "identificatie": "03630000000839"
+          },
+          "bagOpenbareruimte": {
+            "href": "https://api.data.amsterdam.nl/v1/bag/openbareruimtes/0363300000004103/",
+            "title": "0363300000004103",
+            "identificatie": "0363300000004103"
+          },
+          "bagNummeraanduiding": {
+            "href": "https://api.data.amsterdam.nl/v1/bag/nummeraanduidingen/0363200000176611/",
+            "title": "0363200000176611",
+            "identificatie": "0363200000176611"
+          },
+          "bagHoofdadresVerblijfsobject": {
+            "href": "https://api.data.amsterdam.nl/v1/bag/verblijfsobjecten/0363010000715661/",
+            "title": "0363010000715661",
+            "identificatie": "0363010000715661"
+          }
+        },
+        "id": "49312",
+        "typeId": "3310",
+        "status": 1,
+        "clusterId": "122179.514|483933.663",
+        "locatieId": "49311",
+        "gbdBuurtId": "03630000000839",
+        "idNummer": "REK00853",
+        "geometrie": {
+          "type": "Point",
+          "coordinates": [
+            122179.95473750506,
+            483934.3869103912
+          ]
+        },
+        "eigenaarId": "67",
+        "fractieCode": "1",
+        "serienummer": "BAZ001246",
+        "datumCreatie": "2016-11-25",
+        "eigenaarNaam": "K Zuid",
+        "verwijderdDp": false,
+        "containerMark": null,
+        "containerKleur": null,
+        "datumPlaatsing": "2005-01-01",
+        "geadopteerdInd": false,
+        "datumOplevering": "2005-01-01",
+        "bagOpenbareruimteId": "0363300000004103",
+        "datumOperationeel": "2005-01-01",
+        "wijzigingsdatumDp": "2021-04-07T09:48:32.470957",
+        "containerEndOfLife": null,
+        "containerOpmerking": null,
+        "bagNummeraanduidingId": "0363200000176611",
+        "fractieOmschrijving": "Rest",
+        "containerChipNummber": null,
+        "datumAflopenGarantie": "2015-01-01",
+        "containerRalKleurCode": null,
+        "containerRalKleurNaam": null,
+        "containerEigenaarschap": "Eigendom",
+        "containerDatumWijziging": "2021-03-01T00:00:00",
+        "containerDatumVervanging": "2015-01-01",
+        "containerRalKleurHexcode": null,
+        "containerUnitCardLezerId": null,
+        "bagHoofdadresVerblijfsobjectId": "0363010000715661",
+        "containerEigenaarschapOpmerking": "Container is in eigendom van de klant"
+      }
+    ]
+  },
+  "page": {
+    "number": 1,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}

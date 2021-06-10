@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
-from factory import DjangoModelFactory, Sequence, SubFactory
+from factory import Sequence, SubFactory
+from factory.django import DjangoModelFactory
 
 from signals.apps.signals.models import RoutingExpression
 

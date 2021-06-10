@@ -3,7 +3,7 @@
 from django.urls import reverse
 from rest_framework import routers
 
-from signals import API_VERSIONS
+from signals import API_VERSIONS, VERSION
 from signals.utils.version import get_version
 
 
@@ -20,8 +20,11 @@ class BaseSignalsAPIRootView(routers.APIRootView):
                 }
             },
             'version': get_version(API_VERSIONS['v1']),
-            'status': 'in development',
+            'status': 'in production',
         }
+        response.data.update({
+            'version': get_version(VERSION),
+        })
         return response
 
     def get_view_name(self):

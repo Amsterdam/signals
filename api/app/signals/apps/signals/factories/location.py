@@ -4,7 +4,8 @@ import copy
 import random
 
 from django.contrib.gis.geos import Point
-from factory import DjangoModelFactory, SubFactory, post_generation
+from factory import SubFactory, post_generation
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyFloat, FuzzyText
 
 from signals.apps.signals.models import STADSDELEN, Location

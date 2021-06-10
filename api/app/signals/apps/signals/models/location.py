@@ -4,7 +4,6 @@ import copy
 
 from django.contrib.gis.db import models
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
-from django.contrib.postgres.fields import JSONField
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.utils.location import AddressFormatter
@@ -63,11 +62,11 @@ class Location(CreatedUpdatedModel):
     # we do NOT use foreign key, since we update
     # buurten as external data in a seperate process
     buurt_code = models.CharField(null=True, max_length=4)
-    address = JSONField(null=True)
+    address = models.JSONField(null=True)
     address_text = models.CharField(null=True, max_length=256, editable=False)
     created_by = models.EmailField(null=True, blank=True)
 
-    extra_properties = JSONField(null=True)
+    extra_properties = models.JSONField(null=True)
     bag_validated = models.BooleanField(default=False)
 
     @property

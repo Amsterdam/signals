@@ -77,7 +77,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'djcelery_email',
-    'imagekit',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
@@ -277,6 +276,7 @@ EMAIL_REST_ENDPOINT_CLIENT_CERT = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_CERT', N
 EMAIL_REST_ENDPOINT_CLIENT_KEY = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_KEY', None)
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@meldingen.amsterdam.nl')
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Django cache settings
 CACHES = {
@@ -291,14 +291,12 @@ RAVEN_CONFIG = {
 }
 
 # Django Logging settings
-GELF_HOST: str = os.getenv('GELF_UDP_HOST', 'localhost')
-GELF_PORT: int = int(os.getenv('GELF_UDP_PORT', '12201'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'root': {
         'level': 'INFO',
-        'handlers': ['console', 'gelf', 'sentry'],
+        'handlers': ['console', 'sentry'],
     },
     'formatters': {
         'console': {
@@ -325,17 +323,11 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
-        'gelf': {
-            'class': 'graypy.GELFUDPHandler',
-            'host': GELF_HOST,
-            'port': GELF_PORT,
-            'filters': ['static_fields'],
-        }
     },
     'loggers': {
         'signals': {
             'level': 'WARNING',
-            'handlers': ['console', 'gelf'],
+            'handlers': ['console'],
             'propagate': True,
         },
         'django': {
@@ -502,6 +494,12 @@ FEATURE_FLAGS = {
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': os.getenv('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True) in TRUE_VALUES,  # noqa
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': os.getenv('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True) in TRUE_VALUES,
+
+    'API_SIGNAL_CONTEXT': os.getenv('API_SIGNAL_CONTEXT', True) in TRUE_VALUES,
+    'API_SIGNAL_CONTEXT_REPORTER': os.getenv('API_SIGNAL_CONTEXT_REPORTER', True) in TRUE_VALUES,
+    'API_SIGNAL_CONTEXT_NEAR': os.getenv('API_SIGNAL_CONTEXT_NEAR', True) in TRUE_VALUES,
+
+    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

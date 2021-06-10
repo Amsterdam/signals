@@ -7,23 +7,32 @@ from signals.utils.version import get_version
 
 __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 
+# Workaround an import issue in Django REST Framework Extensions, see:
+# https://github.com/chibisov/drf-extensions/issues/294
+# These lines can be removed when a new version is released (> 0.6.0)
+from django.db.models.sql import datastructures  # noqa
+from django.core.exceptions import EmptyResultSet  # noqa
+
+datastructures.EmptyResultSet = EmptyResultSet
+# ---
+
+
 # Versioning
 # ==========
-#
-# We are tracking multiple versions. First we've the application version which increments by every
-# release. Based on the changes in the new release there is a major, minor or patch version bump.
-#
-# Besides that we've API versioning which are seperated versioning numbers for the given API. The
-# major versioning number of the API is fixed related to the given API. e.g. API Version 1 with url
-# `/signals/v1/...` will always have major API version number `1`.
+# SIA / Signalen follows the semantic versioning standard. Previously we had
+# separate version numbers for the V0 (now defunct) and V1 versions of the API.
+# We now no longer separately version these, as their releases were always
+# tied to the backend. For backwards compatibility, and to not break external
+# systems that rely on SIA / Signalen we still expose all the separate version
+# numbers, but they are now all the same.
+
 
 # Application version (Major, minor, patch)
-VERSION = (0, 21, 4)
+VERSION = (2, 0, 0)
 
-# API versions (Major, minor, patch)
 API_VERSIONS = {
-    'v0': (0, 8, 0),
-    'v1': (1, 12, 0),
+    'v0': VERSION,
+    'v1': VERSION,
 }
 
 __version__ = get_version(VERSION)

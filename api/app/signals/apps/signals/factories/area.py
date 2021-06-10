@@ -3,7 +3,8 @@
 import random
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from factory import DjangoModelFactory, Sequence, SubFactory
+from factory import Sequence, SubFactory
+from factory.django import DjangoModelFactory
 
 from signals.apps.signals.models import Area, AreaType
 

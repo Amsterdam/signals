@@ -4,7 +4,8 @@ import uuid
 from datetime import timedelta
 
 from django.utils import timezone
-from factory import DjangoModelFactory, LazyAttribute, LazyFunction, RelatedFactory, post_generation
+from factory import LazyAttribute, LazyFunction, RelatedFactory, post_generation
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyAttribute, FuzzyChoice, FuzzyDateTime
 from faker import Faker
 

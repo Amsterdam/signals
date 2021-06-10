@@ -3,6 +3,7 @@
 import json
 
 from django.core.management import BaseCommand
+from django.utils.text import slugify
 
 from signals.apps.signals.models import Category
 
@@ -32,6 +33,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument('data_file', type=str)
 
+    # load_categories will create new slug if the Name property changes. The load_categories command
+    # is not intended to be used for renaming categories. It's intended for loading new catagories
+    # and make un-used categories inactive. Typically this is used during training/debug sessions
+    # and / or adding new categories. It will however re-use the slug if the Name -> Slug
+    # transformation remains the same.
     def handle(self, *args, **options) -> None:
         self.processed_cats = set()
         with open(options['data_file']) as f:
@@ -44,11 +50,11 @@ class Command(BaseCommand):
                 parent_id = fields.pop('parent')
                 if parent_id:
                     fields['parent'] = self._get_parent(parent_id)
-                cat = self._get_cat(fields['slug'], fields.get('parent', None))
+                cat = self._get_cat(slugify(fields['name']), fields.get('parent', None))
                 if cat is not None:
                     self.stdout.write(f'Updating: {fields["slug"]}')
                     for attr, value in fields.items():
-                        if hasattr(cat, attr):
+                        if attr != 'slug' and hasattr(cat, attr):
                             setattr(cat, attr, value)
                     cat.save()
                 else:

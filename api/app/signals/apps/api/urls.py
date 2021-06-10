@@ -4,7 +4,7 @@ from django.urls import include, path
 
 from signals.apps.api.generics.routers import BaseSignalsRouter
 from signals.apps.api.generics.views import SwaggerView
-from signals.apps.api.v1.views.ml_tool_proxy import LegacyMlPredictCategoryView
+from signals.apps.api.views.ml_tool_proxy import LegacyMlPredictCategoryView
 
 # Base router
 base_signal_router = BaseSignalsRouter()
@@ -17,7 +17,7 @@ urlpatterns = [
     path('category/prediction', LegacyMlPredictCategoryView.as_view(), name='ml-tool-predict-proxy'),
 
     # API Version 1
-    path('', include(('signals.apps.api.v1.urls', 'signals'), namespace='v1')),
+    path('', include(('signals.apps.api.urls_v1', 'signals'), namespace='v1')),
 
     # Swagger
     path('swagger/openapi.yaml', SwaggerView.as_view()),

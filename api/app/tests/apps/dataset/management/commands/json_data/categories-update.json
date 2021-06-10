@@ -5,11 +5,11 @@
         "fields": {
             "parent": null,
             "slug": "test-parent-cat1",
-            "name": "test parent cat1 (renamed)",
+            "name": "test parent cat1",
             "handling": "REST",
             "handling_message": null,
             "is_active": true,
-            "description": null
+            "description": "renamed"
         }
     },
     {

@@ -31,9 +31,9 @@ Continuous integration tests SHOULD validate that the source code and the policy
 
 Requirement | meets | links and notes
 -----|-----|-----
-The codebase MUST be developed to be reusable in different contexts. | almost | VNG is specifically tasked with this.
-The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes? | Lacks public dataset for easily running the machine learning model.
-The codebase SHOULD be in use by multiple parties. | almost |
+The codebase MUST be developed to be reusable in different contexts. | yes |
+The codebase MUST be independent from any secret, undisclosed, proprietary or non-open licensed code or services for execution and understanding. | yes |
+The codebase SHOULD be in use by multiple parties. | yes |
 The roadmap SHOULD be influenced by the needs of multiple parties. | yes |
 Configuration SHOULD be used to make code adapt to context specific needs. | yes |
 Codebases SHOULD include a publiccode.yml metadata description so that they’re easily discoverable. | no | Created [backend#64](https://github.com/Signalen/backend/issues/64).
@@ -153,7 +153,7 @@ Requirement | meets | links and notes
 All functionality in the source code MUST have automated tests. | mostly | In addition to unit testing, there are end-to-end tests which run on master and release branches (frontend); there are coverage reports, results require manual download.
 Contributions MUST pass all automated tests before they are admitted into the codebase. | yes |
 Contributions MUST be small. | yes | Each pull request contains a single feature or fix, but this policy is not explicit in CONTRIBUTING.md nor explictily checked by reviewer.
-The codebase MUST have active contributors. | yes | Amsterdam & VNG
+The codebase MUST have active contributors. | yes | Amsterdam & VNG, [pulse](https://github.com/Amsterdam/signals/pulse/monthly)
 Source code test and documentation coverage SHOULD be monitored. | no | Coverage statics are not monitored but tests will fail when coverage is below a threshold.
 Policy and documentation MAY have testing for consistency with the source and vice versa. |  |
 Policy and documentation MAY have testing for style and broken links. |  |

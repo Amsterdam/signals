@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from factory import DjangoModelFactory, Sequence
+from factory import Sequence
+from factory.django import DjangoModelFactory
 
 from signals.apps.email_integrations.models import EmailTemplate
 
