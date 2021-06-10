@@ -19,7 +19,7 @@ from signals.apps.reporting.csv.datawarehouse.signals import (
     create_signals_routing_departments_csv
 )
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
-from signals.apps.reporting.csv.utils import save_csv_files, zip_csv_files
+from signals.apps.reporting.csv.utils import rotate_zip_files, save_csv_files, zip_csv_files
 from signals.celery import app
 
 
@@ -77,7 +77,7 @@ def zip_csv_files_endpoint(files: list):
 
 
 @app.task
-def save_and_zip_csv_files_endpoint():
+def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30):
     """
     Create zip file of generated csv files
 
@@ -85,3 +85,4 @@ def save_and_zip_csv_files_endpoint():
     """
     created_files = save_csv_files_datawarehouse(using=None)
     zip_csv_files(files_to_zip=created_files, using='datawarehouse')
+    rotate_zip_files(using='datawarehouse', max_csv_amount=max_csv_amount)
