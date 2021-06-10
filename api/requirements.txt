@@ -25,7 +25,7 @@ ddtrace==0.48.0
 debtcollector==2.2.0
 defusedxml==0.7.1
 distlib==0.3.1
-Django==3.2.2
+Django==3.2.4
 django-appconf==1.0.4
 django-celery-beat==2.2.0
 django-celery-email==3.0.0
