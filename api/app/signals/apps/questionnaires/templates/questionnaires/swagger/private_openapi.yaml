@@ -175,7 +175,7 @@ components:
         name:
           type: string
           example: "Questionnaire #1"
-        descriptionn:
+        description:
           type: string
           nullable: true
           example: "Describing the Questionnaire"
