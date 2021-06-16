@@ -22,8 +22,10 @@ class Question(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
+    label = models.CharField(max_length=255)
+    short_label = models.CharField(max_length=255)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
-    payload = models.JSONField(null=True, blank=True)
+    next_rules = models.JSONField(null=True, blank=True)
     required = models.BooleanField(default=False)
 
     root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
@@ -33,15 +35,15 @@ class Question(models.Model):
     def __str__(self):
         return f'{self.key or self.uuid} ({self.field_type})'
 
-    def _clean_payload(self, value):
+    def _clean_next_rules(self, value):
         field_type_class = get_field_type_class(self)
         if field_type_class is None:
             raise ValidationError('field_type')
         return field_type_class().clean(value)
 
     def clean(self):
-        if self.payload:
-            self.payload = self._clean_payload(self.payload)
+        if self.next_rules:
+            self.next_rules = self._clean_next_rules(self.next_rules)
 
     def save(self, *args, **kwargs):
         self.full_clean()

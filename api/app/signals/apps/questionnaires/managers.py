@@ -18,7 +18,8 @@ class QuestionManager(models.Manager):
             question, _ = Question.objects.get_or_create(
                 key='submit',
                 field_type='submit',
-                payload={'label': 'Verstuur', 'shortLabel': 'Verstuur'},
+                label='Verstuur',
+                short_label='Verstuur',
                 required=True
             )
             return question

@@ -79,11 +79,12 @@ class QuestionnairesService:
         return answer
 
     @staticmethod
-    def get_next_question_ref(answer_payload, question_payload):
+    def get_next_question_ref(answer_payload, next_rules):
         # TODO: consider whether we want case sensitive matches in case of
         # character strings
-        if 'next' in question_payload and question_payload['next']:
-            for rule in question_payload['next']:
+
+        if next_rules:
+            for rule in next_rules:
                 if 'payload' in rule and answer_payload == rule['payload']:
                     return rule['ref']
                 elif 'payload' not in rule:
@@ -93,7 +94,7 @@ class QuestionnairesService:
 
     @staticmethod
     def get_next_question(answer, question):
-        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.payload)
+        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.next_rules)
 
         if next_ref is None and question.key != 'submit':
             next_question = Question.objects.get_by_reference(ref='submit')

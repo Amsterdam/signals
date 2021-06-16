@@ -22,10 +22,13 @@ class Migration(migrations.Migration):
                 ('key', models.CharField(blank=True, max_length=255, null=True, unique=True)),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('label', models.CharField(max_length=255)),
+                ('short_label', models.CharField(max_length=255)),
                 ('field_type', models.CharField(
-                    choices=[('integer', 'Integer'), ('plain_text', 'PlainText'), ('submit', 'Submit')], max_length=255
+                    choices=[('integer', 'Integer'), ('plain_text', 'PlainText'), ('submit', 'Submit')],
+                    max_length=255
                 )),
-                ('payload', models.JSONField(blank=True, null=True)),
+                ('next_rules', models.JSONField(blank=True, null=True)),
                 ('required', models.BooleanField(default=False)),
                 ('root', models.ForeignKey(
                     blank=True,

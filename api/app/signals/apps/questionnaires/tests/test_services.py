@@ -11,131 +11,151 @@ from signals.apps.questionnaires.services import QuestionnairesService
 
 
 def _question_graph_with_decision():
-    q1 = QuestionFactory.create(key='q_yesno', payload={
-        'shortLabel': 'Yes or no?',
-        'label': 'Yes or no, what do you choose?',
-        'next': [
+    q1 = QuestionFactory.create(
+        key='q_yesno',
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+        next_rules=[
             {'ref': 'q_yes', 'payload': 'yes'},
             {'ref': 'q_no', 'payload': 'no'},
         ],
-    })
-    q2 = QuestionFactory.create(key='q_yes', payload={
-        'shortLabel': 'yes',
-        'label': 'The yes question. Happy now?'
-    })
-    q3 = QuestionFactory.create(key='q_no', payload={
-        'shortLabel': 'no',
-        'label': 'The no question. Still unhappy?'
-    })
+    )
+    q2 = QuestionFactory.create(
+        key='q_yes',
+        short_label='yes',
+        label='The yes question. Happy now?'
+    )
+    q3 = QuestionFactory.create(
+        key='q_no',
+        short_label='no',
+        label='The no question. Still unhappy?'
+    )
 
     return q1, q2, q3
 
 
 def _question_graph_with_decision_null_keys():
-    q2 = QuestionFactory.create(key=None, payload={
-        'shortLabel': 'yes',
-        'label': 'The yes question. Happy now?'
-    })
-    q3 = QuestionFactory.create(key=None, payload={
-        'shortLabel': 'no',
-        'label': 'The no question. Still unhappy?'
-    })
-    q1 = QuestionFactory.create(key=None, payload={
-        'shortLabel': 'Yes or no?',
-        'label': 'Yes or no, what do you choose?',
-        'next': [
+    q2 = QuestionFactory.create(
+        key=None,
+        short_label='yes',
+        label='The yes question. Happy now?'
+    )
+    q3 = QuestionFactory.create(
+        key=None,
+        short_label='no',
+        label='The no question. Still unhappy?'
+    )
+    q1 = QuestionFactory.create(
+        key=None,
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+        next_rules=[
             {'ref': str(q2.uuid), 'payload': 'yes'},
             {'ref': str(q3.uuid), 'payload': 'no'},
         ],
-    })
+    )
 
     return q1, q2, q3
 
 
 def _question_graph_with_decision_with_default():
-    q1 = QuestionFactory.create(key='q_yesno', payload={
-        'shortLabel': 'Yes or no?',
-        'label': 'Yes or no, what do you choose?',
-        'next': [
+    q1 = QuestionFactory.create(
+        key='q_yesno',
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+        next_rules=[
             {'ref': 'q_yes', 'payload': 'yes'},
             {'ref': 'q_no', 'payload': 'no'},
             {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
         ],
-    })
-    q2 = QuestionFactory.create(key='q_yes', payload={
-        'shortLabel': 'yes',
-        'label': 'The yes question. Happy now?'
-    })
-    q3 = QuestionFactory.create(key='q_no', payload={
-        'shortLabel': 'no',
-        'label': 'The no question. Still unhappy?'
-    })
+    )
+    q2 = QuestionFactory.create(
+        key='q_yes',
+        short_label='yes',
+        label='The yes question. Happy now?'
+    )
+    q3 = QuestionFactory.create(
+        key='q_no',
+        short_label='no',
+        label='The no question. Still unhappy?'
+    )
 
     return q1, q2, q3
 
 
 def _question_graph_no_required_answers():
-    q1 = QuestionFactory.create(key='one', required=False, payload={
-        'shortLabel': 'First not required',
-        'label': 'First not required',
-        'next': [
+    q1 = QuestionFactory.create(
+        key='one',
+        required=False,
+        short_label='First not required',
+        label='First not required',
+        next_rules=[
             {'ref': 'two'},
         ]
-    })
-    q2 = QuestionFactory(key='two', required=False, payload={
-        'shortLabel': 'Second not required',
-        'label': 'Second not required',
-    })
+    )
+    q2 = QuestionFactory(
+        key='two',
+        required=False,
+        short_label='Second not required',
+        label='Second not required',
+    )
 
     return q1, q2
 
 
 def _question_graph_with_decision_with_default_no_required_answers():
-    q1 = QuestionFactory.create(key='q_yesno', required=False, payload={
-        'shortLabel': 'Yes or no?',
-        'label': 'Yes or no, what do you choose?',
-        'next': [
+    q1 = QuestionFactory.create(
+        key='q_yesno',
+        required=False,
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+        next_rules=[
             {'ref': 'q_yes', 'payload': 'yes'},
             {'ref': 'q_no', 'payload': 'no'},
             {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
         ],
-    })
-    q2 = QuestionFactory.create(key='q_yes', payload={
-        'shortLabel': 'yes',
-        'label': 'The yes question. Happy now?'
-    })
-    q3 = QuestionFactory.create(key='q_no', payload={
-        'shortLabel': 'no',
-        'label': 'The no question. Still unhappy?'
-    })
+    )
+    q2 = QuestionFactory.create(
+        key='q_yes',
+        short_label='yes',
+        label='The yes question. Happy now?'
+    )
+    q3 = QuestionFactory.create(
+        key='q_no',
+        short_label='no',
+        label='The no question. Still unhappy?'
+    )
 
     return q1, q2, q3
 
 
 def _question_graph_with_cycle():
-    q1 = QuestionFactory.create(key='one', payload={
-        'shortLabel': 'First question.',
-        'label': 'First question.',
-        'next': [
+    q1 = QuestionFactory.create(
+        key='one',
+        short_label='First question.',
+        label='First question.',
+        next_rules=[
             {'ref': 'two'}
         ],
-    })
-    q2 = QuestionFactory.create(key='two', payload={
-        'shortLabel': 'Second question.',
-        'label': 'Second question.',
-        'next': [
+    )
+    q2 = QuestionFactory.create(
+        key='two',
+        short_label='Second question.',
+        label='Second question.',
+        next_rules=[
             {'ref': 'one'}
         ],
-    })
+    )
 
     return q1, q2
 
 
 def _question_graph_one_question():
-    q1 = QuestionFactory.create(key='only', payload={
-        'shortLabel': 'Only question.',
-        'label': 'Only question.',
-    })
+    q1 = QuestionFactory.create(
+        key='only',
+        short_label='Only question.',
+        label='Only question.',
+    )
     return q1
 
 
@@ -217,24 +237,22 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(next_question.key, 'submit')
 
     def test_get_next_question_ref(self):
-        q_payload_no_next = {}
-        q_payload_next_none = {'next': None}
-        q_payload_next_unconditional = {'next': [{'ref': 'UNCONDITIONAL'}]}
-        q_payload_next_conditional = {
-            'next': [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
-        }
-        q_payload_next_conditional_with_default = {
-            'next': [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}, {'ref': 'DEFAULT'}]
-        }
+        q_next_rules_no_next = []
+        q_next_rules_next_none = None
+        q_next_rules_next_unconditional = [{'ref': 'UNCONDITIONAL'}]
+        q_next_rules_next_conditional = [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
+        q_next_rules_next_conditional_with_default = [
+            {'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}, {'ref': 'DEFAULT'}
+        ]
 
         get_next = QuestionnairesService.get_next_question_ref
-        self.assertEqual(get_next('yes', q_payload_no_next), None)
-        self.assertEqual(get_next('yes', q_payload_next_none), None)
-        self.assertEqual(get_next('WILL NOT MATCH', q_payload_next_conditional), None)
-        self.assertEqual(get_next('BLAH', q_payload_next_unconditional), 'UNCONDITIONAL')
-        self.assertEqual(get_next('yes', q_payload_next_conditional), 'YES')
-        self.assertEqual(get_next('no', q_payload_next_conditional), 'NO')
-        self.assertEqual(get_next('WILL NOT MATCH', q_payload_next_conditional_with_default), 'DEFAULT')
+        self.assertEqual(get_next('yes', q_next_rules_no_next), None)
+        self.assertEqual(get_next('yes', q_next_rules_next_none), None)  # <-- problematic
+        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional), None)
+        self.assertEqual(get_next('BLAH', q_next_rules_next_unconditional), 'UNCONDITIONAL')
+        self.assertEqual(get_next('yes', q_next_rules_next_conditional), 'YES')
+        self.assertEqual(get_next('no', q_next_rules_next_conditional), 'NO')
+        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional_with_default), 'DEFAULT')
 
     def test_question_not_required(self):
         # set up our questions and questionnaires
@@ -307,9 +325,9 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(next_question.key, 'submit')
 
     def test_validate_answer_payload(self):
-        integer_question = QuestionFactory(field_type='integer', payload={'label': 'integer', 'shortLabel': 'integer'})
+        integer_question = QuestionFactory(field_type='integer', label='integer', short_label='integer')
         plaintext_question = QuestionFactory(
-            field_type='plain_text', payload={'label': 'plain_text', 'shortLabel': 'plain_text'})
+            field_type='plain_text', label='plain_text', short_label='plain_text')
         validate_answer = QuestionnairesService.validate_answer_payload
 
         # Check integer fieldtype

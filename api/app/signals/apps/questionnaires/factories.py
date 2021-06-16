@@ -15,10 +15,9 @@ class QuestionFactory(DjangoModelFactory):
     # next question reference present. Tests that need those will have to
     # create model instances themselves.
     field_type = 'plain_text'
-    payload = Sequence(lambda n: {
-        'shortLabel': f'Short label for question {n}.',
-        'label': f'Long label for question {n}.',
-    })
+    label = Sequence(lambda n:  f'Long label for question {n}.')
+    short_label = Sequence(lambda n: f'Short label for question {n}.')
+
     required = True
 
     class Meta:
@@ -53,7 +52,7 @@ class AnswerFactory(DjangoModelFactory):
 
     @post_generation
     def set_question_and_answer(obj, create, extracted, **kwargs):
-        obj.payload = f'Answer to: {obj.question.payload["shortLabel"]}.'
+        obj.payload = f'Answer to: {obj.question.short_label}.'
 
     class Meta:
         model = Answer

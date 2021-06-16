@@ -8,79 +8,39 @@ import jsonschema
 
 class FieldType:
     """All field types should subclass this, so that they become visible as a choice"""
-
     def clean(self, payload):
-        jsonschema.validate(payload, self.payload_schema)  # !! what is the output? probably
+        next_rules_schema = self.get_next_rules_schema()
+        jsonschema.validate(payload, next_rules_schema)
         return payload
+
+    def get_next_rules_schema(self):
+        return {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'ref': {'type': 'string'},
+                    'payload': self.submission_schema  # leave out "payload" if next is unconditional
+                },
+                'required': ['ref'],
+                'additionalProperties': False
+            }
+        }
 
 
 class PlainText(FieldType):
     choice = ('plain_text', 'PlainText')  # TODO: derive from class name
     submission_schema = {'type': 'string'}
 
-    payload_schema = {
-        'type': 'object',
-        'properties': {
-            'label': {'type': 'string'},
-            'shortLabel': {'type': 'string'},
-            'next': {
-                'type': 'array',
-                'items': {
-                    'type': 'object',
-                    'properties': {
-                        'ref': {'type': 'string'},
-                        'payload': submission_schema  # leave out "payload" if next is unconditional
-                    },
-                    'required': ['ref'],
-                    'additionalProperties': False
-                }
-            }  # Leave next out completely if this is the last question
-        },
-        'required': ['label', 'shortLabel'],
-        'additionalProperties': False,
-    }
-
 
 class Integer(FieldType):
     choice = ('integer', 'Integer')
     submission_schema = {'type': 'integer'}
 
-    payload_schema = {
-        'type': 'object',
-        'properties': {
-            'label': {'type': 'string'},
-            'shortLabel': {'type': 'string'},
-            'next': {
-                'type': 'array',
-                'items': {
-                    'type': 'object',
-                    'properties': {
-                        'ref': {'type': 'string'},
-                        'payload': submission_schema  # leave out "payload" if next is unconditional
-                    },
-                    'required': ['ref'],
-                    'additionalProperties': False
-                }
-            }
-        },
-        'required': ['label', 'shortLabel'],
-        'additionalProperties': False,
-    }
-
 
 class Submmit(FieldType):
     choice = ('submit', 'Submit')
     submission_schema = {"type": "null"}
-
-    payload_schema = {
-        'type': 'object',
-        'properties': {
-            'label': {'type': 'string'},
-            'shortLabel': {'type': 'string'},
-        },
-        'required': ['label', 'shortLabel'],
-        'additionalProperties': False,
-    }
 
 
 def init():
