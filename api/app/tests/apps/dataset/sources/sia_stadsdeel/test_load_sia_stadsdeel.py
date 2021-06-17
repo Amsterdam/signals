@@ -20,13 +20,13 @@ class TestLoadSIAStadsdeel(TestCase):
             code='stadsdeel',
             description='Stadsdeel voor tests.'
         )
-        cbs_gemeente_type = AreaType.objects.create(
+        AreaType.objects.create(
             name='Stadsdeel',
             code='cbs-gemeente-2019',
             description='CBS gemeentegrens voor tests.'
         )
 
-        # We create three city distticts of 10x10 meters located at City Hall to
+        # We create three city districts of 10x10 meters located at City Hall to
         # test with. (Code stolen from the Gebieden API tests.)
         x, y = RD_STADHUIS
         width, height = 10, 10
@@ -59,12 +59,12 @@ class TestLoadSIAStadsdeel(TestCase):
         Area.objects.create(
             name='Weesp',
             code='SOME_CBS_CODE_3',
-            _type=cbs_gemeente_type,
+            _type=stadsdeel_area_type,
             geometry=weesp_geometry,
         )
 
         self.assertEqual(Area.objects.count(), 3)
-        self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 2)
+        self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 3)
 
     def test__load_amsterdamse_bos_geometry(self):
         # Since the method being tested only loads a hard-coded data file,
@@ -75,7 +75,7 @@ class TestLoadSIAStadsdeel(TestCase):
 
     def test_load(self):
         self.assertEqual(Area.objects.count(), 3)
-        self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 2)
+        self.assertEqual(Area.objects.filter(_type__code='stadsdeel').count(), 3)
         self.loader.load()
 
         # There should be four "sia-stadsdeel" type areas (Amsterdamse bos,

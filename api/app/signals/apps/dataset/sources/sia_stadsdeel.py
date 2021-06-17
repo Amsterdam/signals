@@ -104,14 +104,14 @@ class SIAStadsdeelLoader(AreaLoader):
                 geometry=diff
             )
 
-            # Special case for Weesp (we want it as a sia-stadsdeel as well)
-            weesp = Area.objects.get(_type__code='cbs-gemeente-2019', name__iexact='weesp')
-            Area.objects.create(
-                name='Weesp',
-                code='weesp',
-                _type=self.area_type,
-                geometry=weesp.geometry
-            )
+            # # Special case for Weesp (we want it as a sia-stadsdeel as well)
+            # weesp = Area.objects.get(_type__code='cbs-gemeente-2019', name__iexact='weesp')
+            # Area.objects.create(
+            #     name='Weesp',
+            #     code='weesp',
+            #     _type=self.area_type,
+            #     geometry=weesp.geometry
+            # )
 
     def load(self):
         self._load_sia_stadsdeel()
