@@ -119,16 +119,22 @@
 						"uuid": {
 							"type": "string"
 						},
+						"label": {
+							"type": "string"
+						},
+						"short_label": {
+							"type": "string"
+						},
 						"field_type": {
 							"type": "string"
 						},
-						"payload": {
+						"next_rules": {
 							"anyOf": [
 								{
-									"type": "string"
+									"type": "null"
 								},
 								{
-									"type": "null"
+									"type": "array"
 								},
 								{
 									"type": "object"
@@ -147,8 +153,10 @@
 						"_display",
 						"id",
 						"uuid",
+						"label",
+						"short_label",
 						"field_type",
-						"payload",
+						"next_rules",
 						"required",
 						"created_at"
 					]

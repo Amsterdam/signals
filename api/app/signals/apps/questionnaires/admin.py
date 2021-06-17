@@ -10,7 +10,7 @@ from signals.apps.questionnaires.models import Question, Questionnaire, Session
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    fields = ('key', 'uuid', 'field_type', 'payload', 'required', 'root', 'created_at',)
+    fields = ('key', 'uuid', 'label', 'short_label', 'field_type', 'next_rules', 'required', 'root', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
     raw_id_fields = ('root',)
 

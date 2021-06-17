@@ -135,29 +135,13 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
-        questionnaire = QuestionnaireFactory.create(
-            first_question__key='test-question-1',
-            first_question__payload={'shortLabel': 'Short label',
-                                     'label': 'Long label',
-                                     'next': [{'ref': 'test-question-2'}]}
-        )
+        questionnaire = QuestionnaireFactory.create(first_question__key='test-question-1',
+                                                    first_question__next_rules=[{'ref': 'test-question-2'}])
 
-        second_question = QuestionFactory.create(
-            key='test-question-2',
-            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-3'}]}
-        )
-        third_question = QuestionFactory.create(
-            key='test-question-3',
-            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-4'}]}
-        )
-        fourth_question = QuestionFactory.create(
-            key='test-question-4',
-            payload={'shortLabel': 'Short label', 'label': 'Long label', 'next': [{'ref': 'test-question-5'}]}
-        )
-        fifth_question = QuestionFactory.create(
-            key='test-question-5',
-            payload={'shortLabel': 'Short label', 'label': 'Long label'}
-        )
+        second_question = QuestionFactory.create(key='test-question-2', next_rules=[{'ref': 'test-question-3'}])
+        third_question = QuestionFactory.create(key='test-question-3', next_rules=[{'ref': 'test-question-4'}])
+        fourth_question = QuestionFactory.create(key='test-question-4', next_rules=[{'ref': 'test-question-5'}])
+        fifth_question = QuestionFactory.create(key='test-question-5')
 
         data = {'payload': 'answer-1', 'questionnaire': questionnaire.uuid}
         first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
@@ -211,29 +195,15 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
-        questionnaire = QuestionnaireFactory.create(
-            first_question__key='test-question-1',
-            first_question__payload={'shortLabel': 'Short label',
-                                     'label': 'Long label',
-                                     'next': [
-                                         {'payload': 'yes', 'ref': 'test-question-2'},
-                                         {'payload': 'no', 'ref': 'test-question-3'},
-                                         {'ref': 'test-question-4'},  # Default
-                                     ]}
-        )
+        questionnaire = QuestionnaireFactory.create(first_question__key='test-question-1',
+                                                    first_question__next_rules=[
+                                                        {'payload': 'yes', 'ref': 'test-question-2'},
+                                                        {'payload': 'no', 'ref': 'test-question-3'},
+                                                        {'ref': 'test-question-4'}])
 
-        second_question = QuestionFactory.create(
-            key='test-question-2',
-            payload={'shortLabel': 'Short label', 'label': 'Long label'}
-        )
-        third_question = QuestionFactory.create(
-            key='test-question-3',
-            payload={'shortLabel': 'Short label', 'label': 'Long label'}
-        )
-        fourth_question = QuestionFactory.create(
-            key='test-question-4',
-            payload={'shortLabel': 'Short label', 'label': 'Long label'}
-        )
+        second_question = QuestionFactory.create(key='test-question-2')
+        third_question = QuestionFactory.create(key='test-question-3')
+        fourth_question = QuestionFactory.create(key='test-question-4')
 
         first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
 

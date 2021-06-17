@@ -26,8 +26,10 @@ class PublicQuestionSerializer(HALSerializer):
             '_display',
             'key',
             'uuid',
+            'label',
+            'short_label',
             'field_type',
-            'payload',
+            'next_rules',
             'required',
         )
         read_only_fields = fields  # No create or update allowed
@@ -49,8 +51,10 @@ class PrivateQuestionSerializer(HALSerializer):
             'id',
             'key',
             'uuid',
+            'label',
+            'short_label',
             'field_type',
-            'payload',
+            'next_rules',
             'required',
             'created_at',
         )

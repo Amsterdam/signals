@@ -249,16 +249,22 @@ components:
           type: string
           pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
           example: '00000000-0000-0000-0000-000000000000'
+        label:
+          type: string
+          example: 'Long label for the question'
+        short_label:
+          type: string
+          example: 'Short label'
         field_type:
           type: string
           enum:
             - 'plain_text'
             - 'integer'
           example: 'plain_text'
-        payload:
+        next_rules:
           type: string
           nullable: true
-          example: {'label': 'A describing label', 'shortLabel': 'short label'}
+          example: [ { 'payload': 'yes', 'ref': 'next-question-key-1' }, { 'payload': 'no', 'ref': 'next-question-key-2' } ]
         required:
           type: boolean
           example: false
