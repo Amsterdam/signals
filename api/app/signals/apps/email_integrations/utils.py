@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import re
-from datetime import timedelta
 from typing import Optional
 
 from django.conf import settings
@@ -11,12 +10,7 @@ from django.utils.timezone import now
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
-from signals.apps.feedback.utils import (
-    NoFrontendAppConfigured,
-    get_fe_application_location,
-    get_feedback_urls
-)
-from signals.apps.questionnaires.models import Question, Questionnaire, Session
+from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.questionnaires.services import ReactionRequestService
 from signals.apps.signals.models import Signal
 from tests.apps.signals.valid_locations import STADHUIS

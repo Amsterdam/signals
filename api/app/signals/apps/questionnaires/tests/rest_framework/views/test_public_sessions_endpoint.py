@@ -32,7 +32,6 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/sessions/'
 
     def setUp(self):
-        self.skipTest('must be ported to new Question model')
         self.questionnaire = QuestionnaireFactory.create()
         self.session = SessionFactory.create(questionnaire=self.questionnaire)
 
