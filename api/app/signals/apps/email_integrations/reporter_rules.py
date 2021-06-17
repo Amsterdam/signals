@@ -84,11 +84,11 @@ SIGNAL_MAIL_RULES = [
         },
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD,
-            'subject': 'Meer over uw melding {signal_id}',
+            'subject': 'Uw melding {signal_id}',
             'context': lambda signal: create_reaction_request_and_mail_context(signal)
         },
         'additional_info': {
-            'history_entry_text': 'Melder is per e-mail om een reactie gevraagd.'
+            'history_entry_text': 'E-mail met vraag verstuurd aan melder'
         }
     },
     {

@@ -52,10 +52,8 @@ def create_reaction_request_and_mail_context(signal: Signal):
     question = Question.objects.create(
         required=True,
         field_type='plain_text',
-        payload={
-            'shortLabel': 'Reactie melder',
-            'label': signal.status.text,  # <-- this should not be empty, max 200 characters
-        },
+        short_label='Reactie melder',
+        label=signal.status.text,  # <-- this should not be empty, max 200 characters
     )
     questionnaire = Questionnaire.objects.create(
         first_question=question,

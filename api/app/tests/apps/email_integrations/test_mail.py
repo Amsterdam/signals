@@ -7,6 +7,7 @@ from unittest import mock
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase, override_settings
+from faker import Faker
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.mail_actions import MailActions
@@ -493,7 +494,9 @@ class TestMailRuleConditions(BaseTestMailCase):
     def test_reaction_requested_links_in_different_environments(self):
         """Test that generated reaction requested links contain the correct host."""
         # Prepare signal with status change to `REACTIE_GEVRAAGD`.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD)
+        fake = Faker()
+        status = StatusFactory.create(
+            _signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text=fake.text(max_nb_chars=200))
         self.signal.status = status
         self.signal.save()
 
@@ -522,7 +525,9 @@ class TestMailRuleConditions(BaseTestMailCase):
         """Deals with the case where nothing is overridden and `environment` not set."""
 
         # Prepare signal with status change to `REACTIE_GEVRAAGD`.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD)
+        fake = Faker()
+        status = StatusFactory.create(
+            _signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text=fake.text(max_nb_chars=200))
         self.signal.status = status
         self.signal.save()
 
