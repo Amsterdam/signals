@@ -472,6 +472,7 @@ class TestMailRuleConditions(BaseTestMailCase):
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(len(mail.outbox), 1)
 
+    @mock.patch.dict('os.environ', {'ENVIRONMENT': 'LOCAL'}, clear=True)
     def test_reaction_requested_email(self):
         # "Reactie gevraagd" flow. Reporter is asked for additional information.
         status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text='Was het mooi weer?')
@@ -490,36 +491,6 @@ class TestMailRuleConditions(BaseTestMailCase):
         # Check mail contents
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(len(mail.outbox), 1)
-
-    def test_reaction_requested_links_in_different_environments(self):
-        """Test that generated reaction requested links contain the correct host."""
-        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
-        fake = Faker()
-        status = StatusFactory.create(
-            _signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text=fake.text(max_nb_chars=200))
-        self.signal.status = status
-        self.signal.save()
-
-        # Check that generated emails contain the correct links for all
-        # configured environments:
-        env_fe_mapping = getattr(settings, 'FEEDBACK_ENV_FE_MAPPING', feedback_settings.FEEDBACK_ENV_FE_MAPPING)
-        self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
-
-        for environment, fe_location in env_fe_mapping.items():
-            local_env = {'ENVIRONMENT': environment}
-
-            with mock.patch.dict('os.environ', local_env):
-                mail.outbox = []
-                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-                ma.apply(signal_id=self.signal.id)
-
-                self.assertEqual(len(mail.outbox), 1)
-                message = mail.outbox[0]
-                self.assertIn(fe_location, message.body)
-                self.assertIn(fe_location, message.alternatives[0][0])
-
-        # we want a history entry when a email was sent
-        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
     def test_reaction_requested_links_environment_env_var_not_set(self):
         """Deals with the case where nothing is overridden and `environment` not set."""
