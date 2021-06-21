@@ -6,7 +6,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.mail_actions import MailActions
@@ -325,7 +325,8 @@ class TestMailRuleConditions(BaseTestMailCase):
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
 
-    def test_links_in_different_environments(self):
+    @override_settings(FRONTEND_URL=None)
+    def test_links_in_different_environments_frontend_url_not_set(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
         StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
@@ -353,6 +354,30 @@ class TestMailRuleConditions(BaseTestMailCase):
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+
+    def test_links_in_different_environments_frontend_url_set(self):
+        """Test that generated feedback links contain the correct host."""
+        # Prepare signal with status change to `AFGEHANDELD`.
+        StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
+        self.signal.status = status
+        self.signal.save()
+
+        test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
+                              'https://random.net', ]
+        for test_frontend_url in test_frontend_urls:
+            with override_settings(FRONTEND_URL=test_frontend_url):
+                mail.outbox = []
+                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+                ma.apply(signal_id=self.signal.id)
+
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn(test_frontend_url, message.body)
+                self.assertIn(test_frontend_url, message.alternatives[0][0])
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(test_frontend_urls))
 
     def test_links_environment_env_var_not_set(self):
         """Deals with the case where nothing is overridden and `environment` not set."""

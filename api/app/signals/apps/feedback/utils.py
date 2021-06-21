@@ -17,6 +17,13 @@ class NoFrontendAppConfigured(Exception):
 
 def get_fe_application_location():
     """Get location of frontend SIA application."""
+
+    # Temporary workaround, will be removed if feedback is moved to the Questionnaires app
+    frontend_url = settings.FRONTEND_URL
+    if frontend_url:
+        return frontend_url
+
+    # If there is no FRONTEND_URL set fallback to the "old" way of determining the frontend url
     env_fe_mapping = copy.deepcopy(getattr(
         settings,
         'FEEDBACK_ENV_FE_MAPPING',
