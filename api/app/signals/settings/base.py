@@ -468,12 +468,15 @@ SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES',
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
-# SIG-1017
+# SIG-1017, replaced by setting the correct FE_URL setting when deploying
 FEEDBACK_ENV_FE_MAPPING = {
     'LOCAL': 'http://dummy_link',
     'ACCEPTANCE': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://acc.meldingen.amsterdam.nl'),
     'PRODUCTION': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://meldingen.amsterdam.nl'),
 }
+
+# The URL of the Frontend, to replace the FEEDBACK_ENV_FE_MAPPING setting
+FE_URL = os.getenv('FE_URL', None)
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
 

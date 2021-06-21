@@ -316,7 +316,8 @@ class TestUtils(TestCase):
     def setUp(self):
         self.feedback = FeedbackFactory()
 
-    def test_link_generation_with_environment_set(self):
+    @override_settings(FE_URL=None)
+    def test_link_generation_with_environment_set_fe_url_not_set(self):
         env_fe_mapping = copy.deepcopy(getattr(
             settings,
             'FEEDBACK_ENV_FE_MAPPING',
@@ -325,16 +326,23 @@ class TestUtils(TestCase):
 
         for environment, fe_location in env_fe_mapping.items():
             env = {'ENVIRONMENT': environment}
+
             with mock.patch.dict('os.environ', env, clear=True):
                 pos_url, neg_url = get_feedback_urls(self.feedback)
-
-                print(environment, fe_location, pos_url)
-                print(environment, fe_location, neg_url, '\n')
                 self.assertIn(fe_location, pos_url)
                 self.assertIn(fe_location, neg_url)
+
+    def test_link_generation_with_environment_set_fe_url_set(self):
+        test_fe_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl', 'https://random.net', ]
+        for test_fe_url in test_fe_urls:
+            with override_settings(FE_URL=test_fe_url):
+                pos_url, neg_url = get_feedback_urls(self.feedback)
+
+                self.assertIn(test_fe_url, pos_url)
+                self.assertIn(test_fe_url, neg_url)
 
     def test_link_generation_no_environment_set(self):
         with mock.patch.dict('os.environ', {}, clear=True):
             pos_url, neg_url = get_feedback_urls(self.feedback)
-            self.assertEqual('http://dummy_link/kto/yes/123', pos_url)
-            self.assertEqual('http://dummy_link/kto/no/123', neg_url)
+            self.assertEqual(f'http://dummy_link/kto/ja/{self.feedback.token}', pos_url)
+            self.assertEqual(f'http://dummy_link/kto/nee/{self.feedback.token}', neg_url)

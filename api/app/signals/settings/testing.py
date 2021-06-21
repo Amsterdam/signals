@@ -19,3 +19,5 @@ SIGNALS_AUTHZ = {
 
 FEATURE_FLAGS['API_SEARCH_ENABLED'] = False  # noqa F405
 FEATURE_FLAGS['SEARCH_BUILD_INDEX'] = False  # noqa F405
+
+FE_URL = 'http://dummy_link'
