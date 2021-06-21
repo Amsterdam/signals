@@ -19,11 +19,11 @@ def get_fe_application_location():
     """Get location of frontend SIA application."""
 
     # Temporary workaround, will be removed if feedback is moved to the Questionnaires app
-    fe_url = settings.FE_URL
-    if fe_url:
-        return fe_url
+    frontend_url = settings.FRONTEND_URL
+    if frontend_url:
+        return frontend_url
 
-    # If there is no fe_url set fallback to the "old" way of determining the FE url
+    # If there is no FRONTEND_URL set fallback to the "old" way of determining the frontend url
     env_fe_mapping = copy.deepcopy(getattr(
         settings,
         'FEEDBACK_ENV_FE_MAPPING',

@@ -316,8 +316,8 @@ class TestUtils(TestCase):
     def setUp(self):
         self.feedback = FeedbackFactory()
 
-    @override_settings(FE_URL=None)
-    def test_link_generation_with_environment_set_fe_url_not_set(self):
+    @override_settings(FRONTEND_URL=None)
+    def test_link_generation_with_environment_set_frontend_url_not_set(self):
         env_fe_mapping = copy.deepcopy(getattr(
             settings,
             'FEEDBACK_ENV_FE_MAPPING',
@@ -332,14 +332,15 @@ class TestUtils(TestCase):
                 self.assertIn(fe_location, pos_url)
                 self.assertIn(fe_location, neg_url)
 
-    def test_link_generation_with_environment_set_fe_url_set(self):
-        test_fe_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl', 'https://random.net', ]
-        for test_fe_url in test_fe_urls:
-            with override_settings(FE_URL=test_fe_url):
+    def test_link_generation_with_environment_set_frontend_url_set(self):
+        test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
+                              'https://random.net', ]
+        for test_frontend_url in test_frontend_urls:
+            with override_settings(FRONTEND_URL=test_frontend_url):
                 pos_url, neg_url = get_feedback_urls(self.feedback)
 
-                self.assertIn(test_fe_url, pos_url)
-                self.assertIn(test_fe_url, neg_url)
+                self.assertIn(test_frontend_url, pos_url)
+                self.assertIn(test_frontend_url, neg_url)
 
     def test_link_generation_no_environment_set(self):
         with mock.patch.dict('os.environ', {}, clear=True):

@@ -29,7 +29,7 @@ TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
 
 # ML_TOOL_ENDPOINT = 'https://acc.api.data.amsterdam.nl/signals_mltool'
 
-FE_URL = os.getenv('FE_URL', 'https://acc.meldingen.amsterdam.nl')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://acc.meldingen.amsterdam.nl')
 
 try:
     from signals.settings.local import *  # noqa
