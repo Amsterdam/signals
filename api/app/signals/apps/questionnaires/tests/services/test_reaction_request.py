@@ -6,14 +6,19 @@ from django.test import TestCase
 
 from signals.apps.questionnaires.exceptions import WrongState
 from signals.apps.questionnaires.factories import SessionFactory
-from signals.apps.questionnaires.services import ReactionRequestService
+from signals.apps.questionnaires.models import Questionnaire
+from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.factories import SignalFactory
 
 
 class TestReactionRequestService(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create(status__state=workflow.GEMELD)
+        self.signal_reaction_requested = SignalFactory.create(
+            status__state=workflow.REACTIE_GEVRAAGD,
+            status__text='Omschrijf uw probleem.',
+        )
 
     @mock.patch.dict('os.environ', {'ENVIRONMENT': 'LOCAL'}, clear=True)
     def test_get_reaction_url(self):
@@ -22,15 +27,31 @@ class TestReactionRequestService(TestCase):
         self.assertEqual(reaction_url, f'http://dummy_link/reactie_gevraagd/{session.uuid}')
 
     def test_create_session(self):
-        question_text = 'Omschrijf uw probleem.'
-        status = StatusFactory(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text=question_text)
-        self.signal.status = status
-        self.signal.save()
-        self.signal.refresh_from_db()
-
-        session = ReactionRequestService.create_session(self.signal)
-        self.assertEqual(session.questionnaire.first_question.label, question_text)
+        session = ReactionRequestService.create_session(self.signal_reaction_requested)
+        self.assertEqual(session.questionnaire.first_question.label, self.signal_reaction_requested.status.text)
+        self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
 
     def test_create_session_wrong_state(self):
         with self.assertRaises(WrongState):
             ReactionRequestService.create_session(self.signal)
+
+    @mock.patch('signals.apps.questionnaires.services.questionnaires.session_frozen')
+    def test_submit_session(self, patched_signal):
+        session = ReactionRequestService.create_session(self.signal_reaction_requested)
+
+        questionnaire = session.questionnaire
+        question = questionnaire.first_question
+        answer_str = 'De zon schijnt te vel.'
+
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=session)
+        next_question = QuestionnairesService.get_next_question(answer, question)
+        self.assertEqual(next_question.ref, 'submit')
+
+        with self.captureOnCommitCallbacks(execute=True):
+            QuestionnairesService.create_answer(
+                answer_payload=None, question=next_question, questionnaire=questionnaire, session=session)
+
+        self.assertTrue(session.frozen)
+        self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
+        patched_signal.send_robust.assert_called_once_with(sender=QuestionnairesService, session=session)

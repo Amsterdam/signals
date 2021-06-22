@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import timedelta
+from unittest import mock
 
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
@@ -344,7 +345,8 @@ class TestQuestionnairesService(TestCase):
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
 
-    def test_submit(self):
+    @mock.patch('signals.apps.questionnaires.services.questionnaires.session_frozen')
+    def test_submit(self, patched_signal):
         q1 = _question_graph_one_question()
         questionnaire = QuestionnaireFactory.create(first_question=q1)
 
@@ -353,8 +355,11 @@ class TestQuestionnairesService(TestCase):
 
         # We will answer the questionnaire, until we reach a None next question.
         # In the first step we have no Session reference yet.
-        answer = QuestionnairesService.create_answer(
-            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            answer = QuestionnairesService.create_answer(
+                answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+        patched_signal.assert_not_called()
+
         self.assertIsInstance(answer, Answer)
         self.assertEqual(answer.question, question)
 
@@ -369,11 +374,13 @@ class TestQuestionnairesService(TestCase):
 
         answer2_str = None
 
-        answer2 = QuestionnairesService.create_answer(
-            answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
+        with self.captureOnCommitCallbacks(execute=True):
+            answer2 = QuestionnairesService.create_answer(
+                answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
         self.assertIsInstance(answer2, Answer)
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
+        patched_signal.send_robust.assert_called_with(sender=QuestionnairesService, session=session)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_question)

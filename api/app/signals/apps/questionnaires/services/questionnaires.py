@@ -7,6 +7,7 @@ from django.utils import timezone
 from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
 
+from signals.apps.questionnaires.django_signals import session_frozen
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
 from signals.apps.questionnaires.models import Answer, Question, Session
@@ -72,6 +73,7 @@ class QuestionnairesService:
         # freeze the session.
         with transaction.atomic():
             if question.key == 'submit':
+                transaction.on_commit(lambda: session_frozen.send_robust(sender=QuestionnairesService, session=session))
                 session.frozen = True
                 session.save()
             answer = Answer.objects.create(session=session, question=question, payload=answer_payload)

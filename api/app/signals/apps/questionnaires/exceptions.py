@@ -8,5 +8,9 @@ class SessionFrozen(Exception):
     pass
 
 
+class SessionNotFrozen(Exception):
+    pass
+
+
 class WrongState(Exception):
     pass
