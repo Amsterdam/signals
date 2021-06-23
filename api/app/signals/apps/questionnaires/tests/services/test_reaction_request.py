@@ -36,7 +36,7 @@ class TestReactionRequestService(TestCase):
             ReactionRequestService.create_session(self.signal)
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.session_frozen')
-    def test_submit_session(self, patched_signal):
+    def test_submit_session_signal_fired(self, patched_signal):
         session = ReactionRequestService.create_session(self.signal_reaction_requested)
 
         questionnaire = session.questionnaire
@@ -55,3 +55,26 @@ class TestReactionRequestService(TestCase):
         self.assertTrue(session.frozen)
         self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
         patched_signal.send_robust.assert_called_once_with(sender=QuestionnairesService, session=session)
+
+    @mock.patch('signals.apps.questionnaires.signal_receivers.tasks')
+    def test_submit_session_signal_received(self, patched_task):
+        # TODO: rewrite to omit the sending part, just trigger the appropriate Django signal
+        session = ReactionRequestService.create_session(self.signal_reaction_requested)
+
+        questionnaire = session.questionnaire
+        question = questionnaire.first_question
+        answer_str = 'De zon schijnt te vel.'
+
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=session)
+        next_question = QuestionnairesService.get_next_question(answer, question)
+        self.assertEqual(next_question.ref, 'submit')
+
+        with self.captureOnCommitCallbacks(execute=False) as callbacks:
+            QuestionnairesService.create_answer(
+                answer_payload=None, question=next_question, questionnaire=questionnaire, session=session)
+
+        self.assertEqual(len(callbacks), 1)
+        callbacks[0]()
+
+        patched_task.update_status_reactie_ontvangen.assert_called_once_with(pk=session.pk)

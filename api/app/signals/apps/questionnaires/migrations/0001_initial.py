@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('signals', '0141_auto_20210622_1314'),
+        ('signals', '0141_workflow_additions'),
     ]
 
     operations = [
