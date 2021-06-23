@@ -117,6 +117,9 @@ urlpatterns = [
             re_path('usernames/?$', AutocompleteUsernameListView.as_view(), name='autocomplete-usernames'),
         ])),
     ])),
+
+    # Reports
+    path('v1/', include('signals.apps.reports.urls')),
 ]
 
 if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT']:
