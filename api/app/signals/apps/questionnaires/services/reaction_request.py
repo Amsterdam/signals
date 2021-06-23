@@ -21,6 +21,9 @@ from signals.apps.questionnaires.models import Answer, Question, Questionnaire, 
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
+REACTION_REQUEST_DAYS_OPEN = 5
+NO_REACTION_RECEIVED_TEXT = """Geen reactie ontvangen."""
+
 
 class ReactionRequestService:
     @staticmethod
@@ -47,7 +50,7 @@ class ReactionRequestService:
                 flow=Questionnaire.REACTION_REQUEST,
             )
             session = Session.objects.create(
-                submit_before=now() + timedelta(days=5),
+                submit_before=now() + timedelta(days=REACTION_REQUEST_DAYS_OPEN),
                 questionnaire=questionnaire,
                 _signal=signal,
             )
@@ -56,6 +59,7 @@ class ReactionRequestService:
 
     @staticmethod
     def handle_frozen_session(session):
+        # TODO: check that we have the correct flow
         if not session.frozen:
             msg = f'Session {session.uuid} is not frozen!'
             raise SessionNotFrozen(msg)
@@ -65,3 +69,21 @@ class ReactionRequestService:
         answer = Answer.objects.filter(session=session, question=question).order_by('-created_at').first()
 
         Signal.actions.update_status({'text': answer.payload, 'state': workflow.REACTIE_ONTVANGEN}, signal)
+
+    @staticmethod
+    def clean_up_reaction_request():
+        # Find all signals that have been in state REACTIE_GEVRAAGD for too
+        # long and change their state to REACTIE_ONTVANGEN with a text saying
+        # no reaction was received.
+        signals = Signal.objects.filter(
+            status__state=workflow.REACTIE_GEVRAAGD,
+            status__created_at__lt=now() - timedelta(days=REACTION_REQUEST_DAYS_OPEN)
+        )
+
+        count = 0
+        for signal in signals:
+            payload = {'text': NO_REACTION_RECEIVED_TEXT, 'state': workflow.REACTIE_ONTVANGEN}
+            Signal.actions.update_status(data=payload, signal=signal)
+            count += 1
+
+        return count

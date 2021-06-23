@@ -6,9 +6,16 @@ from unittest import mock
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
-from signals.apps.questionnaires.factories import QuestionFactory, QuestionnaireFactory
-from signals.apps.questionnaires.models import SESSION_DURATION, Answer
+from signals.apps.questionnaires.exceptions import SessionInvalidated
+from signals.apps.questionnaires.factories import (
+    QuestionFactory,
+    QuestionnaireFactory,
+    SessionFactory
+)
+from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
+from signals.apps.signals import workflow
+from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 
 def _question_graph_with_decision():
@@ -384,3 +391,29 @@ class TestQuestionnairesService(TestCase):
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_question)
+
+    def test_get_session_reaction_request_flow(self):
+        # A session for reaction request flow with no associated Signal should
+        # raise an SessionInvalidated.
+        session_no_signal = SessionFactory.create(questionnaire__flow=Questionnaire.REACTION_REQUEST)
+
+        with self.assertRaises(SessionInvalidated):
+            QuestionnairesService.get_session(session_no_signal.uuid)
+
+        # A session for reaction request flow for a signal in a state other
+        # than REACTIE_GEVRAAGD should raise SessionInvalidated.
+        signal = SignalFactory.create()
+        session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)
+
+        with self.assertRaises(SessionInvalidated):
+            QuestionnairesService.get_session(session.uuid)  # <-- !!! FAAL
+
+        # A session for reaction request flow for a signal that also has a more
+        # recent session, should raise SessionInvalidated.
+        status = StatusFactory.create(state=workflow.REACTIE_GEVRAAGD)
+        signal.status = status
+        signal.save()
+        SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)  # more recent
+
+        with self.assertRaises(SessionInvalidated):
+            QuestionnairesService.get_session(session.uuid)

@@ -14,3 +14,7 @@ class SessionNotFrozen(Exception):
 
 class WrongState(Exception):
     pass
+
+
+class SessionInvalidated(Exception):
+    pass

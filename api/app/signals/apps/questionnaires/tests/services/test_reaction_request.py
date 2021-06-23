@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+from datetime import timedelta
 from unittest import mock
 
 from django.test import TestCase
+from django.utils.timezone import now
+from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import WrongState
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
+from signals.apps.questionnaires.services.reaction_request import REACTION_REQUEST_DAYS_OPEN
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.models import Signal
 
 
 class TestReactionRequestService(TestCase):
@@ -78,3 +83,30 @@ class TestReactionRequestService(TestCase):
         callbacks[0]()
 
         patched_task.update_status_reactie_ontvangen.assert_called_once_with(pk=session.pk)
+
+    def test_clean_up_reaction_request(self):
+        # Make sure that the Signals created in setUp() method do not affect
+        # this test:
+        status = StatusFactory.create(text='xyz', state=workflow.BEHANDELING, _signal=self.signal_reaction_requested)
+        self.signal_reaction_requested.status = status
+        self.signal_reaction_requested.save()
+
+        with freeze_time(now() - timedelta(days=2 * REACTION_REQUEST_DAYS_OPEN)):
+            # Five signals that were in state REACTIE_GEVRAAGD and too old to
+            # still receive an update.
+            SignalFactory.create_batch(5, status__state=workflow.REACTIE_GEVRAAGD)
+
+        with freeze_time(now() - timedelta(days=REACTION_REQUEST_DAYS_OPEN // 2)):
+            # Five signals that were in state REACTIE_GEVRAAGD and may still
+            # get an update.
+            SignalFactory.create_batch(5, status__state=workflow.REACTIE_GEVRAAGD)
+
+        self.assertEqual(Signal.objects.count(), 12)
+        n_updated = ReactionRequestService.clean_up_reaction_request()
+
+        self.assertEqual(n_updated, 5)
+        reactie_gevraagd = Signal.objects.filter(status__state=workflow.REACTIE_GEVRAAGD)
+        reactie_ontvangen = Signal.objects.filter(status__state=workflow.REACTIE_ONTVANGEN)
+
+        self.assertEqual(reactie_gevraagd.count(), 5)
+        self.assertEqual(reactie_ontvangen.count(), 5)
