@@ -118,8 +118,8 @@ urlpatterns = [
         ])),
     ])),
 
-    # Reports
-    path('v1/', include('signals.apps.reports.urls')),
+    # Reporting
+    path('v1/', include('signals.apps.reporting.urls')),
 ]
 
 if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT']:

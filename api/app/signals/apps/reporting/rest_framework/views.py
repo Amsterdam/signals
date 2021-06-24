@@ -7,11 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions
-from signals.apps.reports.filters import (
+from signals.apps.reporting.filters import (
     SignalsOpenPerCategoryCountFilterSet,
     SignalsReopenRequestedPerCategoryCountFilterSet
 )
-from signals.apps.reports.rest_framework.serializers import ReportSignalsPerCategory
+from signals.apps.reporting.rest_framework.serializers import ReportSignalsPerCategory
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 

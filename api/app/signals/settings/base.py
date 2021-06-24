@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     'signals.apps.reporting',
     'signals.apps.search',
     'signals.apps.dataset',
-    'signals.apps.reports',
 
     'change_log',
 
