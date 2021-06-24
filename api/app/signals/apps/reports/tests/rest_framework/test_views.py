@@ -21,6 +21,7 @@ from signals.apps.signals.workflow import (
     AFGEHANDELD,
     AFWACHTING,
     BEHANDELING,
+    GEMELD,
     VERZOEK_TOT_HEROPENEN
 )
 
@@ -41,7 +42,7 @@ test_urlconf.urlpatterns = urlpatterns
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
-class TestPrivateQuestionnaireEndpoint(APITestCase):
+class TestPrivateReportEndpoint(APITestCase):
     base_endpoint = '/private/reports'
 
     def setUp(self):
@@ -76,8 +77,8 @@ class TestPrivateQuestionnaireEndpoint(APITestCase):
     def test_signals_open_per_category_signals_no_filter(self):
         self.client.force_authenticate(user=self.superuser)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=3))):
-            SignalFactory.create_batch(5, category_assignment__category=self.category_1)
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=3)):
+            SignalFactory.create_batch(5, status__state=GEMELD, category_assignment__category=self.category_1)
             SignalFactory.create_batch(3, status__state=BEHANDELING, category_assignment__category=self.category_2)
             SignalFactory.create_batch(2, status__state=AFWACHTING, category_assignment__category=self.category_3)
 
@@ -106,27 +107,25 @@ class TestPrivateQuestionnaireEndpoint(APITestCase):
 
         self.assertEqual(Signal.objects.count(), 0)
 
-        start_date = timezone.now() - timezone.timedelta(weeks=5)
-        end_date = timezone.now() - timezone.timedelta(weeks=3)
+        start = timezone.now() - timezone.timedelta(weeks=5)
+        end = timezone.now() - timezone.timedelta(weeks=3)
 
-        response = self.client.get(f'{self.base_endpoint}/signals/open',
-                                   data={'start_date': start_date, 'end_date': end_date})
+        response = self.client.get(f'{self.base_endpoint}/signals/open', data={'start': start, 'end': end})
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
         self.assertEqual(response_data['total_signal_count'], 0)
         self.assertEqual(len(response_data['results']), 0)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=4))):
-            SignalFactory.create_batch(5, category_assignment__category=self.category_1)
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=4)):
+            SignalFactory.create_batch(5, status__state=GEMELD, category_assignment__category=self.category_1)
 
             # Should not show up
             SignalFactory.create_batch(5, status__state=AFGEHANDELD, category_assignment__category=self.category_1)
 
         self.assertEqual(Signal.objects.count(), 10)
 
-        response = self.client.get(f'{self.base_endpoint}/signals/open',
-                                   data={'start_date': start_date, 'end_date': end_date})
+        response = self.client.get(f'{self.base_endpoint}/signals/open', data={'start': start, 'end': end})
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -156,11 +155,11 @@ class TestPrivateQuestionnaireEndpoint(APITestCase):
     def test_signals_reopen_requested_per_category_no_filter(self):
         self.client.force_authenticate(user=self.superuser)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=3))):
-            SignalFactory.create_batch(5, category_assignment__category=self.category_1)
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=3)):
+            SignalFactory.create_batch(5, status__state=GEMELD, category_assignment__category=self.category_1)
             SignalFactory.create_batch(3, status__state=BEHANDELING, category_assignment__category=self.category_2)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=1))):
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=1)):
             for signal in Signal.objects.all():
                 status = StatusFactory.create(_signal=signal, state=VERZOEK_TOT_HEROPENEN)
                 signal.status = status
@@ -187,19 +186,19 @@ class TestPrivateQuestionnaireEndpoint(APITestCase):
     def test_signals_reopen_requested_per_category_filtered(self):
         self.client.force_authenticate(user=self.superuser)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=3))):
-            SignalFactory.create_batch(5, category_assignment__category=self.category_1)
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=3)):
+            SignalFactory.create_batch(5, status__state=GEMELD, category_assignment__category=self.category_1)
             SignalFactory.create_batch(3, status__state=BEHANDELING, category_assignment__category=self.category_2)
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=1))):
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=1)):
             for signal in Signal.objects.all():
                 status = StatusFactory.create(_signal=signal, state=VERZOEK_TOT_HEROPENEN)
                 signal.status = status
                 signal.save()
 
-        with (freeze_time(timezone.now() - timezone.timedelta(weeks=12))):
+        with freeze_time(timezone.now() - timezone.timedelta(weeks=12)):
             # Should not show up
-            signals = SignalFactory.create_batch(2, category_assignment__category=self.category_3)
+            signals = SignalFactory.create_batch(2, status__state=GEMELD, category_assignment__category=self.category_3)
             for signal in signals:
                 status = StatusFactory.create(_signal=signal, state=VERZOEK_TOT_HEROPENEN)
                 signal.status = status
@@ -207,11 +206,10 @@ class TestPrivateQuestionnaireEndpoint(APITestCase):
 
         self.assertEqual(Signal.objects.count(), 10)
 
-        start_date = timezone.now() - timezone.timedelta(weeks=2)
-        end_date = timezone.now() - timezone.timedelta(days=5)
+        start = timezone.now() - timezone.timedelta(weeks=2)
+        end = timezone.now() - timezone.timedelta(days=5)
 
-        response = self.client.get(f'{self.base_endpoint}/signals/reopen-requested',
-                                   data={'start_date': start_date, 'end_date': end_date})
+        response = self.client.get(f'{self.base_endpoint}/signals/reopen-requested', data={'start': start, 'end': end})
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()

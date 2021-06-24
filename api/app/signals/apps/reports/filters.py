@@ -7,8 +7,8 @@ from signals.apps.signals import workflow
 
 
 class SignalsOpenPerCategoryCountFilterSet(FilterSet):
-    start_date = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
-    end_date = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
+    start = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='gte')
+    end = filters.IsoDateTimeFilter(field_name='created_at', lookup_expr='lte')
 
     def filter_queryset(self, queryset):
         queryset = queryset.exclude(
@@ -20,8 +20,8 @@ class SignalsOpenPerCategoryCountFilterSet(FilterSet):
 
 
 class SignalsReopenRequestedPerCategoryCountFilterSet(FilterSet):
-    start_date = filters.IsoDateTimeFilter(field_name='status__created_at', lookup_expr='gte')
-    end_date = filters.IsoDateTimeFilter(field_name='status__created_at', lookup_expr='lte')
+    start = filters.IsoDateTimeFilter(field_name='status__created_at', lookup_expr='gte')
+    end = filters.IsoDateTimeFilter(field_name='status__created_at', lookup_expr='lte')
 
     def filter_queryset(self, queryset):
         queryset = queryset.filter(status__state=workflow.VERZOEK_TOT_HEROPENEN)
