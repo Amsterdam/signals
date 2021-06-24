@@ -1580,6 +1580,68 @@ paths:
         - OAuth2:
             - SIG/ALL
 
+  /signals/v1/private/reports/signals/open/:
+    get:
+      description: Returns a total count of Signals in a "open" state + a count per category
+      parameters:
+        - name: "start"
+          in: query
+          description: Filters Signals created after this datetime
+          schema:
+            type: string
+          required: false
+        - name: "end"
+          in: query
+          description: Filters Signals created before this datetime
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Returns a total count of Signals in a "open" state + a count per category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateReportResponse'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
+  /signals/v1/private/reports/signals/reopen-requested/:
+    get:
+      description: Returns a total count of Signals in the "reopen requested" state + a count per category
+      parameters:
+        - name: "start"
+          in: query
+          description: Filters Signals put in the  "reopen requested" state after this datetime
+          schema:
+            type: string
+          required: false
+        - name: "end"
+          in: query
+          description: Filters Signals put in the  "reopen requested" state before this datetime
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Returns a total count of Signals in the "reopen requested" state + a count per category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateReportResponse'
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+      security:
+        - OAuth2:
+            - SIG/ALL
+
 components:
   schemas:
     StatusStateChoices:
@@ -3715,6 +3777,33 @@ components:
                     type: string
                     format: date-time
                     example: "2020-01-01T00:00:00+00:00"
+
+    privateReportResponse:
+      type: object
+      properties:
+        total_signal_count:
+          type: integer
+          example: 12345
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Example Category"
+                  departments:
+                    type: array
+                    items:
+                      type: string
+                      example: 'ASC'
+              signal_count:
+                type: integer
+                example: 12345
+            minItems: 0
 
   securitySchemes:
     OAuth2:
