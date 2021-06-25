@@ -5,6 +5,7 @@ import uuid
 from datapunt_api.rest import DatapuntViewSet
 from django.utils import timezone
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -108,8 +109,8 @@ class PublicSessionViewSet(HALViewSetRetrieve):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
 
-    queryset = Session.objects.all()
-    queryset_detail = Session.objects.all()
+    queryset = Session.objects.none()
+    queryset_detail = Session.objects.none()
 
     serializer_class = PublicSessionSerializer
     serializer_detail_class = PublicSessionDetailedSerializer
@@ -117,12 +118,18 @@ class PublicSessionViewSet(HALViewSetRetrieve):
     authentication_classes = ()
 
     def get_object(self):
-        obj = super(PublicSessionViewSet, self).get_object()
+        session_uuid = self.kwargs[self.lookup_url_kwarg]
+
+        try:
+            session = QuestionnairesService.get_session(session_uuid)
+        except Exception as e:
+            # For now just re-raise the exception as a DRF APIException
+            raise APIException(str(e))
 
         now = timezone.now()
-        if obj.submit_before and obj.submit_before < now:
+        if session.submit_before and session.submit_before < now:
             raise Gone('Expired!')
-        elif obj.created_at + obj.duration < now:
+        elif session.created_at + session.duration < now:
             raise Gone('Expired!')
 
-        return obj
+        return session
