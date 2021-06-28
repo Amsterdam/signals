@@ -55,14 +55,24 @@ class Question(models.Model):
 
 
 class Questionnaire(models.Model):
+    EXTRA_PROPERTIES = 'EXTRA_PROPERTIES'
+    REACTION_REQUEST = 'REACTION_REQUEST'
+    FEEDBACK_REQUEST = 'FEEDBACK_REQUEST'
+    FLOW_CHOICES = (
+        (EXTRA_PROPERTIES, 'Uitvraag'),
+        (REACTION_REQUEST, 'Reactie gevraagd'),
+        (FEEDBACK_REQUEST, 'Klanttevredenheidsonderzoek'),
+    )
+
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
     first_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
+    flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
 
     name = models.CharField(max_length=255, help_text='The name of the Questionnaire')
     description = models.TextField(blank=True, null=True, help_text='Describe the Questionnaire')
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     objects = QuestionnaireManager()
 
@@ -89,6 +99,7 @@ class Session(models.Model):
 
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
+    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, null=True)
 
     objects = SessionManager()
 

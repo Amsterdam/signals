@@ -1,0 +1,75 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"self-uuid": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self",
+				"self-uuid"
+			]
+		},
+		"_display": {
+			"type": "string"
+		},
+		"id": {
+			"type": "integer"
+		},
+		"uuid": {
+			"type": "string"
+		},
+		"field_type": {
+			"type": "string"
+		},
+		"payload": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"required": {
+			"type": "boolean"
+		},
+		"created_at": {
+			"type": "string"
+		}
+	},
+	"required": [
+		"_links",
+		"_display",
+		"id",
+		"uuid",
+		"field_type",
+		"payload",
+		"required",
+		"created_at"
+	]
+}

@@ -19,6 +19,9 @@ HEROPEND = 'reopened'
 VERZOEK_TOT_AFHANDELING = 'closure requested'
 INGEPLAND = 'ingepland'
 VERZOEK_TOT_HEROPENEN = 'reopen requested'
+REACTIE_GEVRAAGD = 'reaction requested'
+REACTIE_ONTVANGEN = 'reaction received'
+
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
@@ -40,6 +43,8 @@ STATUS_CHOICES_API = (
     (HEROPEND, 'Heropend'),
     (GESPLITST, 'Gesplitst'),
     (VERZOEK_TOT_AFHANDELING, 'Verzoek tot afhandeling'),
+    (REACTIE_GEVRAAGD, 'Reactie gevraagd'),
+    (REACTIE_ONTVANGEN, 'Reactie ontvangen'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -66,6 +71,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,  # SIG-1294
         GEANNULEERD,  # Op verzoek via mail van Arvid Smits
         INGEPLAND,  # SIG-1327
+        REACTIE_GEVRAAGD,  # SIG-3651
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264
@@ -76,6 +82,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,  # SIG-1293
         BEHANDELING,  # SIG-1295
         GEANNULEERD,  # SIG-2987
+        REACTIE_GEVRAAGD,  # SIG-3651
     ],
     BEHANDELING: [
         GEMELD,  # SIG-1264
@@ -85,6 +92,7 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,
         TE_VERZENDEN,
         VERZOEK_TOT_AFHANDELING,  # SIG-1374
+        REACTIE_GEVRAAGD,  # SIG-3651
     ],
     INGEPLAND: [
         GEMELD,  # SIG-1264
@@ -93,6 +101,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
         VERZOEK_TOT_AFHANDELING,  # SIG-1293
+        REACTIE_GEVRAAGD,  # SIG-3651
     ],
     ON_HOLD: [
         INGEPLAND,
@@ -147,5 +156,25 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         HEROPEND,
         GEANNULEERD,
-    ]
+    ],
+    REACTIE_GEVRAAGD: [  # SIG-3651
+        GEMELD,
+        AFWACHTING,
+        BEHANDELING,
+        INGEPLAND,
+        AFGEHANDELD,
+        GEANNULEERD,
+        GESPLITST,
+        REACTIE_ONTVANGEN,
+    ],
+    REACTIE_ONTVANGEN: [  # SIG-3651
+        GEMELD,
+        AFWACHTING,
+        BEHANDELING,
+        AFGEHANDELD,
+        GEANNULEERD,
+        INGEPLAND,
+        REACTIE_GEVRAAGD,
+        TE_VERZENDEN,
+    ],
 }

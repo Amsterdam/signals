@@ -11,6 +11,7 @@ from django.utils.timezone import now
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
+from signals.apps.questionnaires.services import ReactionRequestService
 from signals.apps.signals.models import Signal
 from tests.apps.signals.valid_locations import STADHUIS
 
@@ -25,6 +26,16 @@ def _create_feedback_and_mail_context(signal: Signal):
         'negative_feedback_url': negative_feedback_url,
         'positive_feedback_url': positive_feedback_url,
     }
+
+
+def create_reaction_request_and_mail_context(signal: Signal):
+    """
+    Util function to create a question, questionnaire and prepared session for reaction request mails
+    """
+    session = ReactionRequestService.create_session(signal)
+    reaction_url = ReactionRequestService.get_reaction_url(session)
+
+    return {'reaction_url': reaction_url}
 
 
 # Pattern used to filter links from the Signal text and text_extra

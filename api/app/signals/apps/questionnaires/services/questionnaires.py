@@ -7,9 +7,11 @@ from django.utils import timezone
 from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
 
-from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.django_signals import session_frozen
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
-from signals.apps.questionnaires.models import Answer, Question, Session
+from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.signals import workflow
 
 
 class QuestionnairesService:
@@ -22,6 +24,29 @@ class QuestionnairesService:
                 ttl_seconds=ttl_seconds
             )
         return Session.objects.create(questionnaire=questionnaire, submit_before=submit_before)
+
+    @staticmethod
+    def get_session(uuid):
+        session = Session.objects.get(uuid=uuid)
+        if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
+            signal = session._signal
+
+            # Check that a signal is associated with this session
+            if signal is None:
+                raise SessionInvalidated(f'Session {session.uuid} is not associated with a Signal.')
+
+            # Make sure that the signal is in state REACTIE_GEVRAAGD.
+            if signal.status.state != workflow.REACTIE_GEVRAAGD:
+                raise SessionInvalidated(f'Session {session.uuid} is invalidated.')
+
+            # Make sure that only the most recent Session and associated
+            # Questionnaire and Question can be answered:
+            most_recent_session = Session.objects.filter(
+                _signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST).order_by('created_at').last()
+            if most_recent_session.uuid != session.uuid:
+                raise SessionInvalidated(f'Session {session.uuid} is invalidated.')
+
+        return session
 
     @staticmethod
     def validate_answer_payload(answer_payload, question):
@@ -72,6 +97,7 @@ class QuestionnairesService:
         # freeze the session.
         with transaction.atomic():
             if question.key == 'submit':
+                transaction.on_commit(lambda: session_frozen.send_robust(sender=QuestionnairesService, session=session))
                 session.frozen = True
                 session.save()
             answer = Answer.objects.create(session=session, question=question, payload=answer_payload)
