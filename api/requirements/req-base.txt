@@ -62,3 +62,6 @@ mistune
 
 # Filetype scanning
 python-magic
+
+# Graph manipulation (for questionnaires)
+networkx

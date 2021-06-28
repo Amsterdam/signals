@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import jsonschema
+import networkx
 from django.core.exceptions import ValidationError as django_validation_error
 from django.db import transaction
 from django.utils import timezone
@@ -8,7 +9,14 @@ from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
 
 from signals.apps.questionnaires.django_signals import session_frozen
-from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
+from signals.apps.questionnaires.exceptions import (
+    QuestionGraphNotAcyclic,
+    QuestionGraphReferenceError,
+    QuestionGraphTooLarge,
+    SessionExpired,
+    SessionFrozen,
+    SessionInvalidated
+)
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
 from signals.apps.signals import workflow
@@ -144,3 +152,41 @@ class QuestionnairesService:
     @staticmethod
     def get_extra_properties_from_session(session):
         pass
+
+    def validate_questions(first_question):
+        """
+        Validate that question graph is not too large and that it is acyclic.
+        """
+        N_MAX_QUESTIONS = 50
+
+        # Build directed graph
+        to_process = set([str(first_question.ref)])
+        processed = set(['submit'])  # submit question has no follow-up questions
+        g = networkx.DiGraph()
+
+        while to_process:
+            current_ref = to_process.pop()
+            if current_ref in processed:
+                continue
+
+            try:
+                question = Question.objects.get_by_reference(current_ref)
+            except Question.DoesNotExist:
+                msg = f'Referenced question "{current_ref}" does not exist.'
+                raise QuestionGraphReferenceError(msg)
+
+            forward_references = set([r['ref'] for r in question.next_rules or []])
+            if not forward_references:
+                forward_references = set(['submit'])
+            g.add_edges_from([(current_ref, ref) for ref in forward_references])
+            to_process = to_process.union(forward_references - processed)
+
+            if len(processed) == N_MAX_QUESTIONS:
+                msg = f'Questions graph rooted at "{first_question.ref} has too many questions.'
+                raise QuestionGraphTooLarge(msg)
+            processed.add(current_ref)
+
+        # Check that our directed graph of questions does not have cycles:
+        if not networkx.is_directed_acyclic_graph(g):
+            msg = f'Questions graph rooted at "{first_question.ref}" not acyclic.'
+            raise QuestionGraphNotAcyclic(msg)

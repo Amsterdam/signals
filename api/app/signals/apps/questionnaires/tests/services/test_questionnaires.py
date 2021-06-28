@@ -6,7 +6,12 @@ from unittest import mock
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
-from signals.apps.questionnaires.exceptions import SessionInvalidated
+from signals.apps.questionnaires.exceptions import (
+    QuestionGraphNotAcyclic,
+    QuestionGraphReferenceError,
+    QuestionGraphTooLarge,
+    SessionInvalidated
+)
 from signals.apps.questionnaires.factories import (
     QuestionFactory,
     QuestionnaireFactory,
@@ -31,12 +36,12 @@ def _question_graph_with_decision():
     q2 = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
-        label='The yes question. Happy now?'
+        label='The yes question. Happy now?',
     )
     q3 = QuestionFactory.create(
         key='q_no',
         short_label='no',
-        label='The no question. Still unhappy?'
+        label='The no question. Still unhappy?',
     )
 
     return q1, q2, q3
@@ -80,12 +85,12 @@ def _question_graph_with_decision_with_default():
     q2 = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
-        label='The yes question. Happy now?'
+        label='The yes question. Happy now?',
     )
     q3 = QuestionFactory.create(
         key='q_no',
         short_label='no',
-        label='The no question. Still unhappy?'
+        label='The no question. Still unhappy?',
     )
 
     return q1, q2, q3
@@ -126,12 +131,12 @@ def _question_graph_with_decision_with_default_no_required_answers():
     q2 = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
-        label='The yes question. Happy now?'
+        label='The yes question. Happy now?',
     )
     q3 = QuestionFactory.create(
         key='q_no',
         short_label='no',
-        label='The no question. Still unhappy?'
+        label='The no question. Still unhappy?',
     )
 
     return q1, q2, q3
@@ -164,14 +169,63 @@ def _question_graph_one_question():
         short_label='Only question.',
         label='Only question.',
     )
-    return q1
+    return [q1]
+
+
+def _question_graph_missing_references():
+    q1 = QuestionFactory.create(
+        key='q_yesno',
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+        next_rules=[
+            {'ref': 'q_yes', 'payload': 'yes'},
+            {'ref': 'q_no', 'payload': 'no'},
+        ],
+    )
+    return [q1]
+
+
+def _question_graph_too_large():
+    N_QUESTIONS = 100
+    for i in range(N_QUESTIONS):
+        q = QuestionFactory.create(
+            key=f'key-{i}',
+            short_label=f'Short label {i}',
+            label=f'Long label {i}',
+        )
+        if i == 0:
+            first_question = q
+        if not i == N_QUESTIONS - 1:
+            q.next_rules = [{'ref': f'key-{i+1}'}]
+            q.save()
+    return [first_question]
 
 
 class TestQuestionGraphs(TestCase):
-    def test_all_question_graph(self):
+    # -- valid question graphs: --
+
+    def test_question_graph_with_decision(self):
         _question_graph_with_decision()
+
+    def test_question_graph_with_decision_null_keys(self):
         _question_graph_with_decision_null_keys()
+
+    def _question_graph_with_decision_with_default(self):
+        _question_graph_with_decision_with_default()
+
+    def _question_graph_with_decision_with_default_no_required_answers(self):
+        _question_graph_with_decision_with_default_no_required_answers()
+
+    def _question_graph_one_question(self):
+        _question_graph_one_question()
+
+    # -- pathological examples: --
+
+    def _question_graph_with_cycle(self):
         _question_graph_with_cycle()
+
+    def _question_graph_missing_references(self):
+        _question_graph_missing_references
 
 
 class TestQuestionnairesService(TestCase):
@@ -354,7 +408,7 @@ class TestQuestionnairesService(TestCase):
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.session_frozen')
     def test_submit(self, patched_signal):
-        q1 = _question_graph_one_question()
+        q1 = _question_graph_one_question()[0]
         questionnaire = QuestionnaireFactory.create(first_question=q1)
 
         question = questionnaire.first_question
@@ -417,3 +471,37 @@ class TestQuestionnairesService(TestCase):
 
         with self.assertRaises(SessionInvalidated):
             QuestionnairesService.get_session(session.uuid)
+
+    def _test_validate_question_graph(self, first_question):
+        QuestionnairesService.validate_questions(first_question)
+
+    def test_question_graph_with_decision_null_keys(self):
+        first_question = _question_graph_with_decision_null_keys()[0]
+        self._test_validate_question_graph(first_question)
+
+    def test_question_graph_with_decision_with_default(self):
+        first_question = _question_graph_with_decision_with_default()[0]
+        self._test_validate_question_graph(first_question)
+
+    def test_question_graph_with_decision_with_default_no_required_answers(self):
+        first_question = _question_graph_with_decision_with_default_no_required_answers()[0]
+        self._test_validate_question_graph(first_question)
+
+    def test_question_graph_with_cycle(self):
+        first_question = _question_graph_with_cycle()[0]
+        with self.assertRaises(QuestionGraphNotAcyclic):
+            self._test_validate_question_graph(first_question)
+
+    def test_question_graph_one_question(self):
+        first_question = _question_graph_one_question()[0]
+        self._test_validate_question_graph(first_question)
+
+    def test_question_graph_missing_references(self):
+        first_question = _question_graph_missing_references()[0]
+        with self.assertRaises(QuestionGraphReferenceError):
+            self._test_validate_question_graph(first_question)
+
+    def test_question_graph_too_large(self):
+        first_question = _question_graph_too_large()[0]
+        with self.assertRaises(QuestionGraphTooLarge):
+            self._test_validate_question_graph(first_question)

@@ -18,3 +18,15 @@ class WrongState(Exception):
 
 class SessionInvalidated(Exception):
     pass
+
+
+class QuestionGraphReferenceError(Exception):
+    pass
+
+
+class QuestionGraphNotAcyclic(Exception):
+    pass
+
+
+class QuestionGraphTooLarge(Exception):
+    pass
