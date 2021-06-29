@@ -7,9 +7,9 @@ import os
 
 class GetAccessToken:
     def getAccessToken(self, client_id, client_secret, acceptance=True):
-        environment = 'acc' if acceptance else 'b'
+        environment = '-acc' if acceptance else ''
         response = requests.post(
-            f'https://iam.amsterdam.nl/auth/realms/datapunt-ad-{environment}/protocol/openid-connect/token',
+            f'https://iam.amsterdam.nl/auth/realms/datapunt-ad{environment}/protocol/openid-connect/token',
             data={
                 'grant_type': 'client_credentials',
                 'client_id': client_id,
@@ -24,8 +24,8 @@ class GetAccessToken:
 
 if __name__ == "__main__":
     access_token_header = GetAccessToken().getAccessToken(
-        client_id=os.getenv('SIGNALS_USER', 'signals.admin@example.com'),
-        client_secret=os.getenv('SIGNALS_PASSWORD', 'insecure'),
+        client_id=os.getenv('CLIENT_ID', 'signals.admin@example.com'),
+        client_secret=os.getenv('CLIENT_SECRET', 'insecure')
     )
 
     if access_token_header:
