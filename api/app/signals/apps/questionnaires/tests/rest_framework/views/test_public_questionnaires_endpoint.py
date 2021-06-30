@@ -45,12 +45,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         self.assertJsonSchema(self.list_schema, response.json())
 
-    def test_questionnaire_detail_by_key(self):
-        response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
-        self.assertEqual(response.status_code, 200)
-
-        self.assertJsonSchema(self.detail_schema, response.json())
-
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
