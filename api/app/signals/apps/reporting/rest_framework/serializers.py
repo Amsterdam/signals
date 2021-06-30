@@ -13,9 +13,9 @@ class _SimpleCategorySerializer(serializers.Serializer):
         return obj.categorydepartment_set.filter(
             is_responsible=True
         ).values_list(
-            'department__name',
+            'department__code',
             flat=True
-        ).order_by('department__name')
+        ).order_by('department__code')
 
 
 class _SignalsPerCategoryCount(serializers.Serializer):

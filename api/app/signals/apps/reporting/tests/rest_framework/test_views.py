@@ -11,6 +11,7 @@ from rest_framework.test import APITestCase
 
 from signals.apps.signals.factories import (
     CategoryFactory,
+    DepartmentFactory,
     ParentCategoryFactory,
     ServiceLevelObjectiveFactory,
     SignalFactory,
@@ -52,12 +53,14 @@ class TestPrivateReportEndpoint(APITestCase):
             defaults={'first_name': 'John', 'last_name': 'Doe', 'is_staff': True}
         )
 
+        self.department = DepartmentFactory.create()
+
         parent_category = ParentCategoryFactory.create()
-        self.category_1 = CategoryFactory.create(parent=parent_category)
+        self.category_1 = CategoryFactory.create(parent=parent_category, departments=[self.department])
         ServiceLevelObjectiveFactory.create(category=self.category_1, n_days=2, use_calendar_days=True)
-        self.category_2 = CategoryFactory.create(parent=parent_category)
+        self.category_2 = CategoryFactory.create(parent=parent_category, departments=[self.department])
         ServiceLevelObjectiveFactory.create(category=self.category_2, n_days=3, use_calendar_days=False)
-        self.category_3 = CategoryFactory.create(parent=parent_category)
+        self.category_3 = CategoryFactory.create(parent=parent_category, departments=[self.department])
         ServiceLevelObjectiveFactory.create(category=self.category_3, n_days=4, use_calendar_days=False)
 
     def test_signals_open_per_category_no_signals(self):
@@ -93,12 +96,21 @@ class TestPrivateReportEndpoint(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data['total_signal_count'], 10)
         self.assertEqual(len(response_data['results']), 3)
+
         self.assertEqual(response_data['results'][0]['signal_count'], 5)
         self.assertEqual(response_data['results'][0]['category']['name'], self.category_1.name)
+        self.assertEqual(len(response_data['results'][0]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][0]['category']['departments'])
+
         self.assertEqual(response_data['results'][1]['signal_count'], 3)
         self.assertEqual(response_data['results'][1]['category']['name'], self.category_2.name)
+        self.assertEqual(len(response_data['results'][1]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][1]['category']['departments'])
+
         self.assertEqual(response_data['results'][2]['signal_count'], 2)
         self.assertEqual(response_data['results'][2]['category']['name'], self.category_3.name)
+        self.assertEqual(len(response_data['results'][2]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][2]['category']['departments'])
 
         self.client.logout()
 
@@ -133,6 +145,8 @@ class TestPrivateReportEndpoint(APITestCase):
         self.assertEqual(len(response_data['results']), 1)
         self.assertEqual(response_data['results'][0]['signal_count'], 5)
         self.assertEqual(response_data['results'][0]['category']['name'], self.category_1.name)
+        self.assertEqual(len(response_data['results'][0]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][0]['category']['departments'])
 
         self.client.logout()
 
@@ -178,8 +192,13 @@ class TestPrivateReportEndpoint(APITestCase):
         self.assertEqual(len(response_data['results']), 2)
         self.assertEqual(response_data['results'][0]['signal_count'], 5)
         self.assertEqual(response_data['results'][0]['category']['name'], self.category_1.name)
+        self.assertEqual(len(response_data['results'][0]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][0]['category']['departments'])
+
         self.assertEqual(response_data['results'][1]['signal_count'], 3)
         self.assertEqual(response_data['results'][1]['category']['name'], self.category_2.name)
+        self.assertEqual(len(response_data['results'][1]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][1]['category']['departments'])
 
         self.client.logout()
 
@@ -217,8 +236,13 @@ class TestPrivateReportEndpoint(APITestCase):
         self.assertEqual(len(response_data['results']), 2)
         self.assertEqual(response_data['results'][0]['signal_count'], 5)
         self.assertEqual(response_data['results'][0]['category']['name'], self.category_1.name)
+        self.assertEqual(len(response_data['results'][0]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][0]['category']['departments'])
+
         self.assertEqual(response_data['results'][1]['signal_count'], 3)
         self.assertEqual(response_data['results'][1]['category']['name'], self.category_2.name)
+        self.assertEqual(len(response_data['results'][1]['category']['departments']), 1)
+        self.assertIn(self.department.code, response_data['results'][1]['category']['departments'])
 
         self.client.logout()
 
