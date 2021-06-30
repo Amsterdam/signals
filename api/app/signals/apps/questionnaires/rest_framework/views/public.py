@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import uuid
-
 from datapunt_api.rest import DatapuntViewSet
+from django.http import Http404
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
@@ -51,8 +49,6 @@ class PublicQuestionViewSet(DatapuntViewSet):
     def get_object(self):
         """
         Copied from rest_framework/generics.py::GenericAPIView::get_object
-
-        Added additional check to see if the given key is a valid UUID
         """
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
 
@@ -63,23 +59,15 @@ class PublicQuestionViewSet(DatapuntViewSet):
                 (self.__class__.__name__, lookup_url_kwarg)
         )
 
-        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
-
         try:
-            # Check if the given string is a UUID
-            # if so use it to get the question based on it's UUID
-            lookup = uuid.UUID(self.kwargs[lookup_url_kwarg])
-            filter_kwargs = {'uuid': lookup}
-        except ValueError:
-            pass
-
-        queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset, **filter_kwargs)
+            question = Question.objects.get_by_reference(self.kwargs[lookup_url_kwarg])
+        except Question.DoesNotExist:
+            raise Http404
 
         # May raise a permission denied
-        self.check_object_permissions(self.request, obj)
+        self.check_object_permissions(self.request, question)
 
-        return obj
+        return question
 
     @action(detail=True, url_path=r'answer/?$', methods=['POST', ], serializer_class=PublicAnswerSerializer)
     def answer(self, request, *args, **kwargs):
