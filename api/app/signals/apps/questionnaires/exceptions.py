@@ -18,3 +18,7 @@ class WrongState(Exception):
 
 class SessionInvalidated(Exception):
     pass
+
+
+class WrongFlow(Exception):
+    pass

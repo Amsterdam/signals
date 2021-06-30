@@ -352,8 +352,8 @@ class TestQuestionnairesService(TestCase):
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
 
-    @mock.patch('signals.apps.questionnaires.services.questionnaires.session_frozen')
-    def test_submit(self, patched_signal):
+    @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
+    def test_submit(self, patched_callback):
         q1 = _question_graph_one_question()
         questionnaire = QuestionnaireFactory.create(first_question=q1)
 
@@ -365,7 +365,7 @@ class TestQuestionnairesService(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             answer = QuestionnairesService.create_answer(
                 answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
-        patched_signal.assert_not_called()
+        patched_callback.assert_not_called()
 
         self.assertIsInstance(answer, Answer)
         self.assertEqual(answer.question, question)
@@ -387,7 +387,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsInstance(answer2, Answer)
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
-        patched_signal.send_robust.assert_called_with(sender=QuestionnairesService, session=session)
+        patched_callback.assert_called_with(session)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_question)

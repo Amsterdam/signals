@@ -16,7 +16,7 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from signals.apps.feedback.utils import get_fe_application_location
-from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongState
+from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -58,14 +58,16 @@ class ReactionRequestService:
         return session
 
     @staticmethod
-    def handle_frozen_session(session):
-        # TODO: check that we have the correct flow
+    def handle_frozen_session_REACTION_REQUEST(session):
         if not session.frozen:
             msg = f'Session {session.uuid} is not frozen!'
             raise SessionNotFrozen(msg)
+        if session.questionnaire.flow != Questionnaire.REACTION_REQUEST:
+            msg = f'Questionnaire flow property for session {session.uuid} is not REACTION_REQUEST!'
+            raise WrongFlow(msg)
 
         signal = session._signal
-        question = session.questionnaire.first_question  # The only question for this flow.
+        question = session.questionnaire.first_question
         answer = Answer.objects.filter(session=session, question=question).order_by('-created_at').first()
 
         Signal.actions.update_status({'text': answer.payload, 'state': workflow.REACTIE_ONTVANGEN}, signal)

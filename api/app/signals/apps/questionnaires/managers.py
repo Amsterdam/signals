@@ -14,6 +14,10 @@ class QuestionManager(models.Manager):
         """
         from signals.apps.questionnaires.models import Question
 
+        if ref is None:
+            msg = 'Cannot get Question instance for ref=None'
+            raise Question.DoesNotExist(msg)
+
         if ref == 'submit':
             question, _ = Question.objects.get_or_create(
                 key='submit',

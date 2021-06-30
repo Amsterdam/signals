@@ -54,7 +54,8 @@ class AnswerFactory(DjangoModelFactory):
 
     @post_generation
     def set_question_and_answer(obj, create, extracted, **kwargs):
-        obj.payload = f'Answer to: {obj.question.short_label}.'
+        if not obj.payload:
+            obj.payload = f'Answer to: {obj.question.short_label}.'
 
     class Meta:
         model = Answer

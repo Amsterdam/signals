@@ -7,10 +7,10 @@ from django.utils import timezone
 from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
 
-from signals.apps.questionnaires.django_signals import session_frozen
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
 from signals.apps.signals import workflow
 
 
@@ -97,12 +97,17 @@ class QuestionnairesService:
         # freeze the session.
         with transaction.atomic():
             if question.key == 'submit':
-                transaction.on_commit(lambda: session_frozen.send_robust(sender=QuestionnairesService, session=session))
+                transaction.on_commit(lambda: QuestionnairesService.handle_frozen_session(session))
                 session.frozen = True
                 session.save()
             answer = Answer.objects.create(session=session, question=question, payload=answer_payload)
 
         return answer
+
+    @staticmethod
+    def handle_frozen_session(session):
+        if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
+            ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
 
     @staticmethod
     def get_next_question_ref(answer_payload, next_rules):
@@ -122,8 +127,11 @@ class QuestionnairesService:
     def get_next_question(answer, question):
         next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.next_rules)
 
-        if next_ref is None and question.key != 'submit':
-            next_question = Question.objects.get_by_reference(ref='submit')
+        if next_ref is None:
+            if question.key == 'submit':
+                next_question = None
+            else:
+                next_question = Question.objects.get_by_reference(ref='submit')
         else:
             try:
                 next_question = Question.objects.get_by_reference(ref=next_ref)
