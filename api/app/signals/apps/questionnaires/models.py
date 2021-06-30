@@ -106,8 +106,8 @@ class Session(models.Model):
     @property
     def is_expired(self):
         return (
-            (self.submit_before and self.submit_before <= timezone.now()) or
-            (self.started_at and self.started_at + self.duration <= timezone.now())
+            (self.submit_before and self.submit_before < timezone.now()) or
+            (self.started_at and self.started_at + self.duration < timezone.now())
         )
 
     @property

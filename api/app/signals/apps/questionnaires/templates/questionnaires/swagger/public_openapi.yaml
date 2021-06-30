@@ -119,7 +119,7 @@ paths:
 
       responses:
         '201':
-          description: The created answer also containing the next question
+          description: Returns the created answer, the response also contains the next question if available.
           content:
             application/json:
               schema:
@@ -129,15 +129,24 @@ paths:
         '404':
           description: Question not found
 
-  /public/qa/sessions:
+  /public/qa/sessions/{UUID}:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of the Session
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
     get:
       responses:
         '200':
-          description: List of Questionnaires
+          description: Detail of the selected Session
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublicSessions'
+                $ref: '#/components/schemas/PublicSession'
 
 components:
   schemas:
@@ -350,22 +359,6 @@ components:
           type: string
           pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
           example: '00000000-0000-0000-0000-000000000000'
-
-    PublicSessions:
-      description: JSON serialization of paginated list of Sessions
-      type: object
-      properties:
-        _links:
-          $ref: '#/components/schemas/HALPaginationLinks'
-        count:
-          type: integer
-          description: Total count of results for the request
-          example: 50
-        results:
-          type: array
-          description: A list of Sessions, paginated
-          items:
-            $ref: '#/components/schemas/PublicSession'
 
     PublicSession:
       type: object

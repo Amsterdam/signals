@@ -27,6 +27,8 @@ class QuestionFactory(DjangoModelFactory):
 class QuestionnaireFactory(DjangoModelFactory):
     first_question = SubFactory(QuestionFactory)
 
+    flow = Questionnaire.EXTRA_PROPERTIES
+
     name = LazyFunction(fake.sentence)
     description = LazyFunction(fake.paragraph)
     is_active = True

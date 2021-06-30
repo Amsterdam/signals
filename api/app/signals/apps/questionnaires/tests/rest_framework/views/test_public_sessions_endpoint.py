@@ -9,7 +9,10 @@ from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
+from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -48,10 +51,12 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_session_detail_gone(self):
         now = timezone.now()
         with freeze_time(now - timezone.timedelta(days=1)):
-            session = SessionFactory.create(questionnaire=self.questionnaire)
+            session = SessionFactory.create(questionnaire=self.questionnaire,
+                                            started_at=now - timezone.timedelta(hours=6))
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 410)
+        self.assertEqual(response.json()['detail'], 'Expired!')
 
         now = timezone.now()
         with freeze_time(now - timezone.timedelta(days=1)):
@@ -60,6 +65,44 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 410)
+        self.assertEqual(response.json()['detail'], 'Expired!')
+
+    def test_session_detail_frozen(self):
+        session = SessionFactory.create(questionnaire=self.questionnaire, frozen=True)
+
+        response = self.client.get(f'{self.base_endpoint}{session.uuid}')
+        self.assertEqual(response.status_code, 410)
+        self.assertEqual(response.json()['detail'], 'Already used!')
+
+    def test_session_detail_reaction_requested(self):
+        questionnaire = QuestionnaireFactory.create(flow=Questionnaire.REACTION_REQUEST)
+
+        session = SessionFactory.create(questionnaire=questionnaire)
+
+        response = self.client.get(f'{self.base_endpoint}{session.uuid}')
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json()['detail'], f'Session {session.uuid} is not associated with a Signal.')
+
+        signal = SignalFactory.create(status__state=GEMELD)
+        session._signal = signal
+        session.save()
+
+        response = self.client.get(f'{self.base_endpoint}{session.uuid}')
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json()['detail'], f'Session {session.uuid} is invalidated.')
+
+        status = StatusFactory(state=REACTIE_GEVRAAGD, _signal=signal)
+        signal.status = status
+        signal.save()
+
+        latest_session = SessionFactory.create(questionnaire=questionnaire, _signal=signal)
+
+        response = self.client.get(f'{self.base_endpoint}{session.uuid}')
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json()['detail'], f'Session {session.uuid} is invalidated.')
+
+        response = self.client.get(f'{self.base_endpoint}{latest_session.uuid}')
+        self.assertEqual(response.status_code, 200)
 
     def test_session_list_not_found(self):
         response = self.client.get(f'{self.base_endpoint}')

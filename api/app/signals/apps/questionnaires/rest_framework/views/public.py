@@ -3,7 +3,6 @@
 import uuid
 
 from datapunt_api.rest import DatapuntViewSet
-from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
@@ -126,10 +125,9 @@ class PublicSessionViewSet(HALViewSetRetrieve):
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
 
-        now = timezone.now()
-        if session.submit_before and session.submit_before < now:
-            raise Gone('Expired!')
-        elif session.created_at + session.duration < now:
+        if session.frozen:
+            raise Gone('Already used!')
+        elif session.is_expired:
             raise Gone('Expired!')
 
         return session
