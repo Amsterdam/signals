@@ -2,12 +2,12 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 
-from signals.apps.questionnaires.fields import (
+from signals.apps.questionnaires.models import Question, Questionnaire
+from signals.apps.questionnaires.rest_framework.fields import (
     QuestionHyperlinkedIdentityField,
     QuestionnairePrivateHyperlinkedIdentityField,
     QuestionnairePublicHyperlinkedIdentityField
 )
-from signals.apps.questionnaires.models import Question, Questionnaire
 
 
 class PublicQuestionSerializer(HALSerializer):
