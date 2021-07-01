@@ -102,6 +102,7 @@ services:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - FRONTEND_URL=http://localhost:3001
       - SWIFT_ENABLED=False
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
