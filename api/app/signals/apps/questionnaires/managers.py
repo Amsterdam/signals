@@ -12,14 +12,12 @@ class QuestionManager(models.Manager):
         """
         Retrieve question key or uuid (either can be the ref).
         """
-        from signals.apps.questionnaires.models import Question
-
         if ref is None:
             msg = 'Cannot get Question instance for ref=None'
-            raise Question.DoesNotExist(msg)
+            raise self.DoesNotExist(msg)
 
         if ref == 'submit':
-            question, _ = Question.objects.get_or_create(
+            question, _ = self.get_or_create(
                 key='submit',
                 field_type='submit',
                 label='Verstuur',
@@ -31,9 +29,9 @@ class QuestionManager(models.Manager):
         try:
             question_uuid = uuid.UUID(ref)
         except (ValueError, TypeError):
-            return Question.objects.get(key=ref)
+            return self.get(key=ref)
         else:
-            return Question.objects.get(uuid=question_uuid)
+            return self.get(uuid=question_uuid)
 
 
 class QuestionnaireManager(models.Manager):
