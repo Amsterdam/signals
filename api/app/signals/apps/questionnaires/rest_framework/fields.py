@@ -40,13 +40,13 @@ class QuestionnairePublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, 
     lookup_field = 'uuid'
 
     def to_representation(self, value):
-        return OrderedDict([('self', dict(href=self.get_url(value, 'public-questionnaire-detail'))), ])
+        return OrderedDict([('self', dict(href=self._get_url(value, 'public-questionnaire-detail'))), ])
 
 
 class QuestionnairePrivateHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         return OrderedDict([
-            ('self', dict(href=self.get_url(value, 'private-questionnaire-detail'))),
+            ('self', dict(href=self._get_url(value, 'private-questionnaire-detail'))),
             ('sia:public-self', dict(href=self._reverse('public-questionnaire-detail', kwargs={'uuid': value.uuid}))),
         ])
 
@@ -56,7 +56,7 @@ class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers
 
     def to_representation(self, value):
         return OrderedDict([
-            ('self', dict(href=self.get_url(value, 'public-question-detail'))),
+            ('self', dict(href=self._get_url(value, 'public-question-detail'))),
             ('sia:uuid-self', dict(href=self._reverse('public-question-detail', kwargs={'key': value.uuid}))),
             ('sia:post-answer', dict(href=self._reverse('public-question-answer',
                                                         kwargs={'key': value.key or value.uuid}))),
@@ -67,8 +67,17 @@ class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serial
     lookup_field = 'uuid'
 
     def to_representation(self, value):
-        return OrderedDict([
-            ('self', dict(href=self.get_url(value, 'public-session-detail'))),
+        result = OrderedDict([
+            ('self', dict(href=self._get_url(value, 'public-session-detail'))),
             ('sia:questionnaire', dict(href=self._reverse('public-questionnaire-detail',
                                                           kwargs={'uuid': value.questionnaire.uuid})))
         ])
+
+        if value._signal:
+            result.update({
+                'sia:public-signal': dict(
+                    href=self.get_url(value._signal, 'public-signals-detail', self.context.get('request'), None)
+                )
+            })
+
+        return result

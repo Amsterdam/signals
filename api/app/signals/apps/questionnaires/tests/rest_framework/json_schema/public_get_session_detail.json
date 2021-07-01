@@ -26,6 +26,17 @@
 					"required": [
 						"href"
 					]
+				},
+				"sia:public-signal": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
 				}
 			},
 			"required": [

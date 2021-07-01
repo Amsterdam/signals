@@ -3,7 +3,7 @@
 
 
 class HyperlinkedRelatedFieldMixin:
-    def get_url(self, obj, view_name, *args, **kwargs):
+    def _get_url(self, obj, view_name, *args, **kwargs):
         request = self.context.get('request')
         namespace = request.resolver_match.namespace if request else None
         if namespace:

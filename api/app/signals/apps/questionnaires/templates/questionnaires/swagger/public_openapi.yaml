@@ -384,6 +384,13 @@ components:
                       description: URI of the questionnaire that the Session is linked to
                       type: string
                       format: uri
+                sia:public-signal:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of the signal if available
+                      type: string
+                      format: uri
         _display:
           description: Display name of the Session
           type: string

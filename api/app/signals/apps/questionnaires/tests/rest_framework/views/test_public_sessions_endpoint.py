@@ -8,6 +8,8 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
+from signals.apps.api.routers import SignalsRouterVersion1
+from signals.apps.api.views import PublicSignalViewSet
 from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
 from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
@@ -15,6 +17,10 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
 
 THIS_DIR = os.path.dirname(__file__)
+
+
+extra_router = SignalsRouterVersion1()
+extra_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
 
 
 urlpatterns = [
@@ -27,7 +33,7 @@ class NameSpace:
 
 
 test_urlconf = NameSpace()
-test_urlconf.urlpatterns = urlpatterns
+test_urlconf.urlpatterns = urlpatterns + extra_router.urls
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
