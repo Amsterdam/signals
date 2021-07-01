@@ -43,12 +43,12 @@ logger = logging.getLogger(__name__)
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
+    throttle_scope = 'public_signal'
     serializer_class = PublicSignalSerializerDetail
 
     def list(self, *args, **kwargs):
         raise Http404
 
-    @throttle_classes([NoUserRateThrottle])
     def create(self, request):
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
