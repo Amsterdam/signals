@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: Questionnaires private endpoints
   description: >-
-    *** THIS APP IS STILL IN DEVELOPMENT ***
+    *** THIS APP IS STILL IN DEVELOPMENT, API MAY STILL CHANGE ***
 
 
     A questionnaires app for the Signals project.
