@@ -7,14 +7,13 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from signals.apps.questionnaires.app_settings import SESSION_DURATION
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 from signals.apps.questionnaires.managers import (
     QuestionManager,
     QuestionnaireManager,
     SessionManager
 )
-
-SESSION_DURATION = 2 * 60 * 60  # Two hours default
 
 
 class Question(models.Model):

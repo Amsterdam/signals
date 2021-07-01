@@ -16,13 +16,14 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from signals.apps.feedback.utils import get_fe_application_location
+from signals.apps.questionnaires.app_settings import (
+    NO_REACTION_RECEIVED_TEXT,
+    REACTION_REQUEST_DAYS_OPEN
+)
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
-
-REACTION_REQUEST_DAYS_OPEN = 5
-NO_REACTION_RECEIVED_TEXT = """Geen reactie ontvangen."""
 
 
 class ReactionRequestService:
