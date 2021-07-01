@@ -36,9 +36,6 @@ Celery
 # Sentry
 raven
 
-# DataDog Tracing
-ddtrace
-
 # PDF
 lxml
 WeasyPrint
