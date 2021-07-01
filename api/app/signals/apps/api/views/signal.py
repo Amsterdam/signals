@@ -7,7 +7,7 @@ from django.db import connection
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import action, throttle_classes
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
@@ -37,18 +37,18 @@ from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
-from signals.throttling import NoUserRateThrottle
+from signals.throttling import PostOnlyNoUserRateThrottle
 
 logger = logging.getLogger(__name__)
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
+    throttle_classes = (PostOnlyNoUserRateThrottle,)
     serializer_class = PublicSignalSerializerDetail
 
     def list(self, *args, **kwargs):
         raise Http404
 
-    @throttle_classes([NoUserRateThrottle])
     def create(self, request):
         serializer = PublicSignalCreateSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)

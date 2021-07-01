@@ -428,11 +428,10 @@ REST_FRAMEWORK = dict(
     COERCE_DECIMAL_TO_STRING=True,
     DEFAULT_THROTTLE_CLASSES=(
         # Currently no default throttle class
-        # 'signals.throttling.NoUserRateThrottle',
     ),
     DEFAULT_THROTTLE_RATES={
         # 'nouser': '5/hour',
-        # 'nouser': '60/hour'
+        'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour')
     },
     DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
     DEFAULT_VERSION='v1',
