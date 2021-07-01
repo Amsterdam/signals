@@ -21,3 +21,4 @@ FEATURE_FLAGS['API_SEARCH_ENABLED'] = False  # noqa F405
 FEATURE_FLAGS['SEARCH_BUILD_INDEX'] = False  # noqa F405
 
 FRONTEND_URL = 'http://dummy_link'
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/m')} # noqa

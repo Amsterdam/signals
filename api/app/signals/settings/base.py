@@ -428,7 +428,6 @@ REST_FRAMEWORK = dict(
     COERCE_DECIMAL_TO_STRING=True,
     DEFAULT_THROTTLE_CLASSES=(
         # Currently no default throttle class
-        # 'signals.throttling.NoUserRateThrottle',
     ),
     DEFAULT_THROTTLE_RATES={
         # 'nouser': '5/hour',

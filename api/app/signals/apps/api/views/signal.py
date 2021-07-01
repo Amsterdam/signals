@@ -37,12 +37,13 @@ from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
+from signals.throttling import PostOnlyNoUserRateThrottle
 
 logger = logging.getLogger(__name__)
 
 
 class PublicSignalViewSet(PublicSignalGenericViewSet):
-    throttle_scope = 'public_signal'
+    throttle_classes = (PostOnlyNoUserRateThrottle,)
     serializer_class = PublicSignalSerializerDetail
 
     def list(self, *args, **kwargs):
