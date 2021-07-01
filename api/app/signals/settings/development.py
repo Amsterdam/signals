@@ -61,5 +61,3 @@ LOGGING['loggers'].update({  # noqa F405
         'handlers': ['console', ],
     }
 })
-
-REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour')} # noqa
