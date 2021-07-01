@@ -9,8 +9,8 @@ from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
 from signals.apps.questionnaires.factories import AnswerFactory, QuestionFactory, SessionFactory
-from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.questionnaires.services import ReactionRequestService
+from signals.apps.questionnaires.models import Question, Questionnaire
+from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
 from signals.apps.questionnaires.services.reaction_request import REACTION_REQUEST_DAYS_OPEN
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
@@ -64,6 +64,34 @@ class TestReactionRequestService(TestCase):
         answer = AnswerFactory(session=session, payload='Het antwoord!')
 
         ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+
+        self.signal_reaction_requested.refresh_from_db()
+        self.assertEqual(self.signal_reaction_requested.status.state, workflow.REACTIE_ONTVANGEN)
+        self.assertEqual(self.signal_reaction_requested.status.text, answer.payload)
+
+    def test_handle_frozen_session_on_commit_triggered(self):
+        question = QuestionFactory.create(
+            field_type='plain_text', label='Is het goed weer?', short_label='Goed weer?')
+        session = SessionFactory.create(
+            questionnaire__flow=Questionnaire.REACTION_REQUEST,
+            questionnaire__first_question=question,
+            frozen=False,
+            _signal=self.signal_reaction_requested
+        )
+        answer = AnswerFactory(session=session, payload='Het antwoord!')
+
+        submit_question = Question.objects.get_by_reference('submit')
+
+        with self.captureOnCommitCallbacks(execute=False) as callbacks:
+            QuestionnairesService.create_answer(
+                answer_payload=None,
+                question=submit_question,
+                questionnaire=session.questionnaire,
+                session=session
+            )
+
+        self.assertEqual(len(callbacks), 1)
+        callbacks[0]()
 
         self.signal_reaction_requested.refresh_from_db()
         self.assertEqual(self.signal_reaction_requested.status.state, workflow.REACTIE_ONTVANGEN)
