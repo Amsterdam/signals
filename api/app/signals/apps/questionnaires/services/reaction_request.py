@@ -30,7 +30,7 @@ class ReactionRequestService:
     @staticmethod
     def get_reaction_url(session):
         frontend_base_url = get_fe_application_location()
-        return f'{frontend_base_url}/reactie_gevraagd/{session.uuid}'
+        return f'{frontend_base_url}/incident/reactie/{session.uuid}'
 
     @staticmethod
     def create_session(signal):
