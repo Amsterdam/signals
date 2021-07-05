@@ -1,0 +1,172 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"next": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"previous": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self",
+				"next",
+				"previous"
+			]
+		},
+		"count": {
+			"type": "integer"
+		},
+		"results": {
+			"type": "array",
+			"items": [
+				{
+					"type": "object",
+					"properties": {
+						"_links": {
+							"type": "object",
+							"properties": {
+								"self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:uuid-self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:post-answer": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								}
+							},
+							"required": [
+								"self",
+								"sia:uuid-self"
+							]
+						},
+						"_display": {
+							"type": "string"
+						},
+						"id": {
+							"type": "integer"
+						},
+						"uuid": {
+							"type": "string"
+						},
+						"label": {
+							"type": "string"
+						},
+						"short_label": {
+							"type": "string"
+						},
+						"field_type": {
+							"type": "string"
+						},
+						"next_rules": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array"
+								},
+								{
+									"type": "object"
+								}
+							]
+						},
+						"required": {
+							"type": "boolean"
+						},
+						"created_at": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"_links",
+						"_display",
+						"id",
+						"uuid",
+						"label",
+						"short_label",
+						"field_type",
+						"next_rules",
+						"required",
+						"created_at"
+					]
+				}
+			]
+		}
+	},
+	"required": [
+		"_links",
+		"count",
+		"results"
+	]
+}

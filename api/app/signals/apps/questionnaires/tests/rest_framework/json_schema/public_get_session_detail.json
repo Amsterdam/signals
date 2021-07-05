@@ -1,0 +1,85 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"sia:questionnaire": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				},
+				"sia:public-signal": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self",
+				"sia:questionnaire"
+			]
+		},
+		"_display": {
+			"type": "string"
+		},
+		"uuid": {
+			"type": "string"
+		},
+		"submit_before": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"duration": {
+			"type": "string"
+		},
+		"started_at": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		}
+	},
+	"required": [
+		"_links",
+		"_display",
+		"uuid",
+		"submit_before",
+		"duration",
+		"started_at"
+	]
+}

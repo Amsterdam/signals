@@ -1,0 +1,140 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"_links": {
+			"type": "object",
+			"properties": {
+				"self": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
+				}
+			},
+			"required": [
+				"self"
+			]
+		},
+		"_display": {
+			"type": "string"
+		},
+		"uuid": {
+			"type": "string"
+		},
+		"name": {
+			"type": "string"
+		},
+		"description": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"is_active": {
+			"type": "boolean"
+		},
+		"first_question": {
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"_links": {
+							"type": "object",
+							"properties": {
+								"self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:uuid-self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								}
+							},
+							"required": [
+								"self",
+								"sia:uuid-self"
+							]
+						},
+						"_display": {
+							"type": "string"
+						},
+						"uuid": {
+							"type": "string"
+						},
+						"label": {
+							"type": "string"
+						},
+						"short_label": {
+							"type": "string"
+						},
+						"field_type": {
+							"type": "string"
+						},
+						"next_rules": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array"
+								},
+								{
+									"type": "object"
+								}
+							]
+						},
+						"required": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"_links",
+						"_display",
+						"uuid",
+						"label",
+						"short_label",
+						"field_type",
+						"next_rules",
+						"required"
+					]
+				},
+				{
+					"type": "null"
+				}
+			]
+		}
+	},
+	"required": [
+		"_links",
+		"_display",
+		"uuid",
+		"name",
+		"description",
+		"is_active",
+		"first_question"
+	]
+}
