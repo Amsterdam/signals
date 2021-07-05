@@ -29,7 +29,7 @@ class TestReactionRequestService(TestCase):
     def test_get_reaction_url(self):
         session = SessionFactory.create()
         reaction_url = ReactionRequestService.get_reaction_url(session)
-        self.assertEqual(reaction_url, f'http://dummy_link/reactie_gevraagd/{session.uuid}')
+        self.assertEqual(reaction_url, f'http://dummy_link/incident/reactie/{session.uuid}')
 
     def test_create_session(self):
         session = ReactionRequestService.create_session(self.signal_reaction_requested)
