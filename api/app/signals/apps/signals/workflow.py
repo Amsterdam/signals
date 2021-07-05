@@ -37,12 +37,12 @@ STATUS_CHOICES_API = (
     (BEHANDELING, 'In behandeling'),
     (ON_HOLD, 'On hold'),
     (INGEPLAND, 'Ingepland'),
-    (TE_VERZENDEN, 'Te verzenden naar extern systeem'),
+    (TE_VERZENDEN, 'Extern: te verzenden'),
     (AFGEHANDELD, 'Afgehandeld'),
     (GEANNULEERD, 'Geannuleerd'),
     (HEROPEND, 'Heropend'),
     (GESPLITST, 'Gesplitst'),
-    (VERZOEK_TOT_AFHANDELING, 'Verzoek tot afhandeling'),
+    (VERZOEK_TOT_AFHANDELING, 'Extern: verzoek tot afhandeling'),
     (REACTIE_GEVRAAGD, 'Reactie gevraagd'),
     (REACTIE_ONTVANGEN, 'Reactie ontvangen'),
 )
@@ -50,9 +50,9 @@ STATUS_CHOICES_API = (
 # Choices used by the application. These choices can be set from within the application, not via the
 # API/Serializer layer.
 STATUS_CHOICES_APP = (
-    (VERZONDEN, 'Verzonden naar extern systeem'),
-    (VERZENDEN_MISLUKT, 'Verzending naar extern systeem mislukt'),
-    (AFGEHANDELD_EXTERN, 'Melding is afgehandeld in extern systeem'),
+    (VERZONDEN, 'Extern: verzonden'),
+    (VERZENDEN_MISLUKT, 'Extern: mislukt'),
+    (AFGEHANDELD_EXTERN, 'Extern: afgehandeld'),
     (VERZOEK_TOT_HEROPENEN, 'Verzoek tot heropenen'),
 )
 
