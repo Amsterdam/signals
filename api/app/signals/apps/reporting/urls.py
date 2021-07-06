@@ -2,10 +2,10 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.urls import include, path
 
-from signals.apps.api.routers import SignalsRouterVersion1
+from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.reporting.rest_framework.views import PrivateReportViewSet
 
-router = SignalsRouterVersion1()
+router = SignalsRouter()
 
 router.register(r'private/reports', PrivateReportViewSet, basename='private-reports')
 

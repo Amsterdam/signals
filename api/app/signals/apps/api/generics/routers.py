@@ -1,35 +1,38 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
+from collections import OrderedDict
+
 from django.urls import reverse
-from rest_framework import routers
+from rest_framework.response import Response
+from rest_framework.routers import APIRootView
+from rest_framework_extensions.routers import ExtendedDefaultRouter
 
 from signals import API_VERSIONS, VERSION
 from signals.utils.version import get_version
 
 
-class BaseSignalsAPIRootView(routers.APIRootView):
+class BaseSignalsAPIRootView(APIRootView):
     def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-
-        # Appending the index view with API version 1 information. For now we need to mix this with
-        # the API version 0 index view.
-        response.data['v1'] = {
-            '_links': {
-                'self': {
-                    'href': request._request.build_absolute_uri(reverse('v1:api-root')),
-                }
+        data = OrderedDict({
+            'v1': {
+                '_links': {
+                    'self': {
+                        'href': request._request.build_absolute_uri(reverse('api-root')),
+                    }
+                },
+                'version': get_version(API_VERSIONS['v1']),
+                'status': 'in production',
             },
-            'version': get_version(API_VERSIONS['v1']),
-            'status': 'in production',
-        }
-        response.data.update({
             'version': get_version(VERSION),
         })
-        return response
+
+        return Response(data)
 
     def get_view_name(self):
         return 'Signals API'
 
 
-class BaseSignalsRouter(routers.DefaultRouter):
-    APIRootView = BaseSignalsAPIRootView
+class SignalsRouter(ExtendedDefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'

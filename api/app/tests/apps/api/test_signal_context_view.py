@@ -25,7 +25,7 @@ class NameSpace:
 
 
 urlpatterns = [
-    path('', include(([
+    path('', include([
         re_path(r'v1/relations/?$',
                 NamespaceView.as_view(),
                 name='signal-namespace'),
@@ -38,7 +38,7 @@ urlpatterns = [
         re_path(r'v1/private/signals/(?P<pk>\d+)/context/near/geography/?$',
                 SignalContextViewSet.as_view({'get': 'near'}),
                 name='private-signal-context-near-geography'),
-    ], 'signals'), namespace='v1')),
+    ])),
 ]
 
 test_urlconf = NameSpace()

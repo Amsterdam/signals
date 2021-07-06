@@ -5,7 +5,7 @@ import os
 from django.urls import include, path
 from django.views.generic.base import TemplateView
 
-from signals.apps.api.routers import SignalsRouterVersion1
+from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.questionnaires.rest_framework.views import (
     PrivateQuestionnaireViewSet,
     PrivateQuestionViewSet,
@@ -14,7 +14,7 @@ from signals.apps.questionnaires.rest_framework.views import (
     PublicSessionViewSet
 )
 
-router = SignalsRouterVersion1()
+router = SignalsRouter()
 
 router.register(r'public/qa/questions', PublicQuestionViewSet, basename='public-question')
 router.register(r'private/qa/questions', PrivateQuestionViewSet, basename='private-question')

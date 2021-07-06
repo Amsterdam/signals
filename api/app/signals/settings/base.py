@@ -2,7 +2,6 @@
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
 import os
 
-from signals import API_VERSIONS
 from signals.settings.settings_databases import (
     OVERRIDE_HOST_ENV_VAR,
     OVERRIDE_PORT_ENV_VAR,
@@ -406,37 +405,16 @@ LOGGING = {
 # Django REST framework settings
 REST_FRAMEWORK = dict(
     PAGE_SIZE=100,
-    MAX_PAGINATE_BY=100,
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
-    DEFAULT_AUTHENTICATION_CLASSES=(
-        # 'signals.auth.backend.JWTAuthBackend',
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-    ),
-    DEFAULT_PAGINATION_CLASS=(
-        'datapunt_api.pagination.HALPagination',
-    ),
-    DEFAULT_RENDERER_CLASSES=(
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
+    DEFAULT_AUTHENTICATION_CLASSES=[],
+    DEFAULT_PAGINATION_CLASS='datapunt_api.pagination.HALPagination',
     DEFAULT_FILTER_BACKENDS=(
-        # 'rest_framework.filters.SearchFilter',
-        # 'rest_framework.filters.OrderingFilter',
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
-    COERCE_DECIMAL_TO_STRING=True,
-    DEFAULT_THROTTLE_CLASSES=(
-        # Currently no default throttle class
-    ),
     DEFAULT_THROTTLE_RATES={
-        # 'nouser': '5/hour',
         'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour')
     },
-    DEFAULT_VERSIONING_CLASS='rest_framework.versioning.NamespaceVersioning',
-    DEFAULT_VERSION='v1',
-    ALLOWED_VERSIONS=API_VERSIONS.keys(),
 )
 
 # Swagger settings

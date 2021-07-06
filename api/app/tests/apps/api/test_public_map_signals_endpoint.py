@@ -4,7 +4,7 @@ import os
 
 from django.test import override_settings
 
-from signals.apps.api.urls_v1 import SignalsRouterVersion1
+from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.views import PublicSignalMapViewSet
 from signals.apps.signals.factories import SignalFactoryValidLocation
 from tests.test import SignalsBaseApiTestCase
@@ -18,7 +18,7 @@ class NameSpace():
 
 # we need to simulate a new route or unit test, urls.py is evaluated once, and cannot be unit tested with settings
 # we set a custom route for the unit test only
-extra_router = SignalsRouterVersion1()
+extra_router = SignalsRouter()
 extra_router.register(r'public/map-signals', PublicSignalMapViewSet, basename='public-list-signals')
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = extra_router.urls

@@ -8,7 +8,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
-from signals.apps.api.routers import SignalsRouterVersion1
+from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.views import PublicSignalViewSet
 from signals.apps.questionnaires.factories import QuestionnaireFactory, SessionFactory
 from signals.apps.questionnaires.models import Questionnaire
@@ -19,12 +19,12 @@ from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
 THIS_DIR = os.path.dirname(__file__)
 
 
-extra_router = SignalsRouterVersion1()
+extra_router = SignalsRouter()
 extra_router.register(r'public/signals', PublicSignalViewSet, basename='public-signals')
 
 
 urlpatterns = [
-    path('', include(('signals.apps.questionnaires.urls', 'signals.apps.questionnaires'), namespace='v1')),
+    path('', include('signals.apps.questionnaires.urls')),
 ]
 
 
