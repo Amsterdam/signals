@@ -23,6 +23,6 @@ class AutoCreateChildrenService:
 
         for action in AutoCreateChildrenService.actions:
             if action(signal):
-                log.info(f'Action {action} runned for Signal #{signal.pk}')
+                log.info(f'Action {action} ran for Signal #{signal.pk}')
         else:
             log.info(f'No action found to run for Singal #{signal.pk}')

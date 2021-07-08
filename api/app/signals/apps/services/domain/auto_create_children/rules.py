@@ -2,14 +2,11 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.conf import settings
 
-from signals.apps.services.domain.auto_create_children.mixins import (
-    ContainerExtraPropertiesMixin,
-    EikenprocessierupsExtraPropertiesMixin
-)
+from signals.apps.services.domain.auto_create_children.mixins import ExtraPropertiesMixin
 from signals.apps.signals.workflow import GEMELD
 
 
-class ContainerRule(ContainerExtraPropertiesMixin):
+class ContainerRule(ExtraPropertiesMixin):
     trigger_category_slugs = (
         'container-is-vol',
         'container-is-kapot',
@@ -45,7 +42,7 @@ class ContainerRule(ContainerExtraPropertiesMixin):
         if category_slug not in self.trigger_category_slugs:
             return False
 
-        selected_containers = len(self.get_extra_properties(signal))
+        selected_containers = len(self.get_extra_properties(signal, 'extra_container'))
         if selected_containers < 2:
             return False
 
@@ -55,7 +52,7 @@ class ContainerRule(ContainerExtraPropertiesMixin):
         return True
 
 
-class EikenprocessierupsRule(EikenprocessierupsExtraPropertiesMixin):
+class EikenprocessierupsRule(ExtraPropertiesMixin):
     trigger_category_slugs = (
         'eikenprocessierups',
     )
@@ -79,7 +76,7 @@ class EikenprocessierupsRule(EikenprocessierupsExtraPropertiesMixin):
         if category_slug not in self.trigger_category_slugs:
             return False
 
-        selected_containers = len(self.get_extra_properties(signal))
+        selected_containers = len(self.get_extra_properties(signal, 'extra_eikenprocessierups'))
         if selected_containers < 2:
             return False
 

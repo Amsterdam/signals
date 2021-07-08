@@ -3,10 +3,7 @@
 import requests
 from django.contrib.gis.geos import Point
 
-from signals.apps.services.domain.auto_create_children.mixins import (
-    ContainerExtraPropertiesMixin,
-    EikenprocessierupsExtraPropertiesMixin
-)
+from signals.apps.services.domain.auto_create_children.mixins import ExtraPropertiesMixin
 from signals.apps.services.domain.auto_create_children.rules import (
     ContainerRule,
     EikenprocessierupsRule
@@ -15,7 +12,7 @@ from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.workflow import GEMELD
 
 
-class CreateChildrenContainerAction(ContainerExtraPropertiesMixin):
+class CreateChildrenContainerAction(ExtraPropertiesMixin):
     rule = ContainerRule()
 
     type_2_category_slug = {
@@ -53,7 +50,7 @@ class CreateChildrenContainerAction(ContainerExtraPropertiesMixin):
         return default
 
     def run(self, signal):
-        for container_data in self.get_extra_properties(signal):
+        for container_data in self.get_extra_properties(signal, 'extra_container'):
             category = self._translate_type_2_category(container_data['type'])
             geometry = self._get_container_location(container_data['id'], signal.location.geometrie)
 
@@ -102,11 +99,11 @@ class CreateChildrenContainerAction(ContainerExtraPropertiesMixin):
         return True
 
 
-class CreateChildrenEikenprocessierupsAction(EikenprocessierupsExtraPropertiesMixin):
+class CreateChildrenEikenprocessierupsAction(ExtraPropertiesMixin):
     rule = EikenprocessierupsRule()
 
     def run(self, signal):
-        for eikenprocessierups_data in self.get_extra_properties(signal):
+        for eikenprocessierups_data in self.get_extra_properties(signal, 'extra_eikenprocessierups'):
             signal_data = {
                 'text': signal.text,
                 'text_extra': signal.text_extra,
