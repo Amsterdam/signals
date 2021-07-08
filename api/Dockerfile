@@ -1,8 +1,22 @@
-FROM amsterdam/python:3.9.0-slim-buster
+FROM amsterdam/python:3.9.0-slim-buster-minimal
 MAINTAINER datapunt@amsterdam.nl
 
 # libgdk-pixbuf is needed to generate PDF files with rendered JPEG images.
-RUN apt-get update && apt-get install -y libgdk-pixbuf2.0-0 libmagic1 libcairo2 libpango1.0-0
+# RUN apt-get update && apt-get install -y libgdk-pixbuf2.0-0 libmagic1 libcairo2 libpango1.0-0
+
+RUN apt-get update \
+    && apt-get autoremove -y \
+    && apt-get install --no-install-recommends -y \
+        netcat \
+        postgresql-client-11 \
+        libgeos-3.7 \
+        libgdal20 \
+        proj-bin \
+        \
+        libgdk-pixbuf2.0-0 \
+        libmagic1 \
+        libcairo2 \
+        libpango1.0-0
 
 ENV PYTHONUNBUFFERED 1
 
