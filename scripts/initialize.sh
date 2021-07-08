@@ -44,7 +44,6 @@
 # fi
 
 uwsgi --master \
-  --plugin http,python3 \
   --http=0.0.0.0:8000 \
   --callable=application \
   --module=signals.wsgi:application \
