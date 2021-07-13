@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
-from signals.apps.services.domain.auto_create_children import AutoCreateChildrenService
+from signals.apps.services.domain.auto_create_children.service import AutoCreateChildrenService
 from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.models import Reporter
 from signals.apps.signals.models.signal import Signal
