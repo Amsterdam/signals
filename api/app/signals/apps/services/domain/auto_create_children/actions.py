@@ -50,7 +50,7 @@ class CreateChildrenContainerAction(ExtraPropertiesMixin):
         return default
 
     def run(self, signal):
-        for container_data in self.get_extra_properties(signal, 'extra_container'):
+        for container_data in self.get_assets(signal, 'extra_container'):
             category = self._translate_type_2_category(container_data['type'])
             geometry = self._get_container_location(container_data['id'], signal.location.geometrie)
 
@@ -103,7 +103,7 @@ class CreateChildrenEikenprocessierupsAction(ExtraPropertiesMixin):
     rule = EikenprocessierupsRule()
 
     def run(self, signal):
-        for eikenprocessierups_data in self.get_extra_properties(signal, 'extra_eikenprocessierups'):
+        for eikenprocessierups_data in self.get_assets(signal, 'extra_eikenprocessierups'):
             signal_data = {
                 'text': signal.text,
                 'text_extra': signal.text_extra,

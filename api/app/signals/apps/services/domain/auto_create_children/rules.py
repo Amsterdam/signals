@@ -42,7 +42,7 @@ class ContainerRule(ExtraPropertiesMixin):
         if category_slug not in self.trigger_category_slugs:
             return False
 
-        selected_containers = len(self.get_extra_properties(signal, 'extra_container'))
+        selected_containers = len(self.get_assets(signal, 'extra_container'))
         if selected_containers < 2:
             return False
 
@@ -76,7 +76,7 @@ class EikenprocessierupsRule(ExtraPropertiesMixin):
         if category_slug not in self.trigger_category_slugs:
             return False
 
-        selected_containers = len(self.get_extra_properties(signal, 'extra_eikenprocessierups'))
+        selected_containers = len(self.get_assets(signal, 'extra_eikenprocessierups'))
         if selected_containers < 2:
             return False
 
