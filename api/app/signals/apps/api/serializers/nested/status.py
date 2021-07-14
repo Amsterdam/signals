@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from signals.apps.api.app_settings import (
     SIGNAL_API_STATE_OPEN,
@@ -44,6 +44,12 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                 raise PermissionDenied({
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })
+
+        if attrs['state'] == workflow.REACTIE_GEVRAAGD:  # SIG-3887
+            signal = self.context['view'].get_object()
+            if not signal.reporter.email:
+                msg = 'No email address known for signal with ID={{ signal.id }}.'
+                raise ValidationError({'state': msg})
 
         return super().validate(attrs=attrs)
 
