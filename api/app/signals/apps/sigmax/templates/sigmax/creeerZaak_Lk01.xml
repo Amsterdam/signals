@@ -43,7 +43,7 @@
                 <ZKN:heeftBetrekkingOp StUF:entiteittype="ZAKOBJ" StUF:verwerkingssoort="T">
                     <ZKN:gerelateerde>
                         <ZKN:adres StUF:entiteittype="AOA" StUF:verwerkingssoort="T">
-                            <BG:wpl.woonplaatsNaam>Amsterdam</BG:wpl.woonplaatsNaam>
+                            <BG:wpl.woonplaatsNaam>{{ signal.location.address.woonplaats }}</BG:wpl.woonplaatsNaam>
                             <BG:gor.openbareRuimteNaam>{{ signal.location.address.openbare_ruimte }}</BG:gor.openbareRuimteNaam>
                             <BG:huisnummer>{{ signal.location.address.huisnummer }}</BG:huisnummer>
                             <BG:huisletter StUF:noValue="geenWaarde" xsi:nil="true"/>
