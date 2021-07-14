@@ -1,5 +1,5 @@
-FROM amsterdam/python:3.9.0-slim-buster
-MAINTAINER datapunt@amsterdam.nl
+FROM amsterdam/python:3.9.6-slim-buster
+LABEL org.opencontainers.image.authors="datapunt@amsterdam.nl"
 
 ENV PYTHONUNBUFFERED 1
 EXPOSE 8000
