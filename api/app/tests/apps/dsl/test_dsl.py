@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import time
+from datetime import datetime
 
 from django.contrib.gis import geos
 from django.test import TestCase
+from freezegun import freeze_time
 
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 
@@ -22,6 +24,7 @@ class DslTest(TestCase):
             'maincat': 'dieren',
             'subcat': 'subcat',
             'time': time.strptime("16:00:00", "%H:%M:%S"),
+            'day': datetime.now().strftime("%A"),
             'area': {
                 'stadsdeel': {
                     'oost': geos.MultiPolygon(poly)
@@ -102,6 +105,12 @@ class DslTest(TestCase):
             'location_2 in area."stadsdeel"."oost" and (testint > 0 or (testint == 1))'
         ).evaluate(self.context))
         self.assertFalse(c.compile('maincat in list and (time > 12:00 and time < 20:00)').evaluate(self.context))
+
+    def test_day_operations(self):
+        c = self.compiler
+        with freeze_time('2021-07-17T12:00:00'):  # Thursday
+            self.assertTrue(c.compile('day == "Thursday"').evaluate(self.context))
+            self.assertFalse(c.compile('day != "Thursday"').evaluate(self.context))
 
     def test_grammer_multiple_and_or(self):
         c = self.compiler

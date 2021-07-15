@@ -55,6 +55,7 @@ class SignalContext:
             'location': signal.location.geometrie,
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
+            'day': signal.incident_date_start.strftime("%A"),
             'areas': self.areas
         }
 
