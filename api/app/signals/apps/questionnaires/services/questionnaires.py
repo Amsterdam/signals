@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import logging
+
 import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
 from django.db import transaction
@@ -12,6 +14,8 @@ from signals.apps.questionnaires.fieldtypes import get_field_type_class
 from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
 from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
 from signals.apps.signals import workflow
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionnairesService:
@@ -33,11 +37,15 @@ class QuestionnairesService:
 
             # Check that a signal is associated with this session
             if signal is None:
-                raise SessionInvalidated(f'Session {session.uuid} is not associated with a Signal.')
+                msg = f'Session {session.uuid} is not associated with a Signal.'
+                logger.warning(msg, stack_info=True)
+                raise SessionInvalidated(msg)
 
             # Make sure that the signal is in state REACTIE_GEVRAAGD.
             if signal.status.state != workflow.REACTIE_GEVRAAGD:
-                raise SessionInvalidated(f'Session {session.uuid} is invalidated.')
+                msg = f'Session {session.uuid} is invalidated.'
+                logger.warning(msg, stack_info=True)
+                raise SessionInvalidated(msg)
 
             # Make sure that only the most recent Session and associated
             # Questionnaire and Question can be answered:
