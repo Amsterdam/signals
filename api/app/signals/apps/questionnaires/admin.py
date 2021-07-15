@@ -29,8 +29,8 @@ admin.site.register(Question, QuestionAdmin)
 
 
 class QuestionnaireAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'name', 'description', 'first_question', 'is_active', 'created_at',)
-    readonly_fields = ('uuid', 'created_at',)
+    fields = ('uuid', 'name', 'description', 'first_question', 'is_active', 'flow', 'created_at',)
+    readonly_fields = ('uuid', 'created_at', 'flow',)
     raw_id_fields = ('first_question',)
 
     list_display = ('name', 'uuid', 'created_at',)
@@ -44,9 +44,9 @@ admin.site.register(Questionnaire, QuestionnaireAdmin)
 
 
 class SessionAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'questionnaire', 'started_at', 'duration', 'submit_before', 'frozen', 'created_at',)
+    fields = ('uuid', 'questionnaire', '_signal', 'started_at', 'duration', 'submit_before', 'frozen', 'created_at',)
     readonly_fields = ('uuid', 'started_at', 'frozen', 'created_at',)
-    raw_id_fields = ('questionnaire',)
+    raw_id_fields = ('questionnaire', '_signal',)
     search_fields = ('uuid__startswith',)
 
     list_display = ('uuid', 'view_questionnaire_link', 'started_at', 'submit_before', 'frozen', 'too_late',)
@@ -67,6 +67,11 @@ class SessionAdmin(admin.ModelAdmin):
         url = reverse('admin:questionnaires_questionnaire_change', kwargs={'object_id': obj.questionnaire.pk})
         return format_html('<a href="{}">{}</a>', url, obj.questionnaire.uuid)
     view_questionnaire_link.short_description = "Questionnaire"
+
+    def view_signal_link(self, obj):
+        url = reverse('admin:signals_signal_change', kwargs={'object_id': obj._signal.pk})
+        return format_html('<a href="{}">{}</a>', url, obj._signal.sia_id)
+    view_signal_link.short_description = "Signal"
 
     def too_late(self, obj):
         return obj.too_late
