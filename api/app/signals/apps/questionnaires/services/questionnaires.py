@@ -126,7 +126,7 @@ class QuestionnairesService:
             ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
 
     @staticmethod
-    def get_next_question_ref(answer_payload, next_rules):
+    def get_next_question_ref_OLD(answer_payload, next_rules):
         # TODO: consider whether we want case sensitive matches in case of
         # character strings
 
@@ -140,8 +140,36 @@ class QuestionnairesService:
         return None
 
     @staticmethod
-    def get_next_question(answer, question):
-        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.next_rules)
+    def get_next_question_OLD(answer, question):
+        next_ref = QuestionnairesService.get_next_question_ref_OLD(answer.payload, question.next_rules)
+
+        if next_ref is None:
+            if question.key == 'submit':
+                next_question = None
+            else:
+                next_question = Question.objects.get_by_reference(ref='submit')
+        else:
+            try:
+                next_question = Question.objects.get_by_reference(ref=next_ref)
+            except Question.DoesNotExist:
+                return None  # TODO: consider raising an exception
+
+        return next_question
+
+    @staticmethod
+    def get_next_question_ref(answer, question, questionnaire):
+        # TODO: consider whether we want case sensitive matches in case of
+        # character strings
+        outgoing_edges = questionnaire.edges.filter(question=question)
+        for edge in outgoing_edges:
+            if edge.payload == answer.payload or edge.payload is None:
+                return edge.next_question.ref
+            
+        return None
+
+    @staticmethod
+    def get_next_question(answer, question, questionnaire):
+        next_ref = QuestionnairesService.get_next_question_ref(answer, question, questionnaire)
 
         if next_ref is None:
             if question.key == 'submit':

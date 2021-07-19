@@ -10,7 +10,9 @@ from signals.apps.questionnaires.exceptions import SessionInvalidated
 from signals.apps.questionnaires.factories import (
     QuestionFactory,
     QuestionnaireFactory,
-    SessionFactory
+    SessionFactory,
+    EdgeFactory,
+    QuestionGraphFactory
 )
 from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
@@ -23,47 +25,55 @@ def _question_graph_with_decision():
         key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-        ],
+        # next_rules=[
+        #     {'ref': 'q_yes', 'payload': 'yes'},
+        #     {'ref': 'q_no', 'payload': 'no'},
+        # ],
     )
-    q2 = QuestionFactory.create(
+    q_yes = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
+    q_no = QuestionFactory.create(
         key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+
+    return graph
 
 
 def _question_graph_with_decision_null_keys():
-    q2 = QuestionFactory.create(
-        key=None,
-        short_label='yes',
-        label='The yes question. Happy now?'
-    )
-    q3 = QuestionFactory.create(
-        key=None,
-        short_label='no',
-        label='The no question. Still unhappy?'
-    )
     q1 = QuestionFactory.create(
         key=None,
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': str(q2.uuid), 'payload': 'yes'},
-            {'ref': str(q3.uuid), 'payload': 'no'},
-        ],
+        # next_rules=[
+        #     {'ref': str(q2.uuid), 'payload': 'yes'},
+        #     {'ref': str(q3.uuid), 'payload': 'no'},
+        # ],
+    )
+    q_yes = QuestionFactory.create(
+        key=None,
+        short_label='yes',
+        label='The yes question. Happy now?'
+    )
+    q_no = QuestionFactory.create(
+        key=None,
+        short_label='no',
+        label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision and null keys', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+
+    return graph
 
 
 def _question_graph_with_decision_with_default():
@@ -71,24 +81,29 @@ def _question_graph_with_decision_with_default():
         key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
-        ],
+        # next_rules=[
+        #     {'ref': 'q_yes', 'payload': 'yes'},
+        #     {'ref': 'q_no', 'payload': 'no'},
+        #     {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
+        # ],
     )
-    q2 = QuestionFactory.create(
+    q_yes = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
+    q_no = QuestionFactory.create(
         key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision with default', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no)  # Default option, last edge without payload prop.
+
+    return graph
 
 
 def _question_graph_no_required_answers():
@@ -108,7 +123,10 @@ def _question_graph_no_required_answers():
         label='Second not required',
     )
 
-    return q1, q2
+    graph = QuestionGraphFactory.create(name='Graph with questions that are not required.', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
+
+    return graph
 
 
 def _question_graph_with_decision_with_default_no_required_answers():
@@ -117,24 +135,29 @@ def _question_graph_with_decision_with_default_no_required_answers():
         required=False,
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
-        ],
+        # next_rules=[
+        #     {'ref': 'q_yes', 'payload': 'yes'},
+        #     {'ref': 'q_no', 'payload': 'no'},
+        #     {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
+        # ],
     )
-    q2 = QuestionFactory.create(
+    q_yes = QuestionFactory.create(
         key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
+    q_no = QuestionFactory.create(
         key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with questions that are not required and have defaults.', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)
+
+    return graph
 
 
 def _question_graph_with_cycle():
@@ -142,20 +165,24 @@ def _question_graph_with_cycle():
         key='one',
         short_label='First question.',
         label='First question.',
-        next_rules=[
-            {'ref': 'two'}
-        ],
+        # next_rules=[
+        #     {'ref': 'two'}
+        # ],
     )
     q2 = QuestionFactory.create(
         key='two',
         short_label='Second question.',
         label='Second question.',
-        next_rules=[
-            {'ref': 'one'}
-        ],
+        # next_rules=[
+        #     {'ref': 'one'}
+        # ],
     )
 
-    return q1, q2
+    graph = QuestionGraphFactory.create(name='Graph with cycle', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
+    EdgeFactory.create(graph=graph, question=q2, next_question=q1)
+
+    return graph
 
 
 def _question_graph_one_question():
@@ -164,7 +191,10 @@ def _question_graph_one_question():
         short_label='Only question.',
         label='Only question.',
     )
-    return q1
+
+    graph = QuestionGraphFactory.create(name='Graph with only one question', first_question=q1)
+
+    return graph
 
 
 class TestQuestionGraphs(TestCase):
@@ -244,6 +274,26 @@ class TestQuestionnairesService(TestCase):
         next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertEqual(next_question.key, 'submit')
 
+    # ----
+    # TODO: passes but needs rewrite, along with get_next_question_ref on QuestionnairesService
+    def test_get_next_question_ref_OLD(self):
+        q_next_rules_no_next = []
+        q_next_rules_next_none = None
+        q_next_rules_next_unconditional = [{'ref': 'UNCONDITIONAL'}]
+        q_next_rules_next_conditional = [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
+        q_next_rules_next_conditional_with_default = [
+            {'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}, {'ref': 'DEFAULT'}
+        ]
+
+        get_next = QuestionnairesService.get_next_question_ref_OLD
+        self.assertEqual(get_next('yes', q_next_rules_no_next), None)
+        self.assertEqual(get_next('yes', q_next_rules_next_none), None)  # <-- problematic
+        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional), None)
+        self.assertEqual(get_next('BLAH', q_next_rules_next_unconditional), 'UNCONDITIONAL')
+        self.assertEqual(get_next('yes', q_next_rules_next_conditional), 'YES')
+        self.assertEqual(get_next('no', q_next_rules_next_conditional), 'NO')
+        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional_with_default), 'DEFAULT')
+
     def test_get_next_question_ref(self):
         q_next_rules_no_next = []
         q_next_rules_next_none = None
@@ -261,6 +311,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(get_next('yes', q_next_rules_next_conditional), 'YES')
         self.assertEqual(get_next('no', q_next_rules_next_conditional), 'NO')
         self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional_with_default), 'DEFAULT')
+    # ----
 
     def test_question_not_required(self):
         # set up our questions and questionnaires
