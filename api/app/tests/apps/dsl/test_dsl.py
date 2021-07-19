@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+import copy
 import time
 from datetime import datetime
 
@@ -107,10 +108,13 @@ class DslTest(TestCase):
         self.assertFalse(c.compile('maincat in list and (time > 12:00 and time < 20:00)').evaluate(self.context))
 
     def test_day_operations(self):
+        context = copy.deepcopy(self.context)
+
         c = self.compiler
-        with freeze_time('2021-07-17T12:00:00'):  # Thursday
-            self.assertTrue(c.compile('day == "Thursday"').evaluate(self.context))
-            self.assertFalse(c.compile('day != "Thursday"').evaluate(self.context))
+        with freeze_time('2021-07-15 12:00:00'):  # Thursday
+            context['day'] = datetime.now().strftime("%A")
+            self.assertTrue(c.compile('day == "Thursday"').evaluate(context))
+            self.assertFalse(c.compile('day != "Thursday"').evaluate(context))
 
     def test_grammer_multiple_and_or(self):
         c = self.compiler
