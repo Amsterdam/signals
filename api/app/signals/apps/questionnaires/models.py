@@ -21,8 +21,8 @@ class Question(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
-    label = models.CharField(max_length=255)
-    short_label = models.CharField(max_length=255)
+    label = models.CharField(max_length=255, null=True, blank=True)
+    short_label = models.CharField(max_length=255, null=True, blank=True)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     next_rules = models.JSONField(null=True, blank=True)
     required = models.BooleanField(default=False)
