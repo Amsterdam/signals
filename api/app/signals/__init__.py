@@ -31,6 +31,7 @@ datastructures.EmptyResultSet = EmptyResultSet
 VERSION = (2, 2, 0)
 
 API_VERSIONS = {
+    'v0': VERSION,
     'v1': VERSION,
 }
 
