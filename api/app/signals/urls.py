@@ -4,11 +4,17 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from signals.apps.api.generics.routers import BaseSignalsAPIRootView
+
 urlpatterns = [
+    # Used to determine API health when deploying
     path('status/', include('signals.apps.health.urls')),
 
     # The Signals application is routed behind the HAproxy with `/signals/` as path.
+    path('signals/', BaseSignalsAPIRootView.as_view()),
     path('signals/', include('signals.apps.api.urls')),
+
+    # The Django admin
     path('signals/admin/', admin.site.urls),
 
     # SOAP stand-in endpoints

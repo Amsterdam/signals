@@ -30,7 +30,7 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 urlpatterns = [
-    path('', include(('signals.apps.reporting.urls', 'signals.apps.reporting'), namespace='v1')),
+    path('', include('signals.apps.reporting.urls')),
 ]
 
 

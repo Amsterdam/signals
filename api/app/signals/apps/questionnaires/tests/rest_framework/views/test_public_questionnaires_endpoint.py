@@ -13,7 +13,7 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 urlpatterns = [
-    path('', include(('signals.apps.questionnaires.urls', 'signals.apps.questionnaires'), namespace='v1')),
+    path('', include('signals.apps.questionnaires.urls')),
 ]
 
 

@@ -148,7 +148,7 @@ class Category(models.Model):
         from rest_framework.reverse import reverse
         if self.is_child():
             kwargs = {'parent_lookup_parent__slug': self.parent.slug, 'slug': self.slug}
-            return reverse('v1:public-subcategory-detail', kwargs=kwargs, request=request)
+            return reverse('public-subcategory-detail', kwargs=kwargs, request=request)
         else:
             kwargs = {'slug': self.slug}
-            return reverse('v1:public-maincategory-detail', kwargs=kwargs, request=request)
+            return reverse('public-maincategory-detail', kwargs=kwargs, request=request)

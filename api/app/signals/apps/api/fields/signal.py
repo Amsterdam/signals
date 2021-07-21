@@ -20,7 +20,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
                                                        kwargs={'parent_lookup__signal__pk': value.pk},
                                                        request=request))),
             ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
-            ('sia:context', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
+            ('sia:context', dict(href=self.get_url(value, 'private-signal-context', request, None))),
         ])
 
         if value.is_child:
@@ -44,7 +44,7 @@ class PrivateSignalLinksField(serializers.HyperlinkedIdentityField):
         request = self.context.get('request')
 
         result = OrderedDict([
-            ('self', dict(href=self.get_url(value, "v1:private-signals-detail", request, None))),
+            ('self', dict(href=self.get_url(value, "private-signals-detail", request, None))),
         ])
 
         return result
@@ -57,21 +57,21 @@ class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
 
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
-            ('self', dict(href=self.get_url(value, 'v1:private-signal-context', request, None))),
+            ('self', dict(href=self.get_url(value, 'private-signal-context', request, None))),
         ])
 
         if 'API_SIGNAL_CONTEXT_REPORTER' not in settings.FEATURE_FLAGS \
                 or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_REPORTER']:
             result.update({
                 'sia:context-reporter-detail':
-                dict(href=self.get_url(value, 'v1:private-signal-context-reporter', request, None))
+                dict(href=self.get_url(value, 'private-signal-context-reporter', request, None))
             })
 
         if 'API_SIGNAL_CONTEXT_NEAR' not in settings.FEATURE_FLAGS \
                 or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_NEAR']:
             result.update({
                 'sia:context-geography-detail':
-                dict(href=self.get_url(value, 'v1:private-signal-context-near-geography', request, None))
+                dict(href=self.get_url(value, 'private-signal-context-near-geography', request, None))
             })
 
         return result
