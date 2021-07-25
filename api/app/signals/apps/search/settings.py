@@ -7,7 +7,7 @@ DEFAULTS = dict(
     PAGE_SIZE=100,
     CONNECTION=dict(
         HOST='http://127.0.0.1:9200',
-        INDEX_NAME='sia_signals',
+        INDEX='signals',
     ),
 )
 

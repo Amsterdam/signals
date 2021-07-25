@@ -6,6 +6,7 @@ from elasticsearch_dsl import Date, InnerDoc, Keyword, Nested, Object, Text
 from elasticsearch_dsl.query import Bool
 
 from signals.apps.search.documents.base import DocumentBase
+from signals.apps.search.settings import app_settings
 from signals.apps.signals.models import Signal
 
 log = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class SignalDocument(DocumentBase):
     updated_at = Date()
 
     class Index:
-        name = 'signals'
+        name = app_settings.CONNECTION['INDEX']
         using = 'default'
 
     def get_model(self):
