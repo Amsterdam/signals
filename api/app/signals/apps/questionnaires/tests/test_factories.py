@@ -12,6 +12,14 @@ from signals.apps.questionnaires.models import Answer, Question, Questionnaire, 
 
 
 class TestFactories(TestCase):
+    def setUp(self):
+        try:
+            q = Question.objects.get_by_reference('submit')
+        except Question.DoesNotExist:
+            pass
+        else:
+            q.delete()
+
     def test_answer_factory(self):
         AnswerFactory.create()
 

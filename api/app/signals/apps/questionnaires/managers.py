@@ -19,7 +19,7 @@ class QuestionManager(models.Manager):
         if ref == 'submit':
             question, _ = self.get_or_create(
                 key='submit',
-                defaults = {
+                defaults={
                     'field_type': 'submit',
                     'label': 'Verstuur',
                     'short_label': 'Verstuur',

@@ -120,11 +120,15 @@
 							"type": "string"
 						},
 						"label": {
-							"type": "string"
-						},
+							"oneOf": [
+								{"type": "string"},
+								{"type": "null"}
+							]						},
 						"short_label": {
-							"type": "string"
-						},
+							"oneOf": [
+								{"type": "string"},
+								{"type": "null"}
+							]						},
 						"field_type": {
 							"type": "string"
 						},
