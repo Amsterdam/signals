@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import os
+import uuid
 from unittest.mock import patch
 
 from django.test import override_settings
@@ -128,7 +129,7 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(response.status_code, 405)
 
     @patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
-    def test_session_submit(self, patched):
+    def test_session_submit_OLD(self, patched):
         session = SessionFactory.create(questionnaire=self.questionnaire)
 
         response = self.client.post(f'{self.base_endpoint}{session.uuid}/submit/')
@@ -138,3 +139,10 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         response = self.client.post(f'{self.base_endpoint}{session.uuid}/submit/')
         self.assertEqual(response.status_code, 410)
+
+        generated = uuid.uuid4()
+        while generated == session.uuid:
+            generated = uuid.uuid4()
+        response = self.client.post(f'{self.base_endpoint}{str(generated)}/submit/')
+
+        self.assertEqual(response.status_code, 404)

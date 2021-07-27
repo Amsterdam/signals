@@ -109,6 +109,8 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         try:
             session = QuestionnairesService.get_session(session_uuid)
+        except Session.DoesNotExist:
+            raise Http404
         except Exception as e:
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
