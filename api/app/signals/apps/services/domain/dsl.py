@@ -108,7 +108,8 @@ class SignalDslService(DslService):
                             {
                                 'id': rule._department.id
                             }
-                        ]
+                        ],
+                        'employee': None if not rule.employee else rule.employee
                     }
                     self.signal_manager.update_routing_departments(data, signal)
                     return True

@@ -530,6 +530,7 @@ class SignalManager(models.Manager):
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
         from signals.apps.signals.models.signal_departments import SignalDepartments
+        from signals.apps.signals.models.signal_user import SignalUser
 
         relation = SignalDepartments.objects.create(
             _signal=signal,
@@ -554,6 +555,15 @@ class SignalManager(models.Manager):
         else:
             raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
+
+        if 'employee' in data:
+            signal.user_assignment, _ = SignalUser.objects.get_or_create(
+                _signal=signal,
+                user=None if not data['employee'] else data['employee'],
+                created_by=data['created_by'] if 'created_by' in data else None
+            )
+            signal.save()
+
         return relation
 
     def _update_directing_departments_no_transaction(self, data, signal):
