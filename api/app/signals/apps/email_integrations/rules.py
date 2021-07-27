@@ -67,7 +67,7 @@ class SignalScheduledRule(AbstractRule):
 class SignalReopenedRule(AbstractRule):
     def validate_status(self, signal):
         """
-        Validate if the status is INGEPLAND
+        Validate if the status is HEROPEND
         """
         return signal.status.state == workflow.HEROPEND
 
@@ -85,3 +85,11 @@ class SignalOptionalRule(AbstractRule):
             workflow.VERZOEK_TOT_AFHANDELING,
             workflow.GEANNULEERD,
         ] and signal.status.send_email
+
+
+class SignalReactionRequestRule(AbstractRule):
+    def validate_status(self, signal):
+        """
+        Validate if the status is REACTIE_GEVRAAGD
+        """
+        return signal.status.state == workflow.REACTIE_GEVRAAGD

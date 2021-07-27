@@ -5,15 +5,18 @@ from unittest import mock
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
+from factory.fuzzy import FuzzyText
 
 from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
     SignalHandledAction,
     SignalOptionalAction,
+    SignalReactionRequestAction,
     SignalReopenedAction,
     SignalScheduledAction
 )
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Note
@@ -42,10 +45,17 @@ class ActionTestMixin:
                                      title='Uw melding {{ signal_id }}',
                                      body='{{ text }} {{ created_at }} {{ status_text }} {{ ORGANIZATION_NAME }}')
 
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ status_text }} {{ reaction_url }} '
+                                          '{{ ORGANIZATION_NAME }}')
+
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id}')
@@ -57,7 +67,9 @@ class ActionTestMixin:
     def test_send_email_dry_run(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=True))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -66,13 +78,14 @@ class ActionTestMixin:
     def test_send_email_anonymous(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email='')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='')
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
         self.assertFalse(Note.objects.filter(text=self.action.note).exists())
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email=None)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email=None)
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -81,8 +94,11 @@ class ActionTestMixin:
     def test_send_email_for_parent_signals(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        parent_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
-        SignalFactory.create(status__state=self.state, reporter__email='test@example.com', parent=parent_signal)
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                             reporter__email='test@example.com')
+        SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
+                             parent=parent_signal)
         self.assertTrue(self.action(parent_signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(Note.objects.count(), 1)
@@ -91,9 +107,11 @@ class ActionTestMixin:
     def test_do_not_send_email_for_child_signals(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        parent_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
-        child_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com',
-                                            parent=parent_signal)
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                             reporter__email='test@example.com')
+        child_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                            reporter__email='test@example.com', parent=parent_signal)
         self.assertFalse(self.action(child_signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -102,9 +120,11 @@ class ActionTestMixin:
     def test_do_not_send_email_invalid_states(self):
         self.assertEqual(len(mail.outbox), 0)
 
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         states = list(map(lambda x: x[0] and x[0] == self.state, workflow.STATUS_CHOICES))
         for state in states:
-            signal = SignalFactory.create(status__state=state, reporter__email='test@example.com')
+            signal = SignalFactory.create(status__state=state, status__text=status_text,
+                                          reporter__email='test@example.com')
             self.assertFalse(self.action(signal))
             self.assertEqual(Note.objects.count(), 0)
             self.assertFalse(Note.objects.filter(text=self.action.note).exists())
@@ -115,7 +135,9 @@ class ActionTestMixin:
 
         self.assertEqual(len(mail.outbox), 0)
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
 
@@ -210,6 +232,43 @@ class TestSignalScheduledAction(ActionTestMixin, TestCase):
 class TestSignalReopenedAction(ActionTestMixin, TestCase):
     state = workflow.HEROPEND
     action = SignalReopenedAction()
+
+
+class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
+    state = workflow.REACTIE_GEVRAAGD
+    action = SignalReactionRequestAction()
+
+    def test_send_email(self):
+        super().test_send_email()
+
+        message = mail.outbox[0]
+        self.assertIn('http://dummy_link', message.body)
+        self.assertIn('http://dummy_link', message.alternatives[0][0])
+
+    def test_reaction_requested_links_environment_env_var_not_set(self):
+        """Deals with the case where nothing is overridden and `environment` not set."""
+
+        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
+        signal = SignalFactory.create(status__state=self.state, status__text=FuzzyText(length=200),
+                                      reporter__email='test@example.com')
+
+        # Check that generated emails contain the correct links for all
+        # configured environments:
+        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
+        self.assertEqual(len(env_fe_mapping), 1)
+
+        for environment, fe_location in env_fe_mapping.items():
+            with mock.patch.dict('os.environ', {}, clear=True):
+                mail.outbox = []
+                self.assertTrue(self.action(signal, dry_run=False))
+
+                self.assertEqual(len(mail.outbox), 1)
+                message = mail.outbox[0]
+                self.assertIn('http://dummy_link', message.body)
+                self.assertIn('http://dummy_link', message.alternatives[0][0])
+
+        # we want a history entry when a email was sent
+        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
 
 class TestSignalOptionalAction(TestCase):

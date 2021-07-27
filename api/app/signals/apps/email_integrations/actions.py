@@ -12,11 +12,13 @@ from signals.apps.email_integrations.rules import (
     SignalCreatedRule,
     SignalHandledRule,
     SignalOptionalRule,
+    SignalReactionRequestRule,
     SignalReopenedRule,
     SignalScheduledRule
 )
 from signals.apps.email_integrations.utils import (
     _create_feedback_and_mail_context,
+    create_reaction_request_and_mail_context,
     make_email_context
 )
 from signals.apps.signals.models import Signal
@@ -135,3 +137,15 @@ class SignalOptionalAction(AbstractAction):
         return {
             'afhandelings_text': signal.status.text
         }
+
+
+class SignalReactionRequestAction(AbstractAction):
+    rule = SignalReactionRequestRule()
+
+    key = EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD
+    subject = 'Meer over uw melding {signal_id}'
+
+    note = 'E-mail met vraag verstuurd aan melder'
+
+    def get_additional_context(self, signal):
+        return create_reaction_request_and_mail_context(signal)

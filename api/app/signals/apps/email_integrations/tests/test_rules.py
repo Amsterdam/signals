@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.test import TestCase
+from factory.fuzzy import FuzzyText
 
 from signals.apps.email_integrations.rules import (
     SignalCreatedRule,
     SignalHandledRule,
     SignalOptionalRule,
+    SignalReactionRequestRule,
     SignalReopenedRule,
     SignalScheduledRule
 )
@@ -18,7 +20,9 @@ class RuleTestMixin:
     state = None
 
     def test_happy_flow(self):
-        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      reporter__email='test@example.com')
         self.assertTrue(self.rule(signal))
 
     def test_signal_not_happy_flow(self):
@@ -26,22 +30,31 @@ class RuleTestMixin:
         self.assertFalse(self.rule(signal))
 
     def test_anonymous_reporter(self):
-        signal = SignalFactory.create(status__state=self.state, reporter__email='')
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='')
         self.assertFalse(self.rule(signal))
 
-        signal = SignalFactory.create(status__state=self.state, reporter__email=None)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email=None)
         self.assertFalse(self.rule(signal))
 
     def test_apply_for_parent_signals(self):
-        parent_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
-        SignalFactory.create(status__state=self.state, reporter__email='test@example.com', parent=parent_signal)
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+
+        parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                             reporter__email='test@example.com')
+        SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
+                             parent=parent_signal)
 
         self.assertTrue(self.rule(parent_signal))
 
     def test_do_not_apply_for_child_signals(self):
-        parent_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
-        child_signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com',
-                                            parent=parent_signal)
+        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+
+        parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                             reporter__email='test@example.com')
+        child_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                            reporter__email='test@example.com', parent=parent_signal)
 
         self.assertFalse(self.rule(child_signal))
 
@@ -121,6 +134,11 @@ class TestSignalScheduledRule(RuleTestMixin, TestCase):
 class TestSignalReopenedRule(RuleTestMixin, TestCase):
     rule = SignalReopenedRule()
     state = workflow.HEROPEND
+
+
+class TestSignalReactionRequestRule(RuleTestMixin, TestCase):
+    rule = SignalReactionRequestRule()
+    state = workflow.REACTIE_GEVRAAGD
 
 
 class TestSignalOptionalRule(TestCase):
