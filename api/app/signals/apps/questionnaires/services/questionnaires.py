@@ -113,6 +113,14 @@ class QuestionnairesService:
         return answer
 
     @staticmethod
+    def freeze_session(session):
+        session.frozen = True
+        session.save()
+
+        QuestionnairesService.handle_frozen_session(session)
+        return session
+
+    @staticmethod
     def handle_frozen_session(session):
         if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
             ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)

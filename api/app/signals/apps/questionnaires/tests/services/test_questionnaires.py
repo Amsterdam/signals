@@ -354,6 +354,9 @@ class TestQuestionnairesService(TestCase):
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_submit(self, patched_callback):
+        # TODO: remove the special "submit" question and replace it with a
+        # separate endpoint that can trigger session freezing.
+
         q1 = _question_graph_one_question()
         questionnaire = QuestionnaireFactory.create(first_question=q1)
 
@@ -392,6 +395,31 @@ class TestQuestionnairesService(TestCase):
         next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_question)
 
+    @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
+    def test_freeze_session(self, patched):
+        q1 = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(first_question=q1)
+
+        question = questionnaire.first_question
+        answer_str = 'ONLY'
+
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
+
+        session = answer.session
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
+
+        session = QuestionnairesService.freeze_session(session)
+        session.refresh_from_db()
+
+        patched.assert_called_with(session)
+        self.assertTrue(session.frozen)
+
     def test_get_session_reaction_request_flow(self):
         # A session for reaction request flow with no associated Signal should
         # raise an SessionInvalidated.
@@ -406,7 +434,7 @@ class TestQuestionnairesService(TestCase):
         session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)
 
         with self.assertRaises(SessionInvalidated):
-            QuestionnairesService.get_session(session.uuid)  # <-- !!! FAAL
+            QuestionnairesService.get_session(session.uuid)
 
         # A session for reaction request flow for a signal that also has a more
         # recent session, should raise SessionInvalidated.
