@@ -108,7 +108,7 @@ class Question(models.Model):  # aka node
 
     @property
     def ref(self):
-        return self.key if self.key else self.uuid
+        return self.key if self.key else str(self.uuid)
 
 
 class Answer(models.Model):

@@ -160,7 +160,7 @@ class QuestionnairesService:
     def get_next_question_ref(answer, question, questionnaire):
         # TODO: consider whether we want case sensitive matches in case of
         # character strings
-        outgoing_edges = questionnaire.edges.filter(question=question)
+        outgoing_edges = questionnaire.graph.edges.filter(question=question)
         for edge in outgoing_edges:
             if edge.payload == answer.payload or edge.payload is None:
                 return edge.next_question.ref

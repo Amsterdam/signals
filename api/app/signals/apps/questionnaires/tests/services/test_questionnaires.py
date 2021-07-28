@@ -112,9 +112,9 @@ def _question_graph_no_required_answers():
         required=False,
         short_label='First not required',
         label='First not required',
-        next_rules=[
-            {'ref': 'two'},
-        ]
+        # next_rules=[
+        #     {'ref': 'two'},
+        # ]
     )
     q2 = QuestionFactory(
         key='two',
@@ -207,8 +207,8 @@ class TestQuestionGraphs(TestCase):
 class TestQuestionnairesService(TestCase):
     def test_create_answers(self):
         # set up our questions and questionnaires
-        q_yesno, q_yes, q_no = _question_graph_with_decision()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'yes'
@@ -226,8 +226,8 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.key)
+        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire)
+        self.assertEqual(question2.ref, 'q_yes')
 
         answer2_str = 'yes'
 
@@ -237,12 +237,12 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire)
+        self.assertEqual(next_question.ref, 'submit')
 
     def test_create_answers_null_keys(self):
-        q_yesno, q_yes, q_no = _question_graph_with_decision_null_keys()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision_null_keys()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'yes'
@@ -260,8 +260,10 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.uuid)
+        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire)
+        # We want the yes branch followed, here we grab the relevant question
+        edge_match = graph.edges.filter(question=question, payload=answer_str).first()
+        self.assertEqual(question2, edge_match.next_question)
 
         answer2_str = 'yes'
 
@@ -271,7 +273,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire)
         self.assertEqual(next_question.key, 'submit')
 
     # ----
@@ -315,10 +317,10 @@ class TestQuestionnairesService(TestCase):
 
     def test_question_not_required(self):
         # set up our questions and questionnaires
-        q1, q2 = _question_graph_no_required_answers()
-        questionnaire = QuestionnaireFactory.create(first_question=q1)
+        graph = _question_graph_no_required_answers()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
-        question = questionnaire.first_question
+        question = questionnaire.graph.first_question
         answer_str = None
 
         # We will answer the questionnaire, until we reach a None next question.
@@ -334,8 +336,8 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q2.ref)
+        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire)
+        self.assertEqual(question2.ref, 'two')
 
         answer2_str = None
 
@@ -345,13 +347,13 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire)
         self.assertEqual(next_question.key, 'submit')
 
     def test_question_with_default_next(self):
         # set up our questions and questionnaires
-        q_yesno, q_yes, q_no = _question_graph_with_decision_with_default()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision_with_default()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'WILL NOT MATCH ANYTHING'  # to trigger default
@@ -369,8 +371,8 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.ref)  # get the default option
+        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire)
+        self.assertEqual(question2.ref, 'q_yes')  # get the default option
 
         answer2_str = 'Yippee'
 
@@ -380,7 +382,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire)
         self.assertEqual(next_question.key, 'submit')
 
     def test_validate_answer_payload(self):
@@ -405,13 +407,10 @@ class TestQuestionnairesService(TestCase):
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_submit(self, patched_callback):
-        # TODO: remove the special "submit" question and replace it with a
-        # separate endpoint that can trigger session freezing.
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
-        q1 = _question_graph_one_question()
-        questionnaire = QuestionnaireFactory.create(first_question=q1)
-
-        question = questionnaire.first_question
+        question = questionnaire.graph.first_question
         answer_str = 'ONLY'
 
         # We will answer the questionnaire, until we reach a None next question.
@@ -430,7 +429,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question)
+        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire)
         self.assertEqual(question2.ref, 'submit')
 
         answer2_str = None
@@ -443,7 +442,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
         patched_callback.assert_called_with(session)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
+        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire)
         self.assertIsNone(next_question)
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
