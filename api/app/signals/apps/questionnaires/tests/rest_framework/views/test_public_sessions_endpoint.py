@@ -129,7 +129,7 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(response.status_code, 405)
 
     @patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
-    def test_session_submit_OLD(self, patched):
+    def test_session_submit(self, patched):
         session = SessionFactory.create(questionnaire=self.questionnaire)
 
         response = self.client.post(f'{self.base_endpoint}{session.uuid}/submit/')
