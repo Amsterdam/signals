@@ -157,19 +157,19 @@ class QuestionnairesService:
         return next_question
 
     @staticmethod
-    def get_next_question_ref(answer, question, questionnaire):
+    def get_next_question_ref(answer_payload, question, graph):
         # TODO: consider whether we want case sensitive matches in case of
         # character strings
-        outgoing_edges = questionnaire.graph.edges.filter(question=question)
+        outgoing_edges = graph.edges.filter(question=question)
         for edge in outgoing_edges:
-            if edge.payload == answer.payload or edge.payload is None:
+            if edge.payload == answer_payload or edge.payload is None:
                 return edge.next_question.ref
             
         return None
 
     @staticmethod
-    def get_next_question(answer, question, questionnaire):
-        next_ref = QuestionnairesService.get_next_question_ref(answer, question, questionnaire)
+    def get_next_question(answer, question, graph):
+        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question, graph)
 
         if next_ref is None:
             if question.key == 'submit':
