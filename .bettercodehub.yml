@@ -6,4 +6,3 @@ exclude:
     - /api/app/signals/apps/reporting/migrations/.*
     - /api/app/signals/apps/users/migrations/.*
     - /api/app/signals/apps/email_integrations/migrations/.*
-    - /api/app/signals/settings/.*
