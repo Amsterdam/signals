@@ -129,7 +129,7 @@ paths:
         '404':
           description: Question not found
 
-  /public/qa/questions/{UUID}/submit:
+  /public/qa/sessions/{UUID}/submit:
     parameters:
       - name: UUID
         in: path
