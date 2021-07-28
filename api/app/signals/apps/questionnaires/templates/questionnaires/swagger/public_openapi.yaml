@@ -129,6 +129,33 @@ paths:
         '404':
           description: Question not found
 
+  /public/qa/questions/{UUID}/submit:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Question
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      description: Submit a session (i.e. freeze it)
+
+      responses:
+        '200':
+          description: Detail of the frozen Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Request invalid
+        '404':
+          description: Question not found
+        '410':
+          description: Session already used or expired.
+
   /public/qa/sessions/{UUID}:
     parameters:
       - name: UUID

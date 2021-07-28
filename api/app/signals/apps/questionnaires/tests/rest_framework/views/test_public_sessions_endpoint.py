@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import os
+import uuid
+from unittest.mock import patch
 
 from django.test import override_settings
 from django.urls import include, path
@@ -125,3 +127,22 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_session_delete_not_allowed(self):
         response = self.client.delete(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 405)
+
+    @patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
+    def test_session_submit(self, patched):
+        session = SessionFactory.create(questionnaire=self.questionnaire)
+
+        response = self.client.post(f'{self.base_endpoint}{session.uuid}/submit/')
+        self.assertEqual(response.status_code, 200)
+        session.refresh_from_db()
+        patched.assert_called_once_with(session)
+
+        response = self.client.post(f'{self.base_endpoint}{session.uuid}/submit/')
+        self.assertEqual(response.status_code, 410)
+
+        generated = uuid.uuid4()
+        while generated == session.uuid:
+            generated = uuid.uuid4()
+        response = self.client.post(f'{self.base_endpoint}{str(generated)}/submit/')
+
+        self.assertEqual(response.status_code, 404)

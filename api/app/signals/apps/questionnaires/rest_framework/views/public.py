@@ -109,6 +109,8 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         try:
             session = QuestionnairesService.get_session(session_uuid)
+        except Session.DoesNotExist:
+            raise Http404
         except Exception as e:
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
@@ -119,3 +121,13 @@ class PublicSessionViewSet(HALViewSetRetrieve):
             raise Gone('Expired!')
 
         return session
+
+    @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
+    def submit(self, request, *args, **kwargs):
+        # TODO: calls to this endpoint are not idempotent, investigate whether
+        # they should be.
+        session = self.get_object()
+        QuestionnairesService.freeze_session(session)
+
+        serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
+        return Response(serializer.data, status=200)
