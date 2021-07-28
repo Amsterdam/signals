@@ -3,3 +3,6 @@ languages:
     - python
 exclude:
     - /api/app/signals/apps/signals/migrations/.*
+    - /api/app/signals/apps/reporting/migrations/.*
+    - /api/app/signals/apps/users/migrations/.*
+    - /api/app/signals/apps/email_integrations/migrations/.*
