@@ -1,0 +1,5 @@
+component_depth: 3
+languages:
+    - python
+exclude:
+    - /api/app/signals/apps/signals/migrations/.*
