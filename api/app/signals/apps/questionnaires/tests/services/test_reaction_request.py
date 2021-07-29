@@ -14,7 +14,7 @@ from signals.apps.questionnaires.factories import (
     QuestionGraphFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import Question, Questionnaire
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
 from signals.apps.questionnaires.services.reaction_request import REACTION_REQUEST_DAYS_OPEN
 from signals.apps.signals import workflow
@@ -87,18 +87,7 @@ class TestReactionRequestService(TestCase):
         )
         answer = AnswerFactory(session=session, payload='Het antwoord!')
 
-        submit_question = Question.objects.get_by_reference('submit')
-
-        with self.captureOnCommitCallbacks(execute=False) as callbacks:
-            QuestionnairesService.create_answer(
-                answer_payload=None,
-                question=submit_question,
-                questionnaire=session.questionnaire,
-                session=session
-            )
-
-        self.assertEqual(len(callbacks), 1)
-        callbacks[0]()
+        QuestionnairesService.freeze_session(session)
 
         self.signal_reaction_requested.refresh_from_db()
         self.assertEqual(self.signal_reaction_requested.status.state, workflow.REACTIE_ONTVANGEN)

@@ -17,16 +17,6 @@ class QuestionManager(models.Manager):
             msg = 'Cannot get Question instance for ref=None'
             raise self.DoesNotExist(msg)
 
-        if ref == 'submit':
-            question, _ = self.get_or_create(
-                key='submit',
-                field_type='submit',
-                label='Verstuur',
-                short_label='Verstuur',
-                required=True
-            )
-            return question
-
         try:
             question_uuid = uuid.UUID(ref)
         except (ValueError, TypeError):

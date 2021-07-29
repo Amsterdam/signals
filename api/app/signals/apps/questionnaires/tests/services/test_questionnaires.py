@@ -210,7 +210,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.ref, 'submit')
+        self.assertIsNone(next_question)
 
     def test_create_answers_null_keys(self):
         graph = _question_graph_with_decision_null_keys()
@@ -246,7 +246,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_get_next_question_ref(self):
         get_next_ref = QuestionnairesService.get_next_question_ref
@@ -322,7 +322,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_question_with_default_next(self):
         # set up our questions and questionnaires
@@ -357,7 +357,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_validate_answer_payload(self):
         integer_question = QuestionFactory(field_type='integer', label='integer', short_label='integer')
@@ -398,26 +398,15 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer.question, question)
 
         session = answer.session
-        session_id = session.id
         self.assertIsNotNone(session)
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, 'submit')
+        self.assertIsNone(question2)
 
-        answer2_str = None
-
-        with self.captureOnCommitCallbacks(execute=True):
-            answer2 = QuestionnairesService.create_answer(
-                answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
-        self.assertIsInstance(answer2, Answer)
-        self.assertEqual(answer2.question, question2)
-        self.assertEqual(answer2.session_id, session_id)
+        QuestionnairesService.freeze_session(session)
         patched_callback.assert_called_with(session)
-
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_freeze_session(self, patched):

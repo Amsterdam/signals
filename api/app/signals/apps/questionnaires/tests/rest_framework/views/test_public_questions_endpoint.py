@@ -78,7 +78,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.delete(f'{self.base_endpoint}{self.question.uuid}')
         self.assertEqual(response.status_code, 405)
 
-    def test_answer_question_create(self):  # <-- HIERZO!!!
+    def test_answer_question_create(self):
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
@@ -98,8 +98,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(data['payload'], response_data['payload'])
         self.assertEqual(data['payload'], answer.payload)
         self.assertEqual(str(session.uuid), str(response_data['session']))
-        self.assertIsNotNone(response_data['next_question'])
-        self.assertEqual(response_data['next_question']['field_type'], 'submit')
+        self.assertIsNone(response_data['next_question'])
 
         self.assertEqual(answer.session.pk, session.pk)
         self.assertEqual(self.questionnaire.pk, session.questionnaire.pk)
@@ -127,12 +126,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(data['payload'], response_data['payload'])
         self.assertEqual(data['payload'], answer.payload)
         self.assertEqual(str(session.uuid), str(response_data['session']))
-        self.assertIsNotNone(response_data['next_question'])
-        self.assertEqual(response_data['next_question']['field_type'], 'submit')
-
-        self.assertEqual(answer.session.pk, session.pk)
-        self.assertEqual(self.questionnaire.pk, session.questionnaire.pk)
-        self.assertEqual(self.question.pk, answer.question.pk)
+        self.assertIsNone(response_data['next_question'])
 
     def test_answer_a_complete_questionnaire(self):
         self.assertEqual(0, Answer.objects.count())
@@ -186,9 +180,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
                 self.assertIsNotNone(response_data['next_question'])
                 next_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
             else:
-                self.assertIsNotNone(response_data['next_question'])
-                self.assertEqual(response_data['next_question']['field_type'], 'submit')
-                next_post_answer_endpoint = None
+                self.assertIsNone(response_data['next_question'])  # session must be frozen using ../submit endpoint
 
         answer_qs = Answer.objects.filter(
             question_id__in=[
@@ -238,8 +230,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(second_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertIsNotNone(response_data['next_question'])
-        self.assertEqual(response_data['next_question']['field_type'], 'submit')
+        self.assertIsNone(response_data['next_question'])
 
         # Flow: question 1 -> question 3 -> done
         data = {'payload': 'no', 'questionnaire': questionnaire.uuid}
@@ -252,8 +243,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(second_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertIsNotNone(response_data['next_question'])
-        self.assertEqual(response_data['next_question']['field_type'], 'submit')
+        self.assertIsNone(response_data['next_question'])
 
         # Flow: question 1 -> question 4 -> done
         data = {'payload': 'default', 'questionnaire': questionnaire.uuid}
@@ -267,8 +257,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(second_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertIsNotNone(response_data['next_question'])
-        self.assertEqual(response_data['next_question']['field_type'], 'submit')
+        self.assertIsNone(response_data['next_question'])
 
         self.assertEqual(3, Session.objects.count())
         self.assertEqual(6, Answer.objects.count())
