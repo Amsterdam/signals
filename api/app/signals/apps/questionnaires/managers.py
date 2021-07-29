@@ -74,7 +74,6 @@ class QuestionManager(models.Manager):
         return self.filter(id__in=reachable)
 
 
-# CHECKED
 class QuestionnaireManager(models.Manager):
     def active(self):
         """
@@ -83,7 +82,6 @@ class QuestionnaireManager(models.Manager):
         return self.get_queryset().filter(is_active=True)
 
 
-# CHECKED
 class SessionManager(models.Manager):
     def retrieve_valid_sessions(self):
         """
