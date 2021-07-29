@@ -198,7 +198,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire.graph)
+        question2 = QuestionnairesService.get_next_question(answer, question)
         self.assertEqual(question2.ref, 'q_yes')
 
         answer2_str = 'yes'
@@ -209,7 +209,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire.graph)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertEqual(next_question.ref, 'submit')
 
     def test_create_answers_null_keys(self):
@@ -232,7 +232,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire.graph)
+        question2 = QuestionnairesService.get_next_question(answer, question)
         # We want the yes branch followed, here we grab the relevant question
         edge_match = graph.edges.filter(question=question, payload=answer_str).first()
         self.assertEqual(question2, edge_match.next_question)
@@ -245,7 +245,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire.graph)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertEqual(next_question.key, 'submit')
 
     def test_get_next_question_ref(self):
@@ -310,7 +310,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire.graph)
+        question2 = QuestionnairesService.get_next_question(answer, question)
         self.assertEqual(question2.ref, 'two')
 
         answer2_str = None
@@ -321,7 +321,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire.graph)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertEqual(next_question.key, 'submit')
 
     def test_question_with_default_next(self):
@@ -345,7 +345,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire.graph)
+        question2 = QuestionnairesService.get_next_question(answer, question)
         self.assertEqual(question2.ref, 'q_yes')  # get the default option
 
         answer2_str = 'Yippee'
@@ -356,7 +356,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.question, question2)
         self.assertEqual(answer2.session_id, session_id)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire.graph)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertEqual(next_question.key, 'submit')
 
     def test_validate_answer_payload(self):
@@ -403,7 +403,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        question2 = QuestionnairesService.get_next_question(answer, question, questionnaire.graph)
+        question2 = QuestionnairesService.get_next_question(answer, question)
         self.assertEqual(question2.ref, 'submit')
 
         answer2_str = None
@@ -416,7 +416,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
         patched_callback.assert_called_with(session)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2, questionnaire.graph)
+        next_question = QuestionnairesService.get_next_question(answer2, question2)
         self.assertIsNone(next_question)
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')

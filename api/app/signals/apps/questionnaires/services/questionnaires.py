@@ -137,7 +137,8 @@ class QuestionnairesService:
         return None
 
     @staticmethod
-    def get_next_question(answer, question, graph):
+    def get_next_question(answer, question):
+        graph = answer.session.questionnaire.graph
         next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question, graph)
 
         if next_ref is None:
