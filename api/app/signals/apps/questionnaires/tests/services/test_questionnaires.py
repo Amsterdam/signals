@@ -421,8 +421,8 @@ class TestQuestionnairesService(TestCase):
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_freeze_session(self, patched):
-        q1 = _question_graph_one_question()
-        questionnaire = QuestionnaireFactory.create(first_question=q1)
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'ONLY'
