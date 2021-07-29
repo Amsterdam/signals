@@ -1,11 +1,11 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2021 Gemeente Amsterdam
 import uuid
 
-from django.db import models
+import networkx
 from django.contrib.gis.db import models
 from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.db.models.functions import Now
-
-import networkx
 
 
 class QuestionManager(models.Manager):
@@ -39,7 +39,7 @@ class QuestionManager(models.Manager):
         questions = set(question_graph.edges.values_list('question', flat=True))
         next_questions = set(question_graph.edges.values_list('next_question', flat=True))
 
-        return self.filter(id__in=(questions|next_questions))
+        return self.filter(id__in=(questions | next_questions))
 
     def get_reachable_from_question_graph(self, question_graph):
         # Given the graph of questions:
@@ -61,16 +61,16 @@ class QuestionManager(models.Manager):
         if not edges.exists():
             return self.filter(id__in=question_graph.first_question_id)
 
-        # first question and edges present, build directed graph, 
+        # first question and edges present, build directed graph
         nx_graph = networkx.DiGraph()
         for edge in edges:
             nx_graph.add_edge(edge.question_id, edge.next_question_id)
             if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {question_graph.name} contains too many questions.'
-                raise Exception(msg)         
+                raise Exception(msg)
 
         # our first_question should be part of the graph of questions
-        if not question_graph.first_question_id in nx_graph:
+        if question_graph.first_question_id not in nx_graph:
             return self.filter(id__in=question_graph.first_question_id)
 
         # our question graph must be directed and acyclic

@@ -8,7 +8,12 @@ from django.utils.timezone import now
 from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
-from signals.apps.questionnaires.factories import AnswerFactory, QuestionFactory, SessionFactory
+from signals.apps.questionnaires.factories import (
+    AnswerFactory,
+    QuestionFactory,
+    QuestionGraphFactory,
+    SessionFactory
+)
 from signals.apps.questionnaires.models import Question, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
 from signals.apps.questionnaires.services.reaction_request import REACTION_REQUEST_DAYS_OPEN
@@ -33,7 +38,7 @@ class TestReactionRequestService(TestCase):
 
     def test_create_session(self):
         session = ReactionRequestService.create_session(self.signal_reaction_requested)
-        self.assertEqual(session.questionnaire.first_question.label, self.signal_reaction_requested.status.text)
+        self.assertEqual(session.questionnaire.graph.first_question.label, self.signal_reaction_requested.status.text)
         self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
 
     def test_create_session_wrong_state(self):
@@ -55,9 +60,10 @@ class TestReactionRequestService(TestCase):
     def test_handle_frozen_session_REACTION_REQUEST(self):
         question = QuestionFactory.create(
             field_type='plain_text', label='Is het goed weer?', short_label='Goed weer?')
+        graph = QuestionGraphFactory.create(name='Reactie gevraagd.', first_question=question)
         session = SessionFactory.create(
             questionnaire__flow=Questionnaire.REACTION_REQUEST,
-            questionnaire__first_question=question,
+            questionnaire__graph=graph,
             frozen=True,
             _signal=self.signal_reaction_requested
         )
@@ -72,9 +78,10 @@ class TestReactionRequestService(TestCase):
     def test_handle_frozen_session_on_commit_triggered(self):
         question = QuestionFactory.create(
             field_type='plain_text', label='Is het goed weer?', short_label='Goed weer?')
+        graph = QuestionGraphFactory.create(name='Reactie gevraagd.', first_question=question)
         session = SessionFactory.create(
             questionnaire__flow=Questionnaire.REACTION_REQUEST,
-            questionnaire__first_question=question,
+            questionnaire__graph=graph,
             frozen=False,
             _signal=self.signal_reaction_requested
         )

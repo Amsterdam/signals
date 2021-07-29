@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.models import Answer, Edge, Question, Questionnaire, Session
 from signals.apps.questionnaires.rest_framework.fields import (
     EmptyHyperlinkedIdentityField,
     QuestionHyperlinkedIdentityField,
@@ -17,6 +18,7 @@ from signals.apps.questionnaires.services import QuestionnairesService
 
 class PublicQuestionSerializer(HALSerializer):
     serializer_url_field = QuestionHyperlinkedIdentityField
+    next_rules = serializers.SerializerMethodField()
     _display = DisplayField()
 
     class Meta:
@@ -34,6 +36,19 @@ class PublicQuestionSerializer(HALSerializer):
         )
         read_only_fields = fields  # No create or update allowed
 
+    def get_next_rules(self, obj):
+        # For backwards compatibility with earlier REST API version, this is
+        # candidate for removal. This also only makes sense for questions seen
+        # as part of a QuestionGraph, as the next_rules are no longer on the
+        # Question object --- graph structure is now explicitly modelled in the
+        # QuestionGraph and Edge objects.
+        next_rules = None
+        if graph := self.context.get('graph', None):
+            outgoing_edges = Edge.objects.filter(graph=graph, question=obj)
+            next_rules = [{'key': edge.next_question.ref, 'payload': edge.payload} for edge in outgoing_edges]
+
+        return next_rules
+
 
 class PublicQuestionDetailedSerializer(PublicQuestionSerializer):
     pass
@@ -41,6 +56,7 @@ class PublicQuestionDetailedSerializer(PublicQuestionSerializer):
 
 class PrivateQuestionSerializer(HALSerializer):
     serializer_url_field = QuestionHyperlinkedIdentityField
+    next_rules = serializers.SerializerMethodField()
     _display = DisplayField()
 
     class Meta:
@@ -63,6 +79,12 @@ class PrivateQuestionSerializer(HALSerializer):
             'uuid',
             'created_at',
         )
+
+    def get_next_rules(self, objects):
+        # Candidate for removal, a question in and of itself has no information
+        # about the relation to other questions in the most recent data model.
+        # In stead that is modelled explicitly by QuestionGraph and Edge objects.
+        return None
 
 
 class PrivateQuestionDetailedSerializer(PrivateQuestionSerializer):

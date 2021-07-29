@@ -8,11 +8,11 @@ from django.test import TestCase
 
 from signals.apps.questionnaires.exceptions import SessionInvalidated
 from signals.apps.questionnaires.factories import (
-    QuestionFactory,
-    QuestionnaireFactory,
-    SessionFactory,
     EdgeFactory,
-    QuestionGraphFactory
+    QuestionFactory,
+    QuestionGraphFactory,
+    QuestionnaireFactory,
+    SessionFactory
 )
 from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
@@ -99,9 +99,6 @@ def _question_graph_no_required_answers():
         required=False,
         short_label='First not required',
         label='First not required',
-        # next_rules=[
-        #     {'ref': 'two'},
-        # ]
     )
     q2 = QuestionFactory(
         key='two',
@@ -134,7 +131,8 @@ def _question_graph_with_decision_with_default_no_required_answers():
         label='The no question. Still unhappy?'
     )
 
-    graph = QuestionGraphFactory.create(name='Graph with questions that are not required and have defaults.', first_question=q1)
+    graph = QuestionGraphFactory.create(
+        name='Graph with questions that are not required and have defaults.', first_question=q1)
     EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
     EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
     EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)
@@ -269,7 +267,7 @@ class TestQuestionnairesService(TestCase):
         next_ref = get_next_ref('ANSWER', q_start, unconditional_graph)
         self.assertEqual(next_ref, q2.ref)
 
-        # conditional next:
+        # conditional next, no default option:
         q_no = QuestionFactory.create(key='NO')
         q_yes = QuestionFactory.create(key='YES')
         conditional_graph = QuestionGraphFactory.create(first_question=q_start)

@@ -34,6 +34,7 @@ class QuestionFactory(DjangoModelFactory):
 class QuestionGraphFactory(DjangoModelFactory):
     name = Sequence(lambda n: f'Question Graph {n}')
     first_question = SubFactory(QuestionFactory)
+
     class Meta:
         model = QuestionGraph
 

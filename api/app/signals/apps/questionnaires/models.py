@@ -4,11 +4,10 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.gis.db import models
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from signals.apps.questionnaires.app_settings import SESSION_DURATION
-from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
+from signals.apps.questionnaires.fieldtypes import field_type_choices
 from signals.apps.questionnaires.managers import (
     QuestionManager,
     QuestionnaireManager,
@@ -31,8 +30,9 @@ class Questionnaire(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True, help_text='Describe the Questionnaire')
     is_active = models.BooleanField(default=True)
-    
-    graph = models.ForeignKey('QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
+
+    graph = models.ForeignKey(
+        'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
 
     objects = QuestionnaireManager()
@@ -74,7 +74,7 @@ class QuestionGraph(models.Model):
     def set_edge_order(self, question, ids):
         all_ids = set(Edge.objects.filter(graph=self, question=question).values_list('id', flat=True))
         if set(ids) != all_ids:
-            msg = f'Cannot update edge order, edge ids are not correct.'
+            msg = 'Cannot update edge order, edge ids are not correct.'
             raise Exception(msg)
 
         for i, id_ in enumerate(ids):

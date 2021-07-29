@@ -29,10 +29,8 @@ admin.site.register(Question, QuestionAdmin)
 
 
 class QuestionnaireAdmin(admin.ModelAdmin):
-#    fields = ('uuid', 'name', 'description', 'first_question', 'is_active', 'flow', 'created_at',)
     fields = ('uuid', 'name', 'description', 'is_active', 'flow', 'created_at',)
     readonly_fields = ('uuid', 'created_at', 'flow',)
-#    raw_id_fields = ('first_question',)  # reference via QuestionGraph
 
     list_display = ('name', 'uuid', 'created_at',)
     list_per_page = 20

@@ -10,7 +10,9 @@ from rest_framework.test import APITestCase
 
 from signals.apps.questionnaires.factories import (
     AnswerFactory,
+    EdgeFactory,
     QuestionFactory,
+    QuestionGraphFactory,
     QuestionnaireFactory,
     SessionFactory
 )
@@ -38,8 +40,9 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/questions/'
 
     def setUp(self):
-        self.questionnaire = QuestionnaireFactory.create()
-        self.question = self.questionnaire.first_question
+        self.question = QuestionFactory.create()
+        graph = QuestionGraphFactory.create(first_question=self.question)
+        self.questionnaire = QuestionnaireFactory.create(graph=graph)
 
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, '../json_schema/public_get_question_detail.json')
@@ -75,7 +78,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.delete(f'{self.base_endpoint}{self.question.uuid}')
         self.assertEqual(response.status_code, 405)
 
-    def test_answer_question_create(self):
+    def test_answer_question_create(self):  # <-- HIERZO!!!
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
@@ -135,14 +138,24 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
-        questionnaire = QuestionnaireFactory.create(first_question__key='test-question-1',
-                                                    first_question__next_rules=[{'ref': 'test-question-2'}])
+        # Setup questions
+        test_question_1 = QuestionFactory(key='test-question-1')
+        test_question_2 = QuestionFactory(key='test-question-2')
+        test_question_3 = QuestionFactory(key='test-question-3')
+        test_question_4 = QuestionFactory(key='test-question-4')
+        test_question_5 = QuestionFactory(key='test-question-5')
 
-        second_question = QuestionFactory.create(key='test-question-2', next_rules=[{'ref': 'test-question-3'}])
-        third_question = QuestionFactory.create(key='test-question-3', next_rules=[{'ref': 'test-question-4'}])
-        fourth_question = QuestionFactory.create(key='test-question-4', next_rules=[{'ref': 'test-question-5'}])
-        fifth_question = QuestionFactory.create(key='test-question-5')
+        # Setup graph relations between questions
+        graph = QuestionGraphFactory.create(first_question=test_question_1)
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_2)
+        EdgeFactory.create(graph=graph, question=test_question_2, next_question=test_question_3)
+        EdgeFactory.create(graph=graph, question=test_question_3, next_question=test_question_4)
+        EdgeFactory.create(graph=graph, question=test_question_4, next_question=test_question_5)
 
+        # Create our questionnaire
+        questionnaire = QuestionnaireFactory.create(graph=graph)
+
+        # Answer our questionnaire
         data = {'payload': 'answer-1', 'questionnaire': questionnaire.uuid}
         first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
         response = self.client.post(first_post_answer_endpoint, data=data, format='json')
@@ -179,11 +192,11 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         answer_qs = Answer.objects.filter(
             question_id__in=[
-                questionnaire.first_question.id,
-                second_question.id,
-                third_question.id,
-                fourth_question.id,
-                fifth_question.id,
+                questionnaire.graph.first_question.id,
+                test_question_2.id,
+                test_question_3.id,
+                test_question_4.id,
+                test_question_5.id,
             ],
             session_id=session.pk,
         )
@@ -195,16 +208,22 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(0, Answer.objects.count())
         self.assertEqual(0, Session.objects.count())
 
-        questionnaire = QuestionnaireFactory.create(first_question__key='test-question-1',
-                                                    first_question__next_rules=[
-                                                        {'payload': 'yes', 'ref': 'test-question-2'},
-                                                        {'payload': 'no', 'ref': 'test-question-3'},
-                                                        {'ref': 'test-question-4'}])
+        # Setup questions
+        test_question_1 = QuestionFactory(key='test-question-1')
+        test_question_2 = QuestionFactory(key='test-question-2')
+        test_question_3 = QuestionFactory(key='test-question-3')
+        test_question_4 = QuestionFactory(key='test-question-4')
 
-        second_question = QuestionFactory.create(key='test-question-2')
-        third_question = QuestionFactory.create(key='test-question-3')
-        fourth_question = QuestionFactory.create(key='test-question-4')
+        # Setup graph relations between questions
+        graph = QuestionGraphFactory.create(first_question=test_question_1)
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_2, payload='yes')
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_3, payload='no')
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_4)
 
+        # Create our questionnaire
+        questionnaire = QuestionnaireFactory.create(graph=graph)
+
+        # Answer our questionnaire
         first_post_answer_endpoint = f'{self.base_endpoint}{questionnaire.first_question.uuid}/answer'
 
         # Flow: question 1 -> question 2 -> done
@@ -212,7 +231,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(first_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response_data['next_question']['uuid'], str(second_question.uuid))
+        self.assertEqual(response_data['next_question']['uuid'], str(test_question_2.uuid))
 
         data = {'payload': 'test', 'session': response_data['session']}
         second_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
@@ -227,7 +246,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(first_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response_data['next_question']['uuid'], str(third_question.uuid))
+        self.assertEqual(response_data['next_question']['uuid'], str(test_question_3.uuid))
 
         data = {'payload': 'test', 'session': response_data['session']}
         response = self.client.post(second_post_answer_endpoint, data=data, format='json')
@@ -241,7 +260,7 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.post(first_post_answer_endpoint, data=data, format='json')
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response_data['next_question']['uuid'], str(fourth_question.uuid))
+        self.assertEqual(response_data['next_question']['uuid'], str(test_question_4.uuid))
 
         data = {'payload': 'test', 'session': response_data['session']}
         second_post_answer_endpoint = response_data['next_question']['_links']['sia:post-answer']['href']
