@@ -14,7 +14,7 @@ from signals.apps.questionnaires.factories import (
     QuestionnaireFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
+from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Choice, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
@@ -378,6 +378,31 @@ class TestQuestionnairesService(TestCase):
             QuestionnairesService.validate_answer_payload(123456, plaintext_question)
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
+
+    def test_validate_answer_payload_choices(self):
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
+
+        payloads = ['only', 'yes', 'no']
+        question = questionnaire.graph.first_question
+        question.enforce_choices = True
+        question.save()
+
+        for payload in payloads:
+            Choice.objects.create(question=question, payload=payload)
+
+        self.assertEqual(question.choices.count(), 3)
+        for payload in payloads:
+            self.assertEqual(payload, QuestionnairesService.validate_answer_payload(payload, question))
+
+        no_choice = 'NOT A VALID ANSWER GIVEN PREDEFINED CHOICES'
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload(no_choice, question)
+
+        question.enforce_choices = False
+        question.save()
+
+        self.assertEqual(no_choice, QuestionnairesService.validate_answer_payload(no_choice, question))
 
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_submit(self, patched_callback):

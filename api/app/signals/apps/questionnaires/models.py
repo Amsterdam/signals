@@ -94,6 +94,7 @@ class Question(models.Model):  # aka node
     short_label = models.CharField(max_length=255)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
+    enforce_choices = models.BooleanField(default=False)
 
     root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
@@ -117,6 +118,12 @@ class Answer(models.Model):
     session = models.ForeignKey('Session', on_delete=models.CASCADE, null=True, related_name='answers')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
 
+    payload = models.JSONField(blank=True, null=True)
+
+
+class Choice(models.Model):
+    # TODO: add choice order
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='choices')
     payload = models.JSONField(blank=True, null=True)
 
 
