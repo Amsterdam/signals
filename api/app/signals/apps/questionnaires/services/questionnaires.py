@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 class QuestionnairesService:
     @staticmethod
-    def create_session(questionnaire, submit_before=None, ttl_seconds=None):
-        if ttl_seconds:
+    def create_session(questionnaire, submit_before=None, duration=None):
+        if duration:
             return Session.objects.create(
                 questionnaire=questionnaire,
                 submit_before=submit_before,
-                ttl_seconds=ttl_seconds
+                duration=duration
             )
         return Session.objects.create(questionnaire=questionnaire, submit_before=submit_before)
 
