@@ -54,11 +54,40 @@ class Edge(models.Model):  # aka edge list / adjacency list
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
     next_question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
 
-    order = models.IntegerField(default=0)  # Default is order of creation, can be overriden.
+    order = models.IntegerField(default=0)  # Default is order of creation, can be overridden.
     payload = models.JSONField(null=True, blank=True)  # <- validate using question field when saving
 
     class Meta:
         ordering = ['order', 'id']
+
+
+class ActionTrigger(models.Model):
+    REOPEN_SIGNAL = 'reopen signal'
+    ACTION_CHOICES = [
+        (REOPEN_SIGNAL, 'Melding heropenen'),
+    ]
+
+    graph = models.ForeignKey('QuestionGraph', on_delete=models.CASCADE, related_name='action_triggers')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
+    payload = models.JSONField(null=True, blank=True)  # <- validate using question field when saving
+
+    order = models.IntegerField(default=0)  # Default is order of creation, can be overridden.
+
+    action = models.CharField(max_length=255, choices=ACTION_CHOICES)
+    arguments = models.JSONField(blank=True, null=True)
+
+
+class InfoTrigger(models.Model):
+    # We check whether information should be shown by checking for a match:
+    graph = models.ForeignKey('QuestionGraph', on_delete=models.CASCADE, related_name='info_triggers')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
+    payload = models.JSONField(null=True, blank=True)  # <- validate using question field when saving
+
+    # It is possible to define several 
+    order = models.IntegerField(default=0)  # Default is order of creation, can be overridden.
+
+    title = models.CharField(max_length=255)
+    information = models.TextField()  # TODO: allow markdown
 
 
 class QuestionGraph(models.Model):
@@ -73,7 +102,7 @@ class QuestionGraph(models.Model):
 
     def set_edge_order(self, question, ids):
         all_ids = set(Edge.objects.filter(graph=self, question=question).values_list('id', flat=True))
-        if set(ids) != all_ids:
+        if set(ids) != all_ids and len(ids) == len():
             msg = 'Cannot update edge order, edge ids are not correct.'
             raise Exception(msg)
 
