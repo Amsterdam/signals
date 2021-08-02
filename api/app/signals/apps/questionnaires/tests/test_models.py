@@ -3,7 +3,6 @@
 """
 Test models and associated manager functions for the questionnaires app.
 """
-import unittest
 import uuid
 
 from django.test import TestCase
@@ -300,7 +299,6 @@ class TestGetByReference(TestCase):
         with self.assertRaises(Question.DoesNotExist):
             Question.objects.get_by_reference(str(generated))
 
-    @unittest.expectedFailure
     def test_pathological_case_key_is_valid_uuid(self):
         # Set up a question that has a valid UUID as a key, make sure that
         # that one UUID does not match the question's `uuid` property.
@@ -316,5 +314,5 @@ class TestGetByReference(TestCase):
 
         # TODO: fix behavior of get_by_reference triggered below (hence the
         # test is marged as an expected failure)
-        retrieved = Question.objects.get_by_reference(generated)
+        retrieved = Question.objects.get_by_reference(str(generated))
         self.assertEqual(retrieved, question)

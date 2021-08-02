@@ -18,11 +18,14 @@ class QuestionManager(models.Manager):
             raise self.model.DoesNotExist(msg)
 
         try:
-            question_uuid = uuid.UUID(ref)
-        except (ValueError, TypeError):
             return self.get(key=ref)
-        else:
-            return self.get(uuid=question_uuid)
+        except self.model.DoesNotExist:
+            try:
+                question_uuid = uuid.UUID(ref)
+            except (ValueError, TypeError):
+                raise self.model.DoesNotExist
+            else:
+                return self.get(uuid=question_uuid)
 
     def get_from_question_graph(self, question_graph):
         # TODO: do this query in ORM completely
