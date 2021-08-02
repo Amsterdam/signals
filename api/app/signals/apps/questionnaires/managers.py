@@ -15,7 +15,7 @@ class QuestionManager(models.Manager):
         """
         if ref is None:
             msg = 'Cannot get Question instance for ref=None'
-            raise self.DoesNotExist(msg)
+            raise self.model.DoesNotExist(msg)
 
         try:
             question_uuid = uuid.UUID(ref)

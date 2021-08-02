@@ -3,6 +3,9 @@
 """
 Test models and associated manager functions for the questionnaires app.
 """
+import unittest
+import uuid
+
 from django.test import TestCase
 
 from signals.apps.questionnaires.factories import EdgeFactory, QuestionFactory, QuestionGraphFactory
@@ -94,6 +97,16 @@ def create_cycle(graph_name='cycle'):
     graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
     EdgeFactory(graph=graph, question=q1, next_question=q2, payload=None)
     EdgeFactory(graph=graph, question=q2, next_question=q1, payload=None)
+
+    return graph
+
+
+def create_too_many_questions(graph_name='too_many'):
+    questions = [QuestionFactory.create() for i in range(100)]  # TODO: make MAX_QUESTIONS an app setting
+
+    graph = QuestionGraphFactory.create(name=graph_name, first_question=questions[0])
+    for i in range(len(questions) - 1):
+        EdgeFactory.create(graph=graph, question=questions[i], next_question=questions[i + 1])
 
     return graph
 
@@ -205,12 +218,32 @@ class TestCycle(TestCase):
         self.assertEqual(len(questions), 2)
 
     def test_get_reachable_from_question_graph(self):
-        # only happy flow ...
         question_graph = QuestionGraph.objects.get(name='cycle')
 
         with self.assertRaises(Exception) as e:
             Question.objects.get_reachable_from_question_graph(question_graph)
             self.assertIn('not acyclic', str(e))
+
+
+class TestTooMany(TestCase):
+    def setUp(self):
+        create_too_many_questions()
+
+    def test_get_from_question_graph(self):
+        # TODO: consider whether we want to raise an error in QuestionManager.get_from_question_graph in case too many
+        # questions are added to the graph.
+        question_graph = QuestionGraph.objects.get(name='too_many')
+        self.assertEqual(len(question_graph.edges.all()), 99)
+
+        questions = Question.objects.get_from_question_graph(question_graph)
+        self.assertEqual(len(questions), 100)
+
+    def test_get_reachable_from_question_graph(self):
+        question_graph = QuestionGraph.objects.get(name='too_many')
+
+        with self.assertRaises(Exception) as e:
+            Question.objects.get_reachable_from_question_graph(question_graph)
+            self.assertIn('too many', str(e))
 
 
 class TestEdgeOrdering(TestCase):
@@ -239,3 +272,49 @@ class TestEdgeOrdering(TestCase):
         after = self.graph.set_edge_order(question, change)
         for id_, edge in zip(after, self.graph.get_edges(question)):
             self.assertEqual(id_, edge.id)
+
+
+class TestGetByReference(TestCase):
+    def setUp(self):
+        self.question = QuestionFactory.create(key='question')
+
+    def test_get_by_reference_none(self):
+        with self.assertRaises(Question.DoesNotExist):
+            Question.objects.get_by_reference(None)
+
+    def test_get_by_reference_key(self):
+        question = Question.objects.get_by_reference('question')
+        self.assertEqual(self.question, question)
+
+        with self.assertRaises(Question.DoesNotExist):
+            Question.objects.get_by_reference('NO SUCH QUESTION')
+
+    def test_get_by_reference_uuid(self):
+        question = Question.objects.get_by_reference(str(self.question.uuid))
+        self.assertEqual(question, self.question)
+
+        generated = uuid.uuid4()
+        while generated == self.question.uuid:
+            generated = uuid.uuid4()
+
+        with self.assertRaises(Question.DoesNotExist):
+            Question.objects.get_by_reference(str(generated))
+
+    @unittest.expectedFailure
+    def test_pathological_case_key_is_valid_uuid(self):
+        # Set up a question that has a valid UUID as a key, make sure that
+        # that one UUID does not match the question's `uuid` property.
+        question = QuestionFactory.create()
+
+        generated = uuid.uuid4()
+        while generated == question.uuid:
+            generated = uuid.uuid4()
+
+        question.key = generated
+        question.save()
+        question.refresh_from_db()
+
+        # TODO: fix behavior of get_by_reference triggered below (hence the
+        # test is marged as an expected failure)
+        retrieved = Question.objects.get_by_reference(generated)
+        self.assertEqual(retrieved, question)
