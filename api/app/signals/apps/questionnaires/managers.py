@@ -29,7 +29,9 @@ class QuestionManager(models.Manager):
         questions = set(question_graph.edges.values_list('question', flat=True))
         next_questions = set(question_graph.edges.values_list('next_question', flat=True))
 
-        return self.filter(id__in=(questions | next_questions))
+        question_ids = questions | next_questions
+        question_ids.add(question_graph.first_question_id)
+        return self.filter(id__in=question_ids)
 
     def get_reachable_from_question_graph(self, question_graph):
         # Given the graph of questions:
@@ -39,7 +41,7 @@ class QuestionManager(models.Manager):
         # - construct a directed graph
         # - check that first question is a node in that graph, if not only return first question
         # - get the set of "descendants" of first question in the graph, turn it into a queryset and return it
-        from questionnaires.models import Edge
+        from signals.apps.questionnaires.models import Edge
         MAX_QUESTIONS = 50
 
         # No first question: return empty Question queryset
@@ -49,7 +51,7 @@ class QuestionManager(models.Manager):
         # No edges: return Queryset with only the first question
         edges = Edge.objects.filter(graph=question_graph)
         if not edges.exists():
-            return self.filter(id__in=question_graph.first_question_id)
+            return self.filter(id=question_graph.first_question_id)
 
         # first question and edges present, build directed graph
         nx_graph = networkx.DiGraph()
@@ -59,9 +61,10 @@ class QuestionManager(models.Manager):
                 msg = f'Question graph {question_graph.name} contains too many questions.'
                 raise Exception(msg)
 
-        # our first_question should be part of the graph of questions
+        # Our first_question should be part of the graph of questions, if it is
+        # not only the first_question is reachable.
         if question_graph.first_question_id not in nx_graph:
-            return self.filter(id__in=question_graph.first_question_id)
+            return self.filter(id=question_graph.first_question_id)
 
         # our question graph must be directed and acyclic
         if not networkx.is_directed_acyclic_graph(nx_graph):
