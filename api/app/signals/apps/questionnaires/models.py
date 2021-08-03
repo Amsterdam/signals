@@ -75,6 +75,9 @@ class ActionTrigger(models.Model):
     action = models.CharField(max_length=255, choices=ACTION_CHOICES)
     arguments = models.JSONField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['order', 'id']
+
 
 class InfoTrigger(models.Model):
     # We check whether information should be shown by checking for a match:
@@ -82,16 +85,32 @@ class InfoTrigger(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
     payload = models.JSONField(null=True, blank=True)  # <- validate using question field when saving
 
-    # It is possible to define several 
+    # It is possible to define several
     order = models.IntegerField(default=0)  # Default is order of creation, can be overridden.
 
     title = models.CharField(max_length=255)
     information = models.TextField()  # TODO: allow markdown
 
+    class Meta:
+        ordering = ['order', 'id']
+
 
 class QuestionGraph(models.Model):
     name = models.CharField(max_length=255, unique=True)
     first_question = models.ForeignKey('Question', blank=True, null=True, on_delete=models.SET_NULL, related_name='+')
+
+    def _set_model_order(self, question, model, ids):
+        all_ids = set(model.objects.filter(graph=self, question=question).values_list('id', flat=True))
+        if set(ids) != all_ids and len(ids) == len(all_ids):
+            msg = f'Cannot update {model.__name__} order, {model.__name__} instance ids are not correct.'
+            raise Exception(msg)
+
+        for i, id_ in enumerate(ids):
+            instance = model.objects.get(id=id_)
+            instance.order = i
+            instance.save()
+
+        return model.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
     def get_edges(self, question):
         return Edge.objects.filter(graph=self, question=question)
@@ -100,17 +119,33 @@ class QuestionGraph(models.Model):
         return Edge.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
     def set_edge_order(self, question, ids):
-        all_ids = set(Edge.objects.filter(graph=self, question=question).values_list('id', flat=True))
-        if set(ids) != all_ids and len(ids) == len():
-            msg = 'Cannot update edge order, edge ids are not correct.'
-            raise Exception(msg)
+        return self._set_model_order(question, Edge, ids)
 
-        for i, id_ in enumerate(ids):
-            edge = Edge.objects.get(id=id_)
-            edge.order = i
-            edge.save()
+    def get_info_triggers(self, question):
+        return InfoTrigger.objects.filter(graph=self, question=question)
 
-        return Edge.objects.filter(graph=self, question=question).values_list('id', flat=True)
+    def get_info_trigger_order(self, question):
+        return InfoTrigger.objects.filter(graph=self, question=question).values_list('id', flat=True)
+
+    def set_info_trigger_order(self, question, ids):
+        return self._set_model_order(question, InfoTrigger, ids)
+
+    def get_action_triggers(self, question):
+        return ActionTrigger.objects.filter(graph=self, question=question)
+
+    def get_action_trigger_order(self, question):
+        return ActionTrigger.objects.filter(graph=self, question=question).values_list('id', flat=True)
+
+    def set_action_trigger_order(self, question, ids):
+        return self._set_model_order(question, ActionTrigger, ids)
+
+
+class Choice(models.Model):
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='choices')
+    payload = models.JSONField(blank=True, null=True)
+
+    class Meta:
+        order_with_respect_to = 'question'
 
 
 class Question(models.Model):  # aka node
@@ -129,10 +164,6 @@ class Question(models.Model):  # aka node
     def __str__(self):
         return f'{self.key or self.uuid} ({self.field_type})'
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-
     @property
     def ref(self):
         return self.key if self.key else str(self.uuid)
@@ -144,12 +175,6 @@ class Answer(models.Model):
     session = models.ForeignKey('Session', on_delete=models.CASCADE, null=True, related_name='answers')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
 
-    payload = models.JSONField(blank=True, null=True)
-
-
-class Choice(models.Model):
-    # TODO: add choice order
-    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='choices')
     payload = models.JSONField(blank=True, null=True)
 
 

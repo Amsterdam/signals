@@ -5,8 +5,11 @@ from factory.django import DjangoModelFactory
 from faker import Faker
 
 from signals.apps.questionnaires.models import (
+    ActionTrigger,
     Answer,
+    Choice,
     Edge,
+    InfoTrigger,
     Question,
     QuestionGraph,
     Questionnaire,
@@ -46,6 +49,29 @@ class EdgeFactory(DjangoModelFactory):
 
     class Meta:
         model = Edge
+
+
+class ActionTriggerFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = ActionTrigger
+
+
+class InfoTriggerFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = InfoTrigger
+
+
+class ChoiceFactory(DjangoModelFactory):
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Choice
 
 
 class QuestionnaireFactory(DjangoModelFactory):
