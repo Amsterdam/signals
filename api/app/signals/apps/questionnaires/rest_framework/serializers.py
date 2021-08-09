@@ -8,7 +8,6 @@ from signals.apps.questionnaires.models import Answer, Edge, Question, Questionn
 from signals.apps.questionnaires.rest_framework.fields import (
     EmptyHyperlinkedIdentityField,
     QuestionHyperlinkedIdentityField,
-    QuestionnairePrivateHyperlinkedIdentityField,
     QuestionnairePublicHyperlinkedIdentityField,
     SessionPublicHyperlinkedIdentityField,
     UUIDRelatedField
@@ -54,43 +53,6 @@ class PublicQuestionDetailedSerializer(PublicQuestionSerializer):
     pass
 
 
-class PrivateQuestionSerializer(HALSerializer):
-    serializer_url_field = QuestionHyperlinkedIdentityField
-    next_rules = serializers.SerializerMethodField()
-    _display = DisplayField()
-
-    class Meta:
-        model = Question
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'key',
-            'uuid',
-            'label',
-            'short_label',
-            'field_type',
-            'next_rules',
-            'required',
-            'created_at',
-        )
-        read_only_fields = (
-            'id',
-            'uuid',
-            'created_at',
-        )
-
-    def get_next_rules(self, objects):
-        # Candidate for removal, a question in and of itself has no information
-        # about the relation to other questions in the most recent data model.
-        # In stead that is modelled explicitly by QuestionGraph and Edge objects.
-        return None
-
-
-class PrivateQuestionDetailedSerializer(PrivateQuestionSerializer):
-    pass
-
-
 class PublicQuestionnaireSerializer(HALSerializer):
     serializer_url_field = QuestionnairePublicHyperlinkedIdentityField
 
@@ -113,36 +75,6 @@ class PublicQuestionnaireSerializer(HALSerializer):
 
 class PublicQuestionnaireDetailedSerializer(PublicQuestionnaireSerializer):
     first_question = PublicQuestionDetailedSerializer()
-
-
-class PrivateQuestionnaireSerializer(HALSerializer):
-    serializer_url_field = QuestionnairePrivateHyperlinkedIdentityField
-
-    _display = DisplayField()
-    first_question = PrivateQuestionSerializer()
-
-    class Meta:
-        model = Questionnaire
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'uuid',
-            'name',
-            'description',
-            'is_active',
-            'created_at',
-            'first_question'
-        )
-        read_only_fields = (
-            'id',
-            'uuid',
-            'created_at',
-        )
-
-
-class PrivateQuestionnaireDetailedSerializer(PrivateQuestionnaireSerializer):
-    first_question = PrivateQuestionDetailedSerializer()
 
 
 class PublicSessionSerializer(HALSerializer):
