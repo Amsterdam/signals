@@ -6,6 +6,7 @@ from unittest import mock
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
+from signals.apps.questionnaires.app_settings import SESSION_DURATION
 from signals.apps.questionnaires.exceptions import SessionInvalidated
 from signals.apps.questionnaires.factories import (
     EdgeFactory,
@@ -14,7 +15,7 @@ from signals.apps.questionnaires.factories import (
     QuestionnaireFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
+from signals.apps.questionnaires.models import Answer, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
