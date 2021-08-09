@@ -46,16 +46,6 @@ class QuestionAdmin(admin.ModelAdmin):
 
     ordering = ('-created_at',)
 
-    # Disable editing on this model
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
 
 class SessionAdmin(admin.ModelAdmin):
     fields = ('uuid', 'questionnaire', '_signal', 'started_at', 'duration', 'submit_before', 'frozen', 'created_at',)
