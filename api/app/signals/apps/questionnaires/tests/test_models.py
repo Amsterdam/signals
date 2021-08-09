@@ -312,7 +312,5 @@ class TestGetByReference(TestCase):
         question.save()
         question.refresh_from_db()
 
-        # TODO: fix behavior of get_by_reference triggered below (hence the
-        # test is marged as an expected failure)
         retrieved = Question.objects.get_by_reference(str(generated))
         self.assertEqual(retrieved, question)

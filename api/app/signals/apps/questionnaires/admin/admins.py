@@ -36,9 +36,8 @@ class QuestionGraphAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    fields = ('key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'root', 'created_at',)
+    fields = ('key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
-    raw_id_fields = ('root',)
 
     list_display = ('key', 'uuid', 'field_type', 'created_at',)
     list_per_page = 20

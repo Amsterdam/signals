@@ -48,13 +48,12 @@ class Questionnaire(models.Model):
 
 
 class Edge(models.Model):  # aka edge list / adjacency list
-    # TODO: order, default;
     graph = models.ForeignKey('QuestionGraph', on_delete=models.CASCADE, related_name='edges')
 
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
     next_question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='+')
 
-    order = models.IntegerField(default=0)  # Default is order of creation, can be overriden.
+    order = models.IntegerField(default=0)  # Default is order of creation, can be overridden.
     payload = models.JSONField(null=True, blank=True)  # <- validate using question field when saving
 
     class Meta:
@@ -94,8 +93,6 @@ class Question(models.Model):  # aka node
     short_label = models.CharField(max_length=255)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
-
-    root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
 
     objects = QuestionManager()
 

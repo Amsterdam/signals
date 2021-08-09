@@ -16,8 +16,17 @@ class Migration(migrations.Migration):
             name='next_rules',
         ),
         migrations.RemoveField(
+            model_name='question',
+            name='root',
+        ),
+        migrations.RemoveField(
             model_name='questionnaire',
             name='first_question',
+        ),
+        migrations.AlterField(
+            model_name='question',
+            name='field_type',
+            field=models.CharField(choices=[('integer', 'Integer'), ('plain_text', 'PlainText')], max_length=255),
         ),
         migrations.AlterField(
             model_name='questionnaire',
