@@ -62,6 +62,8 @@ def create_diamond_plus(graph_name='diamond_plus'):
     q7 = QuestionFactory.create()
     EdgeFactory.create(graph=graph, question=q6, next_question=q7, payload=None)
 
+    return graph
+
 
 def create_empty(graph_name='empty'):
     return QuestionGraphFactory.create(name=graph_name, first_question=None)

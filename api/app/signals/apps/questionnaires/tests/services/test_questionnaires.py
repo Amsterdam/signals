@@ -170,6 +170,26 @@ def _question_graph_one_question():
     return QuestionGraphFactory.create(name='Graph with only one question', first_question=q1)
 
 
+def _create_graph_no_defaults(graph_name='diamond'):
+    """
+    Seed the database with a diamond shaped graph formed by questions.
+    """
+    q1 = QuestionFactory.create()
+    q2 = QuestionFactory.create()
+    q3 = QuestionFactory.create()
+
+    # sketch:
+    #    q1 <- first_question
+    #   /  \
+    # q2    q3
+
+    graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q3, payload='no')
+
+    return graph
+
+
 class TestQuestionGraphs(TestCase):
     def test_all_question_graph(self):
         _question_graph_with_decision()
@@ -379,6 +399,27 @@ class TestQuestionnairesService(TestCase):
             QuestionnairesService.validate_answer_payload(123456, plaintext_question)
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
+
+    def test_question_no_default_next(self):
+        """
+        Behavior of get_next_question when no default is set.
+        """
+        graph = _create_graph_no_defaults()
+        questionnaire = QuestionnaireFactory(graph=graph)
+        q1 = questionnaire.graph.first_question
+
+        # Try following both branches:
+        answer = QuestionnairesService.create_answer(answer_payload='yes', question=q1, questionnaire=questionnaire)
+        self.assertIsNotNone(QuestionnairesService.get_next_question(answer, q1))
+
+        answer = QuestionnairesService.create_answer(answer_payload='no', question=q1, questionnaire=questionnaire)
+        self.assertIsNotNone(QuestionnairesService.get_next_question(answer, q1))
+
+        # Try an answer that does not match a branch in the question graph.
+        # Since the graph has no default question following the first question
+        # we will get a next_question of None:
+        answer = QuestionnairesService.create_answer(answer_payload='NADA', question=q1, questionnaire=questionnaire)
+        self.assertIsNone(QuestionnairesService.get_next_question(answer, q1))
 
     def test_validate_answer_payload_choices(self):
         graph = _question_graph_one_question()
