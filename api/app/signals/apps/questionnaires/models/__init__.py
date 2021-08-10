@@ -7,6 +7,7 @@ from signals.apps.questionnaires.models.question import Question
 from signals.apps.questionnaires.models.question_graph import QuestionGraph
 from signals.apps.questionnaires.models.questionnaire import Questionnaire
 from signals.apps.questionnaires.models.session import Session
+from signals.apps.questionnaires.models.trigger import Trigger
 
 __all__ = [
     'Answer',
@@ -15,5 +16,6 @@ __all__ = [
     'Question',
     'QuestionGraph',
     'Questionnaire',
-    'Session'
+    'Session',
+    'Trigger'
 ]

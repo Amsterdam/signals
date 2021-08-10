@@ -15,7 +15,7 @@ from signals.apps.questionnaires.factories import (
     QuestionnaireFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import Answer, Questionnaire
+from signals.apps.questionnaires.models import Answer, Choice, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory

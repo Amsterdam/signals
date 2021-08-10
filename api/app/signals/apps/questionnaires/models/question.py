@@ -25,15 +25,12 @@ class Question(models.Model):
     short_label = models.CharField(max_length=255)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
+    enforce_choices = models.BooleanField(default=False)
 
     objects = QuestionManager()
 
     def __str__(self):
         return f'{self.key or self.uuid} ({self.field_type})'
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @property
     def ref(self):

@@ -10,9 +10,9 @@ from django.test import TestCase
 from signals.apps.questionnaires.factories import (
     ChoiceFactory,
     EdgeFactory,
-    InfoTriggerFactory,
     QuestionFactory,
-    QuestionGraphFactory
+    QuestionGraphFactory,
+    TriggerFactory
 )
 from signals.apps.questionnaires.models import Edge, Question, QuestionGraph
 
@@ -275,69 +275,31 @@ class TestEdges(TestCase):
         # now reorder our edges
         change = before[1:] + before[:1]
         self.graph.set_edge_order(question, change)
+
         for id_, edge in zip(change, self.graph.get_edges(question)):
             self.assertEqual(id_, edge.id)
 
 
-class TestInfoTriggers(TestCase):
+class TestTriggers(TestCase):
     def setUp(self):
         q1 = QuestionFactory.create(field_type='plain_text')
 
-        self.graph = QuestionGraphFactory.create(name='info_trigger_order', first_question=q1)
-        InfoTriggerFactory.create(
-            graph=self.graph,
-            question=self.graph.first_question,
-            payload='one',
-            title='Title one',
-            information='Information one'
-        )
-        InfoTriggerFactory.create(
-            graph=self.graph,
-            question=self.graph.first_question,
-            payload='two',
-            title='Title two',
-            information='Information two'
-        )
-        InfoTriggerFactory.create(
-            graph=self.graph,
-            question=self.graph.first_question,
-            title='Title default',
-            information='Information default'
-        )
+        self.graph = QuestionGraphFactory.create(name='trigger_order', first_question=q1)
 
-    def test_info_trigger_ordering(self):
+        trigger_payloads = ['one', 'two', 'three']
+        for payload in trigger_payloads:
+            TriggerFactory.create(graph=self.graph, question=q1, payload=payload)
+
+    def test_trigger_ordering(self):
         question = self.graph.first_question
-        before = self.graph.get_info_trigger_order(question)
-        for id_, trigger in zip(before, self.graph.get_info_triggers(question)):
+        before = self.graph.get_trigger_order(question)
+        for id_, trigger in zip(before, self.graph.get_triggers(question)):
             self.assertEqual(id_, trigger.id)
 
         # now reorder our edges
         change = before[1:] + before[:1]
-        self.graph.set_info_trigger_order(question, change)
-        for id_, trigger in zip(change, self.graph.get_info_triggers(question)):
-            self.assertEqual(id_, trigger.id)
-
-
-class TestActionTriggers(TestCase):
-    def setUp(self):
-        q1 = QuestionFactory.create(field_type='plain_text')
-
-        self.graph = QuestionGraphFactory.create(name='action_trigger_order', first_question=q1)
-
-        action_trigger_payloads = ['one', 'two', 'three']
-        for payload in action_trigger_payloads:
-            InfoTriggerFactory.create(graph=self.graph, question=q1, payload=payload)
-
-    def test_action_trigger_ordering(self):
-        question = self.graph.first_question
-        before = self.graph.get_action_trigger_order(question)
-        for id_, trigger in zip(before, self.graph.get_action_triggers(question)):
-            self.assertEqual(id_, trigger.id)
-
-        # now reorder our edges
-        change = before[1:] + before[:1]
-        self.graph.set_action_trigger_order(question, change)
-        for id_, trigger in zip(change, self.graph.get_action_triggers(question)):
+        self.graph.set_trigger_order(question, change)
+        for id_, trigger in zip(change, self.graph.get_triggers(question)):
             self.assertEqual(id_, trigger.id)
 
 

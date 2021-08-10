@@ -17,30 +17,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.CreateModel(
-            name='InfoTrigger',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('payload', models.JSONField(blank=True, null=True)),
-                ('order', models.IntegerField(default=0)),
-                ('title', models.CharField(max_length=255)),
-                ('information', models.TextField()),
-                ('graph', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name='info_triggers',
-                    to='questionnaires.questiongraph'
-                )),
-                ('question', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name='+',
-                    to='questionnaires.question'
-                )),
-            ],
-            options={
-                'ordering': ['order', 'id'],
-            },
-        ),
-        migrations.CreateModel(
-            name='ActionTrigger',
+            name='Trigger',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('payload', models.JSONField(blank=True, null=True)),
