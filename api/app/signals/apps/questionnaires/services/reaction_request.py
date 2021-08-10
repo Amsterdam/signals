@@ -21,7 +21,13 @@ from signals.apps.questionnaires.app_settings import (
     REACTION_REQUEST_DAYS_OPEN
 )
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.models import (
+    Answer,
+    Question,
+    QuestionGraph,
+    Questionnaire,
+    Session
+)
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -45,8 +51,9 @@ class ReactionRequestService:
                 short_label='Reactie melder',
                 label=signal.status.text,  # <-- this should not be empty, max 200 characters
             )
+            graph = QuestionGraph.objects.create(first_question=question, name='Reactie gevraagd.')
             questionnaire = Questionnaire.objects.create(
-                first_question=question,
+                graph=graph,
                 name='Reactie gevraagd',
                 flow=Questionnaire.REACTION_REQUEST,
             )

@@ -4,7 +4,6 @@ import logging
 
 import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
-from django.db import transaction
 from django.utils import timezone
 from jsonschema.exceptions import SchemaError as js_schema_error
 from jsonschema.exceptions import ValidationError as js_validation_error
@@ -20,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 class QuestionnairesService:
     @staticmethod
-    def create_session(questionnaire, submit_before=None, ttl_seconds=None):
-        if ttl_seconds:
+    def create_session(questionnaire, submit_before=None, duration=None):
+        if duration:
             return Session.objects.create(
                 questionnaire=questionnaire,
                 submit_before=submit_before,
-                ttl_seconds=ttl_seconds
+                duration=duration
             )
         return Session.objects.create(questionnaire=questionnaire, submit_before=submit_before)
 
@@ -98,19 +97,10 @@ class QuestionnairesService:
         if session.frozen:
             raise SessionFrozen(f'Session {session.uuid} frozen.')
 
-        # Check submitted answer
-        answer_payload = QuestionnairesService.validate_answer_payload(answer_payload, question)
+        # Check submitted answer validates. If so save it to DB and return it.
+        QuestionnairesService.validate_answer_payload(answer_payload, question)
 
-        # Check whether the (equivalent of) a submit button was used, if so
-        # freeze the session.
-        with transaction.atomic():
-            if question.key == 'submit':
-                transaction.on_commit(lambda: QuestionnairesService.handle_frozen_session(session))
-                session.frozen = True
-                session.save()
-            answer = Answer.objects.create(session=session, question=question, payload=answer_payload)
-
-        return answer
+        return Answer.objects.create(session=session, question=question, payload=answer_payload)
 
     @staticmethod
     def freeze_session(session):
@@ -126,28 +116,23 @@ class QuestionnairesService:
             ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
 
     @staticmethod
-    def get_next_question_ref(answer_payload, next_rules):
+    def get_next_question_ref(answer_payload, question, graph):
         # TODO: consider whether we want case sensitive matches in case of
         # character strings
-
-        if next_rules:
-            for rule in next_rules:
-                if 'payload' in rule and answer_payload == rule['payload']:
-                    return rule['ref']
-                elif 'payload' not in rule:
-                    return rule['ref']
+        outgoing_edges = graph.edges.filter(question=question)
+        for edge in outgoing_edges:
+            if edge.payload == answer_payload or edge.payload is None:
+                return edge.next_question.ref
 
         return None
 
     @staticmethod
     def get_next_question(answer, question):
-        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question.next_rules)
+        graph = answer.session.questionnaire.graph
+        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question, graph)
 
         if next_ref is None:
-            if question.key == 'submit':
-                next_question = None
-            else:
-                next_question = Question.objects.get_by_reference(ref='submit')
+            next_question = None
         else:
             try:
                 next_question = Question.objects.get_by_reference(ref=next_ref)

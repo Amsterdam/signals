@@ -1,46 +1,49 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.contrib import admin, messages
-from django.contrib.gis.db.models import JSONField
 from django.utils.html import format_html
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
-from signals.apps.questionnaires.models import Question, Questionnaire, Session
+from signals.apps.questionnaires.admin.inlines import EdgeStackedInline
+
+
+class QuestionnaireAdmin(admin.ModelAdmin):
+    inlines = (EdgeStackedInline, )
+    fieldsets = (
+        (None, {'fields': ('uuid', 'created_at',)}),
+        ('Details', {'fields': ('name', 'description', 'flow', 'is_active',)}),
+        ('Question Graph', {'fields': ('graph',)}),
+    )
+    readonly_fields = ('uuid', 'created_at',)
+
+    list_display = ('name', 'uuid', 'is_active', 'created_at',)
+    list_display_links = ('name', 'uuid',)
+    list_filter = ('is_active',)
+    list_per_page = 20
+    list_select_related = True
+
+    search_fields = ('name',)
+
+    ordering = ('-created_at',)
+
+
+class QuestionGraphAdmin(admin.ModelAdmin):
+    inlines = (EdgeStackedInline,)
+    fields = ('name', 'first_question',)
+
+    list_display = ('name', 'first_question',)
+    list_per_page = 20
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    fields = ('key', 'uuid', 'label', 'short_label', 'field_type', 'next_rules', 'required', 'root', 'created_at',)
+    fields = ('key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
-    raw_id_fields = ('root',)
 
     list_display = ('key', 'uuid', 'field_type', 'created_at',)
     list_per_page = 20
     list_select_related = True
 
     ordering = ('-created_at',)
-
-    formfield_overrides = {
-        JSONField: {'widget': PrettyJSONWidget}
-    }
-
-
-admin.site.register(Question, QuestionAdmin)
-
-
-class QuestionnaireAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'name', 'description', 'first_question', 'is_active', 'flow', 'created_at',)
-    readonly_fields = ('uuid', 'created_at', 'flow',)
-    raw_id_fields = ('first_question',)
-
-    list_display = ('name', 'uuid', 'created_at',)
-    list_per_page = 20
-    list_select_related = True
-
-    ordering = ('-created_at',)
-
-
-admin.site.register(Questionnaire, QuestionnaireAdmin)
 
 
 class SessionAdmin(admin.ModelAdmin):
@@ -108,6 +111,3 @@ class SessionAdmin(admin.ModelAdmin):
 
         unfrozen_post_count = queryset.filter(frozen=False).count()
         messages.add_message(request, messages.SUCCESS, f'{unfrozen_post_count-not_frozen_pre_count} Sessions unfrozen')
-
-
-admin.site.register(Session, SessionAdmin)

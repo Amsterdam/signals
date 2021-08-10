@@ -43,14 +43,6 @@ class QuestionnairePublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, 
         return OrderedDict([('self', dict(href=self._get_url(value, 'public-questionnaire-detail'))), ])
 
 
-class QuestionnairePrivateHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
-    def to_representation(self, value):
-        return OrderedDict([
-            ('self', dict(href=self._get_url(value, 'private-questionnaire-detail'))),
-            ('sia:public-self', dict(href=self._reverse('public-questionnaire-detail', kwargs={'uuid': value.uuid}))),
-        ])
-
-
 class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
     lookup_field = 'key'
 
