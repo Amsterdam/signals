@@ -133,11 +133,11 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(0, Session.objects.count())
 
         # Setup questions
-        test_question_1 = QuestionFactory(key='test-question-1')
-        test_question_2 = QuestionFactory(key='test-question-2')
-        test_question_3 = QuestionFactory(key='test-question-3')
-        test_question_4 = QuestionFactory(key='test-question-4')
-        test_question_5 = QuestionFactory(key='test-question-5')
+        test_question_1 = QuestionFactory(name='test-question-1')
+        test_question_2 = QuestionFactory(name='test-question-2')
+        test_question_3 = QuestionFactory(name='test-question-3')
+        test_question_4 = QuestionFactory(name='test-question-4')
+        test_question_5 = QuestionFactory(name='test-question-5')
 
         # Setup graph relations between questions
         graph = QuestionGraphFactory.create(first_question=test_question_1)

@@ -23,17 +23,17 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 def _question_graph_with_decision():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        name='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key='q_yes',
+        name='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key='q_no',
+        name='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -71,17 +71,17 @@ def _question_graph_with_decision_null_keys():
 
 def _question_graph_with_decision_with_default():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        name='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key='q_yes',
+        name='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key='q_no',
+        name='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -96,13 +96,13 @@ def _question_graph_with_decision_with_default():
 
 def _question_graph_no_required_answers():
     q1 = QuestionFactory.create(
-        key='one',
+        name='one',
         required=False,
         short_label='First not required',
         label='First not required',
     )
     q2 = QuestionFactory(
-        key='two',
+        name='two',
         required=False,
         short_label='Second not required',
         label='Second not required',

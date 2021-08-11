@@ -11,14 +11,14 @@ from django.db.models.functions import Now
 class QuestionManager(models.Manager):
     def get_by_reference(self, ref):
         """
-        Retrieve question key or uuid (either can be the ref).
+        Retrieve question name or uuid (either can be the ref).
         """
         if ref is None:
             msg = 'Cannot get Question instance for ref=None'
             raise self.model.DoesNotExist(msg)
 
         try:
-            return self.get(key=ref)
+            return self.get(name=ref)
         except self.model.DoesNotExist:
             try:
                 question_uuid = uuid.UUID(ref)

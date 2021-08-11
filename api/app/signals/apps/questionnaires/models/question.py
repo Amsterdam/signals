@@ -17,7 +17,8 @@ class Question(models.Model):
     appear in several graphs and hence Questionnaires. See the QuestionGraph and
     Edge models as to how the questions are referred to.
     """
-    key = models.CharField(unique=True, max_length=255, null=True, blank=True)
+    name = models.CharField(unique=True, max_length=255, null=True, blank=True)  # used to identify question (optional)
+    key = models.CharField(max_length=255, null=True, blank=True)  # property used for downstream analysis
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
@@ -34,4 +35,4 @@ class Question(models.Model):
 
     @property
     def ref(self):
-        return self.key if self.key else str(self.uuid)
+        return self.name if self.name else str(self.uuid)
