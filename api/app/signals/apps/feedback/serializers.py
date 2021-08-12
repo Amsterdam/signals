@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.feedback.services.questionnaires_proxy import QuestionnairesProxyService
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -63,5 +64,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
                     'state': workflow.VERZOEK_TOT_HEROPENEN,
                 }
                 Signal.actions.update_status(payload, signal)
+
+        # Store the information in the Questionnaire Session
+        QuestionnairesProxyService.answer_feedback_session(instance, validated_data)
 
         return super().update(instance, validated_data)
