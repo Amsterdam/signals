@@ -13,7 +13,7 @@ class QuestionGraph(models.Model):
     The nodes in that graph are Question instances and the edges are Edge
     instances.
     """
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
     first_question = models.ForeignKey('Question', blank=True, null=True, on_delete=models.SET_NULL, related_name='+')
 
     def _set_model_order(self, question, model, ids):
