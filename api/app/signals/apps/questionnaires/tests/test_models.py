@@ -3,11 +3,11 @@
 """
 Test models and associated manager functions for the questionnaires app.
 """
-from api.app.signals.apps.questionnaires.factories import QuestionnaireFactory
 import uuid
 from datetime import datetime, timedelta
 
 from django.test import TestCase
+from django.utils.timezone import make_aware
 from freezegun import freeze_time
 
 from signals.apps.questionnaires.factories import (
@@ -15,6 +15,7 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
+    QuestionnaireFactory,
     SessionFactory,
     TriggerFactory
 )
@@ -335,7 +336,7 @@ class TestChoices(TestCase):
 
 class TestGetByReference(TestCase):
     def setUp(self):
-        self.question = QuestionFactory.create(key='question')
+        self.question = QuestionFactory.create(name='question')
 
     def test_get_by_reference_none(self):
         with self.assertRaises(Question.DoesNotExist):
@@ -368,7 +369,7 @@ class TestGetByReference(TestCase):
         while generated == question.uuid:
             generated = uuid.uuid4()
 
-        question.key = generated
+        question.name = generated
         question.save()
         question.refresh_from_db()
 
@@ -378,7 +379,7 @@ class TestGetByReference(TestCase):
 
 class TestQuestion(TestCase):
     def setUp(self):
-        self.now = datetime(2021, 8, 11, 20, 0, 0)
+        self.now = make_aware(datetime(2021, 8, 11, 20, 0, 0))
 
     def test_deadline_and_duration(self):
         session = SessionFactory.create(submit_before=self.now + timedelta(weeks=2), duration=timedelta(hours=2))
@@ -400,7 +401,7 @@ class TestQuestion(TestCase):
         # submit after deadline and outside allowed duration
         session.started_at = session.submit_before + timedelta(minutes=5)
         with freeze_time(session.submit_before + timedelta(hours=4)):
-            self.assertFalse(session.is_expired)
+            self.assertTrue(session.is_expired)
 
         # start just before deadline, submit just after deadline but within allowed duration
         session.started_at = session.submit_before - timedelta(minutes=5)
@@ -436,5 +437,5 @@ class TestQuestion(TestCase):
 
         # submit waaayyyy long after starting the questionnaire
         session.started_at = self.now
-        with freeze_time(self.now + timedelta(years=10)):
+        with freeze_time(self.now + timedelta(days=10000)):
             self.assertFalse(session.is_expired)

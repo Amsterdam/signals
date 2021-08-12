@@ -54,7 +54,7 @@ def create_kto_graph():
         Choice.objects.create(question=q_unsatisfied, payload=reason.text)
 
         if reason.reopens_when_unhappy:
-            Trigger.objects.create(graph=graph, question=reasons_unsatisfied, payload=reason.text)
+            Trigger.objects.create(graph=graph, question=q_unsatisfied, payload=reason.text)
 
     # Now some general questions
     q_extra_info = Question.objects.create(
