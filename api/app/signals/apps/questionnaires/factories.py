@@ -6,11 +6,13 @@ from faker import Faker
 
 from signals.apps.questionnaires.models import (
     Answer,
+    Choice,
     Edge,
     Question,
     QuestionGraph,
     Questionnaire,
-    Session
+    Session,
+    Trigger
 )
 
 fake = Faker()
@@ -46,6 +48,21 @@ class EdgeFactory(DjangoModelFactory):
 
     class Meta:
         model = Edge
+
+
+class TriggerFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Trigger
+
+
+class ChoiceFactory(DjangoModelFactory):
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Choice
 
 
 class QuestionnaireFactory(DjangoModelFactory):

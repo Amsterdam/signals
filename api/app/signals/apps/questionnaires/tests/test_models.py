@@ -7,7 +7,13 @@ import uuid
 
 from django.test import TestCase
 
-from signals.apps.questionnaires.factories import EdgeFactory, QuestionFactory, QuestionGraphFactory
+from signals.apps.questionnaires.factories import (
+    ChoiceFactory,
+    EdgeFactory,
+    QuestionFactory,
+    QuestionGraphFactory,
+    TriggerFactory
+)
 from signals.apps.questionnaires.models import Edge, Question, QuestionGraph
 
 
@@ -55,6 +61,8 @@ def create_diamond_plus(graph_name='diamond_plus'):
     q6 = QuestionFactory.create()
     q7 = QuestionFactory.create()
     EdgeFactory.create(graph=graph, question=q6, next_question=q7, payload=None)
+
+    return graph
 
 
 def create_empty(graph_name='empty'):
@@ -245,7 +253,7 @@ class TestTooMany(TestCase):
             self.assertIn('too many', str(e))
 
 
-class TestEdgeOrdering(TestCase):
+class TestEdges(TestCase):
     def setUp(self):
         #    q1
         #   / | \
@@ -255,7 +263,7 @@ class TestEdgeOrdering(TestCase):
         q3 = QuestionFactory.create()
         q4 = QuestionFactory.create()
 
-        self.graph = QuestionGraphFactory.create(name='order',  first_question=q1)
+        self.graph = QuestionGraphFactory.create(name='edge_order',  first_question=q1)
         EdgeFactory.create(graph=self.graph, question=q1, next_question=q2, payload=None)
         EdgeFactory.create(graph=self.graph, question=q1, next_question=q3, payload=None)
         EdgeFactory.create(graph=self.graph, question=q1, next_question=q4, payload=None)
@@ -268,9 +276,57 @@ class TestEdgeOrdering(TestCase):
 
         # now reorder our edges
         change = before[1:] + before[:1]
-        after = self.graph.set_edge_order(question, change)
-        for id_, edge in zip(after, self.graph.get_edges(question)):
+        self.graph.set_edge_order(question, change)
+
+        for id_, edge in zip(change, self.graph.get_edges(question)):
             self.assertEqual(id_, edge.id)
+
+
+class TestTriggers(TestCase):
+    def setUp(self):
+        q1 = QuestionFactory.create(field_type='plain_text')
+
+        self.graph = QuestionGraphFactory.create(name='trigger_order', first_question=q1)
+
+        trigger_payloads = ['one', 'two', 'three']
+        for payload in trigger_payloads:
+            TriggerFactory.create(graph=self.graph, question=q1, payload=payload)
+
+    def test_trigger_ordering(self):
+        question = self.graph.first_question
+        before = self.graph.get_trigger_order(question)
+        for id_, trigger in zip(before, self.graph.get_triggers(question)):
+            self.assertEqual(id_, trigger.id)
+
+        # now reorder our edges
+        change = before[1:] + before[:1]
+        self.graph.set_trigger_order(question, change)
+        for id_, trigger in zip(change, self.graph.get_triggers(question)):
+            self.assertEqual(id_, trigger.id)
+
+
+class TestChoices(TestCase):
+    def setUp(self):
+        q1 = QuestionFactory.create(field_type='plain_text')
+        self.graph = QuestionGraphFactory.create(name='info_trigger_order', first_question=q1)
+
+        choice_payloads = ['one', 'two', 'three']
+        for payload in choice_payloads:
+            ChoiceFactory.create(question=q1, payload=payload)
+
+    def test_choice_ordering(self):
+        question = self.graph.first_question
+        before = question.get_choice_order()
+        for id_, choice in zip(before, question.choices.all()):
+            self.assertEqual(id_, choice.id)
+
+        # now reorder our choices
+        change = before[1:] + before[:1]
+        question.set_choice_order(change)
+        question.refresh_from_db()
+
+        for id_, choice in zip(change, question.choices.all()):
+            self.assertEqual(id_, choice.id)
 
 
 class TestGetByReference(TestCase):

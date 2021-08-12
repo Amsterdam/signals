@@ -56,7 +56,7 @@ class QuestionnairesService:
         return session
 
     @staticmethod
-    def validate_answer_payload(answer_payload, question):
+    def validate_answer_payload(answer_payload, question):  # noqa: C901
         # If a question is not required the answer payload must be JSON null,
         # anything else gets the schema check.
         if not question.required and answer_payload is None:
@@ -74,7 +74,18 @@ class QuestionnairesService:
             msg = 'Submitted answer does not validate.'
             raise django_validation_error(msg)
 
-        return answer_payload
+        # If a questions has pre-defined answers (see the Choice model), the
+        # answer payload should match one of these predefined answers.
+        if not question.enforce_choices:
+            return answer_payload
+
+        if valid_payloads := question.choices.values_list('payload', flat=True):
+            for valid_payload in valid_payloads:
+                if answer_payload == valid_payload:
+                    return answer_payload
+            else:
+                msg = 'Submitted answer does not match one of the pre-defined answers.'
+                raise django_validation_error(msg)
 
     @staticmethod
     def create_answer(answer_payload, question, questionnaire, session=None):

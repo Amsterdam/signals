@@ -3,6 +3,7 @@
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.models.edge import Edge
+from signals.apps.questionnaires.models.trigger import Trigger
 
 
 class QuestionGraph(models.Model):
@@ -12,8 +13,21 @@ class QuestionGraph(models.Model):
     The nodes in that graph are Question instances and the edges are Edge
     instances.
     """
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
     first_question = models.ForeignKey('Question', blank=True, null=True, on_delete=models.SET_NULL, related_name='+')
+
+    def _set_model_order(self, question, model, ids):
+        all_ids = set(model.objects.filter(graph=self, question=question).values_list('id', flat=True))
+        if set(ids) != all_ids or len(ids) != len(all_ids):
+            msg = f'Cannot update {model.__name__} order, {model.__name__} instance ids are not correct.'
+            raise Exception(msg)
+
+        for i, id_ in enumerate(ids):
+            instance = model.objects.get(id=id_)
+            instance.order = i
+            instance.save()
+
+        return model.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
     def get_edges(self, question):
         return Edge.objects.filter(graph=self, question=question)
@@ -22,14 +36,13 @@ class QuestionGraph(models.Model):
         return Edge.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
     def set_edge_order(self, question, ids):
-        all_ids = set(Edge.objects.filter(graph=self, question=question).values_list('id', flat=True))
-        if set(ids) != all_ids:
-            msg = 'Cannot update edge order, edge ids are not correct.'
-            raise Exception(msg)
+        return self._set_model_order(question, Edge, ids)
 
-        for i, id_ in enumerate(ids):
-            edge = Edge.objects.get(id=id_)
-            edge.order = i
-            edge.save()
+    def get_triggers(self, question):
+        return Trigger.objects.filter(graph=self, question=question)
 
-        return Edge.objects.filter(graph=self, question=question).values_list('id', flat=True)
+    def get_trigger_order(self, question):
+        return Trigger.objects.filter(graph=self, question=question).values_list('id', flat=True)
+
+    def set_trigger_order(self, question, ids):
+        return self._set_model_order(question, Trigger, ids)
