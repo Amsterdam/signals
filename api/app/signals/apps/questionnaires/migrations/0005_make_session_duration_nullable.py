@@ -8,15 +8,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('questionnaires', '0003_add_triggers'),
+        ('questionnaires', '0004_alter_questiongraph_name'),
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='questiongraph',
-            name='name',
-            field=models.CharField(blank=True, max_length=255, null=True),
-        ),
         migrations.AlterField(
             model_name='session',
             name='duration',
