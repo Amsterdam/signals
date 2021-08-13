@@ -50,7 +50,7 @@ def create_diamond(graph_name='diamond'):
 
 
 def create_diamond_plus(graph_name='diamond_plus'):
-    graph = create_diamond(graph_name='diamond_plus')
+    graph = create_diamond(graph_name=graph_name)
     # sketch:
     #    q1 <- first_question
     #   /  \
@@ -335,7 +335,7 @@ class TestChoices(TestCase):
 
 class TestGetByReference(TestCase):
     def setUp(self):
-        self.question = QuestionFactory.create(key='question')
+        self.question = QuestionFactory.create(retrieval_key='question')
 
     def test_get_by_reference_none(self):
         with self.assertRaises(Question.DoesNotExist):
@@ -368,7 +368,7 @@ class TestGetByReference(TestCase):
         while generated == question.uuid:
             generated = uuid.uuid4()
 
-        question.key = generated
+        question.retrieval_key = generated
         question.save()
         question.refresh_from_db()
 

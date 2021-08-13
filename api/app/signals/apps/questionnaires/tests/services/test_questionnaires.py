@@ -23,17 +23,17 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 def _question_graph_with_decision():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key='q_yes',
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key='q_no',
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -47,17 +47,17 @@ def _question_graph_with_decision():
 
 def _question_graph_with_decision_null_keys():
     q1 = QuestionFactory.create(
-        key=None,
+        retrieval_key=None,
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key=None,
+        retrieval_key=None,
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key=None,
+        retrieval_key=None,
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -71,17 +71,17 @@ def _question_graph_with_decision_null_keys():
 
 def _question_graph_with_decision_with_default():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key='q_yes',
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key='q_no',
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -96,13 +96,13 @@ def _question_graph_with_decision_with_default():
 
 def _question_graph_no_required_answers():
     q1 = QuestionFactory.create(
-        key='one',
+        retrieval_key='one',
         required=False,
         short_label='First not required',
         label='First not required',
     )
     q2 = QuestionFactory(
-        key='two',
+        retrieval_key='two',
         required=False,
         short_label='Second not required',
         label='Second not required',
@@ -116,18 +116,18 @@ def _question_graph_no_required_answers():
 
 def _question_graph_with_decision_with_default_no_required_answers():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         required=False,
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
     )
     q_yes = QuestionFactory.create(
-        key='q_yes',
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
     q_no = QuestionFactory.create(
-        key='q_no',
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
@@ -143,12 +143,12 @@ def _question_graph_with_decision_with_default_no_required_answers():
 
 def _question_graph_with_cycle():
     q1 = QuestionFactory.create(
-        key='one',
+        retrieval_key='one',
         short_label='First question.',
         label='First question.',
     )
     q2 = QuestionFactory.create(
-        key='two',
+        retrieval_key='two',
         short_label='Second question.',
         label='Second question.',
     )
@@ -162,7 +162,7 @@ def _question_graph_with_cycle():
 
 def _question_graph_one_question():
     q1 = QuestionFactory.create(
-        key='only',
+        retrieval_key='only',
         short_label='Only question.',
         label='Only question.',
     )
@@ -272,7 +272,7 @@ class TestQuestionnairesService(TestCase):
     def test_get_next_question_ref(self):
         get_next_ref = QuestionnairesService.get_next_question_ref
 
-        q_start = QuestionFactory.create(key='start', field_type='plain_text')
+        q_start = QuestionFactory.create(retrieval_key='start', field_type='plain_text')
 
         # No next rules:
         empty_graph = QuestionGraphFactory.create(first_question=q_start)
@@ -289,8 +289,8 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(next_ref, q2.ref)
 
         # conditional next, no default option:
-        q_no = QuestionFactory.create(key='NO')
-        q_yes = QuestionFactory.create(key='YES')
+        q_no = QuestionFactory.create(retrieval_key='NO')
+        q_yes = QuestionFactory.create(retrieval_key='YES')
         conditional_graph = QuestionGraphFactory.create(first_question=q_start)
         EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_no, payload='no')
         EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_yes, payload='yes')
@@ -300,7 +300,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(q_no.ref, get_next_ref('no', q_start, conditional_graph))
 
         # conditional next with default:
-        q_default = QuestionFactory.create(key='DEFAULT')
+        q_default = QuestionFactory.create(retrieval_key='DEFAULT')
         conditional_with_default_graph = QuestionGraphFactory.create(first_question=q_start)
         EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_no, payload='no')
         EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_yes, payload='yes')

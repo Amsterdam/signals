@@ -25,7 +25,8 @@ class PublicQuestionSerializer(HALSerializer):
         fields = (
             '_links',
             '_display',
-            'key',
+            'retrieval_key',
+            'analysis_key',
             'uuid',
             'label',
             'short_label',

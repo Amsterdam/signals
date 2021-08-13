@@ -19,7 +19,8 @@ fake = Faker()
 
 
 class QuestionFactory(DjangoModelFactory):
-    key = Sequence(lambda n: f'question-{n}')
+    retrieval_key = Sequence(lambda n: f'question-{n}')
+    analysis_key = Sequence(lambda n: f'analysis-key-for-question-{n}')
     # Note we only create plain_text questions in this factory, with no
     # next question reference present. Tests that need those will have to
     # create model instances themselves.
