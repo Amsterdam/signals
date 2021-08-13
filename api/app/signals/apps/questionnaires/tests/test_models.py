@@ -376,7 +376,7 @@ class TestGetByReference(TestCase):
         self.assertEqual(retrieved, question)
 
 
-class TestSession(TestCase):
+class TestQuestion(TestCase):
     def setUp(self):
         self.now = make_aware(datetime(2021, 8, 11, 20, 0, 0))
 
@@ -418,3 +418,23 @@ class TestSession(TestCase):
         # submit outside of allowed duration
         with freeze_time(self.now + timedelta(hours=4)):
             self.assertTrue(session.is_expired)
+
+    def test_duration_none(self):
+        session = SessionFactory.create(submit_before=self.now + timedelta(days=14), duration=None)
+
+        # submit before deadline
+        session.started_at = self.now
+        with freeze_time(session.submit_before - timedelta(minutes=5)):
+            self.assertFalse(session.is_expired)
+
+        # submit after deadline
+        with freeze_time(session.submit_before + timedelta(minutes=5)):
+            self.assertTrue(session.is_expired)
+
+    def test_deadline_and_duration_none(self):
+        session = SessionFactory.create(submit_before=None, duration=None)
+
+        # submit waaayyyy long after starting the questionnaire
+        session.started_at = self.now
+        with freeze_time(self.now + timedelta(days=10000)):
+            self.assertFalse(session.is_expired)
