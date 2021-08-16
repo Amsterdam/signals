@@ -64,6 +64,8 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('status', response_data['options'])
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
+        self.assertFalse(response_data['refresh'])
+        self.assertFalse(response_data['show_on_overview'])
 
     def test_create_filter_missing_options_no_500(self):
         data = {
@@ -103,6 +105,8 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('status', response_data['options'])
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
+        self.assertEqual(sia_read_write_user_filter.refresh, response_data['refresh'])
+        self.assertFalse(response_data['show_on_overview'])
 
     def test_delete_filter(self):
         sia_read_write_user_filter = StoredSignalFilterFactory.create(
@@ -155,6 +159,7 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
         self.assertTrue(response_data['refresh'])
+        self.assertFalse(response_data['show_on_overview'])
 
     @unittest.expectedFailure
     def test_nonsense_store_and_retrieve(self):
@@ -184,8 +189,7 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertEqual(response_data['name'], filter_name)
         self.assertIn('nonsense', response_data['options'])
-        self.assertEqual(
-            set(response_data['options']['nonsense']), set(['none', 'email']))
+        self.assertEqual(set(response_data['options']['nonsense']), set(['none', 'email']))
 
     def test_do_not_store_unknown_filters(self):
         filter_name = 'Dit mag niet opgeslagen worden.'
@@ -219,3 +223,64 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
             response = self.client.post(self.endpoint, data, format='json')
             self.assertEqual(400, response.status_code)
+
+    def test_create_filter_show_on_overview(self):
+        """
+        SIG-3923 Added 'show_on_overview' flag
+        """
+        data = {
+            'name': 'Created my first filter',
+            'options': {
+                'status': [
+                    'i',
+                ]
+            },
+            'show_on_overview': True
+        }
+
+        response = self.client.post(self.endpoint, data, format='json')
+        self.assertEqual(201, response.status_code)
+
+        response_data = response.json()
+        self.assertEqual('Created my first filter', response_data['name'])
+        self.assertIn('options', response_data)
+        self.assertIn('status', response_data['options'])
+        self.assertEqual(1, len(response_data['options']['status']))
+        self.assertIn('i', response_data['options']['status'])
+        self.assertFalse(response_data['refresh'])
+        self.assertTrue(response_data['show_on_overview'])
+
+    def test_update_filter_show_on_overview(self):
+        """
+        SIG-3923 Added 'show_on_overview' flag
+        """
+        sia_read_write_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_write_user
+        )
+        uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
+
+        response = self.client.get(uri, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertFalse(response_data['show_on_overview'])
+
+        data = {
+            'show_on_overview': True
+        }
+
+        response = self.client.patch(uri, data, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertTrue(response_data['show_on_overview'])
+
+        data = {
+            'show_on_overview': False
+        }
+
+        response = self.client.patch(uri, data, format='json')
+        self.assertEqual(200, response.status_code)
+
+        response_data = response.json()
+        self.assertFalse(response_data['show_on_overview'])

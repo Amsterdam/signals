@@ -15,6 +15,7 @@ class StoredSignalFilter(CreatedUpdatedModel):
     created_by = models.EmailField(null=True, blank=True)
     options = models.JSONField(default=dict)
     refresh = models.BooleanField(default=False)
+    show_on_overview = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-created_at', )
