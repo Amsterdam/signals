@@ -11,6 +11,7 @@ class StoredSignalFilterFactory(DjangoModelFactory):
     name = FuzzyText(length=100)
     created_by = SubFactory('signals.apps.users.factories.UserFactory')
     refresh = FuzzyChoice((True, False))
+    show_on_overview = False
 
     class Meta:
         model = StoredSignalFilter
