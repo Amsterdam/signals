@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import unittest
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -58,13 +57,12 @@ class TestFeedbackRequestService(TestCase):
         questionnaire = session.questionnaire
         graph = questionnaire.graph
 
-        self.assertEqual(questionnaire.first_question.key, 'satisfied')
+        self.assertEqual(questionnaire.first_question.analysis_key, 'satisfied')
         all_questions = Question.objects.get_from_question_graph(graph)
         self.assertEqual(all_questions.count(), 5)
         reachable_questions = Question.objects.get_reachable_from_question_graph(graph)
         self.assertEqual(reachable_questions.count(), 5)
 
-    @unittest.expectedFailure
     def test_create_two_questionnaires(self):
         # We cannot re-use Question.key, this test demonstrates the problem
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
@@ -80,11 +78,11 @@ class TestFeedbackRequestService(TestCase):
         session = FeedbackRequestService.create_session(signal)
         questionnaire = session.questionnaire
         question_1 = questionnaire.graph.first_question
-        self.assertEqual(question_1.ref, 'satisfied')
+        self.assertEqual(question_1.analysis_key, 'satisfied')
 
         answer_1 = QuestionnairesService.create_answer('ja', question_1, questionnaire, session=session)
         question_2 = QuestionnairesService.get_next_question(answer_1, question_1)
-        self.assertEqual(question_2.ref, 'reason_satisfied')
+        self.assertEqual(question_2.analysis_key, 'reason_satisfied')
 
         # We re-use the feedback app for pre-defined answers (that will allow
         # management of this questionnaire as if it was still implemented by
@@ -95,12 +93,12 @@ class TestFeedbackRequestService(TestCase):
         answer_2 = QuestionnairesService.create_answer(
             happy_standard_answer.text, question_2, questionnaire, session=session)
         question_3 = QuestionnairesService.get_next_question(answer_2, question_2)
-        self.assertEqual(question_3.ref, 'extra_info')
+        self.assertEqual(question_3.analysis_key, 'extra_info')
 
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
         question_4 = QuestionnairesService.get_next_question(answer_3, question_3)
-        self.assertEqual(question_4.ref, 'allow_contact')
+        self.assertEqual(question_4.analysis_key, 'allow_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
@@ -113,11 +111,11 @@ class TestFeedbackRequestService(TestCase):
         session = FeedbackRequestService.create_session(signal)
         questionnaire = session.questionnaire
         question_1 = questionnaire.graph.first_question
-        self.assertEqual(question_1.ref, 'satisfied')
+        self.assertEqual(question_1.analysis_key, 'satisfied')
 
         answer_1 = QuestionnairesService.create_answer('nee', question_1, questionnaire, session=session)
         question_2 = QuestionnairesService.get_next_question(answer_1, question_1)
-        self.assertEqual(question_2.ref, 'reason_unsatisfied')
+        self.assertEqual(question_2.analysis_key, 'reason_unsatisfied')
 
         # We re-use the feedback app for pre-defined answers (that will allow
         # management of this questionnaire as if it was still implemented by
@@ -128,12 +126,12 @@ class TestFeedbackRequestService(TestCase):
         answer_2 = QuestionnairesService.create_answer(
             happy_standard_answer.text, question_2, questionnaire, session=session)
         question_3 = QuestionnairesService.get_next_question(answer_2, question_2)
-        self.assertEqual(question_3.ref, 'extra_info')
+        self.assertEqual(question_3.analysis_key, 'extra_info')
 
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
         question_4 = QuestionnairesService.get_next_question(answer_3, question_3)
-        self.assertEqual(question_4.ref, 'allow_contact')
+        self.assertEqual(question_4.analysis_key, 'allow_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
