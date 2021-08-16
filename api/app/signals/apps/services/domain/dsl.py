@@ -109,7 +109,7 @@ class SignalDslService(DslService):
                                 'id': rule._department.id
                             }
                         ],
-                        'employee': None if not rule.employee else rule.employee
+                        '_user': None if not rule._user else rule._user
                     }
                     self.signal_manager.update_routing_departments(data, signal)
                     return True

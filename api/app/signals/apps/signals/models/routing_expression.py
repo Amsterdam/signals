@@ -17,7 +17,7 @@ class RoutingExpression(models.Model):
         related_name='routing_department'
     )
     _department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    employee = models.ForeignKey(to=User, on_delete=models.SET_NULL, blank=True, null=True)
+    _user = models.ForeignKey(to=User, on_delete=models.SET_NULL, blank=True, null=True)
     order = models.PositiveIntegerField(default=0, db_index=True)
     is_active = models.BooleanField(default=False)
 
