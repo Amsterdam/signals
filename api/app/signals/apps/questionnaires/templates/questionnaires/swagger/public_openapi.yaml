@@ -312,6 +312,17 @@ components:
           type: string
           nullable: true
           example: 'a-key-describing-the-question'
+          description: The `key` property is a copy of the `retrieval_key`.
+        retrieval_key:
+          type: string
+          nullable: true
+          example: 'a-key-describing-the-question'
+          description: Key for retrieval of a question, must be unique.
+        analysis_key:
+          type: string
+          nullable: true
+          example: "question-key"
+          description: Key that answer data will be collected under.
         uuid:
           type: string
           pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
@@ -442,3 +453,13 @@ components:
         created_at:
           type: string
           example: '2021-01-01T00:00:00+00:00'
+
+  securitySchemes:
+    OAuth2:
+      description: SIA API is using OAuth2 implicit grant flow.
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: '/oauth2/authorize'
+          scopes:
+            SIG/ALL: General access to SIA Django application.

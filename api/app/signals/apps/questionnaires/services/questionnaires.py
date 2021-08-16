@@ -146,7 +146,7 @@ class QuestionnairesService:
             next_question = None
         else:
             try:
-                next_question = Question.objects.get_by_reference(ref=next_ref)
+                next_question = Question.objects.get_by_reference(next_ref)
             except Question.DoesNotExist:
                 return None  # TODO: consider raising an exception
 

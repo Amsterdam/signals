@@ -35,8 +35,8 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
 
 
 class PublicQuestionViewSet(DatapuntViewSet):
-    lookup_field = 'key'
-    lookup_url_kwarg = 'key'
+    lookup_field = 'retrieval_key'
+    lookup_url_kwarg = 'retrieval_key'
 
     queryset = Question.objects.all()
     queryset_detail = Question.objects.all()

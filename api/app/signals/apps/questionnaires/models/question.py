@@ -17,7 +17,8 @@ class Question(models.Model):
     appear in several graphs and hence Questionnaires. See the QuestionGraph and
     Edge models as to how the questions are referred to.
     """
-    key = models.CharField(unique=True, max_length=255, null=True, blank=True)
+    retrieval_key = models.CharField(unique=True, max_length=255, null=True, blank=True)
+    analysis_key = models.CharField(max_length=255, null=True, blank=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
@@ -30,8 +31,8 @@ class Question(models.Model):
     objects = QuestionManager()
 
     def __str__(self):
-        return f'{self.key or self.uuid} ({self.field_type})'
+        return f'{self.retrieval_key or self.uuid} ({self.field_type})'
 
     @property
     def ref(self):
-        return self.key if self.key else str(self.uuid)
+        return self.retrieval_key if self.retrieval_key else str(self.uuid)
