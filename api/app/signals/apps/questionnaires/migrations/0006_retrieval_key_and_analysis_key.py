@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('questionnaires', '0004_alter_questiongraph_name'),
+        ('questionnaires', '0005_make_session_duration_nullable'),
     ]
 
     operations = [
