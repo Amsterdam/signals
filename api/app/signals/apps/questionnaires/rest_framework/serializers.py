@@ -19,12 +19,14 @@ class PublicQuestionSerializer(HALSerializer):
     serializer_url_field = QuestionHyperlinkedIdentityField
     next_rules = serializers.SerializerMethodField()
     _display = DisplayField()
+    key = serializers.CharField(source='retrieval_key')
 
     class Meta:
         model = Question
         fields = (
             '_links',
             '_display',
+            'key',
             'retrieval_key',
             'analysis_key',
             'uuid',
