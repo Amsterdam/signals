@@ -556,10 +556,10 @@ class SignalManager(models.Manager):
             raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
 
-        if 'employee' in data:
+        if '_user' in data:
             signal.user_assignment, _ = SignalUser.objects.get_or_create(
                 _signal=signal,
-                user=None if not data['employee'] else data['employee'],
+                user=None if not data['_user'] else data['_user'],
                 created_by=data['created_by'] if 'created_by' in data else None
             )
             signal.save()
