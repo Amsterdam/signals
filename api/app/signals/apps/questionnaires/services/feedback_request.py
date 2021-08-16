@@ -27,7 +27,7 @@ from signals.apps.signals import workflow
 def create_kto_graph():
     # First question, is reporter happy with resolution? Yes or no?
     q1 = Question.objects.create(
-        key='satisfied',
+        analysis_key='satisfied',
         label='Bent u tevreden met de afhandeling van uw melding?',
         short_label='Tevreden',
         field_type='plain_text',
@@ -40,7 +40,7 @@ def create_kto_graph():
 
     # Question for satisfied reporter
     q_satisfied = Question.objects.create(
-        key='reason_satisfied',
+        analysis_key='reason_satisfied',
         label='Waarom bent u tevreden?',
         short_label='Waarom bent u tevreden?',
         field_type='plain_text',
@@ -52,7 +52,7 @@ def create_kto_graph():
 
     # Question for unsatisfied reporter
     q_unsatisfied = Question.objects.create(
-        key='reason_unsatisfied',
+        analysis_key='reason_unsatisfied',
         label='Waarom bent u ontevreden?',
         short_label='Waarom bent u ontevreden?',
         field_type='plain_text',
@@ -66,14 +66,14 @@ def create_kto_graph():
 
     # Now some general questions
     q_extra_info = Question.objects.create(
-        key='extra_info',
+        analysis_key='extra_info',
         field_type='plain_text',
         label='Wilt u verder nog iets vermelden of toelichten?',
         short_label='Wilt u verder nog iets vermelden of toelichten?',
         required=False,
     )
     q_allow_contact = Question.objects.create(
-        key='allow_contact',
+        analysis_key='allow_contact',
         field_type='plain_text',
         label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
         short_label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
@@ -125,6 +125,8 @@ class FeedbackRequestService:
         if session.questionnaire.flow != Questionnaire.REACTION_REQUEST:
             msg = f'Questionnaire flow property for session {session.uuid} is not REACTION_REQUEST!'
             raise WrongFlow(msg)
+
+        signal = session._signal  # noqa
 
         # TODO:
         # - extract answers to see whether response was positive or negative,
