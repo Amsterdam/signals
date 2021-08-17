@@ -4,18 +4,23 @@ from datapunt_api.rest import DatapuntViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from signals.apps.api.serializers.source import SourceSerializer
-from signals.apps.signals.models import Source
+from signals.apps.signals.models import Signal, Source
 from signals.auth.backend import JWTAuthBackend
 
 
 class PrivateSourcesViewSet(DatapuntViewSet):
     """
-    Private ViewSet to display all sources in the database
+    Private ViewSet to display all sources, excluding the "online" (Signal.SOURCE_DEFAULT_ANONYMOUS_USER) source
     """
     serializer_class = SourceSerializer
     serializer_detail_class = SourceSerializer
 
-    queryset = Source.objects.all()
+    # Bug: SIG-3934
+    #
+    # The "online" source (Signal.SOURCE_DEFAULT_ANONYMOUS_USER) should not be returned in the response of
+    # the private list endpoint. This source is only used when a anonymous user creates a Signal using the public
+    # Signal endpoint
+    queryset = Source.objects.exclude(name=Signal.SOURCE_DEFAULT_ANONYMOUS_USER)
 
     authentication_classes = (JWTAuthBackend, )
 
