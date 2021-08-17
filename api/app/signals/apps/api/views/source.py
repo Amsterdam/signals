@@ -10,7 +10,7 @@ from signals.auth.backend import JWTAuthBackend
 
 class PrivateSourcesViewSet(DatapuntViewSet):
     """
-    Private ViewSet to display all sources, excluded the "onine" (Signal.SOURCE_DEFAULT_ANONYMOUS_USER) source
+    Private ViewSet to display all sources, excluding the "online" (Signal.SOURCE_DEFAULT_ANONYMOUS_USER) source
     """
     serializer_class = SourceSerializer
     serializer_detail_class = SourceSerializer

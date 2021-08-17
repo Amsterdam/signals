@@ -41,7 +41,7 @@ class TestPrivateSourceEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(5, len(data['results']))
         self.assertJsonSchema(self.list_sources_schema, data)
 
-    def test_get_list_exclude_signal_SOURCE_DEFAULT_ANONYMOUS_USER(self):
+    def test_get_list_excluding_signal_SOURCE_DEFAULT_ANONYMOUS_USER(self):
         """
         Bug: SIG-3934
 
