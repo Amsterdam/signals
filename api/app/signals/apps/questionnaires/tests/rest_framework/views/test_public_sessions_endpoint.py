@@ -97,7 +97,8 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json()['detail'], f'Session {session.uuid} is invalidated.')
+        self.assertEqual(response.json()['detail'],
+                         f'Session {session.uuid} is invalidated, associated signal not in state REACTIE_GEVRAAGD.')
 
         status = StatusFactory(state=REACTIE_GEVRAAGD, _signal=signal)
         signal.status = status
@@ -107,7 +108,8 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         response = self.client.get(f'{self.base_endpoint}{session.uuid}')
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json()['detail'], f'Session {session.uuid} is invalidated.')
+        self.assertEqual(response.json()['detail'],
+                         f'Session {session.uuid} is invalidated, a newer reaction request was issued.')
 
         response = self.client.get(f'{self.base_endpoint}{latest_session.uuid}')
         self.assertEqual(response.status_code, 200)

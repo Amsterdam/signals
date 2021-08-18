@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
 from signals.apps.questionnaires.rest_framework.serializers import (
@@ -114,14 +115,11 @@ class PublicSessionViewSet(HALViewSetRetrieve):
             session = QuestionnairesService.get_session(session_uuid)
         except Session.DoesNotExist:
             raise Http404
+        except (SessionFrozen, SessionExpired) as e:
+            raise Gone(str(e))
         except Exception as e:
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
-
-        if session.frozen:
-            raise Gone('Already used!')
-        elif session.is_expired:
-            raise Gone('Expired!')
 
         return session
 
