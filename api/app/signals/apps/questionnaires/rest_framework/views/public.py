@@ -82,7 +82,11 @@ class PublicQuestionViewSet(DatapuntViewSet):
         serializer.save()
 
         next_question_data = None
-        next_question = QuestionnairesService.get_next_question(answer=serializer.instance, question=question)
+
+        answer = serializer.instance
+        graph = answer.session.questionnaire.graph
+        next_question = QuestionnairesService.get_next_question(answer.payload, question, graph)
+
         if next_question:
             context = self.get_serializer_context()
             context.update({'graph': serializer.instance.session.questionnaire.graph})

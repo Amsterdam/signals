@@ -77,11 +77,12 @@ class TestFeedbackRequestService(TestCase):
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
         session = FeedbackRequestService.create_session(signal)
         questionnaire = session.questionnaire
+        graph = questionnaire.graph
         question_1 = questionnaire.graph.first_question
         self.assertEqual(question_1.analysis_key, 'satisfied')
 
         answer_1 = QuestionnairesService.create_answer('ja', question_1, questionnaire, session=session)
-        question_2 = QuestionnairesService.get_next_question(answer_1, question_1)
+        question_2 = QuestionnairesService.get_next_question(answer_1.payload, question_1, graph)
         self.assertEqual(question_2.analysis_key, 'reason_satisfied')
 
         # We re-use the feedback app for pre-defined answers (that will allow
@@ -92,17 +93,17 @@ class TestFeedbackRequestService(TestCase):
 
         answer_2 = QuestionnairesService.create_answer(
             happy_standard_answer.text, question_2, questionnaire, session=session)
-        question_3 = QuestionnairesService.get_next_question(answer_2, question_2)
+        question_3 = QuestionnairesService.get_next_question(answer_2.payload, question_2, graph)
         self.assertEqual(question_3.analysis_key, 'extra_info')
 
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
-        question_4 = QuestionnairesService.get_next_question(answer_3, question_3)
+        question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
         self.assertEqual(question_4.analysis_key, 'allow_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
-        question_5 = QuestionnairesService.get_next_question(answer_4, question_4)
+        question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
 
     def test_fill_out_questionnaire_unsatisfied(self):
@@ -110,11 +111,12 @@ class TestFeedbackRequestService(TestCase):
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
         session = FeedbackRequestService.create_session(signal)
         questionnaire = session.questionnaire
+        graph = questionnaire.graph
         question_1 = questionnaire.graph.first_question
         self.assertEqual(question_1.analysis_key, 'satisfied')
 
         answer_1 = QuestionnairesService.create_answer('nee', question_1, questionnaire, session=session)
-        question_2 = QuestionnairesService.get_next_question(answer_1, question_1)
+        question_2 = QuestionnairesService.get_next_question(answer_1.payload, question_1, graph)
         self.assertEqual(question_2.analysis_key, 'reason_unsatisfied')
 
         # We re-use the feedback app for pre-defined answers (that will allow
@@ -125,15 +127,15 @@ class TestFeedbackRequestService(TestCase):
 
         answer_2 = QuestionnairesService.create_answer(
             happy_standard_answer.text, question_2, questionnaire, session=session)
-        question_3 = QuestionnairesService.get_next_question(answer_2, question_2)
+        question_3 = QuestionnairesService.get_next_question(answer_2.payload, question_2, graph)
         self.assertEqual(question_3.analysis_key, 'extra_info')
 
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
-        question_4 = QuestionnairesService.get_next_question(answer_3, question_3)
+        question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
         self.assertEqual(question_4.analysis_key, 'allow_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
-        question_5 = QuestionnairesService.get_next_question(answer_4, question_4)
+        question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
