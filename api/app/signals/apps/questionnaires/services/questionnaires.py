@@ -30,7 +30,19 @@ class QuestionnairesService:
 
     @staticmethod
     def get_session(uuid):
+        """
+        Get sessions, that are not frozen, expired or in wrong state for given flow.
+        """
         session = Session.objects.get(uuid=uuid)
+
+        # Reaction was already provided (hence form filled out, and hence session.frozen):
+        if session.frozen:
+            raise SessionFrozen('Already used!')
+
+        # Reaction was not provided in time and therefore this session expired:
+        if session.is_expired:
+            raise SessionExpired('Expired!')
+
         if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
             signal = session._signal
 
@@ -42,7 +54,7 @@ class QuestionnairesService:
 
             # Make sure that the signal is in state REACTIE_GEVRAAGD.
             if signal.status.state != workflow.REACTIE_GEVRAAGD:
-                msg = f'Session {session.uuid} is invalidated.'
+                msg = f'Session {session.uuid} is invalidated, associated signal not in state REACTIE_GEVRAAGD.'
                 logger.warning(msg, stack_info=True)
                 raise SessionInvalidated(msg)
 
@@ -51,7 +63,8 @@ class QuestionnairesService:
             most_recent_session = Session.objects.filter(
                 _signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST).order_by('created_at').last()
             if most_recent_session.uuid != session.uuid:
-                raise SessionInvalidated(f'Session {session.uuid} is invalidated.')
+                msg = f'Session {session.uuid} is invalidated, a newer reaction request was issued.'
+                raise SessionInvalidated(msg)
 
         return session
 

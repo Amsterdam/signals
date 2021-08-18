@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest import mock
 
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
+from freezegun.api import freeze_time
 
-from signals.apps.questionnaires.app_settings import SESSION_DURATION
-from signals.apps.questionnaires.exceptions import SessionInvalidated
+from signals.apps.questionnaires.app_settings import REACTION_REQUEST_DAYS_OPEN, SESSION_DURATION
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
@@ -510,11 +511,12 @@ class TestQuestionnairesService(TestCase):
 
         # A session for reaction request flow for a signal in a state other
         # than REACTIE_GEVRAAGD should raise SessionInvalidated.
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
         session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)
 
-        with self.assertRaises(SessionInvalidated):
+        with self.assertRaises(SessionInvalidated) as cm:
             QuestionnairesService.get_session(session.uuid)
+        self.assertIn('associated signal not in state REACTIE_GEVRAAGD', str(cm.exception))
 
         # A session for reaction request flow for a signal that also has a more
         # recent session, should raise SessionInvalidated.
@@ -523,5 +525,30 @@ class TestQuestionnairesService(TestCase):
         signal.save()
         SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)  # more recent
 
-        with self.assertRaises(SessionInvalidated):
+        with self.assertRaises(SessionInvalidated) as cm:
             QuestionnairesService.get_session(session.uuid)
+        self.assertIn('a newer reaction request was issued', str(cm.exception))
+
+    def test_get_session_expired(self):
+        # A session that expired should raise a SessionExpired
+        signal_created_at = datetime(2021, 8, 18, 12, 0, 0)
+        submit_before = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN)
+        get_session_at = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN * 2)
+
+        with freeze_time(signal_created_at):
+            signal = SignalFactory.create(status__state=workflow.GEMELD)
+            session = SessionFactory.create(
+                _signal=signal, questionnaire__flow=Questionnaire.EXTRA_PROPERTIES, submit_before=submit_before)
+
+        with freeze_time(get_session_at):
+            with self.assertRaises(SessionExpired) as cm:
+                QuestionnairesService.get_session(session.uuid)
+            self.assertIn('Expired!', str(cm.exception))
+
+    def test_get_session_frozen(self):
+        # A session that is frozen should raise SessionFrozen
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
+        session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST, frozen=True)
+        with self.assertRaises(SessionFrozen) as cm:
+            QuestionnairesService.get_session(session.uuid)
+        self.assertIn('Already used!', str(cm.exception))
