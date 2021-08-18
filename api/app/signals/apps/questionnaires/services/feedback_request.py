@@ -119,6 +119,8 @@ class FeedbackRequestService:
 
     @staticmethod
     def handle_frozen_session_FEEDBACK_REQUEST(session):
+        # from signals.apps.questionnaires.services import QuestionnairesService  # TODO refactor services modules
+
         if not session.frozen:
             msg = f'Session {session.uuid} is not frozen!'
             raise SessionNotFrozen(msg)
@@ -126,7 +128,11 @@ class FeedbackRequestService:
             msg = f'Questionnaire flow property for session {session.uuid} is not REACTION_REQUEST!'
             raise WrongFlow(msg)
 
-        signal = session._signal  # noqa
+        # signal = session._signal  # noqa
+        # by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
+
+        # The whole questionnaire must be answered, for now we just check for
+        # the presence of the relevant analysis_keys
 
         # TODO:
         # - extract answers to see whether response was positive or negative,
