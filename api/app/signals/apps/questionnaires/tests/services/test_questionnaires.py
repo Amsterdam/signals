@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datetime import datetime, timedelta
 import unittest
+from datetime import datetime, timedelta
 from unittest import mock
 
 from django.core.exceptions import ValidationError as django_validation_error
