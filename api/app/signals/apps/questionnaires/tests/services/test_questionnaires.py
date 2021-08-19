@@ -649,7 +649,88 @@ class TestGetAnswersFromSession(TestCase):
         self.assertEqual(by_uuid[self.graph.first_question.uuid].payload, 'yes')
         self.assertEqual(by_uuid[self.q2.uuid].payload, 'yes happy')
 
-    def test_validate_session_using_question_graph(self):
-        # TODO: move to different TestCase subclass
-        session = QuestionnairesService.validate_session_using_question_graph(self.session)
-        self.assertIsInstance(session, Session)
+
+class TestValidateSessionUsingQuestionGraph(TestCase):
+
+    def test_validate_question_graph_with_decision(self):
+        graph = _question_graph_with_decision()
+        q_yes = Question.objects.get(retrieval_key='q_yes')
+        q_no = Question.objects.get(retrieval_key='q_no')
+
+        # Test yes branch
+        session1 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session1, question=graph.first_question, payload='yes')
+        AnswerFactory(session=session1, question=q_yes, payload='yes happy')
+
+        result1 = QuestionnairesService.validate_session_using_question_graph(session1)
+        self.assertIsInstance(result1, Session)
+
+        # Test no branch
+        session2 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session2, question=graph.first_question, payload='no')
+        AnswerFactory(session=session2, question=q_no, payload='no unhappy')
+
+        result2 = QuestionnairesService.validate_session_using_question_graph(session2)
+        self.assertIsInstance(result2, Session)
+
+        # Test missing data
+        session3 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session3, question=graph.first_question, payload='yes')
+
+        with self.assertRaises(django_validation_error) as cm:
+            QuestionnairesService.validate_session_using_question_graph(session3)
+        self.assertIn(str(q_yes.uuid), cm.exception.error_dict)
+
+        # Test showing a question halfway through the questionnaire can be
+        # considered an endpoint.
+        # TODO: consider whether this behavior is desirable (likely not).
+        session4 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session4, question=graph.first_question, payload='not a choice, but valid')
+
+        result4 = QuestionnairesService.validate_session_using_question_graph(session4)
+        self.assertIsInstance(result4, Session)
+
+    def test_validate_question_graph_with_decision_with_default_required(self):
+        graph = _question_graph_with_decision_with_default()
+        q_yes = Question.objects.get(retrieval_key='q_yes')
+
+        # Test default branch by not providing an answer, that will fail because
+        # the first question is required.
+        session1 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session1, question=q_yes, payload='yes happy')
+
+        with self.assertRaises(django_validation_error) as cm:
+            QuestionnairesService.validate_session_using_question_graph(session1)
+        self.assertIn(str(graph.first_question.uuid), cm.exception.error_dict)
+
+        # Test default branch (by providing a non-matching, but valid answer)
+        session2 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session2, question=graph.first_question, payload='not a choice, but valid')
+        AnswerFactory(session=session2, question=q_yes, payload='yes happy')
+
+        result2 = QuestionnairesService.validate_session_using_question_graph(session2)
+        self.assertIsInstance(result2, Session)
+
+    def test_validate_question_graph_with_decision_with_default_not_required(self):
+        graph = _question_graph_with_decision_with_default()
+        graph.first_question.required = False
+        graph.first_question.save()
+        q_yes = Question.objects.get(retrieval_key='q_yes')
+        q_no = Question.objects.get(retrieval_key='q_no')
+
+        # Test default branch by not providing an answer, that will work because
+        # the first question is not required.
+        session1 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session1, question=q_yes, payload='yes happy')
+
+        result1 = QuestionnairesService.validate_session_using_question_graph(session1)
+        self.assertIsInstance(result1, Session)
+
+        # Test default branch (by providing a non-matching, but valid answer).
+        # This case will fail because the default branch is chosen.
+        session2 = SessionFactory.create(questionnaire__graph=graph)
+        AnswerFactory(session=session2, question=q_no, payload='not happy')
+
+        with self.assertRaises(django_validation_error) as cm:
+            QuestionnairesService.validate_session_using_question_graph(session2)
+        self.assertIn(str(q_yes.uuid), cm.exception.error_dict)
