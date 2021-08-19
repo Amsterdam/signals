@@ -10,7 +10,7 @@ from jsonschema.exceptions import ValidationError as js_validation_error
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.models import Answer, Questionnaire, Session
 from signals.apps.questionnaires.services.feedback_request import FeedbackRequestService
 from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
 from signals.apps.signals import workflow
@@ -207,49 +207,6 @@ class QuestionnairesService:
         answers = QuestionnairesService.get_latest_answers(session)
         return {a.question.uuid: a for a in answers}
 
-    def validate_session_using_question_graph_OLD(session):
-        # We consider valid:
-        # - questionnaires where all required questions along a valid path
-        #   through the question graph are answered.
-        # - all answers are valid (already checked by create_answer above)
-        # For now we ignore the following edge case:
-        # - a question that has several outgoing edges, is not required and
-        #   has no default outgoing edge, and choices that are not constrained.
-        #   For such a question an answer could be valid and not match any of
-        #   the outgoing edges, the question then effectively become a possible
-        #   endpoint in the graph. TODO: address this case
-
-        # TODO: consider allowing no more answers than questions
-        by_uuid = QuestionnairesService.get_latest_answers_by_uuid(session)
-        graph = session.questionnaire.graph
-
-        if not graph.first_question:
-            raise Exception('Question graph contains no questions.')
-
-        errors = {}
-
-        q = graph.first_question
-        while q:
-            # Check that we have all required answers:
-            answer = by_uuid.get(q.uuid, None)
-            if not answer and q.required:
-                errors[q.uuid] = 'Question not answered'
-
-            # Get the next question (using get_next_question_ref because it
-            # correctly deals with non-required questions).
-            answer_payload = answer.payload if answer else None
-
-            # TODO: next line is problematic when no default present. Currently
-            # that will cause a failure here (returns a next_ref of None, and
-            # then get_by_reference will cause an exception).
-            next_ref = QuestionnairesService.get_next_question_ref(answer_payload, q, graph)
-            q = Question.objects.get_by_reference(next_ref)
-
-        if errors:
-            raise django_validation_error(errors)
-
-        return session
-
     def validate_session_using_question_graph(session):
         # TODO: consider allowing no more answers than questions
         by_uuid = QuestionnairesService.get_latest_answers_by_uuid(session)
@@ -265,9 +222,12 @@ class QuestionnairesService:
             # Check that we have all required answers:
             answer = by_uuid.get(q.uuid, None)
             if not answer and q.required:
-                errors[q.uuid] = 'Question not answered'
+                errors[str(q.uuid)] = 'Question not answered'
 
-            q = QuestionnairesService.get_next_question(answer.payload, q, graph)
+            if answer:
+                q = QuestionnairesService.get_next_question(answer.payload, q, graph)
+            else:
+                q = QuestionnairesService.get_next_question(None, q, graph)
 
         if errors:
             raise django_validation_error(errors)
