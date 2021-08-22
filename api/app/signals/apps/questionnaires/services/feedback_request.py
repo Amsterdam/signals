@@ -8,7 +8,7 @@ from datetime import timedelta
 from django.db import transaction
 from django.utils import timezone
 
-from signals.apps.feedback.models import StandardAnswer
+from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.utils import get_fe_application_location
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
@@ -22,6 +22,7 @@ from signals.apps.questionnaires.models import (
     Trigger
 )
 from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal
 
 
 def create_kto_graph():
@@ -44,7 +45,7 @@ def create_kto_graph():
         label='Waarom bent u tevreden?',
         short_label='Waarom bent u tevreden?',
         field_type='plain_text',
-
+        required=False,
     )
     reasons_satisfied = StandardAnswer.objects.filter(is_visible=True, is_satisfied=True)
     for reason in reasons_satisfied:
@@ -56,12 +57,13 @@ def create_kto_graph():
         label='Waarom bent u ontevreden?',
         short_label='Waarom bent u ontevreden?',
         field_type='plain_text',
+        required=False,
     )
     reasons_unsatisfied = StandardAnswer.objects.filter(is_visible=True, is_satisfied=False)
     for reason in reasons_unsatisfied.all():
         Choice.objects.create(question=q_unsatisfied, payload=reason.text)
 
-        if reason.reopens_when_unhappy:
+        if reason.reopens_when_unhappy:  # TODO: consider, could be done on session freeze (and thus simpler)
             Trigger.objects.create(graph=graph, question=q_unsatisfied, payload=reason.text)
 
     # Now some general questions
@@ -73,7 +75,7 @@ def create_kto_graph():
         required=False,
     )
     q_allow_contact = Question.objects.create(
-        analysis_key='allow_contact',
+        analysis_key='allows_contact',
         field_type='plain_text',
         label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
         short_label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
@@ -106,9 +108,7 @@ class FeedbackRequestService:
 
         with transaction.atomic():
             graph = create_kto_graph()
-            questionnaire = Questionnaire.objects.create(
-                graph=graph,
-            )
+            questionnaire = Questionnaire.objects.create(graph=graph, flow=Questionnaire.FEEDBACK_REQUEST)
             session = Session.objects.create(
                 submit_before=timezone.now() + timedelta(days=FEEDBACK_REQUEST_DAYS_OPEN),
                 questionnaire=questionnaire,
@@ -119,25 +119,62 @@ class FeedbackRequestService:
 
     @staticmethod
     def handle_frozen_session_FEEDBACK_REQUEST(session):
-        # from signals.apps.questionnaires.services import QuestionnairesService  # TODO refactor services modules
+        from signals.apps.questionnaires.services import \
+            QuestionnairesService  # TODO refactor services modules
 
         if not session.frozen:
             msg = f'Session {session.uuid} is not frozen!'
             raise SessionNotFrozen(msg)
-        if session.questionnaire.flow != Questionnaire.REACTION_REQUEST:
-            msg = f'Questionnaire flow property for session {session.uuid} is not REACTION_REQUEST!'
+        if session.questionnaire.flow != Questionnaire.FEEDBACK_REQUEST:
+            msg = f'Questionnaire flow property for session {session.uuid} is not FEEDBACK_REQUEST!'
             raise WrongFlow(msg)
 
-        # signal = session._signal  # noqa
-        # by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
+        # Collect information from the answers that were received and stored
+        # on the Session instance.
+        signal = session._signal
+        QuestionnairesService.validate_session_using_question_graph(session)
+        answers_by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
+        by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
 
-        # The whole questionnaire must be answered, for now we just check for
-        # the presence of the relevant analysis_keys
+        satisfied = by_analysis_key['satisfied']  # TODO: move to BooleanField when we have a FieldType for that
+        reason_satisfied = by_analysis_key.get('reason_satisfied', None)
+        reason_unsatisfied = by_analysis_key.get('reason_unsatisfied', None)
+        extra_info = by_analysis_key.get('extra_info', None)
+        allows_contact = by_analysis_key.get('allows_contact', None)
 
-        # TODO:
-        # - extract answers to see whether response was positive or negative,
-        #   and if negative whether it reopens the Signal/Complaint
-        # - fix they way information is extracted from a filled-out
-        #   questionnaire (and thus the way questions are referred to)
-        # - Update history (possibly by injecting a Feedback object in the
-        #   feedback app)
+        reason = reason_satisfied or reason_unsatisfied
+        is_satisfied = True if satisfied == 'ja' else False
+        allows_contact = True if allows_contact == 'ja' else False
+
+        # Prepare a Feedback object, save it later
+        feedback = Feedback(
+            _signal=signal,
+            created_at=session.created_at,
+            submitted_at=timezone.now(),
+            is_satisfied=is_satisfied,
+            allows_contact=allows_contact,
+            text=reason,
+            text_extra=extra_info,
+        )
+
+        # We check whether the reason given (when unsatisfied) is one that
+        # requires the complaints/signal to be reopened.
+        if is_satisfied:
+            reopen = False
+        else:
+            try:
+                sa = StandardAnswer.objects.get(text=reason)
+            except StandardAnswer.DoesNotExist:
+                reopen = True
+            else:
+                if not sa.is_satisfied:
+                    reopen = sa.reopens_when_unhappy
+
+        with transaction.atomic():
+            if reopen and signal.status.state == workflow.AFGEHANDELD:
+                payload = {
+                    'text': 'De melder is niet tevreden blijkt uit feedback. Zo nodig heropenen.',
+                    'state': workflow.VERZOEK_TOT_HEROPENEN,
+                }
+                Signal.actions.update_status(payload, signal)
+            feedback.save()
