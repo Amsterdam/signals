@@ -208,12 +208,16 @@ class QuestionnairesService:
         return {a.question.uuid: a for a in answers}
 
     def validate_session_using_question_graph(session):
+        """
+        Given a session validate whether all required answers along a path in a
+        question graph were received.
+        """
         # TODO: consider allowing no more answers than questions
         by_uuid = QuestionnairesService.get_latest_answers_by_uuid(session)
         graph = session.questionnaire.graph
 
         if not graph.first_question:
-            raise Exception('Question graph contains no questions.')
+            raise django_validation_error('Question graph contains no questions.')
 
         errors = {}
 

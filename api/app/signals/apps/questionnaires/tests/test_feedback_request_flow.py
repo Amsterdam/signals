@@ -8,11 +8,11 @@ from django.utils.timezone import make_aware
 from freezegun import freeze_time
 
 from signals.apps.feedback.factories import StandardAnswerFactory
-from signals.apps.feedback.models import StandardAnswer
+from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import WrongState
-from signals.apps.questionnaires.factories import SessionFactory
-from signals.apps.questionnaires.models import Question, Session
+from signals.apps.questionnaires.factories import AnswerFactory, SessionFactory
+from signals.apps.questionnaires.models import Edge, Question, Session
 from signals.apps.questionnaires.services import FeedbackRequestService, QuestionnairesService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
@@ -99,7 +99,7 @@ class TestFeedbackRequestService(TestCase):
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
         question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
-        self.assertEqual(question_4.analysis_key, 'allow_contact')
+        self.assertEqual(question_4.analysis_key, 'allows_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
@@ -133,9 +133,43 @@ class TestFeedbackRequestService(TestCase):
         answer_3 = QuestionnairesService.create_answer(
             'Dit is extra informatie', question_3, questionnaire, session=session)
         question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
-        self.assertEqual(question_4.analysis_key, 'allow_contact')
+        self.assertEqual(question_4.analysis_key, 'allows_contact')
 
         answer_4 = QuestionnairesService.create_answer(
             'ja', question_4, questionnaire, session=session)
         question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
+
+    def test_freeze_session(self):
+        """
+        Trigger a reopen request on Signal.
+        """
+        signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
+        # Create a session with all relevant questions answered
+        session = FeedbackRequestService.create_session(signal)
+        graph = session.questionnaire.graph
+        AnswerFactory.create(session=session, question=graph.first_question, payload='nee')
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, payload='nee').first()
+        q_reason = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_reason, payload='never good')  # trigger reopen request
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=q_reason).first()
+        q_extra_info = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_extra_info, payload='EXTRA INFO')
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=q_extra_info).first()
+        q_allows_contact = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_allows_contact, payload='ja')
+
+        session = QuestionnairesService.freeze_session(session)
+        self.assertIsInstance(session, Session)
+        self.assertEqual(Feedback.objects.count(), 1)
+        signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
+
+        feedback = Feedback.objects.first()
+        self.assertEqual(feedback.is_satisfied, False)
+        # self.assertEqual(feedback.text, 'never good')
+        self.assertEqual(feedback.text_extra, 'EXTRA INFO')
+        self.assertEqual(feedback.allows_contact, True)
