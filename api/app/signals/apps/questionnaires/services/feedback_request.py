@@ -18,8 +18,7 @@ from signals.apps.questionnaires.models import (
     Question,
     QuestionGraph,
     Questionnaire,
-    Session,
-    Trigger
+    Session
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -32,12 +31,12 @@ def create_kto_graph():
         label='Bent u tevreden met de afhandeling van uw melding?',
         short_label='Tevreden',
         field_type='plain_text',
-        enforce_choices=False,
+        enforce_choices=True,
         required=True,
     )
     c1_ja = Choice.objects.create(question=q1, payload='ja')
     c1_nee = Choice.objects.create(question=q1, payload='nee')
-    graph = QuestionGraph.objects.create(first_question=q1)  # Create our QuestionGraph here, triggers need it.
+    graph = QuestionGraph.objects.create(first_question=q1)
 
     # Question for satisfied reporter
     q_satisfied = Question.objects.create(
@@ -63,9 +62,6 @@ def create_kto_graph():
     for reason in reasons_unsatisfied.all():
         Choice.objects.create(question=q_unsatisfied, payload=reason.text)
 
-        if reason.reopens_when_unhappy:  # TODO: consider, could be done on session freeze (and thus simpler)
-            Trigger.objects.create(graph=graph, question=q_unsatisfied, payload=reason.text)
-
     # Now some general questions
     q_extra_info = Question.objects.create(
         analysis_key='extra_info',
@@ -79,7 +75,10 @@ def create_kto_graph():
         field_type='plain_text',
         label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
         short_label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
+        enforce_choices=True,
     )
+    Choice.objects.create(question=q_allow_contact, payload='ja')
+    Choice.objects.create(question=q_allow_contact, payload='nee')
 
     # Connect the questions to form a graph:
     Edge.objects.create(graph=graph, question=q1, next_question=q_satisfied, payload=c1_ja.payload)
@@ -119,8 +118,7 @@ class FeedbackRequestService:
 
     @staticmethod
     def handle_frozen_session_FEEDBACK_REQUEST(session):
-        from signals.apps.questionnaires.services import \
-            QuestionnairesService  # TODO refactor services modules
+        from signals.apps.questionnaires.services import QuestionnairesService
 
         if not session.frozen:
             msg = f'Session {session.uuid} is not frozen!'
@@ -136,15 +134,13 @@ class FeedbackRequestService:
         answers_by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
         by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
 
-        satisfied = by_analysis_key['satisfied']  # TODO: move to BooleanField when we have a FieldType for that
-        reason_satisfied = by_analysis_key.get('reason_satisfied', None)
-        reason_unsatisfied = by_analysis_key.get('reason_unsatisfied', None)
-        extra_info = by_analysis_key.get('extra_info', None)
-        allows_contact = by_analysis_key.get('allows_contact', None)
-
-        reason = reason_satisfied or reason_unsatisfied
+        # Work around missing boolean FieldType
+        satisfied = by_analysis_key['satisfied']
         is_satisfied = True if satisfied == 'ja' else False
+        allows_contact = by_analysis_key.get('allows_contact', 'nee')
         allows_contact = True if allows_contact == 'ja' else False
+
+        reason = by_analysis_key.get('reason_satisfied', None) or by_analysis_key.get('reason_unsatisfied', None)
 
         # Prepare a Feedback object, save it later
         feedback = Feedback(
@@ -154,7 +150,7 @@ class FeedbackRequestService:
             is_satisfied=is_satisfied,
             allows_contact=allows_contact,
             text=reason,
-            text_extra=extra_info,
+            text_extra=by_analysis_key.get('extra_info', None),
         )
 
         # We check whether the reason given (when unsatisfied) is one that
