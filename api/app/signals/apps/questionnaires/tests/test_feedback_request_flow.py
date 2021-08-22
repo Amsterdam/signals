@@ -140,7 +140,7 @@ class TestFeedbackRequestService(TestCase):
         question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
 
-    def test_freeze_session(self):
+    def test_freeze_session_feedback_request_reopens(self):
         """
         Trigger a reopen request on Signal.
         """
@@ -170,6 +170,40 @@ class TestFeedbackRequestService(TestCase):
 
         feedback = Feedback.objects.first()
         self.assertEqual(feedback.is_satisfied, False)
-        # self.assertEqual(feedback.text, 'never good')
+        self.assertEqual(feedback.text, 'never good')
+        self.assertEqual(feedback.text_extra, 'EXTRA INFO')
+        self.assertEqual(feedback.allows_contact, True)
+
+    def test_freeze_session_feedback_request_does_not_reopen(self):
+        """
+        Give feedback without triggering reopen request on Signal.
+        """
+        signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
+        # Create a session with all relevant questions answered
+        session = FeedbackRequestService.create_session(signal)
+        graph = session.questionnaire.graph
+        AnswerFactory.create(session=session, question=graph.first_question, payload='ja')
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, payload='ja').first()
+        q_reason = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_reason, payload='all good')  # trigger reopen request
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=q_reason).first()
+        q_extra_info = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_extra_info, payload='EXTRA INFO')
+
+        outgoing_edge = Edge.objects.filter(graph=graph, question=q_extra_info).first()
+        q_allows_contact = outgoing_edge.next_question
+        AnswerFactory.create(session=session, question=q_allows_contact, payload='ja')
+
+        session = QuestionnairesService.freeze_session(session)
+        self.assertIsInstance(session, Session)
+        self.assertEqual(Feedback.objects.count(), 1)
+        signal.refresh_from_db()
+        self.assertEqual(signal.status.state, workflow.AFGEHANDELD)
+
+        feedback = Feedback.objects.first()
+        self.assertEqual(feedback.is_satisfied, True)
+        self.assertEqual(feedback.text, 'all good')
         self.assertEqual(feedback.text_extra, 'EXTRA INFO')
         self.assertEqual(feedback.allows_contact, True)
