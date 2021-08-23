@@ -141,10 +141,10 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         # Setup graph relations between questions
         graph = QuestionGraphFactory.create(first_question=test_question_1)
-        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_2)
-        EdgeFactory.create(graph=graph, question=test_question_2, next_question=test_question_3)
-        EdgeFactory.create(graph=graph, question=test_question_3, next_question=test_question_4)
-        EdgeFactory.create(graph=graph, question=test_question_4, next_question=test_question_5)
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_2, choice=None)
+        EdgeFactory.create(graph=graph, question=test_question_2, next_question=test_question_3, choice=None)
+        EdgeFactory.create(graph=graph, question=test_question_3, next_question=test_question_4, choice=None)
+        EdgeFactory.create(graph=graph, question=test_question_4, next_question=test_question_5, choice=None)
 
         # Create our questionnaire
         questionnaire = QuestionnaireFactory.create(graph=graph)
@@ -208,9 +208,17 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
         # Setup graph relations between questions
         graph = QuestionGraphFactory.create(first_question=test_question_1)
-        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_2, payload='yes')
-        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_3, payload='no')
-        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_4)
+        EdgeFactory.create(graph=graph,
+                           question=test_question_1,
+                           next_question=test_question_2,
+                           choice__payload='yes',
+                           choice__question=test_question_1)
+        EdgeFactory.create(graph=graph,
+                           question=test_question_1,
+                           next_question=test_question_3,
+                           choice__payload='no',
+                           choice__question=test_question_1)
+        EdgeFactory.create(graph=graph, question=test_question_1, next_question=test_question_4, choice=None)
 
         # Create our questionnaire
         questionnaire = QuestionnaireFactory.create(graph=graph)

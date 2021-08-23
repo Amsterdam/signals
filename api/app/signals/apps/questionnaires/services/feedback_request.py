@@ -81,11 +81,11 @@ def create_kto_graph():
     Choice.objects.create(question=q_allow_contact, payload='nee')
 
     # Connect the questions to form a graph:
-    Edge.objects.create(graph=graph, question=q1, next_question=q_satisfied, payload=c1_ja.payload)
-    Edge.objects.create(graph=graph, question=q1, next_question=q_unsatisfied, payload=c1_nee.payload)
-    Edge.objects.create(graph=graph, question=q_satisfied, next_question=q_extra_info)
-    Edge.objects.create(graph=graph, question=q_unsatisfied, next_question=q_extra_info)
-    Edge.objects.create(graph=graph, question=q_extra_info, next_question=q_allow_contact)
+    Edge.objects.create(graph=graph, question=q1, next_question=q_satisfied, choice=c1_ja)
+    Edge.objects.create(graph=graph, question=q1, next_question=q_unsatisfied, choice=c1_nee)
+    Edge.objects.create(graph=graph, question=q_satisfied, next_question=q_extra_info, choice=None)
+    Edge.objects.create(graph=graph, question=q_unsatisfied, next_question=q_extra_info, choice=None)
+    Edge.objects.create(graph=graph, question=q_extra_info, next_question=q_allow_contact, choice=None)
 
     return graph
 

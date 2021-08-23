@@ -42,10 +42,18 @@ class QuestionGraphFactory(DjangoModelFactory):
         model = QuestionGraph
 
 
+class ChoiceFactory(DjangoModelFactory):
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Choice
+
+
 class EdgeFactory(DjangoModelFactory):
     graph = SubFactory(QuestionGraphFactory)
     question = SubFactory(QuestionFactory)
     next_question = SubFactory(QuestionFactory)
+    choice = SubFactory(ChoiceFactory)
 
     class Meta:
         model = Edge
@@ -57,13 +65,6 @@ class TriggerFactory(DjangoModelFactory):
 
     class Meta:
         model = Trigger
-
-
-class ChoiceFactory(DjangoModelFactory):
-    question = SubFactory(QuestionFactory)
-
-    class Meta:
-        model = Choice
 
 
 class QuestionnaireFactory(DjangoModelFactory):

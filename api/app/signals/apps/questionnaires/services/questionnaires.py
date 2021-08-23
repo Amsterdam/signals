@@ -2,11 +2,8 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import logging
 
-import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
-from jsonschema.exceptions import SchemaError as js_schema_error
-from jsonschema.exceptions import ValidationError as js_validation_error
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
@@ -76,17 +73,9 @@ class QuestionnairesService:
         if not question.required and answer_payload is None:
             return answer_payload
 
-        # Schema check
+        # FieldType subclass schema check
         field_type_class = get_field_type_class(question)
-
-        try:
-            jsonschema.validate(answer_payload, field_type_class.submission_schema)
-        except js_schema_error:
-            msg = f'JSONSchema for {field_type_class.__name__} is not valid.'
-            raise django_validation_error(msg)
-        except js_validation_error:
-            msg = 'Submitted answer does not validate.'
-            raise django_validation_error(msg)
+        field_type_class().validate_submission_payload(answer_payload)
 
         # If a questions has pre-defined answers (see the Choice model), the
         # answer payload should match one of these predefined answers.
@@ -147,10 +136,10 @@ class QuestionnairesService:
         """
         Get next question given an Answer payload and Question and QuestionGraph.
         """
-        outgoing_edges = graph.edges.filter(question=question)
+        outgoing_edges = graph.edges.filter(question=question).select_related('choice')
 
         for edge in outgoing_edges:
-            if edge.payload == answer_payload or edge.payload is None:
+            if edge.choice and edge.choice.payload == answer_payload or edge.choice is None:
                 return edge.next_question
 
         return None
