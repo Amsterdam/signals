@@ -150,7 +150,7 @@ class TestFeedbackRequestService(TestCase):
         graph = session.questionnaire.graph
         AnswerFactory.create(session=session, question=graph.first_question, payload='nee')
 
-        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, payload='nee').first()
+        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, choice__payload='nee').first()
         q_reason = outgoing_edge.next_question
         AnswerFactory.create(session=session, question=q_reason, payload='never good')  # trigger reopen request
 
@@ -184,7 +184,7 @@ class TestFeedbackRequestService(TestCase):
         graph = session.questionnaire.graph
         AnswerFactory.create(session=session, question=graph.first_question, payload='ja')
 
-        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, payload='ja').first()
+        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, choice__payload='ja').first()
         q_reason = outgoing_edge.next_question
         AnswerFactory.create(session=session, question=q_reason, payload='all good')  # trigger reopen request
 

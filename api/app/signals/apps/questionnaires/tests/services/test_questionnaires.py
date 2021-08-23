@@ -42,8 +42,8 @@ def _question_graph_with_decision():
     )
 
     graph = QuestionGraphFactory.create(name='Graph with decision', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, choice__payload='yes', choice__question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, choice__payload='no', choice__question=q1)
 
     return graph
 
@@ -66,8 +66,8 @@ def _question_graph_with_decision_null_retrieval_keys():
     )
 
     graph = QuestionGraphFactory.create(name='Graph with decision and null keys', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, choice__payload='yes', choice__question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, choice__payload='no', choice__question=q1)
 
     return graph
 
@@ -90,9 +90,10 @@ def _question_graph_with_decision_with_default():
     )
 
     graph = QuestionGraphFactory.create(name='Graph with decision with default', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)  # Default option, last edge without payload prop.
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, choice__payload='yes', choice__question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, choice__payload='no', choice__question=q1)
+    # Default option, last edge without choice property:
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, choice=None)
 
     return graph
 
@@ -112,34 +113,16 @@ def _question_graph_no_required_answers():
     )
 
     graph = QuestionGraphFactory.create(name='Graph with questions that are not required.', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, choice=None)
 
     return graph
 
 
 def _question_graph_with_decision_with_default_no_required_answers():
-    q1 = QuestionFactory.create(
-        retrieval_key='q_yesno',
-        required=False,
-        short_label='Yes or no?',
-        label='Yes or no, what do you choose?',
-    )
-    q_yes = QuestionFactory.create(
-        retrieval_key='q_yes',
-        short_label='yes',
-        label='The yes question. Happy now?'
-    )
-    q_no = QuestionFactory.create(
-        retrieval_key='q_no',
-        short_label='no',
-        label='The no question. Still unhappy?'
-    )
-
-    graph = QuestionGraphFactory.create(
-        name='Graph with questions that are not required and have defaults.', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)
+    # reuse the _question_graph_with_decision_with_default, but make question not-required
+    graph = _question_graph_with_decision_with_default()
+    graph.first_question.required = False
+    graph.first_question.save()
 
     return graph
 
@@ -157,8 +140,8 @@ def _question_graph_with_cycle():
     )
 
     graph = QuestionGraphFactory.create(name='Graph with cycle', first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
-    EdgeFactory.create(graph=graph, question=q2, next_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, choice=None)
+    EdgeFactory.create(graph=graph, question=q2, next_question=q1, choice=None)
 
     return graph
 
@@ -187,8 +170,8 @@ def _create_graph_no_defaults(graph_name='diamond'):
     # q2    q3
 
     graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q2, payload='yes')
-    EdgeFactory.create(graph=graph, question=q1, next_question=q3, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, choice__payload='yes', choice__question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q3, choice__payload='no', choice__question=q1)
 
     return graph
 
@@ -258,7 +241,7 @@ class TestQuestionnairesService(TestCase):
 
         question2 = QuestionnairesService.get_next_question(answer.payload, question, graph)
         # We want the yes branch followed, here we grab the relevant question
-        edge_match = graph.edges.filter(question=question, payload=answer_str).first()
+        edge_match = graph.edges.filter(question=question, choice__payload=answer_str).first()
         self.assertEqual(question2, edge_match.next_question)
 
         answer2_str = 'yes'
@@ -286,7 +269,7 @@ class TestQuestionnairesService(TestCase):
         # Unconditional next:
         q2 = QuestionFactory.create()
         unconditional_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=unconditional_graph, question=q_start, next_question=q2)
+        EdgeFactory(graph=unconditional_graph, question=q_start, next_question=q2, choice=None)
 
         next_ref = get_next('ANSWER', q_start, unconditional_graph)
         self.assertEqual(next_ref, q2)
@@ -295,9 +278,16 @@ class TestQuestionnairesService(TestCase):
         q_no = QuestionFactory.create(retrieval_key='NO')
         q_yes = QuestionFactory.create(retrieval_key='YES')
         conditional_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_no, payload='no')
-        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_yes, payload='yes')
-
+        EdgeFactory(graph=conditional_graph,
+                    question=q_start,
+                    next_question=q_no,
+                    choice__payload='no',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_graph,
+                    question=q_start,
+                    next_question=q_yes,
+                    choice__payload='yes',
+                    choice__question=q_start)
         self.assertIsNone(get_next('ANSWER', q_start, conditional_graph))  # consider whether this is useful
         self.assertEqual(q_yes, get_next('yes', q_start, conditional_graph))
         self.assertEqual(q_no, get_next('no', q_start, conditional_graph))
@@ -305,9 +295,20 @@ class TestQuestionnairesService(TestCase):
         # conditional next with default:
         q_default = QuestionFactory.create(retrieval_key='DEFAULT')
         conditional_with_default_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_no, payload='no')
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_yes, payload='yes')
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_default, payload=None)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_no,
+                    choice__payload='no',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_yes,
+                    choice__payload='yes',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_default,
+                    choice=None)
 
         self.assertEqual(q_default, get_next('ANSWER', q_start, conditional_with_default_graph))
         self.assertEqual(q_yes, get_next('yes', q_start, conditional_with_default_graph))
@@ -329,7 +330,7 @@ class TestQuestionnairesService(TestCase):
         # Unconditional next:
         q2 = QuestionFactory.create()
         unconditional_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=unconditional_graph, question=q_start, next_question=q2)
+        EdgeFactory(graph=unconditional_graph, question=q_start, next_question=q2, choice=None)
 
         answer = AnswerFactory.create(payload='EMPTY', session__questionnaire__graph=unconditional_graph)
         next_q = get_next(answer, q_start)
@@ -339,8 +340,16 @@ class TestQuestionnairesService(TestCase):
         q_no = QuestionFactory.create(retrieval_key='NO')
         q_yes = QuestionFactory.create(retrieval_key='YES')
         conditional_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_no, payload='no')
-        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_yes, payload='yes')
+        EdgeFactory(graph=conditional_graph,
+                    question=q_start,
+                    next_question=q_no,
+                    choice__payload='no',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_graph,
+                    question=q_start,
+                    next_question=q_yes,
+                    choice__payload='yes',
+                    choice__question=q_start)
 
         answer = AnswerFactory.create(payload='ANSWER', session__questionnaire__graph=conditional_graph)
         self.assertIsNone(get_next(answer, q_start))  # consider whether this is useful
@@ -354,9 +363,21 @@ class TestQuestionnairesService(TestCase):
         # conditional next with default:
         q_default = QuestionFactory.create(retrieval_key='DEFAULT')
         conditional_with_default_graph = QuestionGraphFactory.create(first_question=q_start)
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_no, payload='no')
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_yes, payload='yes')
-        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_default, payload=None)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_no,
+                    choice__payload='no',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_yes,
+                    choice__payload='yes',
+                    choice__question=q_start)
+        EdgeFactory(graph=conditional_with_default_graph,
+                    question=q_start,
+                    next_question=q_default,
+                    choice__payload=None,
+                    choice_question=q_start)
 
         answer = AnswerFactory.create(payload='ANSWER', session__questionnaire__graph=conditional_with_default_graph)
         self.assertEqual(q_default, get_next(answer, q_start))
@@ -712,9 +733,8 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         self.assertIsInstance(result2, Session)
 
     def test_validate_question_graph_with_decision_with_default_not_required(self):
-        graph = _question_graph_with_decision_with_default()
-        graph.first_question.required = False
-        graph.first_question.save()
+        # graph = _question_graph_with_decision_with_default()
+        graph = _question_graph_with_decision_with_default_no_required_answers()
         q_yes = Question.objects.get(retrieval_key='q_yes')
         q_no = Question.objects.get(retrieval_key='q_no')
 
