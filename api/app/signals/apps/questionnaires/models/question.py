@@ -18,7 +18,7 @@ class Question(models.Model):
     Edge models as to how the questions are referred to.
     """
     retrieval_key = models.CharField(unique=True, max_length=255, null=True, blank=True)
-    analysis_key = models.CharField(max_length=255, null=True, blank=True)
+    analysis_key = models.CharField(max_length=255, default='analysis_key_placeholder')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
