@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('questionnaires', '0006_retrieval_key_and_analysis_key'),
+        ('questionnaires', '0007_alter_question_analysis_key'),
     ]
 
     operations = [

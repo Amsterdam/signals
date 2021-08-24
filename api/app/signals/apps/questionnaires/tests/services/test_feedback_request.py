@@ -81,7 +81,7 @@ class TestFeedbackRequestService(TestCase):
         question_1 = questionnaire.graph.first_question
         self.assertEqual(question_1.analysis_key, 'satisfied')
 
-        answer_1 = QuestionnairesService.create_answer('ja', question_1, questionnaire, session=session)
+        answer_1 = QuestionnairesService.create_answer(True, question_1, questionnaire, session=session)
         question_2 = QuestionnairesService.get_next_question(answer_1.payload, question_1, graph)
         self.assertEqual(question_2.analysis_key, 'reason_satisfied')
 
@@ -101,8 +101,7 @@ class TestFeedbackRequestService(TestCase):
         question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
         self.assertEqual(question_4.analysis_key, 'allows_contact')
 
-        answer_4 = QuestionnairesService.create_answer(
-            'ja', question_4, questionnaire, session=session)
+        answer_4 = QuestionnairesService.create_answer(True, question_4, questionnaire, session=session)
         question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
 
@@ -115,7 +114,7 @@ class TestFeedbackRequestService(TestCase):
         question_1 = questionnaire.graph.first_question
         self.assertEqual(question_1.analysis_key, 'satisfied')
 
-        answer_1 = QuestionnairesService.create_answer('nee', question_1, questionnaire, session=session)
+        answer_1 = QuestionnairesService.create_answer(False, question_1, questionnaire, session=session)
         question_2 = QuestionnairesService.get_next_question(answer_1.payload, question_1, graph)
         self.assertEqual(question_2.analysis_key, 'reason_unsatisfied')
 
@@ -135,10 +134,13 @@ class TestFeedbackRequestService(TestCase):
         question_4 = QuestionnairesService.get_next_question(answer_3.payload, question_3, graph)
         self.assertEqual(question_4.analysis_key, 'allows_contact')
 
-        answer_4 = QuestionnairesService.create_answer(
-            'ja', question_4, questionnaire, session=session)
+        answer_4 = QuestionnairesService.create_answer(True, question_4, questionnaire, session=session)
         question_5 = QuestionnairesService.get_next_question(answer_4.payload, question_4, graph)
         self.assertIsNone(question_5, None)
+
+# TODO: add tests for "unhappy" flow, make sure "bad" inputs cannot trip bad behavior
+# TODO: revisit QuestionnairesService.validate_session_using_question_graph and
+# QuestionnairesService.get_latest_answers_by_analysis_key
 
     def test_freeze_session_feedback_request_reopens(self):
         """
@@ -148,9 +150,10 @@ class TestFeedbackRequestService(TestCase):
         # Create a session with all relevant questions answered
         session = FeedbackRequestService.create_session(signal)
         graph = session.questionnaire.graph
-        AnswerFactory.create(session=session, question=graph.first_question, payload='nee')
+        a1 = AnswerFactory.create(session=session, question=graph.first_question, payload=False)
 
-        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, choice__payload='nee').first()
+        outgoing_edge = Edge.objects.filter(
+            graph=graph, question=graph.first_question, choice__payload=a1.payload).first()
         q_reason = outgoing_edge.next_question
         AnswerFactory.create(session=session, question=q_reason, payload='never good')  # trigger reopen request
 
@@ -160,7 +163,7 @@ class TestFeedbackRequestService(TestCase):
 
         outgoing_edge = Edge.objects.filter(graph=graph, question=q_extra_info).first()
         q_allows_contact = outgoing_edge.next_question
-        AnswerFactory.create(session=session, question=q_allows_contact, payload='ja')
+        AnswerFactory.create(session=session, question=q_allows_contact, payload=True)
 
         session = QuestionnairesService.freeze_session(session)
         self.assertIsInstance(session, Session)
@@ -182,9 +185,9 @@ class TestFeedbackRequestService(TestCase):
         # Create a session with all relevant questions answered
         session = FeedbackRequestService.create_session(signal)
         graph = session.questionnaire.graph
-        AnswerFactory.create(session=session, question=graph.first_question, payload='ja')
+        AnswerFactory.create(session=session, question=graph.first_question, payload=True)
 
-        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, choice__payload='ja').first()
+        outgoing_edge = Edge.objects.filter(graph=graph, question=graph.first_question, choice__payload=True).first()
         q_reason = outgoing_edge.next_question
         AnswerFactory.create(session=session, question=q_reason, payload='all good')  # trigger reopen request
 
@@ -194,7 +197,7 @@ class TestFeedbackRequestService(TestCase):
 
         outgoing_edge = Edge.objects.filter(graph=graph, question=q_extra_info).first()
         q_allows_contact = outgoing_edge.next_question
-        AnswerFactory.create(session=session, question=q_allows_contact, payload='ja')
+        AnswerFactory.create(session=session, question=q_allows_contact, payload=True)
 
         session = QuestionnairesService.freeze_session(session)
         self.assertIsInstance(session, Session)
