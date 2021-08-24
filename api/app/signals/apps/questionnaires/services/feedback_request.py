@@ -30,12 +30,12 @@ def create_kto_graph():
         analysis_key='satisfied',
         label='Bent u tevreden met de afhandeling van uw melding?',
         short_label='Tevreden',
-        field_type='plain_text',
+        field_type='boolean',
         enforce_choices=True,
         required=True,
     )
-    c1_ja = Choice.objects.create(question=q1, payload='ja')
-    c1_nee = Choice.objects.create(question=q1, payload='nee')
+    c1_ja = Choice.objects.create(question=q1, payload=True, display='Ja, ik ben tevreden.')
+    c1_nee = Choice.objects.create(question=q1, payload=False, display='Nee, ik ben niet tevreden.')
     graph = QuestionGraph.objects.create(first_question=q1)
 
     # Question for satisfied reporter
@@ -72,13 +72,13 @@ def create_kto_graph():
     )
     q_allow_contact = Question.objects.create(
         analysis_key='allows_contact',
-        field_type='plain_text',
+        field_type='boolean',
         label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
         short_label='Mogen wij contact met u opnemen naar aanleiding van uw feedback?',
         enforce_choices=True,
     )
-    Choice.objects.create(question=q_allow_contact, payload='ja')
-    Choice.objects.create(question=q_allow_contact, payload='nee')
+    Choice.objects.create(question=q_allow_contact, payload=True, display='Ja')
+    Choice.objects.create(question=q_allow_contact, payload=False, display='Nee')
 
     # Connect the questions to form a graph:
     Edge.objects.create(graph=graph, question=q1, next_question=q_satisfied, choice=c1_ja)
@@ -134,12 +134,7 @@ class FeedbackRequestService:
         answers_by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
         by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
 
-        # Work around missing boolean FieldType
-        satisfied = by_analysis_key['satisfied']
-        is_satisfied = True if satisfied == 'ja' else False
-        allows_contact = by_analysis_key.get('allows_contact', 'nee')
-        allows_contact = True if allows_contact == 'ja' else False
-
+        is_satisfied = by_analysis_key['satisfied']
         reason = by_analysis_key.get('reason_satisfied', None) or by_analysis_key.get('reason_unsatisfied', None)
 
         # Prepare a Feedback object, save it later
@@ -148,7 +143,7 @@ class FeedbackRequestService:
             created_at=session.created_at,
             submitted_at=timezone.now(),
             is_satisfied=is_satisfied,
-            allows_contact=allows_contact,
+            allows_contact=by_analysis_key.get('allows_contact', False),
             text=reason,
             text_extra=by_analysis_key.get('extra_info', None),
         )

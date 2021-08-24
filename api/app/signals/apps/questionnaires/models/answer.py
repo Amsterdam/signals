@@ -13,3 +13,6 @@ class Answer(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, related_name='+')
 
     payload = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f'Answer (id={self.id}) to question with analysis_key={self.question.analysis_key}.'

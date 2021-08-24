@@ -11,27 +11,6 @@ from jsonschema.exceptions import ValidationError as js_validation_error
 
 class FieldType:
     """All field types should subclass this, so that they become visible as a choice"""
-    def clean(self, payload):
-        next_rules_schema = self.get_json_schema()
-        jsonschema.validate(payload, next_rules_schema)
-        return payload
-
-    def get_json_schema(self):
-        """
-        Return JSONSchema for this FieldType subclass, wrap it to allow an array
-        """
-        return {
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'ref': {'type': 'string'},
-                    'payload': self.submission_schema  # leave out "payload" if next is unconditional
-                },
-                'required': ['ref'],
-                'additionalProperties': False
-            }
-        }
 
     def validate_submission_payload(self, payload):
         """
@@ -58,6 +37,11 @@ class PlainText(FieldType):
 class Integer(FieldType):
     choice = ('integer', 'Integer')
     submission_schema = {'type': 'integer'}
+
+
+class Boolean(FieldType):
+    choice = ('boolean', 'Boolean')
+    submission_schema = {'type': 'boolean'}
 
 
 def init():
