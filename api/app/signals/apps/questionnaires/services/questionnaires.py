@@ -185,10 +185,7 @@ class QuestionnairesService:
         answers = QuestionnairesService.get_latest_answers(session)
         by_analysis_key = {}
         for answer in answers.all():
-            # analysis_key can be None, TODO: consider disallowing None there
             key = answer.question.analysis_key
-            if not key:
-                continue
 
             # If several questions in a questionnaire have the same analysis_key
             # we will use the answer with the latest created_at timestamp.
