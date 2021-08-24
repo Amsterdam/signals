@@ -517,13 +517,14 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_user import SignalUser
         from signals.apps.users.models import User
         try:
-            user_email = data['user_assignment']['user']['email']
-            signal.user_assignment, _ = SignalUser.objects.get_or_create(
-                _signal=signal,
-                user=None if not user_email else User.objects.get(email=user_email),
-                created_by=data['created_by'] if 'created_by' in data else None
-            )
-            signal.save()
+            if data['user_assignment']['user']['email'] is not None:
+                user_email = data['user_assignment']['user']['email']
+                signal.user_assignment, _ = SignalUser.objects.get_or_create(
+                    _signal=signal,
+                    user=None if not user_email else User.objects.get(email=user_email),
+                    created_by=data['created_by'] if 'created_by' in data else None
+                )
+                signal.save()
         except Exception:
             raise ValidationError('Could not set user assignment')
         return signal.user_assignment
@@ -555,14 +556,6 @@ class SignalManager(models.Manager):
         else:
             raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
-
-        if '_user' in data:
-            signal.user_assignment, _ = SignalUser.objects.get_or_create(
-                _signal=signal,
-                user=None if not data['_user'] else data['_user'],
-                created_by=data['created_by'] if 'created_by' in data else None
-            )
-            signal.save()
 
         return relation
 

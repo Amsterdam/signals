@@ -104,13 +104,19 @@ class SignalDslService(DslService):
                 if eval_result:
                     # assign relation to department
                     data = {
-                        'departments': [
-                            {
-                                'id': rule._department.id
+                        'routing_assignment': {
+                            'departments': [
+                                {
+                                    'id': rule._department.id
+                                }
+                            ]
+                        },
+                        'user_assignment': {
+                            'user': {
+                                'email': None if not rule._user else rule._user.email
                             }
-                        ],
-                        '_user': None if not rule._user else rule._user
+                        }
                     }
-                    self.signal_manager.update_routing_departments(data, signal)
+                    self.signal_manager.update_multiple(data, signal)
                     return True
         return False
