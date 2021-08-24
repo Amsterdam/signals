@@ -517,21 +517,19 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_user import SignalUser
         from signals.apps.users.models import User
         try:
-            if data['user_assignment']['user']['email'] is not None:
-                user_email = data['user_assignment']['user']['email']
-                signal.user_assignment, _ = SignalUser.objects.get_or_create(
-                    _signal=signal,
-                    user=None if not user_email else User.objects.get(email=user_email),
-                    created_by=data['created_by'] if 'created_by' in data else None
-                )
-                signal.save()
+            user_email = data['user_assignment']['user']['email']
+            signal.user_assignment, _ = SignalUser.objects.get_or_create(
+                _signal=signal,
+                user=None if not user_email else User.objects.get(email=user_email),
+                created_by=data['created_by'] if 'created_by' in data else None
+            )
+            signal.save()
         except Exception:
             raise ValidationError('Could not set user assignment')
         return signal.user_assignment
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
         from signals.apps.signals.models.signal_departments import SignalDepartments
-        from signals.apps.signals.models.signal_user import SignalUser
 
         relation = SignalDepartments.objects.create(
             _signal=signal,

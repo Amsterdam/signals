@@ -3,7 +3,7 @@
 from django.contrib.gis import geos
 from django.test import TestCase
 
-from signals.apps.services.domain.dsl import SignalContext, SignalDslService
+from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.factories import (
     AreaFactory,
     DepartmentFactory,
@@ -12,10 +12,7 @@ from signals.apps.signals.factories import (
     RoutingExpressionFactory,
     SignalFactory
 )
-
-from signals.apps.users.factories import (
-    UserFactory
-)
+from signals.apps.users.factories import UserFactory
 
 
 class TestRoutingMechanism(TestCase):
@@ -62,4 +59,3 @@ class TestRoutingMechanism(TestCase):
         self.assertIsNotNone(signal.routing_assignment)
         user = signal.user_assignment.user
         self.assertEqual(user.id, self.user.id)
-
