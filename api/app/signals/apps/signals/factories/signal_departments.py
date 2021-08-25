@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
-from factory import Sequence, SubFactory, fuzzy, post_generation
+from factory import Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
 from signals.apps.signals.models import SignalDepartments
@@ -12,7 +12,7 @@ class SignalDepartmentsFactory(DjangoModelFactory):
 
     _signal = SubFactory('signals.apps.signals.factories.signal.SignalFactory', category_assignment=None)
     created_by = Sequence(lambda n: 'beheerder{}@example.com'.format(n))
-    relation_type = fuzzy.FuzzyChoice(SignalDepartments.REL_CHOICES)
+    relation_type = SignalDepartments.REL_DIRECTING
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

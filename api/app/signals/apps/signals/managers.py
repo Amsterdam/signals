@@ -21,6 +21,8 @@ update_reporter = DjangoSignal()
 update_priority = DjangoSignal()
 create_note = DjangoSignal()
 update_type = DjangoSignal()
+update_user_assignment = DjangoSignal()
+update_signal_departments = DjangoSignal()
 
 
 def send_signals(to_send):
@@ -352,6 +354,7 @@ class SignalManager(models.Manager):
 
         note = Note.objects.create(**data, _signal_id=signal.id)
         signal.save()
+
         return note
 
     def create_note(self, data, signal):
@@ -460,20 +463,35 @@ class SignalManager(models.Manager):
                 }))
 
             if 'directing_departments_assignment' in data:
-                self._update_directing_departments_no_transaction(
+                signal_departments = self._update_directing_departments_no_transaction(
                     data['directing_departments_assignment'], locked_signal
                 )
+                to_send.append((update_signal_departments, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'signal_departments': signal_departments
+                }))
 
             if 'routing_assignment' in data:
                 update_detail_data = data['routing_assignment']
-                self._update_routing_departments_no_transaction(
+                signal_departments = self._update_routing_departments_no_transaction(
                     update_detail_data, locked_signal
                 )
+                to_send.append((update_signal_departments, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'signal_departments': signal_departments
+                }))
 
             if 'user_assignment' in data:
-                self._update_user_signal_no_transaction(
+                user_assignment = self._update_user_signal_no_transaction(
                     data, locked_signal
                 )
+                to_send.append((update_signal_departments, {
+                    'sender': sender,
+                    'signal_obj': locked_signal,
+                    'user_assignment': user_assignment
+                }))
 
             # Send out all Django signals:
             transaction.on_commit(lambda: send_signals(to_send))
@@ -516,6 +534,7 @@ class SignalManager(models.Manager):
     def _update_user_signal_no_transaction(self, data, signal):
         from signals.apps.signals.models.signal_user import SignalUser
         from signals.apps.users.models import User
+
         try:
             user_email = data['user_assignment']['user']['email']
             signal.user_assignment, _ = SignalUser.objects.get_or_create(
@@ -526,6 +545,7 @@ class SignalManager(models.Manager):
             signal.save()
         except Exception:
             raise ValidationError('Could not set user assignment')
+
         return signal.user_assignment
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
@@ -554,6 +574,7 @@ class SignalManager(models.Manager):
         else:
             raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
+
         return relation
 
     def _update_directing_departments_no_transaction(self, data, signal):
@@ -581,6 +602,10 @@ class SignalManager(models.Manager):
                 data=data,
                 signal=locked_signal
             )
+
+            transaction.on_commit(lambda: update_signal_departments.send_robust(sender=self.__class__,
+                                                                                signal_obj=signal,
+                                                                                signal_departments=departments))
 
         return departments
 

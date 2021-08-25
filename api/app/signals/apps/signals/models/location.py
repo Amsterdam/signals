@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import copy
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 
@@ -68,6 +69,8 @@ class Location(CreatedUpdatedModel):
 
     extra_properties = models.JSONField(null=True)
     bag_validated = models.BooleanField(default=False)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     @property
     def short_address_text(self):

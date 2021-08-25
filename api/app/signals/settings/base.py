@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     # Signals project
+    'signals.apps.history',
+
     'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
@@ -480,6 +482,9 @@ FEATURE_FLAGS = {
 
     'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
     'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
+
+    # Enabled the history_log based response, disables the signal_history_view based response
+    'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

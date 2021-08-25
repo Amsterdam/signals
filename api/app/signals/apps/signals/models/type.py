@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 
@@ -23,6 +24,8 @@ class Type(models.Model):
 
     created_by = models.EmailField(null=True, blank=True)  # null will default to the system user
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     class Meta:
         ordering = ('_signal', '-created_at', )
