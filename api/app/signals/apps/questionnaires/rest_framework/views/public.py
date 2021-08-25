@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Question, Questionnaire, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
 from signals.apps.questionnaires.rest_framework.serializers import (
@@ -35,8 +36,8 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
 
 
 class PublicQuestionViewSet(DatapuntViewSet):
-    lookup_field = 'key'
-    lookup_url_kwarg = 'key'
+    lookup_field = 'retrieval_key'
+    lookup_url_kwarg = 'retrieval_key'
 
     queryset = Question.objects.all()
     queryset_detail = Question.objects.all()
@@ -83,7 +84,10 @@ class PublicQuestionViewSet(DatapuntViewSet):
         next_question_data = None
         next_question = QuestionnairesService.get_next_question(answer=serializer.instance, question=question)
         if next_question:
-            question_serializer = PublicQuestionSerializer(next_question, context=self.get_serializer_context())
+            context = self.get_serializer_context()
+            context.update({'graph': serializer.instance.session.questionnaire.graph})
+
+            question_serializer = PublicQuestionSerializer(next_question, context=context)
             next_question_data = question_serializer.data
 
         data = serializer.data
@@ -109,13 +113,22 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         try:
             session = QuestionnairesService.get_session(session_uuid)
+        except Session.DoesNotExist:
+            raise Http404
+        except (SessionFrozen, SessionExpired) as e:
+            raise Gone(str(e))
         except Exception as e:
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
 
-        if session.frozen:
-            raise Gone('Already used!')
-        elif session.is_expired:
-            raise Gone('Expired!')
-
         return session
+
+    @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
+    def submit(self, request, *args, **kwargs):
+        # TODO: calls to this endpoint are not idempotent, investigate whether
+        # they should be.
+        session = self.get_object()
+        QuestionnairesService.freeze_session(session)
+
+        serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
+        return Response(serializer.data, status=200)

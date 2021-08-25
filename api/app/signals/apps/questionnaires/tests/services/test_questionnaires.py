@@ -1,18 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest import mock
 
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
+from freezegun.api import freeze_time
 
-from signals.apps.questionnaires.exceptions import SessionInvalidated
+from signals.apps.questionnaires.app_settings import REACTION_REQUEST_DAYS_OPEN, SESSION_DURATION
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.factories import (
+    EdgeFactory,
     QuestionFactory,
+    QuestionGraphFactory,
     QuestionnaireFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import SESSION_DURATION, Answer, Questionnaire
+from signals.apps.questionnaires.models import Answer, Choice, Questionnaire
 from signals.apps.questionnaires.services import QuestionnairesService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
@@ -20,151 +24,171 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 def _question_graph_with_decision():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-        ],
     )
-    q2 = QuestionFactory.create(
-        key='q_yes',
+    q_yes = QuestionFactory.create(
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
-        key='q_no',
+    q_no = QuestionFactory.create(
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+
+    return graph
 
 
 def _question_graph_with_decision_null_keys():
-    q2 = QuestionFactory.create(
-        key=None,
+    q1 = QuestionFactory.create(
+        retrieval_key=None,
+        short_label='Yes or no?',
+        label='Yes or no, what do you choose?',
+    )
+    q_yes = QuestionFactory.create(
+        retrieval_key=None,
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
-        key=None,
+    q_no = QuestionFactory.create(
+        retrieval_key=None,
         short_label='no',
         label='The no question. Still unhappy?'
     )
-    q1 = QuestionFactory.create(
-        key=None,
-        short_label='Yes or no?',
-        label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': str(q2.uuid), 'payload': 'yes'},
-            {'ref': str(q3.uuid), 'payload': 'no'},
-        ],
-    )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision and null keys', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+
+    return graph
 
 
 def _question_graph_with_decision_with_default():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
-        ],
     )
-    q2 = QuestionFactory.create(
-        key='q_yes',
+    q_yes = QuestionFactory.create(
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
-        key='q_no',
+    q_no = QuestionFactory.create(
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(name='Graph with decision with default', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)  # Default option, last edge without payload prop.
+
+    return graph
 
 
 def _question_graph_no_required_answers():
     q1 = QuestionFactory.create(
-        key='one',
+        retrieval_key='one',
         required=False,
         short_label='First not required',
         label='First not required',
-        next_rules=[
-            {'ref': 'two'},
-        ]
     )
     q2 = QuestionFactory(
-        key='two',
+        retrieval_key='two',
         required=False,
         short_label='Second not required',
         label='Second not required',
     )
 
-    return q1, q2
+    graph = QuestionGraphFactory.create(name='Graph with questions that are not required.', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
+
+    return graph
 
 
 def _question_graph_with_decision_with_default_no_required_answers():
     q1 = QuestionFactory.create(
-        key='q_yesno',
+        retrieval_key='q_yesno',
         required=False,
         short_label='Yes or no?',
         label='Yes or no, what do you choose?',
-        next_rules=[
-            {'ref': 'q_yes', 'payload': 'yes'},
-            {'ref': 'q_no', 'payload': 'no'},
-            {'ref': 'q_yes'}  # Default option, always last and without 'payload' property!
-        ],
     )
-    q2 = QuestionFactory.create(
-        key='q_yes',
+    q_yes = QuestionFactory.create(
+        retrieval_key='q_yes',
         short_label='yes',
         label='The yes question. Happy now?'
     )
-    q3 = QuestionFactory.create(
-        key='q_no',
+    q_no = QuestionFactory.create(
+        retrieval_key='q_no',
         short_label='no',
         label='The no question. Still unhappy?'
     )
 
-    return q1, q2, q3
+    graph = QuestionGraphFactory.create(
+        name='Graph with questions that are not required and have defaults.', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_no, payload='no')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q_yes)
+
+    return graph
 
 
 def _question_graph_with_cycle():
     q1 = QuestionFactory.create(
-        key='one',
+        retrieval_key='one',
         short_label='First question.',
         label='First question.',
-        next_rules=[
-            {'ref': 'two'}
-        ],
     )
     q2 = QuestionFactory.create(
-        key='two',
+        retrieval_key='two',
         short_label='Second question.',
         label='Second question.',
-        next_rules=[
-            {'ref': 'one'}
-        ],
     )
 
-    return q1, q2
+    graph = QuestionGraphFactory.create(name='Graph with cycle', first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2)
+    EdgeFactory.create(graph=graph, question=q2, next_question=q1)
+
+    return graph
 
 
 def _question_graph_one_question():
     q1 = QuestionFactory.create(
-        key='only',
+        retrieval_key='only',
         short_label='Only question.',
         label='Only question.',
     )
-    return q1
+
+    return QuestionGraphFactory.create(name='Graph with only one question', first_question=q1)
+
+
+def _create_graph_no_defaults(graph_name='diamond'):
+    """
+    Seed the database with a diamond shaped graph formed by questions.
+    """
+    q1 = QuestionFactory.create()
+    q2 = QuestionFactory.create()
+    q3 = QuestionFactory.create()
+
+    # sketch:
+    #    q1 <- first_question
+    #   /  \
+    # q2    q3
+
+    graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, payload='yes')
+    EdgeFactory.create(graph=graph, question=q1, next_question=q3, payload='no')
+
+    return graph
 
 
 class TestQuestionGraphs(TestCase):
@@ -177,8 +201,8 @@ class TestQuestionGraphs(TestCase):
 class TestQuestionnairesService(TestCase):
     def test_create_answers(self):
         # set up our questions and questionnaires
-        q_yesno, q_yes, q_no = _question_graph_with_decision()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'yes'
@@ -197,7 +221,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.key)
+        self.assertEqual(question2.ref, 'q_yes')
 
         answer2_str = 'yes'
 
@@ -208,11 +232,11 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_create_answers_null_keys(self):
-        q_yesno, q_yes, q_no = _question_graph_with_decision_null_keys()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision_null_keys()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'yes'
@@ -231,7 +255,9 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.uuid)
+        # We want the yes branch followed, here we grab the relevant question
+        edge_match = graph.edges.filter(question=question, payload=answer_str).first()
+        self.assertEqual(question2, edge_match.next_question)
 
         answer2_str = 'yes'
 
@@ -242,32 +268,55 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_get_next_question_ref(self):
-        q_next_rules_no_next = []
-        q_next_rules_next_none = None
-        q_next_rules_next_unconditional = [{'ref': 'UNCONDITIONAL'}]
-        q_next_rules_next_conditional = [{'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}]
-        q_next_rules_next_conditional_with_default = [
-            {'ref': 'NO', 'payload': 'no'}, {'ref': 'YES', 'payload': 'yes'}, {'ref': 'DEFAULT'}
-        ]
+        get_next_ref = QuestionnairesService.get_next_question_ref
 
-        get_next = QuestionnairesService.get_next_question_ref
-        self.assertEqual(get_next('yes', q_next_rules_no_next), None)
-        self.assertEqual(get_next('yes', q_next_rules_next_none), None)  # <-- problematic
-        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional), None)
-        self.assertEqual(get_next('BLAH', q_next_rules_next_unconditional), 'UNCONDITIONAL')
-        self.assertEqual(get_next('yes', q_next_rules_next_conditional), 'YES')
-        self.assertEqual(get_next('no', q_next_rules_next_conditional), 'NO')
-        self.assertEqual(get_next('WILL NOT MATCH', q_next_rules_next_conditional_with_default), 'DEFAULT')
+        q_start = QuestionFactory.create(retrieval_key='start', field_type='plain_text')
+
+        # No next rules:
+        empty_graph = QuestionGraphFactory.create(first_question=q_start)
+
+        next_q = get_next_ref('ANSWER', q_start, empty_graph)
+        self.assertIsNone(next_q)
+
+        # Unconditional next:
+        q2 = QuestionFactory.create()
+        unconditional_graph = QuestionGraphFactory.create(first_question=q_start)
+        EdgeFactory(graph=unconditional_graph, question=q_start, next_question=q2)
+
+        next_ref = get_next_ref('ANSWER', q_start, unconditional_graph)
+        self.assertEqual(next_ref, q2.ref)
+
+        # conditional next, no default option:
+        q_no = QuestionFactory.create(retrieval_key='NO')
+        q_yes = QuestionFactory.create(retrieval_key='YES')
+        conditional_graph = QuestionGraphFactory.create(first_question=q_start)
+        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_no, payload='no')
+        EdgeFactory(graph=conditional_graph, question=q_start, next_question=q_yes, payload='yes')
+
+        self.assertIsNone(get_next_ref('ANSWER', q_start, conditional_graph))  # consider whether this is useful
+        self.assertEqual(q_yes.ref, get_next_ref('yes', q_start, conditional_graph))
+        self.assertEqual(q_no.ref, get_next_ref('no', q_start, conditional_graph))
+
+        # conditional next with default:
+        q_default = QuestionFactory.create(retrieval_key='DEFAULT')
+        conditional_with_default_graph = QuestionGraphFactory.create(first_question=q_start)
+        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_no, payload='no')
+        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_yes, payload='yes')
+        EdgeFactory(graph=conditional_with_default_graph, question=q_start, next_question=q_default, payload=None)
+
+        self.assertEqual(q_default.ref, get_next_ref('ANSWER', q_start, conditional_with_default_graph))
+        self.assertEqual(q_yes.ref, get_next_ref('yes', q_start, conditional_with_default_graph))
+        self.assertEqual(q_no.ref, get_next_ref('no', q_start, conditional_with_default_graph))
 
     def test_question_not_required(self):
         # set up our questions and questionnaires
-        q1, q2 = _question_graph_no_required_answers()
-        questionnaire = QuestionnaireFactory.create(first_question=q1)
+        graph = _question_graph_no_required_answers()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
-        question = questionnaire.first_question
+        question = questionnaire.graph.first_question
         answer_str = None
 
         # We will answer the questionnaire, until we reach a None next question.
@@ -284,7 +333,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q2.ref)
+        self.assertEqual(question2.ref, 'two')
 
         answer2_str = None
 
@@ -295,12 +344,12 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_question_with_default_next(self):
         # set up our questions and questionnaires
-        q_yesno, q_yes, q_no = _question_graph_with_decision_with_default()
-        questionnaire = QuestionnaireFactory.create(first_question=q_yesno)
+        graph = _question_graph_with_decision_with_default()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
         question = questionnaire.first_question
         answer_str = 'WILL NOT MATCH ANYTHING'  # to trigger default
@@ -319,7 +368,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, q_yes.ref)  # get the default option
+        self.assertEqual(question2.ref, 'q_yes')  # get the default option
 
         answer2_str = 'Yippee'
 
@@ -330,7 +379,7 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer2.session_id, session_id)
 
         next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertEqual(next_question.key, 'submit')
+        self.assertIsNone(next_question)
 
     def test_validate_answer_payload(self):
         integer_question = QuestionFactory(field_type='integer', label='integer', short_label='integer')
@@ -352,12 +401,58 @@ class TestQuestionnairesService(TestCase):
         with self.assertRaises(django_validation_error):
             QuestionnairesService.validate_answer_payload({'some': 'thing', 'complicated': {}}, plaintext_question)
 
+    def test_question_no_default_next(self):
+        """
+        Behavior of get_next_question when no default is set.
+        """
+        graph = _create_graph_no_defaults()
+        questionnaire = QuestionnaireFactory(graph=graph)
+        q1 = questionnaire.graph.first_question
+
+        # Try following both branches:
+        answer = QuestionnairesService.create_answer(answer_payload='yes', question=q1, questionnaire=questionnaire)
+        self.assertIsNotNone(QuestionnairesService.get_next_question(answer, q1))
+
+        answer = QuestionnairesService.create_answer(answer_payload='no', question=q1, questionnaire=questionnaire)
+        self.assertIsNotNone(QuestionnairesService.get_next_question(answer, q1))
+
+        # Try an answer that does not match a branch in the question graph.
+        # Since the graph has no default question following the first question
+        # we will get a next_question of None:
+        answer = QuestionnairesService.create_answer(answer_payload='NADA', question=q1, questionnaire=questionnaire)
+        self.assertIsNone(QuestionnairesService.get_next_question(answer, q1))
+
+    def test_validate_answer_payload_choices(self):
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
+
+        payloads = ['only', 'yes', 'no']
+        question = questionnaire.graph.first_question
+        question.enforce_choices = True
+        question.save()
+
+        for payload in payloads:
+            Choice.objects.create(question=question, payload=payload)
+
+        self.assertEqual(question.choices.count(), 3)
+        for payload in payloads:
+            self.assertEqual(payload, QuestionnairesService.validate_answer_payload(payload, question))
+
+        no_choice = 'NOT A VALID ANSWER GIVEN PREDEFINED CHOICES'
+        with self.assertRaises(django_validation_error):
+            QuestionnairesService.validate_answer_payload(no_choice, question)
+
+        question.enforce_choices = False
+        question.save()
+
+        self.assertEqual(no_choice, QuestionnairesService.validate_answer_payload(no_choice, question))
+
     @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
     def test_submit(self, patched_callback):
-        q1 = _question_graph_one_question()
-        questionnaire = QuestionnaireFactory.create(first_question=q1)
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
 
-        question = questionnaire.first_question
+        question = questionnaire.graph.first_question
         answer_str = 'ONLY'
 
         # We will answer the questionnaire, until we reach a None next question.
@@ -371,26 +466,40 @@ class TestQuestionnairesService(TestCase):
         self.assertEqual(answer.question, question)
 
         session = answer.session
-        session_id = session.id
         self.assertIsNotNone(session)
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
         question2 = QuestionnairesService.get_next_question(answer, question)
-        self.assertEqual(question2.ref, 'submit')
+        self.assertIsNone(question2)
 
-        answer2_str = None
-
-        with self.captureOnCommitCallbacks(execute=True):
-            answer2 = QuestionnairesService.create_answer(
-                answer_payload=answer2_str, question=question2, questionnaire=questionnaire, session=session)
-        self.assertIsInstance(answer2, Answer)
-        self.assertEqual(answer2.question, question2)
-        self.assertEqual(answer2.session_id, session_id)
+        QuestionnairesService.freeze_session(session)
         patched_callback.assert_called_with(session)
 
-        next_question = QuestionnairesService.get_next_question(answer2, question2)
-        self.assertIsNone(next_question)
+    @mock.patch('signals.apps.questionnaires.services.questionnaires.QuestionnairesService.handle_frozen_session')
+    def test_freeze_session(self, patched):
+        graph = _question_graph_one_question()
+        questionnaire = QuestionnaireFactory.create(graph=graph)
+
+        question = questionnaire.first_question
+        answer_str = 'ONLY'
+
+        answer = QuestionnairesService.create_answer(
+            answer_payload=answer_str, question=question, questionnaire=questionnaire, session=None)
+
+        self.assertIsInstance(answer, Answer)
+        self.assertEqual(answer.question, question)
+
+        session = answer.session
+        self.assertIsNotNone(session)
+        self.assertIsNone(session.submit_before)
+        self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
+
+        session = QuestionnairesService.freeze_session(session)
+        session.refresh_from_db()
+
+        patched.assert_called_with(session)
+        self.assertTrue(session.frozen)
 
     def test_get_session_reaction_request_flow(self):
         # A session for reaction request flow with no associated Signal should
@@ -402,11 +511,12 @@ class TestQuestionnairesService(TestCase):
 
         # A session for reaction request flow for a signal in a state other
         # than REACTIE_GEVRAAGD should raise SessionInvalidated.
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
         session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)
 
-        with self.assertRaises(SessionInvalidated):
-            QuestionnairesService.get_session(session.uuid)  # <-- !!! FAAL
+        with self.assertRaises(SessionInvalidated) as cm:
+            QuestionnairesService.get_session(session.uuid)
+        self.assertIn('associated signal not in state REACTIE_GEVRAAGD', str(cm.exception))
 
         # A session for reaction request flow for a signal that also has a more
         # recent session, should raise SessionInvalidated.
@@ -415,5 +525,30 @@ class TestQuestionnairesService(TestCase):
         signal.save()
         SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)  # more recent
 
-        with self.assertRaises(SessionInvalidated):
+        with self.assertRaises(SessionInvalidated) as cm:
             QuestionnairesService.get_session(session.uuid)
+        self.assertIn('a newer reaction request was issued', str(cm.exception))
+
+    def test_get_session_expired(self):
+        # A session that expired should raise a SessionExpired
+        signal_created_at = datetime(2021, 8, 18, 12, 0, 0)
+        submit_before = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN)
+        get_session_at = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN * 2)
+
+        with freeze_time(signal_created_at):
+            signal = SignalFactory.create(status__state=workflow.GEMELD)
+            session = SessionFactory.create(
+                _signal=signal, questionnaire__flow=Questionnaire.EXTRA_PROPERTIES, submit_before=submit_before)
+
+        with freeze_time(get_session_at):
+            with self.assertRaises(SessionExpired) as cm:
+                QuestionnairesService.get_session(session.uuid)
+            self.assertIn('Expired!', str(cm.exception))
+
+    def test_get_session_frozen(self):
+        # A session that is frozen should raise SessionFrozen
+        signal = SignalFactory.create(status__state=workflow.GEMELD)
+        session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST, frozen=True)
+        with self.assertRaises(SessionFrozen) as cm:
+            QuestionnairesService.get_session(session.uuid)
+        self.assertIn('Already used!', str(cm.exception))

@@ -10,7 +10,20 @@
             {% if extra_property.answer|is_a_list %}
                 <td>:&nbsp;
                 {% for answer in extra_property.answer %}
-                    {% firstof answer.label answer.value answer.answer answer '-' %}{% if not forloop.last %},&nbsp;{% endif %}
+                    {% if answer.label %}
+                        {{ answer.label }}
+                    {% elif answer.value %}
+                        {{ answer.value }}
+                    {% elif answer.answer %}
+                        {{ answer.answer }}
+                    {% elif answer.description and answer.id %}
+                        {{ answer.description }} - {{ answer.id }}
+                    {% elif answer %}
+                        {{ answer }}
+                    {% else %}
+                        -
+                    {% endif %}
+                    {% if not forloop.last %},&nbsp;{% endif %}
                 {% endfor %}
                 </td>
             {% else %}

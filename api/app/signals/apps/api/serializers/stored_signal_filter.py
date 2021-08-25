@@ -22,10 +22,14 @@ class StoredSignalFilterSerializer(HALSerializer):
             'created_at',
             'options',
             'refresh',
+            'show_on_overview',
         )
 
     def validate(self, attrs):
-        if 'options' not in attrs:
+        if 'options' not in attrs and self.context['view'].action != 'partial_update':
+            """
+            When doing a partial_update the "options" are not mandatory, for all other actions they are!
+            """
             raise ValidationError('No filters specified, "options" object missing.')
 
         return super().validate(attrs)

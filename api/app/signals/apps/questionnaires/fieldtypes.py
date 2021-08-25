@@ -38,11 +38,6 @@ class Integer(FieldType):
     submission_schema = {'type': 'integer'}
 
 
-class Submmit(FieldType):
-    choice = ('submit', 'Submit')
-    submission_schema = {"type": "null"}
-
-
 def init():
     """Initialize field type mapping caches."""
     current_module = sys.modules[__name__]

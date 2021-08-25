@@ -4,13 +4,23 @@ from factory import LazyFunction, SelfAttribute, Sequence, SubFactory, post_gene
 from factory.django import DjangoModelFactory
 from faker import Faker
 
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.models import (
+    Answer,
+    Choice,
+    Edge,
+    Question,
+    QuestionGraph,
+    Questionnaire,
+    Session,
+    Trigger
+)
 
 fake = Faker()
 
 
 class QuestionFactory(DjangoModelFactory):
-    key = Sequence(lambda n: f'question-{n}')
+    retrieval_key = Sequence(lambda n: f'question-{n}')
+    analysis_key = Sequence(lambda n: f'analysis-key-for-question-{n}')
     # Note we only create plain_text questions in this factory, with no
     # next question reference present. Tests that need those will have to
     # create model instances themselves.
@@ -24,8 +34,40 @@ class QuestionFactory(DjangoModelFactory):
         model = Question
 
 
-class QuestionnaireFactory(DjangoModelFactory):
+class QuestionGraphFactory(DjangoModelFactory):
+    name = Sequence(lambda n: f'Question Graph {n}')
     first_question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = QuestionGraph
+
+
+class EdgeFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
+    question = SubFactory(QuestionFactory)
+    next_question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Edge
+
+
+class TriggerFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Trigger
+
+
+class ChoiceFactory(DjangoModelFactory):
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Choice
+
+
+class QuestionnaireFactory(DjangoModelFactory):
+    graph = SubFactory(QuestionGraphFactory)
 
     flow = Questionnaire.EXTRA_PROPERTIES
 

@@ -151,6 +151,36 @@
 										"uuid": {
 											"type": "string"
 										},
+										"key": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										},
+										"retrieval_key": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										},
+										"analysis_key": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										},
 										"label": {
 											"type": "string"
 										},
@@ -181,12 +211,16 @@
 										"_links",
 										"_display",
 										"uuid",
+										"key",
+										"retrieval_key",
+										"analysis_key",
 										"label",
 										"short_label",
 										"field_type",
 										"next_rules",
 										"required"
-									]
+									],
+									"additionalProperties": false
 								},
 								{
 									"type": "null"
