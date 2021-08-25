@@ -554,6 +554,7 @@ class SignalManager(models.Manager):
         else:
             raise ValidationError(f'Signal - department relation {relation_type} is not supported')
         signal.save()
+
         return relation
 
     def _update_directing_departments_no_transaction(self, data, signal):
