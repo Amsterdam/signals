@@ -487,7 +487,7 @@ class SignalManager(models.Manager):
                 user_assignment = self._update_user_signal_no_transaction(
                     data, locked_signal
                 )
-                to_send.append((update_signal_departments, {
+                to_send.append((update_user_assignment, {
                     'sender': sender,
                     'signal_obj': locked_signal,
                     'user_assignment': user_assignment

@@ -9,7 +9,6 @@ from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyAttribute, FuzzyChoice, FuzzyDateTime
 from faker import Faker
 
-# from signals.apps.history.models import Log
 from signals.apps.signals.models import Signal
 
 fake = Faker()

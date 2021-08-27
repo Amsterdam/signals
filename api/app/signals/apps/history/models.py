@@ -39,6 +39,13 @@ class Log(models.Model):
     created_by = models.EmailField(null=True, blank=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
+    # This is a reference to a specific Signal. It can be blank if the object does not have a relation to a Signal.
+    #
+    # We want this to be here so that for the Signal history endpoint we can easily select all history for that specific
+    # Signal.
+    #
+    # When creating history log for any changes on a Signal make sure to use the SignalLogService. In the future more
+    # LogService classes can and will be created to facilitate the history logging of other objects.
     _signal = models.ForeignKey('signals.Signal', on_delete=models.DO_NOTHING, related_name='history_log',
                                 blank=True, null=True)
 

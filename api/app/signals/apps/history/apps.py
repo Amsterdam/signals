@@ -15,3 +15,5 @@ class HistoryConfig(AppConfig):
         import signals.apps.history.signal_receivers.update_priority # noqa
         import signals.apps.history.signal_receivers.update_status  # noqa
         import signals.apps.history.signal_receivers.update_type  # noqa
+        import signals.apps.history.signal_receivers.update_user_signal  # noqa
+        import signals.apps.history.signal_receivers.update_signal_departments  # noqa
