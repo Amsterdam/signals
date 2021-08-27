@@ -78,8 +78,6 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
@@ -1582,8 +1580,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
@@ -1678,8 +1674,6 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 @freeze_time('2019-11-01 12:00:00', tz_offset=1)
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,

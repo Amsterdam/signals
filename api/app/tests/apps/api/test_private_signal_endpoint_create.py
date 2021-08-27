@@ -27,8 +27,6 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
@@ -39,8 +37,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     list_endpoint = '/signals/v1/private/signals/'
 
     prod_feature_flags_settings = {
-        'API_SEARCH_ENABLED': False,
-        'SEARCH_BUILD_INDEX': False,
         'API_DETERMINE_STADSDEEL_ENABLED': True,
         'API_FILTER_EXTRA_PROPERTIES': True,
         'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
