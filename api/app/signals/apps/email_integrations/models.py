@@ -12,6 +12,7 @@ class EmailTemplate(CreatedUpdatedModel):
     SIGNAL_STATUS_CHANGED_HEROPEND = 'signal_status_changed_heropend'
     SIGNAL_STATUS_CHANGED_OPTIONAL = 'signal_status_changed_optional'
     SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD = 'signal_status_changed_reactie_gevraagd'
+    SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN = 'signal_status_changed_reactie_ontvangen'
 
     KEYS_CHOICES = [
         (SIGNAL_CREATED, 'Send mail signal created'),
@@ -19,7 +20,8 @@ class EmailTemplate(CreatedUpdatedModel):
         (SIGNAL_STATUS_CHANGED_INGEPLAND, 'Send mail signal scheduled'),
         (SIGNAL_STATUS_CHANGED_HEROPEND, 'Send mail signal reopened'),
         (SIGNAL_STATUS_CHANGED_OPTIONAL, 'Send mail optional'),
-        (SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD, 'Send mail signal reaction requested')
+        (SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD, 'Send mail signal reaction requested'),
+        (SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN, 'Send mail signal reaction requested received')
     ]
 
     key = models.CharField(max_length=100, choices=KEYS_CHOICES, db_index=True)
