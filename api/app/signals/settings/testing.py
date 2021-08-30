@@ -17,7 +17,4 @@ SIGNALS_AUTHZ = {
     'USER_ID_FIELDS': 'sub,email'.split(',')
 }
 
-FEATURE_FLAGS['API_SEARCH_ENABLED'] = False  # noqa F405
-FEATURE_FLAGS['SEARCH_BUILD_INDEX'] = False  # noqa F405
-
 FRONTEND_URL = 'http://dummy_link'

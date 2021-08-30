@@ -17,8 +17,6 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
     'API_FILTER_EXTRA_PROPERTIES': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
