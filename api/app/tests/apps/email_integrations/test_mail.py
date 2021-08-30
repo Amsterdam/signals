@@ -481,7 +481,7 @@ class TestMailRuleConditions(BaseTestMailCase):
     @mock.patch.dict('os.environ', {'ENVIRONMENT': 'LOCAL'}, clear=True)
     def test_reaction_requested_email(self):
         # "Reactie gevraagd" flow. Reporter is asked for additional information.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text='Het was mooi weer')
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text='Was het mooi weer?')
         self.signal.status = status
         self.signal.save()
 
@@ -529,7 +529,7 @@ class TestMailRuleConditions(BaseTestMailCase):
 
     def test_reaction_requested_received_email(self):
         # "Reactie gevraagd" flow. Reporter is asked for additional information. Answer given.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_ONTVANGEN, text='Was het mooi weer?')
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_ONTVANGEN, text='Het was mooi weer')
         self.signal.status = status
         self.signal.save()
 
@@ -545,6 +545,10 @@ class TestMailRuleConditions(BaseTestMailCase):
         # Check mail contents
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(len(mail.outbox), 1)
+
+        message = mail.outbox[0]
+        self.assertIn('Het was mooi weer', message.body)
+        self.assertIn('Het was mooi weer', message.alternatives[0][0])
 
     def test_reaction_requested_not_received(self):
         # "Reactie gevraagd" flow. Reporter is asked for additional information. But did not give any
