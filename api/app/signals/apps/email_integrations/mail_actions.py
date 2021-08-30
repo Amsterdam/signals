@@ -31,9 +31,13 @@ class MailActions:
             self._kwargs[key] = config['kwargs'] if 'kwargs' in config else {}
             self._additional_info[key] = config['additional_info'] if 'additional_info' in config else {}
 
-    def _apply_filters(self, filters: dict, signal: Signal) -> bool:
+    def _apply_filters(self, filters: dict, signal: Signal, exclude=None) -> bool:
+        queryset = Signal.objects.filter(**filters)
+        if exclude:
+            queryset = queryset.exclude(**exclude)
+
         try:
-            Signal.objects.filter(**filters).get(pk=signal.pk)
+            queryset.get(pk=signal.pk)
             return True
         except Signal.DoesNotExist:
             pass
@@ -47,9 +51,10 @@ class MailActions:
 
     def _apply_conditions(self, conditions: dict, signal: Signal) -> Any:
         filters = conditions['filters'] if 'filters' in conditions else {}
+        exclude = conditions['exclude'] if 'exclude' in conditions else {}
         functions = conditions['functions'] if 'functions' in conditions else {}
 
-        return (self._apply_filters(filters=filters, signal=signal) and
+        return (self._apply_filters(filters=filters, signal=signal, exclude=exclude) and
                 self._apply_functions(functions=functions, signal=signal))
 
     def _get_actions(self, signal: Signal) -> list:

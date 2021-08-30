@@ -16,6 +16,7 @@ from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
 from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
+from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.managers import create_initial, update_status
@@ -49,6 +50,11 @@ class BaseTestMailCase(TestCase):
                                      title='Uw melding {{signal_id}}',
                                      body='{{ text }} {{ created_at }} {{ status_text }}'
                                           '{{ reaction_url }} {{ORGANIZATION_NAME }}')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN,
+                                     title='Uw melding {{signal_id}}',
+                                     body='{{ reaction_request_answer }}'
+                                          '{{ORGANIZATION_NAME }}')
 
 
 class TestMailActionTriggers(BaseTestMailCase):
@@ -520,6 +526,49 @@ class TestMailRuleConditions(BaseTestMailCase):
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+
+    def test_reaction_requested_received_email(self):
+        # "Reactie gevraagd" flow. Reporter is asked for additional information. Answer given.
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_ONTVANGEN, text='Het was mooi weer')
+        self.signal.status = status
+        self.signal.save()
+
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal reaction request received'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 1)
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(set(actions), set(activated))
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 1)
+
+        message = mail.outbox[0]
+        self.assertIn('Het was mooi weer', message.body)
+        self.assertIn('Het was mooi weer', message.alternatives[0][0])
+
+    def test_reaction_requested_not_received(self):
+        # "Reactie gevraagd" flow. Reporter is asked for additional information. But did not give any
+        status = StatusFactory.create(_signal=self.signal, state=workflow.REACTIE_ONTVANGEN,
+                                      text=NO_REACTION_RECEIVED_TEXT)
+        self.signal.status = status
+        self.signal.save()
+
+        # Is the intended rule activated?
+        actions = self._get_mail_rules(['Send mail signal reaction request received'])._get_actions(self.signal)
+        self.assertEqual(len(actions), 0)
+
+        # Is it the only one that activates?
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        activated = ma._get_actions(self.signal)
+        self.assertEqual(len(activated), 0)
+
+        # Check mail contents
+        ma.apply(signal_id=self.signal.id)
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestOptionalMails(BaseTestMailCase):
