@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('questionnaires', '0007_alter_question_analysis_key'),
+        ('questionnaires', '0006_retrieval_key_and_analysis_key'),
     ]
 
     operations = [
@@ -34,6 +34,23 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name='+',
                 to='questionnaires.choice'
+            ),
+        ),
+        migrations.AlterField(
+            model_name='question',
+            name='analysis_key',
+            field=models.CharField(default='PLACEHOLDER', max_length=255),
+        ),
+        migrations.AlterField(
+            model_name='question',
+            name='field_type',
+            field=models.CharField(
+                choices=[
+                    ('boolean', 'Boolean'),
+                    ('integer', 'Integer'),
+                    ('plain_text', 'PlainText')
+                ],
+                max_length=255
             ),
         ),
     ]

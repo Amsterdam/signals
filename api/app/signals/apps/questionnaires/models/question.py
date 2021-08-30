@@ -18,7 +18,7 @@ class Question(models.Model):
     Edge models as to how the questions are referred to.
     """
     retrieval_key = models.CharField(unique=True, max_length=255, null=True, blank=True)
-    analysis_key = models.CharField(max_length=255, default='analysis_key_placeholder')
+    analysis_key = models.CharField(max_length=255, default='PLACEHOLDER')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
@@ -36,3 +36,8 @@ class Question(models.Model):
     @property
     def ref(self):
         return self.retrieval_key if self.retrieval_key else str(self.uuid)
+
+    def save(self, *args, **kwargs):
+        if self.analysis_key == 'PLACEHOLDER':
+            self.analysis_key = f'PLACEHOLDER-{str(self.uuid)}'
+        return super().save(*args, **kwargs)

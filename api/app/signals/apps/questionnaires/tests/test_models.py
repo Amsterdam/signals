@@ -454,3 +454,10 @@ class TestQuestion(TestCase):
         session.started_at = self.now
         with freeze_time(self.now + timedelta(days=10000)):
             self.assertFalse(session.is_expired)
+
+
+class TestQuestionModel(TestCase):
+    def test_analysis_key_default(self):
+        # We set this to the default because it is normally overwritten by QuestionFactory:
+        q = QuestionFactory.create(analysis_key='PLACEHOLDER')
+        self.assertEqual(q.analysis_key, f'PLACEHOLDER-{str(q.uuid)}')
