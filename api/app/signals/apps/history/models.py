@@ -123,30 +123,31 @@ class Log(models.Model):
         "get_action" copied from History
         Present for backwards compatibility
         """
-        if self.what == 'UPDATE_STATUS':
+        what = self.what
+        if what == 'UPDATE_STATUS':
             action = f'Status gewijzigd naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
-        elif self.what == 'UPDATE_PRIORITY':
+        elif what == 'UPDATE_PRIORITY':
             translated = {'high': 'Hoog', 'normal': 'Normaal', 'low': 'Laag'}.get(self.extra, 'Onbekend')
             action = f'Urgentie gewijzigd naar: {translated}'
-        elif self.what == 'UPDATE_CATEGORY_ASSIGNMENT':
+        elif what == 'UPDATE_CATEGORY_ASSIGNMENT':
             action = f'Categorie gewijzigd naar: {self.extra}'
-        elif self.what == 'UPDATE_LOCATION':
+        elif what == 'UPDATE_LOCATION':
             action = 'Locatie gewijzigd naar:'
-        elif self.what == 'CREATE_NOTE':
+        elif what == 'CREATE_NOTE':
             action = 'Notitie toegevoegd:'
-        elif self.what == 'RECEIVE_FEEDBACK':
+        elif what == 'RECEIVE_FEEDBACK':
             action = 'Feedback van melder ontvangen'
-        elif self.what == 'UPDATE_TYPE_ASSIGNMENT':
+        elif what == 'UPDATE_TYPE_ASSIGNMENT':
             action = f'Type gewijzigd naar: {_history_translated_action(self.extra)}'
-        elif self.what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
+        elif what == 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT':
             action = f'Regie gewijzigd naar: {self.extra or "Verantwoordelijke afdeling"}'
-        elif self.what == 'UPDATE_ROUTING_ASSIGNMENT':
+        elif what == 'UPDATE_ROUTING_ASSIGNMENT':
             action = f'Routering: afdeling/afdelingen gewijzigd naar: {self.extra or "Verantwoordelijke afdeling (routering)"}'  # noqa
-        elif self.what == 'UPDATE_USER_ASSIGNMENT':
+        elif what == 'UPDATE_USER_ASSIGNMENT':
             action = f'Melding toewijzing gewijzigd naar: {self.extra}'
-        elif self.what == 'CHILD_SIGNAL_CREATED':
+        elif what == 'CHILD_SIGNAL_CREATED':
             action = 'Deelmelding toegevoegd'
-        elif self.what == 'UPDATE_SLA':
+        elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
         else:
             action = 'Actie onbekend.'
@@ -157,13 +158,14 @@ class Log(models.Model):
         "get_description" copied from History
         Present for backwards compatibility
         """
-        if self.what == 'UPDATE_LOCATION':
+        what = self.what
+        if what == 'UPDATE_LOCATION':
             description = _get_description_of_update_location(int(self.object_pk))
-        elif self.what == 'RECEIVE_FEEDBACK':
+        elif what == 'RECEIVE_FEEDBACK':
             description = _get_description_of_receive_feedback(uuid.UUID(self.object_pk))
-        elif self.what == 'CHILD_SIGNAL_CREATED':
+        elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
-        elif self.what == 'UPDATE_SLA' and self.description is None:
+        elif what == 'UPDATE_SLA' and self.description is None:
             description = EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
         else:
             description = self.description
