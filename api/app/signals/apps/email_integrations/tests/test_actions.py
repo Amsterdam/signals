@@ -134,7 +134,7 @@ class ActionTestMixin:
             self.assertEqual(Note.objects.count(), 0)
             self.assertFalse(Note.objects.filter(text=self.action.note).exists())
 
-    @mock.patch('signals.apps.email_integrations.actions.send_mail', autospec=True)
+    @mock.patch('signals.apps.email_integrations.actions.abstract.send_mail', autospec=True)
     def test_send_email_fails(self, mocked):
         mocked.return_value = False
 
