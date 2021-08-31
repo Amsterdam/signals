@@ -50,6 +50,11 @@ class ActionTestMixin:
                                      body='{{ text }} {{ created_at }} {{ status_text }} {{ reaction_url }} '
                                           '{{ ORGANIZATION_NAME }}')
 
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN,
+                                     title='Uw melding {{ signal_id }}',
+                                     body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
+                                          '{{ ORGANIZATION_NAME }}')
+
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
 
@@ -271,6 +276,29 @@ class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
         self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
 
+class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
+    state = workflow.REACTIE_GEVRAAGD
+    action = SignalReactionRequestAction()
+
+    def test_send_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = 'Aanvullend antwoord naar aanleiding van reactie gevraagd is gegeven.'
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      reporter__email='test@example.com')
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+        message = mail.outbox[0]
+        self.assertIn(status_text, message.body)
+        self.assertIn(status_text, message.alternatives[0][0])
+
+
 class TestSignalOptionalAction(TestCase):
     action = SignalOptionalAction()
 
@@ -325,7 +353,7 @@ class TestSignalOptionalAction(TestCase):
             workflow.TE_VERZENDEN,
             workflow.VERZONDEN,
             workflow.VERZENDEN_MISLUKT,
-            workflow.AFGEHANDELD_EXTERN
+            workflow.AFGEHANDELD_EXTERN,
         ]
 
         for state in statuses:

@@ -7,10 +7,12 @@ from signals.apps.email_integrations.rules import (
     SignalCreatedRule,
     SignalHandledRule,
     SignalOptionalRule,
+    SignalReactionRequestReceivedRule,
     SignalReactionRequestRule,
     SignalReopenedRule,
     SignalScheduledRule
 )
+from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 
@@ -139,6 +141,18 @@ class TestSignalReopenedRule(RuleTestMixin, TestCase):
 class TestSignalReactionRequestRule(RuleTestMixin, TestCase):
     rule = SignalReactionRequestRule()
     state = workflow.REACTIE_GEVRAAGD
+
+
+class TestSignalReactionRequestReceivedRule(RuleTestMixin, TestCase):
+    rule = SignalReactionRequestReceivedRule()
+    state = workflow.REACTIE_ONTVANGEN
+
+    def test_no_reaction_received(self):
+        signal = SignalFactory.create(status__state=workflow.REACTIE_ONTVANGEN,
+                                      status__text=NO_REACTION_RECEIVED_TEXT,
+                                      reporter__email='test@example.com')
+
+        self.assertFalse(self.rule(signal))
 
 
 class TestSignalOptionalRule(TestCase):

@@ -4,6 +4,8 @@ from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
     SignalHandledAction,
     SignalOptionalAction,
+    SignalReactionRequestAction,
+    SignalReactionRequestReceivedAction,
     SignalReopenedAction,
     SignalScheduledAction
 )
@@ -17,6 +19,8 @@ class MailService:
         SignalScheduledAction(),
         SignalReopenedAction(),
         SignalOptionalAction(),
+        SignalReactionRequestAction(),
+        SignalReactionRequestReceivedAction(),
     )
 
     @staticmethod

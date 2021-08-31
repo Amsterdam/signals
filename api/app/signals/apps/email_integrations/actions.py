@@ -12,6 +12,7 @@ from signals.apps.email_integrations.rules import (
     SignalCreatedRule,
     SignalHandledRule,
     SignalOptionalRule,
+    SignalReactionRequestReceivedRule,
     SignalReactionRequestRule,
     SignalReopenedRule,
     SignalScheduledRule
@@ -149,3 +150,15 @@ class SignalReactionRequestAction(AbstractAction):
 
     def get_additional_context(self, signal):
         return create_reaction_request_and_mail_context(signal)
+
+
+class SignalReactionRequestReceivedAction(AbstractAction):
+    rule = SignalReactionRequestReceivedRule()
+
+    key = EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN
+    subject = 'Meer over uw melding {signal_id}'
+
+    note = 'Automatische e-mail bij Reactie ontvangen is verzonden aan de melder.'
+
+    def get_additional_context(self, signal):
+        return {'reaction_request_answer': signal.status.text}

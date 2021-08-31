@@ -4,6 +4,7 @@ from abc import ABC
 
 from django.db.models import Q
 
+from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -93,3 +94,12 @@ class SignalReactionRequestRule(AbstractRule):
         Validate if the status is REACTIE_GEVRAAGD
         """
         return signal.status.state == workflow.REACTIE_GEVRAAGD
+
+
+class SignalReactionRequestReceivedRule(AbstractRule):
+    def validate_status(self, signal):
+        """
+        Validate if the status is REACTIE_ONTVANGEN and status text does not match NO_REACTION_RECEIVED_TEXT
+        """
+        return (signal.status.state == workflow.REACTIE_ONTVANGEN and
+                signal.status.text.lower() != NO_REACTION_RECEIVED_TEXT.lower())
