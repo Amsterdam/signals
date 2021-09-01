@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -17,3 +18,5 @@ class SignalDepartments(CreatedUpdatedModel):
     departments = models.ManyToManyField('signals.Department', related_name='+')
     relation_type = models.CharField(max_length=20, choices=REL_CHOICES, default=REL_DIRECTING)
     created_by = models.EmailField(null=True, blank=True)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')

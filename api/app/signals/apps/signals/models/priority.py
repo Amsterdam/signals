@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -21,6 +22,8 @@ class Priority(CreatedUpdatedModel):
                                 on_delete=models.CASCADE)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default=PRIORITY_NORMAL)
     created_by = models.EmailField(null=True, blank=True)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     class Meta:
         verbose_name_plural = 'Priorities'

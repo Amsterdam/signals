@@ -3,10 +3,14 @@
 from datapunt_api.rest import HALSerializer
 from rest_framework import serializers
 
+from signals.apps.history.models import Log
 from signals.apps.signals.models import History, Signal
 
 
 class HistoryHalSerializer(HALSerializer):
+    """
+    Serializer for the history based on the signals_history_view, defined in signals.history (Database view)
+    """
     _signal = serializers.PrimaryKeyRelatedField(queryset=Signal.objects.all())
     who = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
@@ -23,6 +27,28 @@ class HistoryHalSerializer(HALSerializer):
 
     class Meta:
         model = History
+        fields = (
+            'identifier',
+            'when',
+            'what',
+            'action',
+            'description',
+            'who',
+            '_signal',
+        )
+
+
+class HistoryLogHalSerializer(HALSerializer):
+    """
+    Serializer for the history based on the history_log, defined in history.log (Database table generated from model)
+    """
+    _signal = serializers.IntegerField(source='_signal_id')
+    action = serializers.CharField(source='get_action')
+    description = serializers.CharField(source='get_description')
+    when = serializers.DateTimeField(source='created_at')
+
+    class Meta:
+        model = Log
         fields = (
             'identifier',
             'when',

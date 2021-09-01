@@ -3,6 +3,7 @@
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
+from django.conf import settings
 from django.db import connection
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -33,7 +34,9 @@ from signals.apps.api.serializers import (
     SignalGeoSerializer,
     SignalIdListSerializer
 )
+from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.views._base import PublicSignalGenericViewSet
+from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
@@ -209,7 +212,23 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=True, url_path=r'history/?$')
     def history(self, *args, **kwargs):
-        """History endpoint filterable by action."""
+        """
+        History endpoint filterable by action.
+
+        This function is used to switch between the signals_history_view or the history_log based history
+        TODO: Replace with `history_log` when `history_view` has been deprecated
+        """
+        if settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return self.history_log(*args, **kwargs)
+        return self.history_view(*args, **kwargs)
+
+    @action(detail=True, url_path=r'history-view/?$')
+    def history_view(self, *args, **kwargs):
+        """
+        History endpoint filterable by action.
+
+        TODO: Deprecate in favour of `history_log`
+        """
         signal = self.get_object()
         history_entries = signal.history.all()
         what = self.request.query_params.get('what', None)
@@ -217,6 +236,26 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             history_entries = history_entries.filter(what=what)
 
         serializer = HistoryHalSerializer(history_entries, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path=r'history-log/?$')
+    def history_log(self, *args, **kwargs):
+        """
+        History endpoint filterable by action.
+
+        TODO: Rename function to history when history_view has been deprecated
+        """
+        signal = self.get_object()
+        history_log_qs = signal.history_log.all()
+
+        what = self.request.query_params.get('what', None)
+        if what:
+            action = Log.translate_what_to_action(what)
+            content_type = Log.translate_what_to_content_type(what)
+
+            history_log_qs = history_log_qs.filter(action__iexact=action, content_type__model__iexact=content_type)
+
+        serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
 
     @action(detail=False, url_path=r'geography/?$')

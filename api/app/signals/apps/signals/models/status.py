@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 
@@ -36,6 +37,8 @@ class Status(CreatedUpdatedModel):
 
     # SIG-2620 Flag to determine if a status can send an email
     send_email = models.BooleanField(default=False)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     class Meta:
         permissions = (

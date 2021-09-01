@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.services.domain.deadlines import DeadlineCalculationService
@@ -36,6 +37,8 @@ class CategoryAssignment(CreatedUpdatedModel):
     # handling message for a category was updated (because it was queried from
     # the category table each time the history is shown).
     stored_handling_message = models.TextField(null=True)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     def __str__(self):
         """String representation."""
