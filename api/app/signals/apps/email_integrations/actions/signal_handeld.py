@@ -5,7 +5,7 @@ import logging
 from signals.apps.email_integrations.actions.abstract import AbstractAction
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.rules import SignalHandledRule
-from signals.apps.email_integrations.utils import _create_feedback_and_mail_context
+from signals.apps.email_integrations.utils import create_feedback_and_mail_context
 
 logger = logging.getLogger(__name__)
 
@@ -19,4 +19,4 @@ class SignalHandledAction(AbstractAction):
     note = 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
 
     def get_additional_context(self, signal):
-        return _create_feedback_and_mail_context(signal)
+        return create_feedback_and_mail_context(signal)
