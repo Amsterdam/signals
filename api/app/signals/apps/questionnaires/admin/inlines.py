@@ -9,7 +9,7 @@ from signals.apps.questionnaires.models import Edge, QuestionGraph, Questionnair
 
 class EdgeStackedInline(NonRelatedStackedInline):
     model = Edge
-    fields = ('question', 'next_question', 'order', 'payload',)
+    fields = ('question', 'next_question', 'order', 'choice',)
 
     extra = 1
     formfield_overrides = {JSONField: {'widget': PrettyJSONWidget}}

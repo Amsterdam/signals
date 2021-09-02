@@ -2,15 +2,13 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import logging
 
-import jsonschema
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
-from jsonschema.exceptions import SchemaError as js_schema_error
-from jsonschema.exceptions import ValidationError as js_validation_error
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
-from signals.apps.questionnaires.models import Answer, Question, Questionnaire, Session
+from signals.apps.questionnaires.models import Answer, Questionnaire, Session
+from signals.apps.questionnaires.services.feedback_request import FeedbackRequestService
 from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
 from signals.apps.signals import workflow
 
@@ -75,17 +73,9 @@ class QuestionnairesService:
         if not question.required and answer_payload is None:
             return answer_payload
 
-        # Schema check
+        # FieldType subclass schema check
         field_type_class = get_field_type_class(question)
-
-        try:
-            jsonschema.validate(answer_payload, field_type_class.submission_schema)
-        except js_schema_error:
-            msg = f'JSONSchema for {field_type_class.__name__} is not valid.'
-            raise django_validation_error(msg)
-        except js_validation_error:
-            msg = 'Submitted answer does not validate.'
-            raise django_validation_error(msg)
+        field_type_class().validate_submission_payload(answer_payload)
 
         # If a questions has pre-defined answers (see the Choice model), the
         # answer payload should match one of these predefined answers.
@@ -138,37 +128,101 @@ class QuestionnairesService:
     def handle_frozen_session(session):
         if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
             ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+        elif session.questionnaire.flow == Questionnaire.FEEDBACK_REQUEST:
+            FeedbackRequestService.handle_frozen_session_FEEDBACK_REQUEST(session)
 
     @staticmethod
-    def get_next_question_ref(answer_payload, question, graph):
-        # TODO: consider whether we want case sensitive matches in case of
-        # character strings
-        outgoing_edges = graph.edges.filter(question=question)
+    def get_next_question(answer_payload, question, graph):
+        """
+        Get next question given an Answer payload and Question and QuestionGraph.
+        """
+        outgoing_edges = graph.edges.filter(question=question).select_related('choice')
+
         for edge in outgoing_edges:
-            if edge.payload == answer_payload or edge.payload is None:
-                return edge.next_question.ref
+            if edge.choice and edge.choice.payload == answer_payload or edge.choice is None:
+                return edge.next_question
 
         return None
 
     @staticmethod
-    def get_next_question(answer, question):
-        graph = answer.session.questionnaire.graph
-        next_ref = QuestionnairesService.get_next_question_ref(answer.payload, question, graph)
+    def get_latest_answers(session):
+        """
+        Queryset of Answers with only the latest answer per Question.
+        """
+        # Postgres only: https://docs.djangoproject.com/en/3.2/ref/models/querysets/#distinct
+        # We want the most recent answer per unique question in effect letting
+        # clients overwrite answers to fix mistakes. However, if several questions
+        # have the same analysis_key property, this queryset will still return
+        # several answers for that analysis_key. The latter problem is addressed
+        # by get_latest_answers_by_analysis_key method below.
+        latest_answers = (
+            Answer.objects.filter(session=session)
+            .order_by('question_id', '-created_at')
+            .distinct('question_id')
+            .select_related('question')
+        )
 
-        if next_ref is None:
-            next_question = None
-        else:
-            try:
-                next_question = Question.objects.get_by_reference(next_ref)
-            except Question.DoesNotExist:
-                return None  # TODO: consider raising an exception
+        return latest_answers
 
-        return next_question
+    def get_latest_answers_by_analysis_key(session):
+        """
+        Get Answers in a dictionary keyed by their Question's analysis_key.
 
-    @staticmethod
-    def get_answers(session):
-        # - only newest answer per question
-        pass
+        Note: As the Question model does not require an analysis_key, not all
+        answers for this session may be returned.
+        """
+        answers = QuestionnairesService.get_latest_answers(session)
+        by_analysis_key = {}
+        for answer in answers.all():
+            key = answer.question.analysis_key
+
+            # If several questions in a questionnaire have the same analysis_key
+            # we will use the answer with the latest created_at timestamp.
+            if key in by_analysis_key:
+                if answer.created_at > by_analysis_key[key].created_at:
+                    by_analysis_key[key] = answer
+            else:
+                by_analysis_key[key] = answer
+
+        return by_analysis_key
+
+    def get_latest_answers_by_uuid(session):
+        """
+        Get Answers in a dictionary keyed by their Question's UUID.
+        """
+        answers = QuestionnairesService.get_latest_answers(session)
+        return {a.question.uuid: a for a in answers}
+
+    def validate_session_using_question_graph(session):
+        """
+        Given a session validate whether all required answers along a path in a
+        question graph were received.
+        """
+        # TODO: consider allowing no more answers than questions
+        by_uuid = QuestionnairesService.get_latest_answers_by_uuid(session)
+        graph = session.questionnaire.graph
+
+        if not graph.first_question:
+            raise django_validation_error('Question graph contains no questions.')
+
+        errors = {}
+
+        q = graph.first_question
+        while q:
+            # Check that we have all required answers:
+            answer = by_uuid.get(q.uuid, None)
+            if not answer and q.required:
+                errors[str(q.uuid)] = 'Question not answered'
+
+            if answer:
+                q = QuestionnairesService.get_next_question(answer.payload, q, graph)
+            else:
+                q = QuestionnairesService.get_next_question(None, q, graph)
+
+        if errors:
+            raise django_validation_error(errors)
+
+        return session
 
     @staticmethod
     def get_extra_properties_from_answer(session):

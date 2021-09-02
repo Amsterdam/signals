@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from factory import LazyFunction, SelfAttribute, Sequence, SubFactory, post_generation
+from factory import LazyFunction, SelfAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 from faker import Faker
 
@@ -42,10 +42,18 @@ class QuestionGraphFactory(DjangoModelFactory):
         model = QuestionGraph
 
 
+class ChoiceFactory(DjangoModelFactory):
+    question = SubFactory(QuestionFactory)
+
+    class Meta:
+        model = Choice
+
+
 class EdgeFactory(DjangoModelFactory):
     graph = SubFactory(QuestionGraphFactory)
     question = SubFactory(QuestionFactory)
     next_question = SubFactory(QuestionFactory)
+    choice = SubFactory(ChoiceFactory)
 
     class Meta:
         model = Edge
@@ -57,13 +65,6 @@ class TriggerFactory(DjangoModelFactory):
 
     class Meta:
         model = Trigger
-
-
-class ChoiceFactory(DjangoModelFactory):
-    question = SubFactory(QuestionFactory)
-
-    class Meta:
-        model = Choice
 
 
 class QuestionnaireFactory(DjangoModelFactory):
@@ -93,11 +94,6 @@ class AnswerFactory(DjangoModelFactory):
     session = SubFactory(SessionFactory)
     question = SelfAttribute('session.questionnaire.first_question')
     payload = None
-
-    @post_generation
-    def set_question_and_answer(obj, create, extracted, **kwargs):
-        if not obj.payload:
-            obj.payload = f'Answer to: {obj.question.short_label}.'
 
     class Meta:
         model = Answer

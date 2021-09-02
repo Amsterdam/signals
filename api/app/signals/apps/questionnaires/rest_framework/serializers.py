@@ -47,7 +47,11 @@ class PublicQuestionSerializer(HALSerializer):
         next_rules = None
         if graph := self.context.get('graph', None):
             outgoing_edges = Edge.objects.filter(graph=graph, question=obj)
-            next_rules = [{'key': edge.next_question.ref, 'payload': edge.payload} for edge in outgoing_edges]
+
+            next_rules = []
+            for edge in outgoing_edges:
+                payload = edge.choice.payload if edge.choice else None
+                next_rules.append({'key': edge.next_question.ref, 'payload': payload})
 
         return next_rules
 

@@ -40,11 +40,11 @@ def create_diamond(graph_name='diamond'):
     #    |
     #    q5
     graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q2, payload=None)
-    EdgeFactory.create(graph=graph, question=q2, next_question=q4, payload=None)
-    EdgeFactory.create(graph=graph, question=q1, next_question=q3, payload=None)
-    EdgeFactory.create(graph=graph, question=q3, next_question=q4, payload=None)
-    EdgeFactory.create(graph=graph, question=q4, next_question=q5, payload=None)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q2, choice=None)
+    EdgeFactory.create(graph=graph, question=q2, next_question=q4, choice=None)
+    EdgeFactory.create(graph=graph, question=q1, next_question=q3, choice=None)
+    EdgeFactory.create(graph=graph, question=q3, next_question=q4, choice=None)
+    EdgeFactory.create(graph=graph, question=q4, next_question=q5, choice=None)
 
     return graph
 
@@ -64,7 +64,7 @@ def create_diamond_plus(graph_name='diamond_plus'):
     # question of the question_graph
     q6 = QuestionFactory.create()
     q7 = QuestionFactory.create()
-    EdgeFactory.create(graph=graph, question=q6, next_question=q7, payload=None)
+    EdgeFactory.create(graph=graph, question=q6, next_question=q7, choice=None)
 
     return graph
 
@@ -92,7 +92,7 @@ def create_disconnected(graph_name='disconnected'):
     # |
     # q3
     graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
-    EdgeFactory.create(graph=graph, question=q2, next_question=q3, payload=None)
+    EdgeFactory.create(graph=graph, question=q2, next_question=q3, choice=None)
 
     return graph
 
@@ -106,8 +106,8 @@ def create_cycle(graph_name='cycle'):
     # (  )
     #  q2
     graph = QuestionGraphFactory.create(name=graph_name, first_question=q1)
-    EdgeFactory(graph=graph, question=q1, next_question=q2, payload=None)
-    EdgeFactory(graph=graph, question=q2, next_question=q1, payload=None)
+    EdgeFactory(graph=graph, question=q1, next_question=q2, choice=None)
+    EdgeFactory(graph=graph, question=q2, next_question=q1, choice=None)
 
     return graph
 
@@ -117,7 +117,7 @@ def create_too_many_questions(graph_name='too_many'):
 
     graph = QuestionGraphFactory.create(name=graph_name, first_question=questions[0])
     for i in range(len(questions) - 1):
-        EdgeFactory.create(graph=graph, question=questions[i], next_question=questions[i + 1])
+        EdgeFactory.create(graph=graph, question=questions[i], next_question=questions[i + 1], choice=None)
 
     return graph
 
@@ -162,6 +162,10 @@ class TestDiamond(TestCase):
     def setUp(self):
         create_diamond()
 
+    def test_factories(self):
+        self.assertEqual(Question.objects.count(), 5)
+        self.assertEqual(Edge.objects.count(), 5)
+
     def test_get_from_question_graph(self):
         question_graph = QuestionGraph.objects.get(name='diamond')
         self.assertEqual(len(question_graph.edges.all()), 5)
@@ -178,6 +182,10 @@ class TestDiamond(TestCase):
 class TestDiamondPlus(TestCase):
     def setUp(self):
         create_diamond_plus()
+
+    def test_factories(self):
+        self.assertEqual(Question.objects.count(), 7)
+        self.assertEqual(Edge.objects.count(), 6)
 
     def test_get_from_question_graph(self):
         question_graph = QuestionGraph.objects.get(name='diamond_plus')
@@ -200,6 +208,10 @@ class TestDisconnected(TestCase):
     def setUp(self):
         create_disconnected()
 
+    def test_factories(self):
+        self.assertEqual(Question.objects.count(), 3)
+        self.assertEqual(Edge.objects.count(), 1)
+
     def test_get_from_question_graph(self):
         question_graph = QuestionGraph.objects.get(name='disconnected')
         self.assertEqual(len(question_graph.edges.all()), 1)
@@ -220,6 +232,10 @@ class TestDisconnected(TestCase):
 class TestCycle(TestCase):
     def setUp(self):
         create_cycle()
+
+    def test_factories(self):
+        self.assertEqual(Question.objects.count(), 2)
+        self.assertEqual(Edge.objects.count(), 2)
 
     def test_get_from_question_graph(self):
         question_graph = QuestionGraph.objects.get(name='cycle')
@@ -268,9 +284,9 @@ class TestEdges(TestCase):
         q4 = QuestionFactory.create()
 
         self.graph = QuestionGraphFactory.create(name='edge_order',  first_question=q1)
-        EdgeFactory.create(graph=self.graph, question=q1, next_question=q2, payload=None)
-        EdgeFactory.create(graph=self.graph, question=q1, next_question=q3, payload=None)
-        EdgeFactory.create(graph=self.graph, question=q1, next_question=q4, payload=None)
+        EdgeFactory.create(graph=self.graph, question=q1, next_question=q2, choice=None)
+        EdgeFactory.create(graph=self.graph, question=q1, next_question=q3, choice=None)
+        EdgeFactory.create(graph=self.graph, question=q1, next_question=q4, choice=None)
 
     def test_edge_ordering(self):
         question = self.graph.first_question
@@ -438,3 +454,10 @@ class TestQuestion(TestCase):
         session.started_at = self.now
         with freeze_time(self.now + timedelta(days=10000)):
             self.assertFalse(session.is_expired)
+
+
+class TestQuestionModel(TestCase):
+    def test_analysis_key_default(self):
+        # We set this to the default because it is normally overwritten by QuestionFactory:
+        q = QuestionFactory.create(analysis_key='PLACEHOLDER')
+        self.assertEqual(q.analysis_key, f'PLACEHOLDER-{str(q.uuid)}')

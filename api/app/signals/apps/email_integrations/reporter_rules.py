@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import (
-    _create_feedback_and_mail_context,
+    create_feedback_and_mail_context,
     create_reaction_request_and_mail_context
 )
 from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
@@ -63,7 +63,7 @@ SIGNAL_MAIL_RULES = [
         'kwargs': {
             'key': EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
             'subject': 'Meer over uw melding {signal_id}',
-            'context': lambda signal: _create_feedback_and_mail_context(signal)
+            'context': lambda signal: create_feedback_and_mail_context(signal)
         },
         'additional_info': {
             'history_entry_text': 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
