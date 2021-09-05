@@ -25,11 +25,11 @@ def create_diamond(graph_name='diamond'):
     """
     Seed the database with a diamond shaped graph formed by questions.
     """
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
-    q3 = QuestionFactory.create()
-    q4 = QuestionFactory.create()
-    q5 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
+    q3 = QuestionFactory.create(analysis_key='q3')
+    q4 = QuestionFactory.create(analysis_key='q4')
+    q5 = QuestionFactory.create(analysis_key='q5')
 
     # sketch:
     #    q1 <- first_question
@@ -62,8 +62,8 @@ def create_diamond_plus(graph_name='diamond_plus'):
 
     # Add an edge to the graph that cannot be reached from the first
     # question of the question_graph
-    q6 = QuestionFactory.create()
-    q7 = QuestionFactory.create()
+    q6 = QuestionFactory.create(analysis_key='q6')
+    q7 = QuestionFactory.create(analysis_key='q7')
     EdgeFactory.create(graph=graph, question=q6, next_question=q7, choice=None)
 
     return graph
@@ -74,16 +74,16 @@ def create_empty(graph_name='empty'):
 
 
 def create_one(graph_name='one'):
-    q1 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
     # sketch:
     # q1 <- first_question
     return QuestionGraphFactory.create(name=graph_name, first_question=q1)
 
 
 def create_disconnected(graph_name='disconnected'):
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
-    q3 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
+    q3 = QuestionFactory.create(analysis_key='q3')
 
     # sketch:
     # q1 <- first_question
@@ -98,8 +98,8 @@ def create_disconnected(graph_name='disconnected'):
 
 
 def create_cycle(graph_name='cycle'):
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
 
     # sketch:
     #  q1 <- first_question
