@@ -54,6 +54,9 @@ class DataUriImageEncodeService:
                 if image.width > max_size or image.height > max_size:
                     image = DataUriImageEncodeService.resize(image, max_size)
 
+                if image.mode == 'RGBA':
+                    image = image.convert('RGB')
+
                 with io.BytesIO() as new_buffer:
                     new_buffer = io.BytesIO()
                     image.save(new_buffer, format='JPEG')

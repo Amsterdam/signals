@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from io import BytesIO
 from unittest.mock import MagicMock
-import unittest
 
 from PIL import Image
 
@@ -50,7 +49,6 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
 
-    @unittest.expectedFailure
     def test_get_context_data_images_for_rgba(self):
         # Reproduce problem reported in SIG-3972, RGBA PNG image attachment causes a failure to create PDFs
         image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
