@@ -110,13 +110,16 @@ class SignalDslService(DslService):
                                     'id': rule._department.id
                                 }
                             ]
-                        },
-                        'user_assignment': {
-                            'user': {
-                                'email': None if not rule._user else rule._user.email
-                            }
                         }
                     }
+
+                    if rule._user:
+                        data['user_assignment'] = {
+                            'user': {
+                                'email': rule._user.email
+                            }
+                        }
+
                     self.signal_manager.update_multiple(data, signal)
                     return True
         return False
