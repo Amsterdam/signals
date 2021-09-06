@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from io import BytesIO
 from unittest.mock import MagicMock
+import unittest
 
 from PIL import Image
 
@@ -45,6 +46,19 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=buffer.getvalue())
         jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 80)
+        self.assertEqual(len(jpg_data_uris), 1)
+        self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
+        self.assertGreater(len(jpg_data_uris[0]), 22)
+
+    @unittest.expectedFailure
+    def test_get_context_data_images_for_rgba(self):
+        # Reproduce problem reported in SIG-3972, RGBA PNG image attachment causes a failure to create PDFs
+        image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+        buffer = BytesIO()
+        image.save(buffer, format='PNG')
+
+        AttachmentFactory.create(_signal=self.signal, file__filename='blah.png', file__data=buffer.getvalue())
+        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 200)
         self.assertEqual(len(jpg_data_uris), 1)
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
