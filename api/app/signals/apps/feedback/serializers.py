@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.questionnaires.services import FeedbackRequestService
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -64,4 +65,6 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 }
                 Signal.actions.update_status(payload, signal)
 
-        return super().update(instance, validated_data)
+        feedback = super().update(instance, validated_data)
+        FeedbackRequestService.create_session_from_feedback(feedback)
+        return feedback

@@ -120,7 +120,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {})
 
-    def test_200_on_submit_feedback(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_200_on_submit_feedback(self, patched_service):
         """Test that the feedback can be PUT once."""
         token = self.feedback.token
         reason = 'testen is leuk'
@@ -145,6 +146,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(self.feedback.is_satisfied, True)
             self.assertEqual(self.feedback.allows_contact, True)
             self.assertEqual(self.feedback.text, reason)
+        # check that a Questionnaire is also filled out
+        patched_service.create_session_from_feedback.assert_called_once()
 
     def test_400_on_submit_feedback_without_is_satisfied(self):
         """Test that the feedback can be PUT once."""
@@ -166,7 +169,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             )
             self.assertEqual(response.status_code, 400)
 
-    def test_reopen_requested_on_unsatisfied_standard_answer(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_reopen_requested_on_unsatisfied_standard_answer(self, patched_service):
         """Certain standard answers (in feedback) lead to "reopen requested" state."""
         token = self.feedback.token
         data = {
@@ -185,8 +189,11 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
+        # check that a Questionnaire is also filled out
+        patched_service.create_session_from_feedback.assert_called_once()
 
-    def test_reopen_requested_on_unsatisfied_custom_answer(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_reopen_requested_on_unsatisfied_custom_answer(self, patched_service):
         """All custom unsatisfied answers (in feedback) lead to "reopen requested" state."""
         token = self.feedback.token
         data = {
@@ -206,7 +213,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.VERZOEK_TOT_HEROPENEN)
 
-    def test_no_reopen_requested_on_unsatisfied_and_known_feedback(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_no_reopen_requested_on_unsatisfied_and_known_feedback(self, patched_service):
         """Some negative feedback is explicitly marked not to trigger reopen requested."""
         token = self.feedback.token
         data = {
@@ -225,8 +233,11 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
+        # check that a Questionnaire is also filled out
+        patched_service.create_session_from_feedback.assert_called_once()
 
-    def test_no_reopen_requested_when_not_in_state_afgehandeld(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_no_reopen_requested_when_not_in_state_afgehandeld(self, patched_service):
         """Only request reopen from AFGEHANDELD state."""
         with freeze_time(self.t_now):
             # Reopen the test signal (so it is no longer in AFGEHANDELD).
@@ -254,8 +265,11 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         # Assert that nothing happened.
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.HEROPEND)
+        # check that a Questionnaire is also filled out
+        patched_service.create_session_from_feedback.assert_called_once()
 
-    def test_no_reopen_requested_on_positive_feedback(self):
+    @mock.patch('signals.apps.feedback.serializers.FeedbackRequestService')
+    def test_no_reopen_requested_on_positive_feedback(self, patched_service):
         """Positive feedback should never request a reopen"""
         # Create a positive feedback StandardAnswer that could possibly lead to
         # the status reopen requested.
@@ -286,6 +300,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
         self.assertEqual(status_id_before, self.signal.status.id)
+        # check that a Questionnaire is also filled out
+        patched_service.create_session_from_feedback.assert_called_once()
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)

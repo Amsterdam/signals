@@ -13,6 +13,7 @@ from signals.apps.feedback.utils import get_fe_application_location
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
 from signals.apps.questionnaires.models import (
+    Answer,
     Choice,
     Edge,
     Question,
@@ -169,3 +170,50 @@ class FeedbackRequestService:
                 }
                 Signal.actions.update_status(payload, signal)
             feedback.save()
+
+    @staticmethod
+    def create_session_from_feedback(feedback):
+        # create session / questionnaire
+        # fill it out
+        with transaction.atomic():
+            graph = create_kto_graph()
+            questionnaire = Questionnaire.objects.create(
+                graph=graph,
+                flow=Questionnaire.FEEDBACK_REQUEST,
+            )
+            session = Session.objects.create(
+                created_at=feedback.created_at,
+                started_at=timezone.now(),
+                submit_before=feedback.created_at+timedelta(FEEDBACK_REQUEST_DAYS_OPEN),
+                questionnaire=questionnaire,
+            )
+
+            questions = Question.objects.get_from_question_graph(graph)
+            questions_by_analysis_key = {q.analysis_key: q for q in questions}
+
+            Answer.objects.create(
+                session=session,
+                question=questions_by_analysis_key['satisfied'],
+                payload=feedback.is_satisfied,
+            )
+            key_reason = 'reason_satisfied' if feedback.is_satisfied else 'reason_unsatisfied'
+            Answer.objects.create(
+                session=session,
+                question=questions_by_analysis_key[key_reason],
+                payload=feedback.text,
+            )
+            if feedback.text_extra:
+                Answer.objects.create(
+                    session=session,
+                    question=questions_by_analysis_key['extra_info'],
+                    payload=feedback.text_extra
+                )
+            Answer.objects.create(
+                session=session,
+                question=questions_by_analysis_key['allows_contact'],
+                payload=feedback.allows_contact
+            )
+            session.frozen = True
+            session.save()
+
+        return session

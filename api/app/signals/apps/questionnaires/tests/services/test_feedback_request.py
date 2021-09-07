@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.utils.timezone import make_aware
 from freezegun import freeze_time
 
-from signals.apps.feedback.factories import StandardAnswerFactory
+from signals.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import WrongState
@@ -210,3 +210,28 @@ class TestFeedbackRequestService(TestCase):
         self.assertEqual(feedback.text, 'all good')
         self.assertEqual(feedback.text_extra, 'EXTRA INFO')
         self.assertEqual(feedback.allows_contact, True)
+
+
+class TestFeedbackToQuestionnaire(TestCase):
+    def test_create_session_from_happy_feedback(self):
+        feedback = FeedbackFactory.create(is_satisfied=True, text_extra='extra')
+        session = FeedbackRequestService.create_session_from_feedback(feedback)
+
+        self.assertIsInstance(session, Session)
+        self.assertTrue(session.frozen)
+        self.assertEqual(feedback.created_at + timedelta(days=FEEDBACK_REQUEST_DAYS_OPEN), session.submit_before)
+
+        questions = Question.objects.get_from_question_graph(session.questionnaire.graph)
+        questions_by_analysis_key = {q.analysis_key: q for q in questions}
+
+        self.assertEqual(
+            set(questions_by_analysis_key),
+            {'satisfied', 'reason_satisfied', 'reason_unsatisfied', 'extra_info', 'allows_contact'}
+        )
+        answers = QuestionnairesService.get_latest_answers(session)
+        answers_by_analysis_key = {a.question.analysis_key: a for a in answers}
+
+        self.assertEqual(feedback.is_satisfied, answers_by_analysis_key['satisfied'].payload)
+        self.assertEqual(feedback.text, answers_by_analysis_key['reason_satisfied'].payload)
+        self.assertEqual(feedback.text_extra, answers_by_analysis_key['extra_info'].payload)
+        self.assertEqual(feedback.allows_contact, answers_by_analysis_key['allows_contact'].payload)
