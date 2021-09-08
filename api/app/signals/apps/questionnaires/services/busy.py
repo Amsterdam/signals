@@ -8,39 +8,18 @@ from signals.apps.questionnaires.models import Answer, Edge, Question
 class QuestionGraphService:
     MAX_QUESTIONS = 50
 
-    def __init__(self, session):
-        self.session = session
-        self.q_graph = session.questionnaire.graph
+    def __init__(self, q_graph):
+        self.q_graph = q_graph
 
-    def load_data(self, session):
-        self._load_path_independent_data(session)
-        self._load_path_dependent_data(session)
-
-    def _load_path_independent_data(self, session):
+    def load_question_data(self):
         # Retrieve all relevant edges, questions and answers
         self.edges = self._get_edges(self.q_graph)
         self.nx_graph = self._build_nx_graph(self.edges, self.q_graph.first_question)
         self.questions = self._get_all_questions(self.nx_graph)
-        self.answers = self._get_all_answers(session)
 
         # setup caches for quick access
         self.edges_by_id = {e.id: e for e in self.edges}
         self.questions_by_id = {q.id: q for q in self.questions}
-        self.answers_by_question_id = {a.question.id: a for a in self.answers}
-
-    def _load_path_dependent_data(self, session):
-        # Take into account QuestionGraph structure, determine questions,
-        # unanswered questions and answers along path. Note that these paths
-        # do not necessarily extend to the end of the questionnaire. (Only the
-        # case if all decision points have a default branch that gets selected
-        # without an answer being provided).
-        # Note: call after _load_path_independent_data
-        reachable, unanswered, answered = self._get_reachable_questions_and_answers(
-            self.nx_graph, self.questions_by_id, self.answers_by_question_id
-        )
-        self.path_questions_by_id = reachable
-        self.path_unanswered_by_id = unanswered
-        self.path_answers_by_question_id = answered
 
     def _get_edges(self, q_graph):
         return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
@@ -75,6 +54,56 @@ class QuestionGraphService:
         Grab questions linked to QuestionGraph.
         """
         return list(Question.objects.filter(id__in=nx_graph.nodes()))
+
+    def get_all_questions(self):
+        return self.questions
+
+    def get_reachable_questions(self):
+        """
+        Grab questions linked to QuestionGraph reachable from first_question.
+        """
+        reachable = networkx.descendants(self.nx_graph, self.q_graph.first_question.id)
+        reachable.add(self.q_graph.first_question.id)
+
+        return list(Question.objects.filter(id__in=reachable))
+
+    def validate(self):
+        """
+        Check QuestionGraph for validity.
+        """
+        # TODO, check QuestionGraph for the following:
+        # - maximum number of questions
+        # - no unreachable questions
+        # - decision points (questions) in the graph must enforce questions
+        pass
+
+
+class SessionService(QuestionGraphService):
+    def __init__(self, session):
+        super().__init__(session.questionnaire.graph)
+        self.session = session
+
+    def load_answer_data(self):
+        self.answers = self._get_all_answers(self.session)
+        self.answers_by_question_id = {a.question.id: a for a in self.answers}
+
+        # Take into account QuestionGraph structure, determine questions,
+        # unanswered questions and answers along path. Note that these paths
+        # do not necessarily extend to the end of the questionnaire. (Only the
+        # case if all decision points have a default branch that gets selected
+        # without an answer being provided).
+        # Note: call after _load_path_independent_data
+        reachable, unanswered, answered, can_freeze = self._get_reachable_questions_and_answers(
+            self.nx_graph, self.questions_by_id, self.answers_by_question_id
+        )
+        self.path_questions_by_id = reachable
+        self.path_unanswered_by_id = unanswered
+        self.path_answers_by_question_id = answered
+        self.can_freeze = can_freeze
+
+    def load_data(self):
+        self.load_question_data()
+        self.load_answer_data()
 
     def _get_all_answers(self, session):
         return list(
@@ -122,19 +151,29 @@ class QuestionGraphService:
             if answer is not None:
                 reachable_answers_by_question_id[answer.question.id] = answer
 
+            previous_question = question
             answer_payload = None if answer is None else answer.payload
             question = self._get_next_question(nx_graph, questions_by_id, question, answer_payload)
 
-        return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id
+        can_freeze = False
+        if nx_graph.out_degree(previous_question.id) == 0 and not unanswered_by_id:
+            # We have reached a potential endpoint, and along our current path
+            # there are no more questions to answer. This means session can be
+            # frozen safely
+            can_freeze = True
 
-    def get_reachable_questions(self, nx_graph, first_question):
-        """
-        Grab questions linked to QuestionGraph reachable from first_question.
-        """
-        reachable = networkx.descendants(nx_graph, first_question.id)
-        reachable.add(first_question.id)
+        return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id, can_freeze
 
-        return list(Question.objects.filter(id__in=reachable))
+    def _get_endpoint_questions(self, nx_graph, questions_by_id):
+        """
+        Get endpoint questions in QuestionGraph.
+        """
+        endpoint_questions_by_id = {}
+        for question_id, out_degree in nx_graph.out_degree():
+            if out_degree == 0:
+                endpoint_questions_by_id[question_id] = questions_by_id[question_id]
+
+        return endpoint_questions_by_id
 
     def get_answers_by_analysis_key(self):
         """
@@ -163,3 +202,10 @@ class QuestionGraphService:
             extra_props.append(entry)
 
         return extra_props
+
+    def get_can_freeze(self):
+        """
+        Can the session under consideration be frozen (i.e. are all required
+        questions answered)?
+        """
+        return self.can_freeze
