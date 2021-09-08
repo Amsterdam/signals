@@ -62,3 +62,4 @@ python-magic
 
 # Graph handling
 networkx
+matplotlib

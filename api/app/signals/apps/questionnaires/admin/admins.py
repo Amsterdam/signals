@@ -29,9 +29,10 @@ class QuestionnaireAdmin(admin.ModelAdmin):
 
 class QuestionGraphAdmin(admin.ModelAdmin):
     inlines = (EdgeStackedInline,)
-    fields = ('name', 'first_question',)
+    fields = ('name', 'first_question', 'image_tag',)
+    readonly_fields = ('image_tag', )
 
-    list_display = ('name', 'first_question',)
+    list_display = ('name', 'first_question', )
     list_per_page = 20
 
 
@@ -135,3 +136,10 @@ class SessionAdmin(admin.ModelAdmin):
 
         unfrozen_post_count = queryset.filter(frozen=False).count()
         messages.add_message(request, messages.SUCCESS, f'{unfrozen_post_count-not_frozen_pre_count} Sessions unfrozen')
+
+
+class ChoiceAdmin(admin.ModelAdmin):
+    fields = ('question', 'selected', 'payload', 'display', )
+
+    list_display = ('question', 'selected', 'payload', 'display', )
+    list_per_page = 20
