@@ -34,11 +34,6 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
 
     authentication_classes = ()
 
-    @action(detail=True, url_path=r'graph/visual/?$', methods=['GET', ])
-    def graph(self, *args, **kwargs):
-        questionnaire = self.get_object()
-        return Response(questionnaire.graph.draw())
-
 
 class PublicQuestionViewSet(DatapuntViewSet):
     lookup_field = 'retrieval_key'
