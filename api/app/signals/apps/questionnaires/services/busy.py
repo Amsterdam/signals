@@ -1,8 +1,38 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 import networkx
+from django.core.exceptions import ValidationError as django_validation_error
+from django.utils import timezone
 
-from signals.apps.questionnaires.models import Answer, Edge, Question
+from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.fieldtypes import get_field_type_class
+from signals.apps.questionnaires.models import Answer, Edge, Question, Session
+
+
+class AnswerService:
+    @staticmethod
+    def validate_answer_payload(answer_payload, question):  # noqa: C901
+        # If a question is not required the answer payload must be JSON null,
+        # anything else gets the schema check.
+        if not question.required and answer_payload is None:
+            return answer_payload
+
+        # FieldType subclass schema check
+        field_type_class = get_field_type_class(question)
+        field_type_class().validate_submission_payload(answer_payload)
+
+        # If a questions has pre-defined answers (see the Choice model), the
+        # answer payload should match one of these predefined answers.
+        if not question.enforce_choices:
+            return answer_payload
+
+        if valid_payloads := question.choices.values_list('payload', flat=True):
+            for valid_payload in valid_payloads:
+                if answer_payload == valid_payload:
+                    return answer_payload
+            else:
+                msg = 'Submitted answer does not match one of the pre-defined answers.'
+                raise django_validation_error(msg)
 
 
 class QuestionGraphService:
@@ -14,7 +44,7 @@ class QuestionGraphService:
     def load_question_data(self):
         # Retrieve all relevant edges, questions and answers
         self.edges = self._get_edges(self.q_graph)
-        self.nx_graph = self._build_nx_graph(self.edges, self.q_graph.first_question)
+        self.nx_graph = self._build_nx_graph(self.q_graph, self.edges)
         self.questions = self._get_all_questions(self.nx_graph)
 
         # setup caches for quick access
@@ -24,7 +54,8 @@ class QuestionGraphService:
     def _get_edges(self, q_graph):
         return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
 
-    def _build_nx_graph(self, edges, first_question):
+    @staticmethod
+    def _build_nx_graph(q_graph, edges):
         """
         Get NetworkX graph representing the QuestionGraph.
         """
@@ -41,15 +72,16 @@ class QuestionGraphService:
                 order=edge.order,
             )
 
-            if len(nx_graph) > self.MAX_QUESTIONS:
-                msg = f'Question graph {self.graph.name} contains too many questions.'
+            if len(nx_graph) > QuestionGraphService.MAX_QUESTIONS:
+                msg = f'Question graph {q_graph.name} contains too many questions.'
                 raise Exception(msg)
 
-        if first_question and first_question not in nx_graph.nodes:
-            nx_graph.add_node(first_question.id)
+        if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
+            nx_graph.add_node(q_graph.first_question.id)
         return nx_graph
 
-    def _get_all_questions(self, nx_graph):
+    @staticmethod
+    def _get_all_questions(nx_graph):
         """
         Grab questions linked to QuestionGraph.
         """
@@ -80,8 +112,9 @@ class QuestionGraphService:
 
 class SessionService(QuestionGraphService):
     def __init__(self, session):
-        super().__init__(session.questionnaire.graph)
         self.session = session
+        self.question_graph_service = QuestionGraphService(session.questionnaire.graph)
+        self.answer_service = AnswerService
 
     def load_answer_data(self):
         self.answers = self._get_all_answers(self.session)
@@ -92,9 +125,11 @@ class SessionService(QuestionGraphService):
         # do not necessarily extend to the end of the questionnaire. (Only the
         # case if all decision points have a default branch that gets selected
         # without an answer being provided).
-        # Note: call after _load_path_independent_data
         reachable, unanswered, answered, can_freeze = self._get_reachable_questions_and_answers(
-            self.nx_graph, self.questions_by_id, self.answers_by_question_id
+            self.question_graph_service.nx_graph,
+            self.question_graph_service.q_graph.first_question,
+            self.question_graph_service.questions_by_id,
+            self.answers_by_question_id
         )
         self.path_questions_by_id = reachable
         self.path_unanswered_by_id = unanswered
@@ -102,10 +137,15 @@ class SessionService(QuestionGraphService):
         self.can_freeze = can_freeze
 
     def load_data(self):
-        self.load_question_data()
+        self.question_graph_service.load_question_data()
         self.load_answer_data()
 
-    def _get_all_answers(self, session):
+    @staticmethod
+    def _get_all_answers(session):
+        """
+        Get answers associated with this session, return only the most recent
+        answer for each question.
+        """
         return list(
             Answer.objects.filter(session=session)
             .order_by('question_id', '-created_at')
@@ -113,7 +153,8 @@ class SessionService(QuestionGraphService):
             .select_related('question')
         )
 
-    def _get_next_question(self, nx_graph, questions_by_id, question, answer_payload):
+    @staticmethod
+    def _get_next_question(nx_graph, questions_by_id, question, answer_payload):
         """
         Get next_question given question graph, current question, and answer.
         """
@@ -130,18 +171,23 @@ class SessionService(QuestionGraphService):
 
         return None
 
-    def _get_reachable_questions_and_answers(self, nx_graph, questions_by_id, answers_by_id):
+    @staticmethod
+    def _get_reachable_questions_and_answers(nx_graph, first_question, questions_by_id, answers_by_id):
         """
         Given (partially?) answered graph determine answers and questions along
         current path.
         """
+        # TODO: right now this function does not return a path through the
+        # question graph, but we should. That way we can provide useful answers
+        # to REST API clients navigating the QuestionGraph.
+
         # We can assume that each individual answer is correct, we must now
         # determine whether these answers are reachable given relevant graph.
         reachable_answers_by_question_id = {}
         reachable_questions_by_id = {}
         unanswered_by_id = {}  # only (!) required questions left unanswered
 
-        question = self.q_graph.first_question
+        question = first_question
         while question:
             reachable_questions_by_id[question.id] = question
             answer = answers_by_id.get(question.id, None)
@@ -153,7 +199,7 @@ class SessionService(QuestionGraphService):
 
             previous_question = question
             answer_payload = None if answer is None else answer.payload
-            question = self._get_next_question(nx_graph, questions_by_id, question, answer_payload)
+            question = SessionService._get_next_question(nx_graph, questions_by_id, question, answer_payload)
 
         can_freeze = False
         if nx_graph.out_degree(previous_question.id) == 0 and not unanswered_by_id:
@@ -164,7 +210,8 @@ class SessionService(QuestionGraphService):
 
         return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id, can_freeze
 
-    def _get_endpoint_questions(self, nx_graph, questions_by_id):
+    @staticmethod
+    def _get_endpoint_questions(nx_graph, questions_by_id):
         """
         Get endpoint questions in QuestionGraph.
         """
@@ -209,3 +256,41 @@ class SessionService(QuestionGraphService):
         questions answered)?
         """
         return self.can_freeze
+
+    def create_answer(self, answer_payload, question):
+        # Check that question is actually part of relevant questionnaire:
+        if question.id not in self.question_graph_service.nx_graph.nodes():
+            msg = f'Question (id={question.id}) not in questionnaire (id={self.session.questionnaire.id})!'
+            raise django_validation_error(msg)
+
+        if not self.session.started_at:
+            self.session.started_at = timezone.now()
+            self.session.save()
+
+        if self.session.is_expired:
+            raise SessionExpired(f'Session {self.session.uuid} expired.')
+
+        if self.session.frozen:
+            raise SessionFrozen(f'Session {self.session.uuid} frozen.')
+
+        # Check submitted answer validates. If so save it to DB and return it.
+        self.answer_service.validate_answer_payload(answer_payload, question)
+
+        return Answer.objects.create(session=self.session, question=question, payload=answer_payload)
+
+    # These need to have knowledge of the different flows, and call the
+    # correct implementations.
+
+    def freeze(self):
+        pass
+
+    def create_session(self):
+        pass
+
+    @classmethod
+    def from_questionnaire(cls, questionnaire, submit_before=None, duration=None):
+        """
+        Initialize the SessionService with a new session using given questionnaire.
+        """
+        session = Session.objects.create(questionnaire=questionnaire, submit_before=submit_before, duration=duration)
+        return cls(session)
