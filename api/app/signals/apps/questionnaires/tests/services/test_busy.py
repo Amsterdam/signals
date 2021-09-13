@@ -1,12 +1,52 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 from networkx import MultiDiGraph
 
-from signals.apps.questionnaires.factories import AnswerFactory, ChoiceFactory, SessionFactory
-from signals.apps.questionnaires.models import Answer, Edge
-from signals.apps.questionnaires.services.busy import QuestionGraphService, SessionService
+from signals.apps.questionnaires.factories import (
+    AnswerFactory,
+    ChoiceFactory,
+    QuestionFactory,
+    SessionFactory
+)
+from signals.apps.questionnaires.models import Answer, Edge, Questionnaire, Session
+from signals.apps.questionnaires.services.busy import (
+    AnswerService,
+    QuestionGraphService,
+    SessionService
+)
 from signals.apps.questionnaires.tests.test_models import create_diamond_plus
+
+
+class TestAnswerService(TestCase):
+    def test_validated_answer_payload_not_required(self):
+        q = QuestionFactory.create(required=False)
+        self.assertEqual(AnswerService.validate_answer_payload(None, q), None)
+        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
+        with self.assertRaises(django_validation_error):
+            AnswerService.validate_answer_payload(['NOT', 'A', 'STRING'], q)
+
+    def test_validated_answer_payload_required(self):
+        q = QuestionFactory.create(required=True)
+        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
+        with self.assertRaises(django_validation_error):
+            AnswerService.validate_answer_payload(None, q)
+        with self.assertRaises(django_validation_error):
+            AnswerService.validate_answer_payload(['NOT', 'A', 'STRING'], q)
+
+    def test_validate_answer_payload_do_not_enforce_choices(self):
+        q = QuestionFactory.create(required=False, enforce_choices=False)
+        ChoiceFactory.create(question=q, payload='VALID')
+        self.assertEqual(AnswerService.validate_answer_payload('VALID', q), 'VALID')
+        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
+
+    def test_validate_answer_payload_do_enforce_choices(self):
+        q = QuestionFactory.create(required=False, enforce_choices=True)
+        ChoiceFactory.create(question=q, payload='VALID')
+        self.assertEqual(AnswerService.validate_answer_payload('VALID', q), 'VALID')
+        with self.assertRaises(django_validation_error):
+            AnswerService.validate_answer_payload('BLAH', q)
 
 
 class TestQuestionGraphService(TestCase):
@@ -22,7 +62,7 @@ class TestQuestionGraphService(TestCase):
         service = QuestionGraphService(q_graph)
         edges = service._get_edges(q_graph)
 
-        nx_graph = service._build_nx_graph(edges, q_graph.first_question)
+        nx_graph = service._build_nx_graph(q_graph, edges)
         self.assertIsInstance(nx_graph, MultiDiGraph)
         self.assertEqual(len(nx_graph.nodes), 7)
 
@@ -30,7 +70,7 @@ class TestQuestionGraphService(TestCase):
         q_graph = create_diamond_plus()
         service = QuestionGraphService(q_graph)
         edges = service._get_edges(q_graph)
-        nx_graph = service._build_nx_graph(edges, q_graph.first_question)
+        nx_graph = service._build_nx_graph(q_graph, edges)
 
         questions = service._get_all_questions(nx_graph)
         self.assertEqual(len(questions), 7)
@@ -40,7 +80,7 @@ class TestQuestionGraphService(TestCase):
         q_graph = create_diamond_plus()
         service = QuestionGraphService(q_graph)
         edges = service._get_edges(q_graph)
-        nx_graph = service._build_nx_graph(edges, q_graph.first_question)
+        nx_graph = service._build_nx_graph(q_graph, edges)
 
         service.q_graph = q_graph
         service.nx_graph = nx_graph
@@ -65,10 +105,10 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.load_question_data()
-        self.assertEqual(len(service.questions_by_id), 7)
+        service.question_graph_service.load_question_data()
+        self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
-        for q in service.questions:
+        for q in service.question_graph_service.questions:
             AnswerFactory.create(session=session, question=q, payload='answer')
         answers = service._get_all_answers(session)
         self.assertEqual(len(answers), 7)
@@ -77,8 +117,8 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.load_question_data()
-        self.assertEqual(len(service.questions_by_id), 7)
+        service.question_graph_service.load_question_data()
+        self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
         # First question in "diamond_plus" QuestionGraph is a decision point,
         # the create_diamond_plus function does not set choices or edge order
@@ -87,8 +127,8 @@ class TestSessionService(TestCase):
         # and checking we get the other branch.
         a = Answer.objects.create(session=session, question=q_graph.first_question, payload='answer')
         next_question_1 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a.payload
         )
@@ -96,12 +136,12 @@ class TestSessionService(TestCase):
         # First set order to the old order, nothing should change.
         edge_ids_before = q_graph.get_edge_order(q_graph.first_question)
         edge_ids_after = q_graph.set_edge_order(q_graph.first_question, edge_ids_before)
-        service.load_question_data()  # reload, because cache is now stale
+        service.question_graph_service.load_question_data()  # reload, because cache is now stale
 
         self.assertEqual(list(edge_ids_before), list(edge_ids_after))
         next_question_2 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a.payload
         )
@@ -112,12 +152,12 @@ class TestSessionService(TestCase):
         new_order = list(reversed(edge_ids_before))
         edge_ids_after = q_graph.set_edge_order(q_graph.first_question, new_order)
         self.assertNotEqual(list(edge_ids_after), list(edge_ids_before))
-        service.load_question_data()  # reload, because cache is now stale
+        service.question_graph_service.load_question_data()  # reload, because cache is now stale
 
         self.assertEqual(list(edge_ids_after), list(new_order))
         next_question_3 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a.payload
         )
@@ -143,8 +183,8 @@ class TestSessionService(TestCase):
         # ---
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.load_question_data()
-        self.assertEqual(len(service.questions_by_id), 7)
+        service.question_graph_service.load_question_data()
+        self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
         a1 = Answer.objects.create(
             session=session,
@@ -152,8 +192,8 @@ class TestSessionService(TestCase):
             payload='NOT A PREDEFINED CHOICE',  # This is something we should not allow!
         )
         next_question_1 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a1.payload
         )
@@ -165,8 +205,8 @@ class TestSessionService(TestCase):
             payload='q2'
         )
         next_question_2 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a2.payload
         )
@@ -178,8 +218,8 @@ class TestSessionService(TestCase):
             payload='q3'
         )
         next_question_3 = service._get_next_question(
-            service.nx_graph,
-            service.questions_by_id,
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.questions_by_id,
             q_graph.first_question,
             a3.payload
         )
@@ -189,13 +229,17 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.load_question_data()
+        service.question_graph_service.load_question_data()
 
         answers = service._get_all_answers(session)
         answers_by_question_id = {a.question.id: a for a in answers}
 
         questions_by_id, unanswered_by_id, answers_by_id, can_freeze = service._get_reachable_questions_and_answers(
-            service.nx_graph, service.questions_by_id, answers_by_question_id)
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.q_graph.first_question,
+            service.question_graph_service.questions_by_id,
+            answers_by_question_id
+        )
         self.assertEqual(len(questions_by_id), 4)  # should only return questions on one branch
         self.assertEqual(len(unanswered_by_id), 4)  # should only return questions on one branch
         self.assertEqual(len(answers_by_id), 0)  # no answers yet
@@ -205,7 +249,7 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.load_question_data()
+        service.question_graph_service.load_question_data()
 
         # Answer questions
         Answer.objects.create(
@@ -218,7 +262,11 @@ class TestSessionService(TestCase):
         answers_by_question_id = {a.question.id: a for a in answers}
 
         questions_by_id, unanswered_by_id, answers_by_id, can_freeze = service._get_reachable_questions_and_answers(
-            service.nx_graph, service.questions_by_id, answers_by_question_id)
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.q_graph.first_question,
+            service.question_graph_service.questions_by_id,
+            answers_by_question_id
+        )
         self.assertEqual(len(questions_by_id), 4)  # should only return questions on one branch
         self.assertEqual(len(unanswered_by_id), 3)
         self.assertEqual(len(answers_by_id), 1)  # one question answered
@@ -230,8 +278,8 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.load_question_data()
-        q_by_analysis_key = {q.analysis_key: q for q in service.questions}
+        service.question_graph_service.load_question_data()
+        q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
         Answer.objects.create(
@@ -259,7 +307,11 @@ class TestSessionService(TestCase):
         answers_by_question_id = {a.question.id: a for a in answers}
 
         questions_by_id, unanswered_by_id, answers_by_id, can_freeze = service._get_reachable_questions_and_answers(
-            service.nx_graph, service.questions_by_id, answers_by_question_id)
+            service.question_graph_service.nx_graph,
+            service.question_graph_service.q_graph.first_question,
+            service.question_graph_service.questions_by_id,
+            answers_by_question_id
+        )
 
         self.assertEqual(len(questions_by_id), 4)  # should only return questions on one branch
         self.assertEqual(len(unanswered_by_id), 0)
@@ -300,8 +352,8 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.load_question_data()
-        q_by_analysis_key = {q.analysis_key: q for q in service.questions}
+        service.question_graph_service.load_question_data()
+        q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
         Answer.objects.create(
@@ -366,8 +418,8 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.load_question_data()
-        q_by_analysis_key = {q.analysis_key: q for q in service.questions}
+        service.question_graph_service.load_question_data()
+        q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
         Answer.objects.create(
@@ -424,8 +476,8 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.load_question_data()
-        q_by_analysis_key = {q.analysis_key: q for q in service.questions}
+        service.question_graph_service.load_question_data()
+        q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
         Answer.objects.create(
@@ -451,3 +503,44 @@ class TestSessionService(TestCase):
 
         service.load_data()
         self.assertTrue(service.get_can_freeze())
+
+    def test_from_questionnaire(self):
+        q_graph = create_diamond_plus()
+        questionnaire = Questionnaire.objects.create(
+            name='Test questionnaire',
+            description='Just a test',
+            is_active=True,
+            graph=q_graph,
+            flow=Questionnaire.EXTRA_PROPERTIES
+        )
+
+        service = SessionService.from_questionnaire(questionnaire)
+        self.assertIsInstance(service, SessionService)
+        self.assertIsInstance(service.session, Session)
+        service.load_data()
+
+        self.assertIsInstance(service.question_graph_service, QuestionGraphService)
+        self.assertEqual(len(service.question_graph_service.nx_graph.nodes), 7)
+        self.assertEqual(len(service.answers), 0)
+
+    def test_create_answer_one_path(self):
+        q_graph = create_diamond_plus()
+        session = SessionFactory.create(questionnaire__graph=q_graph)
+        service = SessionService(session)
+
+        # get references to questions
+        service.question_graph_service.load_question_data()
+        q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
+
+        # Answer questions
+        service.create_answer('q1', q_by_analysis_key['q1'])
+        service.create_answer('q2', q_by_analysis_key['q2'])
+        service.create_answer('q4', q_by_analysis_key['q4'])
+        service.create_answer('q5', q_by_analysis_key['q5'])
+
+        service.load_data()
+        answers_by_analysis_key = service.get_answers_by_analysis_key()
+
+        self.assertEqual(len(answers_by_analysis_key), 4)
+        for key in ['q1', 'q2', 'q4', 'q5']:
+            self.assertEqual(answers_by_analysis_key[key].payload, key)
