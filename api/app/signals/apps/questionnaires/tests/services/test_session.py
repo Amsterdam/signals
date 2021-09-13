@@ -1,103 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
-from networkx import MultiDiGraph
 
-from signals.apps.questionnaires.factories import (
-    AnswerFactory,
-    ChoiceFactory,
-    QuestionFactory,
-    SessionFactory
-)
+from signals.apps.questionnaires.factories import AnswerFactory, ChoiceFactory, SessionFactory
 from signals.apps.questionnaires.models import Answer, Edge, Questionnaire, Session
-from signals.apps.questionnaires.services.busy import (
-    AnswerService,
-    QuestionGraphService,
-    SessionService
-)
+from signals.apps.questionnaires.services.question_graph import QuestionGraphService
+from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.questionnaires.tests.test_models import create_diamond_plus
-
-
-class TestAnswerService(TestCase):
-    def test_validated_answer_payload_not_required(self):
-        q = QuestionFactory.create(required=False)
-        self.assertEqual(AnswerService.validate_answer_payload(None, q), None)
-        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
-        with self.assertRaises(django_validation_error):
-            AnswerService.validate_answer_payload(['NOT', 'A', 'STRING'], q)
-
-    def test_validated_answer_payload_required(self):
-        q = QuestionFactory.create(required=True)
-        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
-        with self.assertRaises(django_validation_error):
-            AnswerService.validate_answer_payload(None, q)
-        with self.assertRaises(django_validation_error):
-            AnswerService.validate_answer_payload(['NOT', 'A', 'STRING'], q)
-
-    def test_validate_answer_payload_do_not_enforce_choices(self):
-        q = QuestionFactory.create(required=False, enforce_choices=False)
-        ChoiceFactory.create(question=q, payload='VALID')
-        self.assertEqual(AnswerService.validate_answer_payload('VALID', q), 'VALID')
-        self.assertEqual(AnswerService.validate_answer_payload('BLAH', q), 'BLAH')
-
-    def test_validate_answer_payload_do_enforce_choices(self):
-        q = QuestionFactory.create(required=False, enforce_choices=True)
-        ChoiceFactory.create(question=q, payload='VALID')
-        self.assertEqual(AnswerService.validate_answer_payload('VALID', q), 'VALID')
-        with self.assertRaises(django_validation_error):
-            AnswerService.validate_answer_payload('BLAH', q)
-
-
-class TestQuestionGraphService(TestCase):
-    def test_get_edges(self):
-        q_graph = create_diamond_plus()
-        service = QuestionGraphService(q_graph)
-
-        edges = service._get_edges(q_graph)
-        self.assertEqual(len(edges), 6)
-
-    def test_build_nx_graph_no_choices_predefined(self):
-        q_graph = create_diamond_plus()
-        service = QuestionGraphService(q_graph)
-        edges = service._get_edges(q_graph)
-
-        nx_graph = service._build_nx_graph(q_graph, edges)
-        self.assertIsInstance(nx_graph, MultiDiGraph)
-        self.assertEqual(len(nx_graph.nodes), 7)
-
-    def test_get_all_questions(self):
-        q_graph = create_diamond_plus()
-        service = QuestionGraphService(q_graph)
-        edges = service._get_edges(q_graph)
-        nx_graph = service._build_nx_graph(q_graph, edges)
-
-        questions = service._get_all_questions(nx_graph)
-        self.assertEqual(len(questions), 7)
-        self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 8)))
-
-    def test_get_reachable_questions(self):
-        q_graph = create_diamond_plus()
-        service = QuestionGraphService(q_graph)
-        edges = service._get_edges(q_graph)
-        nx_graph = service._build_nx_graph(q_graph, edges)
-
-        service.q_graph = q_graph
-        service.nx_graph = nx_graph
-        questions = service.get_reachable_questions()
-        self.assertEqual(len(questions), 5)
-        self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 6)))
-
-    def test_load_question_data(self):
-        q_graph = create_diamond_plus()
-        service = QuestionGraphService(q_graph)
-
-        service.load_question_data()
-        self.assertEqual(len(service.edges), 6)
-        self.assertIsInstance(service.nx_graph, MultiDiGraph)
-        self.assertEqual(len(service.nx_graph.nodes), 7)
-        self.assertEqual(len(service.questions), 7)
-        self.assertEqual(len(service.questions_by_id), 7)
 
 
 class TestSessionService(TestCase):

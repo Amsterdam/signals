@@ -1,116 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import networkx
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
-from signals.apps.questionnaires.fieldtypes import get_field_type_class
-from signals.apps.questionnaires.models import Answer, Edge, Question, Session
+from signals.apps.questionnaires.models import Answer, Session
+from signals.apps.questionnaires.services.answer import AnswerService
+from signals.apps.questionnaires.services.question_graph import QuestionGraphService
 
 
-class AnswerService:
-    @staticmethod
-    def validate_answer_payload(answer_payload, question):  # noqa: C901
-        # If a question is not required the answer payload must be JSON null,
-        # anything else gets the schema check.
-        if not question.required and answer_payload is None:
-            return answer_payload
-
-        # FieldType subclass schema check
-        field_type_class = get_field_type_class(question)
-        field_type_class().validate_submission_payload(answer_payload)
-
-        # If a questions has pre-defined answers (see the Choice model), the
-        # answer payload should match one of these predefined answers.
-        if not question.enforce_choices:
-            return answer_payload
-
-        if valid_payloads := question.choices.values_list('payload', flat=True):
-            for valid_payload in valid_payloads:
-                if answer_payload == valid_payload:
-                    return answer_payload
-            else:
-                msg = 'Submitted answer does not match one of the pre-defined answers.'
-                raise django_validation_error(msg)
-
-
-class QuestionGraphService:
-    MAX_QUESTIONS = 50
-
-    def __init__(self, q_graph):
-        self.q_graph = q_graph
-
-    def load_question_data(self):
-        # Retrieve all relevant edges, questions and answers
-        self.edges = self._get_edges(self.q_graph)
-        self.nx_graph = self._build_nx_graph(self.q_graph, self.edges)
-        self.questions = self._get_all_questions(self.nx_graph)
-
-        # setup caches for quick access
-        self.edges_by_id = {e.id: e for e in self.edges}
-        self.questions_by_id = {q.id: q for q in self.questions}
-
-    def _get_edges(self, q_graph):
-        return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
-
-    @staticmethod
-    def _build_nx_graph(q_graph, edges):
-        """
-        Get NetworkX graph representing the QuestionGraph.
-        """
-        nx_graph = networkx.MultiDiGraph()
-        for edge in edges:
-            choice_payload = None if edge.choice is None else edge.choice.payload
-
-            nx_graph.add_edge(
-                edge.question_id,
-                edge.next_question_id,
-                # Needed for rule matching and dertermining next questions:
-                choice_payload=choice_payload,
-                edge_id=edge.id,
-                order=edge.order,
-            )
-
-            if len(nx_graph) > QuestionGraphService.MAX_QUESTIONS:
-                msg = f'Question graph {q_graph.name} contains too many questions.'
-                raise Exception(msg)
-
-        if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
-            nx_graph.add_node(q_graph.first_question.id)
-        return nx_graph
-
-    @staticmethod
-    def _get_all_questions(nx_graph):
-        """
-        Grab questions linked to QuestionGraph.
-        """
-        return list(Question.objects.filter(id__in=nx_graph.nodes()))
-
-    def get_all_questions(self):
-        return self.questions
-
-    def get_reachable_questions(self):
-        """
-        Grab questions linked to QuestionGraph reachable from first_question.
-        """
-        reachable = networkx.descendants(self.nx_graph, self.q_graph.first_question.id)
-        reachable.add(self.q_graph.first_question.id)
-
-        return list(Question.objects.filter(id__in=reachable))
-
-    def validate(self):
-        """
-        Check QuestionGraph for validity.
-        """
-        # TODO, check QuestionGraph for the following:
-        # - maximum number of questions
-        # - no unreachable questions
-        # - decision points (questions) in the graph must enforce questions
-        pass
-
-
-class SessionService(QuestionGraphService):
+class SessionService:
     def __init__(self, session):
         self.session = session
         self.question_graph_service = QuestionGraphService(session.questionnaire.graph)
