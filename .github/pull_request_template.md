@@ -13,6 +13,7 @@ Add a meaningful description explaining the change/fix that is provided in this 
 - [ ] Check that the PR targets `master`
 - [ ] There are no merge conflicts
 - [ ] There are no conflicting Django migrations
+- [ ] PR was created with "Allow edits and access to secrets by maintainers"
 
 ## How has this been tested?
 
