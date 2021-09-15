@@ -2,16 +2,15 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import networkx
 
+from signals.apps.questionnaires.app_settings import MAX_QUESTIONS
 from signals.apps.questionnaires.models import Edge, Question
 
 
 class QuestionGraphService:
-    MAX_QUESTIONS = 50
-
     def __init__(self, q_graph):
         self.q_graph = q_graph
 
-    def load_question_data(self):
+    def load_question_graph_data(self):
         # Retrieve all relevant edges, questions and answers
         self.edges = self._get_edges(self.q_graph)
         self.nx_graph = self._build_nx_graph(self.q_graph, self.edges)
@@ -42,7 +41,7 @@ class QuestionGraphService:
                 order=edge.order,
             )
 
-            if len(nx_graph) > QuestionGraphService.MAX_QUESTIONS:
+            if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {q_graph.name} contains too many questions.'
                 raise Exception(msg)
 

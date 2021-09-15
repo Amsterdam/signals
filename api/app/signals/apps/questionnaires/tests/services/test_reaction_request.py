@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 
-from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
+from signals.apps.questionnaires.exceptions import WrongFlow, WrongState
 from signals.apps.questionnaires.factories import (
     AnswerFactory,
     QuestionFactory,
@@ -15,14 +15,20 @@ from signals.apps.questionnaires.factories import (
     SessionFactory
 )
 from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.questionnaires.services import QuestionnairesService, ReactionRequestService
-from signals.apps.questionnaires.services.reaction_request import REACTION_REQUEST_DAYS_OPEN
+from signals.apps.questionnaires.services.reaction_request import (
+    REACTION_REQUEST_DAYS_OPEN,
+    ReactionRequestSessionService,
+    clean_up_reaction_request,
+    create_session_for_reaction_request,
+    get_reaction_url
+)
+from signals.apps.questionnaires.services.utils import get_session_service
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Signal
 
 
-class TestReactionRequestService(TestCase):
+class TestReactionRequestSessionService(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create(status__state=workflow.GEMELD)
         self.signal_reaction_requested = SignalFactory.create(
@@ -33,33 +39,40 @@ class TestReactionRequestService(TestCase):
     @mock.patch.dict('os.environ', {'ENVIRONMENT': 'LOCAL'}, clear=True)
     def test_get_reaction_url(self):
         session = SessionFactory.create()
-        reaction_url = ReactionRequestService.get_reaction_url(session)
+        reaction_url = get_reaction_url(session)
         self.assertEqual(reaction_url, f'http://dummy_link/incident/reactie/{session.uuid}')
 
     def test_create_session(self):
-        session = ReactionRequestService.create_session(self.signal_reaction_requested)
+        session = create_session_for_reaction_request(self.signal_reaction_requested)
         self.assertEqual(session.questionnaire.graph.first_question.label, self.signal_reaction_requested.status.text)
         self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
 
     def test_create_session_wrong_state(self):
         with self.assertRaises(WrongState):
-            ReactionRequestService.create_session(self.signal)
-
-    def test_handle_frozen_session_REACTION_REQUEST_not_frozen(self):
-        session = SessionFactory.create(
-            questionnaire__flow=Questionnaire.REACTION_REQUEST, frozen=False, _signal=self.signal_reaction_requested)
-        with self.assertRaises(SessionNotFrozen):
-            ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+            create_session_for_reaction_request(self.signal)
 
     def test_handle_frozen_session_REACTION_REQUEST_wrong_flow(self):
         session = SessionFactory.create(
-            questionnaire__flow=Questionnaire.EXTRA_PROPERTIES, frozen=True, _signal=self.signal_reaction_requested)
-        with self.assertRaises(WrongFlow):
-            ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+            questionnaire__flow=Questionnaire.REACTION_REQUEST, frozen=True, _signal=self.signal_reaction_requested)
+        AnswerFactory(session=session, payload='Het antwoord!')
+
+        service = get_session_service(session.uuid)
+        self.assertIsInstance(service, ReactionRequestSessionService)
+        session.questionnaire.flow = Questionnaire.EXTRA_PROPERTIES
+        session.questionnaire.save()
+
+        service.load_data()
+        self.assertEqual(service.session.questionnaire.flow, Questionnaire.EXTRA_PROPERTIES)
+        with self.assertRaises(WrongFlow):  # Deal with CannotFreeze
+            service.freeze()
 
     def test_handle_frozen_session_REACTION_REQUEST(self):
         question = QuestionFactory.create(
-            field_type='plain_text', label='Is het goed weer?', short_label='Goed weer?')
+            field_type='plain_text',
+            label='Is het goed weer?',
+            short_label='Goed weer?',
+            analysis_key='reaction',
+        )
         graph = QuestionGraphFactory.create(name='Reactie gevraagd.', first_question=question)
         session = SessionFactory.create(
             questionnaire__flow=Questionnaire.REACTION_REQUEST,
@@ -69,7 +82,9 @@ class TestReactionRequestService(TestCase):
         )
         answer = AnswerFactory(session=session, payload='Het antwoord!')
 
-        ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+        service = get_session_service(session.uuid)
+        self.assertIsInstance(service, ReactionRequestSessionService)
+        service.freeze()
 
         self.signal_reaction_requested.refresh_from_db()
         self.assertEqual(self.signal_reaction_requested.status.state, workflow.REACTIE_ONTVANGEN)
@@ -77,7 +92,11 @@ class TestReactionRequestService(TestCase):
 
     def test_handle_frozen_session_on_commit_triggered(self):
         question = QuestionFactory.create(
-            field_type='plain_text', label='Is het goed weer?', short_label='Goed weer?')
+            field_type='plain_text',
+            label='Is het goed weer?',
+            short_label='Goed weer?',
+            analysis_key='reaction',
+        )
         graph = QuestionGraphFactory.create(name='Reactie gevraagd.', first_question=question)
         session = SessionFactory.create(
             questionnaire__flow=Questionnaire.REACTION_REQUEST,
@@ -87,7 +106,9 @@ class TestReactionRequestService(TestCase):
         )
         answer = AnswerFactory(session=session, payload='Het antwoord!')
 
-        QuestionnairesService.freeze_session(session)
+        service = get_session_service(session.uuid)
+        self.assertIsInstance(service, ReactionRequestSessionService)
+        service.freeze()
 
         self.signal_reaction_requested.refresh_from_db()
         self.assertEqual(self.signal_reaction_requested.status.state, workflow.REACTIE_ONTVANGEN)
@@ -111,7 +132,7 @@ class TestReactionRequestService(TestCase):
             SignalFactory.create_batch(5, status__state=workflow.REACTIE_GEVRAAGD)
 
         self.assertEqual(Signal.objects.count(), 12)
-        n_updated = ReactionRequestService.clean_up_reaction_request()
+        n_updated = clean_up_reaction_request()
 
         self.assertEqual(n_updated, 5)
         reactie_gevraagd = Signal.objects.filter(status__state=workflow.REACTIE_GEVRAAGD)

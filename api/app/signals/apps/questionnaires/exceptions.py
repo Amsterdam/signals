@@ -22,3 +22,7 @@ class SessionInvalidated(Exception):
 
 class WrongFlow(Exception):
     pass
+
+
+class CannotFreeze(Exception):
+    pass

@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import logging
+from collections import OrderedDict
+
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
 
@@ -8,6 +11,8 @@ from signals.apps.questionnaires.models import Answer, Session
 from signals.apps.questionnaires.services.answer import AnswerService
 from signals.apps.questionnaires.services.question_graph import QuestionGraphService
 
+logger = logging.getLogger(__name__)
+
 
 class SessionService:
     def __init__(self, session):
@@ -15,7 +20,33 @@ class SessionService:
         self.question_graph_service = QuestionGraphService(session.questionnaire.graph)
         self.answer_service = AnswerService
 
-    def load_answer_data(self):
+    @classmethod
+    def from_questionnaire(cls, questionnaire, submit_before=None, duration=None):
+        """
+        Initialize the SessionService with a new session using given questionnaire.
+        """
+        session = Session.objects.create(questionnaire=questionnaire, submit_before=submit_before, duration=duration)
+        return cls(session)
+
+    def is_publicly_accessible(self):
+        """
+        Check whether the session associated with this SessionService is to be
+        accessible through the public API. (Session not expired, session
+        otherwise).
+
+        Note: flow specific implementations are in SessionService subclasses.
+        """
+        self.session.refresh_from_db()
+
+        # Reaction was already provided (hence form filled out, and hence session.frozen):
+        if self.session.frozen:
+            raise SessionFrozen('Already used!')
+
+        # Reaction was not provided in time and therefore this session expired:
+        if self.session.is_expired:
+            raise SessionExpired('Expired!')
+
+    def load_session_data(self):
         self.answers = self._get_all_answers(self.session)
         self.answers_by_question_id = {a.question.id: a for a in self.answers}
 
@@ -36,8 +67,9 @@ class SessionService:
         self.can_freeze = can_freeze
 
     def load_data(self):
-        self.question_graph_service.load_question_data()
-        self.load_answer_data()
+        self.session.refresh_from_db()
+        self.question_graph_service.load_question_graph_data()
+        self.load_session_data()
 
     @staticmethod
     def _get_all_answers(session):
@@ -76,18 +108,23 @@ class SessionService:
         Given (partially?) answered graph determine answers and questions along
         current path.
         """
-        # TODO: right now this function does not return a path through the
-        # question graph, but we should. That way we can provide useful answers
-        # to REST API clients navigating the QuestionGraph.
+        # Assumptions:
+        # - each individual answer is correct (previously validated)
+        # - question graph has correct structure
 
-        # We can assume that each individual answer is correct, we must now
-        # determine whether these answers are reachable given relevant graph.
+        # We need to keep order of questions along path through question graph
+        # hence the OrderedDict. Unanswered and required questions and answers
+        # to questions along the path are also collected.
+        reachable_questions_by_id = OrderedDict()
         reachable_answers_by_question_id = {}
-        reachable_questions_by_id = {}
-        unanswered_by_id = {}  # only (!) required questions left unanswered
+        unanswered_by_id = {}  # Collect required questions left unanswered.
 
         question = first_question
         while question:
+            # Protect against cycles in question graph:
+            if question.id in reachable_answers_by_question_id:
+                raise Exception('Cycle detected')
+
             reachable_questions_by_id[question.id] = question
             answer = answers_by_id.get(question.id, None)
 
@@ -100,11 +137,12 @@ class SessionService:
             answer_payload = None if answer is None else answer.payload
             question = SessionService._get_next_question(nx_graph, questions_by_id, question, answer_payload)
 
+        # Finally we want to know whether session under consideration can be
+        # frozen meaningfully (i.e. a path through it is fully answered and the
+        # data can be made available for further processing).
         can_freeze = False
         if nx_graph.out_degree(previous_question.id) == 0 and not unanswered_by_id:
-            # We have reached a potential endpoint, and along our current path
-            # there are no more questions to answer. This means session can be
-            # frozen safely
+            # Endpoint reached (no outgoing edges) and no unanswered required questions.
             can_freeze = True
 
         return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id, can_freeze
@@ -120,6 +158,17 @@ class SessionService:
                 endpoint_questions_by_id[question_id] = questions_by_id[question_id]
 
         return endpoint_questions_by_id
+
+    def get_next_question(self, question, answer):
+        """
+        Given question and its answer determine next question.
+        """
+        return SessionService._get_next_question(
+            self.question_graph_service.nx_graph,
+            self.question_graph_service.questions_by_id,
+            question,
+            answer.payload
+        )
 
     def get_answers_by_analysis_key(self):
         """
@@ -157,6 +206,9 @@ class SessionService:
         return self.can_freeze
 
     def create_answer(self, answer_payload, question):
+        """
+        Answer a question, update session.started_at if needed.
+        """
         # Check that question is actually part of relevant questionnaire:
         if question.id not in self.question_graph_service.nx_graph.nodes():
             msg = f'Question (id={question.id}) not in questionnaire (id={self.session.questionnaire.id})!'
@@ -175,21 +227,13 @@ class SessionService:
         # Check submitted answer validates. If so save it to DB and return it.
         self.answer_service.validate_answer_payload(answer_payload, question)
 
-        return Answer.objects.create(session=self.session, question=question, payload=answer_payload)
+        answer = Answer.objects.create(session=self.session, question=question, payload=answer_payload)
+        self.load_data()  # prevent stale data // TODO: consider only using load_session_data
+        return answer
 
     # These need to have knowledge of the different flows, and call the
     # correct implementations.
 
     def freeze(self):
-        pass
-
-    def create_session(self):
-        pass
-
-    @classmethod
-    def from_questionnaire(cls, questionnaire, submit_before=None, duration=None):
-        """
-        Initialize the SessionService with a new session using given questionnaire.
-        """
-        session = Session.objects.create(questionnaire=questionnaire, submit_before=submit_before, duration=duration)
-        return cls(session)
+        self.session.frozen = True
+        self.session.save()

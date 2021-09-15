@@ -11,7 +11,7 @@ from django.utils import timezone
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.utils import get_fe_application_location
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
-from signals.apps.questionnaires.exceptions import SessionNotFrozen, WrongFlow, WrongState
+from signals.apps.questionnaires.exceptions import CannotFreeze, WrongFlow, WrongState
 from signals.apps.questionnaires.models import (
     Choice,
     Edge,
@@ -20,6 +20,7 @@ from signals.apps.questionnaires.models import (
     Questionnaire,
     Session
 )
+from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -90,62 +91,68 @@ def create_kto_graph():
     return graph
 
 
-class FeedbackRequestService:
-    @staticmethod
-    def get_feedback_urls(session):
-        fe_location = get_fe_application_location()
-        positive_feedback_url = f'{fe_location}/feedback/ja/{session.uuid}'
-        negative_feedback_url = f'{fe_location}/feedback/nee/{session.uuid}'
+def get_feedback_urls(session):
+    fe_location = get_fe_application_location()
+    positive_feedback_url = f'{fe_location}/feedback/ja/{session.uuid}'
+    negative_feedback_url = f'{fe_location}/feedback/nee/{session.uuid}'
 
-        return positive_feedback_url, negative_feedback_url
+    return positive_feedback_url, negative_feedback_url
 
-    @staticmethod
-    def create_session(signal):
-        if signal.status.state != workflow.AFGEHANDELD:
-            msg = f'Signal {signal.id} is not in state REACTIE_GEVRAAGD!'
-            raise WrongState(msg)
 
-        with transaction.atomic():
-            graph = create_kto_graph()
-            questionnaire = Questionnaire.objects.create(graph=graph, flow=Questionnaire.FEEDBACK_REQUEST)
-            session = Session.objects.create(
-                submit_before=timezone.now() + timedelta(days=FEEDBACK_REQUEST_DAYS_OPEN),
-                questionnaire=questionnaire,
-                _signal=signal,
-            )
+def create_session_for_feedback_request(signal):
+    if signal.status.state != workflow.AFGEHANDELD:
+        msg = f'Signal {signal.id} is not in state REACTIE_GEVRAAGD!'
+        raise WrongState(msg)
 
-        return session
+    with transaction.atomic():
+        graph = create_kto_graph()
+        questionnaire = Questionnaire.objects.create(graph=graph, flow=Questionnaire.FEEDBACK_REQUEST)
+        session = Session.objects.create(
+            submit_before=timezone.now() + timedelta(days=FEEDBACK_REQUEST_DAYS_OPEN),
+            questionnaire=questionnaire,
+            _signal=signal,
+        )
 
-    @staticmethod
-    def handle_frozen_session_FEEDBACK_REQUEST(session):
-        from signals.apps.questionnaires.services import QuestionnairesService
+    return session
 
-        if not session.frozen:
-            msg = f'Session {session.uuid} is not frozen!'
-            raise SessionNotFrozen(msg)
-        if session.questionnaire.flow != Questionnaire.FEEDBACK_REQUEST:
-            msg = f'Questionnaire flow property for session {session.uuid} is not FEEDBACK_REQUEST!'
+
+class FeedbackRequestSessionService(SessionService):
+    def freeze(self, refresh=True):  # noqa: C901
+        """
+        Freeze self.session, apply feedback request business rules.
+        """
+
+        signal = self.session._signal
+
+        if refresh:
+            self.load_data()  # Make sure cache is not stale // TODO: this can raise, deal with it
+
+        if not self.can_freeze:
+            msg = f'Session (uuid={self.session.uuid}) is not fully answered.'
+            raise CannotFreeze(msg)
+
+        if self.session.questionnaire.flow != Questionnaire.FEEDBACK_REQUEST:
+            msg = f'Questionnaire flow property for session {self.session.uuid} is not REACTION_REQUEST!'
             raise WrongFlow(msg)
 
-        # Collect information from the answers that were received and stored
-        # on the Session instance.
-        signal = session._signal
-        QuestionnairesService.validate_session_using_question_graph(session)
-        answers_by_analysis_key = QuestionnairesService.get_latest_answers_by_analysis_key(session)
-        by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
+        super().freeze()
 
-        is_satisfied = by_analysis_key['satisfied']
-        reason = by_analysis_key.get('reason_satisfied', None) or by_analysis_key.get('reason_unsatisfied', None)
+        answers_by_analysis_key = self.get_answers_by_analysis_key()
+        payload_by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
+
+        is_satisfied = payload_by_analysis_key['satisfied']
+        reason = payload_by_analysis_key.get('reason_satisfied', None) or \
+            payload_by_analysis_key.get('reason_unsatisfied', None)
 
         # Prepare a Feedback object, save it later
         feedback = Feedback(
             _signal=signal,
-            created_at=session.created_at,
+            created_at=self.session.created_at,
             submitted_at=timezone.now(),
             is_satisfied=is_satisfied,
-            allows_contact=by_analysis_key.get('allows_contact', False),
+            allows_contact=payload_by_analysis_key.get('allows_contact', False),
             text=reason,
-            text_extra=by_analysis_key.get('extra_info', None),
+            text_extra=payload_by_analysis_key.get('extra_info', None),
         )
 
         # We check whether the reason given (when unsatisfied) is one that
