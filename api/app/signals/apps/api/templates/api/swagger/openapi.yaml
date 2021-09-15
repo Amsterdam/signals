@@ -39,7 +39,7 @@ paths:
           in: query
           description: >-
             Filter signals according to the currently assigned location area_code, accepts
-            a single area_code. area_type_code is required if area_code is present.
+            a single area_code
           schema:
             type: string
             example: 'ASC'
@@ -48,14 +48,17 @@ paths:
           in: query
           description: >-
             Filter signals according to the currently assigned location area_type_code, accepts
-            a single area_type_code. area_code is required if area_type_code is present.
+            a single area_type_code
           schema:
             type: string
             example: 'district'
           required: false
         - name: buurt_code
+          deprecated: true
           in: query
           description: >-
+            Deprecated, will be removed in the near future.
+
             Filter signals according to the currently assigned location buurt_code
           schema:
             type: string
@@ -1773,7 +1776,7 @@ paths:
   /signals/v1/private/reports/signals/open/:
     get:
       description: >-
-        Selects all Signals in a "open" state that have surpassed a factor 3 of the deadline.
+        Selects all Signals in a "open" state that have surpassed by a factor 3 of the deadline.
 
         A Signal is considered to be in a "open" state if the status is NOT in one of the following states:
           - AFGEHANDELD
