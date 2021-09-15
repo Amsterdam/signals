@@ -14,7 +14,7 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
         for q in service.question_graph_service.questions:
@@ -26,7 +26,7 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
         # First question in "diamond_plus" QuestionGraph is a decision point,
@@ -45,7 +45,7 @@ class TestSessionService(TestCase):
         # First set order to the old order, nothing should change.
         edge_ids_before = q_graph.get_edge_order(q_graph.first_question)
         edge_ids_after = q_graph.set_edge_order(q_graph.first_question, edge_ids_before)
-        service.question_graph_service.load_question_data()  # reload, because cache is now stale
+        service.question_graph_service.load_question_graph_data()  # reload, because cache is now stale
 
         self.assertEqual(list(edge_ids_before), list(edge_ids_after))
         next_question_2 = service._get_next_question(
@@ -61,7 +61,7 @@ class TestSessionService(TestCase):
         new_order = list(reversed(edge_ids_before))
         edge_ids_after = q_graph.set_edge_order(q_graph.first_question, new_order)
         self.assertNotEqual(list(edge_ids_after), list(edge_ids_before))
-        service.question_graph_service.load_question_data()  # reload, because cache is now stale
+        service.question_graph_service.load_question_graph_data()  # reload, because cache is now stale
 
         self.assertEqual(list(edge_ids_after), list(new_order))
         next_question_3 = service._get_next_question(
@@ -92,7 +92,7 @@ class TestSessionService(TestCase):
         # ---
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         self.assertEqual(len(service.question_graph_service.questions_by_id), 7)
 
         a1 = Answer.objects.create(
@@ -138,7 +138,7 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
 
         answers = service._get_all_answers(session)
         answers_by_question_id = {a.question.id: a for a in answers}
@@ -158,7 +158,7 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph)
         service = SessionService(session)
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
 
         # Answer questions
         Answer.objects.create(
@@ -187,7 +187,7 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
@@ -261,7 +261,7 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
@@ -327,7 +327,7 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
@@ -385,7 +385,7 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
@@ -438,7 +438,7 @@ class TestSessionService(TestCase):
         service = SessionService(session)
 
         # get references to questions
-        service.question_graph_service.load_question_data()
+        service.question_graph_service.load_question_graph_data()
         q_by_analysis_key = {q.analysis_key: q for q in service.question_graph_service.questions}
 
         # Answer questions
@@ -453,3 +453,6 @@ class TestSessionService(TestCase):
         self.assertEqual(len(answers_by_analysis_key), 4)
         for key in ['q1', 'q2', 'q4', 'q5']:
             self.assertEqual(answers_by_analysis_key[key].payload, key)
+
+        # Test our is_accessible here:
+        service.is_publicly_accessible()

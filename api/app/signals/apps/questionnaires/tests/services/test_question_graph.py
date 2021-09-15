@@ -50,7 +50,7 @@ class TestQuestionGraphService(TestCase):
         q_graph = create_diamond_plus()
         service = QuestionGraphService(q_graph)
 
-        service.load_question_data()
+        service.load_question_graph_data()
         self.assertEqual(len(service.edges), 6)
         self.assertIsInstance(service.nx_graph, MultiDiGraph)
         self.assertEqual(len(service.nx_graph.nodes), 7)

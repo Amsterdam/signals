@@ -8,8 +8,8 @@ from django.utils import timezone
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen, SessionInvalidated
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
 from signals.apps.questionnaires.models import Answer, Questionnaire, Session
-from signals.apps.questionnaires.services.feedback_request import FeedbackRequestService
-from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
+# from signals.apps.questionnaires.services.feedback_request import FeedbackRequestService
+# from signals.apps.questionnaires.services.reaction_request import ReactionRequestService
 from signals.apps.signals import workflow
 
 logger = logging.getLogger(__name__)
@@ -126,10 +126,11 @@ class QuestionnairesService:
 
     @staticmethod
     def handle_frozen_session(session):
-        if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
-            ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
-        elif session.questionnaire.flow == Questionnaire.FEEDBACK_REQUEST:
-            FeedbackRequestService.handle_frozen_session_FEEDBACK_REQUEST(session)
+        assert False
+        # if session.questionnaire.flow == Questionnaire.REACTION_REQUEST:
+        #     ReactionRequestService.handle_frozen_session_REACTION_REQUEST(session)
+        # elif session.questionnaire.flow == Questionnaire.FEEDBACK_REQUEST:
+        #     FeedbackRequestService.handle_frozen_session_FEEDBACK_REQUEST(session)
 
     @staticmethod
     def get_next_question(answer_payload, question, graph):
