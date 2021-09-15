@@ -19,7 +19,7 @@ from signals.apps.questionnaires.rest_framework.serializers import (
     PublicSessionSerializer
 )
 from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
-from signals.apps.questionnaires.services import QuestionnairesService
+from signals.apps.questionnaires.services.utils import get_session_service
 
 
 class PublicQuestionnaireViewSet(DatapuntViewSet):
@@ -84,8 +84,10 @@ class PublicQuestionViewSet(DatapuntViewSet):
         next_question_data = None
 
         answer = serializer.instance
-        graph = answer.session.questionnaire.graph
-        next_question = QuestionnairesService.get_next_question(answer.payload, question, graph)
+        # TODO: make get_session_service also accept Session objects:
+        session_service = get_session_service(answer.session.uuid)
+        session_service.load_data()
+        next_question = session_service.get_next_question(question, answer)
 
         if next_question:
             context = self.get_serializer_context()
@@ -116,23 +118,27 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         session_uuid = self.kwargs[self.lookup_url_kwarg]
 
         try:
-            session = QuestionnairesService.get_session(session_uuid)
+            session_service = get_session_service(session_uuid)
         except Session.DoesNotExist:
             raise Http404
+
+        try:
+            session_service.is_publicly_accessible()
         except (SessionFrozen, SessionExpired) as e:
             raise Gone(str(e))
         except Exception as e:
             # For now just re-raise the exception as a DRF APIException
             raise APIException(str(e))
 
-        return session
+        return session_service.session
 
     @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
     def submit(self, request, *args, **kwargs):
         # TODO: calls to this endpoint are not idempotent, investigate whether
         # they should be.
         session = self.get_object()
-        QuestionnairesService.freeze_session(session)
+        session_service = get_session_service(session.uuid)  # TODO: error handling, and make uuid not necessary here
+        session_service.freeze()
 
         serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
         return Response(serializer.data, status=200)

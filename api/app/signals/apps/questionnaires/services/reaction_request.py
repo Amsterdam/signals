@@ -95,7 +95,7 @@ class ReactionRequestSessionService(SessionService):
         Is self.session accessible via public API (reaction request flow).
         """
         # Check general access rules.
-        super().is_publicly_accessible(self.session)
+        super().is_publicly_accessible()
 
         # Check rection request flow specific rules
         signal = self.session._signal
