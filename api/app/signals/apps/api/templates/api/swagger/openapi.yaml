@@ -19,57 +19,56 @@ paths:
     get:
       description: Signals list endpoint
       parameters:
-        - name: "created_before"
+        - name: id
           in: query
           description: >-
-            Filter returns only signals created before specified datetime. Note
-            the date time string should be in ISO 8601 format and URL encoded.
+            Filter Signals on a given id
           schema:
-            type: string
-            format: date-time
+            type: integer
+            example: 123456789
           required: false
-        - name: "created_after"
+        - name: address_text
           in: query
           description: >-
-            Filter returns only signals created after specified datetime. Note
-            the date time string should be in ISO 8601 format and URL encoded.
+            Filter Signals located on a (part) of an address (case insensitive)
           schema:
             type: string
-            format: date-time
+            example: 'Amstel 1'
           required: false
-        - name: "updated_before"
+        - name: area_code
           in: query
           description: >-
-            Filter returns only signals updated before specified datetime. Note
-            the date time string should be in ISO 8601 format and URL encoded.
+            Filter signals according to the currently assigned location area_code, accepts
+            a single area_code. area_type_code is required if area_code is present.
           schema:
             type: string
-            format: date-time
+            example: 'ASC'
           required: false
-        - name: updated_after
+        - name: area_type_code
           in: query
           description: >-
-            Filter returns only signals updated after specified datetime. Note
-            the date time string should be in ISO 8601 format and URL encoded.
+            Filter signals according to the currently assigned location area_type_code, accepts
+            a single area_type_code. area_code is required if area_type_code is present.
           schema:
             type: string
-            format: date-time
+            example: 'district'
           required: false
-        - name: status
+        - name: buurt_code
           in: query
-          description: Filter returns only signals with specified status.
-          schema:
-            $ref: '#/components/schemas/StatusStateChoices'
-          required: false
-        - name: maincategory_slug
           description: >-
-            If the category_id filter is used this will overwrite the use of the
-            maincategory_slug/category_slug filter. Filter returns only signals with matching main
-            category slug.
+            Filter signals according to the currently assigned location buurt_code
+          schema:
+            type: string
+            example: 'E17a'
+          required: false
+        - name: category_id
+          description: >-
+            Filter returns only signals with matching category id(s). This will overrule the use of
+            maincategory_slug and/or category_slug.
           in: query
           required: false
           schema:
-            type: string
+            type: integer
         - name: category_slug
           description: >-
             If the category_id filter is used this will overwrite the use of the
@@ -79,14 +78,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: category_id
-          description: >-
-            Filter returns only signals with matching category id(s). This will overrule the use of
-            maincategory_slug and/or category_slug.
-          in: query
-          required: false
-          schema:
-            type: integer
         - name: contact_details
           in: query
           description: >-
@@ -101,70 +92,24 @@ paths:
               - phone
               - email
           required: false
-        - name: priority
+        - name: created_after
           in: query
           description: >-
-            Filter signals according to their priority, accepts (a combination
-            of) the following values: `low`, `high` and/or `normal`.
-          required: false
+            Filter returns only signals created after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
-            enum:
-              - low
-              - normal
-              - high
-        - name: feedback
+            format: date-time
+          required: false
+        - name: created_before
           in: query
           description: >-
-            Filter Signals/meldingen according to wether feedback was received
-            for them. This filter accepts one of the following values:
-            `satisfied` (reporter was satisfied with the resolution),
-            `not_satisfied` (reporter was not satisfied with the resolution),
-            or `not_received` (no feedback was sent by the reporter). Only the
-            newest feedback is taken into account.
-          required: false
+            Filter returns only signals created before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
           schema:
             type: string
-            enum:
-              - satisfied
-              - not_satisfied
-              - not_received
-        - name: source
-          in: query
-          description: >-
-            Filter Signals/meldingen according to their source, accepted values
-            are derived from the database. Source `online` are Signals/meldingen
-            that were created in the public website.
+            format: date-time
           required: false
-          schema:
-            type: string
-        - name: 'type'
-          in: query
-          description: >-
-            Filter signals according to the currently assigned type, accepts
-            (a combination of) the values `SIG` a "Signal/Melding", `REQ` a "Request/Aanvraag", `QUE` a "QuestionVraag", `COM` a "Complaint/Klacht" and `MAI` a "Maintenance/Groot onderhoud"
-          schema:
-            type: string
-            enum:
-              - SIG
-              - REQ
-              - QUE
-              - COM
-              - MAI
-          required: false
-        - name: note_keyword
-          in: query
-          description: >-
-            This filter option is temporary, and will likely be replaced by
-            either proper tagging or extended search using the Elastic Search
-            implementation of SIA.
-            Filter Signals/meldingen according to the presence of a certain
-            keyword in one or more of notes associated with a Signal/melding.
-            Accepts one keyword, will check wether it is present and return the
-            Signals/meldingen where it is present.
-          required: false
-          schema:
-            type: string
         - name: directing_department
           in: query
           description: >-
@@ -183,24 +128,33 @@ paths:
               value: 'null'
               summary: Will select all (parent) Signals without a directing department assignment
           required: false
-        - name: area_type_code
+        - name: feedback
           in: query
           description: >-
-            Filter signals according to the currently assigned location area_type_code, accepts
-            a single area_type_code. area_code is required if area_type_code is present.
+            Filter Signals/meldingen according to wether feedback was received
+            for them. This filter accepts one of the following values:
+            `satisfied` (reporter was satisfied with the resolution),
+            `not_satisfied` (reporter was not satisfied with the resolution),
+            or `not_received` (no feedback was sent by the reporter). Only the
+            newest feedback is taken into account.
+          required: false
           schema:
             type: string
-            example: 'district'
-          required: false
-        - name: area_code
+            enum:
+              - satisfied
+              - not_satisfied
+              - not_received
+        - name: has_changed_children
           in: query
           description: >-
-            Filter signals according to the currently assigned location area_code, accepts
-            a single area_code. area_type_code is required if area_code is present.
-          schema:
-            type: string
-            example: 'ASC'
+            Filters all parent signals that have changes or no changes in children. Accepts true,
+            false or both. When both true and false are given only parent Signals are returned.
           required: false
+          schema:
+            type: boolean
+            example:
+              true: true
+              false: false
         - name: kind
           in: query
           description: >-
@@ -228,18 +182,127 @@ paths:
               child_signal:
                 value: 'child_signal'
               combination:
-                value: ['parent_signal', 'signal']
-        - name: has_changed_children
+                value: [ 'parent_signal', 'signal' ]
+        - name: incident_date
           in: query
           description: >-
-            Filters all parent signals that have changes or no changes in children. Accepts true,
-            false or both. When both true and false are given only parent Signals are returned.
+            Filter returns only signals with a incident_date at the exact specified date
+          schema:
+            type: string
+            format: date
+          required: false
+        - name: incident_date_after
+          in: query
+          description: >-
+            Filter returns only signals with a incident_date after the specified date
+          schema:
+            type: string
+            format: date
+          required: false
+        - name: incident_date_before
+          in: query
+          description: >-
+            Filter returns only signals with a incident_date before the specified date
+          schema:
+            type: string
+            format: date
+          required: false
+        - name: maincategory_slug
+          description: >-
+            If the category_id filter is used this will overwrite the use of the
+            maincategory_slug/category_slug filter. Filter returns only signals with matching main
+            category slug.
+          in: query
           required: false
           schema:
-            type: boolean
-            example:
-              true: true
-              false: false
+            type: string
+        - name: note_keyword
+          in: query
+          description: >-
+            This filter option is temporary, and will likely be replaced by
+            either proper tagging or extended search using the Elastic Search
+            implementation of SIA.
+            Filter Signals/meldingen according to the presence of a certain
+            keyword in one or more of notes associated with a Signal/melding.
+            Accepts one keyword, will check wether it is present and return the
+            Signals/meldingen where it is present.
+          required: false
+          schema:
+            type: string
+        - name: priority
+          in: query
+          description: >-
+            Filter signals according to their priority, accepts (a combination
+            of) the following values: `low`, `high` and/or `normal`.
+          required: false
+          schema:
+            type: string
+            enum:
+              - low
+              - normal
+              - high
+        - name: source
+          in: query
+          description: >-
+            Filter Signals/meldingen according to their source, accepted values
+            are derived from the database. Source `online` are Signals/meldingen
+            that were created in the public website.
+          required: false
+          schema:
+            type: string
+        - name: stadsdeel
+          in: query
+          description: Filter signals according to the currently assigned location stadsdeel
+          schema:
+            type: string
+          required: false
+        - name: status
+          in: query
+          description: Filter returns only signals with specified status.
+          schema:
+            $ref: '#/components/schemas/StatusStateChoices'
+          required: false
+        - name: 'type'
+          in: query
+          description: >-
+            Filter signals according to the currently assigned type, accepts
+            (a combination of) the values `SIG` a "Signal/Melding", `REQ` a "Request/Aanvraag", `QUE` a "QuestionVraag", `COM` a "Complaint/Klacht" and `MAI` a "Maintenance/Groot onderhoud"
+          schema:
+            type: string
+            enum:
+              - SIG
+              - REQ
+              - QUE
+              - COM
+              - MAI
+          required: false
+        - name: updated_after
+          in: query
+          description: >-
+            Filter returns only signals updated after specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: updated_before
+          in: query
+          description: >-
+            Filter returns only signals updated before specified datetime. Note
+            the date time string should be in ISO 8601 format and URL encoded.
+          schema:
+            type: string
+            format: date-time
+          required: false
+        - name: assigned_user_email
+          in: query
+          description: >-
+            !!! Currently not used by Amsterdam !!!
+            Filter signals based on the email address of the assigned user.
+          required: false
+          schema:
+            type: string
+            format: email
         - name: reporter_email
           in: query
           description: Filter signals based on the email address of its reporter.
@@ -247,6 +310,14 @@ paths:
           schema:
             type: string
             format: email
+        - name: routing_department_code
+          in: query
+          description: >-
+            !!! Currently not used by Amsterdam !!!
+            Filter signals based on the department code set by the routing mechanism.
+          required: false
+          schema:
+            type: string
         - name: punctuality
           in: query
           description: Filter signals that are being worked on to check that
@@ -1701,7 +1772,15 @@ paths:
 
   /signals/v1/private/reports/signals/open/:
     get:
-      description: Returns a total count of Signals in a "open" state + a count per category
+      description: >-
+        Selects all Signals in a "open" state that have surpassed a factor 3 of the deadline.
+
+        A Signal is considered to be in a "open" state if the status is NOT in one of the following states:
+          - AFGEHANDELD
+          - GEANNULEERD
+          - GESPLITST
+
+        Returns a total count of these Signals + a count per category.
       parameters:
         - name: "start"
           in: query
@@ -2062,6 +2141,11 @@ components:
       properties:
         text:
           type: string
+          example: 'De statusupdate is per e-mail verzonden aan de melder'
+        created_by:
+          type: string
+          nullable: true
+          example: 'test@test.com'
 
     _NestedTypeRequestData:
       description: JSON Data
@@ -2319,6 +2403,15 @@ components:
           $ref: '#/components/schemas/_NestedReporterResponseData'
         priority:
           $ref: '#/components/schemas/_NestedPriorityResponseData'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/_NestedNoteResponseData'
+          example:
+            - text: 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
+              created_by: 'test@test.com'
+            - text: 'De statusupdate is per e-mail verzonden aan de melder'
+              created_by: 'test@test.com'
         'type':
           $ref: '#/components/schemas/_NestedTypeResponseData'
         directing_departments:
@@ -2478,6 +2571,16 @@ components:
           $ref: '#/components/schemas/_NestedReporterResponseData'
         priority:
           $ref: '#/components/schemas/_NestedPriorityResponseData'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/_NestedNoteResponseData'
+          example:
+            example:
+              - text: 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
+                created_by: 'test@test.com'
+              - text: 'De statusupdate is per e-mail verzonden aan de melder'
+                created_by: 'test@test.com'
         'type':
           $ref: '#/components/schemas/_NestedTypeResponseData'
         source:
