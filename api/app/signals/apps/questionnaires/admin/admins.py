@@ -136,10 +136,3 @@ class SessionAdmin(admin.ModelAdmin):
 
         unfrozen_post_count = queryset.filter(frozen=False).count()
         messages.add_message(request, messages.SUCCESS, f'{unfrozen_post_count-not_frozen_pre_count} Sessions unfrozen')
-
-
-class ChoiceAdmin(admin.ModelAdmin):
-    fields = ('question', 'selected', 'payload', 'display', )
-
-    list_display = ('question', 'selected', 'payload', 'display', )
-    list_per_page = 20
