@@ -24,7 +24,7 @@ class Session(models.Model):
 
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
-    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, null=True)
+    _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True, null=True)
 
     objects = SessionManager()
 
@@ -45,11 +45,11 @@ class Session(models.Model):
         questionnaire set `submit_before` to None and `duration` to the
         desired duration.
         """
-        return (
+        return bool(
             (self.submit_before and self.submit_before < timezone.now()) or
             (self.started_at and self.duration and self.started_at + self.duration < timezone.now())
         )
 
     @property
     def too_late(self):
-        return not self.frozen or self.is_expired
+        return not self.frozen and self.is_expired

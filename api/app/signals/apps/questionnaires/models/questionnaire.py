@@ -31,7 +31,7 @@ class Questionnaire(models.Model):
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True, help_text='Describe the Questionnaire')
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     graph = models.ForeignKey(
         'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)

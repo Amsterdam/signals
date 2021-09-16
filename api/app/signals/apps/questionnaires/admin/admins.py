@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 from rest_framework.reverse import reverse
 
-from signals.apps.questionnaires.admin.inlines import EdgeStackedInline
+from signals.apps.questionnaires.admin.inlines import ChoiceStackedInline, EdgeStackedInline
 
 
 class QuestionnaireAdmin(admin.ModelAdmin):
@@ -36,6 +36,7 @@ class QuestionGraphAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    inlines = (ChoiceStackedInline,)
     fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
 
@@ -46,13 +47,35 @@ class QuestionAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
 
+class ChoiceAdmin(admin.ModelAdmin):
+    fields = ('question', 'display', 'selected', 'payload',)
+    readonly_fields = ('question', )
+
+    list_display = ('question', 'display',)
+    list_per_page = 20
+    list_select_related = True
+    list_filter = ('question__field_type',)
+
+    search_fields = ('display', 'question__retrieval_key', 'question__analysis_key', 'question__label',
+                     'question__short_label',)
+
+    ordering = ('-question', )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class SessionAdmin(admin.ModelAdmin):
     fields = ('uuid', 'questionnaire', '_signal', 'started_at', 'duration', 'submit_before', 'frozen', 'created_at',)
     readonly_fields = ('uuid', 'started_at', 'frozen', 'created_at',)
     raw_id_fields = ('questionnaire', '_signal',)
-    search_fields = ('uuid__startswith',)
+    search_fields = ('uuid__startswith', 'questionnaire__name__icontains',)
 
-    list_display = ('uuid', 'view_questionnaire_link', 'started_at', 'submit_before', 'frozen', 'too_late',)
+    list_display = ('uuid', 'view_questionnaire_link', 'view_signal_link', 'started_at', 'submit_before', 'frozen',
+                    'too_late',)
     list_filter = ('frozen',)
     list_per_page = 20
     list_select_related = True
@@ -62,18 +85,19 @@ class SessionAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
     def has_delete_permission(self, request, obj=None):
-        if obj and not obj.started_at:
-            return True
-        return False
+        return obj and not obj.started_at
 
     def view_questionnaire_link(self, obj):
         url = reverse('admin:questionnaires_questionnaire_change', kwargs={'object_id': obj.questionnaire.pk})
-        return format_html('<a href="{}">{}</a>', url, obj.questionnaire.uuid)
+        return format_html('<a href="{}">{}</a>', url, obj.questionnaire.name or obj.questionnaire.uuid)
     view_questionnaire_link.short_description = "Questionnaire"
 
     def view_signal_link(self, obj):
-        url = reverse('admin:signals_signal_change', kwargs={'object_id': obj._signal.pk})
-        return format_html('<a href="{}">{}</a>', url, obj._signal.sia_id)
+        if obj._signal:
+            url = reverse('admin:signals_signal_change', kwargs={'object_id': obj._signal.pk})
+            return format_html('<a href="{}">{}</a>', url, obj._signal.signalen_id)
+        else:
+            return '-'
     view_signal_link.short_description = "Signal"
 
     def too_late(self, obj):
