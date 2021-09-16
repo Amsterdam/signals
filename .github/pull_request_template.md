@@ -13,6 +13,7 @@ Add a meaningful description explaining the change/fix that is provided in this 
 - [ ] Check that the PR targets `master`
 - [ ] There are no merge conflicts
 - [ ] There are no conflicting Django migrations
+- [ ] PR was created with the "[Allow edits and access to secrets by maintainers](https://docs.github.com/en/enterprise-server@3.2/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)" checkbox checked
 
 ## How has this been tested?
 
