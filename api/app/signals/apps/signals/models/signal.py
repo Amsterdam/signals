@@ -115,13 +115,6 @@ class Signal(CreatedUpdatedModel):
         return f'SIA-{self.id}'
 
     @property
-    def signalen_id(self):
-        """
-        Signalen identifier used for external communication.
-        """
-        return f'Signalen-{self.id}'
-
-    @property
     def siblings(self):
         """
         Returns all siblings, excluded the signal itself. By default it will return a Signal.objects.none()
