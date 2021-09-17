@@ -5,6 +5,8 @@ import logging
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.conf import settings
 from django.db import connection
+from django.db.models import CharField, Value
+from django.db.models.functions import JSONObject
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -39,6 +41,7 @@ from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
+from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import PostOnlyNoUserRateThrottle
 
@@ -258,11 +261,21 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, url_path=r'geography/?$')
+    @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)
     def geography(self, request):
         # Makes use of the optimised queryset
+        # Annotates the JSON in Postgres using the JSON_OBJECT and ST_AsGeoJSON functions available in Postgres
         filtered_qs = self.filter_queryset(
-            self.geography_queryset.filter_for_user(
+            self.geography_queryset.annotate(
+                feature=JSONObject(
+                    type=Value('Feature', output_field=CharField()),
+                    geometrie=AsGeoJSON('location__geometrie'),
+                    properties=JSONObject(
+                        id='id',
+                        created_at='created_at',
+                    ),
+                )
+            ).filter_for_user(
                 user=self.request.user
             )
         ).order_by(
