@@ -3,8 +3,7 @@
 from django.test import TestCase
 
 from signals.apps.questionnaires.factories import AnswerFactory, ChoiceFactory, SessionFactory
-from signals.apps.questionnaires.models import Answer, Edge, Questionnaire, Session
-from signals.apps.questionnaires.services.question_graph import QuestionGraphService
+from signals.apps.questionnaires.models import Answer, Edge
 from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.questionnaires.tests.test_models import create_diamond_plus
 
@@ -412,25 +411,6 @@ class TestSessionService(TestCase):
 
         service.load_data()
         self.assertTrue(service.get_can_freeze())
-
-    def test_from_questionnaire(self):
-        q_graph = create_diamond_plus()
-        questionnaire = Questionnaire.objects.create(
-            name='Test questionnaire',
-            description='Just a test',
-            is_active=True,
-            graph=q_graph,
-            flow=Questionnaire.EXTRA_PROPERTIES
-        )
-
-        service = SessionService.from_questionnaire(questionnaire)
-        self.assertIsInstance(service, SessionService)
-        self.assertIsInstance(service.session, Session)
-        service.load_data()
-
-        self.assertIsInstance(service.question_graph_service, QuestionGraphService)
-        self.assertEqual(len(service.question_graph_service.nx_graph.nodes), 7)
-        self.assertEqual(len(service.answers), 0)
 
     def test_create_answer_one_path(self):
         q_graph = create_diamond_plus()

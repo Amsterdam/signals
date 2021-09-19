@@ -35,3 +35,23 @@ class TestAnswerService(TestCase):
         self.assertEqual(AnswerService.validate_answer_payload('VALID', q), 'VALID')
         with self.assertRaises(django_validation_error):
             AnswerService.validate_answer_payload('BLAH', q)
+
+    def test_validate_fieldtypes(self):
+        integer_question = QuestionFactory(field_type='integer', label='integer', short_label='integer')
+        plaintext_question = QuestionFactory(
+            field_type='plain_text', label='plain_text', short_label='plain_text')
+        validate_answer = AnswerService.validate_answer_payload
+
+        # Check integer fieldtype
+        self.assertEqual(validate_answer(123456, integer_question), 123456)
+        with self.assertRaises(django_validation_error):
+            validate_answer('THESE ARE CHARACTERS', integer_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer({'some': 'thing', 'complicated': {}}, integer_question)
+
+        # check plain_text fieldtype
+        self.assertEqual(validate_answer('THIS IS TEXT', plaintext_question), 'THIS IS TEXT')
+        with self.assertRaises(django_validation_error):
+            validate_answer(123456, plaintext_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer({'some': 'thing', 'complicated': {}}, plaintext_question)
