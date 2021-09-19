@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
-from signals.apps.questionnaires.models import Answer, Session
+from signals.apps.questionnaires.models import Answer
 from signals.apps.questionnaires.services.answer import AnswerService
 from signals.apps.questionnaires.services.question_graph import QuestionGraphService
 
@@ -19,14 +19,6 @@ class SessionService:
         self.session = session
         self.question_graph_service = QuestionGraphService(session.questionnaire.graph)
         self.answer_service = AnswerService
-
-    @classmethod
-    def from_questionnaire(cls, questionnaire, submit_before=None, duration=None):
-        """
-        Initialize the SessionService with a new session using given questionnaire.
-        """
-        session = Session.objects.create(questionnaire=questionnaire, submit_before=submit_before, duration=duration)
-        return cls(session)
 
     def is_publicly_accessible(self):
         """
@@ -176,6 +168,9 @@ class SessionService:
         """
         # translate answers along path to dict keyed by question.analysis_key
         return {a.question.analysis_key: a for a in self.path_answers_by_question_id.values()}
+
+    def get_answers_by_uuid(self):
+        return {a.question.uuid: a for a in self.path_answers_by_question_id.values()}
 
     def get_extra_properties(self, category_url=None):
         """
