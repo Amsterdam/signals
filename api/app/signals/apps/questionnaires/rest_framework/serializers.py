@@ -151,13 +151,11 @@ class PublicAnswerSerializer(HALSerializer):
 
         if 'session' in validated_data:
             session = validated_data.pop('session')
-            questionnaire = session.questionnaire
-            session_service = get_session_service(session.uuid)
+            session_service = get_session_service(session)
         else:
-            session = None
             questionnaire = validated_data.pop('questionnaire')
             session = Session.objects.create(questionnaire=questionnaire)
-            session_service = get_session_service(session.uuid)
+            session_service = get_session_service(session)
 
         session_service.load_data()
         return session_service.create_answer(payload, question)

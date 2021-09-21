@@ -84,7 +84,7 @@ class TestFeedbackRequestSessionService(TestCase):
         # Check predefined questionnaire structure, then fill out the questionnaire.
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
         session = create_session_for_feedback_request(signal)
-        service = get_session_service(session.uuid)
+        service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
         service.load_data()
 
@@ -120,7 +120,7 @@ class TestFeedbackRequestSessionService(TestCase):
         # -- set up our session and SessionService subclass
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
         session = create_session_for_feedback_request(signal)
-        service = get_session_service(session.uuid)
+        service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
         service.load_data()
 
@@ -167,7 +167,7 @@ class TestFeedbackRequestSessionService(TestCase):
         # -- set up our session and SessionService subclass
         signal = SignalFactory.create(status__state=workflow.AFGEHANDELD)
         session = create_session_for_feedback_request(signal)
-        service = get_session_service(session.uuid)
+        service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
         service.load_data()
 

@@ -14,14 +14,17 @@ SESSION_SERVICE_FOR_FLOW = {
 }
 
 
-def get_session_service(session_uuid):
+def get_session_service(session):
     """
-    Get correct SessionService subclass for a given session UUID.
+    Get correct SessionService subclass for Session or session UUID.
     """
-    session = Session.objects.get(uuid=session_uuid)
+    if isinstance(session, Session):
+        session.refresh_from_db()
+    else:
+        session = Session.objects.get(uuid=session)
 
     if not session.questionnaire:
-        raise Exception(f'Session (uuid={str(session_uuid)}) has no associated questionnaire.')
+        raise Exception(f'Session (uuid={str(session)}) has no associated questionnaire.')
 
     cls = SESSION_SERVICE_FOR_FLOW.get(session.questionnaire.flow, SessionService)
     return cls(session)

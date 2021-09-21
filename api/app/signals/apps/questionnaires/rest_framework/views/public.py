@@ -85,7 +85,7 @@ class PublicQuestionViewSet(DatapuntViewSet):
 
         answer = serializer.instance
         # TODO: make get_session_service also accept Session objects:
-        session_service = get_session_service(answer.session.uuid)
+        session_service = get_session_service(answer.session)
         session_service.load_data()
         next_question = session_service.get_next_question(question, answer)
 
@@ -137,7 +137,7 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         # TODO: calls to this endpoint are not idempotent, investigate whether
         # they should be.
         session = self.get_object()
-        session_service = get_session_service(session.uuid)  # TODO: error handling, and make uuid not necessary here
+        session_service = get_session_service(session)  # TODO: error handling
         session_service.freeze()
 
         serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
