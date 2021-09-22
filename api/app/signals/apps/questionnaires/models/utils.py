@@ -7,56 +7,9 @@ import networkx
 from django.utils import timezone
 from networkx.drawing.nx_pydot import graphviz_layout
 
+from signals.apps.questionnaires.services import QuestionGraphService
+
 import pydot  # noqa
-
-
-def make_nx_graph(question_graph):
-    nx_graph = networkx.DiGraph()
-    nx_graph.add_node(question_graph.first_question_id)
-    for edge in question_graph.edges.all():
-        if edge.choice:
-            choice_label = f'{edge.choice.display or edge.choice.payload}' \
-                           f'{" (selected)" if edge.choice.selected else ""}'
-        else:
-            choice_label = ''
-
-        nx_graph.add_edge(edge.question_id, edge.next_question_id, choice_label=choice_label)
-
-    return nx_graph
-
-
-def validate_nx_graph(question_graph):
-    nx_graph = make_nx_graph(question_graph)
-    if len(nx_graph) > question_graph.MAX_QUESTIONS_PER_GRAPH:
-        raise Exception(f'Question graph {question_graph.name} contains too many questions.')
-
-    if not networkx.is_directed_acyclic_graph(nx_graph):
-        raise Exception(f'Question graph {question_graph.name} is cyclic.')
-
-    return nx_graph
-
-
-def retrieve_reachable_questions(question_graph):
-    # Given the graph of questions:
-    # - check that first_question is not None/null, otherwise return empty queryset
-    # - retrieve all edges in one go (possibly do a count first and fail if too many ...)
-    # - if there is a first question and there are no edges: return queryset with only first question
-    # - construct a directed graph
-    # - check that first question is a node in that graph, if not only return first question
-    # - get the set of "descendants" of first question in the graph, turn it into a queryset and return it
-    from signals.apps.questionnaires.models import Question
-
-    if not question_graph.first_question:
-        return Question.objects.none()
-
-    if not question_graph.edges.exists():
-        return Question.objects.filter(pk=question_graph.first_question_id)
-
-    nx_graph = validate_nx_graph(question_graph)
-
-    reachable = networkx.descendants(nx_graph, question_graph.first_question_id)
-    reachable.add(question_graph.first_question_id)
-    return Question.objects.filter(pk__in=reachable)
 
 
 def draw_graph(question_graph, location='/'):
@@ -74,7 +27,9 @@ def draw_graph(question_graph, location='/'):
         for question in question_qs
     }
 
-    nx_graph = make_nx_graph(question_graph)
+    question_graph_service = QuestionGraphService(q_graph=question_graph)
+    question_graph_service.load_question_graph_data()
+    nx_graph = question_graph_service.nx_graph
 
     pos = graphviz_layout(nx_graph, prog='dot')
     networkx.draw(nx_graph, pos, labels=labels, font_size=10, node_color='lightblue')

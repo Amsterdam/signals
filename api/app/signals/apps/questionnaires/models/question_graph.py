@@ -14,8 +14,6 @@ class QuestionGraph(models.Model):
     The nodes in that graph are Question instances and the edges are Edge
     instances.
     """
-    MAX_QUESTIONS_PER_GRAPH = 50
-
     name = models.CharField(max_length=255, blank=True, null=True)
     first_question = models.ForeignKey('Question', blank=True, null=True, on_delete=models.SET_NULL, related_name='+')
 
@@ -49,11 +47,6 @@ class QuestionGraph(models.Model):
 
     def set_trigger_order(self, question, ids):
         return self._set_model_order(question, Trigger, ids)
-
-    @property
-    def reachable_questions(self):
-        from signals.apps.questionnaires.models.utils import retrieve_reachable_questions
-        return retrieve_reachable_questions(self)
 
     def draw(self, location='/'):
         from signals.apps.questionnaires.models.utils import draw_graph
