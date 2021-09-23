@@ -12,7 +12,7 @@ from signals.apps.questionnaires.services import QuestionGraphService
 import pydot  # noqa
 
 
-def draw_graph(question_graph, location='/'):
+def draw_graph(question_graph, location=None):
     from signals.apps.questionnaires.models import Question
 
     now = timezone.now()

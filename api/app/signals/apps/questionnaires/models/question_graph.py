@@ -48,7 +48,7 @@ class QuestionGraph(models.Model):
     def set_trigger_order(self, question, ids):
         return self._set_model_order(question, Trigger, ids)
 
-    def draw(self, location='/'):
+    def draw(self, location=None):
         from signals.apps.questionnaires.models.utils import draw_graph
         return draw_graph(self, location=location)
 
