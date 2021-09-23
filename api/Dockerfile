@@ -13,6 +13,7 @@ RUN apt-get update \
                 libcairo2 \
                 libpango1.0-0 \
                 gcc \
+                graphviz \
     && pip install -r /requirements.txt \
     && apt-get purge -y gcc \
     && rm -rf /var/lib/apt/lists/*
