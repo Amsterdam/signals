@@ -28,18 +28,26 @@ class QuestionGraphService:
         """
         Get NetworkX graph representing the QuestionGraph.
         """
+        # To allow for matching rule and default rule (i.e. a double edge).
         nx_graph = networkx.MultiDiGraph()
-        for edge in edges:
-            choice_payload = None if edge.choice is None else edge.choice.payload
 
-            nx_graph.add_edge(
-                edge.question_id,
-                edge.next_question_id,
-                # Needed for rule matching and dertermining next questions:
-                choice_payload=choice_payload,
-                edge_id=edge.id,
-                order=edge.order,
-            )
+        for edge in edges:
+            # Needed for rule matching and dertermining next questions (edge
+            # ordering is important if several rules match and we want
+            # consistent results):
+            edge_kwargs = {
+                'choice_payload': None if edge.choice is None else edge.choice.payload,
+                'edge_id': edge.id,
+                'order': edge.order,
+            }
+
+            # Needed for question graph visualization:
+            if edge.choice:
+                edge_kwargs['choice_label'] = (f'{edge.choice.display or edge.choice.payload}'
+                                               f' {" (selected)" if edge.choice.selected else ""}')
+
+            # Add the edge with all relevant information:
+            nx_graph.add_edge(edge.question_id, edge.next_question_id, **edge_kwargs)
 
             if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {q_graph.name} contains too many questions.'

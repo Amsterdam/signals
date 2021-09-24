@@ -101,7 +101,7 @@ def get_feedback_urls(session):
 
 def create_session_for_feedback_request(signal):
     if signal.status.state != workflow.AFGEHANDELD:
-        msg = f'Signal {signal.id} is not in state REACTIE_GEVRAAGD!'
+        msg = f'Signal {signal.id} is not in state AFGEHANDELD!'
         raise WrongState(msg)
 
     with transaction.atomic():

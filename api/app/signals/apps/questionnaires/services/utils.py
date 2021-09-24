@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import logging
+
 from signals.apps.questionnaires.models import Session
 from signals.apps.questionnaires.models.questionnaire import Questionnaire
 from signals.apps.questionnaires.services import (
@@ -8,9 +10,12 @@ from signals.apps.questionnaires.services import (
     SessionService
 )
 
+logger = logging.getLogger(__name__)
+
 SESSION_SERVICE_FOR_FLOW = {
     Questionnaire.REACTION_REQUEST: ReactionRequestSessionService,
     Questionnaire.FEEDBACK_REQUEST: FeedbackRequestSessionService,
+    Questionnaire.EXTRA_PROPERTIES: SessionService,
 }
 
 
@@ -26,5 +31,10 @@ def get_session_service(session):
     if not session.questionnaire:
         raise Exception(f'Session (uuid={str(session)}) has no associated questionnaire.')
 
-    cls = SESSION_SERVICE_FOR_FLOW.get(session.questionnaire.flow, SessionService)
+    try:
+        cls = SESSION_SERVICE_FOR_FLOW[session.questionnaire.flow]
+    except KeyError:
+        msg = f'Falling back to basic SessionService for session (UUID={session.uuid}).'
+        logger.warning(msg)
+
     return cls(session)

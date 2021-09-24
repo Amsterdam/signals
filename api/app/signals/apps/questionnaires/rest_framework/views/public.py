@@ -84,7 +84,6 @@ class PublicQuestionViewSet(DatapuntViewSet):
         next_question_data = None
 
         answer = serializer.instance
-        # TODO: make get_session_service also accept Session objects:
         session_service = get_session_service(answer.session)
         session_service.load_data()
         next_question = session_service.get_next_question(question, answer)
