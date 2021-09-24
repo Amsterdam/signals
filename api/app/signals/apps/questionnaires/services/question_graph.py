@@ -8,17 +8,17 @@ from signals.apps.questionnaires.models import Edge, Question
 
 class QuestionGraphService:
     def __init__(self, q_graph):
-        self.q_graph = q_graph
+        self._q_graph = q_graph
 
-    def load_question_graph_data(self):
+    def refresh_from_db(self):
         # Retrieve all relevant edges, questions and answers
-        self.edges = self._get_edges(self.q_graph)
-        self.nx_graph = self._build_nx_graph(self.q_graph, self.edges)
-        self.questions = self._get_all_questions(self.nx_graph)
+        self._edges = self._get_edges(self._q_graph)
+        self._nx_graph = self._build_nx_graph(self._q_graph, self._edges)
+        self._questions = self._get_all_questions(self._nx_graph)
 
         # setup caches for quick access
-        self.edges_by_id = {e.id: e for e in self.edges}
-        self.questions_by_id = {q.id: q for q in self.questions}
+        self._edges_by_id = {e.id: e for e in self._edges}
+        self._questions_by_id = {q.id: q for q in self._questions}
 
     def _get_edges(self, q_graph):
         return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
@@ -71,10 +71,31 @@ class QuestionGraphService:
         """
         Grab questions linked to QuestionGraph reachable from first_question.
         """
-        reachable = networkx.descendants(self.nx_graph, self.q_graph.first_question.id)
-        reachable.add(self.q_graph.first_question.id)
+        reachable = networkx.descendants(self._nx_graph, self._q_graph.first_question.id)
+        reachable.add(self._q_graph.first_question.id)
 
         return list(Question.objects.filter(id__in=reachable))
+
+    @property
+    def nx_graph(self):
+        if not hasattr(self, '_nx_graph'):
+            self.refresh_from_db()
+        return self._nx_graph
+
+    @property
+    def questions(self):
+        if not hasattr(self, '_questions'):
+            self.refresh_from_db()
+        return self._questions
+
+    @property
+    def reachable_questions(self):
+        if not hasattr(self, '_nx_graph'):
+            self.refresh_from_db()
+
+        reachable = networkx.descendants(self._nx_graph, self._q_graph.first_question.id)
+        reachable.add(self._q_graph.first_question.id)
+        return {q for q_id, q in self._questions_by_id.items() if q_id in reachable}
 
     def validate(self):
         """

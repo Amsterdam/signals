@@ -61,7 +61,7 @@ class TestReactionRequestSessionService(TestCase):
         session.questionnaire.flow = Questionnaire.EXTRA_PROPERTIES
         session.questionnaire.save()
 
-        service.load_data()
+        service.refresh_from_db()
         self.assertEqual(service.session.questionnaire.flow, Questionnaire.EXTRA_PROPERTIES)
         with self.assertRaises(WrongFlow):  # Deal with CannotFreeze
             service.freeze()

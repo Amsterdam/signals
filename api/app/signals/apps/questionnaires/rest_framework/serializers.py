@@ -157,5 +157,5 @@ class PublicAnswerSerializer(HALSerializer):
             session = Session.objects.create(questionnaire=questionnaire)
             session_service = get_session_service(session)
 
-        session_service.load_data()
+        session_service.refresh_from_db()
         return session_service.create_answer(payload, question)

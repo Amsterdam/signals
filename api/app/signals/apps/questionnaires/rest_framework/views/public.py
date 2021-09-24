@@ -85,7 +85,7 @@ class PublicQuestionViewSet(DatapuntViewSet):
 
         answer = serializer.instance
         session_service = get_session_service(answer.session)
-        session_service.load_data()
+        session_service.refresh_from_db()
         next_question = session_service.get_next_question(question, answer)
 
         if next_question:

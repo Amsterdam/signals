@@ -86,7 +86,7 @@ class TestFeedbackRequestSessionService(TestCase):
         session = create_session_for_feedback_request(signal)
         service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
-        service.load_data()
+        service.refresh_from_db()
 
         question_1 = session.questionnaire.graph.first_question
         self.assertEqual(question_1.analysis_key, 'satisfied')
@@ -122,7 +122,7 @@ class TestFeedbackRequestSessionService(TestCase):
         session = create_session_for_feedback_request(signal)
         service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
-        service.load_data()
+        service.refresh_from_db()
 
         # -- complete questionnaire --
         question_1 = session.questionnaire.graph.first_question
@@ -148,7 +148,7 @@ class TestFeedbackRequestSessionService(TestCase):
         self.assertIsNone(question_5, None)
 
         # -- freeze session, access data, check actions after freeze
-        service.load_data()
+        service.refresh_from_db()
         service.freeze()
         self.assertEqual(Feedback.objects.count(), 1)
         signal.refresh_from_db()
@@ -169,7 +169,7 @@ class TestFeedbackRequestSessionService(TestCase):
         session = create_session_for_feedback_request(signal)
         service = get_session_service(session)
         self.assertIsInstance(service, FeedbackRequestSessionService)
-        service.load_data()
+        service.refresh_from_db()
 
         # -- complete questionnaire --
         question_1 = session.questionnaire.graph.first_question
@@ -195,7 +195,7 @@ class TestFeedbackRequestSessionService(TestCase):
         self.assertIsNone(question_5, None)
 
         # -- freeze session, access data, check actions after freeze
-        service.load_data()
+        service.refresh_from_db()
         service.freeze()
         self.assertEqual(Feedback.objects.count(), 1)
         signal.refresh_from_db()

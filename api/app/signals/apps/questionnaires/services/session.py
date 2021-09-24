@@ -39,8 +39,8 @@ class SessionService:
             raise SessionExpired('Expired!')
 
     def load_session_data(self):
-        self.answers = self._get_all_answers(self.session)
-        self.answers_by_question_id = {a.question.id: a for a in self.answers}
+        self._answers = self._get_all_answers(self.session)
+        self._answers_by_question_id = {a.question.id: a for a in self._answers}
 
         # Take into account QuestionGraph structure, determine questions,
         # unanswered questions and answers along path. Note that these paths
@@ -48,19 +48,19 @@ class SessionService:
         # case if all decision points have a default branch that gets selected
         # without an answer being provided).
         reachable, unanswered, answered, can_freeze = self._get_reachable_questions_and_answers(
-            self.question_graph_service.nx_graph,
-            self.question_graph_service.q_graph.first_question,
-            self.question_graph_service.questions_by_id,
-            self.answers_by_question_id
+            self.question_graph_service._nx_graph,
+            self.question_graph_service._q_graph.first_question,
+            self.question_graph_service._questions_by_id,
+            self._answers_by_question_id
         )
-        self.path_questions_by_id = reachable
-        self.path_unanswered_by_id = unanswered
-        self.path_answers_by_question_id = answered
-        self.can_freeze = can_freeze
+        self._path_questions_by_id = reachable
+        self._path_unanswered_by_id = unanswered
+        self._path_answers_by_question_id = answered
+        self._can_freeze = can_freeze
 
-    def load_data(self):
+    def refresh_from_db(self):
         self.session.refresh_from_db()
-        self.question_graph_service.load_question_graph_data()
+        self.question_graph_service.refresh_from_db()
         self.load_session_data()
 
     @staticmethod
@@ -156,32 +156,49 @@ class SessionService:
         Given question and its answer determine next question.
         """
         return SessionService._get_next_question(
-            self.question_graph_service.nx_graph,
-            self.question_graph_service.questions_by_id,
+            self.question_graph_service._nx_graph,
+            self.question_graph_service._questions_by_id,
             question,
             answer.payload
         )
 
-    def get_answers_by_analysis_key(self):
+    @property
+    def answers_by_analysis_key(self):
         """
-        Given (partially?) answered graph determine answers along current path.
-        """
-        # translate answers along path to dict keyed by question.analysis_key
-        return {a.question.analysis_key: a for a in self.path_answers_by_question_id.values()}
+        Dictionary of answers along current path keyed by question analysis key.
 
-    def get_answers_by_uuid(self):
-        return {a.question.uuid: a for a in self.path_answers_by_question_id.values()}
+        Note: for internal use, not over public API.
+        """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return {a.question.analysis_key: a for a in self._path_answers_by_question_id.values()}
+
+    @property
+    def answers_by_question_uuids(self):
+        """
+        Dictionary of answers along current path keyed by question UUID.
+
+        Note: for internal use, not over public API.
+        """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return {a.question.uuid: a for a in self._path_answers_by_question_id.values()}
 
     def get_extra_properties(self, category_url=None):
         """
         Given (partially?) answered graph determine answers along current path
         and return them in an Signal.extra_properties compatible dictionary.
         """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
         # TODO: double check against VNG forms implementation
         # Translate answers along path to dict keyed by question.analysis_key
         # TBD, still how do we mark answers with the proper category
         extra_props = []
-        for answer in self.path_answers_by_question_id.values():
+        for answer in self._path_answers_by_question_id.values():
             entry = {
                 'id': answer.question.analysis_key,
                 'label': answer.question.short_label,
@@ -193,19 +210,12 @@ class SessionService:
 
         return extra_props
 
-    def get_can_freeze(self):
-        """
-        Can the session under consideration be frozen (i.e. are all required
-        questions answered)?
-        """
-        return self.can_freeze
-
     def create_answer(self, answer_payload, question):
         """
         Answer a question, update session.started_at if needed.
         """
         # Check that question is actually part of relevant questionnaire:
-        if question.id not in self.question_graph_service.nx_graph.nodes():
+        if question.id not in self.question_graph_service._nx_graph.nodes():
             msg = f'Question (id={question.id}) not in questionnaire (id={self.session.questionnaire.id})!'
             raise django_validation_error(msg)
 
@@ -223,8 +233,56 @@ class SessionService:
         self.answer_service.validate_answer_payload(answer_payload, question)
 
         answer = Answer.objects.create(session=self.session, question=question, payload=answer_payload)
-        self.load_data()  # prevent stale data // TODO: consider only using load_session_data
+        self.refresh_from_db()  # prevent stale data // TODO: consider only using load_session_data or updating cache
         return answer
+
+    @property
+    def can_freeze(self):
+        """
+        Can this session be frozen given current answers.
+        """
+        if not hasattr(self, '_can_freeze'):
+            self.refresh_from_db()
+        return self._can_freeze
+
+    @property
+    def path_questions(self):
+        """
+        List of questions along current path.
+
+        Note: current path may not extend to final question because of decision
+        points in question graph. As these decision points (questions) get
+        answered, the list of questions along current path may extend.
+        """
+        if not hasattr(self, '_path_questions_by_id'):
+            self.refresh_from_db()
+
+        return [q for q in self._path_answers_by_question_id.values()]
+
+    @property
+    def path_answered_question_uuids(self):
+        """
+        List of question UUIDs along current path that are answered.
+        """
+        # Note: by design no answers are returned here --- that may have
+        # security/privacy implications. TODO: get input from privacy officer.
+        # If we can send the answers back to the client, this would allow us
+        # to fully synchronize the backend and client states (desirable).
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return [q.uuid for q in self._path_answers_by_question_id.values()]
+
+    @property
+    def path_unanswered_question_uuids(self):
+        """
+        List of question UUIDs along current path that require an answer but
+        have none.
+        """
+        if not hasattr(self, '_path_unanswered_by_id'):
+            self.refresh_from_db()
+
+        return [q.uuid for q in self._path_unanswered_by_id.values()]
 
     # These need to have knowledge of the different flows, and call the
     # correct implementations.

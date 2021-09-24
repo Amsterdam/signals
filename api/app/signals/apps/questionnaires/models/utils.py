@@ -28,7 +28,7 @@ def draw_graph(question_graph, location=None):
     }
 
     question_graph_service = QuestionGraphService(q_graph=question_graph)
-    question_graph_service.load_question_graph_data()
+    question_graph_service.refresh_from_db()
     nx_graph = question_graph_service.nx_graph
 
     pos = graphviz_layout(nx_graph, prog='dot')
