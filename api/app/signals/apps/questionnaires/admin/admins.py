@@ -29,9 +29,10 @@ class QuestionnaireAdmin(admin.ModelAdmin):
 
 class QuestionGraphAdmin(admin.ModelAdmin):
     inlines = (EdgeStackedInline,)
-    fields = ('name', 'first_question',)
+    fields = ('name', 'first_question', 'image_tag',)
+    readonly_fields = ('image_tag', )
 
-    list_display = ('name', 'first_question',)
+    list_display = ('name', 'first_question', )
     list_per_page = 20
 
 

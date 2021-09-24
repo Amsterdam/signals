@@ -8,12 +8,12 @@ passed.
 """
 from django.core.management import BaseCommand
 
-from signals.apps.questionnaires.services import ReactionRequestService
+from signals.apps.questionnaires.services.reaction_request import clean_up_reaction_request
 
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write('Updating status on signals with REACTIE_GEVRAAGD that are too old.')
-        n_updated = ReactionRequestService.clean_up_reaction_request()
+        n_updated = clean_up_reaction_request()
 
         self.stdout.write(f'Updated {n_updated} signals.')

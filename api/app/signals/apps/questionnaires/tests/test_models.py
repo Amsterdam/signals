@@ -3,6 +3,7 @@
 """
 Test models and associated manager functions for the questionnaires app.
 """
+import base64
 import uuid
 from datetime import datetime, timedelta
 
@@ -25,11 +26,11 @@ def create_diamond(graph_name='diamond'):
     """
     Seed the database with a diamond shaped graph formed by questions.
     """
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
-    q3 = QuestionFactory.create()
-    q4 = QuestionFactory.create()
-    q5 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
+    q3 = QuestionFactory.create(analysis_key='q3')
+    q4 = QuestionFactory.create(analysis_key='q4')
+    q5 = QuestionFactory.create(analysis_key='q5')
 
     # sketch:
     #    q1 <- first_question
@@ -62,8 +63,8 @@ def create_diamond_plus(graph_name='diamond_plus'):
 
     # Add an edge to the graph that cannot be reached from the first
     # question of the question_graph
-    q6 = QuestionFactory.create()
-    q7 = QuestionFactory.create()
+    q6 = QuestionFactory.create(analysis_key='q6')
+    q7 = QuestionFactory.create(analysis_key='q7')
     EdgeFactory.create(graph=graph, question=q6, next_question=q7, choice=None)
 
     return graph
@@ -74,16 +75,16 @@ def create_empty(graph_name='empty'):
 
 
 def create_one(graph_name='one'):
-    q1 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
     # sketch:
     # q1 <- first_question
     return QuestionGraphFactory.create(name=graph_name, first_question=q1)
 
 
 def create_disconnected(graph_name='disconnected'):
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
-    q3 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
+    q3 = QuestionFactory.create(analysis_key='q3')
 
     # sketch:
     # q1 <- first_question
@@ -98,8 +99,8 @@ def create_disconnected(graph_name='disconnected'):
 
 
 def create_cycle(graph_name='cycle'):
-    q1 = QuestionFactory.create()
-    q2 = QuestionFactory.create()
+    q1 = QuestionFactory.create(analysis_key='q1')
+    q2 = QuestionFactory.create(analysis_key='q2')
 
     # sketch:
     #  q1 <- first_question
@@ -157,6 +158,21 @@ class TestOne(TestCase):
         questions = Question.objects.get_reachable_from_question_graph(question_graph)
         self.assertEqual(len(questions), 1)
 
+    def test_draw_base64(self):
+        question_graph = QuestionGraph.objects.get(name='one')
+        base64_encoded_image = question_graph.draw_base64()
+
+        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
+
+    def test_image_tag(self):
+        question_graph = QuestionGraph.objects.get(name='one')
+        image_tag = question_graph.image_tag()
+
+        self.assertIn('<img src="data:image/png;base64, ', image_tag)
+
+        base64_encoded_image = image_tag[32:-4].strip()
+        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
+
 
 class TestDiamond(TestCase):
     def setUp(self):
@@ -177,6 +193,21 @@ class TestDiamond(TestCase):
         question_graph = QuestionGraph.objects.get(name='diamond')
         questions = Question.objects.get_reachable_from_question_graph(question_graph)
         self.assertEqual(len(questions), 5)
+
+    def test_draw_base64(self):
+        question_graph = QuestionGraph.objects.get(name='diamond')
+        base64_encoded_image = question_graph.draw_base64()
+
+        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
+
+    def test_image_tag(self):
+        question_graph = QuestionGraph.objects.get(name='diamond')
+        image_tag = question_graph.image_tag()
+
+        self.assertIn('<img src="data:image/png;base64, ', image_tag)
+
+        base64_encoded_image = image_tag[32:-4].strip()
+        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
 
 
 class TestDiamondPlus(TestCase):

@@ -12,7 +12,7 @@ from signals.apps.questionnaires.rest_framework.fields import (
     SessionPublicHyperlinkedIdentityField,
     UUIDRelatedField
 )
-from signals.apps.questionnaires.services import QuestionnairesService
+from signals.apps.questionnaires.services.utils import get_session_service
 
 
 class PublicQuestionSerializer(HALSerializer):
@@ -151,11 +151,11 @@ class PublicAnswerSerializer(HALSerializer):
 
         if 'session' in validated_data:
             session = validated_data.pop('session')
-            questionnaire = session.questionnaire
+            session_service = get_session_service(session)
         else:
-            session = None
             questionnaire = validated_data.pop('questionnaire')
+            session = Session.objects.create(questionnaire=questionnaire)
+            session_service = get_session_service(session)
 
-        return QuestionnairesService.create_answer(
-            answer_payload=payload, question=question, questionnaire=questionnaire, session=session
-        )
+        session_service.load_data()
+        return session_service.create_answer(payload, question)

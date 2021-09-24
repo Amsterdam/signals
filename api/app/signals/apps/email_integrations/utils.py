@@ -10,8 +10,15 @@ from django.utils.timezone import now
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
-from signals.apps.feedback.utils import get_feedback_urls
-from signals.apps.questionnaires.services import FeedbackRequestService, ReactionRequestService
+from signals.apps.feedback.utils import get_feedback_urls as get_feedback_urls_no_questionnaires
+from signals.apps.questionnaires.services.feedback_request import (
+    create_session_for_feedback_request,
+    get_feedback_urls
+)
+from signals.apps.questionnaires.services.reaction_request import (
+    create_session_for_reaction_request,
+    get_reaction_url
+)
 from signals.apps.signals.models import Signal
 from tests.apps.signals.valid_locations import STADHUIS
 
@@ -26,11 +33,11 @@ def create_feedback_and_mail_context(signal: Signal):
 
     if ('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' in settings.FEATURE_FLAGS and
             settings.FEATURE_FLAGS['API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK']):
-        session = FeedbackRequestService.create_session(signal)
-        positive_feedback_url, negative_feedback_url = FeedbackRequestService.get_feedback_urls(session)
+        session = create_session_for_feedback_request(signal)
+        positive_feedback_url, negative_feedback_url = get_feedback_urls(session)
     else:
         feedback = Feedback.actions.request_feedback(signal)
-        positive_feedback_url, negative_feedback_url = get_feedback_urls(feedback)
+        positive_feedback_url, negative_feedback_url = get_feedback_urls_no_questionnaires(feedback)
 
     return {
         'negative_feedback_url': negative_feedback_url,
@@ -42,8 +49,8 @@ def create_reaction_request_and_mail_context(signal: Signal):
     """
     Util function to create a question, questionnaire and prepared session for reaction request mails
     """
-    session = ReactionRequestService.create_session(signal)
-    reaction_url = ReactionRequestService.get_reaction_url(session)
+    session = create_session_for_reaction_request(signal)
+    reaction_url = get_reaction_url(session)
 
     return {'reaction_url': reaction_url}
 
