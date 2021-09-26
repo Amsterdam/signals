@@ -6,7 +6,7 @@ from collections import OrderedDict
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
 
-from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.exceptions import CycleDetected, SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Answer
 from signals.apps.questionnaires.services.answer import AnswerService
 from signals.apps.questionnaires.services.question_graph import QuestionGraphService
@@ -23,10 +23,11 @@ class SessionService:
     def is_publicly_accessible(self):
         """
         Check whether the session associated with this SessionService is to be
-        accessible through the public API. (Session not expired, session
-        otherwise).
+        accessible through the public API. Will raise appropriate exceptions
+        when the session must not be available.
 
-        Note: flow specific implementations are in SessionService subclasses.
+        Note: flow specific implementations are in SessionService subclasses,
+        these subclasses can use custom exception classes as well.
         """
         self.session.refresh_from_db()
 
@@ -114,8 +115,8 @@ class SessionService:
         question = first_question
         while question:
             # Protect against cycles in question graph:
-            if question.id in reachable_answers_by_question_id:
-                raise Exception('Cycle detected')
+            if question.id in reachable_questions_by_id:
+                raise CycleDetected('Cycle detected')
 
             reachable_questions_by_id[question.id] = question
             answer = answers_by_id.get(question.id, None)
@@ -144,6 +145,8 @@ class SessionService:
         """
         Get endpoint questions in QuestionGraph.
         """
+        # TODO: move this to QuestionGraphService and take into account only
+        # connected component that includes the first question.
         endpoint_questions_by_id = {}
         for question_id, out_degree in nx_graph.out_degree():
             if out_degree == 0:

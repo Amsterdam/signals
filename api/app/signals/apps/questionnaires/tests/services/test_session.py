@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from django.test import TestCase
+import unittest
+from datetime import datetime, timedelta
 
+from django.test import TestCase
+from freezegun import freeze_time
+
+from signals.apps.questionnaires.exceptions import CycleDetected, SessionExpired, SessionFrozen
 from signals.apps.questionnaires.factories import AnswerFactory, ChoiceFactory, SessionFactory
-from signals.apps.questionnaires.models import Answer, Edge
+from signals.apps.questionnaires.models import Answer, Edge, Questionnaire
 from signals.apps.questionnaires.services.session import SessionService
-from signals.apps.questionnaires.tests.test_models import create_diamond_plus
+from signals.apps.questionnaires.services.utils import get_session_service
+from signals.apps.questionnaires.tests.test_models import create_cycle, create_diamond_plus
 
 
 class TestSessionService(TestCase):
@@ -132,6 +138,23 @@ class TestSessionService(TestCase):
             a3.payload
         )
         self.assertEqual(next_question_3.analysis_key, 'q3')
+
+    def test_get_reachable_questions_answers_graph_with_cycles(self):
+        q_graph = create_cycle()
+        session = SessionFactory.create(questionnaire__graph=q_graph)
+        service = SessionService(session)
+        service.question_graph_service.refresh_from_db()
+
+        answers = service._get_all_answers(session)
+        answers_by_question_id = {a.question.id: a for a in answers}
+
+        with self.assertRaises(CycleDetected):
+            service._get_reachable_questions_and_answers(
+                service.question_graph_service._nx_graph,
+                service.question_graph_service._q_graph.first_question,
+                service.question_graph_service._questions_by_id,
+                answers_by_question_id
+            )
 
     def test_get_reachable_questions_answers_no_answers(self):
         q_graph = create_diamond_plus()
@@ -435,3 +458,60 @@ class TestSessionService(TestCase):
 
         # Test our is_accessible here:
         service.is_publicly_accessible()
+
+    def test_is_publicly_accessible_frozen_session(self):
+        # Sessions that are frozen are no longer publicly accessible:
+        q_graph = create_diamond_plus()
+        session_frozen = SessionFactory.create(questionnaire__graph=q_graph, frozen=True)
+        service_frozen = SessionService(session_frozen)
+        with self.assertRaises(SessionFrozen):
+            service_frozen.is_publicly_accessible()
+
+    def test_is_publicly_accessible_expired_session(self):
+        q_graph = create_diamond_plus()
+        # Sessions that have expired because the submit_before deadline was
+        # passed are no longer available:
+        t_creation = datetime(2021, 1, 1, 0, 0, 0)
+        t_now = datetime(2021, 6, 1, 0, 0, 0)
+
+        session_expired_i = SessionFactory.create(
+            questionnaire__graph=q_graph,
+            created_at=t_creation,
+            started_at=None,
+            submit_before=t_creation + timedelta(days=7),
+            duration=None,
+            frozen=False
+        )
+        service_expired_i = SessionService(session_expired_i)
+
+        with freeze_time(t_now):
+            with self.assertRaises(SessionExpired):
+                service_expired_i.is_publicly_accessible()
+
+        # Sessions that have expired because too long was taken to fill out
+        # the questionnaire are no longer available:
+        session_expired_ii = SessionFactory.create(
+            questionnaire__graph=q_graph,
+            created_at=t_creation,
+            started_at=t_creation,
+            submit_before=None,
+            duration=timedelta(seconds=60 * 60 * 2),
+            frozen=False
+        )
+        service_expired_ii = SessionService(session_expired_ii)
+        with freeze_time(t_now):
+            with self.assertRaises(SessionExpired):
+                service_expired_ii.is_publicly_accessible()
+
+    @unittest.expectedFailure
+    def test_get_endpoint_questions(self):
+        q_graph = create_diamond_plus()
+        session = SessionFactory.create(
+            questionnaire__graph=q_graph, questionnaire__flow=Questionnaire.EXTRA_PROPERTIES)
+        service = get_session_service(session)
+
+        endpoints_by_id = service._get_endpoint_questions(
+            service.question_graph_service.nx_graph, service.question_graph_service._questions_by_id)
+        self.assertEqual(len(endpoints_by_id), 1)
+        question = list(endpoints_by_id.values())[0]
+        self.assertEqual(question.analysis_key, 'q5')

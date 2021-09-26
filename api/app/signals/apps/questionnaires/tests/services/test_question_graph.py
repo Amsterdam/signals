@@ -56,3 +56,27 @@ class TestQuestionGraphService(TestCase):
         self.assertEqual(len(service._nx_graph.nodes), 7)
         self.assertEqual(len(service._questions), 7)
         self.assertEqual(len(service._questions_by_id), 7)
+
+    def test_property_nx_graph(self):
+        q_graph = create_diamond_plus()
+        service = QuestionGraphService(q_graph)
+
+        nx_graph = service.nx_graph
+        self.assertIsInstance(nx_graph, MultiDiGraph)
+        self.assertEqual(len(nx_graph.nodes), 7)
+
+    def test_property_questions(self):
+        q_graph = create_diamond_plus()
+        service = QuestionGraphService(q_graph)
+
+        questions = service.questions
+        self.assertEqual(len(questions), 7)
+        self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 8)))
+
+    def test_property_reachable_questions(self):
+        q_graph = create_diamond_plus()
+        service = QuestionGraphService(q_graph)
+
+        questions = service.reachable_questions
+        self.assertEqual(len(questions), 5)
+        self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 6)))
