@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import unittest
 from datetime import datetime, timedelta
 
 from django.test import TestCase
@@ -8,9 +7,8 @@ from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import CycleDetected, SessionExpired, SessionFrozen
 from signals.apps.questionnaires.factories import AnswerFactory, ChoiceFactory, SessionFactory
-from signals.apps.questionnaires.models import Answer, Edge, Questionnaire
+from signals.apps.questionnaires.models import Answer, Edge
 from signals.apps.questionnaires.services.session import SessionService
-from signals.apps.questionnaires.services.utils import get_session_service
 from signals.apps.questionnaires.tests.test_models import create_cycle, create_diamond_plus
 
 
@@ -502,16 +500,3 @@ class TestSessionService(TestCase):
         with freeze_time(t_now):
             with self.assertRaises(SessionExpired):
                 service_expired_ii.is_publicly_accessible()
-
-    @unittest.expectedFailure
-    def test_get_endpoint_questions(self):
-        q_graph = create_diamond_plus()
-        session = SessionFactory.create(
-            questionnaire__graph=q_graph, questionnaire__flow=Questionnaire.EXTRA_PROPERTIES)
-        service = get_session_service(session)
-
-        endpoints_by_id = service._get_endpoint_questions(
-            service.question_graph_service.nx_graph, service.question_graph_service._questions_by_id)
-        self.assertEqual(len(endpoints_by_id), 1)
-        question = list(endpoints_by_id.values())[0]
-        self.assertEqual(question.analysis_key, 'q5')

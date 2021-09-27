@@ -140,20 +140,6 @@ class SessionService:
 
         return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id, can_freeze
 
-    @staticmethod
-    def _get_endpoint_questions(nx_graph, questions_by_id):
-        """
-        Get endpoint questions in QuestionGraph.
-        """
-        # TODO: move this to QuestionGraphService and take into account only
-        # connected component that includes the first question.
-        endpoint_questions_by_id = {}
-        for question_id, out_degree in nx_graph.out_degree():
-            if out_degree == 0:
-                endpoint_questions_by_id[question_id] = questions_by_id[question_id]
-
-        return endpoint_questions_by_id
-
     def get_next_question(self, question, answer):
         """
         Given question and its answer determine next question.

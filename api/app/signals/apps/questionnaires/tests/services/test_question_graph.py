@@ -40,11 +40,9 @@ class TestQuestionGraphService(TestCase):
         edges = service._get_edges(q_graph)
         nx_graph = service._build_nx_graph(q_graph, edges)
 
-        service._q_graph = q_graph
-        service._nx_graph = nx_graph
-        questions = service.get_reachable_questions()
+        questions = service._get_reachable_questions(nx_graph, q_graph)
         self.assertEqual(len(questions), 5)
-        self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 6)))
+        self.assertEqual({q.analysis_key for q in questions.values()}, set(f'q{n}' for n in range(1, 6)))
 
     def test_refresh_from_db(self):
         q_graph = create_diamond_plus()
@@ -80,3 +78,13 @@ class TestQuestionGraphService(TestCase):
         questions = service.reachable_questions
         self.assertEqual(len(questions), 5)
         self.assertEqual({q.analysis_key for q in questions}, set(f'q{n}' for n in range(1, 6)))
+
+    def test_get_endpoint_questions(self):
+        q_graph = create_diamond_plus()
+        service = QuestionGraphService(q_graph)
+        service.refresh_from_db()
+
+        endpoints_by_id = service.endpoint_questions
+        self.assertEqual(len(endpoints_by_id), 1)
+        question = list(endpoints_by_id.values())[0]
+        self.assertEqual(question.analysis_key, 'q5')

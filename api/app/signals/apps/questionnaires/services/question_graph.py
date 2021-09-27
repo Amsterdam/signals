@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+"""
+QuestionGraph service contains functionality that deals with QuestionGraph
+structure (reachable questions and the like).
+"""
 import networkx
 
 from signals.apps.questionnaires.app_settings import MAX_QUESTIONS
@@ -11,6 +15,9 @@ class QuestionGraphService:
         self._q_graph = q_graph
 
     def refresh_from_db(self):
+        """
+        Retrieve all QuestionGraph data, cache it.
+        """
         # Retrieve all relevant edges, questions and answers
         self._edges = self._get_edges(self._q_graph)
         self._nx_graph = self._build_nx_graph(self._q_graph, self._edges)
@@ -20,7 +27,14 @@ class QuestionGraphService:
         self._edges_by_id = {e.id: e for e in self._edges}
         self._questions_by_id = {q.id: q for q in self._questions}
 
+        self._reachable_questions_by_id = self._get_reachable_questions(self._nx_graph, self._q_graph)
+        self._endpoint_questions_by_id = self._get_endpoint_questions(
+            self._nx_graph, self._questions_by_id, self._reachable_questions_by_id)
+
     def _get_edges(self, q_graph):
+        """
+        List of Edge instances decsribing QuestionGraph structure.
+        """
         return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
 
     @staticmethod
@@ -58,44 +72,69 @@ class QuestionGraphService:
         return nx_graph
 
     @staticmethod
+    def _get_reachable_questions(nx_graph, q_graph):
+        """
+        Grab questions linked to QuestionGraph reachable from first_question.
+        """
+        reachable = networkx.descendants(nx_graph, q_graph.first_question.id)
+        reachable.add(q_graph.first_question.id)
+
+        return {q.id: q for q in Question.objects.filter(id__in=reachable)}
+
+    @staticmethod
+    def _get_endpoint_questions(nx_graph, questions_by_id, reachable_questions_by_id):
+        """
+        Get endpoint questions in QuestionGraph.
+        """
+        endpoint_questions_by_id = {}
+        for question_id, out_degree in nx_graph.out_degree():
+            if out_degree == 0 and question_id in reachable_questions_by_id:
+                endpoint_questions_by_id[question_id] = questions_by_id[question_id]
+
+        return endpoint_questions_by_id
+
+    @staticmethod
     def _get_all_questions(nx_graph):
         """
         Grab questions linked to QuestionGraph.
         """
         return list(Question.objects.filter(id__in=nx_graph.nodes()))
 
-    def get_all_questions(self):
-        return self.questions
-
-    def get_reachable_questions(self):
+    @property
+    def endpoint_questions(self):
         """
-        Grab questions linked to QuestionGraph reachable from first_question.
+        List of questions that form the endpoints of a QuestionGraph.
         """
-        reachable = networkx.descendants(self._nx_graph, self._q_graph.first_question.id)
-        reachable.add(self._q_graph.first_question.id)
-
-        return list(Question.objects.filter(id__in=reachable))
+        if not hasattr(self, '_endpoint_questions_by_id'):
+            self.refresh_from_db()
+        return self._endpoint_questions_by_id
 
     @property
     def nx_graph(self):
+        """
+        networkx.MultiDigraph instance representing QuestionGraph.
+        """
         if not hasattr(self, '_nx_graph'):
             self.refresh_from_db()
         return self._nx_graph
 
     @property
     def questions(self):
+        """
+        List of Question instance (reachable and not) for QuestionGraph.
+        """
         if not hasattr(self, '_questions'):
             self.refresh_from_db()
         return self._questions
 
     @property
     def reachable_questions(self):
-        if not hasattr(self, '_nx_graph'):
+        """
+        List of Question instances for QuestionGraph (only reachable ones).
+        """
+        if not hasattr(self, '_reachable_questions_by_id'):
             self.refresh_from_db()
-
-        reachable = networkx.descendants(self._nx_graph, self._q_graph.first_question.id)
-        reachable.add(self._q_graph.first_question.id)
-        return {q for q_id, q in self._questions_by_id.items() if q_id in reachable}
+        return list(self._reachable_questions_by_id.values())
 
     def validate(self):
         """
