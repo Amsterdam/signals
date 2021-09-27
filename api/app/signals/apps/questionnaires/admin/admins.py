@@ -96,7 +96,7 @@ class SessionAdmin(admin.ModelAdmin):
     def view_signal_link(self, obj):
         if obj._signal:
             url = reverse('admin:signals_signal_change', kwargs={'object_id': obj._signal.pk})
-            return format_html('<a href="{}">{}</a>', url, obj._signal.signalen_id)
+            return format_html('<a href="{}">{}</a>', url, obj._signal.sia_id)
         else:
             return '-'
     view_signal_link.short_description = "Signal"
