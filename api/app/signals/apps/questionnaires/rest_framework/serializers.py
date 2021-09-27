@@ -141,8 +141,6 @@ class PublicAnswerSerializer(HALSerializer):
         elif 'session' not in attrs and 'questionnaire' not in attrs:
             raise ValidationError('Either the session or questionnaire is mandatory!')
 
-        # TODO: Add a check to see if the question belongs to the questionnaire that is being processed
-
         return attrs
 
     def create(self, validated_data):

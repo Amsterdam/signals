@@ -617,7 +617,7 @@ class TestGetAnswersFromSession(TestCase):
     def test_get_latest_answers_by_uuid(self):
         session_service = get_session_service(self.session.uuid)
         session_service.refresh_from_db()
-        by_uuid = session_service.answers_by_question_uuids
+        by_uuid = session_service.answers_by_question_uuid
         self.assertEqual(len(by_uuid), 2)
         self.assertEqual(by_uuid[self.graph.first_question.uuid].payload, 'yes')
         self.assertEqual(by_uuid[self.q2.uuid].payload, 'yes happy')

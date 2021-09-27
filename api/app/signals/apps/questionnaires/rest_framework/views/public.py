@@ -83,6 +83,9 @@ class PublicQuestionViewSet(DatapuntViewSet):
 
         next_question_data = None
 
+        # TODO: consider removing the serialized next_question, that is not
+        # currently used and superseded by the path_questions available through
+        # the SessionService (subclass).
         answer = serializer.instance
         session_service = get_session_service(answer.session)
         session_service.refresh_from_db()

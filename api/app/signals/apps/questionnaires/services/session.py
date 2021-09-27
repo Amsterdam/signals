@@ -144,6 +144,7 @@ class SessionService:
         """
         Given question and its answer determine next question.
         """
+        # TODO: consider removing when next_rules is removed from public API.
         return SessionService._get_next_question(
             self.question_graph_service._nx_graph,
             self.question_graph_service._questions_by_id,
@@ -164,7 +165,7 @@ class SessionService:
         return {a.question.analysis_key: a for a in self._path_answers_by_question_id.values()}
 
     @property
-    def answers_by_question_uuids(self):
+    def answers_by_question_uuid(self):
         """
         Dictionary of answers along current path keyed by question UUID.
 
@@ -203,6 +204,9 @@ class SessionService:
         """
         Answer a question, update session.started_at if needed.
         """
+        if not hasattr(self, '_nx_graph'):
+            self.refresh_from_db()
+
         # Check that question is actually part of relevant questionnaire:
         if question.id not in self.question_graph_service._nx_graph.nodes():
             msg = f'Question (id={question.id}) not in questionnaire (id={self.session.questionnaire.id})!'
@@ -225,6 +229,36 @@ class SessionService:
         self.refresh_from_db()  # prevent stale data // TODO: consider only using load_session_data or updating cache
         return answer
 
+    def create_answers(self, answer_payloads, questions):
+        """
+        Answer several questions, do not raise ValidationErrors instead save
+        save a dictionary of errors keyed by question UUID on the SessionService
+        (subclass).
+
+        Note: to access the errors access the path_validation_errors property.
+        """
+        # We need all relevant data cached.
+        if not hasattr(self, '_can_freeze'):
+            self.refresh_from_db()
+
+        # Iterate through answer payloads and questions, validate them, collect
+        # any error (messages), and cache them on SessionService (subclass).
+        errors_by_uuid = {}
+        for answer_payload, question in zip(answer_payloads, questions):
+            try:
+                self.create_answer(answer_payload, question)
+            except (SessionExpired, SessionFrozen) as e:
+                # Expired sessions should raise not be possible to update
+                raise e
+            except django_validation_error as e:
+                # For validation errors we keep the error messages
+                errors_by_uuid[question.uuid] = e.message
+
+        # Cache our validation errors so that these can be accessed through the
+        # path_validation_errors property.
+        self._path_validation_errors_by_uuid = errors_by_uuid
+        return errors_by_uuid
+
     @property
     def can_freeze(self):
         """
@@ -243,10 +277,10 @@ class SessionService:
         points in question graph. As these decision points (questions) get
         answered, the list of questions along current path may extend.
         """
-        if not hasattr(self, '_path_questions_by_id'):
+        if not hasattr(self, '_path_answers_by_question_id'):
             self.refresh_from_db()
 
-        return [q for q in self._path_answers_by_question_id.values()]
+        return list(self._path_questions_by_id.values())
 
     @property
     def path_answered_question_uuids(self):
@@ -260,7 +294,7 @@ class SessionService:
         if not hasattr(self, '_path_answers_by_question_id'):
             self.refresh_from_db()
 
-        return [q.uuid for q in self._path_answers_by_question_id.values()]
+        return [a.question.uuid for a in self._path_answers_by_question_id.values()]
 
     @property
     def path_unanswered_question_uuids(self):
@@ -273,9 +307,25 @@ class SessionService:
 
         return [q.uuid for q in self._path_unanswered_by_id.values()]
 
-    # These need to have knowledge of the different flows, and call the
-    # correct implementations.
+    @property
+    def path_validation_errors_by_uuid(self):
+        """
+        Dictionary of validation error messages keyed by Question UUID.
+        """
+        if not hasattr(self, '_path_validation_errors_by_uuid'):
+            # This property is only set when answer_payloads were processed, if
+            # that was not the case we cannot just call self.refresh_from_db()
+            # because we have no access to answer payloads here. In this case
+            # we just return an empty validation errors dictionary.
+            return {}
+        return self._path_validation_errors_by_uuid
 
     def freeze(self):
+        """
+        Freeze the Session.
+
+        Note: this should be overridden by SessionService subclasses to add
+        custom session processing.
+        """
         self.session.frozen = True
         self.session.save()
