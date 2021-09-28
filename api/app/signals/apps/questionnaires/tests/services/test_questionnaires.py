@@ -189,7 +189,7 @@ class TestQuestionnairesService(TestCase):
         questionnaire = QuestionnaireFactory.create(graph=graph, flow=Questionnaire.EXTRA_PROPERTIES)
         session = SessionFactory.create(questionnaire=questionnaire)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question_1 = questionnaire.first_question
         answer_payload = 'yes'
@@ -225,7 +225,7 @@ class TestQuestionnairesService(TestCase):
         questionnaire = QuestionnaireFactory.create(graph=graph)
         session = SessionFactory.create(questionnaire=questionnaire)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question_1 = questionnaire.first_question
         answer_payload_1 = 'yes'
@@ -266,11 +266,11 @@ class TestQuestionnairesService(TestCase):
 
         session = SessionFactory.create(questionnaire__graph=empty_graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         next_q = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'ANSWER'
         )
@@ -283,11 +283,11 @@ class TestQuestionnairesService(TestCase):
 
         session = SessionFactory.create(questionnaire__graph=unconditional_graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         next_q = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'ANSWER'
         )
@@ -310,25 +310,25 @@ class TestQuestionnairesService(TestCase):
 
         session = SessionFactory.create(questionnaire__graph=conditional_graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         no_choice_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'ANSWER'
         )
         self.assertIsNone(no_choice_question)  # consider whether this is useful
         yes_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'yes'
         )
         self.assertEqual(q_yes, yes_question)
         no_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'no'
         )
@@ -354,25 +354,25 @@ class TestQuestionnairesService(TestCase):
 
         session = SessionFactory.create(questionnaire__graph=conditional_with_default_graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         no_choice_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'ANSWER'
         )
         self.assertEqual(no_choice_question, q_default)
         yes_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'yes'
         )
         self.assertEqual(yes_question, q_yes)
         no_question = session_service._get_next_question(
-            session_service.question_graph_service.nx_graph,
-            session_service.question_graph_service.questions_by_id,
+            session_service.question_graph_service._nx_graph,
+            session_service.question_graph_service._questions_by_id,
             q_start,
             'no'
         )
@@ -384,7 +384,7 @@ class TestQuestionnairesService(TestCase):
         questionnaire = QuestionnaireFactory.create(graph=graph)
         session = SessionFactory.create(questionnaire__graph=graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question_1 = questionnaire.graph.first_question
         answer_payload_1 = None
@@ -419,7 +419,7 @@ class TestQuestionnairesService(TestCase):
         graph = _question_graph_with_decision_with_default()
         session = SessionFactory.create(questionnaire__graph=graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question_1 = session.questionnaire.first_question
         answer_payload_1 = 'WILL NOT MATCH ANYTHING'  # to trigger default
@@ -455,7 +455,7 @@ class TestQuestionnairesService(TestCase):
         graph = _create_graph_no_defaults()
         session = SessionFactory.create(questionnaire__graph=graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question_1 = session.questionnaire.graph.first_question
 
@@ -501,7 +501,7 @@ class TestQuestionnairesService(TestCase):
         graph = _question_graph_one_question()
         session = SessionFactory.create(questionnaire__graph=graph)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         question = session.questionnaire.first_question
         answer_payload = 'ONLY'
@@ -515,7 +515,7 @@ class TestQuestionnairesService(TestCase):
         self.assertIsNone(session.submit_before)
         self.assertEqual(session.duration, timedelta(seconds=SESSION_DURATION))
 
-        session_service.load_data()
+        session_service.refresh_from_db()
         session_service.freeze()
         session = session_service.session
         session.refresh_from_db()
@@ -548,7 +548,7 @@ class TestQuestionnairesService(TestCase):
         signal.status = status
         signal.save()
         SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST)  # more recent
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         with self.assertRaises(SessionInvalidated) as cm:
             session_service.is_publicly_accessible()
@@ -566,7 +566,7 @@ class TestQuestionnairesService(TestCase):
                 _signal=signal, questionnaire__flow=Questionnaire.EXTRA_PROPERTIES, submit_before=submit_before)
 
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         with freeze_time(get_session_at):
             with self.assertRaises(SessionExpired) as cm:
@@ -578,7 +578,7 @@ class TestQuestionnairesService(TestCase):
         signal = SignalFactory.create(status__state=workflow.GEMELD)
         session = SessionFactory.create(_signal=signal, questionnaire__flow=Questionnaire.REACTION_REQUEST, frozen=True)
         session_service = get_session_service(session.uuid)
-        session_service.load_data()
+        session_service.refresh_from_db()
 
         with self.assertRaises(SessionFrozen) as cm:
             session_service.is_publicly_accessible()
@@ -606,18 +606,18 @@ class TestGetAnswersFromSession(TestCase):
 
         self.assertEqual(len(answers), 2)  # for duplicate answers we want only one
 
-    def test_get_latest_answers_by_analysis_key(self):
+    def test_answers_by_analysis_key(self):
         session_service = get_session_service(self.session.uuid)
-        session_service.load_data()
-        by_analysis_key = session_service.get_answers_by_analysis_key()
+        session_service.refresh_from_db()
+        by_analysis_key = session_service.answers_by_analysis_key
         self.assertEqual(len(by_analysis_key), 2)
         self.assertEqual(by_analysis_key[self.graph.first_question.analysis_key].payload, 'yes')
         self.assertEqual(by_analysis_key[self.q2.analysis_key].payload, 'yes happy')
 
     def test_get_latest_answers_by_uuid(self):
         session_service = get_session_service(self.session.uuid)
-        session_service.load_data()
-        by_uuid = session_service.get_answers_by_uuid()
+        session_service.refresh_from_db()
+        by_uuid = session_service.answers_by_question_uuid
         self.assertEqual(len(by_uuid), 2)
         self.assertEqual(by_uuid[self.graph.first_question.uuid].payload, 'yes')
         self.assertEqual(by_uuid[self.q2.uuid].payload, 'yes happy')
@@ -636,8 +636,8 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_1, question=q_yes, payload='yes happy')
 
         session_service_1 = get_session_service(session_1.uuid)
-        session_service_1.load_data()
-        self.assertTrue(session_service_1.get_can_freeze())
+        session_service_1.refresh_from_db()
+        self.assertTrue(session_service_1.can_freeze)
 
         # Test no branch
         session_2 = SessionFactory.create(questionnaire__graph=graph)
@@ -645,16 +645,16 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_2, question=q_no, payload='no unhappy')
 
         session_service_2 = get_session_service(session_2.uuid)
-        session_service_2.load_data()
-        self.assertTrue(session_service_2.get_can_freeze())
+        session_service_2.refresh_from_db()
+        self.assertTrue(session_service_2.can_freeze)
 
         # Test missing data
         session_3 = SessionFactory.create(questionnaire__graph=graph)
         AnswerFactory(session=session_3, question=graph.first_question, payload='yes')
 
         session_service_3 = get_session_service(session_3.uuid)
-        session_service_3.load_data()
-        self.assertFalse(session_service_3.get_can_freeze())
+        session_service_3.refresh_from_db()
+        self.assertFalse(session_service_3.can_freeze)
 
         # Test showing a question halfway through the questionnaire can be
         # considered an endpoint.
@@ -663,8 +663,8 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_4, question=graph.first_question, payload='not a choice, but valid')
 
         session_service_4 = get_session_service(session_4.uuid)
-        session_service_4.load_data()
-        self.assertFalse(session_service_4.get_can_freeze())
+        session_service_4.refresh_from_db()
+        self.assertFalse(session_service_4.can_freeze)
 
     def test_validate_question_graph_with_decision_with_default_required(self):
         graph = _question_graph_with_decision_with_default()
@@ -676,8 +676,8 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_1, question=q_yes, payload='yes happy')
 
         session_service_1 = get_session_service(session_1.uuid)
-        session_service_1.load_data()
-        self.assertFalse(session_service_1.get_can_freeze())
+        session_service_1.refresh_from_db()
+        self.assertFalse(session_service_1.can_freeze)
 
         # Test default branch (by providing a non-matching, but valid answer)
         session_2 = SessionFactory.create(questionnaire__graph=graph)
@@ -685,8 +685,8 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_2, question=q_yes, payload='yes happy')
 
         session_service_2 = get_session_service(session_2.uuid)
-        session_service_2.load_data()
-        self.assertTrue(session_service_2.get_can_freeze())
+        session_service_2.refresh_from_db()
+        self.assertTrue(session_service_2.can_freeze)
 
     def test_validate_question_graph_with_decision_with_default_not_required(self):
         graph = _question_graph_with_decision_with_default_no_required_answers()
@@ -699,9 +699,9 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_1, question=q_yes, payload='yes happy')
 
         session_service_1 = get_session_service(session_1.uuid)
-        session_service_1.load_data()
+        session_service_1.refresh_from_db()
 
-        self.assertTrue(session_service_1.get_can_freeze())
+        self.assertTrue(session_service_1.can_freeze)
 
         # Test default branch (by providing a non-matching, but valid answer).
         # This case will fail because the default branch is chosen.
@@ -709,6 +709,6 @@ class TestValidateSessionUsingQuestionGraph(TestCase):
         AnswerFactory(session=session_2, question=q_no, payload='not happy')
 
         session_service_2 = get_session_service(session_2.uuid)
-        session_service_2.load_data()
+        session_service_2.refresh_from_db()
 
-        self.assertFalse(session_service_2.get_can_freeze())
+        self.assertFalse(session_service_2.can_freeze)

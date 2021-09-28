@@ -6,7 +6,7 @@ from collections import OrderedDict
 from django.core.exceptions import ValidationError as django_validation_error
 from django.utils import timezone
 
-from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.exceptions import CycleDetected, SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Answer
 from signals.apps.questionnaires.services.answer import AnswerService
 from signals.apps.questionnaires.services.question_graph import QuestionGraphService
@@ -23,10 +23,11 @@ class SessionService:
     def is_publicly_accessible(self):
         """
         Check whether the session associated with this SessionService is to be
-        accessible through the public API. (Session not expired, session
-        otherwise).
+        accessible through the public API. Will raise appropriate exceptions
+        when the session must not be available.
 
-        Note: flow specific implementations are in SessionService subclasses.
+        Note: flow specific implementations are in SessionService subclasses,
+        these subclasses can use custom exception classes as well.
         """
         self.session.refresh_from_db()
 
@@ -39,8 +40,8 @@ class SessionService:
             raise SessionExpired('Expired!')
 
     def load_session_data(self):
-        self.answers = self._get_all_answers(self.session)
-        self.answers_by_question_id = {a.question.id: a for a in self.answers}
+        self._answers = self._get_all_answers(self.session)
+        self._answers_by_question_id = {a.question.id: a for a in self._answers}
 
         # Take into account QuestionGraph structure, determine questions,
         # unanswered questions and answers along path. Note that these paths
@@ -48,19 +49,19 @@ class SessionService:
         # case if all decision points have a default branch that gets selected
         # without an answer being provided).
         reachable, unanswered, answered, can_freeze = self._get_reachable_questions_and_answers(
-            self.question_graph_service.nx_graph,
-            self.question_graph_service.q_graph.first_question,
-            self.question_graph_service.questions_by_id,
-            self.answers_by_question_id
+            self.question_graph_service._nx_graph,
+            self.question_graph_service._q_graph.first_question,
+            self.question_graph_service._questions_by_id,
+            self._answers_by_question_id
         )
-        self.path_questions_by_id = reachable
-        self.path_unanswered_by_id = unanswered
-        self.path_answers_by_question_id = answered
-        self.can_freeze = can_freeze
+        self._path_questions_by_id = reachable
+        self._path_unanswered_by_id = unanswered
+        self._path_answers_by_question_id = answered
+        self._can_freeze = can_freeze
 
-    def load_data(self):
+    def refresh_from_db(self):
         self.session.refresh_from_db()
-        self.question_graph_service.load_question_graph_data()
+        self.question_graph_service.refresh_from_db()
         self.load_session_data()
 
     @staticmethod
@@ -114,8 +115,8 @@ class SessionService:
         question = first_question
         while question:
             # Protect against cycles in question graph:
-            if question.id in reachable_answers_by_question_id:
-                raise Exception('Cycle detected')
+            if question.id in reachable_questions_by_id:
+                raise CycleDetected('Cycle detected')
 
             reachable_questions_by_id[question.id] = question
             answer = answers_by_id.get(question.id, None)
@@ -139,49 +140,55 @@ class SessionService:
 
         return reachable_questions_by_id, unanswered_by_id, reachable_answers_by_question_id, can_freeze
 
-    @staticmethod
-    def _get_endpoint_questions(nx_graph, questions_by_id):
-        """
-        Get endpoint questions in QuestionGraph.
-        """
-        endpoint_questions_by_id = {}
-        for question_id, out_degree in nx_graph.out_degree():
-            if out_degree == 0:
-                endpoint_questions_by_id[question_id] = questions_by_id[question_id]
-
-        return endpoint_questions_by_id
-
     def get_next_question(self, question, answer):
         """
         Given question and its answer determine next question.
         """
+        # TODO: consider removing when next_rules is removed from public API.
         return SessionService._get_next_question(
-            self.question_graph_service.nx_graph,
-            self.question_graph_service.questions_by_id,
+            self.question_graph_service._nx_graph,
+            self.question_graph_service._questions_by_id,
             question,
             answer.payload
         )
 
-    def get_answers_by_analysis_key(self):
+    @property
+    def answers_by_analysis_key(self):
         """
-        Given (partially?) answered graph determine answers along current path.
-        """
-        # translate answers along path to dict keyed by question.analysis_key
-        return {a.question.analysis_key: a for a in self.path_answers_by_question_id.values()}
+        Dictionary of answers along current path keyed by question analysis key.
 
-    def get_answers_by_uuid(self):
-        return {a.question.uuid: a for a in self.path_answers_by_question_id.values()}
+        Note: for internal use, not over public API.
+        """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return {a.question.analysis_key: a for a in self._path_answers_by_question_id.values()}
+
+    @property
+    def answers_by_question_uuid(self):
+        """
+        Dictionary of answers along current path keyed by question UUID.
+
+        Note: for internal use, not over public API.
+        """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return {a.question.uuid: a for a in self._path_answers_by_question_id.values()}
 
     def get_extra_properties(self, category_url=None):
         """
         Given (partially?) answered graph determine answers along current path
         and return them in an Signal.extra_properties compatible dictionary.
         """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
         # TODO: double check against VNG forms implementation
         # Translate answers along path to dict keyed by question.analysis_key
         # TBD, still how do we mark answers with the proper category
         extra_props = []
-        for answer in self.path_answers_by_question_id.values():
+        for answer in self._path_answers_by_question_id.values():
             entry = {
                 'id': answer.question.analysis_key,
                 'label': answer.question.short_label,
@@ -193,19 +200,15 @@ class SessionService:
 
         return extra_props
 
-    def get_can_freeze(self):
-        """
-        Can the session under consideration be frozen (i.e. are all required
-        questions answered)?
-        """
-        return self.can_freeze
-
     def create_answer(self, answer_payload, question):
         """
         Answer a question, update session.started_at if needed.
         """
+        if not hasattr(self, '_nx_graph'):
+            self.refresh_from_db()
+
         # Check that question is actually part of relevant questionnaire:
-        if question.id not in self.question_graph_service.nx_graph.nodes():
+        if question.id not in self.question_graph_service._nx_graph.nodes():
             msg = f'Question (id={question.id}) not in questionnaire (id={self.session.questionnaire.id})!'
             raise django_validation_error(msg)
 
@@ -223,12 +226,106 @@ class SessionService:
         self.answer_service.validate_answer_payload(answer_payload, question)
 
         answer = Answer.objects.create(session=self.session, question=question, payload=answer_payload)
-        self.load_data()  # prevent stale data // TODO: consider only using load_session_data
+        self.refresh_from_db()  # prevent stale data // TODO: consider only using load_session_data or updating cache
         return answer
 
-    # These need to have knowledge of the different flows, and call the
-    # correct implementations.
+    def create_answers(self, answer_payloads, questions):
+        """
+        Answer several questions, do not raise ValidationErrors instead save
+        save a dictionary of errors keyed by question UUID on the SessionService
+        (subclass).
+
+        Note: to access the errors access the path_validation_errors property.
+        """
+        # We need all relevant data cached.
+        if not hasattr(self, '_can_freeze'):
+            self.refresh_from_db()
+
+        # Iterate through answer payloads and questions, validate them, collect
+        # any error (messages), and cache them on SessionService (subclass).
+        errors_by_uuid = {}
+        for answer_payload, question in zip(answer_payloads, questions):
+            try:
+                self.create_answer(answer_payload, question)
+            except (SessionExpired, SessionFrozen) as e:
+                # Expired sessions should raise not be possible to update
+                raise e
+            except django_validation_error as e:
+                # For validation errors we keep the error messages
+                errors_by_uuid[question.uuid] = e.message
+
+        # Cache our validation errors so that these can be accessed through the
+        # path_validation_errors property.
+        self._path_validation_errors_by_uuid = errors_by_uuid
+        return errors_by_uuid
+
+    @property
+    def can_freeze(self):
+        """
+        Can this session be frozen given current answers.
+        """
+        if not hasattr(self, '_can_freeze'):
+            self.refresh_from_db()
+        return self._can_freeze
+
+    @property
+    def path_questions(self):
+        """
+        List of questions along current path.
+
+        Note: current path may not extend to final question because of decision
+        points in question graph. As these decision points (questions) get
+        answered, the list of questions along current path may extend.
+        """
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return list(self._path_questions_by_id.values())
+
+    @property
+    def path_answered_question_uuids(self):
+        """
+        List of question UUIDs along current path that are answered.
+        """
+        # Note: by design no answers are returned here --- that may have
+        # security/privacy implications. TODO: get input from privacy officer.
+        # If we can send the answers back to the client, this would allow us
+        # to fully synchronize the backend and client states (desirable).
+        if not hasattr(self, '_path_answers_by_question_id'):
+            self.refresh_from_db()
+
+        return [a.question.uuid for a in self._path_answers_by_question_id.values()]
+
+    @property
+    def path_unanswered_question_uuids(self):
+        """
+        List of question UUIDs along current path that require an answer but
+        have none.
+        """
+        if not hasattr(self, '_path_unanswered_by_id'):
+            self.refresh_from_db()
+
+        return [q.uuid for q in self._path_unanswered_by_id.values()]
+
+    @property
+    def path_validation_errors_by_uuid(self):
+        """
+        Dictionary of validation error messages keyed by Question UUID.
+        """
+        if not hasattr(self, '_path_validation_errors_by_uuid'):
+            # This property is only set when answer_payloads were processed, if
+            # that was not the case we cannot just call self.refresh_from_db()
+            # because we have no access to answer payloads here. In this case
+            # we just return an empty validation errors dictionary.
+            return {}
+        return self._path_validation_errors_by_uuid
 
     def freeze(self):
+        """
+        Freeze the Session.
+
+        Note: this should be overridden by SessionService subclasses to add
+        custom session processing.
+        """
         self.session.frozen = True
         self.session.save()

@@ -26,3 +26,7 @@ class WrongFlow(Exception):
 
 class CannotFreeze(Exception):
     pass
+
+
+class CycleDetected(Exception):
+    pass

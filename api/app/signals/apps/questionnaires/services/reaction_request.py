@@ -125,9 +125,9 @@ class ReactionRequestSessionService(SessionService):
         Freeze self.session, apply reaction request business rules.
         """
         if refresh:
-            self.load_data()  # Make sure cache is not stale // TODO: this can raise, deal with it
+            self.refresh_from_db()  # Make sure cache is not stale // TODO: this can raise, deal with it
 
-        if not self.can_freeze:
+        if not self._can_freeze:
             msg = f'Session (uuid={self.session.uuid}) is not fully answered.'
             raise CannotFreeze(msg)
 
@@ -137,8 +137,7 @@ class ReactionRequestSessionService(SessionService):
 
         super().freeze()
 
-        answers = self.get_answers_by_analysis_key()
-        answer = answers['reaction']
+        answer = self.answers_by_analysis_key['reaction']
 
         Signal.actions.update_status(
             {'text': answer.payload, 'state': workflow.REACTIE_ONTVANGEN}, self.session._signal)

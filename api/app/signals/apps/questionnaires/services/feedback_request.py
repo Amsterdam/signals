@@ -125,9 +125,9 @@ class FeedbackRequestSessionService(SessionService):
         signal = self.session._signal
 
         if refresh:
-            self.load_data()  # Make sure cache is not stale // TODO: this can raise, deal with it
+            self.refresh_from_db()  # Make sure cache is not stale // TODO: this can raise, deal with it
 
-        if not self.can_freeze:
+        if not self._can_freeze:
             msg = f'Session (uuid={self.session.uuid}) is not fully answered.'
             raise CannotFreeze(msg)
 
@@ -137,7 +137,7 @@ class FeedbackRequestSessionService(SessionService):
 
         super().freeze()
 
-        answers_by_analysis_key = self.get_answers_by_analysis_key()
+        answers_by_analysis_key = self.answers_by_analysis_key
         payload_by_analysis_key = {k: a.payload for k, a in answers_by_analysis_key.items()}
 
         is_satisfied = payload_by_analysis_key['satisfied']
