@@ -10,12 +10,12 @@ class PermissionService(BasePermissionService):
     @staticmethod
     def _skip_permission_check(permission):
         """
-        The feature flag can be used to disable the permission, by default it is enabled
+        The feature flag can be used to disable the permission, by default the permission check is enabled
         """
-        flag = f'PERMISSION_{permission.upper()}'
+        flag = f'SKIP_PERMISSION_{permission.upper()}'
         if hasattr(settings, 'FEATURE_FLAGS') and flag in settings.FEATURE_FLAGS:
-            return not settings.FEATURE_FLAGS[flag]  # noqa Invert the flag if the check should not be skipped
-        return False  # By default the permission is enabled therefore return False, check should not be skipped
+            return settings.FEATURE_FLAGS[flag]
+        return False  # By default the permission check is enabled therefore return False
 
     @staticmethod
     def has_permission_via_department_routing(user, signal):

@@ -55,15 +55,16 @@ class TestSignalPermissionService(TestCase):
 
         self.assertFalse(PermissionService.has_signal_permission(self.user, self.signal))
 
-    @override_settings(FEATURE_FLAGS={'PERMISSION_VIA_CATEGORY': False})
+    @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_CATEGORY': True})
     def test_permission_via_category_check_disabled(self):
         self.assertTrue(PermissionService.has_permission_via_category(self.user, self.signal))
 
-    @override_settings(FEATURE_FLAGS={'PERMISSION_VIA_DEPARTMENT_ROUTING': False})
+    @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_DEPARTMENT_ROUTING': True})
     def test_permission_via_department_routing_check_disabled(self):
         self.assertTrue(PermissionService.has_permission_via_department_routing(self.user, self.signal))
 
-    @override_settings(FEATURE_FLAGS={'PERMISSION_VIA_CATEGORY': False, 'PERMISSION_VIA_DEPARTMENT_ROUTING': False})
+    @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_CATEGORY': True,
+                                      'SKIP_PERMISSION_VIA_DEPARTMENT_ROUTING': True})
     def test_super_user_has_signal_permission_permission_checks_disabled(self):
         sia_read = Permission.objects.get(codename='sia_read')
         self.user.user_permissions.add(sia_read)
