@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import TestCase, override_settings
 
-from signals.apps.services.domain.permissions.signal import PermissionService
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.factories import SignalFactory
 
 
@@ -25,43 +25,45 @@ class TestSignalPermissionService(TestCase):
         self.signal = SignalFactory.create()
 
     def test_super_user_has_permission(self):
-        self.assertTrue(PermissionService.has_permission(self.superuser, 'signals.sia_read'))
-        self.assertTrue(PermissionService.has_permission(self.superuser, 'signals.sia_read', self.signal))
+        self.assertTrue(SignalPermissionService.has_permission(self.superuser, 'signals.sia_read'))
+        self.assertTrue(SignalPermissionService.has_permission(self.superuser, 'signals.sia_read', self.signal))
 
-        self.assertFalse(PermissionService.has_permission(self.user, 'signals.sia_read'))
-        self.assertFalse(PermissionService.has_permission(self.user, 'signals.sia_read', self.signal))
+        self.assertFalse(SignalPermissionService.has_permission(self.user, 'signals.sia_read'))
+        self.assertFalse(SignalPermissionService.has_permission(self.user, 'signals.sia_read', self.signal))
 
     def test_super_user_has_permissions(self):
-        self.assertTrue(PermissionService.has_permissions(self.superuser, ['signals.sia_read', 'signals.sia_write']))
-        self.assertTrue(PermissionService.has_permissions(self.superuser, ['signals.sia_read', 'signals.sia_write'],
-                                                          self.signal))
+        self.assertTrue(SignalPermissionService.has_permissions(self.superuser,
+                                                                ['signals.sia_read', 'signals.sia_write']))
+        self.assertTrue(SignalPermissionService.has_permissions(self.superuser,
+                                                                ['signals.sia_read', 'signals.sia_write'],
+                                                                self.signal))
 
-        self.assertFalse(PermissionService.has_permissions(self.user, ['signals.sia_read', 'signals.sia_write']))
-        self.assertFalse(PermissionService.has_permissions(self.user, ['signals.sia_read', 'signals.sia_write'],
-                                                           self.signal))
+        self.assertFalse(SignalPermissionService.has_permissions(self.user, ['signals.sia_read', 'signals.sia_write']))
+        self.assertFalse(SignalPermissionService.has_permissions(self.user, ['signals.sia_read', 'signals.sia_write'],
+                                                                 self.signal))
 
     def test_super_user_has_permission_via_routing(self):
-        self.assertTrue(PermissionService.has_permission_via_department_routing(self.superuser, self.signal))
+        self.assertTrue(SignalPermissionService.has_permission_via_department_routing(self.superuser, self.signal))
 
-        self.assertFalse(PermissionService.has_permission_via_department_routing(self.user, self.signal))
+        self.assertFalse(SignalPermissionService.has_permission_via_department_routing(self.user, self.signal))
 
     def test_super_user_has_permission_via_category(self):
-        self.assertTrue(PermissionService.has_permission_via_category(self.superuser, self.signal))
+        self.assertTrue(SignalPermissionService.has_permission_via_category(self.superuser, self.signal))
 
-        self.assertFalse(PermissionService.has_permission_via_category(self.user, self.signal))
+        self.assertFalse(SignalPermissionService.has_permission_via_category(self.user, self.signal))
 
     def test_super_user_has_signal_permission(self):
-        self.assertTrue(PermissionService.has_signal_permission(self.superuser, self.signal))
+        self.assertTrue(SignalPermissionService.has_signal_permission(self.superuser, self.signal))
 
-        self.assertFalse(PermissionService.has_signal_permission(self.user, self.signal))
+        self.assertFalse(SignalPermissionService.has_signal_permission(self.user, self.signal))
 
     @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_CATEGORY': True})
     def test_permission_via_category_check_disabled(self):
-        self.assertTrue(PermissionService.has_permission_via_category(self.user, self.signal))
+        self.assertTrue(SignalPermissionService.has_permission_via_category(self.user, self.signal))
 
     @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_DEPARTMENT_ROUTING': True})
     def test_permission_via_department_routing_check_disabled(self):
-        self.assertTrue(PermissionService.has_permission_via_department_routing(self.user, self.signal))
+        self.assertTrue(SignalPermissionService.has_permission_via_department_routing(self.user, self.signal))
 
     @override_settings(FEATURE_FLAGS={'SKIP_PERMISSION_VIA_CATEGORY': True,
                                       'SKIP_PERMISSION_VIA_DEPARTMENT_ROUTING': True})
@@ -69,4 +71,4 @@ class TestSignalPermissionService(TestCase):
         sia_read = Permission.objects.get(codename='sia_read')
         self.user.user_permissions.add(sia_read)
 
-        self.assertTrue(PermissionService.has_signal_permission(self.user, self.signal))
+        self.assertTrue(SignalPermissionService.has_signal_permission(self.user, self.signal))

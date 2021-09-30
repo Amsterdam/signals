@@ -3,7 +3,7 @@
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
 
-from signals.apps.services.domain.permissions.signal import PermissionService
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 
 
 class SIABasePermission(BasePermission):
@@ -26,7 +26,7 @@ class SIABasePermission(BasePermission):
         if not request.user:
             return False
         permissions = self.get_required_permissions(method=request.method)
-        return PermissionService.has_permissions(request.user, permissions)
+        return SignalPermissionService.has_permissions(request.user, permissions)
 
 
 class SIAPermissions(SIABasePermission):
@@ -103,7 +103,7 @@ class ModelWritePermissions(DjangoModelPermissions):
 
 
 class SignalViewObjectPermission(DjangoModelPermissions):
-    permission_service = PermissionService
+    permission_service = SignalPermissionService
 
     def has_object_permission(self, request, view, obj):
         if self.permission_service.has_permission(request.user, 'signals.sia_can_view_all_categories'):

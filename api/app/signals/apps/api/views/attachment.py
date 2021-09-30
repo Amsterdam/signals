@@ -15,7 +15,7 @@ from signals.apps.api.serializers import (
     PublicSignalAttachmentSerializer
 )
 from signals.apps.api.views._base import PublicSignalGenericViewSet
-from signals.apps.services.domain.permissions.signal import PermissionService
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
 
@@ -47,7 +47,7 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, mixins.CreateModelMixi
         pk = self.kwargs.get('parent_lookup__signal__pk')
         signal_accessible = Signal.objects.filter(id=pk).filter_for_user(user).exists()
 
-        if not PermissionService.has_permission(user, 'signals.sia_can_view_all_categories'):
+        if not SignalPermissionService.has_permission(user, 'signals.sia_can_view_all_categories'):
             if not signal_accessible:
                 raise PermissionDenied()
         return super().get_queryset()

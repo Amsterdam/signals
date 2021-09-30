@@ -3,10 +3,10 @@
 from django.conf import settings
 from django.db.models import Q
 
-from signals.apps.services.domain.permissions.base import PermissionService as BasePermissionService
+from signals.apps.services.domain.permissions.base import PermissionService
 
 
-class PermissionService(BasePermissionService):
+class SignalPermissionService(PermissionService):
     @staticmethod
     def _skip_permission_check(permission):
         """
@@ -22,7 +22,7 @@ class PermissionService(BasePermissionService):
         if user.is_superuser:
             return True  # With great power comes great responsibility
 
-        if PermissionService._skip_permission_check(permission='VIA_DEPARTMENT_ROUTING'):
+        if SignalPermissionService._skip_permission_check(permission='VIA_DEPARTMENT_ROUTING'):
             return True  # The permission check is disabled therefore this method can return True
 
         return bool(
@@ -46,7 +46,7 @@ class PermissionService(BasePermissionService):
         if user.is_superuser:
             return True  # With great power comes great responsibility
 
-        if PermissionService._skip_permission_check(permission='VIA_CATEGORY'):
+        if SignalPermissionService._skip_permission_check(permission='VIA_CATEGORY'):
             return True  # The permission check is disabled therefore this method can return True
 
         return bool(
@@ -72,7 +72,7 @@ class PermissionService(BasePermissionService):
             return True  # With great power comes great responsibility
 
         has_read_permission = (
-                PermissionService.has_permission_via_category(user, signal) or
-                PermissionService.has_permission_via_department_routing(user, signal)
+                SignalPermissionService.has_permission_via_category(user, signal) or
+                SignalPermissionService.has_permission_via_department_routing(user, signal)
         )
-        return has_read_permission and PermissionService.has_permission(user, 'signals.sia_read')
+        return has_read_permission and SignalPermissionService.has_permission(user, 'signals.sia_read')

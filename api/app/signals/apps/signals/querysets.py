@@ -2,12 +2,12 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.db.models import Count, F, Max, QuerySet
 
-from signals.apps.services.domain.permissions.signal import PermissionService
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.services.domain.permissions.utils import make_permission_condition_for_user
 
 
 class SignalQuerySet(QuerySet):
-    permission_service = PermissionService
+    permission_service = SignalPermissionService
 
     def filter_for_user(self, user):
         if not self.permission_service.has_permission(user, 'signals.sia_can_view_all_categories'):
