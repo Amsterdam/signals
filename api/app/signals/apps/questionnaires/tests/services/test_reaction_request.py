@@ -46,6 +46,7 @@ class TestReactionRequestSessionService(TestCase):
         session = create_session_for_reaction_request(self.signal_reaction_requested)
         self.assertEqual(session.questionnaire.graph.first_question.label, self.signal_reaction_requested.status.text)
         self.assertEqual(session.questionnaire.flow, Questionnaire.REACTION_REQUEST)
+        self.assertEqual(session.questionnaire.is_active, True)
 
     def test_create_session_wrong_state(self):
         with self.assertRaises(WrongState):

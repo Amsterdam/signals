@@ -53,6 +53,7 @@ def create_session_for_reaction_request(signal):
         )
         graph = QuestionGraph.objects.create(first_question=question, name='Reactie gevraagd.')
         questionnaire = Questionnaire.objects.create(
+            is_active=True,
             graph=graph,
             name='Reactie gevraagd',
             flow=Questionnaire.REACTION_REQUEST,
