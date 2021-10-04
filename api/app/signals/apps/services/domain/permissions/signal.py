@@ -57,7 +57,6 @@ class SignalPermissionService(PermissionService):
                 )
             ).intersection(
                 signal.category_assignment.category.departments.filter(
-                    Q(categorydepartment__is_responsible=True) |
                     Q(categorydepartment__can_view=True)
                 ).values_list(
                     'pk',
