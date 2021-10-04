@@ -11,6 +11,7 @@ from signals.apps.api.app_settings import (
     SIGNALS_API_STATE_CLOSED_DISPLAY
 )
 from signals.apps.api.generics.serializers import SIAModelSerializer
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Status
 
@@ -40,7 +41,8 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                 and attrs.get('target_api') == Status.TARGET_API_SIGMAX):
 
             request = self.context.get('request')
-            if request and not request.user.has_perm('signals.push_to_sigmax'):
+
+            if request and not SignalPermissionService.has_permission(request.user, 'signals.push_to_sigmax'):
                 raise PermissionDenied({
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })

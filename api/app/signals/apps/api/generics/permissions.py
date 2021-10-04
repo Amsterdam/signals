@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-from django.conf import settings
 from rest_framework import exceptions
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
 
-from signals.apps.services.domain.signal_permission import SignalPermissionService
+from signals.apps.services.domain.permissions.signal import SignalPermissionService
 
 
 class SIABasePermission(BasePermission):
@@ -18,29 +17,16 @@ class SIABasePermission(BasePermission):
         'DELETE': [],
     }
 
-    def _skip_permission_check(self):
-        """
-        The feature flag can be used to disable the permission, by default it is enabled
-        So if we need to skip it we need to inverse the feature_flag setting
-        """
-        flag = 'PERMISSION_{}'.format(self.__class__.__name__.upper())
-        return not settings.FEATURE_FLAGS[flag] if flag in settings.FEATURE_FLAGS else False
-
     def get_required_permissions(self, method):
         if method not in self.perms_map:
             raise exceptions.MethodNotAllowed(method)
-
         return self.perms_map[method]
 
     def has_permission(self, request, *args, **kwargs):
-        if request.user:
-            if self._skip_permission_check():
-                return True
-
-            perms = self.get_required_permissions(method=request.method)
-            return request.user.has_perms(perms)
-        else:
+        if not request.user:
             return False
+        permissions = self.get_required_permissions(method=request.method)
+        return SignalPermissionService.has_permissions(request.user, permissions)
 
 
 class SIAPermissions(SIABasePermission):
@@ -117,18 +103,12 @@ class ModelWritePermissions(DjangoModelPermissions):
 
 
 class SignalViewObjectPermission(DjangoModelPermissions):
-    permission_service = SignalPermissionService()
+    permission_service = SignalPermissionService
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser or request.user.has_perm('signals.sia_can_view_all_categories'):  # noqa
+        if self.permission_service.has_permission(request.user, 'signals.sia_can_view_all_categories'):
             return True
-
-        read_permission = (
-            self.permission_service.has_permission_via_category(request.user, obj) or
-            self.permission_service.has_permission_via_routing(request.user, obj)
-        )
-
-        return read_permission and request.user.has_perm('signals.sia_read')
+        return self.permission_service.has_signal_permission(request.user, obj)
 
 
 class SIAReportPermissions(SIABasePermission):
