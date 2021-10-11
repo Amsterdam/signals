@@ -63,12 +63,14 @@ class TestRetrieveReactionRequest(ValidateJsonSchemaMixin, APITestCase):
         self.t_answer_in_time = self.t_creation + timedelta(seconds=seconds_open / 2)
         self.t_answer_too_late = self.t_creation + timedelta(seconds=seconds_open * 2)
 
-        self.signal = SignalFactory.create(
-            created_at=self.t_creation,
-            status__state=workflow.REACTIE_GEVRAAGD,
-            status__text='SOME QUESTION'
-        )
-        self.session = create_session_for_reaction_request(self.signal)
+        with freeze_time(self.t_creation):
+            self.signal = SignalFactory.create(
+                created_at=self.t_creation,
+                status__state=workflow.REACTIE_GEVRAAGD,
+                status__text='SOME QUESTION'
+            )
+            self.session = create_session_for_reaction_request(self.signal)
+
         self.assertIsInstance(self.session, Session)
         self.assertEqual(self.session._signal.status.state, workflow.REACTIE_GEVRAAGD)
 
@@ -95,6 +97,7 @@ class TestRetrieveReactionRequest(ValidateJsonSchemaMixin, APITestCase):
         """
         with freeze_time(self.t_answer_too_late):
             response = self.client.get(self.session_url)
+
         response_json = response.json()
 
         self.assertEqual(response.status_code, 410)
