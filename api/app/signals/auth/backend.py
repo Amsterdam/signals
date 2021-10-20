@@ -44,8 +44,8 @@ class JWTAuthBackend():
     """
     @staticmethod  # noqa: C901
     def authenticate(request):
-        authz_header = request.META.get('HTTP_AUTHORIZATION')
-        claims, user_id = JWTAccessToken.token_data(authz_header)
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        claims, user_id = JWTAccessToken.token_data(auth_header)
         if user_id == "ALWAYS_OK":
             user_id = settings.TEST_LOGIN
 

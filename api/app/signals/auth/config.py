@@ -4,13 +4,13 @@ import types
 
 from django.conf import settings as django_settings
 
-from .errors import AuthzConfigurationError
+from .errors import AuthConfigurationError
 
 # A sentinel object for required settings
 _required = object()
 
 # The Django settings key
-_settings_key = 'SIGNALS_AUTHZ'
+_settings_key = 'SIGNALS_AUTH'
 
 # A list of all available settings, with default values
 _available_settings = {
@@ -60,13 +60,13 @@ def load_settings():
     # Check for required but missing settings
     missing = _required_settings_keys - user_settings_keys
     if missing:
-        raise AuthzConfigurationError(
+        raise AuthConfigurationError(
             'Missing required {} config: {}'.format(_settings_key, missing))
 
     # Check for unknown settings
     unknown = user_settings_keys - _available_settings_keys
     if unknown:
-        raise AuthzConfigurationError(
+        raise AuthConfigurationError(
             'Unknown {} config params: {}'.format(_settings_key, unknown))
 
     # Merge defaults with provided settings
@@ -74,7 +74,7 @@ def load_settings():
     user_settings.update({key: _available_settings[key] for key in defaults})
 
     if not user_settings.get('JWKS') and not user_settings.get('JWKS_URL'):
-        raise AuthzConfigurationError(
+        raise AuthConfigurationError(
             'Either JWKS or JWKS_URL must be set, or both'
         )
 

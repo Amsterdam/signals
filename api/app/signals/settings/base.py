@@ -216,31 +216,10 @@ DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
 # Using `HEALTH_MODEL` for health check endpoint.
 HEALTH_MODEL = 'signals.Signal'
 
-# The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256   # noqa
-# This is a test public/private key def and added for testing .
-JWKS_TEST_KEY = """
-    {
-        "keys": [
-            {
-                "kty": "EC",
-                "key_ops": [
-                    "verify",
-                    "sign"
-                ],
-                "kid": "2aedafba-8170-4064-b704-ce92b7c89cc6",
-                "crv": "P-256",
-                "x": "6r8PYwqfZbq_QzoMA4tzJJsYUIIXdeyPA27qTgEJCDw=",
-                "y": "Cf2clfAfFuuCB06NMfIat9ultkMyrMQO9Hd2H7O9ZVE=",
-                "d": "N1vu0UQUp0vLfaNeM0EDbl4quvvL6m_ltjoAXXzkI3U="
-            }
-        ]
-    }
-"""
-
-SIGNALS_AUTHZ = {
+SIGNALS_AUTH = {
     'JWKS': os.getenv('PUB_JWKS'),
     'JWKS_URL': os.getenv('JWKS_URL'),
-    'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'sub').split(','),
+    'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(','),
     'ALWAYS_OK': False,
 }
 

@@ -3,7 +3,7 @@
 from django import http
 
 
-class AuthzConfigurationError(Exception):
+class AuthConfigurationError(Exception):
     """ Error for missing / invalid configuration"""
 
 
