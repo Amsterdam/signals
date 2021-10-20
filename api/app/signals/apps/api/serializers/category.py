@@ -67,7 +67,7 @@ class _NestedPrivateCategoryDepartmentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='department.id')
     code = serializers.CharField(source='department.code')
     name = serializers.CharField(source='department.name')
-    is_intern = serializers.CharField(source='department.is_intern')
+    is_intern = serializers.BooleanField(source='department.is_intern')
 
     class Meta:
         model = CategoryDepartment
