@@ -89,6 +89,12 @@ class PublicSessionSerializer(HALSerializer):
 
     _display = DisplayField()
 
+    can_freeze = serializers.SerializerMethodField()
+    path_questions = serializers.SerializerMethodField()
+    path_answered_question_uuids = serializers.SerializerMethodField()
+    path_unanswered_question_uuids = serializers.SerializerMethodField()
+    path_validation_errors_by_uuid = serializers.SerializerMethodField()
+
     class Meta:
         model = Session
         fields = (
@@ -99,12 +105,45 @@ class PublicSessionSerializer(HALSerializer):
             'submit_before',
             'duration',
             'created_at',
-        )
+            # generated using the SessionService in serializer context:
+            'can_freeze',
+            'path_questions',
+            'path_answered_question_uuids',
+            'path_unanswered_question_uuids',
+            'path_validation_errors_by_uuid'
+            )
         read_only_fields = (
             'id',
             'uuid',
             'created_at',
+            # generated using the SessionService in serializer context:
+            'can_freeze',
+            'path_questions',
+            'path_path_answered_question_uuids',
+            'path_unanswered_question_uuids',
+            'path_validation_errors_by_uuid'
         )
+
+    def get_can_freeze(self, obj):
+        session_service = self.context.get('session_service')
+        return session_service.can_freeze
+
+    def get_path_questions(self, obj):
+        session_service = self.context.get('session_service')
+        serializer = PublicQuestionSerializer(session_service.path_questions, many=True, context=self.context)
+        return serializer.data
+
+    def get_path_answered_question_uuids(self, obj):
+        session_service = self.context.get('session_service')
+        return session_service.path_unanswered_question_uuids
+
+    def get_path_unanswered_question_uuids(self, obj):
+        session_service = self.context.get('session_service')
+        return session_service.path_unanswered_question_uuids
+
+    def get_path_validation_errors_by_uuid(self, obj):
+        session_service = self.context.get('session_service')
+        return session_service.path_validation_errors_by_uuid
 
 
 class PublicSessionDetailedSerializer(PublicSessionSerializer):
@@ -157,3 +196,17 @@ class PublicAnswerSerializer(HALSerializer):
 
         session_service.refresh_from_db()
         return session_service.create_answer(payload, question)
+
+
+class PublicSessionAnswerSerializer(HALSerializer):
+    question_uuid = serializers.UUIDField()
+    payload = serializers.JSONField()
+
+    class Meta:
+        fields = (
+            'question_uuid',
+            'payload',
+        )
+        read_only_fields = (
+            'created_at',
+        )
