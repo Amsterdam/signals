@@ -63,7 +63,7 @@ class TestBackend(SignalsBaseApiTestCase):
         with self.assertRaises(AuthenticationFailed) as cm:
             decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
         e = cm.exception
-        self.assertTrue(str(e).startswith('API authz problem: invalid signature'))
+        self.assertTrue(str(e).startswith('API auth problem: invalid signature'))
 
     def test_auth_verify_bearer_token_missing_signature(self):
         keyset = get_keyset()
@@ -96,7 +96,7 @@ class TestBackend(SignalsBaseApiTestCase):
             with self.assertRaises(AuthenticationFailed) as cm:
                 decoded_claims, user_id = JWTAccessToken.token_data(bearer, True)
             e = cm.exception
-            self.assertTrue(str(e).startswith('API authz problem: token expired'))
+            self.assertTrue(str(e).startswith('API auth problem: token expired'))
 
     @skip('buggy test')
     @patch('signals.auth.tokens.JWTAccessToken.token_data')
