@@ -3663,6 +3663,7 @@ components:
             - 'SelectInput'
             - 'TextareaInput'
             - 'MapSelect'
+            - 'AssetSelect'
           example: CheckboxInput
         meta:
           type: object
