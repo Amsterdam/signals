@@ -38,24 +38,25 @@ class PDOKAddressValidation(BaseAddressValidation):
         query_dict.update({'fq': 'bron:BAG'})
         query_dict.update({'fq': 'type:adres'})
 
-        if 'woonplaats' in address and address["woonplaats"]:
-            query_dict.update({'fq': f'woonplaatsnaam:{address["woonplaats"]}'})
-        if 'postcode' in address and address["postcode"]:
-            query_dict.update({'fq': f'postcode:{address["postcode"]}'})
+        if 'woonplaats' in address and address['woonplaats'].strip():
+            query_dict.update({'fq': f'woonplaatsnaam:{address["woonplaats"].strip()}'})
+        if 'postcode' in address and address['postcode'].strip():
+            query_dict.update({'fq': f'postcode:{address["postcode"].strip()}'})
 
         # remove '', ' ' strings before formatting
         cleaned_pdok_list = filter(lambda item: item, map(str.strip, DEFAULT_PDOK_MUNICIPALITIES))
         query_dict.update({'fq': f'''gemeentenaam:("{'" "'.join(cleaned_pdok_list)}")'''})
 
-        straatnaam = address["openbare_ruimte"]
-        huisnummer = address["huisnummer"]
-        huisletter = address["huisletter"] if 'huisletter' in address and address["huisletter"] else ''
-        toevoeging = f'-{address["huisnummer_toevoeging"]}' if 'huisnummer_toevoeging' in address and address["huisnummer_toevoeging"] else ''  # noqa
+        straatnaam = address['openbare_ruimte'].strip()
+        huisnummer = str(address['huisnummer']).strip()
+        huisletter = address['huisletter'].strip() if 'huisletter' in address and address['huisletter'] else ''
+        toevoeging = f'-{address["huisnummer_toevoeging"].strip()}' if 'huisnummer_toevoeging' in address and address['huisnummer_toevoeging'] else ''  # noqa
 
         if lon and lat:
             query_dict.update({'lon': lon, 'lat': lat})
 
         query_dict.update({'q': f'{straatnaam} {huisnummer}{huisletter}{toevoeging}'})
+
         return query_dict
 
     def _search(self, address, lon=None, lat=None, *args, **kwargs):
