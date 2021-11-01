@@ -489,7 +489,7 @@ DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
 
 # use dynamic map server for pdf, empty by default
 # example servers
-# 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts/brtachtergrondkaart/EPSG:3857/{zoom}/{x}/{y}.png'
+# 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:28992/{z}/{x}/{y}.png'
 # 'https://a.tile.openstreetmap.org/{zoom}/{x}/{y}.png'
 DEFAULT_MAP_TILE_SERVER = os.getenv(
     'DEFAULT_MAP_TILE_SERVER',

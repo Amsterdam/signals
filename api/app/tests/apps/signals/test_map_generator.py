@@ -33,7 +33,7 @@ class MapGeneratorTest(TestCase):
         try:
             mg = MapGenerator()
             map = mg.make_map(
-                url_template="https://geodata.nationaalgeoregister.nl/tiles/service/wmts/brtachtergrondkaart/EPSG:3857/{zoom}/{x}/{y}.png", # noqa
+                url_template="https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:28992/{z}/{x}/{y}.png", # noqa
                 lat=52.0870974,
                 lon=4.3075533,
                 zoom=17,
