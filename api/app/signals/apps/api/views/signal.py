@@ -19,7 +19,6 @@ from rest_framework.viewsets import GenericViewSet, ViewSet
 from signals.apps.api.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
     SignalCreateInitialPermission,
@@ -33,7 +32,6 @@ from signals.apps.api.serializers import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
-    SignalGeoSerializer,
     SignalIdListSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
@@ -41,6 +39,7 @@ from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
+from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import PostOnlyNoUserRateThrottle
@@ -263,33 +262,35 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
     @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)
     def geography(self, request):
-        # Makes use of the optimised queryset
-        # Annotates the JSON in Postgres using the JSON_OBJECT and ST_AsGeoJSON functions available in Postgres
-        filtered_qs = self.filter_queryset(
+        """
+        POC Refactor for SIG-3988
+
+        TODO:
+            * Do we still want to use pagination in the headers? Or can we do without them?
+        """
+        feature_collection = {
+            'type': 'FeatureCollection'
+        }
+
+        feature_collection.update(self.filter_queryset(
             self.geography_queryset.annotate(
                 feature=JSONObject(
                     type=Value('Feature', output_field=CharField()),
                     geometrie=AsGeoJSON('location__geometrie'),
+                    geometry=AsGeoJSON('location__geometrie'),
                     properties=JSONObject(
                         id='id',
                         created_at='created_at',
                     ),
                 )
             ).filter_for_user(
-                user=self.request.user
+                user=request.user
             )
-        ).order_by(
-            'id'  # Oldest Signals first
-        )
+        ).aggregate(
+            features=JSONAgg('feature')
+        ))
 
-        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=4000)  # noqa page_size = 2.5 times the average signals made in a day, at this moment the highest average is 1600
-        page = paginator.paginate_queryset(filtered_qs, self.request, view=self)
-        if page is not None:
-            serializer = SignalGeoSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = SignalGeoSerializer(filtered_qs, many=True)
-        return Response(serializer.data)
+        return Response(feature_collection)
 
     @action(detail=True, url_path=r'children/?$')
     def children(self, request, pk=None):

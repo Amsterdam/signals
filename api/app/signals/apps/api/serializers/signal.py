@@ -6,7 +6,6 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework_gis.serializers import GeoFeatureModelListSerializer
 
 from signals.apps.api.fields import (
     PrivateSignalAttachmentRelatedField,
@@ -562,19 +561,6 @@ class SignalIdListSerializer(HALSerializer):
         fields = (
             'id',
         )
-
-
-class SignalGeoSerializer(serializers.Serializer):
-    feature = serializers.JSONField()
-
-    class Meta:
-        fields = ('feature', )  # feature must annotated on the queryset
-        list_serializer_class = GeoFeatureModelListSerializer  # We still use the GeoFeatureModelListSerializer
-
-    def to_representation(self, instance):
-        # TODO: Make this nicer instead of this hacky solution :)
-        representation = super(SignalGeoSerializer, self).to_representation(instance)
-        return representation['feature']
 
 
 class AbridgedChildSignalSerializer(HALSerializer):
