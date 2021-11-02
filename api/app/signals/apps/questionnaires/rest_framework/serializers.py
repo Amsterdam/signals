@@ -135,7 +135,7 @@ class PublicSessionSerializer(HALSerializer):
 
     def get_path_answered_question_uuids(self, obj):
         session_service = self.context.get('session_service')
-        return session_service.path_unanswered_question_uuids
+        return session_service.path_answered_question_uuids
 
     def get_path_unanswered_question_uuids(self, obj):
         session_service = self.context.get('session_service')
@@ -143,7 +143,8 @@ class PublicSessionSerializer(HALSerializer):
 
     def get_path_validation_errors_by_uuid(self, obj):
         session_service = self.context.get('session_service')
-        return session_service.path_validation_errors_by_uuid
+        # Possibly turn all UUIDs into str(UUID)s in SessionService.
+        return {str(k): v for k, v in session_service.path_validation_errors_by_uuid.items()}
 
 
 class PublicSessionDetailedSerializer(PublicSessionSerializer):
@@ -198,7 +199,7 @@ class PublicAnswerSerializer(HALSerializer):
         return session_service.create_answer(payload, question)
 
 
-class PublicSessionAnswerSerializer(HALSerializer):
+class PublicSessionAnswerSerializer(serializers.Serializer):
     question_uuid = serializers.UUIDField()
     payload = serializers.JSONField()
 

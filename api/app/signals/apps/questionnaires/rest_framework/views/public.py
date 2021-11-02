@@ -167,6 +167,7 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         # We demand an array of answers, even if only a single answer is present.
         serializer = PublicSessionAnswerSerializer(data=request.data, many=True)
+        serializer.is_valid()
 
         answer_payloads = []
         questions = []
@@ -174,6 +175,7 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         retrieval_errors_by_uuid = []
         for answer_data in serializer.data:
             uuid = answer_data['question_uuid']
+            assert isinstance(uuid, str)
             try:
                 question = Question.objects.get_by_reference(uuid)
             except Question.DoesNotExist as e:
