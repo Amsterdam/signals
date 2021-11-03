@@ -19,6 +19,7 @@ from rest_framework.viewsets import GenericViewSet, ViewSet
 from signals.apps.api.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
+from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
     SignalCreateInitialPermission,
@@ -263,10 +264,15 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)
     def geography(self, request):
         """
-        POC Refactor for SIG-3988
+        SIG-3988
 
-        TODO:
-            * Do we still want to use pagination in the headers? Or can we do without them?
+        To speed up the generation of the GeoJSON we are now skipping DRF serializers and are constructing the response
+        in the database using the same type of query as used in the PublicSignalMapViewSet.list method.
+
+        However we are not creating a raw query, instead we are creating the query in Django ORM and
+        annotating/aggregating the result in the database. This way we keep all the benefits of the SignalFilterSet and
+        the 'filter_for_user' functionality AND gain all the performance by skipping DRF and letting the database
+        generate the GeoJSON.
         """
         feature_collection = {
             'type': 'FeatureCollection'
@@ -290,7 +296,14 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             features=JSONAgg('feature')
         ))
 
-        return Response(feature_collection)
+        headers = []
+        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=4000)
+        page = paginator.paginate_queryset(feature_collection['features'], self.request, view=self)
+        if page is not None:
+            feature_collection['features'] = page
+            headers = paginator.get_pagination_headers()
+
+        return Response(feature_collection, headers=headers)
 
     @action(detail=True, url_path=r'children/?$')
     def children(self, request, pk=None):

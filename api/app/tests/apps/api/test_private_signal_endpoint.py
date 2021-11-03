@@ -151,15 +151,11 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()['features']), 2)
 
-        # TODO: Refactor this test if POC for SIG-3988 is accepted
         # Check headers
-        # self.assertTrue(response.has_header('Link'))
-        # self.assertTrue(response.has_header('X-Total-Count'))
-        # self.assertEqual(response['X-Total-Count'], '2')
+        self.assertTrue(response.has_header('Link'))
+        self.assertTrue(response.has_header('X-Total-Count'))
+        self.assertEqual(response['X-Total-Count'], '2')
 
-        # TODO: add GeoJSON schema check?
-
-    @skip('TODO: Refactor this test if POC for SIG-3988 is accepted')
     def test_geo_list_endpoint_paginated(self):
         # the first page
         response = self.client.get(f'{self.geo_list_endpoint}?page_size=1')
