@@ -3,6 +3,7 @@
 import os
 
 from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory, QuestionFactory
+from signals.apps.signals.models import Question
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -18,14 +19,15 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
             )
         )
 
+        super().setUp()
+
+    def test_category_question_list(self):
         question = QuestionFactory.create_batch(1)
         question2 = QuestionFactory.create_batch(1)
         self.parent_category = ParentCategoryFactory.create(questions=question2)
         CategoryFactory.create_batch(1, parent=self.parent_category, questions=question)
         self.parent_category.refresh_from_db()
-        super().setUp()
 
-    def test_category_question_list(self):
         endpoint_url = '/signals/v1/public/questions/'
         response = self.client.get(endpoint_url)
         self.assertEqual(response.status_code, 200)
@@ -58,3 +60,29 @@ class TestCategoryQuestionEndpoints(SignalsBaseApiTestCase):
         # JSONSchema validation
         self.assertJsonSchema(self.retrieve_sub_category_question_schema, data)
         self.assertEqual(data['count'], 2)
+
+    def test_category_question_field_types(self):
+        """
+        Create a question for every field type and check if they are returned correctly
+        """
+        category = ParentCategoryFactory.create(name='Category for field_type testing',
+                                                slug='question-field-type')
+        for field_type in list(dict(Question.FIELD_TYPE_CHOICES).keys()):
+            category.questions.clear()
+
+            question = QuestionFactory.create(field_type=field_type)
+            category.questions.add(question)
+            category.refresh_from_db()
+
+            response = self.client.get(f'/signals/v1/public/questions/?slug={category.slug}')
+            self.assertEqual(response.status_code, 200)
+
+            response_data = response.json()
+            self.assertJsonSchema(self.retrieve_sub_category_question_schema, response_data)
+            self.assertEqual(response_data['count'], 1)
+
+            result = response_data['results'][0]
+            self.assertEqual(result['key'], question.key)
+            self.assertEqual(result['field_type'], question.field_type)
+            self.assertEqual(result['meta'], question.meta)
+            self.assertEqual(result['required'], question.required)
