@@ -15,3 +15,4 @@ class SourceFactory(DjangoModelFactory):
     order = Sequence(lambda n: n)
     is_active = True
     is_public = False
+    can_be_selected = True

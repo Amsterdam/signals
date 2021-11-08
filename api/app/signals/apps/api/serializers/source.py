@@ -8,4 +8,4 @@ from signals.apps.signals.models import Source
 class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Source
-        fields = ('id', 'name', 'description', 'is_active', )
+        fields = ('id', 'name', 'description', 'is_active', 'can_be_selected', )
