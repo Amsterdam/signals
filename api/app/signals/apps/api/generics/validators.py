@@ -6,6 +6,21 @@ from rest_framework.serializers import ValidationError
 from signals.apps.signals.models import Signal, Source
 
 
+class PublicSignalSourceValidator:
+    def __call__(self, value, *args, **kwargs):
+        """
+        On the public endpoint we only allow sources that are active and for public use only
+        """
+        if value.lower() == Signal.SOURCE_DEFAULT_ANONYMOUS_USER.lower():
+            # No check is needed for the default source for anonymous users because it can or cannot be present in the
+            # Database. This is how the API worked before we added this validator (SIG-4026)
+            return value
+
+        if not Source.objects.filter(name__iexact=value, is_public=True, is_active=True).exists():
+            raise ValidationError('Invalid source given, value not known')
+        return value
+
+
 class SignalSourceValidator:
     requires_context = True
 
@@ -30,14 +45,19 @@ class SignalSourceValidator:
 
         user = serializer_field.context['request'].user
 
-        # If there is no user only the Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be given as a source
-        if not user and value.lower() != Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
-            raise ValidationError('Invalid source given for anonymous user')
-
-        # If there is no user and the previous check did not raised an ValidationError we can use
-        # the value. Otherwise we need to do some more checks
         if not user:
-            return value
+            # If there is no user check the following
+            if value.lower() != Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
+                # The Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be given as a source, if not raise an ValidationError
+                # Default behaviour of the API
+                raise ValidationError('Invalid source given for anonymous user')
+            elif not Source.objects.filter(name__iexact=value, is_public=True, is_active=True).exists():
+                # The given Source must be active and flagged as is_public otherwise raise an ValidationError
+                raise ValidationError('Invalid source given for anonymous user')
+            else:
+                # If there is no user and the previous check did not raised an ValidationError we can use
+                # the value. Otherwise we need to do some more checks
+                return value
 
         # If the user is not authenticated only the Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be
         # given as a source

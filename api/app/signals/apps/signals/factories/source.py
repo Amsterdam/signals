@@ -14,3 +14,4 @@ class SourceFactory(DjangoModelFactory):
     description = Sequence(lambda n: f'Beschrijving bron {n}')
     order = Sequence(lambda n: n)
     is_active = True
+    is_public = False
