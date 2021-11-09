@@ -16,6 +16,7 @@ from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ViewSet
 
+from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
@@ -296,7 +297,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         ))
 
         headers = []
-        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=4000)
+        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
         page = paginator.paginate_queryset(feature_collection['features'], self.request, view=self)
         if page is not None:
             feature_collection['features'] = page
