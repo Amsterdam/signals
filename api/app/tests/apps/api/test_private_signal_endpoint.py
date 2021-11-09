@@ -2057,6 +2057,15 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_delete_not_allowed_via_api(self):
+        # Signals are allowed to be deleted at the database level, but until it
+        # is known what requirements / restrictions are at REST API level we do
+        # not allow deletes via REST API.
+        self.client.force_authenticate(user=self.superuser)
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_2.id)
+        response = self.client.delete(detail_endpoint)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 class TestSignalChildrenEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
