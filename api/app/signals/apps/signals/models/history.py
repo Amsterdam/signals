@@ -15,7 +15,7 @@ class History(models.Model):
     _signal = models.ForeignKey('signals.Signal',
                                 related_name='history',
                                 null=False,
-                                on_delete=models.CASCADE)
+                                on_delete=models.DO_NOTHING)
     when = models.DateTimeField(null=True)
     what = models.CharField(max_length=255)
     who = models.CharField(max_length=255, null=True)  # old entries in database may have no user
