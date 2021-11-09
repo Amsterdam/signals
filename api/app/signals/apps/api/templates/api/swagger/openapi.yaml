@@ -19,6 +19,34 @@ paths:
     get:
       description: Signals list endpoint
       parameters:
+        - name: ordering
+          in: query
+          description: Order the result of this endpoint (ASC or DESC)
+          schema:
+            type: string
+            enum:
+              - id
+              - -id
+              - created_at
+              - -created_at
+              - updated_at
+              - -updated_at
+              - stadsdeel
+              - -stadsdeel
+              - sub_category
+              - -sub_category
+              - main_category
+              - -main_category
+              - status
+              - -status
+              - priority
+              - -priority
+              - address
+              - -address
+              - assigned_user_email
+              - -assigned_user_email
+          example: created_at
+          required: false
         - name: id
           in: query
           description: >-
