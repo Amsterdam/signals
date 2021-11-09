@@ -282,7 +282,6 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             self.geography_queryset.annotate(
                 feature=JSONObject(
                     type=Value('Feature', output_field=CharField()),
-                    geometrie=AsGeoJSON('location__geometrie'),
                     geometry=AsGeoJSON('location__geometrie'),
                     properties=JSONObject(
                         id='id',
