@@ -20,7 +20,7 @@ from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.pagination import LinkHeaderPagination
+from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
     SignalCreateInitialPermission,
@@ -275,11 +275,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         the 'filter_for_user' functionality AND gain all the performance by skipping DRF and letting the database
         generate the GeoJSON.
         """
-        feature_collection = {
-            'type': 'FeatureCollection'
-        }
-
-        feature_collection.update(self.filter_queryset(
+        # Annotate Signal queryset with GeoJSON features and filter it according
+        # to "Signalen" project access rules:
+        features_qs = self.filter_queryset(
             self.geography_queryset.annotate(
                 feature=JSONObject(
                     type=Value('Feature', output_field=CharField()),
@@ -292,22 +290,24 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             ).filter_for_user(
                 user=request.user
             )
-        ).aggregate(
-            features=JSONAgg('feature')
-        ))
+        )
 
+        # Paginate our queryset and turn it into a GeoJSON feature collection:
         headers = []
-        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
-        page = paginator.paginate_queryset(feature_collection['features'], self.request, view=self)
-        if page is not None:
-            feature_collection['features'] = page
+        feature_collection = {'type': 'FeatureCollection', 'features': []}
+        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
+        page_qs = paginator.paginate_queryset(features_qs, self.request, view=self)
+
+        if page_qs is not None:
+            features = page_qs.aggregate(features=JSONAgg('feature'))
+            feature_collection.update(features)
             headers = paginator.get_pagination_headers()
 
         return Response(feature_collection, headers=headers)
 
     @action(detail=True, url_path=r'children/?$')
     def children(self, request, pk=None):
-        """Show abbriged version of child signals for a given parent signal."""
+        """Show abridged version of child signals for a given parent signal."""
         # Based on a user's department a signal may not be accessible.
         signal_exists = Signal.objects.filter(id=pk).exists()
         signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()

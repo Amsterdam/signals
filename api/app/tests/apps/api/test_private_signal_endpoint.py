@@ -4,7 +4,7 @@ import copy
 import json
 import os
 from datetime import timedelta
-from unittest import expectedFailure, skip
+from unittest import skip
 from unittest.mock import patch
 
 import dateutil
@@ -189,11 +189,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         self.assertEqual(len(response.json()['features']), 1)
 
-    @expectedFailure
     @override_settings(DEBUG=True)  # we need access to the DB queries here
     @patch("signals.apps.api.views.signal.SIGNALS_API_GEO_PAGINATE_BY", 2)
     def test_geo_list_endpoint_queries(self):
-        """We want the database to paginate geography responses."""
         from django.db import connection
         SignalFactory.create_batch(size=8)
 
