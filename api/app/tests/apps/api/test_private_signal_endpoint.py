@@ -189,6 +189,30 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         self.assertEqual(len(response.json()['features']), 1)
 
+    @override_settings(DEBUG=True)  # we need access to the DB queries here
+    @patch("signals.apps.api.views.signal.SIGNALS_API_GEO_PAGINATE_BY", 2)
+    def test_geo_list_endpoint_queries(self):
+        from django.db import connection
+        SignalFactory.create_batch(size=8)
+
+        response = self.client.get(self.geo_list_endpoint + '?geopage=2')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['features']), 2)
+
+        # Check headers
+        self.assertTrue(response.has_header('Link'))
+        self.assertTrue(response.has_header('X-Total-Count'))
+        self.assertEqual(response['X-Total-Count'], '10')
+
+        # Confirm pagination is done in DB and not in Python
+        self.assertIn('LIMIT 2 OFFSET 2', connection.queries[-1]['sql'])
+
+        # Check the full set of Signals is not retrieved
+        with connection.cursor() as cursor:
+            cursor.execute(connection.queries[-1]['sql'])
+            retrieved = cursor.fetchall()
+        self.assertNotEqual(len(retrieved), Signal.objects.count())
+
     def test_detail_endpoint(self):
         response = self.client.get(self.detail_endpoint.format(pk=self.signal_no_image.id))
         self.assertEqual(response.status_code, 200)
