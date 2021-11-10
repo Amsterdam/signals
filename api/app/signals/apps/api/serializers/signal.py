@@ -6,8 +6,6 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework_gis.fields import GeometryField
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from signals.apps.api.fields import (
     PrivateSignalAttachmentRelatedField,
@@ -563,17 +561,6 @@ class SignalIdListSerializer(HALSerializer):
         fields = (
             'id',
         )
-
-
-class SignalGeoSerializer(GeoFeatureModelSerializer):
-    # For use with the "geography" action
-    location = GeometryField(source='location.geometrie')
-
-    class Meta:
-        model = Signal
-        id_field = False
-        geo_field = 'location'
-        fields = ['id', 'created_at']
 
 
 class AbridgedChildSignalSerializer(HALSerializer):

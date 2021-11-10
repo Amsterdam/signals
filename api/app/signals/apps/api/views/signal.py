@@ -5,6 +5,8 @@ import logging
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.conf import settings
 from django.db import connection
+from django.db.models import CharField, Value
+from django.db.models.functions import JSONObject
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -14,10 +16,11 @@ from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ViewSet
 
+from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet, SignalPromotedToParentFilter
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.api.generics.pagination import LinkHeaderPagination
+from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
     SignalCreateInitialPermission,
@@ -31,7 +34,6 @@ from signals.apps.api.serializers import (
     PrivateSignalSerializerList,
     PublicSignalCreateSerializer,
     PublicSignalSerializerDetail,
-    SignalGeoSerializer,
     SignalIdListSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
@@ -39,6 +41,8 @@ from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
+from signals.apps.signals.models.aggregates.json_agg import JSONAgg
+from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
 from signals.throttling import PostOnlyNoUserRateThrottle
 
@@ -258,29 +262,52 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, url_path=r'geography/?$')
+    @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)
     def geography(self, request):
-        # Makes use of the optimised queryset
-        filtered_qs = self.filter_queryset(
-            self.geography_queryset.filter_for_user(
-                user=self.request.user
+        """
+        SIG-3988
+
+        To speed up the generation of the GeoJSON we are now skipping DRF serializers and are constructing the response
+        in the database using the same type of query as used in the PublicSignalMapViewSet.list method.
+
+        However we are not creating a raw query, instead we are creating the query in Django ORM and
+        annotating/aggregating the result in the database. This way we keep all the benefits of the SignalFilterSet and
+        the 'filter_for_user' functionality AND gain all the performance by skipping DRF and letting the database
+        generate the GeoJSON.
+        """
+        # Annotate Signal queryset with GeoJSON features and filter it according
+        # to "Signalen" project access rules:
+        features_qs = self.filter_queryset(
+            self.geography_queryset.annotate(
+                feature=JSONObject(
+                    type=Value('Feature', output_field=CharField()),
+                    geometry=AsGeoJSON('location__geometrie'),
+                    properties=JSONObject(
+                        id='id',
+                        created_at='created_at',
+                    ),
+                )
+            ).filter_for_user(
+                user=request.user
             )
-        ).order_by(
-            'id'  # Oldest Signals first
         )
 
-        paginator = LinkHeaderPagination(page_query_param='geopage', page_size=4000)  # noqa page_size = 2.5 times the average signals made in a day, at this moment the highest average is 1600
-        page = paginator.paginate_queryset(filtered_qs, self.request, view=self)
-        if page is not None:
-            serializer = SignalGeoSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+        # Paginate our queryset and turn it into a GeoJSON feature collection:
+        headers = []
+        feature_collection = {'type': 'FeatureCollection', 'features': []}
+        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
+        page_qs = paginator.paginate_queryset(features_qs, self.request, view=self)
 
-        serializer = SignalGeoSerializer(filtered_qs, many=True)
-        return Response(serializer.data)
+        if page_qs is not None:
+            features = page_qs.aggregate(features=JSONAgg('feature'))
+            feature_collection.update(features)
+            headers = paginator.get_pagination_headers()
+
+        return Response(feature_collection, headers=headers)
 
     @action(detail=True, url_path=r'children/?$')
     def children(self, request, pk=None):
-        """Show abbriged version of child signals for a given parent signal."""
+        """Show abridged version of child signals for a given parent signal."""
         # Based on a user's department a signal may not be accessible.
         signal_exists = Signal.objects.filter(id=pk).exists()
         signal_accessible = Signal.objects.filter_for_user(request.user).filter(id=pk).exists()
