@@ -5,8 +5,6 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from signals.apps.signals.querysets import SignalQuerySet
-
 
 class LinkHeaderPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
@@ -69,6 +67,4 @@ class LinkHeaderPaginationForQuerysets(LinkHeaderPagination):
             self.display_page_controls = True
 
         self.request = request
-        assert isinstance(self.page.object_list, SignalQuerySet)
-
         return self.page.object_list
