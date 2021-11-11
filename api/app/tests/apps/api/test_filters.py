@@ -86,7 +86,7 @@ class TestFilters(SignalsBaseApiTestCase):
         self.signals = TestFilters.signals
         self.sub_categories = TestFilters.sub_categories
         self.states = TestFilters.states
-        SourceFactory.create(name='online')
+        SourceFactory.create(name='online', is_public=True)
         SourceFactory.create(name='ACC')
 
     def _request_filter_signals(self, filter_params: dict):

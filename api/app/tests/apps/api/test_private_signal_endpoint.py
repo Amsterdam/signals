@@ -110,7 +110,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             self.subcategory.parent.slug, self.subcategory.slug
         )
 
-        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='online', is_public=True, is_active=True)
         SourceFactory.create(name='valid-source', is_active=True)
 
         # Load fixture of initial data, augment with above test categories.
@@ -1386,8 +1386,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.post(self.list_endpoint, self.create_initial_data, format='json')
 
         self.assertEqual(400, response.status_code)
-        self.assertEqual(response.json()['source'][0],
-                         'Invalid source given for authenticated user')
+        self.assertEqual(response.json()['source'][0], 'Invalid source given for authenticated user')
 
     def test_validate_extra_properties_enabled(self):
         self.create_initial_data['extra_properties'] = [{
@@ -1712,7 +1711,7 @@ class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, S
     subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
 
     def setUp(self):
-        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='online', is_public=True, is_active=True)
         SourceFactory.create(name='test-api', is_active=True)
 
         self.department = DepartmentFactory.create(
