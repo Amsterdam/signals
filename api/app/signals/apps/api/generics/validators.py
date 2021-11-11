@@ -45,34 +45,10 @@ class SignalSourceValidator:
 
         user = serializer_field.context['request'].user
 
-        if not user:
-            # If there is no user check the following
-            if value.lower() != Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
-                # The Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be given as a source, if not raise an ValidationError
-                # Default behaviour of the API
-                raise ValidationError('Invalid source given for anonymous user')
-            elif not Source.objects.filter(name__iexact=value, is_public=True, is_active=True).exists():
-                # The given Source must be active and flagged as is_public otherwise raise an ValidationError
-                raise ValidationError('Invalid source given for anonymous user')
-            else:
-                # If there is no user and the previous check did not raised an ValidationError we can use
-                # the value. Otherwise we need to do some more checks
-                return value
-
-        # If the user is not authenticated only the Signal.SOURCE_DEFAULT_ANONYMOUS_USER can be
-        # given as a source
-        if not user.is_authenticated and value.lower() != Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
-            raise ValidationError('Invalid source given for anonymous user')
-
         # If the user is authenticated the Signal.SOURCE_DEFAULT_ANONYMOUS_USER CANNOT be given
         # as a source
         if user.is_authenticated and value.lower() == Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
             raise ValidationError('Invalid source given for authenticated user')
-
-        # If the user is not authenticated and the given Source is active and NOT flagged as is_public otherwise raise
-        # an ValidationError
-        if not user.is_authenticated and Source.objects.filter(name__iexact=value, is_public=False, is_active=True).exists():  # noqa
-            raise ValidationError('Invalid source given for anonymous user')
 
         # If the user is authenticated and the given Source is active and flagged as is_public otherwise raise an
         # ValidationError
