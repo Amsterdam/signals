@@ -21,7 +21,7 @@ from signals.apps.api.generics.permissions import (
     SignalCreateInitialPermission,
     SignalCreateNotePermission
 )
-from signals.apps.api.generics.validators import SignalSourceValidator
+from signals.apps.api.generics.validators import PublicSignalSourceValidator, SignalSourceValidator
 from signals.apps.api.serializers.nested import (
     _NestedCategoryModelSerializer,
     _NestedDepartmentModelSerializer,
@@ -501,6 +501,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
     Note: this is only used in the creation of new Signal instances, not to
     create the response body after a succesfull POST.
     """
+    source = serializers.CharField(default='online', validators=[PublicSignalSourceValidator()])
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     category = _NestedCategoryModelSerializer(source='category_assignment')
@@ -522,6 +523,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
     class Meta(object):
         model = Signal
         fields = (
+            'source',
             'text',
             'text_extra',
             'location',
@@ -550,8 +552,8 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
         category_assignment_data = validated_data.pop('category_assignment')
 
         status_data = {"state": workflow.GEMELD}
-        signal = Signal.actions.create_initial(
-            validated_data, location_data, status_data, category_assignment_data, reporter_data)
+        signal = Signal.actions.create_initial(validated_data, location_data, status_data, category_assignment_data,
+                                               reporter_data)
         return signal
 
 

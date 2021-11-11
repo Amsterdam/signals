@@ -2293,6 +2293,10 @@ components:
       description: JSON data for creation of Signal/melding (public version).
       type: object
       properties:
+        source:
+          description: This field is optional, if not given the source will be set to "online". Only Sources that are defined public can be used.
+          type: string
+          example: online
         text:
           type: string
           description: The complaint

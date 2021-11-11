@@ -11,7 +11,7 @@ from django.test import override_settings
 
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import CategoryFactory, SignalFactory
+from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from tests.apps.signals.attachment_helpers import small_gif
 from tests.test import SignalsBaseApiTestCase
@@ -354,3 +354,49 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         signal = Signal.objects.get(pk=data['id'])
         self.assertEqual(signal.source, 'online')  # online is model default and is used for non-logged in users
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_source_online(self, validate_address):
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data.update({'source': 'online'})
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(1, Signal.objects.count())
+
+        signal = Signal.objects.last()
+        self.assertEqual(signal.source, 'online')
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_source_with_is_public_property_set_to_true(self, validate_address):
+        public_source = SourceFactory.create(is_public=True)
+
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data.update({'source': public_source.name})
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(1, Signal.objects.count())
+
+        signal = Signal.objects.last()
+        self.assertEqual(signal.source, public_source.name)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_source_with_is_public_property_set_to_false(self, validate_address):
+        private_source = SourceFactory.create(is_public=False)
+
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+        create_initial_data.update({'source': private_source.name})
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(0, Signal.objects.count())
+
+        response_json = response.json()
+        self.assertEqual(len(response_json['source']), 1)
+        self.assertEqual(response_json['source'][0], 'Invalid source given, value not known')

@@ -45,7 +45,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     }
 
     def setUp(self):
-        SourceFactory.create(name='online', is_active=True)
+        SourceFactory.create(name='online', is_active=True, is_public=True)
         SourceFactory.create(name='Telefoon – ASC', is_active=True)
 
         self.main_category = ParentCategoryFactory.create(name='main', slug='main')
@@ -426,7 +426,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     def test_create_initial_child_signals_validate_source_online(self, validate_address):
         # Validating a valid source for child Signals causes a HTTP 500 in
         # SIA production, this testcase reproduces the problem.
-        SourceFactory.create(name='online', description='online')
+        SourceFactory.create(name='online', description='online', is_public=True)
 
         with self.settings(FEATURE_FLAGS=self.prod_feature_flags_settings):
             parent_signal = SignalFactory.create()
@@ -457,7 +457,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)
     def test_signal_ids_cannot_be_skipped(self, validate_address):
-        SourceFactory.create(name='online', description='online')
+        SourceFactory.create(name='online', description='online', is_public=True)
 
         with self.settings(FEATURE_FLAGS=self.prod_feature_flags_settings):
             parent_signal = SignalFactory.create()
@@ -502,3 +502,16 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
             ids = [entry['id'] for entry in response_json]
             self.assertEqual(ids[0] - parent_signal.id, 1)
             self.assertEqual(ids[1] - parent_signal.id, 2)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_signal_public_source(self, validate_address):
+        public_source = SourceFactory.create(name='app', is_public=True, is_active=True)
+        signal_count = Signal.objects.count()
+
+        initial_data = copy.deepcopy(self.initial_data_base)
+        initial_data['source'] = public_source.name
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Signal.objects.count(), signal_count)
