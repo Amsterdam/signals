@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0144_alter_question_field_type'),
+        ('signals', '0145_source_is_public'),
     ]
 
     operations = [
