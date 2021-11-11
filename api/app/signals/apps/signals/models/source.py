@@ -8,6 +8,8 @@ class Source(models.Model):
     description = models.TextField(max_length=3000)
     order = models.PositiveIntegerField(null=True)
     is_active = models.BooleanField(default=False)
+
+    # When is_public is set to True this Source can only be used when creating Signals using the public endpoint
     is_public = models.BooleanField(default=False)
 
     class Meta:

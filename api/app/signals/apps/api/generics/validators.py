@@ -69,4 +69,14 @@ class SignalSourceValidator:
         if user.is_authenticated and value.lower() == Signal.SOURCE_DEFAULT_ANONYMOUS_USER:
             raise ValidationError('Invalid source given for authenticated user')
 
+        # If the user is not authenticated and the given Source is active and NOT flagged as is_public otherwise raise
+        # an ValidationError
+        if not user.is_authenticated and Source.objects.filter(name__iexact=value, is_public=False, is_active=True).exists():  # noqa
+            raise ValidationError('Invalid source given for anonymous user')
+
+        # If the user is authenticated and the given Source is active and flagged as is_public otherwise raise an
+        # ValidationError
+        if user.is_authenticated and Source.objects.filter(name__iexact=value, is_public=True, is_active=True).exists():
+            raise ValidationError('Invalid source given for authenticated user')
+
         return value

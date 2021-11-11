@@ -506,7 +506,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_signal_public_source(self, validate_address):
-        public_source = SourceFactory.create(name='app', is_public=True, is_active=False)
+        public_source = SourceFactory.create(name='app', is_public=True, is_active=True)
         signal_count = Signal.objects.count()
 
         initial_data = copy.deepcopy(self.initial_data_base)
