@@ -1764,13 +1764,26 @@ paths:
   /signals/v1/private/sources/:
     get:
       description: Retrieve a list of signal sources.
+      parameters:
+        - name: "is_active"
+          in: query
+          description: Filter by "is_active" flag
+          schema:
+            type: boolean
+          required: false
+        - name: "can_be_selected"
+          in: query
+          description: Filter by "can_be_selected" flag
+          schema:
+            type: boolean
+          required: false
       responses:
         '200':
           description: List of signal sources
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/V1SourceList'
+                $ref: '#/components/schemas/V1SourceListV1SourceList'
         '404':
           description: Not Found.
 
