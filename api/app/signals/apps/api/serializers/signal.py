@@ -21,10 +21,6 @@ from signals.apps.api.generics.permissions import (
     SignalCreateInitialPermission,
     SignalCreateNotePermission
 )
-from signals.apps.api.generics.validators import (
-    PrivateSignalSourceValidator,
-    PublicSignalSourceValidator
-)
 from signals.apps.api.serializers.nested import (
     _NestedCategoryModelSerializer,
     _NestedDepartmentModelSerializer,
@@ -39,6 +35,10 @@ from signals.apps.api.serializers.nested import (
 from signals.apps.api.validation.address.mixin import AddressValidationMixin
 from signals.apps.api.validation.mixin import SignalValidationMixin
 from signals.apps.api.validators.extra_properties import ExtraPropertiesValidator
+from signals.apps.api.validators.source import (
+    PrivateSignalSourceValidator,
+    PublicSignalSourceValidator
+)
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal
 
