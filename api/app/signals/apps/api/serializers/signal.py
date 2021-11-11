@@ -21,7 +21,10 @@ from signals.apps.api.generics.permissions import (
     SignalCreateInitialPermission,
     SignalCreateNotePermission
 )
-from signals.apps.api.generics.validators import PublicSignalSourceValidator, SignalSourceValidator
+from signals.apps.api.generics.validators import (
+    PrivateSignalSourceValidator,
+    PublicSignalSourceValidator
+)
 from signals.apps.api.serializers.nested import (
     _NestedCategoryModelSerializer,
     _NestedDepartmentModelSerializer,
@@ -382,7 +385,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'has_children',
         )
         extra_kwargs = {
-            'source': {'validators': [SignalSourceValidator()]},
+            'source': {'validators': [PrivateSignalSourceValidator()]},
         }
 
     def get_has_attachments(self, obj):

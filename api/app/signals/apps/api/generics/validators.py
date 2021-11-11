@@ -21,7 +21,7 @@ class PublicSignalSourceValidator:
         return value
 
 
-class SignalSourceValidator:
+class PrivateSignalSourceValidator:
     requires_context = True
 
     def __call__(self, value, serializer_field):  # noqa: C901
