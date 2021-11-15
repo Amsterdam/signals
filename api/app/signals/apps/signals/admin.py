@@ -206,15 +206,6 @@ class RoutingExpressionAdmin(admin.ModelAdmin):
     list_display = ['_expression', '_department', 'is_active']
 
     def save_model(self, request, obj, form, change):
-        dept = form.cleaned_data.get('_department', None)
-        user = form.cleaned_data.get('_user', None)
-
-        if dept and user and not user.profile.departments.filter(id=dept.id):
-            messages.add_message(request, messages.WARNING, f'{user.email} is not part of department {dept.name}')
-            obj._user = None
-            if obj.is_active:
-                obj.is_active = False
-
         # if is_active is true, try to compile code, deactivate when invalid
         try:
             if obj.is_active:

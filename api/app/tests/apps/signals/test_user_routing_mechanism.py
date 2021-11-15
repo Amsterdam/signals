@@ -30,6 +30,7 @@ class TestRoutingMechanism(TestCase):
                                                            f'"{self.area.code}"')
 
         self.user = UserFactory.create()
+        self.user.profile.departments.add(self.department)
         RoutingExpressionFactory.create(_expression=self.location_expr, _department=self.department, _user=self.user,
                                         is_active=True, order=2)
 
