@@ -26,7 +26,7 @@ class RoutingExpression(models.Model):
         super(RoutingExpression, self).clean()
 
         errors = {}
-        if self._user and not self._user.profile.departments.filter(id=self._department.id).exists():
+        if self.is_active and self._user and not self._user.profile.departments.filter(id=self._department.id).exists():
             errors.update({
                 '_user': ValidationError(f'{self._user.username} is not part of department {self._department.name}')
             })
@@ -37,22 +37,3 @@ class RoutingExpression(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(RoutingExpression, self).save(*args, **kwargs)
-
-    # objects = models.Manager()
-
-    # def save(self, *args, **kwargs):
-    #     if not self.validate_user():
-    #         raise ValidationError(f'{self.user.username} is not part of department {self._department.name}')
-    #
-    #     super(RoutingExpression, self).save(*args, **kwargs)
-
-    # def validate_user(self):
-    #     """
-    #     If a User is set it MUST belong to the set Department
-    #     If no User is set return True, no need to check if None is a member of the set Department.
-    #     """
-    #     if not self._user:
-    #         return True  # No need to check if the user is a member of the department because no user is given
-    #
-    #     # Check if the user is a member of the given department
-    #     return self._user.profile.departments.filter(id=self._department.id).exists()

@@ -9,7 +9,7 @@ from signals.apps.users.factories import UserFactory
 
 
 class TestRoutingExpression(TestCase):
-    def test_routing_expression_with_valid_user(self):
+    def test_routing_expression_with_valid_user_and_active(self):
         department = DepartmentFactory.create()
         expression = ExpressionFactory.create()
         user = UserFactory.create()
@@ -27,7 +27,25 @@ class TestRoutingExpression(TestCase):
         self.assertEqual(routing_expression._department_id, department.id)
         self.assertEqual(routing_expression._user_id, user.id)
 
-    def test_routing_expression_with_invalid_user(self):
+    def test_routing_expression_with_valid_user_and_not_active(self):
+        department = DepartmentFactory.create()
+        expression = ExpressionFactory.create()
+        user = UserFactory.create()
+        user.profile.departments.add(department)
+
+        routing_expression = RoutingExpression(
+            _expression=expression,
+            _department=department,
+            _user=user,
+            order=1,
+            is_active=False,
+        )
+        routing_expression.save()
+
+        self.assertEqual(routing_expression._department_id, department.id)
+        self.assertEqual(routing_expression._user_id, user.id)
+
+    def test_routing_expression_with_invalid_user_and_active(self):
         department = DepartmentFactory.create()
         expression = ExpressionFactory.create()
         user = UserFactory.create()
@@ -40,5 +58,26 @@ class TestRoutingExpression(TestCase):
             is_active=True,
         )
 
+        with self.assertRaises(ValidationError):
+            routing_expression.save()
+
+    def test_routing_expression_with_invalid_user_and_update_active(self):
+        department = DepartmentFactory.create()
+        expression = ExpressionFactory.create()
+        user = UserFactory.create()
+
+        routing_expression = RoutingExpression(
+            _expression=expression,
+            _department=department,
+            _user=user,
+            order=1,
+            is_active=False,
+        )
+        routing_expression.save()
+
+        self.assertEqual(routing_expression._department_id, department.id)
+        self.assertEqual(routing_expression._user_id, user.id)
+
+        routing_expression.is_active = True
         with self.assertRaises(ValidationError):
             routing_expression.save()

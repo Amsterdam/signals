@@ -16,37 +16,61 @@ from signals.apps.users.factories import UserFactory
 
 
 class TestRoutingMechanism(TestCase):
-    dsl_service = SignalDslService()
-
-    def setUp(self):
-        geometry = geos.MultiPolygon([geos.Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
-        self.area = AreaFactory.create(geometry=geometry, name='centrum', code='centrum', _type__name='gebied',
-                                       _type__code='stadsdeel')
-
-        self.exp_routing_type = ExpressionTypeFactory.create(name="routing")
-        self.department = DepartmentFactory.create()
-        self.location_expr = ExpressionFactory.create(_type=self.exp_routing_type, name="test outside",
-                                                      code=f'location in areas."{self.area._type.name}".'
-                                                           f'"{self.area.code}"')
-
-        self.user = UserFactory.create()
-        self.user.profile.departments.add(self.department)
-        RoutingExpressionFactory.create(_expression=self.location_expr, _department=self.department, _user=self.user,
-                                        is_active=True, order=2)
-
     def test_routing_with_user(self):
-        signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
-        signal.refresh_from_db()
+        department = DepartmentFactory.create()
+        user = UserFactory.create()
+        user.profile.departments.add(department)
 
+        geometry = geos.MultiPolygon([geos.Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
+        area = AreaFactory.create(geometry=geometry, name='centrum', code='centrum', _type__name='gebied',
+                                  _type__code='stadsdeel')
+
+        expression_routing_type = ExpressionTypeFactory.create(name="routing")
+        expression = ExpressionFactory.create(_type=expression_routing_type, name="test outside",
+                                              code=f'location in areas."{area._type.name}"."{area.code}"')
+
+        RoutingExpressionFactory.create(_expression=expression, _department=department, _user=user)
+
+        signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
         self.assertIsNone(signal.user_assignment)
-        self.assertIsNone(signal.routing_assignment)
 
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal)
+        dsl_service = SignalDslService()
+
+        dsl_service.process_routing_rules(signal)
+
         signal.refresh_from_db()
+        self.assertEqual(signal.user_assignment.user.id, user.id)
 
-        self.assertIsNotNone(signal.user_assignment)
-        self.assertIsNotNone(signal.routing_assignment)
+    def test_routing_with_user_no_longer_member_of_department(self):
+        department = DepartmentFactory.create()
+        user = UserFactory.create()
+        user.profile.departments.add(department)
 
-        user = signal.user_assignment.user
-        self.assertEqual(user.id, self.user.id)
+        geometry = geos.MultiPolygon([geos.Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
+        area = AreaFactory.create(geometry=geometry, name='centrum', code='centrum', _type__name='gebied',
+                                  _type__code='stadsdeel')
+
+        expression_routing_type = ExpressionTypeFactory.create(name="routing")
+        expression = ExpressionFactory.create(_type=expression_routing_type, name="test outside",
+                                              code=f'location in areas."{area._type.name}"."{area.code}"')
+
+        routing_expression = RoutingExpressionFactory.create(_expression=expression, _department=department, _user=user)
+        self.assertTrue(routing_expression.is_active)
+
+        # In the mean time the user is no longer part of the department
+        user.profile.departments.remove(department)
+
+        signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
+        self.assertIsNone(signal.user_assignment)
+
+        # simulate apply routing rules
+        dsl_service = SignalDslService()
+
+        dsl_service.process_routing_rules(signal)
+
+        signal.refresh_from_db()
+        self.assertIsNone(signal.user_assignment)
+
+        routing_expression.refresh_from_db()
+        self.assertFalse(routing_expression.is_active)
