@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import re
 from unittest import expectedFailure
+from urllib.parse import quote
 
 from django.conf import settings
 from django.test import TestCase
@@ -198,3 +199,76 @@ class TestUtils(TestCase):
     def test_validate_template(self):
         self.assertTrue(validate_template('{{ text|lower }}'))
         self.assertFalse(validate_template('{{ text|lower:"a" }}'))  # TemplateSyntaxError
+
+    def test_make_email_context_with_encoded_urls(self):
+        test_schemas = ['http://', 'https://', 'ftp://', 'sftp://', 'file://', 'chrome://', 'chrome-extension://',
+                        'dns://', 'git://', 'irc://', 'ldap://', 'smb://', 'z39.50r://', 'z39.50s://', '', ]
+
+        test_uris = [
+            'test-domain.com',
+            'www.test-domain.com/',
+            'test-domain.com?query=param',
+            'test-domain.com/?query=param',
+            'www.test-domain.com/with/path?query=param',
+            'test-domain.com/with/path/?query=param',
+            'test-domain.com?query=param&extra=param',
+            'test-domain.com/?query=param&extra=param',
+            'www.test-domain.com/with/path?query=param&extra=param',
+            'test-domain.com/with/path/?query=param&extra=param',
+            'test-domain.com:8080',
+            'www.test-domain.com:8080/',
+            'user:password@test-domain.com',
+            'user:password@test-domain.com/',
+            'user:password@test-domain.com:8080',
+            'user:password@www.test-domain.com:8080/',
+            'test-domain.com:8080?query=param',
+            'test-domain.com:8080/?query=param&extra=param',
+            'user:password@test-domain.com?query=param',
+            'user:password@test-domain.com/?query=param&extra=param',
+            'user:password@test-domain.com:8080?query=param',
+            'user:password@test-domain.com:8080/?query=param&extra=param',
+            'test-domain.co.uk',
+            'www.test-domain.co.uk/',
+            'úêï.google',
+            'www.úêï.google/',
+            'strangetld.lol',
+            'strangetld.fun',
+            'strangetld.wow',
+            'strangetld.unicorn',
+            'www.example.com/just/a/path/',
+            'test.com',
+        ]
+
+        fake = Faker()
+        fake_text = fake.text(max_nb_chars=250)
+        position_to_insert = fake_text.find('.')
+
+        signal = SignalFactory.create()
+        for schema in test_schemas:
+            for uri in test_uris:
+                unquoted_url = f'{schema}{uri}'
+                quoted_url = quote(unquoted_url)
+                faked_text = f'{fake_text[:position_to_insert + 1]} {quoted_url} {fake_text[position_to_insert + 2:]}'
+
+                if schema:
+                    self.assertNotIn(unquoted_url, faked_text)
+                self.assertIn(quoted_url, faked_text)
+
+                signal.text = faked_text
+                signal.text_extra = faked_text
+                signal.save()
+
+                if schema:
+                    self.assertNotIn(unquoted_url, signal.text)
+                    self.assertNotIn(unquoted_url, signal.text_extra)
+
+                self.assertIn(quoted_url, signal.text)
+                self.assertIn(quoted_url, signal.text_extra)
+
+                context = make_email_context(signal=signal)
+
+                self.assertNotIn(unquoted_url, context['text'])
+                self.assertNotIn(unquoted_url, context['text_extra'])
+
+                self.assertNotIn(quoted_url, context['text'])
+                self.assertNotIn(quoted_url, context['text_extra'])
