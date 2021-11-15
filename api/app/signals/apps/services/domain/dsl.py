@@ -82,7 +82,7 @@ class SignalDslService(DslService):
     context_func = SignalContext()
     signal_manager = SignalManager()
 
-    def process_routing_rules(self, signal):
+    def process_routing_rules(self, signal):  # noqa C901
         ctx = self.context_func(signal)
         rules = RoutingExpression.objects.select_related('_expression', '_department')
         for rule in rules.filter(is_active=True, _expression___type__name='routing').order_by('order'):
@@ -104,12 +104,18 @@ class SignalDslService(DslService):
                 if eval_result:
                     # assign relation to department
                     data = {
-                        'departments': [
-                            {
-                                'id': rule._department.id
-                            }
-                        ]
+                        'routing_assignment': {
+                            'departments': [
+                                {
+                                    'id': rule._department.id
+                                }
+                            ]
+                        }
                     }
-                    self.signal_manager.update_routing_departments(data, signal)
+
+                    if rule._user:
+                        data['user_assignment'] = {'user': {'email': rule._user.email}}
+
+                    self.signal_manager.update_multiple(data, signal)
                     return True
         return False
