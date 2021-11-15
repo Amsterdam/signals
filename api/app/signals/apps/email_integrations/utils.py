@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import re
 from typing import Optional
+from urllib.parse import unquote
 
 from django.conf import settings
 from django.core.validators import URLValidator
@@ -74,12 +75,16 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
 
     For backwards compatibility the Signal and the Status are still added to the context
     """
+    # Decode the text and text_area before removing any URL to make sure that urlencoded URL's are also removed.
+    text = re.sub(URL_PATTERN, '', unquote(signal.text))
+    text_extra = re.sub(URL_PATTERN, '', unquote(signal.text_extra))
+
     context = {
         'signal_id': signal.id,
         'formatted_signal_id': signal.sia_id,
         'created_at': signal.created_at,
-        'text': re.sub(URL_PATTERN, '', signal.text),
-        'text_extra': re.sub(URL_PATTERN, '', signal.text_extra),
+        'text': text,
+        'text_extra': text_extra,
         'address': signal.location.address,
         'status_text': signal.status.text,
         'status_state': signal.status.state,
