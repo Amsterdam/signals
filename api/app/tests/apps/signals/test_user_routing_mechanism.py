@@ -34,7 +34,7 @@ class TestRoutingMechanism(TestCase):
         signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
         self.assertIsNone(signal.user_assignment)
 
-        # simulate apply routing rules
+        # simulate applying routing rules
         dsl_service = SignalDslService()
 
         dsl_service.process_routing_rules(signal)
@@ -60,6 +60,40 @@ class TestRoutingMechanism(TestCase):
 
         # In the mean time the user is no longer part of the department
         user.profile.departments.remove(department)
+
+        signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
+        self.assertIsNone(signal.user_assignment)
+
+        # simulate applying routing rules
+        dsl_service = SignalDslService()
+
+        dsl_service.process_routing_rules(signal)
+
+        signal.refresh_from_db()
+        self.assertIsNone(signal.user_assignment)
+
+        routing_expression.refresh_from_db()
+        self.assertFalse(routing_expression.is_active)
+
+    def test_routing_with_user_no_longer_active(self):
+        department = DepartmentFactory.create()
+        user = UserFactory.create()
+        user.profile.departments.add(department)
+
+        geometry = geos.MultiPolygon([geos.Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
+        area = AreaFactory.create(geometry=geometry, name='centrum', code='centrum', _type__name='gebied',
+                                  _type__code='stadsdeel')
+
+        expression_routing_type = ExpressionTypeFactory.create(name="routing")
+        expression = ExpressionFactory.create(_type=expression_routing_type, name="test outside",
+                                              code=f'location in areas."{area._type.name}"."{area.code}"')
+
+        routing_expression = RoutingExpressionFactory.create(_expression=expression, _department=department, _user=user)
+        self.assertTrue(routing_expression.is_active)
+
+        # In the mean time the user has been deactived
+        user.is_active = False
+        user.save()
 
         signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
         self.assertIsNone(signal.user_assignment)

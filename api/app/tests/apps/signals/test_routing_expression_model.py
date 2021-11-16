@@ -11,7 +11,7 @@ from signals.apps.users.factories import UserFactory
 class TestRoutingExpression(TestCase):
     """
     A User can only be assigned to a RoutingExpression if it is a member of the Department that is set on the same
-    RoutingExpression
+    RoutingExpression. Also the User must be active.
     """
     def test_routing_expression_with_valid_user_and_active(self):
         department = DepartmentFactory.create()
@@ -62,7 +62,15 @@ class TestRoutingExpression(TestCase):
             is_active=True,
         )
 
-        with self.assertRaises(ValidationError):
+        # User must be a member of the Department
+        with self.assertRaises(ValidationError, msg=f'{user.username} is not part of department {department.name}'):
+            routing_expression.save()
+
+        # Inactivate User is not allowed
+        user.profile.departments.add(department)
+        user.is_active = False
+        user.save()
+        with self.assertRaises(ValidationError, msg=f'{user.username} is not active'):
             routing_expression.save()
 
     def test_routing_expression_with_invalid_user_and_update_active(self):
@@ -87,6 +95,18 @@ class TestRoutingExpression(TestCase):
         self.assertEqual(routing_expression._department_id, department.id)
         self.assertEqual(routing_expression._user_id, user.id)
 
+        # User must be a member of the Department
         routing_expression.is_active = True
+        with self.assertRaises(ValidationError):
+            routing_expression.save()
+
+        # Inactivate User and not a member of the Department is not allowed
+        user.is_active = False
+        user.save()
+        with self.assertRaises(ValidationError):
+            routing_expression.save()
+
+        # Inactivate User is not allowed
+        user.profile.departments.add(department)
         with self.assertRaises(ValidationError):
             routing_expression.save()

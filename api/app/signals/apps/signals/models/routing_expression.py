@@ -26,10 +26,19 @@ class RoutingExpression(models.Model):
         super(RoutingExpression, self).clean()
 
         errors = {}
+        if self.is_active and self._user and not self._user.is_active:
+            if '_user' not in errors:
+                errors.update({'_user': []})
+            errors['_user'].extend(
+                ValidationError(f'{self._user.username} is not active')
+            )
+
         if self.is_active and self._user and not self._user.profile.departments.filter(id=self._department.id).exists():
-            errors.update({
-                '_user': ValidationError(f'{self._user.username} is not part of department {self._department.name}')
-            })
+            if '_user' not in errors:
+                errors.update({'_user': []})
+            errors['_user'].extend(
+                ValidationError(f'{self._user.username} is not part of department {self._department.name}')
+            )
 
         if errors:
             raise ValidationError(errors)
