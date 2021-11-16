@@ -82,10 +82,23 @@ class SignalDslService(DslService):
     context_func = SignalContext()
     signal_manager = SignalManager()
 
-    def process_routing_rules(self, signal):
+    def process_routing_rules(self, signal):  # noqa C901
         ctx = self.context_func(signal)
         rules = RoutingExpression.objects.select_related('_expression', '_department')
         for rule in rules.filter(is_active=True, _expression___type__name='routing').order_by('order'):
+            if rule._user and not rule._user.is_active:
+                # The user is no longer active so let's de activate the rule
+                rule.is_active = False
+                rule.save(update_fields=['is_active'])
+                continue  # Continue to the next rule
+
+            if (rule._department and rule._user
+                    and not rule._user.profile.departments.filter(id=rule._department.id).exists()):
+                # The user is no longer a member of the department so let's de activate the rule
+                rule.is_active = False
+                rule.save(update_fields=['is_active'])
+                continue  # Continue to the next rule
+
             evaluator = None
             try:
                 evaluator = self._compile(rule._expression.code)
@@ -104,12 +117,18 @@ class SignalDslService(DslService):
                 if eval_result:
                     # assign relation to department
                     data = {
-                        'departments': [
-                            {
-                                'id': rule._department.id
-                            }
-                        ]
+                        'routing_assignment': {
+                            'departments': [
+                                {
+                                    'id': rule._department.id
+                                }
+                            ]
+                        }
                     }
-                    self.signal_manager.update_routing_departments(data, signal)
+
+                    if rule._user:
+                        data['user_assignment'] = {'user': {'email': rule._user.email}}
+
+                    self.signal_manager.update_multiple(data, signal)
                     return True
         return False
