@@ -98,7 +98,7 @@ the `api` service.
 
 The Signals backend authenticates users through an external OpenID Connect
 provider. The backend performs a case-insensitive matches through the
-`USER_ID_FIELD` (default: email) to match users. Users need to exist in the
+`USER_ID_FIELDS` (default: "email") to match users. Users need to exist in the
 database first before they are allowed to login. Permissions are also handled
 in the backend.
 
