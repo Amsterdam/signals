@@ -91,7 +91,7 @@ class SignalDslService(DslService):
                 # The user is no longer a member of the department so let's de activate the rule
                 rule.is_active = False
                 rule.save(update_fields=['is_active'])
-                continue  # Something
+                continue
 
             evaluator = None
             try:

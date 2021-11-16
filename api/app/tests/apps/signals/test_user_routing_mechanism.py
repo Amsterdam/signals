@@ -64,7 +64,7 @@ class TestRoutingMechanism(TestCase):
         signal = SignalFactory.create(location__geometrie=geos.Point(4.88, 52.36))
         self.assertIsNone(signal.user_assignment)
 
-        # simulate apply routing rules
+        # simulate applying routing rules
         dsl_service = SignalDslService()
 
         dsl_service.process_routing_rules(signal)
