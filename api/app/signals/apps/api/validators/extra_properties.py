@@ -4,28 +4,19 @@ import json
 
 from jsonschema import ValidationError as JSONSchemaValidationError
 from jsonschema import validate
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 
 
-class ExtraPropertiesValidator(object):
-    requires_context = True
+class ExtraPropertiesValidator:
+    def __init__(self, filename):
+        with open(filename) as f:
+            self.schema = json.load(f)
 
-    def __init__(self, *args, **kwargs):
-        self.serializer_field = None
-        self.schema = None
-
-        filename = kwargs.pop('filename', None)
-        if filename:
-            with open(filename) as f:
-                self.schema = json.load(f)
-
-    def __call__(self, value, serializer_field):
-        self.serializer_field = serializer_field
-
+    def __call__(self, value):
         try:
             validate(instance=value, schema=self.schema)
         except JSONSchemaValidationError:
             # Transform jsonschema ValidationError to DRF ValidationError
-            raise ValidationError()
+            raise DRFValidationError()
         else:
             return value
