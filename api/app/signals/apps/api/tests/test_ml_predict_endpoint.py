@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from signals.apps.signals.factories import CategoryFactory
 from signals.apps.signals.models import Category
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestLegacyMlPredictCategory(SignalsBaseApiTestCase):

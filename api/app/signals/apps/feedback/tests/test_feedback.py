@@ -17,7 +17,7 @@ from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 # We want to keep these tests confined to the reusable application itself, see:
 # https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration

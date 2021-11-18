@@ -26,7 +26,7 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.models import Priority, Signal, SignalDepartments
 from signals.apps.signals.workflow import BEHANDELING, GEMELD, ON_HOLD
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestFilters(SignalsBaseApiTestCase):

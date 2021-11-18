@@ -4,7 +4,7 @@ import unittest
 
 from signals.apps.signals.factories import StoredSignalFilterFactory
 from signals.apps.signals.models import StoredSignalFilter
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

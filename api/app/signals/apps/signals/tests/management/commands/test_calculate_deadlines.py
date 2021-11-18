@@ -15,7 +15,7 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.management.commands.calculate_deadlines import HISTORY_MESSAGE, Command
 from signals.apps.signals.models import Signal
-from tests.test import SuperUserMixin
+from signals.test.utils import SuperUserMixin
 
 
 class TestCalculateDeadlines(APITestCase, SuperUserMixin):

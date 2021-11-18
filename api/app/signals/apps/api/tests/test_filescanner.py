@@ -18,7 +18,7 @@ from signals.apps.services.domain.filescanner import (
     UploadScannerService
 )
 from signals.apps.signals.factories import SignalFactory
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 

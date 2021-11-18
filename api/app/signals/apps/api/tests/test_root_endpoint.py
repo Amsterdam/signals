@@ -3,8 +3,8 @@
 import os
 
 from signals import API_VERSIONS
+from signals.test.utils import SignalsBaseApiTestCase
 from signals.utils.version import get_version
-from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')

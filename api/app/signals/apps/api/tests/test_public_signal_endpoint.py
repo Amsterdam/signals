@@ -13,8 +13,8 @@ from signals.apps.api.validation.address.base import AddressValidationUnavailabl
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
-from tests.apps.signals.attachment_helpers import small_gif
-from tests.test import SignalsBaseApiTestCase
+from signals.apps.signals.tests.attachment_helpers import small_gif
+from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 

@@ -7,7 +7,7 @@ from PIL import Image
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

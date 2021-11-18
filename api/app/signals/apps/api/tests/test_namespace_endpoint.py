@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestNamespaceEndpoint(SignalsBaseApiTestCase):

@@ -16,8 +16,13 @@ from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
 from signals.apps.signals.models import Signal
-from tests.apps.signals.valid_locations import ARENA, BLAUWE_THEEHUIS, FILMMUSEUM_EYE, STADHUIS
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
+from signals.apps.signals.tests.valid_locations import (
+    ARENA,
+    BLAUWE_THEEHUIS,
+    FILMMUSEUM_EYE,
+    STADHUIS
+)
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
 
 
 class NameSpace:

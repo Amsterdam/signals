@@ -21,7 +21,7 @@ from signals.apps.questionnaires.services.reaction_request import (
     get_reaction_url
 )
 from signals.apps.signals.models import Signal
-from tests.apps.signals.valid_locations import STADHUIS
+from signals.apps.signals.tests.valid_locations import STADHUIS
 
 
 def create_feedback_and_mail_context(signal: Signal):

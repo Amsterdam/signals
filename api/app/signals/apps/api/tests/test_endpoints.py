@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission
 
 from signals.apps.signals.factories import NoteFactory, SignalFactory
 from signals.apps.signals.models import Signal
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')

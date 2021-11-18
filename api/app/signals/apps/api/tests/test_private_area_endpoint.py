@@ -5,7 +5,7 @@ import os
 from rest_framework import status
 
 from signals.apps.signals.factories import AreaFactory, AreaTypeFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 

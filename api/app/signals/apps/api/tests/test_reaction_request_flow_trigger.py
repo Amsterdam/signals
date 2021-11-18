@@ -8,7 +8,7 @@ This transition is tested here. Checks fix for SIG-3887.
 """
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestReactionRequestFlowTrigger(SignalsBaseApiTestCase):

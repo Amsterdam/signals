@@ -5,7 +5,7 @@ from rest_framework import status
 
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, ParentCategoryFactory
 from signals.apps.signals.models import Department
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateDepartmentEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

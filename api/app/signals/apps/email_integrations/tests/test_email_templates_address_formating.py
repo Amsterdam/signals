@@ -10,7 +10,7 @@ from signals.apps.email_integrations.mail_actions import MailActions
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
 from signals.apps.signals.factories import SignalFactory
-from tests.apps.signals.valid_locations import STADHUIS
+from signals.apps.signals.tests.valid_locations import STADHUIS
 
 
 class TestEmailTemplateAddressFormatting(TestCase):

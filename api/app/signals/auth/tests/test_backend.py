@@ -11,7 +11,7 @@ from signals.auth.backend import JWTAuthBackend
 from signals.auth.config import get_settings
 from signals.auth.jwks import get_keyset
 from signals.auth.tokens import JWTAccessToken
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 
 class TestBackend(SignalsBaseApiTestCase):

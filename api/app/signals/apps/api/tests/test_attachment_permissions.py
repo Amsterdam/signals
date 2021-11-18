@@ -7,7 +7,7 @@ from signals.apps.signals.factories import (
     SignalFactory
 )
 from signals.apps.signals.models import Attachment
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

@@ -7,7 +7,7 @@ from django.test import override_settings
 from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.views import PublicSignalMapViewSet
 from signals.apps.signals.factories import SignalFactoryValidLocation
-from tests.test import SignalsBaseApiTestCase
+from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 

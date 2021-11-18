@@ -9,7 +9,7 @@ from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyFloat, FuzzyText
 
 from signals.apps.signals.models import STADSDELEN, Location
-from tests.apps.signals.valid_locations import VALID_LOCATIONS
+from signals.apps.signals.tests.valid_locations import VALID_LOCATIONS
 
 # Amsterdam.
 BBOX = [4.58565, 52.03560, 5.31360, 52.48769]

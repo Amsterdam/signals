@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group, Permission
 
 from signals.apps.signals.factories import DepartmentFactory
 from signals.apps.users.factories import GroupFactory, UserFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestUsersViews(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

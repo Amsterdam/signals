@@ -4,7 +4,7 @@
 from django.contrib.auth.models import Permission
 
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPDFView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

@@ -36,12 +36,12 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
 from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
-from tests.apps.signals.attachment_helpers import (
+from signals.apps.signals.tests.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
     small_gif
 )
-from tests.test import (
+from signals.test.utils import (
     SIAReadUserMixin,
     SIAReadWriteUserMixin,
     SIAWriteUserMixin,

@@ -9,7 +9,7 @@ from signals.apps.signals.factories import (
     ExpressionTypeFactory
 )
 from signals.apps.signals.models import ExpressionContext
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateExpressionEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

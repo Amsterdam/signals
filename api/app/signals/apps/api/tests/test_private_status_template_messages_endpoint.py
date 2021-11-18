@@ -3,7 +3,7 @@
 from django.contrib.auth.models import Permission
 
 from signals.apps.signals.factories import CategoryFactory, StatusMessageTemplateFactory
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTestCase):

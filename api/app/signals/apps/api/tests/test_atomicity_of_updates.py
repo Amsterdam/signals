@@ -21,7 +21,7 @@ from signals.apps.signals.managers import (
     update_type
 )
 from signals.apps.signals.models import Category
-from tests.test import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
 
