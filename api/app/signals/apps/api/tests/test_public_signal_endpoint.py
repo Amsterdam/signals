@@ -17,7 +17,6 @@ from tests.apps.signals.attachment_helpers import small_gif
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-SIGNALS_TEST_DATA_DIR = os.path.join(os.path.split(THIS_DIR)[0], 'signals', 'test-data')
 
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):
@@ -221,7 +220,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create()
 
-        doc_upload = os.path.join(SIGNALS_TEST_DATA_DIR, 'sia-ontwerp-testfile.doc')
+        doc_upload = os.path.join(THIS_DIR, 'test-data', 'sia-ontwerp-testfile.doc')
         with open(doc_upload, encoding='latin-1') as f:
             data = {"file": f}
 

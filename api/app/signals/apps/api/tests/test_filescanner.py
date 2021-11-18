@@ -21,12 +21,11 @@ from signals.apps.signals.factories import SignalFactory
 from tests.test import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(os.path.split(THIS_DIR)[0], 'signals', 'test-data')
 
-DOC_FILE = os.path.join(TEST_DATA_DIR, 'sia-ontwerp-testfile.doc')
-JPG_FILE = os.path.join(TEST_DATA_DIR, 'test.jpg')
-PNG_FILE = os.path.join(TEST_DATA_DIR, 'test.png')
-GIF_FILE = os.path.join(TEST_DATA_DIR, 'test.gif')
+DOC_FILE = os.path.join(THIS_DIR, 'test-data', 'sia-ontwerp-testfile.doc')
+JPG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.jpg')
+PNG_FILE = os.path.join(THIS_DIR, 'test-data', 'test.png')
+GIF_FILE = os.path.join(THIS_DIR, 'test-data', 'test.gif')
 
 ALLOWED = [
     (GIF_FILE, 'image/gif'),
