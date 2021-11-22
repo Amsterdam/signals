@@ -49,16 +49,6 @@ class UpdateModelMixin(mixins.UpdateModelMixin):
             raise convert_validation_error(e)
 
 
-class AddExtrasMixin:
-    """Mixin class to add extra values to the validated data."""
-
-    def add_user(self, data):
-        request = self.context.get('request')
-        if request.user and not request.user.is_anonymous:
-            data['user'] = request.user.get_username()
-        return data
-
-
 class WriteOnceMixin:
     """
     Serializer mixin to make fields only writeable at creation. When updating the field is set to
