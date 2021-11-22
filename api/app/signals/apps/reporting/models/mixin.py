@@ -12,8 +12,6 @@ import datetime
 from collections import defaultdict
 
 from dateutil.relativedelta import relativedelta
-from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError as DjangoValidationError
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
@@ -338,19 +336,3 @@ def validate_parameters(value):
     return value.
     """
     get_parameters(value)
-
-
-class ExportParametersMixin(models.Model):
-    """
-    Model mixin for SIA data export and report parameters.
-    """
-    class Meta:
-        abstract = True
-
-    export_parameters = JSONField(validators=[validate_parameters])
-
-    def get_parameters(self):
-        """
-        Derive export parameters t_begin, t_end, categories, areas.
-        """
-        return get_parameters(self.report_params)
