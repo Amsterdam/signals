@@ -10,15 +10,11 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 
 class TestTasks(TestCase):
-    signal = None
-
-    def setUp(self):
-        self.signal = SignalFactory.create()
-        self.prev_status = self.signal.status
-        self.signal.status = StatusFactory(_signal=self.signal, state=workflow.BEHANDELING)
-        self.signal.save()
-
-    @mock.patch('signals.apps.email_integrations.tasks.MailActions', autospec=True)
+    @mock.patch('signals.apps.email_integrations.tasks.MailService.mail', autospec=True)
     def test_send_mail_reporter_created(self, mocked_mail):
-        tasks.send_mail_reporter(pk=self.signal.id)
-        mocked_mail().apply.assert_called_once_with(self.signal.pk)
+        signal = SignalFactory.create()
+        signal.status = StatusFactory(_signal=signal, state=workflow.BEHANDELING)
+        signal.save()
+
+        tasks.send_mail_reporter(pk=signal.pk)
+        mocked_mail.assert_called_once_with(signal=signal.pk)
