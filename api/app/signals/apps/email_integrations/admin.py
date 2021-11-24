@@ -3,6 +3,8 @@
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
+from django.db import models
+from markdownx.widgets import AdminMarkdownxWidget
 
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import validate_email_template, validate_template
@@ -29,6 +31,9 @@ class EmailTemplateAdminForm(forms.ModelForm):
 @admin.register(EmailTemplate)
 class EmailTemplate(admin.ModelAdmin):
     change_form_template = 'admin/change_email_template_form.html'
+    formfield_overrides = {
+        models.TextField: {'widget': AdminMarkdownxWidget},
+    }
 
     list_display = ('key', 'title', )
     readonly_fields = ('created_by', )

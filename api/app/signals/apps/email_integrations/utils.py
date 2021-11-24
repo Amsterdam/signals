@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.validators import URLValidator
 from django.template import Context, Template
 from django.utils.timezone import now
+from mistune import create_markdown
 
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.feedback.models import Feedback
@@ -139,3 +140,11 @@ def validate_template(template: str) -> bool:
         return False
     else:
         return True
+
+
+def markdownx_md(value):
+    """
+    Util function for the markdownx Django Admin preview functionality to make sure it is rendered with Mistune
+    """
+    render_markdown = create_markdown(escape=True)
+    return render_markdown(value)

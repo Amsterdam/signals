@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'djcelery_email',
+    'markdownx',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_gis',
@@ -520,3 +521,6 @@ ALLOW_INVALID_ADDRESS_AS_UNVERIFIED = os.getenv('ALLOW_INVALID_ADDRESS_AS_UNVERI
 
 # Max instances we allow per Category/State combination
 STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES', 20)
+
+MARKDOWNX_MARKDOWNIFY_FUNCTION = 'signals.apps.email_integrations.utils.markdownx_md'  # noqa Renders markdown as HTML using Mistune
+MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Signals has for markdownx
