@@ -5,6 +5,43 @@
     <div>
         <h1>Extra informatie</h1>
         {% verbatim %}
+
+        <h2>Opmaak</h2>
+        <p>
+            Voor het opmaken van de e-mail templates maken we gebruik van markdown.
+            <br/>
+            Een zin op de volgende regel starten doet u door de voorgaande regel te beëindigen met 2 spaties.
+
+            <br/><br/>
+            Enkele voorbeelden:
+        </p>
+
+        <h3>Nadruk</h3>
+        <ul>
+            <li>**dik gedrukt**</li>
+            <li>*cursief gedrukt*</li>
+            <li>_cursief gedrukt_</li>
+        </ul>
+
+        <h3>Headers</h3>
+        <ul>
+            <li># Dit is een H1</li>
+            <li>## Dit is een H2</li>
+            <li>### Dit is een H3</li>
+        </ul>
+
+        <h3>Links</h3>
+        <ul>
+            <li>[meldingen.amsterdam.nl](https://meldingen.amsterdam.nl/)</li>
+        </ul>
+
+        <p>
+            Meer informatie over de markdown syntax vind u <a target="_blank" href="https://www.markdownguide.org/cheat-sheet/">hier</a>.
+            Niet alle syntax zal ondersteund worden door de applicatie. U ziet naast de textarea boven in dit scherm een voorbeeld van de daadwerkelijke opmaak.
+        </p>
+
+        <h2>Gegevens van de melding</h2>
+
         <p>
             Bij het maken van de templates zijn er gegevens beschikbaar van de melding. Deze kunt u
             gebruiken door de variabelen in de tekst te plaatsen tussen '{{' en '}}'. Bijvoorbeeld:
@@ -14,7 +51,7 @@
         </p>
         {% endverbatim %}
 
-        <h2>Variabelen</h2>
+        <h3>Variabelen</h3>
         <ul>
             <li>signal_id</li>
             <li>formatted_signal_id</li>
@@ -28,7 +65,7 @@
             <li>ORGANIZATION_NAME</li>
         </ul>
 
-        <h2>Verouderde variabelen</h2>
+        <h3>Verouderde variabelen</h3>
         <p>
             Mocht uw template nog een van de volgende variabellen gebruiken zet dit dan z.s.m. om.
             Deze zullen z.s.m. worden verwijderd!
