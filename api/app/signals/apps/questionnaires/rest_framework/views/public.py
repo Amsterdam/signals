@@ -15,6 +15,7 @@ from signals.apps.questionnaires.rest_framework.serializers import (
     PublicQuestionnaireDetailedSerializer,
     PublicQuestionnaireSerializer,
     PublicQuestionSerializer,
+    PublicSessionAnswerSerializer,
     PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
@@ -134,6 +135,16 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         return session_service.session
 
+    def retrieve(self, request, *args, **kwargs):
+        session = self.get_object()
+        session_service = get_session_service(session)  # TODO: error handling
+
+        context = self.get_serializer_context()
+        context['session_service'] = session_service
+
+        serializer = self.serializer_detail_class(session, context=context)
+        return Response(serializer.data, status=200)
+
     @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
     def submit(self, request, *args, **kwargs):
         # TODO: calls to this endpoint are not idempotent, investigate whether
@@ -142,5 +153,43 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         session_service = get_session_service(session)  # TODO: error handling
         session_service.freeze()
 
-        serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
+        context = self.get_serializer_context()
+        context['session_service'] = session_service
+
+        serializer = self.serializer_detail_class(session, context=context)
+        return Response(serializer.data, status=200)
+
+    @action(detail=True, url_path=r'answers/?$', methods=['POST', ])
+    def answers(self, request, *args, **kwargs):
+        # TODO: finish / test
+        session = self.get_object()
+        session_service = get_session_service(session)
+
+        # We demand an array of answers, even if only a single answer is present.
+        serializer = PublicSessionAnswerSerializer(data=request.data, many=True)
+        serializer.is_valid()
+
+        answer_payloads = []
+        questions = []
+
+        retrieval_errors_by_uuid = []
+        for answer_data in serializer.data:
+            uuid = answer_data['question_uuid']
+            assert isinstance(uuid, str)
+            try:
+                question = Question.objects.get_by_reference(uuid)
+            except Question.DoesNotExist as e:
+                # we silently ignore retrieval errors for now (UUIDs to non existant questions)
+                retrieval_errors_by_uuid[answer_data[uuid]] = str(e)
+                continue
+
+            answer_payloads.append(answer_data['payload'])
+            questions.append(question)
+
+        session_service.create_answers(answer_payloads, questions)
+        context = self.get_serializer_context()
+        context['session_service'] = session_service  # session_service will have our validation errors
+
+        serializer = self.serializer_detail_class(session, context=context)
+        # TODO, consider status code - possibly return 400 if all answers were rejected
         return Response(serializer.data, status=200)
