@@ -234,7 +234,11 @@ class TestAutoCreateChildrenServiceService(TestCase):
         self.assertFalse(signal.is_parent)
         self.assertEqual(signal.children.count(), 0)
 
-    def test_signal_kapot_to_vol(self):
+    @mock.patch(
+        'signals.apps.services.domain.auto_create_children.service.CreateChildrenContainerAction._get_container_location',  # noqa
+        autospec=True
+    )
+    def test_signal_kapot_to_vol(self, mocked):
         """
         Check that complaints in one of the broken container categories get
         children in one of the full container categories.
@@ -253,6 +257,7 @@ class TestAutoCreateChildrenServiceService(TestCase):
             self.assertFalse(signal.is_parent)
             self.assertEqual(signal.children.count(), 0)
 
+            mocked.return_value = signal.location.geometrie
             AutoCreateChildrenService.run(signal_id=signal.pk)
 
             signal.refresh_from_db()
