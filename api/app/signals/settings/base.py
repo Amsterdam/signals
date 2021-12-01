@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
+    'signals.apps.xperimental',
 
     'change_log',
 
@@ -381,6 +382,12 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console', ],
+        #     'propagate': True,
+        # },
     },
 }
 
