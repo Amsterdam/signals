@@ -13,16 +13,20 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
             'sharing_allowed',
         )
 
-    def to_representation(self, *args, **kwargs):
+    def to_representation(self, instance):
         """
         For backwards compatibility we replace null in email and phone fields with empty string.
         """
-        serialized = super().to_representation(*args, **kwargs)
+        serialized = super().to_representation(instance)
 
-        for fieldname, representation in serialized.items():
-            if fieldname in ['email', 'phone']:
-                if representation is None:
-                    serialized[fieldname] = ''
+        user = self.context['request'].user if 'request' in self.context else None
+        if not user.has_perm('signals.sia_can_view_contact_details'):
+            serialized['email'] = '*****' if serialized['email'] is not None else ''
+            serialized['phone'] = '*****' if serialized['phone'] is not None else ''
+        else:
+            serialized['email'] = serialized['email'] if serialized['email'] is not None else ''
+            serialized['phone'] = serialized['phone'] if serialized['phone'] is not None else ''
+
         return serialized
 
     def to_internal_value(self, data):

@@ -1432,6 +1432,10 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         empty strings to null / None. We want to keep the REST API stable,
         hence this test. (related to SIG-1976)
         """
+        permission = Permission.objects.get(codename='sia_can_view_contact_details')
+        self.sia_read_write_user.user_permissions.add(permission)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_with_image.id)
 
         # first check serialization when values are not None
@@ -1453,6 +1457,153 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response_json = response.json()
         self.assertEqual(response_json['reporter']['email'], '')
         self.assertEqual(response_json['reporter']['phone'], '')
+
+    def test_no_permissions_to_view_contact_details(self):
+        """
+        SIG-4160 - [BE] Rechten op contactgegevens
+
+        When a user has no "sia_can_view_contact_details" and there is an email and/or phone they should be rendered as
+        "*****". If there is no email and/or phone they should still render as "".
+        """
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_with_image.id)
+
+        self.signal_with_image.reporter.email = 'm.elder@example.com'
+        self.signal_with_image.reporter.phone = '0123456789'
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '*****')
+        self.assertEqual(response_json['reporter']['phone'], '*****')
+
+        self.signal_with_image.reporter.email = 'm.elder@example.com'
+        self.signal_with_image.reporter.phone = None
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '*****')
+        self.assertEqual(response_json['reporter']['phone'], '')
+
+        self.signal_with_image.reporter.email = None
+        self.signal_with_image.reporter.phone = '0123456789'
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '')
+        self.assertEqual(response_json['reporter']['phone'], '*****')
+
+        self.signal_with_image.reporter.email = None
+        self.signal_with_image.reporter.phone = None
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '')
+        self.assertEqual(response_json['reporter']['phone'], '')
+
+    def test_list_no_permissions_to_view_contact_details(self):
+        """
+        SIG-4160 - [BE] Rechten op contactgegevens
+
+        When a user has no "sia_can_view_contact_details" and there is an email and/or phone they should be rendered as
+        "*****". If there is no email and/or phone they should still render as "".
+        """
+        now = timezone.now()
+        with freeze_time(now + timedelta(minutes=10)):
+            signal_with_email_and_phone = SignalFactoryWithImage.create()
+            signal_with_email_and_phone.reporter.email = 'm.elder@example.com'
+            signal_with_email_and_phone.reporter.phone = '0123456789'
+            signal_with_email_and_phone.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=20)):
+            signal_only_email = SignalFactoryWithImage.create()
+            signal_only_email.reporter.email = 'm.elder@example.com'
+            signal_only_email.reporter.phone = None
+            signal_only_email.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=30)):
+            signal_only_phone = SignalFactoryWithImage.create()
+            signal_only_phone.reporter.email = None
+            signal_only_phone.reporter.phone = '0123456789'
+            signal_only_phone.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=40)):
+            signal_no_email_no_phone = SignalFactoryWithImage.create()
+            signal_no_email_no_phone.reporter.email = None
+            signal_no_email_no_phone.reporter.phone = None
+            signal_no_email_no_phone.reporter.save()
+
+        response = self.client.get(self.list_endpoint, data={'created_after': now + timedelta(minutes=9)})
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 4)
+        self.assertEqual(len(response_json['results']), 4)
+
+        self.assertEqual(response_json['results'][3]['reporter']['email'], '*****')
+        self.assertEqual(response_json['results'][3]['reporter']['phone'], '*****')
+
+        self.assertEqual(response_json['results'][2]['reporter']['email'], '*****')
+        self.assertEqual(response_json['results'][2]['reporter']['phone'], '')
+
+        self.assertEqual(response_json['results'][1]['reporter']['email'], '')
+        self.assertEqual(response_json['results'][1]['reporter']['phone'], '*****')
+
+        self.assertEqual(response_json['results'][0]['reporter']['email'], '')
+        self.assertEqual(response_json['results'][0]['reporter']['phone'], '')
+
+    def test_list_permissions_to_view_contact_details(self):
+        """
+        SIG-4160 - [BE] Rechten op contactgegevens
+
+        When a user has the "sia_can_view_contact_details" and there is an email and/or phone they should be rendered as
+        their database value or a "" if the value is None
+        """
+        permission = Permission.objects.get(codename='sia_can_view_contact_details')
+        self.sia_read_write_user.user_permissions.add(permission)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        now = timezone.now()
+        with freeze_time(now + timedelta(minutes=10)):
+            signal_with_email_and_phone = SignalFactoryWithImage.create()
+            signal_with_email_and_phone.reporter.email = 'm.elder@example.com'
+            signal_with_email_and_phone.reporter.phone = '0123456789'
+            signal_with_email_and_phone.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=20)):
+            signal_only_email = SignalFactoryWithImage.create()
+            signal_only_email.reporter.email = 'm.elder@example.com'
+            signal_only_email.reporter.phone = None
+            signal_only_email.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=30)):
+            signal_only_phone = SignalFactoryWithImage.create()
+            signal_only_phone.reporter.email = None
+            signal_only_phone.reporter.phone = '0123456789'
+            signal_only_phone.reporter.save()
+
+        with freeze_time(now + timedelta(minutes=40)):
+            signal_no_email_no_phone = SignalFactoryWithImage.create()
+            signal_no_email_no_phone.reporter.email = None
+            signal_no_email_no_phone.reporter.phone = None
+            signal_no_email_no_phone.reporter.save()
+
+        response = self.client.get(self.list_endpoint, data={'created_after': now + timedelta(minutes=9)})
+        response_json = response.json()
+        self.assertEqual(response_json['count'], 4)
+        self.assertEqual(len(response_json['results']), 4)
+
+        self.assertEqual(response_json['results'][3]['reporter']['email'], 'm.elder@example.com')
+        self.assertEqual(response_json['results'][3]['reporter']['phone'], '0123456789')
+
+        self.assertEqual(response_json['results'][2]['reporter']['email'], 'm.elder@example.com')
+        self.assertEqual(response_json['results'][2]['reporter']['phone'], '')
+
+        self.assertEqual(response_json['results'][1]['reporter']['email'], '')
+        self.assertEqual(response_json['results'][1]['reporter']['phone'], '0123456789')
+
+        self.assertEqual(response_json['results'][0]['reporter']['email'], '')
+        self.assertEqual(response_json['results'][0]['reporter']['phone'], '')
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation

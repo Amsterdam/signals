@@ -24,6 +24,11 @@ class Reporter(CreatedUpdatedModel):
 
     sharing_allowed = models.BooleanField(default=False)
 
+    class Meta:
+        permissions = (
+            ('sia_can_view_contact_details', 'Inzien van contactgegevens melder (in melding)'),
+        )
+
     @property
     def is_anonymized(self):
         """

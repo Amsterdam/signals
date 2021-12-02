@@ -11,8 +11,8 @@ class TestPermissionsViews(SIAReadUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data['count'], 18)
-        self.assertEqual(len(data['results']), 18)
+        self.assertEqual(data['count'], 19)
+        self.assertEqual(len(data['results']), 19)
 
     def test_get_permission(self):
         self.client.force_authenticate(user=self.sia_read_user)
