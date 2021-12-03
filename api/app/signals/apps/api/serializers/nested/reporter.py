@@ -20,12 +20,12 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
         serialized = super().to_representation(instance)
 
         user = self.context['request'].user if 'request' in self.context else None
-        if not user.has_perm('signals.sia_can_view_contact_details'):
-            serialized['email'] = '*****' if serialized['email'] is not None else ''
-            serialized['phone'] = '*****' if serialized['phone'] is not None else ''
+        if not user or not user.has_perm('signals.sia_can_view_contact_details'):
+            serialized['email'] = '*****' if serialized['email'] else ''
+            serialized['phone'] = '*****' if serialized['phone'] else ''
         else:
-            serialized['email'] = serialized['email'] if serialized['email'] is not None else ''
-            serialized['phone'] = serialized['phone'] if serialized['phone'] is not None else ''
+            serialized['email'] = serialized['email'] if serialized['email'] else ''
+            serialized['phone'] = serialized['phone'] if serialized['phone'] else ''
 
         return serialized
 

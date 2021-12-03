@@ -1503,6 +1503,15 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(response_json['reporter']['email'], '')
         self.assertEqual(response_json['reporter']['phone'], '')
 
+        self.signal_with_image.reporter.email = ''
+        self.signal_with_image.reporter.phone = ''
+        self.signal_with_image.reporter.save()
+
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertEqual(response_json['reporter']['email'], '')
+        self.assertEqual(response_json['reporter']['phone'], '')
+
     def test_list_no_permissions_to_view_contact_details(self):
         """
         SIG-4160 - [BE] Rechten op contactgegevens
