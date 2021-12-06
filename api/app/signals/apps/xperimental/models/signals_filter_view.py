@@ -30,9 +30,11 @@ class SignalFilterView(models.Model):
 
     parent_category_id = models.IntegerField()
     parent_category_slug = models.CharField(max_length=50)
+    parent_category_name = models.CharField(max_length=255)
 
     child_category_id = models.IntegerField()
     child_category_slug = models.CharField(max_length=50)
+    child_category_name = models.CharField(max_length=255)
 
     category_assignment_deadline = models.DateTimeField()
     category_assignment_deadline_factor_3 = models.DateTimeField()
@@ -68,8 +70,6 @@ class SignalFilterView(models.Model):
 
     # Fields are used by the services/domain/permissions/util.py to check User permission therefore they are also needed
     # on this model
-    parent_category_name = models.CharField(max_length=255)
-    child_category_name = models.CharField(max_length=255)
     category_assignment = models.ForeignKey(to='signals.CategoryAssignment', related_name='+',
                                             on_delete=models.DO_NOTHING)
     routing_assignment = models.OneToOneField('signals.SignalDepartments', related_name='+', null=True,

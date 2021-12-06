@@ -67,16 +67,16 @@ LEFT JOIN (
     WHERE "inner_select"."parent_id" IS NOT NULL
     GROUP BY "inner_select"."parent_id"
 ) "scs" ON "scs"."parent_id" = "s"."id"
-INNER JOIN "signals_categoryassignment" "sc" ON "s"."category_assignment_id" = "sc"."id"
-INNER JOIN "signals_category" "c" ON "sc"."category_id" = "c"."id"
-INNER JOIN "signals_category" "cp" ON "c"."parent_id" = "cp"."id"
-INNER JOIN "signals_status" "ss" ON "s"."status_id" = "ss"."id"
-INNER JOIN "signals_priority" "sp" ON "s"."priority_id" = "sp"."id"
-INNER JOIN "signals_location" "sl" ON "s"."location_id" = "sl"."id"
-LEFT JOIN "signals_reporter" "sr" ON "s"."reporter_id" = "sr"."id"
-INNER JOIN "signals_type" "st" ON "s"."type_assignment_id" = "st"."id"
-LEFT JOIN "signals_signaluser" "ss2" ON "s"."user_assignment_id" = "ss2"."id"
-LEFT JOIN "auth_user" "au" ON "ss2"."user_id" = "au"."id"
+INNER JOIN "signals_categoryassignment" AS "sc" ON "s"."category_assignment_id" = "sc"."id"
+INNER JOIN "signals_category" AS "c" ON "sc"."category_id" = "c"."id"
+INNER JOIN "signals_category" AS "cp" ON "c"."parent_id" = "cp"."id"
+INNER JOIN "signals_status" AS "ss" ON "s"."status_id" = "ss"."id"
+INNER JOIN "signals_priority" AS "sp" ON "s"."priority_id" = "sp"."id"
+INNER JOIN "signals_location" AS "sl" ON "s"."location_id" = "sl"."id"
+LEFT JOIN "signals_reporter" AS "sr" ON "s"."reporter_id" = "sr"."id"
+INNER JOIN "signals_type" AS "st" ON "s"."type_assignment_id" = "st"."id"
+LEFT JOIN "signals_signaluser" AS "ss2" ON "s"."user_assignment_id" = "ss2"."id"
+LEFT JOIN "auth_user" AS "au" ON "ss2"."user_id" = "au"."id"
 LEFT JOIN (
     SELECT DISTINCT ON ("inner_select"."_signal_id") _signal_id,
                     "inner_select"."is_satisfied",
