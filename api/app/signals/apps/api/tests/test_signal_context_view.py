@@ -30,7 +30,7 @@ class NameSpace:
 
 
 urlpatterns = [
-    path('', include([
+    path('signals/', include([
         re_path(r'v1/relations/?$',
                 NamespaceView.as_view(),
                 name='signal-namespace'),
