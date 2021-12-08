@@ -12,7 +12,7 @@ from signals.apps.questionnaires.rest_framework.serializers.public.sessions impo
     PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
-from signals.apps.questionnaires.rest_framework.views.utils import get_session_service_or_404
+from signals.apps.questionnaires.rest_framework.utils import get_session_service_or_404
 from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 from signals.apps.questionnaires.services.utils import get_session_service
 
