@@ -4,5 +4,5 @@ from django.apps import AppConfig
 
 
 class ApiConfig(AppConfig):
-    name = 'signals.apps.xperimental'
+    name = 'signals.apps.experimental'
     verbose_name = 'Experimental App'

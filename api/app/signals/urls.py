@@ -16,7 +16,7 @@ urlpatterns = [
     path('signals/', include('signals.apps.api.urls')),
 
     # Experimental API
-    path('signals/', include('signals.apps.xperimental.rest_framework.urls')),
+    path('signals/', include('signals.apps.experimental.rest_framework.urls')),
 
     # The Django admin
     path('signals/admin/', admin.site.urls),

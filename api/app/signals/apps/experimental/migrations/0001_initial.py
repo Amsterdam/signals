@@ -93,6 +93,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('signals', '0148_alter_reporter_options')
     ]
 
     operations = [

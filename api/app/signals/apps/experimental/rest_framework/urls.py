@@ -3,7 +3,7 @@
 from django.urls import include, path
 
 from signals.apps.api.generics.routers import SignalsRouter
-from signals.apps.xperimental.rest_framework.viewsets.signal import PrivateSignalViewSet
+from signals.apps.experimental.rest_framework.viewsets.signal import PrivateSignalViewSet
 
 router = SignalsRouter()
 router.register(r'private/signals', PrivateSignalViewSet, basename='experimental-private-signals')

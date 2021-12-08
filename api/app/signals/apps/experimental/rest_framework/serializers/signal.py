@@ -4,7 +4,7 @@ from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
 from signals.apps.api.fields import PrivateSignalLinksField
-from signals.apps.xperimental.models.signals_filter_view import SignalFilterView
+from signals.apps.experimental.models.signals_filter_view import SignalFilterView
 
 
 class PrivateSignalSerializerList(HALSerializer):

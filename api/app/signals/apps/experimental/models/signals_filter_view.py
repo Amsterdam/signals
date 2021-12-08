@@ -5,8 +5,8 @@ from django.contrib.gis.db import models
 from django.utils import timezone
 from pytz import utc
 
+from signals.apps.experimental.models.querysets import SignalFilterViewQuerySet
 from signals.apps.signals.workflow import STATUS_CHOICES
-from signals.apps.xperimental.models.querysets import SignalFilterViewQuerySet
 
 
 class SignalFilterView(models.Model):

@@ -8,9 +8,9 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
-from signals.apps.xperimental.models.signals_filter_view import SignalFilterView
-from signals.apps.xperimental.rest_framework.filters.signal import SignalFilterSet
-from signals.apps.xperimental.rest_framework.serializers.signal import PrivateSignalSerializerList
+from signals.apps.experimental.models.signals_filter_view import SignalFilterView
+from signals.apps.experimental.rest_framework.filters.signal import SignalFilterSet
+from signals.apps.experimental.rest_framework.serializers.signal import PrivateSignalSerializerList
 from signals.auth.backend import JWTAuthBackend
 
 logger = logging.getLogger(__name__)
