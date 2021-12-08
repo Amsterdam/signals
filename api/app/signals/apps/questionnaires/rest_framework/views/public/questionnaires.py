@@ -3,7 +3,7 @@
 from datapunt_api.rest import DatapuntViewSet
 
 from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.questionnaires.rest_framework.serializers import (
+from signals.apps.questionnaires.rest_framework.serializers.public.questionnaires import (
     PublicQuestionnaireDetailedSerializer,
     PublicQuestionnaireSerializer
 )

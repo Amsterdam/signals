@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from django.http import Http404
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
@@ -8,11 +7,12 @@ from rest_framework.response import Response
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Question, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
-from signals.apps.questionnaires.rest_framework.serializers import (
+from signals.apps.questionnaires.rest_framework.serializers.public.sessions import (
     PublicSessionAnswerSerializer,
     PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
+from signals.apps.questionnaires.rest_framework.views.utils import get_session_service_or_404
 from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 from signals.apps.questionnaires.services.utils import get_session_service
 
@@ -31,11 +31,7 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
     def get_object(self):
         session_uuid = self.kwargs[self.lookup_url_kwarg]
-
-        try:
-            session_service = get_session_service(session_uuid)
-        except Session.DoesNotExist:
-            raise Http404
+        session_service = get_session_service_or_404(session_uuid)
 
         try:
             session_service.is_publicly_accessible()

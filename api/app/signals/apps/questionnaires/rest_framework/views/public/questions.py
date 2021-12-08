@@ -6,8 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Question
-from signals.apps.questionnaires.rest_framework.serializers import (
-    PublicAnswerSerializer,
+from signals.apps.questionnaires.rest_framework.serializers.public.answers import (
+    PublicAnswerSerializer
+)
+from signals.apps.questionnaires.rest_framework.serializers.public.questions import (
     PublicQuestionDetailedSerializer,
     PublicQuestionSerializer
 )
