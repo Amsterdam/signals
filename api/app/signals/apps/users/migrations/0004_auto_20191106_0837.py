@@ -10,6 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('signals', '0008_department_maincategory_subcategory'),
         ('users', '0003_auto_20191016_1113'),
     ]
 
