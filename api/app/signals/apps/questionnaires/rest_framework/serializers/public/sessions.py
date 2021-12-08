@@ -73,10 +73,6 @@ class PublicSessionSerializer(HALSerializer):
         return {str(k): v for k, v in session_service.path_validation_errors_by_uuid.items()}
 
 
-class PublicSessionDetailedSerializer(PublicSessionSerializer):
-    pass
-
-
 class PublicSessionAnswerSerializer(serializers.Serializer):
     question_uuid = serializers.UUIDField()
     payload = serializers.JSONField()

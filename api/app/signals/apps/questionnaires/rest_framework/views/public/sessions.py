@@ -9,12 +9,10 @@ from signals.apps.questionnaires.models import Question, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
 from signals.apps.questionnaires.rest_framework.serializers.public.sessions import (
     PublicSessionAnswerSerializer,
-    PublicSessionDetailedSerializer,
     PublicSessionSerializer
 )
 from signals.apps.questionnaires.rest_framework.utils import get_session_service_or_404
 from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
-from signals.apps.questionnaires.services.utils import get_session_service
 
 
 class PublicSessionViewSet(HALViewSetRetrieve):
@@ -25,53 +23,53 @@ class PublicSessionViewSet(HALViewSetRetrieve):
     queryset_detail = Session.objects.none()
 
     serializer_class = PublicSessionSerializer
-    serializer_detail_class = PublicSessionDetailedSerializer
+    serializer_detail_class = PublicSessionSerializer
 
     authentication_classes = ()
 
-    def get_object(self):
-        session_uuid = self.kwargs[self.lookup_url_kwarg]
-        session_service = get_session_service_or_404(session_uuid)
+    def get_session_service(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
 
+        assert lookup_url_kwarg in self.kwargs, (
+                'Expected view %s to be called with a URL keyword argument '
+                'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                'attribute on the view correctly.' %
+                (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        return get_session_service_or_404(self.kwargs[lookup_url_kwarg])
+
+    def get_object(self):
+        session_service = self.get_session_service()
         try:
             session_service.is_publicly_accessible()
         except (SessionFrozen, SessionExpired) as e:
             raise Gone(str(e))
         except Exception as e:
-            # For now just re-raise the exception as a DRF APIException
-            raise APIException(str(e))
+            raise APIException(str(e))  # For now just re-raise the exception as a DRF APIException
+        else:
+            return session_service.session
 
-        return session_service.session
-
-    def retrieve(self, request, *args, **kwargs):
-        session = self.get_object()
-        session_service = get_session_service(session)  # TODO: error handling
-
-        context = self.get_serializer_context()
-        context['session_service'] = session_service
-
-        serializer = self.serializer_detail_class(session, context=context)
-        return Response(serializer.data, status=200)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'session_service': self.get_session_service()})
+        return context
 
     @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
     def submit(self, request, *args, **kwargs):
-        # TODO: calls to this endpoint are not idempotent, investigate whether
-        # they should be.
+        # TODO: calls to this endpoint are not idempotent, investigate whether they should be.
         session = self.get_object()
-        session_service = get_session_service(session)  # TODO: error handling
+        session_service = self.get_session_service()   # TODO: error handling
         session_service.freeze()
 
-        context = self.get_serializer_context()
-        context['session_service'] = session_service
-
-        serializer = self.serializer_detail_class(session, context=context)
+        serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
         return Response(serializer.data, status=200)
 
     @action(detail=True, url_path=r'answers/?$', methods=['POST', ])
     def answers(self, request, *args, **kwargs):
         # TODO: finish / test
         session = self.get_object()
-        session_service = get_session_service(session)
+        session_service = get_session_service_or_404(session)
 
         # We demand an array of answers, even if only a single answer is present.
         serializer = PublicSessionAnswerSerializer(data=request.data, many=True)
