@@ -6,7 +6,14 @@ from django.test import override_settings
 from django.urls import include, path
 from rest_framework.test import APITestCase
 
-from signals.apps.questionnaires.factories import QuestionnaireFactory
+from signals.apps.questionnaires.factories import (
+    ChoiceFactory,
+    EdgeFactory,
+    QuestionFactory,
+    QuestionGraphFactory,
+    QuestionnaireFactory
+)
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -62,3 +69,45 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_questionnaire_delete_not_allowed(self):
         response = self.client.delete(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 405)
+
+    def test_create_session_for_questionnaire(self):
+        q1 = QuestionFactory.create(analysis_key='q1', label='q1', short_label='q1')
+        choice1_q2 = ChoiceFactory(question=q1, payload='q2', display='q2')
+        choice1_q3 = ChoiceFactory(question=q1, payload='q3', display='q3')
+
+        q2 = QuestionFactory.create(analysis_key='q2', label='q2', short_label='q2')
+        q3 = QuestionFactory.create(analysis_key='q3', label='q3', short_label='q3')
+        q4 = QuestionFactory.create(analysis_key='q4', label='q4', short_label='q4', required=True)
+        q5 = QuestionFactory.create(analysis_key='q5', label='q5', short_label='q5')
+
+        # sketch:
+        #    q1 <- first_question
+        #   /  \
+        # q2    q3
+        #   \  /
+        #    q4
+        #    |
+        #    q5
+        graph = QuestionGraphFactory.create(name='testgraph', first_question=q1)
+        EdgeFactory.create(graph=graph, question=q1, next_question=q2, choice=choice1_q2)
+        EdgeFactory.create(graph=graph, question=q2, next_question=q4, choice=None)
+        EdgeFactory.create(graph=graph, question=q1, next_question=q3, choice=choice1_q3)
+        EdgeFactory.create(graph=graph, question=q3, next_question=q4, choice=None)
+        EdgeFactory.create(graph=graph, question=q4, next_question=q5, choice=None)
+
+        questionnaire = QuestionnaireFactory.create(graph=graph, name='diamond', flow=Questionnaire.EXTRA_PROPERTIES)
+
+        response = self.client.post(f'{self.base_endpoint}{questionnaire.uuid}/session', data=None, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        response_json = response.json()
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 1)
+        self.assertIn('path_answered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 0)
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 1)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], False)

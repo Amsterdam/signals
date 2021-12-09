@@ -37,7 +37,7 @@ class PublicSessionSerializer(HALSerializer):
             'path_answered_question_uuids',
             'path_unanswered_question_uuids',
             'path_validation_errors_by_uuid'
-            )
+        )
         read_only_fields = (
             'id',
             'uuid',
@@ -71,6 +71,18 @@ class PublicSessionSerializer(HALSerializer):
         session_service = self.context.get('session_service')
         # Possibly turn all UUIDs into str(UUID)s in SessionService.
         return {str(k): v for k, v in session_service.path_validation_errors_by_uuid.items()}
+
+    def create(self, validated_data):
+        """
+        This serializer cannot be used to create Session instances
+        """
+        raise NotImplementedError
+
+    def update(self, instance, validated_data):
+        """
+        This serializer cannot be used to update Session instances
+        """
+        raise NotImplementedError
 
 
 class PublicSessionAnswerSerializer(serializers.Serializer):

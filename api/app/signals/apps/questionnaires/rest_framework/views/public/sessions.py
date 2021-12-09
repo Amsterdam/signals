@@ -20,7 +20,6 @@ class PublicSessionViewSet(HALViewSetRetrieve):
     lookup_url_kwarg = 'uuid'
 
     queryset = Session.objects.none()
-    queryset_detail = Session.objects.none()
 
     serializer_class = PublicSessionSerializer
     serializer_detail_class = PublicSessionSerializer
@@ -39,8 +38,8 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         return get_session_service_or_404(self.kwargs[lookup_url_kwarg])
 
-    def get_object(self):
-        session_service = self.get_session_service()
+    def get_object(self, session_service=None):
+        session_service = session_service or self.get_session_service()
         try:
             session_service.is_publicly_accessible()
         except (SessionFrozen, SessionExpired) as e:
@@ -50,19 +49,25 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         else:
             return session_service.session
 
-    def get_serializer_context(self):
+    def get_serializer_context(self, **kwargs):
         context = super().get_serializer_context()
-        context.update({'session_service': self.get_session_service()})
+        context.update(kwargs)
         return context
+
+    def retrieve(self, request, *args, **kwargs):
+        session_service = self.get_session_service()
+        session = self.get_object(session_service=session_service)
+        serializer = self.get_serializer(session, context=self.get_serializer_context(session_service=session_service))
+        return Response(serializer.data, status=200)
 
     @action(detail=True, url_path=r'submit/?$', methods=['POST', ])
     def submit(self, request, *args, **kwargs):
         # TODO: calls to this endpoint are not idempotent, investigate whether they should be.
-        session = self.get_object()
-        session_service = self.get_session_service()   # TODO: error handling
+        session_service = self.get_session_service()
+        session = self.get_object(session_service)
         session_service.freeze()
 
-        serializer = self.serializer_detail_class(session, context=self.get_serializer_context())
+        serializer = self.get_serializer(session, context=self.get_serializer_context(session_service=session_service))
         return Response(serializer.data, status=200)
 
     @action(detail=True, url_path=r'answers/?$', methods=['POST', ])

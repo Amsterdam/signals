@@ -15,7 +15,8 @@ class HALViewSetRetrieve(DetailSerializerMixin, mixins.RetrieveModelMixin, views
 
 
 class HALViewSetRetrieveCreate(mixins.CreateModelMixin, HALViewSetRetrieve):
-    pass
+    def perform_create(self, serializer):
+        return serializer.save()
 
 
 class HALViewSetRetrieveCreateUpdate(mixins.UpdateModelMixin, HALViewSetRetrieveCreate):
