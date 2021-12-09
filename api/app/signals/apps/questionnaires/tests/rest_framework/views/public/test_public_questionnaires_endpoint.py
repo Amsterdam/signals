@@ -40,10 +40,10 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.questionnaire = QuestionnaireFactory.create()
 
         self.detail_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, '../json_schema/public_get_questionnaire_detail.json')
+            os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_detail.json')
         )
         self.list_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, '../json_schema/public_get_questionnaire_list.json')
+            os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
         )
 
     def test_questionnaire_list(self):
