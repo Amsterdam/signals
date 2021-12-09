@@ -58,7 +58,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicQuestionnaire'
         '404':
-          description: Question not found
+          description: Questionnaire not found
 
   /public/qa/questionnaires/{UUID}/session:
     parameters:
@@ -78,8 +78,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Bad request
         '404':
-          description: Question not found
+          description: Questionnaire not found
 
   /public/qa/questions:
     get:
@@ -173,7 +175,7 @@ paths:
         '400':
           description: Request invalid
         '404':
-          description: Question not found
+          description: Session not found
         '410':
           description: Session already used or expired.
 
