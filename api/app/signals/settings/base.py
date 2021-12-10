@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
+    'signals.apps.experimental',
 
     'change_log',
 

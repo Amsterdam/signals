@@ -8,6 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('feedback', '0001_initial'),
         ('signals', '0041_auto_20190325_1520'),
     ]
 

@@ -15,6 +15,9 @@ urlpatterns = [
     path('signals/', BaseSignalsAPIRootView.as_view()),
     path('signals/', include('signals.apps.api.urls')),
 
+    # Experimental API
+    path('signals/', include('signals.apps.experimental.rest_framework.urls')),
+
     # The Django admin
     path('signals/admin/', admin.site.urls),
     url(r'^signals/markdownx/', include('markdownx.urls')),
