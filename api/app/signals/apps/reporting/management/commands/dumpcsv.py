@@ -20,6 +20,7 @@ from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_
 from signals.apps.reporting.csv.datawarehouse.signals import (
     create_signals_assigned_user_csv,
     create_signals_csv,
+    create_signals_notes_csv,
     create_signals_routing_departments_csv
 )
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
@@ -40,6 +41,7 @@ REPORT_OPTIONS = {
     'feedback': create_kto_feedback_csv,
     'directing_departments': create_directing_departments_csv,
     'routing_departments': create_signals_routing_departments_csv,
+    'notes': create_signals_notes_csv
 }
 
 

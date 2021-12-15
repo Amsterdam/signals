@@ -11,7 +11,7 @@ from django.db.models import CharField, F, Value
 from django.db.models.functions import Cast, Coalesce
 
 from signals.apps.reporting.csv.utils import queryset_to_csv_file, reorder_csv
-from signals.apps.signals.models import Signal, SignalDepartments
+from signals.apps.signals.models import Note, Signal, SignalDepartments
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +110,34 @@ def create_signals_routing_departments_csv(location: str) -> str:
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'routing_departments.csv'))
 
     ordered_field_names = ['id', 'created_at', 'updated_at', '_signal_id', 'departments', ]
+    reorder_csv(csv_file.name, ordered_field_names)
+
+    return csv_file.name
+
+
+def create_signals_notes_csv(location: str) -> str:
+    """
+    Create the CSV file with all `Signal - notes relation` objects.
+
+    :param location: Directory for saving the CSV file
+    :returns: Path to CSV file
+    """
+    queryset = Note.objects.annotate(
+        image=Value(None, output_field=CharField()),
+    ).values(
+        'id',
+        'created_at',
+        'updated_at',
+        '_signal_id',
+        'text',
+    ).order_by(
+        '_signal_id',
+        '-created_at',
+    )
+
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals_notes.csv'))
+
+    ordered_field_names = ['id', 'created_at', 'updated_at', '_signal_id', 'text']
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name
