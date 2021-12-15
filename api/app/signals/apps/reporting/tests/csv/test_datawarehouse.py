@@ -127,8 +127,8 @@ class TestDatawarehouse(testcases.TestCase):
         with freeze_time('2020-09-10T15:00:00+00:00'):
             datawarehouse.save_and_zip_csv_files_endpoint(max_csv_amount=1)
 
-        src_folder = f'{self.file_backend_tmp_dir}/2020/09/10'
-        list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
+        src_folder = f'{self.file_backend_tmp_dir}/2020'
+        list_of_files = glob(f'{src_folder}/**/*.zip', recursive=True)
         self.assertEqual(1, len(list_of_files))
         self.assertTrue(list_of_files[0].endswith('20200910_150000UTC.zip'))
 

@@ -50,7 +50,7 @@ def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
     now = timezone.now()
     src_folder = f'{storage.location}/{now:%Y}'
     if os.path.exists(src_folder):
-        list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
+        list_of_files = glob(f'{src_folder}/**/*.zip', recursive=True)
         if len(list_of_files) > max_csv_amount:
             list_of_files.sort(key=os.path.getmtime)
             for file_to_be_deleted in list_of_files[:len(list_of_files) - max_csv_amount]:
