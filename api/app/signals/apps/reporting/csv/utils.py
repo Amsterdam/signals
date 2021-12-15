@@ -42,13 +42,13 @@ def zip_csv_files(files_to_zip: list, using: str) -> None:
 
 def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
     """
-    rotate csv zip file in the {now:%Y}/{now:%m}/{now:%d} folder
+    rotate csv zip file in the {now:%Y} folder
 
     :returns:
     """
     storage = _get_storage_backend(using=using)
     now = timezone.now()
-    src_folder = f'{storage.location}/{now:%Y}/{now:%m}/{now:%d}'
+    src_folder = f'{storage.location}/{now:%Y}'
     if os.path.exists(src_folder):
         list_of_files = glob(f'{src_folder}/*.zip', recursive=True)
         if len(list_of_files) > max_csv_amount:
