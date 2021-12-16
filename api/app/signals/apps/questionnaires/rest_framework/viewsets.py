@@ -14,10 +14,10 @@ class HALViewSetRetrieve(DetailSerializerMixin, mixins.RetrieveModelMixin, views
     detailed_keyword = 'detailed'
 
 
-class HALViewSetRetrieveCreateUpdate(DetailSerializerMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
-                                     mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    renderer_classes = DEFAULT_RENDERERS
-    pagination_class = HALPagination
-    filter_backends = (_DisabledHTMLFilterBackend,)
+class HALViewSetRetrieveCreate(mixins.CreateModelMixin, HALViewSetRetrieve):
+    def perform_create(self, serializer):
+        return serializer.save()
 
-    detailed_keyword = 'detailed'
+
+class HALViewSetRetrieveCreateUpdate(mixins.UpdateModelMixin, HALViewSetRetrieveCreate):
+    pass

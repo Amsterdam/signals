@@ -6,7 +6,7 @@ from django.urls import include, path
 from django.views.generic.base import TemplateView
 
 from signals.apps.api.generics.routers import SignalsRouter
-from signals.apps.questionnaires.rest_framework.views import (
+from signals.apps.questionnaires.rest_framework.views.public import (
     PublicQuestionnaireViewSet,
     PublicQuestionViewSet,
     PublicSessionViewSet

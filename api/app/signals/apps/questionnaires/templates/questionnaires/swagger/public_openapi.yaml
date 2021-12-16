@@ -58,7 +58,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicQuestionnaire'
         '404':
-          description: Question not found
+          description: Questionnaire not found
+
+  /public/qa/questionnaires/{UUID}/session:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Questionnaire
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      responses:
+        '201':
+          description: Detail of the created Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Bad request
+        '404':
+          description: Questionnaire not found
 
   /public/qa/questions:
     get:
@@ -152,7 +175,7 @@ paths:
         '400':
           description: Request invalid
         '404':
-          description: Question not found
+          description: Session not found
         '410':
           description: Session already used or expired.
 
@@ -453,6 +476,36 @@ components:
         created_at:
           type: string
           example: '2021-01-01T00:00:00+00:00'
+        can_freeze:
+          type: boolean
+          example: false
+        path_questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicQuestion'
+          minItems: 1
+        path_answered_question_uuids:
+          type: array
+          items:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          minItems: 0
+        path_unanswered_question_uuids:
+          type: array
+          items:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          minItems: 0
+        path_validation_errors_by_uuid:
+          type: array
+          items:
+            type: object
+            properties:
+              "{uuid}":
+                type: array
+                items:
+                  type: string
+          minItems: 0
 
   securitySchemes:
     OAuth2:
