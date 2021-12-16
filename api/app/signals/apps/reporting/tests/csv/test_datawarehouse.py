@@ -18,7 +18,7 @@ from freezegun import freeze_time
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
-from signals.apps.signals.factories import DepartmentFactory, SignalFactory
+from signals.apps.signals.factories import DepartmentFactory, NoteFactory, SignalFactory
 from signals.apps.signals.models import SignalDepartments
 
 
@@ -94,6 +94,7 @@ class TestDatawarehouse(testcases.TestCase):
         statuses_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_statuses.csv')
         sla_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_sla.csv')
         directing_departments_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_directing_departments.csv')  # noqa
+        notes_csv = path.join(self.file_backend_tmp_dir, '2020/09/10', '120000UTC_notes.csv')
         zip_package = path.join(self.file_backend_tmp_dir, '2020/09/10', '20200910_120000UTC.zip')
 
         self.assertTrue(path.exists(signals_csv))
@@ -108,6 +109,7 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(path.getsize(statuses_csv))
         self.assertTrue(path.getsize(sla_csv))
         self.assertTrue(path.getsize(directing_departments_csv))
+        self.assertTrue(path.getsize(notes_csv))
         self.assertTrue(path.getsize(zip_package))
 
     @mock.patch.dict('os.environ', {}, clear=True)
@@ -334,6 +336,23 @@ class TestDatawarehouse(testcases.TestCase):
 
                 for department in departments:
                     self.assertIn(department.name, row['departments'].split(', '))
+
+    def test_create_notes_csv(self):
+        signal = SignalFactory.create()
+        # Add one note to the signal
+        notes = NoteFactory(id=1, _signal=signal)
+
+        csv_file = datawarehouse.create_signals_notes_csv(self.csv_tmp_dir)
+
+        self.assertEqual(path.join(self.csv_tmp_dir, 'notes.csv'),
+                         csv_file)
+
+        with open(csv_file) as opened_csv_file:
+            reader = csv.DictReader(opened_csv_file)
+            for row in reader:
+                self.assertEqual(row['id'], str(notes.id))
+                self.assertEqual(row['_signal_id'], str(notes._signal_id))
+                self.assertEqual(row['text'], str(notes.text))
 
 
 class TestFeedbackHandling(testcases.TestCase):

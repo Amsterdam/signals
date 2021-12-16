@@ -16,6 +16,7 @@ from signals.apps.reporting.csv.datawarehouse.reporters import create_reporters_
 from signals.apps.reporting.csv.datawarehouse.signals import (
     create_signals_assigned_user_csv,
     create_signals_csv,
+    create_signals_notes_csv,
     create_signals_routing_departments_csv
 )
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
@@ -58,6 +59,7 @@ def save_csv_files_datawarehouse(using='datawarehouse'):
     csv_files.extend(save_csv_file_datawarehouse(create_category_sla_csv, using=using))
     csv_files.extend(save_csv_file_datawarehouse(create_directing_departments_csv, using=using))
     csv_files.extend(save_csv_file_datawarehouse(create_signals_routing_departments_csv, using=using))
+    csv_files.extend(save_csv_file_datawarehouse(create_signals_notes_csv, using=using))
 
     try:
         csv_files.extend(save_csv_file_datawarehouse(create_kto_feedback_csv, using=using))
