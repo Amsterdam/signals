@@ -133,7 +133,7 @@ def create_signals_notes_csv(location: str) -> str:
         '-created_at',
     )
 
-    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals_notes.csv'))
+    csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'notes.csv'))
 
     ordered_field_names = ['id', 'created_at', 'updated_at', '_signal_id', 'text']
     reorder_csv(csv_file.name, ordered_field_names)
