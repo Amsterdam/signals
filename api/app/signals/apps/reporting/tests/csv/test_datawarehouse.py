@@ -18,7 +18,7 @@ from freezegun import freeze_time
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
-from signals.apps.signals.factories import DepartmentFactory, SignalFactory
+from signals.apps.signals.factories import DepartmentFactory, NoteFactory, SignalFactory
 from signals.apps.signals.models import SignalDepartments
 
 
@@ -339,7 +339,8 @@ class TestDatawarehouse(testcases.TestCase):
 
     def test_create_notes_csv(self):
         signal = SignalFactory.create()
-        notes = signal.notes
+        # Add one note to the signal
+        notes = NoteFactory(id=1, _signal=signal)
 
         csv_file = datawarehouse.create_signals_notes_csv(self.csv_tmp_dir)
 
