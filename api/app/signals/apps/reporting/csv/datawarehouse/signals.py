@@ -122,9 +122,7 @@ def create_signals_notes_csv(location: str) -> str:
     :param location: Directory for saving the CSV file
     :returns: Path to CSV file
     """
-    queryset = Note.objects.annotate(
-        image=Value(None, output_field=CharField()),
-    ).values(
+    queryset = Note.objects.values(
         'id',
         'created_at',
         'updated_at',
