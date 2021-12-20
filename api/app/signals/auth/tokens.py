@@ -59,7 +59,7 @@ class JWTAccessToken:
     def token_data(auth_header, skip_always=False):
         settings = get_settings()
         if not skip_always and settings['ALWAYS_OK']:
-            return {x: "ALWAYS_OK" for x in settings['USER_ID_FIELDS']}, "ALWAYS_OK"
+            return {x: 'ALWAYS_OK' for x in settings['USER_ID_FIELDS']}, 'ALWAYS_OK'
         try:
             prefix, raw_jwt = auth_header.split()
         except:  # noqa

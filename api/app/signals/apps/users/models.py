@@ -30,6 +30,11 @@ class Profile(CreatedUpdatedModel):
     # SIG-2016 Added a note field to the profile
     note = models.TextField(null=True, blank=True)
 
+    # Keep track of the last authentication in the JWTToken
+    # Keycloak has a claim "auth_time" as explained on https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+    # This claim, if present, will be stored in this field
+    last_authentication = models.DateTimeField(blank=True, null=True)
+
     def __str__(self):
         return self.user.username
 
