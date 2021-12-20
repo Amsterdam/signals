@@ -424,6 +424,8 @@ FEATURE_FLAGS = {
     # Enabled the history_log based response, disables the signal_history_view based response
     'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
     'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
+
+    'STORE_CLAIM_AUTH_TIME': os.getenv('STORE_CLAIM_AUTH_TIME', False)
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

@@ -3,7 +3,7 @@
 from unittest import mock, skip
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework import exceptions
 
@@ -157,6 +157,22 @@ class TestJWTAuthBackend(TestCase):
         self.assertEqual(user, test_user)
         # self.assertEqual(scope, 'SIG/ALL')
 
+    @override_settings(FEATURE_FLAGS={'STORE_CLAIM_AUTH_TIME': False})
+    def test_auth_time_claim_feature_flag_disabled(self):
+        """
+        Last stored authentication time is None so store the auth_time from the claim
+        """
+        test_user = SuperUserFactory.create()
+        self.assertIsNone(test_user.profile.last_authentication)
+
+        auth_time_datetime = timezone.now()
+        claims = {'auth_time': auth_time_datetime.timestamp()}
+        backend.JWTAuthBackend.store_last_authentication(test_user, claims)
+        test_user.refresh_from_db()
+
+        self.assertIsNone(test_user.profile.last_authentication)
+
+    @override_settings(FEATURE_FLAGS={'STORE_CLAIM_AUTH_TIME': True})
     def test_auth_time_claim_stored_in_last_authentication_is_none(self):
         """
         Last stored authentication time is None so store the auth_time from the claim
@@ -172,6 +188,7 @@ class TestJWTAuthBackend(TestCase):
         self.assertIsNotNone(test_user.profile.last_authentication)
         self.assertEqual(test_user.profile.last_authentication.timestamp(), claims['auth_time'])
 
+    @override_settings(FEATURE_FLAGS={'STORE_CLAIM_AUTH_TIME': True})
     def test_auth_time_claim_stored_in_last_authentication_is_older(self):
         """
         Last stored authentication time is older so store the auth_time from the claim
@@ -193,6 +210,7 @@ class TestJWTAuthBackend(TestCase):
         self.assertNotEqual(test_user.profile.last_authentication.timestamp(), last_authentication_datetime.timestamp())
         self.assertEqual(test_user.profile.last_authentication.timestamp(), claims['auth_time'])
 
+    @override_settings(FEATURE_FLAGS={'STORE_CLAIM_AUTH_TIME': True})
     def test_auth_time_claim_not_stored(self):
         """
         Last stored authentication time is newer then the auth_time in the claims

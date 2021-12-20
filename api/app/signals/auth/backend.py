@@ -65,6 +65,10 @@ class JWTAuthBackend:
             OPTIONAL. (The auth_time Claim semantically corresponds to the OpenID 2.0 PAPE [OpenID.PAPE] auth_time
             response parameter.)
         """
+        if not settings.FEATURE_FLAGS.get('STORE_CLAIM_AUTH_TIME', False):
+            # Feature disabled so just return None
+            return None
+
         # Check if the "auth_time" claim is present
         if 'auth_time' in claims and claims['auth_time']:
             auth_time_claim = timezone.datetime.fromtimestamp(claims['auth_time'])
