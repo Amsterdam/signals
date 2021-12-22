@@ -2808,6 +2808,12 @@ components:
                 public:
                   type: string
                   description: URI to the public parent category detail
+            sia:questionnaire:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the public questionnaire
         _display:
           type: string
           description: The display value of the category

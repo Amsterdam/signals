@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
+from django.db.models.deletion import DO_NOTHING
 from django.urls import resolve
 from django_extensions.db.fields import AutoSlugField
 from rest_framework_extensions.settings import extensions_api_settings
@@ -98,6 +99,8 @@ class Category(models.Model):
                                        through_fields=('category', 'question'))
 
     note = models.TextField(blank=True, null=True)
+
+    questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
     logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message'))
 

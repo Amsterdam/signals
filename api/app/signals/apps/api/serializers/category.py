@@ -16,6 +16,7 @@ class CategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     departments = serializers.SerializerMethodField()
+    questionnaire = serializers.UUIDField(source='questionnaire.uuid', required=False, read_only=True)
 
     class Meta:
         model = Category
@@ -29,6 +30,7 @@ class CategoryHALSerializer(HALSerializer):
             'is_active',
             'description',
             'handling_message',
+            'questionnaire',
         )
 
     def get_departments(self, obj):

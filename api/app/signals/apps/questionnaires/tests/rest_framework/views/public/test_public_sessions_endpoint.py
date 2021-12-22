@@ -10,7 +10,7 @@ from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from signals.apps.api.generics.routers import SignalsRouter
-from signals.apps.api.views import PublicSignalViewSet
+from signals.apps.api.views import NamespaceView, PublicSignalViewSet
 from signals.apps.questionnaires.factories import (
     ChoiceFactory,
     EdgeFactory,
@@ -32,6 +32,7 @@ extra_router.register(r'public/signals', PublicSignalViewSet, basename='public-s
 
 
 urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
 ]
 

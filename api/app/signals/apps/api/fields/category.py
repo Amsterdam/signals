@@ -26,6 +26,13 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', {'href': category_public_url(value, request)}),
         ])
+
+        if value.questionnaire:
+            result.update({
+                'sia:questionnaire': dict(href=self.reverse('questionnaires:public-questionnaire-detail',
+                                                            kwargs={'uuid': value.questionnaire.uuid},
+                                                            request=request)),
+            })
         return result
 
 
@@ -80,6 +87,13 @@ class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFie
             result.update({'sia:parent': dict(
                 href=self.get_url(value.parent, 'private-category-detail', request, None),
                 public=self._get_public_url(obj=value.parent, request=request))
+            })
+
+        if value.questionnaire:
+            result.update({
+                'sia:questionnaire': dict(
+                    href=self.reverse('questionnaires:public-questionnaire-detail',
+                                      kwargs={'uuid': value.questionnaire.uuid}, request=request)),
             })
 
         return result
