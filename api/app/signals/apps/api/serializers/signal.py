@@ -508,7 +508,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
     location = _NestedLocationModelSerializer()
     reporter = _NestedReporterModelSerializer()
     category = _NestedCategoryModelSerializer(source='category_assignment')
-
+    incident_date_start = serializers.DateTimeField()
     extra_properties = SignalExtraPropertiesField(
         required=False,
         allow_null=True,
@@ -521,7 +521,8 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
         ]
     )
 
-    incident_date_start = serializers.DateTimeField()
+    # The Session containing the given answers of a Questionnaire
+    session = serializers.UUIDField(default=None, write_only=True, required=False)
 
     class Meta(object):
         model = Signal
@@ -535,6 +536,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
             'incident_date_start',
             'incident_date_end',
             'extra_properties',
+            'session',
         )
 
     def validate(self, data):
@@ -547,17 +549,47 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                 raise ValidationError('Extra properties present: {}'.format(
                     ', '.join(present_keys - allowed_keys)
                 ))
+
+        if 'session' in data:
+            """
+            If a Session UUID is given the following checks must be valid before it can be connected to the Signal that
+            is going to be created created.
+
+                - The Session with given UUID must exists
+                - The Session cannot be connected to a Signal
+                - The Session cannot be expired
+            """
+            from signals.apps.questionnaires.models import Session
+            try:
+                session = Session.objects.get(uuid=data['session'])
+            except Session.DoesNotExist:
+                # Session not found, so set None
+                data['session'] = None
+            else:
+                if session._signal_id or session.is_expired:
+                    # If the Session is already linked to another Signal OR if it is expired set None
+                    data['session'] = None
+                else:
+                    data['session'] = session
+
         return super().validate(data)
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_assignment_data = validated_data.pop('category_assignment')
+        session_data = validated_data.pop('session')
 
-        status_data = {"state": workflow.GEMELD}
-        signal = Signal.actions.create_initial(validated_data, location_data, status_data, category_assignment_data,
-                                               reporter_data)
-        return signal
+        return Signal.actions.create_initial(
+            validated_data,
+            location_data,
+            {'state': workflow.GEMELD},
+            category_assignment_data,
+            reporter_data,
+            priority_data=None,
+            type_data=None,
+            session_data=session_data,
+        )
 
 
 class SignalIdListSerializer(HALSerializer):

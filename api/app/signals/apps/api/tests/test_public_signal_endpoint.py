@@ -8,8 +8,10 @@ from unittest.mock import patch
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
+from django.utils import timezone
 
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
+from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, SignalFactory, SourceFactory
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
@@ -399,3 +401,62 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         response_json = response.json()
         self.assertEqual(len(response_json['source']), 1)
         self.assertEqual(response_json['source'][0], 'Invalid source given, value not known')
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_session(self, validate_address):
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+
+        session = SessionFactory.create(submit_before=timezone.now() + timezone.timedelta(hours=2))
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(1, Signal.objects.count())
+
+        session.refresh_from_db()
+        signal = Signal.objects.first()
+        self.assertEqual(session._signal_id, signal.id)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_expired_session(self, validate_address):
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+
+        session = SessionFactory.create(submit_before=timezone.now() - timezone.timedelta(hours=2))
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(1, Signal.objects.count())
+
+        session.refresh_from_db()
+        self.assertIsNone(session._signal_id)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_session_connected_to_another_signal(self, validate_address):
+        create_initial_data = copy.deepcopy(self.create_initial_data)
+
+        session = SessionFactory.create()
+
+        another_signal = SignalFactory.create()
+        session._signal = another_signal
+        session.save()
+
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertJsonSchema(self.create_schema, response.json())
+        self.assertEqual(2, Signal.objects.count())
+
+        session.refresh_from_db()
+        signal = Signal.objects.exclude(id=another_signal.id).first()
+        self.assertNotEqual(session._signal_id, signal.id)
+        self.assertEqual(session._signal_id, another_signal.id)
