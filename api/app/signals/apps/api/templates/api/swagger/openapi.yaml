@@ -2295,6 +2295,13 @@ components:
             type: string
             example: 'http://127.0.0.1:8000/signals/v1/private/signals/123/attachments/456'
           minItems: 0
+        session:
+          description: The UUID of a Session containing the answers of a specific Questionnaire
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+          required: false
+          nullable: true
       required:
         - text
         - location

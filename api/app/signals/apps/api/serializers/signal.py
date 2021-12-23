@@ -39,6 +39,7 @@ from signals.apps.api.validators.source import (
     PrivateSignalSourceValidator,
     PublicSignalSourceValidator
 )
+from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Attachment, Priority, Signal
 
@@ -344,6 +345,9 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
                                                       required=False, read_only=False, write_only=True,
                                                       queryset=Attachment.objects.all())
 
+    # The Session containing the given answers of a Questionnaire
+    session = serializers.UUIDField(default=None, write_only=True, required=False)
+
     class Meta:
         model = Signal
         list_serializer_class = _SignalListSerializer
@@ -375,7 +379,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'parent',
             'has_parent',
             'has_children',
-            'assigned_user_email'
+            'assigned_user_email',
+            'session'
         )
         read_only_fields = (
             'created_at',
@@ -397,7 +402,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     def get_has_children(self, obj):
         return obj.children.exists()
 
-    def validate(self, attrs):
+    def validate(self, attrs):  # noqa C901
         errors = {}
         if attrs.get('directing_departments_assignment') is not None:
             errors.update(
@@ -423,6 +428,27 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             attachments_belong_to_parent = all([parent.pk == attachment._signal_id for attachment in attachments])
             if not attachments_belong_to_parent:
                 errors.update({'attachments': ['Attachments can only be copied from the parent Signal']})
+
+        if 'session' in attrs:
+            """
+            If a Session UUID is given the following checks must be valid before it can be connected to the Signal that
+            is going to be created created.
+
+                - The Session with given UUID must exists
+                - The Session cannot be connected to a Signal
+                - The Session cannot be expired
+            """
+            try:
+                session = Session.objects.get(uuid=attrs['session'])
+            except Session.DoesNotExist:
+                # Session not found, so set None
+                attrs['session'] = None
+            else:
+                if session._signal_id or session.is_expired:
+                    # If the Session is already linked to another Signal OR if it is expired set None
+                    attrs['session'] = None
+                else:
+                    attrs['session'] = session
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -456,6 +482,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         type_data['created_by'] = logged_in_user.email
 
         attachments = validated_data.pop('attachments') if 'attachments' in validated_data else None
+        session_data = validated_data.pop('session')
 
         signal = Signal.actions.create_initial(
             validated_data,
@@ -464,7 +491,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             category_assignment_data,
             reporter_data,
             priority_data,
-            type_data
+            type_data,
+            session_data=session_data,
         )
 
         if attachments:
@@ -559,7 +587,6 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                 - The Session cannot be connected to a Signal
                 - The Session cannot be expired
             """
-            from signals.apps.questionnaires.models import Session
             try:
                 session = Session.objects.get(uuid=data['session'])
             except Session.DoesNotExist:
