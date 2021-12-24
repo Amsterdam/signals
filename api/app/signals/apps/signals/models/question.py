@@ -11,7 +11,6 @@ class Question(models.Model):
     RADIO_INPUT = 'radio_input'
     SELECT_INPUT = 'select_input'
     TEXT_AREA_INPUT = 'text_area_input'
-    MAP_SELECT = 'map_select'
     ASSET_SELECT = 'asset_select'
 
     FIELD_TYPE_CHOICES = (
@@ -22,7 +21,6 @@ class Question(models.Model):
         (RADIO_INPUT, 'RadioInput'),
         (SELECT_INPUT, 'SelectInput'),
         (TEXT_AREA_INPUT, 'TextareaInput'),
-        (MAP_SELECT, 'MapSelect'),
         (ASSET_SELECT, 'AssetSelect'),
     )
 
