@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('questionnaires', '0007_auto_20210830_2156'),
-        ('signals', '0148_alter_reporter_options'),
+        ('signals', '0149_alter_question_field_type'),
     ]
 
     operations = [
