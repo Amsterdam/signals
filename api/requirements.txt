@@ -141,3 +141,4 @@ pydot==1.4.2
 
 django-markdownx==3.0.1
 Markdown==3.3.6
+pytest-env==0.6.2

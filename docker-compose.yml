@@ -57,14 +57,20 @@ services:
       - elasticsearch
       - mailhog
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DATABASE_NAME=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - DATABASE_USER=signals
+      - RABBITMQ_HOST=rabbit
+      - ELASTICSEARCH_HOST=elasticsearch:9200
       - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
       - EMAIL_HOST=mailhog
       - EMAIL_PORT=1025
       - EMAIL_USE_TLS=False
       - EMAIL_USE_SSL=False
       - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - FRONTEND_URL=http://localhost:3001
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
     volumes:
@@ -79,8 +85,13 @@ services:
       - database
       - rabbit
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DATABASE_NAME=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - DATABASE_USER=signals
+      - RABBITMQ_HOST=rabbit
+      - ELASTICSEARCH_HOST=elasticsearch:9200
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SWIFT_ENABLED=False
@@ -99,15 +110,19 @@ services:
       - elasticsearch
       - dex
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DATABASE_NAME=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - DATABASE_USER=signals
+      - RABBITMQ_HOST=rabbit
+      - ELASTICSEARCH_HOST=elasticsearch:9200
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - FRONTEND_URL=http://localhost:3001
       - SWIFT_ENABLED=False
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
       - DWH_MEDIA_ROOT=/dwh_media
-      - ELASTICSEARCH_HOST=elasticsearch:9200
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
     volumes:

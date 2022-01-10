@@ -2,15 +2,6 @@
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
 import os
 
-from signals.settings.settings_databases import (
-    OVERRIDE_HOST_ENV_VAR,
-    OVERRIDE_PORT_ENV_VAR,
-    LocationKey,
-    get_database_key,
-    get_docker_host,
-    in_docker
-)
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 TRUE_VALUES = [True, 'True', 'true', '1']
@@ -124,35 +115,15 @@ TEMPLATES = [
     }
 ]
 
-# Database
-DATABASE_OPTIONS = {
-    LocationKey.docker: {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'signals'),
-        'USER': os.getenv('DATABASE_USER', 'signals'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': 'database',
-        'PORT': '5432',
-    },
-    LocationKey.local: {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'signals'),
-        'USER': os.getenv('DATABASE_USER', 'signals'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': get_docker_host(),
-        'PORT': '5409',
-    },
-    LocationKey.override: {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'signals'),
-        'USER': os.getenv('DATABASE_USER', 'signals'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': os.getenv(OVERRIDE_HOST_ENV_VAR),
-        'PORT': os.getenv(OVERRIDE_PORT_ENV_VAR, '5432'),
-    },
-}
 DATABASES = {
-    'default': DATABASE_OPTIONS[get_database_key()]
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST_OVERRIDE'),
+        'PORT': os.getenv('DATABASE_PORT_OVERRIDE'),
+    }
 }
 
 # Internationalization
@@ -229,7 +200,7 @@ SIGNALS_AUTH = {
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'insecure')
 RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', 'vhost')
-RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbit' if in_docker() else 'localhost')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')
 
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
                               f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}'
