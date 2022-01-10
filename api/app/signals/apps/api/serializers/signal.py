@@ -429,7 +429,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             if not attachments_belong_to_parent:
                 errors.update({'attachments': ['Attachments can only be copied from the parent Signal']})
 
-        if 'session' in attrs:
+        if 'session' in attrs and attrs['session']:
             """
             If a Session UUID is given the following checks must be valid before it can be connected to the Signal that
             is going to be created created.
@@ -440,13 +440,15 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             """
             try:
                 session = Session.objects.get(uuid=attrs['session'])
-            except Session.DoesNotExist:
-                # Session not found, so set None
-                attrs['session'] = None
+            except Session.DoesNotExist as e:
+                errors.update({'session': [f'{e}']})
             else:
-                if session._signal_id or session.is_expired:
-                    # If the Session is already linked to another Signal OR if it is expired set None
-                    attrs['session'] = None
+                if session._signal_id:
+                    errors.update({'session': ['Session already used']})
+                elif not session.frozen and not session.is_expired:
+                    errors.update({'session': ['Session not frozen']})
+                elif session.too_late:
+                    errors.update({'session': ['Session expired']})
                 else:
                     attrs['session'] = session
 
@@ -482,7 +484,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         type_data['created_by'] = logged_in_user.email
 
         attachments = validated_data.pop('attachments') if 'attachments' in validated_data else None
-        session_data = validated_data.pop('session')
+        session = validated_data.pop('session')
 
         signal = Signal.actions.create_initial(
             validated_data,
@@ -492,7 +494,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             reporter_data,
             priority_data,
             type_data,
-            session_data=session_data,
+            session=session,
         )
 
         if attachments:
@@ -567,7 +569,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
             'session',
         )
 
-    def validate(self, data):
+    def validate(self, data):  # noqa: C901
         """Make sure any extra data is rejected"""
         if hasattr(self, 'initial_data'):
             present_keys = set(self.initial_data)
@@ -578,7 +580,8 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                     ', '.join(present_keys - allowed_keys)
                 ))
 
-        if 'session' in data:
+        errors = {}
+        if 'session' in data and data['session']:
             """
             If a Session UUID is given the following checks must be valid before it can be connected to the Signal that
             is going to be created created.
@@ -589,15 +592,20 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
             """
             try:
                 session = Session.objects.get(uuid=data['session'])
-            except Session.DoesNotExist:
-                # Session not found, so set None
-                data['session'] = None
+            except Session.DoesNotExist as e:
+                errors.update({'session': [f'{e}']})
             else:
-                if session._signal_id or session.is_expired:
-                    # If the Session is already linked to another Signal OR if it is expired set None
-                    data['session'] = None
+                if session._signal_id:
+                    errors.update({'session': ['Session already used']})
+                elif not session.frozen and not session.is_expired:
+                    errors.update({'session': ['Session not frozen']})
+                elif session.too_late:
+                    errors.update({'session': ['Session expired']})
                 else:
                     data['session'] = session
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return super().validate(data)
 
@@ -605,7 +613,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
         location_data = validated_data.pop('location')
         reporter_data = validated_data.pop('reporter')
         category_assignment_data = validated_data.pop('category_assignment')
-        session_data = validated_data.pop('session')
+        session = validated_data.pop('session')
 
         return Signal.actions.create_initial(
             validated_data,
@@ -615,7 +623,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
             reporter_data,
             priority_data=None,
             type_data=None,
-            session_data=session_data,
+            session=session,
         )
 
 
