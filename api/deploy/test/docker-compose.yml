@@ -20,11 +20,13 @@ services:
   tests:
     build: ../../
     links:
-    - database:signals
+    - database
     environment:
       DATABASE_NAME: signals
       DATABASE_USER: signals
       DATABASE_PASSWORD: insecure
+      DATABASE_HOST_OVERRIDE: database
+      DATABASE_PORT_OVERRIDE: 5432
       ENVIRONMENT: test
       DJANGO_SETTINGS_MODULE: signals.settings.testing
     volumes:
