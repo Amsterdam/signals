@@ -1,4 +1,4 @@
-amqp==5.0.6
+amqp==5.0.9
 apipkg==1.5
 appdirs==1.4.4
 Arpeggio==1.10.1
@@ -7,14 +7,14 @@ attrs==20.3.0
 billiard==3.6.4.0
 cairocffi==1.2.0
 CairoSVG==2.5.2
-celery==5.0.5
+celery==5.2.2
 certifi==2020.12.5
 cffi==1.14.5
 chardet==4.0.0
-click==7.1.2
-click-didyoumean==0.0.3
+click==8.0.3
+click-didyoumean==0.3.0
 click-plugins==1.1.1
-click-repl==0.1.6
+click-repl==0.2.0
 coreapi==2.3.3
 coreschema==0.0.4
 coverage==5.5
@@ -63,7 +63,7 @@ jsonpointer==2.1
 jsonschema==3.2.0
 jwcrypto==0.8
 keystoneauth1==4.3.1
-kombu==5.0.2
+kombu==5.2.3
 lxml==4.6.5
 MarkupSafe==1.1.1
 mccabe==0.6.1
