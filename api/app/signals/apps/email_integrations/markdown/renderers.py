@@ -67,3 +67,6 @@ class PlaintextRenderer(BaseRenderer):
 
     def list_item(self, text, level):
         return '- {}\n'.format(text)
+
+    def finalize(self, data):
+        return ''.join(data)
