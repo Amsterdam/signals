@@ -113,7 +113,6 @@ services:
       - ELASTICSEARCH_HOST=elasticsearch:9200
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
-      - ALLOW_INVALID_ADDRESS_AS_UNVERIFIED=True
       - RABBITMQ_HOST=rabbit
     volumes:
       - ./api/app:/app
