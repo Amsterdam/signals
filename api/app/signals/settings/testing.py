@@ -38,3 +38,14 @@ SIGNALS_AUTH = {
 }
 
 FRONTEND_URL = 'http://dummy_link'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'signals',
+        'USER': 'signals',
+        'PASSWORD': 'insecure',
+        'HOST': 'database',
+        'PORT': '5432',
+    }
+}
