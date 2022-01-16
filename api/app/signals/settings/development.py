@@ -4,6 +4,9 @@ import os
 
 from signals.settings.base import *  # noqa
 
+DATABASES['default']['HOST'] = 'database'  # noqa: F405
+DATABASES['default']['PORT'] = '5432'  # noqa: F405
+
 SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*']

@@ -4,6 +4,9 @@ import os
 
 from signals.settings.base import *  # noqa
 
+DATABASES['default']['HOST'] = os.getenv('DATABASE_HOST_OVERRIDE')  # noqa: F405
+DATABASES['default']['PORT'] = os.getenv('DATABASE_PORT_OVERRIDE')  # noqa: F405
+
 # Django security settings
 SECURE_SSL_REDIRECT = True
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
