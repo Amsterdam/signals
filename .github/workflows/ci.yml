@@ -41,7 +41,7 @@ jobs:
       - name: Run tests
         run: |
           cd api/app
-          tox
+          tox -- --ds signals.settings.github
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v1
