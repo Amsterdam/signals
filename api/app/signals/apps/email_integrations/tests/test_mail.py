@@ -806,6 +806,41 @@ class TestOptionalMails(BaseTestMailCase):
         patched_send_mail.assert_called_once()
         self.assertEqual(Note.objects.count(), 1)
 
+    def test_optional_mail_INGEPLAND(self):
+        # check normal signal
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.INGEPLAND, send_email=False)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail signal scheduled'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 0)
+
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.INGEPLAND, send_email=True)
+        self.signal.status = new_status
+        self.signal.save()
+
+        rules = self._get_mail_rules(['Send mail signal scheduled'])._get_actions(self.signal)
+        self.assertEqual(len(rules), 1)
+
+        # ... not for child signal
+        new_status = StatusFactory.create(_signal=self.child_signal, state=workflow.INGEPLAND, send_email=True)
+        self.child_signal.status = new_status
+        self.child_signal.save()
+
+        rules = self._get_mail_rules(['Send mail signal scheduled'])._get_actions(self.child_signal)
+        self.assertEqual(len(rules), 0)
+
+    @mock.patch('signals.apps.email_integrations.mail_actions.django_send_mail')
+    def test_send_optional_mail_INGEPLAND(self, patched_send_mail):
+        signal = self.signal
+        new_status = StatusFactory.create(_signal=signal, state=workflow.INGEPLAND, send_email=True)
+        signal.status = new_status
+        signal.save()
+
+        self._get_mail_rules(['Send mail signal scheduled']).apply(signal_id=signal.pk, send_mail=True)
+        patched_send_mail.assert_called_once()
+        self.assertEqual(Note.objects.count(), 1)
+
 
 class TestNoDatabaseTemplatesMails(TestCase):
     """

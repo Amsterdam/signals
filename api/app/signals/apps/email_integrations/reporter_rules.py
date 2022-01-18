@@ -126,6 +126,7 @@ SIGNAL_MAIL_RULES = [
                 'status__state__in': [workflow.INGEPLAND, ],
                 'reporter__email__isnull': False,
                 'reporter__email__gt': 0,
+                'status__send_email__exact': True,  # noqa SIG-4237 The state INGEPLAND should not automatically send emails anymore, only when send_mail is True
             },
             'functions': {
                 'no_children': lambda signal: Signal.objects.filter(id=signal.id).filter(
