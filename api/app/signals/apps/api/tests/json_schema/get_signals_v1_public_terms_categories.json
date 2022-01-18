@@ -71,7 +71,33 @@
 						"_links": {
 							"type": "object",
 							"properties": {
+								"curies": {
+									"type": "object",
+									"properties": {
+										"name":{
+											"type": "string"
+										},
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"href"
+									]
+								},
 								"self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:questionnaire": {
 									"type": "object",
 									"properties": {
 										"href": {
@@ -84,6 +110,7 @@
 								}
 							},
 							"required": [
+								"curies",
 								"self"
 							]
 						},
@@ -105,7 +132,33 @@
 										"_links": {
 											"type": "object",
 											"properties": {
+												"curies": {
+													"type": "object",
+													"properties": {
+														"name":{
+															"type": "string"
+														},
+														"href": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"name",
+														"href"
+													]
+												},
 												"self": {
+													"type": "object",
+													"properties": {
+														"href": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"href"
+													]
+												},
+												"sia:questionnaire": {
 													"type": "object",
 													"properties": {
 														"href": {
@@ -118,6 +171,7 @@
 												}
 											},
 											"required": [
+												"curies",
 												"self"
 											]
 										},
@@ -197,6 +251,23 @@
 										},
 										"is_active": {
 											"type": "boolean"
+										},
+										"description": {
+											"oneOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"handling_message": {
+											"type": "string"
+										},
+										"questionnaire": {
+											"type": "string",
+											"pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 										}
 									},
 									"required": [

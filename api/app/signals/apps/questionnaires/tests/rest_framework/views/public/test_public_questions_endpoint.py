@@ -8,6 +8,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
+from signals.apps.api.views import NamespaceView
 from signals.apps.questionnaires.factories import (
     AnswerFactory,
     EdgeFactory,
@@ -23,6 +24,7 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
 ]
 

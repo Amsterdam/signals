@@ -30,6 +30,17 @@
 					"required": [
 						"href"
 					]
+				},
+				"sia:questionnaire": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
 				}
 			},
 			"required": [
@@ -75,6 +86,23 @@
 		},
 		"is_active": {
 			"type": "boolean"
+		},
+		"description": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"handling_message": {
+			"type": "string"
+		},
+		"questionnaire": {
+			"type": "string",
+			"pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 		}
 	},
 	"required": [

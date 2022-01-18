@@ -71,7 +71,33 @@
 						"_links": {
 							"type": "object",
 							"properties": {
+								"curies": {
+									"type": "object",
+									"properties": {
+										"name":{
+											"type": "string"
+										},
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"href"
+									]
+								},
 								"self": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:create-session": {
 									"type": "object",
 									"properties": {
 										"href": {
@@ -84,7 +110,9 @@
 								}
 							},
 							"required": [
-								"self"
+								"curies",
+								"self",
+								"sia:create-session"
 							]
 						},
 						"_display": {

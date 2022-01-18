@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import os
 
+from signals.apps.questionnaires.factories import QuestionnaireFactory
 from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory
 from signals.apps.signals.models import Category
 from signals.test.utils import SignalsBaseApiTestCase
@@ -81,3 +82,33 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
 
         self.assertEqual(data['name'], sub_category.name)
         self.assertIn('is_active', data)
+
+    def test_category_detail_questionnaire(self):
+        questionnaire = QuestionnaireFactory.create()
+        parent_category = ParentCategoryFactory.create(questionnaire=questionnaire)
+
+        url = f'/signals/v1/public/terms/categories/{parent_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_category_schema, data)
+        self.assertIsNotNone(data['_links']['sia:questionnaire'])
+
+    def test_sub_category_detail_questionnaire(self):
+        questionnaire = QuestionnaireFactory.create()
+        parent_category = ParentCategoryFactory.create()
+        sub_category = CategoryFactory.create(parent=parent_category, questionnaire=questionnaire)
+
+        url = f'/signals/v1/public/terms/categories/{sub_category.parent.slug}/sub_categories/{sub_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+        self.assertIsNotNone(data['_links']['sia:questionnaire'])
+        self.assertEqual(data['questionnaire'], str(sub_category.questionnaire.uuid))

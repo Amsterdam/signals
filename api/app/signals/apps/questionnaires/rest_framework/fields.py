@@ -40,7 +40,11 @@ class QuestionnairePublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, 
     lookup_field = 'uuid'
 
     def to_representation(self, value):
-        return OrderedDict([('self', dict(href=self._get_url(value, 'public-questionnaire-detail'))), ])
+        return OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
+            ('self', dict(href=self._get_url(value, 'public-questionnaire-detail'))),
+            ('sia:create-session', dict(href=self._get_url(value, 'public-questionnaire-create-session'))),
+        ])
 
 
 class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers.HyperlinkedIdentityField):
@@ -48,6 +52,7 @@ class QuestionHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serializers
 
     def to_representation(self, value):
         return OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
             ('self', dict(href=self._get_url(value, 'public-question-detail'))),
             ('sia:uuid-self', dict(href=self._reverse('public-question-detail', kwargs={'retrieval_key': value.uuid}))),
             ('sia:post-answer', dict(href=self._reverse('public-question-answer',
@@ -60,6 +65,7 @@ class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serial
 
     def to_representation(self, value):
         result = OrderedDict([
+            ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
             ('self', dict(href=self._get_url(value, 'public-session-detail'))),
             ('sia:questionnaire', dict(href=self._reverse('public-questionnaire-detail',
                                                           kwargs={'uuid': value.questionnaire.uuid})))

@@ -37,8 +37,9 @@ def send_signals(to_send):
 
 class SignalManager(models.Manager):
 
-    def _create_initial_no_transaction(self, signal_data, location_data, status_data,
-                                       category_assignment_data, reporter_data, priority_data=None, type_data=None):
+    def _create_initial_no_transaction(  # noqa: C901
+            self, signal_data, location_data, status_data, category_assignment_data, reporter_data, priority_data=None,
+            type_data=None, session=None):
         """Create a new `Signal` object with all related objects.
             If a transaction is needed use SignalManager.create_initial
 
@@ -53,6 +54,15 @@ class SignalManager(models.Manager):
         """
         from .models import CategoryAssignment, Location, Priority, Reporter, Status, Type
         from .utils.location import _get_area, _get_stadsdeel_code
+
+        if session:
+            from signals.apps.questionnaires.services import SessionService
+            session_service = SessionService(session)
+            session_extra_properties = session_service.get_extra_properties()
+            if 'extra_properties' in signal_data:
+                signal_data['extra_properties'] = signal_data['extra_properties'] + session_extra_properties
+            else:
+                signal_data.update({'extra_properties': session_extra_properties})
 
         signal = self.create(**signal_data)
 
@@ -73,8 +83,7 @@ class SignalManager(models.Manager):
         # Create dependent model instances with correct foreign keys to Signal
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
         status = Status.objects.create(**status_data, _signal_id=signal.pk)
-        category_assignment = CategoryAssignment.objects.create(**category_assignment_data,
-                                                                _signal_id=signal.pk)
+        category_assignment = CategoryAssignment.objects.create(**category_assignment_data, _signal_id=signal.pk)
         reporter = Reporter.objects.create(**reporter_data, _signal_id=signal.pk)
         priority = Priority.objects.create(**priority_data, _signal_id=signal.pk)
 
@@ -90,10 +99,14 @@ class SignalManager(models.Manager):
         signal.type_assignment = signal_type
         signal.save()
 
+        if session:
+            session._signal = signal
+            session.save()
+
         return signal
 
     def create_initial(self, signal_data, location_data, status_data, category_assignment_data,
-                       reporter_data, priority_data=None, type_data=None):
+                       reporter_data, priority_data=None, type_data=None, session=None):
         """Create a new `Signal` object with all related objects.
 
         :param signal_data: deserialized data dict
@@ -103,6 +116,7 @@ class SignalManager(models.Manager):
         :param reporter_data: deserialized data dict
         :param priority_data: deserialized data dict (Default: None)
         :param type_data: deserialized data dict (Default: None)
+        :param session: Session object (Default: None)
         :returns: Signal object
         """
 
@@ -115,6 +129,7 @@ class SignalManager(models.Manager):
                 reporter_data=reporter_data,
                 priority_data=priority_data,
                 type_data=type_data,
+                session=session,
             )
 
             transaction.on_commit(lambda: create_initial.send_robust(sender=self.__class__,

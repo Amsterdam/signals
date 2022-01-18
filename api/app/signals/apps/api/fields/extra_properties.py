@@ -11,7 +11,7 @@ class SignalExtraPropertiesField(JSONField):
 
     def get_attribute(self, instance):
         self.instance = instance
-        return instance.extra_properties
+        return self.to_representation(instance.extra_properties)
 
     def to_representation(self, value):
         representation = super().to_representation(value=value)
@@ -26,4 +26,4 @@ class SignalExtraPropertiesField(JSONField):
 
         return filter(
             lambda x: 'category_url' in x and x['category_url'] in category_urls, representation
-        )
+        ) if representation else None

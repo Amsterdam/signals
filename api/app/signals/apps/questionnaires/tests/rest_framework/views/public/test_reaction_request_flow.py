@@ -13,6 +13,7 @@ from django.urls import include, path
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
+from signals.apps.api.views import NamespaceView
 from signals.apps.questionnaires.app_settings import REACTION_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.factories import AnswerFactory
 from signals.apps.questionnaires.models import Session
@@ -26,6 +27,7 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 THIS_DIR = os.path.dirname(__file__)
 
 urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
 ]
 

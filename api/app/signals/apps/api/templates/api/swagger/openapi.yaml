@@ -399,6 +399,8 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/V1PrivateSignalDetailGet'
                   - $ref: '#/components/schemas/V1PrivateSignalDetailGetBulk'
+        '400':
+          description: Bad request
         '401':
           description: Not authenticated, may be caused by expired token.
         '403':
@@ -2295,6 +2297,13 @@ components:
             type: string
             example: 'http://127.0.0.1:8000/signals/v1/private/signals/123/attachments/456'
           minItems: 0
+        session:
+          description: The UUID of a Session containing the answers of a specific Questionnaire
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+          required: false
+          nullable: true
       required:
         - text
         - location
@@ -2338,6 +2347,13 @@ components:
           items:
             type: object
           example: []
+        session:
+          description: The UUID of a Session containing the answers of a specific Questionnaire
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+          required: false
+          nullable: true
       required:
         - text
         - location
@@ -2808,6 +2824,12 @@ components:
                 public:
                   type: string
                   description: URI to the public parent category detail
+            sia:questionnaire:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the public questionnaire
         _display:
           type: string
           description: The display value of the category

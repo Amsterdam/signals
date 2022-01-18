@@ -14,6 +14,7 @@ class ParentCategoryFactory(DjangoModelFactory):
     handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (parent category)'
     is_active = True
+    questionnaire = None
 
     class Meta:
         model = Category
@@ -36,6 +37,7 @@ class CategoryFactory(DjangoModelFactory):
     handling = FuzzyChoice([c[0] for c in Category.HANDLING_CHOICES])
     handling_message = 'Test handling message (child category)'
     is_active = True
+    questionnaire = None
 
     class Meta:
         model = Category

@@ -13,6 +13,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
+from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals.factories import (
     CategoryFactory,
     ParentCategoryFactory,
@@ -515,3 +516,71 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Signal.objects.count(), signal_count)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_session(self, validate_address):
+        signal_count = Signal.objects.count()
+        create_initial_data = copy.deepcopy(self.initial_data_base)
+
+        session = SessionFactory.create(submit_before=timezone.now() + timezone.timedelta(hours=2), frozen=True)
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(signal_count + 1, Signal.objects.count())
+
+        session.refresh_from_db()
+        signal = Signal.objects.get(pk=response.json()['id'])
+        self.assertEqual(session._signal_id, signal.id)
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_not_frozen_session(self, validate_address):
+        signal_count = Signal.objects.count()
+        create_initial_data = copy.deepcopy(self.initial_data_base)
+
+        session = SessionFactory.create(submit_before=timezone.now() + timezone.timedelta(hours=2))
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(response.json()['session'][0], 'Session not frozen')
+        self.assertEqual(signal_count, Signal.objects.count())
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_expired_session(self, validate_address):
+        signal_count = Signal.objects.count()
+        create_initial_data = copy.deepcopy(self.initial_data_base)
+
+        session = SessionFactory.create(submit_before=timezone.now() - timezone.timedelta(hours=2))
+        create_initial_data.update({'session': session.uuid})
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(response.json()['session'][0], 'Session expired')
+        self.assertEqual(signal_count, Signal.objects.count())
+
+    @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_with_session_connected_to_another_signal(self, validate_address):
+        create_initial_data = copy.deepcopy(self.initial_data_base)
+
+        session = SessionFactory.create()
+
+        another_signal = SignalFactory.create()
+        session._signal = another_signal
+        session.save()
+
+        create_initial_data.update({'session': session.uuid})
+
+        signal_count = Signal.objects.count()
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(response.json()['session'][0], 'Session already used')
+        self.assertEqual(signal_count, Signal.objects.count())
