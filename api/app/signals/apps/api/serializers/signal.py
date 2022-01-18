@@ -437,6 +437,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
                 - The Session with given UUID must exists
                 - The Session cannot be connected to a Signal
                 - The Session cannot be expired
+                - The Session must be frozen
             """
             try:
                 session = Session.objects.get(uuid=attrs['session'])
@@ -589,6 +590,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                 - The Session with given UUID must exists
                 - The Session cannot be connected to a Signal
                 - The Session cannot be expired
+                - The Session must be frozen
             """
             try:
                 session = Session.objects.get(uuid=data['session'])
