@@ -42,12 +42,12 @@ services:
   rabbit:
     image: rabbitmq:3.8
     ports:
-     - "5672:5672"
+      - "5672:5672"
     environment:
-     - RABBITMQ_ERLANG_COOKIE='secret cookie here'
-     - RABBITMQ_DEFAULT_USER=signals
-     - RABBITMQ_DEFAULT_PASS=insecure
-     - RABBITMQ_DEFAULT_VHOST=vhost
+      - RABBITMQ_ERLANG_COOKIE='secret cookie here'
+      - RABBITMQ_DEFAULT_USER=signals
+      - RABBITMQ_DEFAULT_PASS=insecure
+      - RABBITMQ_DEFAULT_VHOST=vhost
 
   celery:
     build: ./api
@@ -67,6 +67,8 @@ services:
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
+      - RABBITMQ_HOST=rabbit
+      - ELASTICSEARCH_HOST=elasticsearch:9200
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -85,6 +87,7 @@ services:
       - DJANGO_SETTINGS_MODULE=signals.settings.development
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
+      - RABBITMQ_HOST=rabbit
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -98,6 +101,7 @@ services:
       - database
       - elasticsearch
       - dex
+      - celery
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
@@ -110,6 +114,7 @@ services:
       - ELASTICSEARCH_HOST=elasticsearch:9200
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
+      - RABBITMQ_HOST=rabbit
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

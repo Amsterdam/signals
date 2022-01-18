@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-18.04
 
     services:
-      postgres:
+      database:
         image: amsterdam/postgres11
         env:
           POSTGRES_USER: signals
           POSTGRES_PASSWORD: insecure
           POSTGRES_DB: signals
-        ports: ['5409:5432']
+        ports: ['5432:5432']
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -41,7 +41,7 @@ jobs:
       - name: Run tests
         run: |
           cd api/app
-          tox
+          tox -- --ds signals.settings.github
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v1

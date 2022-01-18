@@ -20,7 +20,7 @@ services:
   tests:
     build: ../../
     links:
-    - database:signals
+    - database
     environment:
       DATABASE_NAME: signals
       DATABASE_USER: signals

@@ -2,6 +2,9 @@
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from signals.settings.base import *  # noqa
 
+DATABASES['default']['HOST'] = 'database'  # noqa: F405
+DATABASES['default']['PORT'] = '5432'  # noqa: F405
+
 SECRET_KEY = 'insecure'
 CELERY_TASK_ALWAYS_EAGER = True
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
