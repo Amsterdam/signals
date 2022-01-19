@@ -7,9 +7,11 @@ to private endpoints
 """
 import os
 from itertools import chain
+from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from PIL.Image import DecompressionBombError
 
 from signals.apps.services.domain.filescanner import (
     FileRejectedError,
@@ -121,6 +123,28 @@ class TestUploadedFileScannerViaAPI(SignalsBaseApiTestCase):
             response = self.client.post(self.private_upload_url, data={'file': renamed})
         self.assertEqual(response.status_code, 400)
 
+    @patch('PIL.Image.MAX_IMAGE_PIXELS', 1)
+    def test_upload_disallowed_pil_DecompressionBombError(self):
+        """
+        When an image exceeds a the MAX_IMAGE_PIXELS PIL will protect against potential DOS attacks caused by
+        “decompression bombs”. When the MAX_IMAGE_PIXELS been exceeded PIL will log a DecompressionBombWarning, if the
+        image pixels exceed twice the MAX_IMAGE_PIXELS PIL will raise a DecompressionBombError.
+
+        More information can be found on:
+            https://pillow.readthedocs.io/en/stable/reference/Image.html?highlight=MAX_IMAGE_PIXELS#PIL.Image.open
+        """
+        self.client.force_authenticate(user=self.superuser)
+        for filename, content_type in ALLOWED:
+            with open(filename, 'rb') as file:
+                suf = SimpleUploadedFile(filename, file.read(), content_type=content_type)
+                response = self.client.post(self.private_upload_url, data={'file': suf})
+            self.assertEqual(response.status_code, 400)
+
+            response_json = response.json()
+            self.assertIn('file', response_json)
+            self.assertEqual(1, len(response_json['file']))
+            self.assertIn('decompression bomb DOS attack', response_json['file'][0])
+
 
 class TestUploadScannerService(TestCase):
     def test__get_mime_from_extension(self):
@@ -199,3 +223,19 @@ class TestUploadScannerService(TestCase):
         suf = SimpleUploadedFile('image.jpg', b'', content_type='image/jpg')
         with self.assertRaises(FileTypeExtensionMismatch):
             UploadScannerService.scan_file(suf)
+
+    @patch('PIL.Image.MAX_IMAGE_PIXELS', 1)
+    def test_pil_DecompressionBombError(self):
+        """
+        When an image exceeds a the MAX_IMAGE_PIXELS PIL will protect against potential DOS attacks caused by
+        “decompression bombs”. When the MAX_IMAGE_PIXELS been exceeded PIL will log a DecompressionBombWarning, if the
+        image pixels exceed twice the MAX_IMAGE_PIXELS PIL will raise a DecompressionBombError.
+
+        More information can be found on:
+            https://pillow.readthedocs.io/en/stable/reference/Image.html?highlight=MAX_IMAGE_PIXELS#PIL.Image.open
+        """
+        for filename, content_type in ALLOWED:
+            with open(filename, 'rb') as file:
+                suf = SimpleUploadedFile(filename, file.read(), content_type=content_type)
+                with self.assertRaises(DecompressionBombError):
+                    UploadScannerService.scan_file(suf)
