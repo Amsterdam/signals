@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
+from PIL.Image import DecompressionBombError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -54,7 +55,7 @@ class SignalAttachmentSerializer(HALSerializer):
 
         try:
             UploadScannerService.scan_file(file)
-        except FileRejectedError as e:
+        except (FileRejectedError, DecompressionBombError) as e:
             raise ValidationError(str(e))
 
         return file

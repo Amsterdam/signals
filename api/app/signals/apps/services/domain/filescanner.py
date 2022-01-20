@@ -7,6 +7,7 @@ import logging
 import mimetypes
 
 import magic
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,9 @@ class UploadScannerService:
         seen.add(UploadScannerService._get_mime_from_content(uploaded_file))
 
         if len(seen) == 1 and list(seen)[0] in ALLOWED_MIME_TYPES:
+            # Let's see if PIL raises the DecompressionBombError
+            Image.open(uploaded_file.file)
+
             return uploaded_file
 
         if len(seen) > 1:
