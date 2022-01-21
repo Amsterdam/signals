@@ -70,7 +70,12 @@ class ShapeBoundariesLoader(AreaLoader):
         # municipality.
         for feature in ds[0]:
             code = feature.get(self.code_field)
-            name_by_code[code] = feature.get(self.name_field)
+            name = feature.get(self.name_field)
+            assert name and code  # At least one of these must be different from None.
+
+            if not name and code:
+                name = code   # No name present, use code as name.
+            name_by_code[code] = name
 
             # Transform to WGS84 and merge if needed.
             transformed = feature.geom.transform('WGS84', clone=True)
