@@ -31,7 +31,7 @@ python manage.py collectstatic --no-input
 if [[ ${INITIALIZE_WITH_DUMMY_DATA:-0} == 1 ]]; then
   echo "Load dummy data"
   python manage.py load_areas stadsdeel
-  python manage.py load_areas cbs-gemeente-2019
+  python manage.py load_areas cbs-gemeente-2021
   python manage.py load_areas sia-stadsdeel
 
   # Other scripts to load data should be placed here

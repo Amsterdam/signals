@@ -8,23 +8,23 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
     """
     Load municipal (and neigbhorhood) boundaries as SIA Area instances.
     """
-    DATASET_URL = 'https://www.cbs.nl/-/media/cbs/dossiers/nederland-regionaal/wijk-en-buurtstatistieken/wijkbuurtkaart_2019_v2up.zip'  # noqa
+    DATASET_URL = 'https://www.cbs.nl/-/media/cbs/dossiers/nederland-regionaal/wijk-en-buurtstatistieken/wijkbuurtkaart_2021_v1.zip'  # noqa
     # Unfortunately, these filenames are not uniformly named over the years,
     # so a hard-coded mapping is provided for the most recent data file (as of
     # this writing 2019).
     DATASET_INFO = {
-        'cbs-gemeente-2019': {
-            'shp_file': 'gemeente_2019_v2up.shp',
+        'cbs-gemeente-2021': {
+            'shp_file': 'WijkBuurtkaart_2021_v1/gemeente_2021_v1.shp',
             'code_field': 'GM_CODE',
             'name_field': 'GM_NAAM',
         },
-        'cbs-wijk-2019': {
-            'shp_file': 'wijk_2019_v2up.shp',
+        'cbs-wijk-2021': {
+            'shp_file': 'WijkBuurtkaart_2021_v1/wijk_2021_v1.shp',
             'code_field': 'WK_CODE',
             'name_field': 'WK_NAAM',
         },
-        'cbs-buurt-2019': {
-            'shp_file': 'buurt_2019_v2up.shp',
+        'cbs-buurt-2021': {
+            'shp_file': 'WijkBuurtkaart_2021_v1/buurt_2021_v1.shp',
             'code_field': 'BU_CODE',
             'name_field': 'BU_NAAM',
         }
