@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 import zipfile
 from urllib.parse import urlsplit
@@ -71,7 +71,7 @@ class ShapeBoundariesLoader(AreaLoader):
         for feature in ds[0]:
             code = feature.get(self.code_field)
             name = feature.get(self.name_field)
-            assert name and code  # At least one of these must be different from None.
+            assert name or code  # At least one of these must be different from None.
 
             if not name and code:
                 name = code   # No name present, use code as name.
