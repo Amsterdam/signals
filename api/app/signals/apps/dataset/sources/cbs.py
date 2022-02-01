@@ -11,7 +11,7 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
     DATASET_URL = 'https://www.cbs.nl/-/media/cbs/dossiers/nederland-regionaal/wijk-en-buurtstatistieken/wijkbuurtkaart_2021_v1.zip'  # noqa
     # Unfortunately, these filenames are not uniformly named over the years,
     # so a hard-coded mapping is provided for the most recent data file (as of
-    # this writing 2019).
+    # this writing early 2022).
     DATASET_INFO = {
         'cbs-gemeente-2021': {
             'shp_file': 'WijkBuurtkaart_2021_v1/gemeente_2021_v1.shp',
