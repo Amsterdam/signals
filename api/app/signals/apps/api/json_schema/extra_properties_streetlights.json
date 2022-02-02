@@ -1,0 +1,181 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://example.com/root.json",
+	"type": "array",
+	"title": "The Root Schema",
+
+	"definitions": {
+		"answer_object_not_on_map_simple": {
+			"$id": "#/items/properties/answer-1",
+			"type": "object",
+			"title": "The streetlight answer (not on map simple) schema",
+			"required": [
+				"type"
+			],
+			"properties": {
+				"type": {
+					"$id": "#/items/properties/answer/properties/type-1",
+					"type": "string",
+					"title": "The type of a streetlight",
+					"examples": [
+						"not-on-map"
+					]
+				}
+			}
+		},
+		"answer_object_not_on_map_complex": {
+			"$id": "#/items/properties/answer-2",
+			"type": "object",
+			"title": "The streetlight answer (not on map complex) schema",
+			"required": [
+				"id",
+				"type",
+				"label"
+			],
+			"properties": {
+				"id": {
+					"$id": "#/items/properties/answer/items/properties/id-2",
+					"type": "integer",
+					"title": "The Id of a streetlight",
+					"minimum": 0,
+					"examples": [
+						123456
+					]
+				},
+				"type": {
+					"$id": "#/items/properties/answer/properties/type-2",
+					"type": "string",
+					"title": "The type of a streetlight",
+					"examples": [
+						"not-on-map"
+					]
+				},
+				"label": {
+					"$id": "#/items/properties/answer/properties/label-2",
+					"type": "string",
+					"title": "The label of a streetlight",
+					"examples": [
+						"De container staat niet op de kaart - 123456"
+					]
+				}
+			}
+		},
+		"answer_object": {
+			"$id": "#/items/properties/answer-3",
+			"type": "object",
+			"title": "The streetlight answer (not on map complex) schema",
+			"required": [
+				"id",
+				"type",
+				"description",
+				"isReported",
+				"label"
+			],
+			"properties": {
+				"id": {
+					"$id": "#/items/properties/answer/items/properties/id-3",
+					"type": "integer",
+					"title": "The Id of a streetlight",
+					"minimum": 0,
+					"examples": [
+						123456
+					]
+				},
+				"type": {
+					"$id": "#/items/properties/answer/properties/type-3",
+					"type": "string",
+					"title": "The type of a streetlight",
+					"examples": [
+						"4"
+					]
+				},
+				"description": {
+					"$id": "#/items/properties/answer/properties/description-3",
+					"type": "string",
+					"title": "A description",
+					"examples": [
+						"Overig lichtpunt"
+					]
+				},
+				"isReported": {
+					"$id": "#/items/properties/answer/properties/isreported-3",
+					"type": "boolean",
+					"title": "If a streetlight has already been reported",
+					"examples": [
+						true,
+						false
+					]
+				},
+				"label": {
+					"$id": "#/items/properties/answer/properties/label-3",
+					"type": "string",
+					"title": "The label of a streetlight",
+					"examples": [
+						"De container staat niet op de kaart - 123456"
+					]
+				}
+			}
+		}
+	},
+
+	"items": {
+		"$id": "#/items",
+		"type": "object",
+		"title": "The Items Schema",
+		"required": [
+			"id",
+			"label",
+			"answer",
+			"category_url"
+		],
+		"properties": {
+			"id": {
+				"$id": "#/items/properties/id",
+				"type": "string",
+				"title": "The id",
+				"default": "",
+				"examples": [
+					"extra_straatverlichting_nummer"
+				],
+				"pattern": "^(.*)$"
+			},
+			"label": {
+				"$id": "#/items/properties/label",
+				"type": "string",
+				"title": "The Label Schema",
+				"default": "",
+				"examples": [
+					"Lichtpunt(en) op kaart"
+				],
+				"pattern": "^(.*)$"
+			},
+			"answer": {
+				"anyOf": [
+					{
+						"#rel": "#/definitions/answer_object"
+					},
+					{
+						"#rel": "#/definitions/answer_object_not_on_map_simple"
+					},
+					{
+						"#rel": "#/definitions/answer_object_not_on_map_complex"
+					}
+				]
+			},
+			"category_url": {
+				"$id": "#/items/properties/category_url",
+				"format": "regex",
+              	"pattern": "^((https?://(www.|)([\\w\\d.:]*)|)(/[\\w\\d\\-/]+))$",
+				"title": "The category_url",
+				"examples": [
+					"/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+					"https://api.data.amsterdam.nl/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+					"https://api.data.amsterdam.nl/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+					"https://127.0.0.1/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",
+					"https://127.0.0.1:8080/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting"
+				]
+			}
+		}
+	},
+	"minItems": 1
+}

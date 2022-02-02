@@ -453,6 +453,17 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
                 else:
                     attrs['session'] = session
 
+        # SIG-4382 additional check on the extra_properties if the category is lantaarpaal-straatverlichting
+        if attrs.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
+            validator = ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
+                                                                       'extra_properties_streetlights.json'))
+            try:
+                validator(attrs.get('extra_properties'))
+            except ValidationError:
+                errors.update({'extra_properties': [
+                    'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
+                ]})
+
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -605,6 +616,18 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                     errors.update({'session': ['Session expired']})
                 else:
                     data['session'] = session
+
+        # SIG-4382 additional check on the extra_properties if the category is lantaarpaal-straatverlichting
+        if data.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
+            validator = ExtraPropertiesValidator(
+                filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
+                                      'extra_properties_streetlights.json'))
+            try:
+                validator(data.get('extra_properties'))
+            except ValidationError:
+                errors.update({'extra_properties': [
+                    'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
+                ]})
 
         if errors:
             raise serializers.ValidationError(errors)
