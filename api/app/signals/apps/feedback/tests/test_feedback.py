@@ -1,15 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import copy
 from datetime import timedelta
-from unittest import mock
 
-from django.conf import settings
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
@@ -23,7 +19,7 @@ from signals.test.utils import SignalsBaseApiTestCase
 # https://docs.djangoproject.com/en/2.1/topics/testing/tools/#urlconf-configuration
 
 
-class NameSpace():
+class NameSpace:
     pass
 
 
@@ -316,22 +312,6 @@ class TestUtils(TestCase):
     def setUp(self):
         self.feedback = FeedbackFactory()
 
-    @override_settings(FRONTEND_URL=None)
-    def test_link_generation_with_environment_set_frontend_url_not_set(self):
-        env_fe_mapping = copy.deepcopy(getattr(
-            settings,
-            'FEEDBACK_ENV_FE_MAPPING',
-            feedback_settings.FEEDBACK_ENV_FE_MAPPING,
-        ))
-
-        for environment, fe_location in env_fe_mapping.items():
-            env = {'ENVIRONMENT': environment}
-
-            with mock.patch.dict('os.environ', env, clear=True):
-                pos_url, neg_url = get_feedback_urls(self.feedback)
-                self.assertIn(fe_location, pos_url)
-                self.assertIn(fe_location, neg_url)
-
     def test_link_generation_with_environment_set_frontend_url_set(self):
         test_frontend_urls = ['https://acc.meldingen.amsterdam.nl', 'https://meldingen.amsterdam.nl',
                               'https://random.net', ]
@@ -343,7 +323,6 @@ class TestUtils(TestCase):
                 self.assertIn(test_frontend_url, neg_url)
 
     def test_link_generation_no_environment_set(self):
-        with mock.patch.dict('os.environ', {}, clear=True):
-            pos_url, neg_url = get_feedback_urls(self.feedback)
-            self.assertEqual(f'http://dummy_link/kto/ja/{self.feedback.token}', pos_url)
-            self.assertEqual(f'http://dummy_link/kto/nee/{self.feedback.token}', neg_url)
+        pos_url, neg_url = get_feedback_urls(self.feedback)
+        self.assertEqual(f'http://dummy_link/kto/ja/{self.feedback.token}', pos_url)
+        self.assertEqual(f'http://dummy_link/kto/nee/{self.feedback.token}', neg_url)

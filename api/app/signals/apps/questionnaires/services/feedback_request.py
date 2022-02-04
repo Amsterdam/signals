@@ -5,11 +5,11 @@ Support for Klanttevredenheidsonderzoek flow.
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.utils import get_fe_application_location
 from signals.apps.questionnaires.app_settings import FEEDBACK_REQUEST_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import CannotFreeze, WrongFlow, WrongState
 from signals.apps.questionnaires.models import (
@@ -92,9 +92,8 @@ def create_kto_graph():
 
 
 def get_feedback_urls(session):
-    fe_location = get_fe_application_location()
-    positive_feedback_url = f'{fe_location}/feedback/ja/{session.uuid}'
-    negative_feedback_url = f'{fe_location}/feedback/nee/{session.uuid}'
+    positive_feedback_url = f'{settings.FRONTEND_URL}/feedback/ja/{session.uuid}'
+    negative_feedback_url = f'{settings.FRONTEND_URL}/feedback/nee/{session.uuid}'
 
     return positive_feedback_url, negative_feedback_url
 

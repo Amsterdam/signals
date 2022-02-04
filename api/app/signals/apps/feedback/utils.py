@@ -1,55 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import copy
 import logging
-import os
 
 from django.conf import settings
-
-from signals.apps.feedback import app_settings as feedback_settings
 
 logger = logging.getLogger(__name__)
 
 
-class NoFrontendAppConfigured(Exception):
-    pass
-
-
-def get_fe_application_location():
-    """Get location of frontend SIA application."""
-
-    # Temporary workaround, will be removed if feedback is moved to the Questionnaires app
-    frontend_url = settings.FRONTEND_URL
-    if frontend_url:
-        return frontend_url
-
-    # If there is no FRONTEND_URL set fallback to the "old" way of determining the frontend url
-    env_fe_mapping = copy.deepcopy(getattr(
-        settings,
-        'FEEDBACK_ENV_FE_MAPPING',
-        feedback_settings.FEEDBACK_ENV_FE_MAPPING
-    ))
-
-    environment = os.getenv('ENVIRONMENT', None)
-
-    try:
-        environment = environment.upper()
-        fe_location = env_fe_mapping[environment]
-    except (AttributeError, KeyError) as e:  # noqa: F841
-        msg = f'ENVIRONMENT environment variable set to unknown value: {environment}'
-        raise NoFrontendAppConfigured(msg)
-    else:
-        return fe_location
-
-
 def get_feedback_urls(feedback):
     """Get positive and negative feedback URLs in meldingingen application."""
-    try:
-        fe_location = get_fe_application_location()
-    except NoFrontendAppConfigured:
-        return 'http://dummy_link/kto/yes/123', 'http://dummy_link/kto/no/123'
-
-    positive_feedback_url = f'{fe_location}/kto/ja/{feedback.token}'
-    negative_feedback_url = f'{fe_location}/kto/nee/{feedback.token}'
+    positive_feedback_url = f'{settings.FRONTEND_URL}/kto/ja/{feedback.token}'
+    negative_feedback_url = f'{settings.FRONTEND_URL}/kto/nee/{feedback.token}'
 
     return positive_feedback_url, negative_feedback_url
