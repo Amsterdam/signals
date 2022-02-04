@@ -16,14 +16,12 @@ class TestTaskUpdateStatusChildrenBasedOnParent(TransactionTestCase):
 
         self.test_feature_flags_enabled = {
             'API_DETERMINE_STADSDEEL_ENABLED': False,  # we are not interested in search behavior here
-            'API_FILTER_EXTRA_PROPERTIES': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in search behavior here
             'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,  # THIS IS WHAT WE WANT TO TEST
         }
         self.test_feature_flags_disabled = {
             'API_DETERMINE_STADSDEEL_ENABLED': False,  # we are not interested in search behavior here
-            'API_FILTER_EXTRA_PROPERTIES': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,  # we are not interested in search behavior here
             'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,  # we are not interested in search behavior here
             'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,  # THIS IS WHAT WE WANT TO TEST

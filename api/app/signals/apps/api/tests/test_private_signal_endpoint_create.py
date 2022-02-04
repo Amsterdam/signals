@@ -29,7 +29,6 @@ THIS_DIR = os.path.dirname(__file__)
 
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
     'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
@@ -39,7 +38,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
     prod_feature_flags_settings = {
         'API_DETERMINE_STADSDEEL_ENABLED': True,
-        'API_FILTER_EXTRA_PROPERTIES': True,
         'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
         'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
         'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
