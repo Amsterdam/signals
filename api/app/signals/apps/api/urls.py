@@ -121,6 +121,14 @@ urlpatterns = [
         path('autocomplete/', include([
             re_path('usernames/?$', AutocompleteUsernameListView.as_view(), name='autocomplete-usernames'),
         ])),
+
+        # Signal context
+        re_path(r'signals/(?P<pk>\d+)/context/?$', SignalContextViewSet.as_view({'get': 'retrieve'}),
+                name='private-signal-context'),
+        re_path(r'signals/(?P<pk>\d+)/context/reporter/?$', SignalContextViewSet.as_view({'get': 'reporter'}),
+                name='private-signal-context-reporter'),
+        re_path(r'signals/(?P<pk>\d+)/context/near/geography/?$', SignalContextViewSet.as_view({'get': 'near'}),
+                name='private-signal-context-near-geography'),
     ])),
 
     # Reporting
@@ -131,25 +139,3 @@ urlpatterns = [
     # Swagger
     path('swagger/openapi.yaml', SwaggerView.as_view()),
 ]
-
-if 'API_SIGNAL_CONTEXT' not in settings.FEATURE_FLAGS or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT']:
-    signal_context_urls = [
-        re_path(r'v1/private/signals/(?P<pk>\d+)/context/?$',
-                SignalContextViewSet.as_view({'get': 'retrieve'}),
-                name='private-signal-context'),
-    ]
-    if 'API_SIGNAL_CONTEXT_REPORTER' not in settings.FEATURE_FLAGS \
-            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_REPORTER']:
-        signal_context_urls += [
-            re_path(r'v1/private/signals/(?P<pk>\d+)/context/reporter/?$',
-                    SignalContextViewSet.as_view({'get': 'reporter'}),
-                    name='private-signal-context-reporter')
-        ]
-    if 'API_SIGNAL_CONTEXT_NEAR' not in settings.FEATURE_FLAGS \
-            or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_NEAR']:
-        signal_context_urls += [
-            re_path(r'v1/private/signals/(?P<pk>\d+)/context/near/geography/?$',
-                    SignalContextViewSet.as_view({'get': 'near'}),
-                    name='private-signal-context-near-geography')
-        ]
-    urlpatterns += signal_context_urls

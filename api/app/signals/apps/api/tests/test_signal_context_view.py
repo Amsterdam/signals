@@ -5,13 +5,10 @@ from unittest import skip
 
 from django.contrib.gis.geos import Point
 from django.db.models import Q
-from django.test import override_settings
-from django.urls import include, path, re_path
 from django.utils import timezone
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
-from signals.apps.api.views import NamespaceView, SignalContextViewSet
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import CategoryFactory, DepartmentFactory, SignalFactory
@@ -25,32 +22,6 @@ from signals.apps.signals.tests.valid_locations import (
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase, SuperUserMixin
 
 
-class NameSpace:
-    pass
-
-
-urlpatterns = [
-    path('signals/', include([
-        re_path(r'v1/relations/?$',
-                NamespaceView.as_view(),
-                name='signal-namespace'),
-        re_path(r'v1/private/signals/(?P<pk>\d+)/context/?$',
-                SignalContextViewSet.as_view({'get': 'retrieve'}),
-                name='private-signal-context'),
-        re_path(r'v1/private/signals/(?P<pk>\d+)/context/reporter/?$',
-                SignalContextViewSet.as_view({'get': 'reporter'}),
-                name='private-signal-context-reporter'),
-        re_path(r'v1/private/signals/(?P<pk>\d+)/context/near/geography/?$',
-                SignalContextViewSet.as_view({'get': 'near'}),
-                name='private-signal-context-near-geography'),
-    ])),
-]
-
-test_urlconf = NameSpace()
-test_urlconf.urlpatterns = urlpatterns
-
-
-@override_settings(ROOT_URLCONF=test_urlconf)
 class TestSignalContextView(SuperUserMixin, APITestCase):
     def setUp(self):
         now = timezone.now()
