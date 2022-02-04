@@ -32,8 +32,6 @@ class AssertSignalsNotInLogMixin:
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
     'SIGNAL_HISTORY_LOG_ENABLED': True
@@ -187,8 +185,6 @@ class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
     'SIGNAL_HISTORY_LOG_ENABLED': False
