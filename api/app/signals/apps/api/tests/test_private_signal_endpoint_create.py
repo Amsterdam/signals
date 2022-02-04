@@ -30,7 +30,6 @@ THIS_DIR = os.path.dirname(__file__)
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
     'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
@@ -39,7 +38,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     prod_feature_flags_settings = {
         'API_DETERMINE_STADSDEEL_ENABLED': True,
         'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-        'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True,
         'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
     }
 
@@ -406,8 +404,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         initial_data['source'] = source.name
         initial_data['parent'] = parent_signal.pk
 
-        with self.settings(FEATURE_FLAGS={'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': True}):
-            response = self.client.post(self.list_endpoint, initial_data, format='json')
+        response = self.client.post(self.list_endpoint, initial_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Signal.objects.count(), signal_count + 1)

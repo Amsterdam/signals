@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
-from django.conf import settings
 from rest_framework.serializers import ValidationError
 
 from signals.apps.signals.models import Signal, Source
@@ -29,19 +28,15 @@ class PrivateSignalSourceValidator:
         if not Source.objects.filter(name__iexact=value, is_active=True).exists():
             raise ValidationError('Invalid source given, value not known')
 
-        # No need to check the given source this will be overwritten when creating the child Signal
-        # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
-        if (settings.FEATURE_FLAGS.get('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True)
-                and hasattr(settings, 'API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO')):
-            data = serializer_field.context['request'].data
-            if isinstance(data, list):
-                if data[0].get('parent', None):
-                    return value
-            elif isinstance(data, dict):
-                if data.get('parent', None):
-                    return value
-            else:
-                raise ValidationError('Signal source validation failed.')  # should never be hit
+        data = serializer_field.context['request'].data
+        if isinstance(data, list):
+            if data[0].get('parent', None):
+                return value
+        elif isinstance(data, dict):
+            if data.get('parent', None):
+                return value
+        else:
+            raise ValidationError('Signal source validation failed.')  # should never be hit
 
         # If the user is authenticated and the given Source is active and flagged as is_public raise a ValidationError
         if (serializer_field.context['request'].user.is_authenticated and
