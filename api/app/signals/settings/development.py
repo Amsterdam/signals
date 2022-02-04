@@ -4,48 +4,20 @@ import os
 
 from signals.settings.base import *  # noqa
 
-DATABASES['default']['HOST'] = 'database'  # noqa: F405
-DATABASES['default']['PORT'] = '5432'  # noqa: F405
-
+SITE_DOMAIN = 'localhost:8000'
 SECRET_KEY = 'insecure'
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', ]
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-
+DATABASES['default']['HOST'] = 'database'  # noqa: F405
+DATABASES['default']['PORT'] = '5432'  # noqa: F405
 SIGNALS_AUTH = {
     'JWKS_URL': os.getenv('JWKS_URL', 'http://dex:5556/keys'),
     'ALWAYS_OK': os.getenv('ALWAYS_OK', True) in TRUE_VALUES,  # noqa
     'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(',')
 }
-
-SITE_DOMAIN = 'localhost:8000'
-
-INSTALLED_APPS += [  # noqa
-    'debug_toolbar',
-]
-MIDDLEWARE.append(  # noqa
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-)
-
 TEST_LOGIN = os.getenv('TEST_LOGIN', 'signals.admin@example.com')
-
-# ML_TOOL_ENDPOINT = 'https://acc.api.data.amsterdam.nl/signals_mltool'
-
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://dummy_link')
-
-try:
-    from signals.settings.local import *  # noqa
-except ImportError:
-    pass
-
-
-def show_toolbar(request):
-    return False  # True to enable Django Debug Toolbar (very slow)
-
-
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': show_toolbar,
-}
 
 # Set console logging to DEBUG
 LOGGING['handlers'].update({  # noqa F405
@@ -63,3 +35,8 @@ LOGGING['loggers'].update({  # noqa F405
         'handlers': ['console', ],
     }
 })
+
+try:
+    from signals.settings.local import *  # noqa
+except ImportError:
+    pass
