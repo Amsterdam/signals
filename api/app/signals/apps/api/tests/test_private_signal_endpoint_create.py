@@ -30,7 +30,6 @@ THIS_DIR = os.path.dirname(__file__)
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
@@ -38,7 +37,6 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
     prod_feature_flags_settings = {
         'API_DETERMINE_STADSDEEL_ENABLED': True,
         'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-        'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': True,
     }
 
     def setUp(self):

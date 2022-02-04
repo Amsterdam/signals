@@ -2,7 +2,6 @@
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
 import logging
 
-from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
@@ -82,11 +81,6 @@ def anonymize_reporter(reporter_id):
 
 @app.task
 def update_status_children_based_on_parent(signal_id):
-    if not settings.FEATURE_FLAGS.get('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True):
-        # Feature disabled
-        log.warning("Feature 'TASK_UPDATE_CHILDREN_BASED_ON_PARENT' disabled!")
-        return
-
     signal = Signal.objects.get(pk=signal_id)
     if signal.is_parent and signal.status.state in [AFGEHANDELD, GEANNULEERD, ]:
         text = 'Hoofdmelding is afgehandeld'

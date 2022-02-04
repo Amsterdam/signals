@@ -36,7 +36,6 @@ class AssertSignalsNotInLogMixin:
     'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
     'SIGNAL_HISTORY_LOG_ENABLED': True
 })
 class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
@@ -192,7 +191,6 @@ class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
     'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
     'SIGNAL_HISTORY_LOG_ENABLED': False
 })
 class TestSignalLogServiceFeatureDisabled(AssertSignalsNotInLogMixin, TestCase):
