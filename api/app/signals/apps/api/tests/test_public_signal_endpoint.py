@@ -162,6 +162,11 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(200, response.status_code)
         self.assertJsonSchema(self.retrieve_schema, response.json())
 
+    def test_get_by_uuid_does_not_exists(self):
+        response = self.client.get(self.detail_endpoint.format(uuid='00000000-0000-0000-0000-000000000000'),
+                                   format='json')
+        self.assertEqual(404, response.status_code)
+
     def test_get_by_uuid_access_status(self):
         # SIA must not publicly expose what step in the resolution process a certain
         # Signal/melding is
