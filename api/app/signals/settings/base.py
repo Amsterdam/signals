@@ -441,7 +441,8 @@ API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE = os.getenv(
 API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO = os.getenv('API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO', 'Interne melding')
 
 # Default pdok municipalities
-DEFAULT_PDOK_MUNICIPALITIES = os.getenv('DEFAULT_PDOK_MUNICIPALITIES', 'Amsterdam,Amstelveen,Weesp').split(',')
+DEFAULT_PDOK_MUNICIPALITIES = os.getenv('DEFAULT_PDOK_MUNICIPALITIES',
+                                        'Amsterdam,Amstelveen,Weesp,Ouder-Amstel').split(',')
 
 # use dynamic map server for pdf, empty by default
 # example servers
