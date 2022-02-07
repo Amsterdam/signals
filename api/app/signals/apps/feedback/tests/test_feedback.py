@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datetime import timedelta
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
@@ -324,5 +325,5 @@ class TestUtils(TestCase):
 
     def test_link_generation_no_environment_set(self):
         pos_url, neg_url = get_feedback_urls(self.feedback)
-        self.assertEqual(f'http://dummy_link/kto/ja/{self.feedback.token}', pos_url)
-        self.assertEqual(f'http://dummy_link/kto/nee/{self.feedback.token}', neg_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/kto/ja/{self.feedback.token}', pos_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/kto/nee/{self.feedback.token}', neg_url)
