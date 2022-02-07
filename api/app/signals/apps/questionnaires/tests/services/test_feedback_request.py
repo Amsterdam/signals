@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import make_aware
 from freezegun import freeze_time
@@ -36,8 +37,8 @@ class TestFeedbackRequestSessionService(TestCase):
         session = SessionFactory.create()
         pos_url, neg_url = get_feedback_urls(session)
 
-        self.assertEqual(f'http://dummy_link/feedback/ja/{session.uuid}', pos_url)
-        self.assertEqual(f'http://dummy_link/feedback/nee/{session.uuid}', neg_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/feedback/ja/{session.uuid}', pos_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/feedback/nee/{session.uuid}', neg_url)
 
     def test_create_session_wrong_state(self):
         signal = SignalFactory.create(status__state=workflow.BEHANDELING)
