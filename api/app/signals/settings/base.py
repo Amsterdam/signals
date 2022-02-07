@@ -372,7 +372,7 @@ REST_FRAMEWORK = dict(
 )
 
 # Swagger settings
-DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
+DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')  # Must end with a trailing slash
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
