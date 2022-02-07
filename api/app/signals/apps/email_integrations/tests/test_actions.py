@@ -16,7 +16,6 @@ from signals.apps.email_integrations.actions import (
     SignalScheduledAction
 )
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Note
@@ -247,33 +246,8 @@ class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
         super().test_send_email()
 
         message = mail.outbox[0]
-        self.assertIn('http://dummy_link', message.body)
-        self.assertIn('http://dummy_link', message.alternatives[0][0])
-
-    def test_reaction_requested_links_environment_env_var_not_set(self):
-        """Deals with the case where nothing is overridden and `environment` not set."""
-
-        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
-        signal = SignalFactory.create(status__state=self.state, status__text=FuzzyText(length=200),
-                                      reporter__email='test@example.com')
-
-        # Check that generated emails contain the correct links for all
-        # configured environments:
-        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
-        self.assertEqual(len(env_fe_mapping), 1)
-
-        for environment, fe_location in env_fe_mapping.items():
-            with mock.patch.dict('os.environ', {}, clear=True):
-                mail.outbox = []
-                self.assertTrue(self.action(signal, dry_run=False))
-
-                self.assertEqual(len(mail.outbox), 1)
-                message = mail.outbox[0]
-                self.assertIn('http://dummy_link', message.body)
-                self.assertIn('http://dummy_link', message.alternatives[0][0])
-
-        # we want a history entry when a email was sent
-        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
+        self.assertIn(settings.FRONTEND_URL, message.body)
+        self.assertIn(settings.FRONTEND_URL, message.alternatives[0][0])
 
 
 class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
