@@ -11,8 +11,7 @@ from signals.apps.api.fields import (
     PrivateSignalAttachmentRelatedField,
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
-    PublicSignalLinksField,
-    SignalExtraPropertiesField
+    PublicSignalLinksField
 )
 from signals.apps.api.generics.permissions import (
     SIAPermissions,
@@ -170,7 +169,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
 
     assigned_user_email = serializers.EmailField(source='user_assignment.user.email', required=False, allow_null=True)
 
-    extra_properties = SignalExtraPropertiesField(
+    extra_properties = serializers.JSONField(
         required=False,
         validators=[
             ExtraPropertiesValidator(filename=os.path.join(
@@ -321,7 +320,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
     assigned_user_email = serializers.EmailField(source='user_assignment.user.email', required=False, allow_null=True)
 
-    extra_properties = SignalExtraPropertiesField(
+    extra_properties = serializers.JSONField(
         required=False,
         allow_null=True,
         validators=[
@@ -551,7 +550,7 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
     reporter = _NestedReporterModelSerializer()
     category = _NestedCategoryModelSerializer(source='category_assignment')
     incident_date_start = serializers.DateTimeField()
-    extra_properties = SignalExtraPropertiesField(
+    extra_properties = serializers.JSONField(
         required=False,
         allow_null=True,
         validators=[

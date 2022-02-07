@@ -2,7 +2,6 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from collections import OrderedDict
 
-from django.conf import settings
 from rest_framework import serializers
 
 from signals.apps.signals.models import Signal
@@ -58,21 +57,11 @@ class PrivateSignalWithContextLinksField(serializers.HyperlinkedIdentityField):
         result = OrderedDict([
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=request))),
             ('self', dict(href=self.get_url(value, 'private-signal-context', request, None))),
+            ('sia:context-reporter-detail', dict(href=self.get_url(
+                value, 'private-signal-context-reporter', request, None))),
+            ('sia:context-geography-detail', dict(href=self.get_url(
+                value, 'private-signal-context-near-geography', request, None))),
         ])
-
-        if 'API_SIGNAL_CONTEXT_REPORTER' not in settings.FEATURE_FLAGS \
-                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_REPORTER']:
-            result.update({
-                'sia:context-reporter-detail':
-                dict(href=self.get_url(value, 'private-signal-context-reporter', request, None))
-            })
-
-        if 'API_SIGNAL_CONTEXT_NEAR' not in settings.FEATURE_FLAGS \
-                or settings.FEATURE_FLAGS['API_SIGNAL_CONTEXT_NEAR']:
-            result.update({
-                'sia:context-geography-detail':
-                dict(href=self.get_url(value, 'private-signal-context-near-geography', request, None))
-            })
 
         return result
 

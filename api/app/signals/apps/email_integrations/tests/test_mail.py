@@ -7,13 +7,11 @@ from unittest import mock
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase, override_settings
-from faker import Faker
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.mail_actions import MailActions
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
-from signals.apps.feedback import app_settings as feedback_settings
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
@@ -338,36 +336,6 @@ class TestMailRuleConditions(BaseTestMailCase):
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), 1)
 
-    @override_settings(FRONTEND_URL=None)
-    def test_links_in_different_environments_frontend_url_not_set(self):
-        """Test that generated feedback links contain the correct host."""
-        # Prepare signal with status change to `AFGEHANDELD`.
-        StatusFactory.create(_signal=self.signal, state=workflow.BEHANDELING)
-        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
-        self.signal.status = status
-        self.signal.save()
-
-        # Check that generated emails contain the correct links for all
-        # configured environments:
-        env_fe_mapping = getattr(settings, 'FEEDBACK_ENV_FE_MAPPING', feedback_settings.FEEDBACK_ENV_FE_MAPPING)
-        self.assertEqual(len(env_fe_mapping), 3)  # sanity check Amsterdam installation has three
-
-        for environment, fe_location in env_fe_mapping.items():
-            local_env = {'ENVIRONMENT': environment}
-
-            with mock.patch.dict('os.environ', local_env):
-                mail.outbox = []
-                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-                ma.apply(signal_id=self.signal.id)
-
-                self.assertEqual(len(mail.outbox), 1)
-                message = mail.outbox[0]
-                self.assertIn(fe_location, message.body)
-                self.assertIn(fe_location, message.alternatives[0][0])
-
-        # we want a history entry when a email was sent
-        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
-
     def test_links_in_different_environments_frontend_url_set(self):
         """Test that generated feedback links contain the correct host."""
         # Prepare signal with status change to `AFGEHANDELD`.
@@ -391,33 +359,6 @@ class TestMailRuleConditions(BaseTestMailCase):
 
         # we want a history entry when a email was sent
         self.assertEqual(Note.objects.count(), len(test_frontend_urls))
-
-    def test_links_environment_env_var_not_set(self):
-        """Deals with the case where nothing is overridden and `environment` not set."""
-
-        # Prepare signal with status change to `AFGEHANDELD`.
-        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD)
-        self.signal.status = status
-        self.signal.save()
-
-        # Check that generated emails contain the correct links for all
-        # configured environments:
-        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
-        self.assertEqual(len(env_fe_mapping), 1)
-
-        for environment, fe_location in env_fe_mapping.items():
-            with mock.patch.dict('os.environ', {}, clear=True):
-                mail.outbox = []
-                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-                ma.apply(signal_id=self.signal.id)
-
-                self.assertEqual(len(mail.outbox), 1)
-                message = mail.outbox[0]
-                self.assertIn('http://dummy_link', message.body)
-                self.assertIn('http://dummy_link', message.alternatives[0][0])
-
-        # we want a history entry when a email was sent
-        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
     def test_send_mail_reporter_created_send_mail_false(self):
         # Is the intended rule activated?
@@ -497,35 +438,6 @@ class TestMailRuleConditions(BaseTestMailCase):
         # Check mail contents
         ma.apply(signal_id=self.signal.id)
         self.assertEqual(len(mail.outbox), 1)
-
-    def test_reaction_requested_links_environment_env_var_not_set(self):
-        """Deals with the case where nothing is overridden and `environment` not set."""
-
-        # Prepare signal with status change to `REACTIE_GEVRAAGD`.
-        fake = Faker()
-        status = StatusFactory.create(
-            _signal=self.signal, state=workflow.REACTIE_GEVRAAGD, text=fake.text(max_nb_chars=200))
-        self.signal.status = status
-        self.signal.save()
-
-        # Check that generated emails contain the correct links for all
-        # configured environments:
-        env_fe_mapping = feedback_settings.FEEDBACK_ENV_FE_MAPPING
-        self.assertEqual(len(env_fe_mapping), 1)
-
-        for environment, fe_location in env_fe_mapping.items():
-            with mock.patch.dict('os.environ', {}, clear=True):
-                mail.outbox = []
-                ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-                ma.apply(signal_id=self.signal.id)
-
-                self.assertEqual(len(mail.outbox), 1)
-                message = mail.outbox[0]
-                self.assertIn('http://dummy_link', message.body)
-                self.assertIn('http://dummy_link', message.alternatives[0][0])
-
-        # we want a history entry when a email was sent
-        self.assertEqual(Note.objects.count(), len(env_fe_mapping))
 
     def test_reaction_requested_received_email(self):
         # "Reactie gevraagd" flow. Reporter is asked for additional information. Answer given.

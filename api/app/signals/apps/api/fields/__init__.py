@@ -10,7 +10,6 @@ from signals.apps.api.fields.category import (
     CategoryHyperlinkedRelatedField,
     PrivateCategoryHyperlinkedIdentityField
 )
-from signals.apps.api.fields.extra_properties import SignalExtraPropertiesField
 from signals.apps.api.fields.signal import (
     PrivateSignalLinksField,
     PrivateSignalLinksFieldWithArchives,
@@ -30,6 +29,5 @@ __all__ = [
     'PrivateSignalWithContextLinksField',
     'PublicSignalLinksField',
     'PublicSignalAttachmentLinksField',
-    'SignalExtraPropertiesField',
     'StoredSignalFilterLinksField',
 ]

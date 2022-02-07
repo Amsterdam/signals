@@ -141,7 +141,7 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Swift
-if os.getenv('SWIFT_ENABLED', 'False') in TRUE_VALUES:
+if os.getenv('SWIFT_ENABLED', False) in TRUE_VALUES:
     # The default settings when using SwiftStorage to the general SIA ObjectStore
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
@@ -208,7 +208,7 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
 CELERY_EMAIL_CHUNK_SIZE = 1
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_RESULT_EXPIRES = 604800  # 7 days in seconds (7*24*60*60)
-CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False') in TRUE_VALUES
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', False) in TRUE_VALUES
 
 # Celery Beat settings
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
@@ -220,9 +220,9 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 465)  # 465 fort SSL 587 for TLS
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') in TRUE_VALUES
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', False) in TRUE_VALUES
 if not EMAIL_USE_TLS:
-    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True') in TRUE_VALUES
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', True) in TRUE_VALUES
 CELERY_EMAIL_BACKEND = os.getenv('CELERY_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_REST_ENDPOINT = os.getenv('EMAIL_REST_ENDPOINT', None)
 EMAIL_REST_ENDPOINT_TIMEOUT = os.getenv('EMAIL_REST_ENDPOINT_TIMEOUT', 5)
@@ -372,13 +372,13 @@ REST_FRAMEWORK = dict(
 )
 
 # Swagger settings
-DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
+DATAPUNT_API_URL = os.getenv('DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')  # Must end with a trailing slash
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
         'Signals API - Swagger': {
             'type': 'oauth2',
-            'authorizationUrl': '{url}oauth2/authorize'.format(url=DATAPUNT_API_URL),
+            'authorizationUrl': f'{DATAPUNT_API_URL}oauth2/authorize',
             'flow': 'implicit',
             'scopes': {
                 'SIG/ALL': 'Signals alle authorizaties',
@@ -400,14 +400,7 @@ SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES',
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
 
-# SIG-1017, replaced by setting the correct FRONTEND_URL setting when deploying
-FEEDBACK_ENV_FE_MAPPING = {
-    'LOCAL': 'http://dummy_link',
-    'ACCEPTANCE': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://acc.meldingen.amsterdam.nl'),
-    'PRODUCTION': os.getenv('FEEDBACK_ENV_FE_MAPPING', 'https://meldingen.amsterdam.nl'),
-}
-
-# The URL of the Frontend, to replace the FEEDBACK_ENV_FE_MAPPING setting
+# The URL of the Frontend
 FRONTEND_URL = os.getenv('FRONTEND_URL', None)
 
 ML_TOOL_ENDPOINT = os.getenv('SIGNALS_ML_TOOL_ENDPOINT', 'https://api.data.amsterdam.nl/signals_mltool')  # noqa
@@ -422,15 +415,8 @@ SEARCH = {
 }
 
 FEATURE_FLAGS = {
-    'API_FILTER_EXTRA_PROPERTIES': os.getenv('API_FILTER_EXTRA_PROPERTIES', True) in TRUE_VALUES,
     'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': os.getenv('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True) in TRUE_VALUES,  # noqa
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': os.getenv('TASK_UPDATE_CHILDREN_BASED_ON_PARENT', True) in TRUE_VALUES,
-
-    'API_SIGNAL_CONTEXT': os.getenv('API_SIGNAL_CONTEXT', True) in TRUE_VALUES,
-    'API_SIGNAL_CONTEXT_REPORTER': os.getenv('API_SIGNAL_CONTEXT_REPORTER', True) in TRUE_VALUES,
-    'API_SIGNAL_CONTEXT_NEAR': os.getenv('API_SIGNAL_CONTEXT_NEAR', True) in TRUE_VALUES,
 
     'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
     'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
@@ -455,19 +441,13 @@ API_TRANSFORM_SOURCE_BASED_ON_REPORTER_SOURCE = os.getenv(
 API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO = os.getenv('API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO', 'Interne melding')
 
 # Default pdok municipalities
-DEFAULT_PDOK_MUNICIPALITIES = os.getenv(
-    'DEFAULT_PDOK_MUNICIPALITIES',
-    'Amsterdam,Amstelveen,Weesp',
-).split(',')
+DEFAULT_PDOK_MUNICIPALITIES = os.getenv('DEFAULT_PDOK_MUNICIPALITIES', 'Amsterdam,Amstelveen,Weesp').split(',')
 
 # use dynamic map server for pdf, empty by default
 # example servers
 # 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:28992/{z}/{x}/{y}.png'
 # 'https://a.tile.openstreetmap.org/{zoom}/{x}/{y}.png'
-DEFAULT_MAP_TILE_SERVER = os.getenv(
-    'DEFAULT_MAP_TILE_SERVER',
-    '',
-)
+DEFAULT_MAP_TILE_SERVER = os.getenv('DEFAULT_MAP_TILE_SERVER', '')
 
 # Default setting for area type
 DEFAULT_SIGNAL_AREA_TYPE = os.getenv('DEFAULT_SIGNAL_AREA_TYPE', 'district')

@@ -78,10 +78,7 @@ class TestPrivateSignalEndpointUnAuthorized(SignalsBaseApiTestCase):
 
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     """
@@ -1761,10 +1758,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     list_endpoint = '/signals/v1/private/signals/'
@@ -1855,10 +1849,7 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
 @freeze_time('2019-11-01 12:00:00', tz_offset=1)
 @override_settings(FEATURE_FLAGS={
     'API_DETERMINE_STADSDEEL_ENABLED': True,
-    'API_FILTER_EXTRA_PROPERTIES': True,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': True,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
 })
 class TestPrivateSignalViewSetPermissions(SIAReadUserMixin, SIAWriteUserMixin, SIAReadWriteUserMixin,
                                           SignalsBaseApiTestCase):

@@ -32,13 +32,8 @@ class AssertSignalsNotInLogMixin:
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
-    'API_FILTER_EXTRA_PROPERTIES': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
     'SIGNAL_HISTORY_LOG_ENABLED': True
 })
 class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
@@ -190,13 +185,8 @@ class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
 
 
 @override_settings(FEATURE_FLAGS={
-    'API_SEARCH_ENABLED': False,
-    'SEARCH_BUILD_INDEX': False,
     'API_DETERMINE_STADSDEEL_ENABLED': False,
-    'API_FILTER_EXTRA_PROPERTIES': False,
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
-    'API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD': False,
-    'TASK_UPDATE_CHILDREN_BASED_ON_PARENT': False,
     'SIGNAL_HISTORY_LOG_ENABLED': False
 })
 class TestSignalLogServiceFeatureDisabled(AssertSignalsNotInLogMixin, TestCase):

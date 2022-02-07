@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
+from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import make_aware
 from freezegun import freeze_time
@@ -33,14 +33,12 @@ class TestFeedbackRequestSessionService(TestCase):
         StandardAnswerFactory.create(is_visible=True, text='not good', is_satisfied=False, reopens_when_unhappy=False)
         StandardAnswerFactory.create(is_visible=True, text='never good', is_satisfied=False, reopens_when_unhappy=True)
 
-    @patch('signals.apps.questionnaires.services.feedback_request.get_fe_application_location')
-    def test_get_feedback_urls(self, patched):
-        patched.return_value = 'http://dummy'
+    def test_get_feedback_urls(self):
         session = SessionFactory.create()
         pos_url, neg_url = get_feedback_urls(session)
 
-        self.assertEqual(f'http://dummy/feedback/ja/{session.uuid}', pos_url)
-        self.assertEqual(f'http://dummy/feedback/nee/{session.uuid}', neg_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/feedback/ja/{session.uuid}', pos_url)
+        self.assertEqual(f'{settings.FRONTEND_URL}/feedback/nee/{session.uuid}', neg_url)
 
     def test_create_session_wrong_state(self):
         signal = SignalFactory.create(status__state=workflow.BEHANDELING)

@@ -30,9 +30,7 @@ class PrivateSignalSourceValidator:
             raise ValidationError('Invalid source given, value not known')
 
         # No need to check the given source this will be overwritten when creating the child Signal
-        # For now this option is turned off for PROD/ACC in the FEATURE_FLAGS in the production.py settings file
-        if (settings.FEATURE_FLAGS.get('API_TRANSFORM_SOURCE_IF_A_SIGNAL_IS_A_CHILD', True)
-                and hasattr(settings, 'API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO')):
+        if hasattr(settings, 'API_TRANSFORM_SOURCE_OF_CHILD_SIGNAL_TO'):
             data = serializer_field.context['request'].data
             if isinstance(data, list):
                 if data[0].get('parent', None):

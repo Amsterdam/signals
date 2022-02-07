@@ -11,12 +11,3 @@ and documents what they do.
 
 # Number of days after closing of an issue that feedback is still accepted.
 FEEDBACK_EXPECTED_WITHIN_N_DAYS = 14
-
-# The feedback application generates links to the SIA frontend application.
-# Where that application is running (its URL) cannot always be determined from
-# the requests, for instance, for code running in Celery tasks. Hence the
-# use of a `ENVIRONMENT` environment variable to figure out where the SIA
-# backend is running.
-FEEDBACK_ENV_FE_MAPPING = {
-    'LOCAL': 'http://dummy_link',
-}

@@ -13,10 +13,10 @@ Current design only allows one question to be posed to the reporter.
 import logging
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
 
-from signals.apps.feedback.utils import get_fe_application_location
 from signals.apps.questionnaires.app_settings import (
     NO_REACTION_RECEIVED_TEXT,
     REACTION_REQUEST_DAYS_OPEN
@@ -68,8 +68,7 @@ def create_session_for_reaction_request(signal):
 
 
 def get_reaction_url(session):
-    frontend_base_url = get_fe_application_location()
-    return f'{frontend_base_url}/incident/reactie/{session.uuid}'
+    return f'{settings.FRONTEND_URL}/incident/reactie/{session.uuid}'
 
 
 def clean_up_reaction_request():
