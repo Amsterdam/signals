@@ -12,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.generics import get_object_or_404
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ViewSet
@@ -65,8 +66,7 @@ class PublicSignalViewSet(PublicSignalGenericViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, uuid):
-        signal = Signal.objects.get(uuid=uuid)
-
+        signal = get_object_or_404(Signal.objects.all(), uuid=uuid)
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
