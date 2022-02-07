@@ -30,7 +30,7 @@ class AbstractAction(ABC):
 
             if self.mail(signal):
                 self.add_note(signal)
-            return True
+                return True
 
         return False
 
@@ -41,9 +41,7 @@ class AbstractAction(ABC):
         context = make_email_context(signal, self.get_additional_context(signal))
         return context
 
-    def mail(self, signal):
-        context = self.get_context(signal)
-
+    def render_mail_data(self, context):
         try:
             email_template = EmailTemplate.objects.get(key=self.key)
 
@@ -58,10 +56,15 @@ class AbstractAction(ABC):
         except EmailTemplate.DoesNotExist:
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
-            subject = self.subject.format(signal_id=signal.id)
+            subject = self.subject.format(signal_id=context['signal_id'])
             message = loader.get_template('email/signal_default.txt').render(context)
             html_message = loader.get_template('email/signal_default.html').render(context)
 
+        return subject, message, html_message
+
+    def mail(self, signal):
+        context = self.get_context(signal)
+        subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
                          recipient_list=[signal.reporter.email, ], html_message=html_message)
 

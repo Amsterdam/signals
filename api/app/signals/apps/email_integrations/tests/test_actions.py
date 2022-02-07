@@ -142,7 +142,7 @@ class ActionTestMixin:
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       reporter__email='test@example.com')
-        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
 
 
