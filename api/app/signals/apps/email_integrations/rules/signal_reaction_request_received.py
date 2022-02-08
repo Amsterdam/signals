@@ -6,7 +6,7 @@ from signals.apps.signals import workflow
 
 
 class SignalReactionRequestReceivedRule(AbstractRule):
-    def validate(self, signal):
+    def _validate(self, signal):
         """
         Run all validations for the Rule
 

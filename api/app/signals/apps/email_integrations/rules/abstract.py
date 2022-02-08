@@ -10,18 +10,18 @@ from signals.apps.signals.models import Signal
 
 class AbstractRule(ABC):
     def __call__(self, signal):
-        return all([
-            self._validate_reporter_email(signal),
-            self._validate_historical_data(signal),
-            self.validate(signal),
-        ])
+        """
+        When called run all validation
+        """
+        return self.validate(signal)
 
-    @abstractmethod
     def validate(self, signal):
         """
-        Overwrite this function in the defined Rule to add additional validation checks
+        Run all validations
         """
-        pass
+        return (self._validate_reporter_email(signal) and
+                self._validate_historical_data(signal) and
+                self._validate(signal))
 
     def _validate_reporter_email(self, signal):
         """
@@ -36,3 +36,10 @@ class AbstractRule(ABC):
         return Signal.objects.filter(id=signal.id).filter(
             Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)
         )
+
+    @abstractmethod
+    def _validate(self, signal):
+        """
+        Overwrite this function in the defined Rule to add additional validation checks
+        """
+        pass
