@@ -6,9 +6,23 @@ from signals.apps.signals import workflow
 
 
 class SignalReactionRequestReceivedRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
         """
-        Validate if the status is REACTIE_ONTVANGEN and status text does not match NO_REACTION_RECEIVED_TEXT
+        Run all validations for the Rule
+
+        - The status is REACTIE_ONTVANGEN
+        - The status text does not match NO_REACTION_RECEIVED_TEXT
         """
-        return (signal.status.state == workflow.REACTIE_ONTVANGEN and
-                signal.status.text.lower() != NO_REACTION_RECEIVED_TEXT.lower())
+        return self._validate_status(signal.status.state) and self._validate_status_text(signal.status.text)
+
+    def _validate_status(self, state):
+        """
+        Validate if the status is REACTIE_ONTVANGEN
+        """
+        return state == workflow.REACTIE_ONTVANGEN
+
+    def _validate_status_text(self, text):
+        """
+        Validate if the status text does not match NO_REACTION_RECEIVED_TEXT
+        """
+        return text.lower() != NO_REACTION_RECEIVED_TEXT.lower()

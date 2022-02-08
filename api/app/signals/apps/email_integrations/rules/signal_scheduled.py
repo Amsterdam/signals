@@ -5,8 +5,16 @@ from signals.apps.signals import workflow
 
 
 class SignalScheduledRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
+        """
+        Run all validations for the Rule
+
+        - The status is INGEPLAND
+        """
+        return self._validate_status(signal.status.state)
+
+    def _validate_status(self, state):
         """
         Validate if the status is INGEPLAND
         """
-        return signal.status.state == workflow.INGEPLAND
+        return state == workflow.INGEPLAND

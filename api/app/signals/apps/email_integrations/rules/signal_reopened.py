@@ -5,8 +5,16 @@ from signals.apps.signals import workflow
 
 
 class SignalReopenedRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
+        """
+        Run all validations for the Rule
+
+        - The status is HEROPEND
+        """
+        return self._validate_status(signal.status.state)
+
+    def _validate_status(self, state):
         """
         Validate if the status is HEROPEND
         """
-        return signal.status.state == workflow.HEROPEND
+        return state == workflow.HEROPEND

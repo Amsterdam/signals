@@ -5,15 +5,24 @@ from signals.apps.signals import workflow
 
 
 class SignalOptionalRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
+        """
+        Run all validations for the Rule
+
+        - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+        - send_mail must be True
+        """
+        return self._validate_status(signal.status.state) and signal.status.send_email
+
+    def _validate_status(self, state):
         """
         Validate if the status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
         """
-        return signal.status.state in [
+        return state in [
             workflow.GEMELD,
             workflow.AFWACHTING,
             workflow.BEHANDELING,
             workflow.ON_HOLD,
             workflow.VERZOEK_TOT_AFHANDELING,
             workflow.GEANNULEERD,
-        ] and signal.status.send_email
+        ]

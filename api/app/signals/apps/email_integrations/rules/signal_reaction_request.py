@@ -5,8 +5,16 @@ from signals.apps.signals import workflow
 
 
 class SignalReactionRequestRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
+        """
+        Run all validations for the Rule
+
+        - The status is REACTIE_GEVRAAGD
+        """
+        return self._validate_status(signal.status.state)
+
+    def _validate_status(self, state):
         """
         Validate if the status is REACTIE_GEVRAAGD
         """
-        return signal.status.state == workflow.REACTIE_GEVRAAGD
+        return state == workflow.REACTIE_GEVRAAGD

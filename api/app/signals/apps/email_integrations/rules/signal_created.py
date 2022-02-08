@@ -5,8 +5,23 @@ from signals.apps.signals import workflow
 
 
 class SignalCreatedRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
+        """
+        Run all validations for the Rule
+
+        - The status is GEMELD
+        - The status GEMELD is set only once
+        """
+        return self._validate_status(signal.status.state) and self._validate_status_GEMELD_set_once(signal)
+
+    def _validate_status(self, state):
         """
         Validate if the status is GEMELD and that it is the first GEMELD status
         """
-        return signal.status.state == workflow.GEMELD and signal.statuses.filter(state=workflow.GEMELD).count() == 1
+        return state == workflow.GEMELD
+
+    def _validate_status_GEMELD_set_once(self, signal):
+        """
+        Validate if the status is GEMELD is set only once
+        """
+        return signal.statuses.filter(state=workflow.GEMELD).count() == 1

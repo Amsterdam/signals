@@ -5,11 +5,27 @@ from signals.apps.signals import workflow
 
 
 class SignalHandledRule(AbstractRule):
-    def validate_status(self, signal):
+    def validate(self, signal):
         """
-        Validate if the status is AFGEHANDELD and previous state must not be VERZOEK_TOT_HEROPENEN
+        Run all validations for the Rule
+
+        - The status is AFGEHANDELD
+        - The previous state is not VERZOEK_TOT_HEROPENEN
         """
-        return signal.status.state == workflow.AFGEHANDELD and signal.statuses.exclude(
+        return (self._validate_status(signal.status.state) and
+                self._validate_previous_state_not_VERZOEK_TOT_HEROPENEN(signal))
+
+    def _validate_status(self, state):
+        """
+        Validate if the status is AFGEHANDELD
+        """
+        return state == workflow.AFGEHANDELD
+
+    def _validate_previous_state_not_VERZOEK_TOT_HEROPENEN(self, signal):
+        """
+        Validate if the previous state is not VERZOEK_TOT_HEROPENEN
+        """
+        return signal.statuses.exclude(
             id=signal.status_id
         ).order_by(
             '-created_at'
