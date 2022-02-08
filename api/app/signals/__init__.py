@@ -28,7 +28,7 @@ datastructures.EmptyResultSet = EmptyResultSet
 
 
 # Application version (Major, minor, patch)
-VERSION = (2, 3, 5)
+VERSION = (2, 3, 6)
 
 API_VERSIONS = {
     'v0': VERSION,
