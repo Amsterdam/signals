@@ -9,6 +9,12 @@ from signals.apps.signals.models import Signal
 
 
 class AbstractRule(ABC):
+    """
+    This class must be used when creating email rule's.
+
+    The derived class, is associated with the corresponding action. For example the SignalCreatedRule is used with the
+    SignalCreatedAction to determine if it should trigger tge Signal created email to be sent.
+    """
     def __call__(self, signal):
         """
         When called run all validation
@@ -18,6 +24,9 @@ class AbstractRule(ABC):
     def validate(self, signal):
         """
         Run all validations
+
+        - The reporter email must be set
+        - The Signal cannot be a child Signal OR should have the status GESPLITST
         """
         return (self._validate_reporter_email(signal) and
                 self._validate_historical_data(signal) and
@@ -25,13 +34,18 @@ class AbstractRule(ABC):
 
     def _validate_reporter_email(self, signal):
         """
-        Validate if there is a reporter email
+        Validate that the reporter email is set
         """
         return signal.reporter and signal.reporter.email
 
     def _validate_historical_data(self, signal):
         """
-        SIG-2931, special case for children of split signal --- still needed for historical data
+        Validate that a Signal is not a child Signal OR that the Signal has the status GESPLITST.
+
+        Note: Currently child signals (Dutch jargon "deelmeldingen") are used internally to track tasks that follow
+              from an original signal ("hoofdmelding"). Internal tasks are never communicated to the reporter, hence no
+              emails can be sent from child signals. Before that child signals were communicated to the parent signal's
+              reporter. In that case the original complaint transitioned to the status GESPLITST. (See SIG-2931.)
         """
         return Signal.objects.filter(id=signal.id).filter(
             Q(parent_id__isnull=True) | Q(parent__status__state__exact=workflow.GESPLITST)

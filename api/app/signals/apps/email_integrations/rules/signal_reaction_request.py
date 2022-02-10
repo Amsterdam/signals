@@ -15,6 +15,6 @@ class SignalReactionRequestRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is REACTIE_GEVRAAGD
+        Validate that the status is REACTIE_GEVRAAGD
         """
         return state == workflow.REACTIE_GEVRAAGD

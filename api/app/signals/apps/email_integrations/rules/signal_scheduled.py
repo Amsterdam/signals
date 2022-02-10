@@ -15,6 +15,6 @@ class SignalScheduledRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is INGEPLAND
+        Validate that the status is INGEPLAND
         """
         return state == workflow.INGEPLAND

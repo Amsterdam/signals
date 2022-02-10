@@ -29,7 +29,7 @@ def create_feedback_and_mail_context(signal: Signal) -> dict:
     """
     Util functions to create the feedback object and create the context needed for the mail
     """
-    # Note: While the questionnaire's app support for feedback requests is under
+    # Note: While the questionnaires app support for feedback requests is under
     # development we support both the "new" flow and the "old". Implementation
     # can be switched using the appropriate feature flag.
 

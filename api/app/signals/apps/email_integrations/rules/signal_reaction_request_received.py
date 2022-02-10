@@ -17,12 +17,12 @@ class SignalReactionRequestReceivedRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is REACTIE_ONTVANGEN
+        Validate that the status is REACTIE_ONTVANGEN
         """
         return state == workflow.REACTIE_ONTVANGEN
 
     def _validate_status_text(self, text):
         """
-        Validate if the status text does not match NO_REACTION_RECEIVED_TEXT
+        Validate that the status text does not match NO_REACTION_RECEIVED_TEXT
         """
         return text.lower() != NO_REACTION_RECEIVED_TEXT.lower()

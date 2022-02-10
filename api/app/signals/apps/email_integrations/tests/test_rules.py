@@ -61,7 +61,7 @@ class RuleTestMixin:
         self.assertFalse(self.rule(child_signal))
 
     def test_invalid_states(self):
-        states = list(map(lambda x: x[0] and x[0] == self.state, workflow.STATUS_CHOICES))
+        states = [s[0] for s in workflow.STATUS_CHOICES if s[0] != self.state]
         for state in states:
             signal = SignalFactory.create(status__state=state, reporter__email='test@example.com')
             self.assertFalse(self.rule(signal))

@@ -16,7 +16,7 @@ class SignalOptionalRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+        Validate that the status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
         """
         return state in [
             workflow.GEMELD,

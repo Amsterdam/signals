@@ -16,12 +16,12 @@ class SignalCreatedRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is GEMELD and that it is the first GEMELD status
+        Validate that the status is GEMELD
         """
         return state == workflow.GEMELD
 
     def _validate_status_GEMELD_set_once(self, signal):
         """
-        Validate if the status is GEMELD is set only once
+        Validate that the status GEMELD is set only once
         """
         return signal.statuses.filter(state=workflow.GEMELD).count() == 1

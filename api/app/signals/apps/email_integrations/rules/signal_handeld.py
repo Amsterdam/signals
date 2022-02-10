@@ -17,13 +17,13 @@ class SignalHandledRule(AbstractRule):
 
     def _validate_status(self, state):
         """
-        Validate if the status is AFGEHANDELD
+        Validate that the status is AFGEHANDELD
         """
         return state == workflow.AFGEHANDELD
 
     def _validate_previous_state_not_VERZOEK_TOT_HEROPENEN(self, signal):
         """
-        Validate if the previous state is not VERZOEK_TOT_HEROPENEN
+        Validate that the previous state is not VERZOEK_TOT_HEROPENEN
         """
         return signal.statuses.exclude(
             id=signal.status_id
