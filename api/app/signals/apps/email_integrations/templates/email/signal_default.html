@@ -28,7 +28,7 @@
         <br/>
         Nummer: <i>{{ formatted_signal_id }}</i>
         Gemeld op: <i>{{ created_at|date:"DATETIME_FORMAT" }}</i><br/>
-        Locatie: <i>{% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %} </i><br/>
+        Locatie: <i>{% if address %}{{ address|format_address:"O hlT, P W" }}{% endif %} </i><br/>
     </p>
 
     <p>

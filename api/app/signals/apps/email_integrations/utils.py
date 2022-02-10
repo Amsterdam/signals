@@ -86,7 +86,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'created_at': signal.created_at,
         'text': text,
         'text_extra': text_extra,
-        'address': signal.location.address,
+        'address': signal.location.address if signal.location and signal.location.address else None,
         'status_text': signal.status.text,
         'status_state': signal.status.state,
         'handling_message': signal.category_assignment.stored_handling_message,
