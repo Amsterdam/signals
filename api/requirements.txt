@@ -79,7 +79,7 @@ oslo.utils==4.8.0
 packaging==20.9
 pbr==5.5.1
 pilkit==2.0
-Pillow==9.0.0
+Pillow==9.0.1
 pluggy==0.13.1
 prompt-toolkit==3.0.18
 protobuf==3.15.7
