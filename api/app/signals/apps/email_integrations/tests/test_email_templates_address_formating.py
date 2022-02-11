@@ -19,7 +19,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
         EmailTemplate.objects.create(
             key=EmailTemplate.SIGNAL_CREATED,
             title='Template title {{ signal_id }}',
-            body='{{ location|format_address:"O hl, P W" }}',
+            body='{{ address|format_address:"O hl, P W" }}',
         )
 
         valid_location = copy.deepcopy(STADHUIS)
@@ -45,3 +45,28 @@ class TestEmailTemplateAddressFormatting(TestCase):
         expected_address = f'{signal.location.address["openbare_ruimte"]} {signal.location.address["huisnummer"]}, ' \
                            f'{postcode} {signal.location.address["woonplaats"]}\n\n'
         self.assertEqual(expected_address, mail.outbox[0].body)
+
+    def test_no_address_formatting(self):
+        EmailTemplate.objects.create(
+            key=EmailTemplate.SIGNAL_CREATED,
+            title='Template title {{ signal_id }}',
+            body='{% if address %}{{ address|format_address:"O hl, P W" }}{% else %}Locatie is gepind op de kaart{% endif %}'  # noqa
+        )
+
+        valid_location = copy.deepcopy(STADHUIS)
+        longitude = valid_location.pop('lon')
+        latitude = valid_location.pop('lat')
+
+        signal = SignalFactory.create(
+            reporter__email='test@example.com',
+            location__geometrie=Point(longitude, latitude),
+            location__buurt_code=None,
+            location__stadsdeel=None,
+            location__address=None,
+        )
+
+        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
+        ma.apply(signal_id=signal.id)
+
+        self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
+        self.assertEqual('Locatie is gepind op de kaart\n\n', mail.outbox[0].body)
