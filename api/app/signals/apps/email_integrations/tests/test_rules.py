@@ -64,6 +64,12 @@ class RuleTestMixin:
 
 
 class TestSignalCreatedRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalCreatedRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is GEMELD
+    - The status GEMELD is set only once
+    """
     rule = SignalCreatedRule()
     state = workflow.GEMELD
 
@@ -82,6 +88,12 @@ class TestSignalCreatedRule(RuleTestMixin, TestCase):
 
 
 class TestSignalHandledRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalHandledRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is AFGEHANDELD
+    - The previous state is not VERZOEK_TOT_HEROPENEN
+    """
     rule = SignalHandledRule()
     state = workflow.AFGEHANDELD
 
@@ -125,21 +137,42 @@ class TestSignalHandledRule(RuleTestMixin, TestCase):
 
 
 class TestSignalScheduledRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalScheduledRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is INGEPLAND
+    """
     rule = SignalScheduledRule()
     state = workflow.INGEPLAND
 
 
 class TestSignalReopenedRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalReopenedRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is HEROPEND
+    """
     rule = SignalReopenedRule()
     state = workflow.HEROPEND
 
 
 class TestSignalReactionRequestRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalReactionRequestRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is REACTIE_GEVRAAGD
+    """
     rule = SignalReactionRequestRule()
     state = workflow.REACTIE_GEVRAAGD
 
 
 class TestSignalReactionRequestReceivedRule(RuleTestMixin, TestCase):
+    """
+    Test the SignalReactionRequestReceivedRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is REACTIE_ONTVANGEN
+    - The status text does not match NO_REACTION_RECEIVED_TEXT
+    """
     rule = SignalReactionRequestReceivedRule()
     state = workflow.REACTIE_ONTVANGEN
 
@@ -152,6 +185,12 @@ class TestSignalReactionRequestReceivedRule(RuleTestMixin, TestCase):
 
 
 class TestSignalOptionalRule(TestCase):
+    """
+    Test the SignalOptionalRule. The rule should only be triggerd when the following rules apply:
+
+    - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+    - send_mail must be True
+    """
     rule = SignalOptionalRule()
 
     def test_statuses(self):

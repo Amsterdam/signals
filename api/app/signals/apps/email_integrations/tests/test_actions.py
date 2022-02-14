@@ -155,10 +155,19 @@ class ActionTestMixin:
 
 
 class TestSignalCreatedAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalCreatedAction. The action should only be triggerd when the following rules apply:
+
+    - The status is GEMELD
+    - The status GEMELD is set only once
+    """
     state = workflow.GEMELD
     action = SignalCreatedAction()
 
     def test_signal_set_state_second_time(self):
+        """
+        Check that if the status GEMELD is set for a second time the action is not triggered
+        """
         self.assertEqual(len(mail.outbox), 0)
 
         signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
@@ -178,10 +187,20 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
 
 class TestSignalHandledAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalHandledAction. The action should only be triggerd when the following rules apply:
+
+    - The status is AFGEHANDELD
+    - The previous state is not VERZOEK_TOT_HEROPENEN
+    """
     state = workflow.AFGEHANDELD
     action = SignalHandledAction()
 
     def test_signal_set_state_second_time(self):
+        """
+        If the Signal status is set to AFGEHANDELD a second time and the previous state is not VERZOEK_TOT_HEROPENEN
+        the action should be triggered
+        """
         self.assertEqual(len(mail.outbox), 0)
 
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
@@ -209,6 +228,10 @@ class TestSignalHandledAction(ActionTestMixin, TestCase):
         self.assertTrue(Note.objects.filter(text=self.action.note).exists())
 
     def test_signal_set_state_second_time_second_last_state_verzoek_tot_heropenen(self):
+        """
+        If the Signal status is set to AFGEHANDELD a second time and the previous state is VERZOEK_TOT_HEROPENEN the
+        action should not be triggered
+        """
         self.assertEqual(len(mail.outbox), 0)
 
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
@@ -237,20 +260,38 @@ class TestSignalHandledAction(ActionTestMixin, TestCase):
 
 
 class TestSignalScheduledAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalScheduledAction. The action should only be triggerd when the following rules apply:
+
+    - The status is INGEPLAND
+    """
     state = workflow.INGEPLAND
     action = SignalScheduledAction()
 
 
 class TestSignalReopenedAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalReopenedAction. The action should only be triggerd when the following rules apply:
+
+    - The status is HEROPEND
+    """
     state = workflow.HEROPEND
     action = SignalReopenedAction()
 
 
 class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalReactionRequestAction. The action should only be triggerd when the following rules apply:
+
+    - The status is REACTIE_GEVRAAGD
+    """
     state = workflow.REACTIE_GEVRAAGD
     action = SignalReactionRequestAction()
 
     def test_send_email(self):
+        """
+        Also check that the FRONTEND_URL is present in the message body
+        """
         super().test_send_email()
 
         message = mail.outbox[0]
@@ -259,6 +300,12 @@ class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
 
 
 class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
+    """
+    Test the SignalReactionRequestReceivedAction. The action should only be triggerd when the following rules apply:
+
+    - The status is REACTIE_ONTVANGEN
+    - The status text does not match NO_REACTION_RECEIVED_TEXT
+    """
     state = workflow.REACTIE_ONTVANGEN
     action = SignalReactionRequestReceivedAction()
 
@@ -282,6 +329,12 @@ class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
 
 
 class TestSignalOptionalAction(TestCase):
+    """
+    Test the SignalOptionalAction. The action should only be triggerd when the following rules apply:
+
+    - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+    - send_mail must be True
+    """
     action = SignalOptionalAction()
 
     def test_statuses(self):
@@ -347,6 +400,13 @@ class TestSignalOptionalAction(TestCase):
 
 
 class TestSignalCreatedActionNoTemplate(TestCase):
+    """
+    Test the SignalOptionalAction. No EmailTemplate(s) are present in the database, therefor the fallback template
+    should be used. The action should only be triggerd when the following rules apply:
+
+    - The status is GEMELD
+    - The status GEMELD is set only once
+    """
     state = workflow.GEMELD
     action = SignalCreatedAction()
 
