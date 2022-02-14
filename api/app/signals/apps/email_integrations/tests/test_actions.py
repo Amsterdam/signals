@@ -23,6 +23,8 @@ from signals.apps.signals.models import Note
 
 
 class ActionTestMixin:
+    send_email = False
+
     def setUp(self):
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_CREATED,
                                      title='Uw melding {{ signal_id }}'
@@ -67,7 +69,7 @@ class ActionTestMixin:
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                      reporter__email='test@example.com')
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
@@ -81,7 +83,7 @@ class ActionTestMixin:
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                      reporter__email='test@example.com')
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=True))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -91,13 +93,15 @@ class ActionTestMixin:
         self.assertEqual(len(mail.outbox), 0)
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
-        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='')
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='')
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
         self.assertFalse(Note.objects.filter(text=self.action.note).exists())
 
-        signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email=None)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email=None)
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -108,7 +112,7 @@ class ActionTestMixin:
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                             reporter__email='test@example.com')
+                                             status__send_email=self.send_email, reporter__email='test@example.com')
         SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
                              parent=parent_signal)
         self.assertTrue(self.action(parent_signal, dry_run=False))
@@ -121,9 +125,10 @@ class ActionTestMixin:
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                             reporter__email='test@example.com')
+                                             status__send_email=self.send_email, reporter__email='test@example.com')
         child_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                            reporter__email='test@example.com', parent=parent_signal)
+                                            status__send_email=self.send_email, reporter__email='test@example.com',
+                                            parent=parent_signal)
         self.assertFalse(self.action(child_signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
@@ -136,7 +141,7 @@ class ActionTestMixin:
         states = list(map(lambda x: x[0] and x[0] == self.state, workflow.STATUS_CHOICES))
         for state in states:
             signal = SignalFactory.create(status__state=state, status__text=status_text,
-                                          reporter__email='test@example.com')
+                                          status__send_email=True, reporter__email='test@example.com')
             self.assertFalse(self.action(signal))
             self.assertEqual(Note.objects.count(), 0)
             self.assertFalse(Note.objects.filter(text=self.action.note).exists())
@@ -149,7 +154,7 @@ class ActionTestMixin:
 
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                      reporter__email='test@example.com')
+                                      status__send_email=True, reporter__email='test@example.com')
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
 
@@ -264,8 +269,10 @@ class TestSignalScheduledAction(ActionTestMixin, TestCase):
     Test the SignalScheduledAction. The action should only be triggerd when the following rules apply:
 
     - The status is INGEPLAND
+    - send_email must be True
     """
     state = workflow.INGEPLAND
+    send_email = True
     action = SignalScheduledAction()
 
 
@@ -307,6 +314,7 @@ class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
     - The status text does not match NO_REACTION_RECEIVED_TEXT
     """
     state = workflow.REACTIE_ONTVANGEN
+    send_email = True
     action = SignalReactionRequestReceivedAction()
 
     def test_send_email(self):
@@ -314,7 +322,7 @@ class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
 
         status_text = 'Aanvullend antwoord naar aanleiding van reactie gevraagd is gegeven.'
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                      reporter__email='test@example.com')
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
@@ -333,7 +341,7 @@ class TestSignalOptionalAction(TestCase):
     Test the SignalOptionalAction. The action should only be triggerd when the following rules apply:
 
     - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
-    - send_mail must be True
+    - send_email must be True
     """
     action = SignalOptionalAction()
 

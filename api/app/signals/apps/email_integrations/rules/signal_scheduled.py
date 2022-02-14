@@ -10,8 +10,9 @@ class SignalScheduledRule(AbstractRule):
         Run all validations for the Rule
 
         - The status is INGEPLAND
+        - send_mail must be True
         """
-        return self._validate_status(signal.status.state)
+        return self._validate_status(signal.status.state) and signal.status.send_email
 
     def _validate_status(self, state):
         """

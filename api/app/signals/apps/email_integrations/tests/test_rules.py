@@ -20,11 +20,12 @@ from signals.apps.signals.factories import SignalFactory, StatusFactory
 class RuleTestMixin:
     rule = None
     state = None
+    send_email = False
 
     def test_happy_flow(self):
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                      reporter__email='test@example.com')
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.rule(signal))
 
     def test_anonymous_reporter(self):
@@ -40,7 +41,7 @@ class RuleTestMixin:
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
 
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
-                                             reporter__email='test@example.com')
+                                             status__send_email=self.send_email, reporter__email='test@example.com')
         SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
                              parent=parent_signal)
 
@@ -141,8 +142,10 @@ class TestSignalScheduledRule(RuleTestMixin, TestCase):
     Test the SignalScheduledRule. The rule should only be triggerd when the following rules apply:
 
     - The status is INGEPLAND
+    - send_mail must be True
     """
     rule = SignalScheduledRule()
+    send_email = True
     state = workflow.INGEPLAND
 
 
