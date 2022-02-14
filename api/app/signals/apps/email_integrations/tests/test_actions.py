@@ -344,6 +344,7 @@ class TestSignalCreatedActionNoTemplate(TestCase):
     action = SignalCreatedAction()
 
     def test_send_email(self):
+        self.assertEqual(EmailTemplate.objects.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
 
         signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
