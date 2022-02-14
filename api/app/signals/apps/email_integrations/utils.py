@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 import re
 from typing import Optional
 from urllib.parse import unquote
@@ -25,7 +25,7 @@ from signals.apps.signals.models import Signal
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
 
-def create_feedback_and_mail_context(signal: Signal):
+def create_feedback_and_mail_context(signal: Signal) -> dict:
     """
     Util functions to create the feedback object and create the context needed for the mail
     """
@@ -47,7 +47,7 @@ def create_feedback_and_mail_context(signal: Signal):
     }
 
 
-def create_reaction_request_and_mail_context(signal: Signal):
+def create_reaction_request_and_mail_context(signal: Signal) -> dict:
     """
     Util function to create a question, questionnaire and prepared session for reaction request mails
     """
@@ -142,7 +142,7 @@ def validate_template(template: str) -> bool:
         return True
 
 
-def markdownx_md(value):
+def markdownx_md(value: str) -> str:
     """
     Util function for the markdownx Django Admin preview functionality to make sure it is rendered with Mistune
     """

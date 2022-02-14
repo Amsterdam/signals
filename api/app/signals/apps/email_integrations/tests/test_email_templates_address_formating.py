@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 import copy
 
 from django.contrib.gis.geos import Point
 from django.core import mail
 from django.test import TestCase
 
-from signals.apps.email_integrations.mail_actions import MailActions
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.email_integrations.reporter_rules import SIGNAL_MAIL_RULES
+from signals.apps.email_integrations.services import MailService
 from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
@@ -27,6 +26,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
         latitude = valid_location.pop('lat')
 
         signal = SignalFactory.create(
+            status__state='m',
             reporter__email='test@example.com',
             location__geometrie=Point(longitude, latitude),
             location__buurt_code=valid_location.pop('buurt_code'),
@@ -34,9 +34,9 @@ class TestEmailTemplateAddressFormatting(TestCase):
             location__address=valid_location,
         )
 
-        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-        ma.apply(signal_id=signal.id)
+        MailService.mail(signal=signal)
 
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
 
         postcode_no_spaces = signal.location.address["postcode"].replace(' ', '')
@@ -65,8 +65,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
             location__address=None,
         )
 
-        ma = MailActions(mail_rules=SIGNAL_MAIL_RULES)
-        ma.apply(signal_id=signal.id)
+        MailService.mail(signal=signal)
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual('Locatie is gepind op de kaart\n\n', mail.outbox[0].body)
