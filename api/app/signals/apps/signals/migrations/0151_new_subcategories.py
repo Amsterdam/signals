@@ -61,7 +61,7 @@ def _new_categories(apps, schema_editor):
             main_category = Category.objects.get(slug=main_category_slug, parent__isnull=True)
 
             for category_slug, category_data in data.items():
-                category = Category.objects.create(name=category_slug, parent=main_category)  # noqa Using the slug as name to ensure the slug is correctly created
+                category = Category.objects.create(name=category_slug, parent=main_category, is_active=False)  # noqa Using the slug as name to ensure the slug is correctly created
 
                 category.name = category_data['name']
                 category.description = category_data['description']
