@@ -12,6 +12,7 @@ from signals.apps.email_integrations.actions import (
     SignalHandledAction,
     SignalOptionalAction,
     SignalReactionRequestAction,
+    SignalReactionRequestReceivedAction,
     SignalReopenedAction,
     SignalScheduledAction
 )
@@ -251,8 +252,8 @@ class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
 
 
 class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
-    state = workflow.REACTIE_GEVRAAGD
-    action = SignalReactionRequestAction()
+    state = workflow.REACTIE_ONTVANGEN
+    action = SignalReactionRequestReceivedAction()
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
