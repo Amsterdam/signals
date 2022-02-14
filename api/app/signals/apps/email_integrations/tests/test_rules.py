@@ -27,10 +27,6 @@ class RuleTestMixin:
                                       reporter__email='test@example.com')
         self.assertTrue(self.rule(signal))
 
-    def test_signal_not_happy_flow(self):
-        signal = SignalFactory.create(status__state=workflow.BEHANDELING, reporter__email='test@example.com')
-        self.assertFalse(self.rule(signal))
-
     def test_anonymous_reporter(self):
         status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
 
