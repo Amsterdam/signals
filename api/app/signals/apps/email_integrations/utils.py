@@ -6,6 +6,7 @@ from urllib.parse import unquote
 
 from django.conf import settings
 from django.core.validators import URLValidator
+from django.db.transaction import atomic, savepoint, savepoint_rollback
 from django.template import Context, Template
 from django.utils.timezone import now
 from mistune import create_markdown
@@ -21,7 +22,7 @@ from signals.apps.questionnaires.services.reaction_request import (
     create_session_for_reaction_request,
     get_reaction_url
 )
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, Status
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
 
@@ -142,3 +143,41 @@ def markdownx_md(value: str) -> str:
     """
     render_markdown = create_markdown(escape=True)
     return render_markdown(value)
+
+
+def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, status_data):
+    """
+    Helper function that will check which mail action will be triggered if a new status is set.
+
+    To make use of the existing MailService we need to set the "new" status on the Signal and trigger the MailService
+    with the dry_run flag set to True.
+
+    All changes in the database will be rollbacked!!!
+    """
+    from signals.apps.email_integrations.services import MailService
+
+    with atomic():
+        # Create a savepoint to rollback to after the mail action has been triggered\
+        sid = savepoint()
+
+        try:
+            # Create the "new" status we want to use to trigger the mail
+            status = Status(_signal=signal, **status_data)
+            status.full_clean()
+            status.save()
+
+            # Set the status, this will be rollbacked
+            signal.status = status
+            signal.save()
+
+            subject = message = html_message = None
+            for action in MailService.actions:
+                if action(signal, dry_run=True):
+                    # action found now render the subject, message and html_message and break the loop
+                    subject, message, html_message = action.render_mail_data(action.get_context(signal))
+                    break
+
+            return subject, message, html_message
+        finally:
+            # Rollback to the created savepoint
+            savepoint_rollback(sid)

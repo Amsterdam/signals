@@ -40,7 +40,8 @@ class TestMailActionsSpecialCasesActions(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_send_email_lambda_actions(self):
-        MailService.actions = (lambda x: False, lambda x: False, lambda x: False, lambda x: False)
+        MailService.actions = (lambda x, dry_run: False, lambda x, dry_run: False, lambda x, dry_run: False,
+                               lambda x, dry_run: False)
 
         self.assertEqual(len(mail.outbox), 0)
 
