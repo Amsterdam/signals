@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import unittest
 from datetime import datetime, timedelta
 from random import shuffle
 
@@ -991,7 +990,6 @@ class TestAreaFilter(SignalsBaseApiTestCase):
         result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
         self.assertEqual(1, len(result_ids))
 
-    @unittest.expectedFailure
     def test_filter_area_code_null(self):
         # Demonstrate problem behind Signalen #118
         result_ids = self._request_filter_signals({'area_type_code': 'null'})
