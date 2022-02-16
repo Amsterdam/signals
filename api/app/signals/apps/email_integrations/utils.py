@@ -58,7 +58,7 @@ def create_reaction_request_and_mail_context(signal: Signal, dry_run: bool = Fal
     """
     if dry_run:
         # Dry run, create a URL for email preview
-        return f'{settings.FRONTEND_URL}/incident/reactie/00000000-0000-0000-0000-000000000000'
+        return {'reaction_url': f'{settings.FRONTEND_URL}/incident/reactie/00000000-0000-0000-0000-000000000000'}
 
     session = create_session_for_reaction_request(signal)
     reaction_url = get_reaction_url(session)
