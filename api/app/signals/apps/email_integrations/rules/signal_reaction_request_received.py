@@ -2,27 +2,27 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
-from signals.apps.signals import workflow
+from signals.apps.signals.workflow import REACTIE_ONTVANGEN
 
 
 class SignalReactionRequestReceivedRule(AbstractRule):
-    def _validate(self, signal):
+    def _validate_status(self, status):
         """
-        Run all validations for the Rule
+        Run status validations for the Rule
 
         - The status is REACTIE_ONTVANGEN
         - The status text does not match NO_REACTION_RECEIVED_TEXT
         """
-        return self._validate_status(signal.status.state) and self._validate_status_text(signal.status.text)
+        return self._validate_status_state(status) and self._validate_status_text(status)
 
-    def _validate_status(self, state):
+    def _validate_status_state(self, status):
         """
         Validate that the status is REACTIE_ONTVANGEN
         """
-        return state == workflow.REACTIE_ONTVANGEN
+        return status.state == REACTIE_ONTVANGEN
 
-    def _validate_status_text(self, text):
+    def _validate_status_text(self, status):
         """
         Validate that the status text does not match NO_REACTION_RECEIVED_TEXT
         """
-        return text.lower() != NO_REACTION_RECEIVED_TEXT.lower()
+        return status.text.lower() != NO_REACTION_RECEIVED_TEXT.lower()

@@ -1,25 +1,27 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from signals.apps.email_integrations.rules.abstract import AbstractRule
-from signals.apps.signals import workflow
+from signals.apps.signals.workflow import AFGEHANDELD, VERZOEK_TOT_HEROPENEN
 
 
 class SignalHandledRule(AbstractRule):
     def _validate(self, signal):
+        return self._validate_previous_state_not_VERZOEK_TOT_HEROPENEN(signal)
+
+    def _validate_status(self, status):
         """
-        Run all validations for the Rule
+        Run status validations for the Rule
 
         - The status is AFGEHANDELD
         - The previous state is not VERZOEK_TOT_HEROPENEN
         """
-        return (self._validate_status(signal.status.state) and
-                self._validate_previous_state_not_VERZOEK_TOT_HEROPENEN(signal))
+        return self._validate_status_state(status)
 
-    def _validate_status(self, state):
+    def _validate_status_state(self, status):
         """
         Validate that the status is AFGEHANDELD
         """
-        return state == workflow.AFGEHANDELD
+        return status.state == AFGEHANDELD
 
     def _validate_previous_state_not_VERZOEK_TOT_HEROPENEN(self, signal):
         """
@@ -32,4 +34,4 @@ class SignalHandledRule(AbstractRule):
         ).values_list(
             'state',
             flat=True
-        ).first() != workflow.VERZOEK_TOT_HEROPENEN
+        ).first() != VERZOEK_TOT_HEROPENEN
