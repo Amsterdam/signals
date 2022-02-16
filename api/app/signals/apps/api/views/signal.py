@@ -352,9 +352,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         status = request.query_params.get('status', None)
         if not status:
-            raise DRFValidationError('The status query parameter is required')
+            raise DRFValidationError('The \'status\' query parameter is required')
         if status not in [status_choice[0] for status_choice in workflow.STATUS_CHOICES]:
-            raise DRFValidationError('Invalid value given for the status query parameter')
+            raise DRFValidationError('Invalid \'status\' query parameter given')
 
         text = request.query_params.get('text', None)
 

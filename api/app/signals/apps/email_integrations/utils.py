@@ -162,6 +162,7 @@ def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, statu
     # Create the "new" status we want to use to trigger the mail
     status = Status(_signal=signal, **status_data)
     status.full_clean()
+    status.id = 0  # Fake id so that we still can trigger the action rule
 
     subject = message = html_message = None
     for action in MailService.actions:
