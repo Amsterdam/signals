@@ -853,6 +853,44 @@ paths:
         - OAuth2:
             - SIG/ALL
 
+  /signals/v1/private/signals/{id}/email/preview/:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the signal
+        required: true
+        schema:
+          type: integer
+    get:
+      description: A email preview for the given status
+      responses:
+        '200':
+          description: Email preview (subject and html body)
+          content:
+            application/json:
+              schema:
+                description: JSON serialization of the email preview subject and html body
+                type: object
+                properties:
+                  subject:
+                    type: string
+                    description: The subject of the email
+                    example: Uw melding SIA-123456789
+                  html:
+                    type: string
+                    description: The rendered body (HTML) of the email
+                    example: <!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Uw melding SIA-123456789</title></head><body><p>Geachte melder,</p><p>Lorem ipsum...</p><p>Met vriendelijke groet,</p><p>Gemeente Amsterdam</p></body></html>
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to request signal geography context.
+        '404':
+          description: No email preview is found for the given status transition on the selected Signal
+      security:
+        - OAuth2:
+            - SIG/ALL
+
+
   /signals/v1/public/signals:
     post:
       description: Create a new Signal/melding.
