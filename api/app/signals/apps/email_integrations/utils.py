@@ -157,7 +157,7 @@ def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, statu
     from signals.apps.email_integrations.services import MailService
 
     with atomic():
-        # Create a savepoint to rollback to after the mail action has been triggered\
+        # Create a savepoint to rollback to after the mail action has been triggered
         sid = savepoint()
 
         try:
@@ -166,7 +166,7 @@ def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, statu
             status.full_clean()
             status.save()
 
-            # Set the status, this will be rollbacked
+            # Set the status, this will be rolled back
             signal.status = status
             signal.save()
 
@@ -174,7 +174,15 @@ def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, statu
             for action in MailService.actions:
                 if action(signal, dry_run=True):
                     # action found now render the subject, message and html_message and break the loop
-                    subject, message, html_message = action.render_mail_data(action.get_context(signal))
+                    email_context = action.get_context(signal)
+
+                    # overwrite the status context
+                    email_context.update({
+                        'status_text': status_data['text'],
+                        'status_state': status_data['state'],
+                    })
+
+                    subject, message, html_message = action.render_mail_data(context=email_context)
                     break
 
             return subject, message, html_message
