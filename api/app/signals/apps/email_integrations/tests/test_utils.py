@@ -156,17 +156,6 @@ class TestUtils(TestCase):
         self.assertEqual(context['signal_id'], signal.id)
         self.assertNotEqual(context['signal_id'], 'test')
 
-    def test_make_email_context_backwards_compatibility(self):
-        """
-        TODO: should be removed a.s.a.p.
-        """
-        signal = SignalFactory.create()
-        context = make_email_context(signal=signal)
-
-        self.assertEqual(context['signal'].id, signal.id)
-        self.assertEqual(context['status']._signal_id, signal.id)
-        self.assertEqual(context['status'].state, signal.status.state)
-
     def test_validate_email_template(self):
         email_template_valid = EmailTemplateFactory.create(key=EmailTemplate.SIGNAL_CREATED)
         result = validate_email_template(email_template_valid)

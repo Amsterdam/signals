@@ -91,12 +91,6 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'status_state': signal.status.state,
         'handling_message': signal.category_assignment.stored_handling_message,
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
-
-        # Backwards compatibility items
-        # TODO: Remove these items when all templates are updated to use the new context variables
-        'signal': signal,
-        'status': signal.status,
-        'location': signal.location,
     }
 
     if additional_context:
@@ -118,7 +112,7 @@ def validate_email_template(email_template: EmailTemplate) -> bool:
 
 def validate_template(template: str) -> bool:
     """
-    Used to validate an template string with a dummy context
+    Used to validate a template string with a dummy context
     """
     context = {
         'signal_id': 123,
