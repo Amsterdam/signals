@@ -153,7 +153,7 @@ def markdownx_md(value: str) -> str:
     return render_markdown(value)
 
 
-def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, status_data):
+def trigger_mail_action_for_email_preview(signal, status_data):
     """
     Helper function that will check which mail action will be triggered if a new status is requested.
     """
@@ -173,8 +173,10 @@ def trigger_mail_action_for_email_preview_and_rollback_all_changes(signal, statu
 
             # overwrite the status context
             email_context.update({
-                'status_text': status_data['text'],
-                'status_state': status_data['state'],
+                'status_text': status_data['text'],  # overwrite the status text
+                'status_state': status_data['state'],  # overwrite the status state
+                'afhandelings_text': status_data['text'],  # overwrite for the 'optional' action
+                'reaction_request_answer': status_data['text'],  # overwrite for the 'reaction received' action
             })
 
             subject, message, html_message = action.render_mail_data(context=email_context)

@@ -42,9 +42,7 @@ from signals.apps.api.serializers import (
 from signals.apps.api.serializers.email_preview import EmailPreviewSerializer
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.views._base import PublicSignalGenericViewSet
-from signals.apps.email_integrations.utils import (
-    trigger_mail_action_for_email_preview_and_rollback_all_changes
-)
+from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -360,9 +358,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         status_data = {'state': status, 'text': text, 'send_email': True}
         try:
-            subject, _, html_message = trigger_mail_action_for_email_preview_and_rollback_all_changes(
-                signal, status_data
-            )
+            subject, _, html_message = trigger_mail_action_for_email_preview(signal, status_data)
         except ValidationError:
             raise NotFound('No email preview available for given status transition')
 
