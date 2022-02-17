@@ -56,7 +56,7 @@ HTTP 400 Bad Request
 
 ```json
 [
-    "The 'status_state' query parameter is required"
+    "The 'status' query parameter is required"
 ]
 ```
 
@@ -69,7 +69,7 @@ HTTP 400 Bad Request
 
 ```json
 [
-    "Invalid 'status_state' query parameter given"
+    "Invalid 'status' query parameter given"
 ]
 ```
 

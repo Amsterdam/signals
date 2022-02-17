@@ -1,20 +1,20 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from signals.apps.email_integrations.rules.abstract import AbstractRule
-from signals.apps.signals import workflow
+from signals.apps.signals.workflow import REACTIE_GEVRAAGD
 
 
 class SignalReactionRequestRule(AbstractRule):
-    def _validate(self, signal):
+    def _validate_status(self, status):
         """
-        Run all validations for the Rule
+        Run status validations for the Rule
 
         - The status is REACTIE_GEVRAAGD
         """
-        return self._validate_status(signal.status.state)
+        return self._validate_status_state(status)
 
-    def _validate_status(self, state):
+    def _validate_status_state(self, status):
         """
         Validate that the status is REACTIE_GEVRAAGD
         """
-        return state == workflow.REACTIE_GEVRAAGD
+        return status.state == REACTIE_GEVRAAGD

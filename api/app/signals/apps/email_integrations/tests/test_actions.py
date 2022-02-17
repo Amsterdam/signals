@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
+from datetime import timedelta
 from unittest import mock
 
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
+from django.utils import timezone
 from factory.fuzzy import FuzzyText
+from freezegun import freeze_time
 
 from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
@@ -184,6 +187,22 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
         status = StatusFactory.create(_signal=signal, state=self.state)
         signal.status = status
         signal.save()
+
+        self.assertFalse(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
+        self.assertFalse(Note.objects.filter(text=self.action.note).exists())
+
+    def test_signal_set_state_multiple_times(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+
+        for x in range(5):
+            with freeze_time(timezone.now() + timedelta(hours=x)):
+                status = StatusFactory.create(_signal=signal, state=self.state)
+                signal.status = status
+                signal.save()
 
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)

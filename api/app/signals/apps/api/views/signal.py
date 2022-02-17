@@ -4,6 +4,7 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
@@ -12,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.response import Response
@@ -37,8 +39,10 @@ from signals.apps.api.serializers import (
     PublicSignalSerializerDetail,
     SignalIdListSerializer
 )
+from signals.apps.api.serializers.email_preview import EmailPreviewSerializer
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.views._base import PublicSignalGenericViewSet
+from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -315,7 +319,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         if signal_exists and not signal_accessible:
             raise PermissionDenied()
 
-        # return a HTTP 404 if we ask for a child signal's children.
+        # return an HTTP 404 if we ask for a child signal's children.
         signal = self.get_object()
         if signal.is_child:
             raise NotFound(detail=f'Signal {pk} has no children, it itself is a child signal.')
@@ -333,6 +337,35 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             return paginator.get_paginated_response(serializer.data)
 
         serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
+
+    @action(detail=True, url_path=r'email/preview/?$', filterset_class=None)
+    def email_preview(self, request, *args, **kwargs):
+        """
+        Render the email preview before transitioning to a specific status.
+        Required parameters: status
+        Optional parameters: text
+        """
+        signal = self.get_object()
+
+        status = request.query_params.get('status', None)
+        if not status:
+            raise DRFValidationError('The \'status\' query parameter is required')
+        if status not in [status_choice[0] for status_choice in workflow.STATUS_CHOICES]:
+            raise DRFValidationError('Invalid \'status\' query parameter given')
+
+        text = request.query_params.get('text', None)
+
+        status_data = {'state': status, 'text': text, 'send_email': True}
+        try:
+            subject, _, html_message = trigger_mail_action_for_email_preview(signal, status_data)
+        except ValidationError:
+            raise NotFound('No email preview available for given status transition')
+
+        context = self.get_serializer_context()
+        context.update({'email_preview': {'subject': subject, 'html_message': html_message}})
+
+        serializer = EmailPreviewSerializer(signal, context=context)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):

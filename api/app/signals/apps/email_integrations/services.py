@@ -24,12 +24,12 @@ class MailService:
     )
 
     @staticmethod
-    def mail(signal):
+    def mail(signal, dry_run=False):
         if not isinstance(signal, Signal):
             signal = Signal.objects.get(pk=signal)
 
         for action in MailService.actions:
-            if action(signal):
+            if action(signal, dry_run=dry_run):
                 return True
 
         return False

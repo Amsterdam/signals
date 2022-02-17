@@ -17,7 +17,7 @@ class SignalOptionalAction(AbstractAction):
 
     note = 'De statusupdate is per e-mail verzonden aan de melder'
 
-    def get_additional_context(self, signal):
+    def get_additional_context(self, signal, dry_run=False):
         return {
             'afhandelings_text': signal.status.text
         }

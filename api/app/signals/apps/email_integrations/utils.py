@@ -21,11 +21,11 @@ from signals.apps.questionnaires.services.reaction_request import (
     create_session_for_reaction_request,
     get_reaction_url
 )
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Signal, Status
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
 
-def create_feedback_and_mail_context(signal: Signal) -> dict:
+def create_feedback_and_mail_context(signal: Signal, dry_run=False) -> dict:
     """
     Util functions to create the feedback object and create the context needed for the mail
     """
@@ -33,13 +33,18 @@ def create_feedback_and_mail_context(signal: Signal) -> dict:
     # development we support both the "new" flow and the "old". Implementation
     # can be switched using the appropriate feature flag.
 
-    if ('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' in settings.FEATURE_FLAGS and
-            settings.FEATURE_FLAGS['API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK']):
-        session = create_session_for_feedback_request(signal)
-        positive_feedback_url, negative_feedback_url = get_feedback_urls(session)
+    if dry_run:
+        # Dry run mode, doe not create feedback but make a dummy link for email preview
+        positive_feedback_url = f'{settings.FRONTEND_URL}/kto/ja/00000000-0000-0000-0000-000000000000'
+        negative_feedback_url = f'{settings.FRONTEND_URL}/kto/nee/00000000-0000-0000-0000-000000000000'
     else:
-        feedback = Feedback.actions.request_feedback(signal)
-        positive_feedback_url, negative_feedback_url = get_feedback_urls_no_questionnaires(feedback)
+        if ('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK' in settings.FEATURE_FLAGS and
+                settings.FEATURE_FLAGS['API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK']):
+            session = create_session_for_feedback_request(signal)
+            positive_feedback_url, negative_feedback_url = get_feedback_urls(session)
+        else:
+            feedback = Feedback.actions.request_feedback(signal)
+            positive_feedback_url, negative_feedback_url = get_feedback_urls_no_questionnaires(feedback)
 
     return {
         'negative_feedback_url': negative_feedback_url,
@@ -47,10 +52,14 @@ def create_feedback_and_mail_context(signal: Signal) -> dict:
     }
 
 
-def create_reaction_request_and_mail_context(signal: Signal) -> dict:
+def create_reaction_request_and_mail_context(signal: Signal, dry_run: bool = False) -> dict:
     """
     Util function to create a question, questionnaire and prepared session for reaction request mails
     """
+    if dry_run:
+        # Dry run, create a URL for email preview
+        return {'reaction_url': f'{settings.FRONTEND_URL}/incident/reactie/00000000-0000-0000-0000-000000000000'}
+
     session = create_session_for_reaction_request(signal)
     reaction_url = get_reaction_url(session)
 
@@ -142,3 +151,35 @@ def markdownx_md(value: str) -> str:
     """
     render_markdown = create_markdown(escape=True)
     return render_markdown(value)
+
+
+def trigger_mail_action_for_email_preview(signal, status_data):
+    """
+    Helper function that will check which mail action will be triggered if a new status is requested.
+    """
+    from signals.apps.email_integrations.services import MailService
+
+    # Create the "new" status we want to use to trigger the mail
+    status = Status(_signal=signal, **status_data)
+    status.full_clean()
+    status.id = 0  # Fake id so that we still can trigger the action rule
+
+    subject = message = html_message = None
+    for action in MailService.actions:
+        # Execute the rule associated with the action
+        if action.rule.validate(signal, status):
+            # action found now render the subject, message and html_message and break the loop
+            email_context = action.get_context(signal, dry_run=True)
+
+            # overwrite the status context
+            email_context.update({
+                'status_text': status_data['text'],  # overwrite the status text
+                'status_state': status_data['state'],  # overwrite the status state
+                'afhandelings_text': status_data['text'],  # overwrite for the 'optional' action
+                'reaction_request_answer': status_data['text'],  # overwrite for the 'reaction received' action
+            })
+
+            subject, message, html_message = action.render_mail_data(context=email_context)
+            break
+
+    return subject, message, html_message

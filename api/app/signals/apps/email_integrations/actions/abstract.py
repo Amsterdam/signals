@@ -50,17 +50,17 @@ class AbstractAction(ABC):
 
         return False
 
-    def get_additional_context(self, signal):
+    def get_additional_context(self, signal, dry_run=False):
         """
         Overwrite this function if additional email context is needed.
         """
         return {}
 
-    def get_context(self, signal):
+    def get_context(self, signal, dry_run=False):
         """
         Email context
         """
-        context = make_email_context(signal, self.get_additional_context(signal))
+        context = make_email_context(signal, self.get_additional_context(signal, dry_run))
         return context
 
     def render_mail_data(self, context):
@@ -87,11 +87,11 @@ class AbstractAction(ABC):
 
         return subject, message, html_message
 
-    def send_mail(self, signal):
+    def send_mail(self, signal, dry_run=False):
         """
         Send the email to the reporter
         """
-        context = self.get_context(signal)
+        context = self.get_context(signal, dry_run)
         subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
                          recipient_list=[signal.reporter.email, ], html_message=html_message)
