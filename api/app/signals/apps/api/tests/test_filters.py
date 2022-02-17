@@ -947,6 +947,7 @@ class TestAreaFilter(SignalsBaseApiTestCase):
     def _request_filter_signals(self, filter_params: dict):
         """ Does a filter request and returns the signal ID's present in the request """
         self.client.force_authenticate(user=self.superuser)
+
         resp = self.client.get(self.LIST_ENDPOINT, data=filter_params)
 
         self.assertEqual(200, resp.status_code)
@@ -987,6 +988,11 @@ class TestAreaFilter(SignalsBaseApiTestCase):
         self.assertEqual(1, len(result_ids))
         # filter on both
         result_ids = self._request_filter_signals({'area_type_code': 'district', 'area_code': self.area.code})
+        self.assertEqual(1, len(result_ids))
+
+    def test_filter_area_code_null(self):
+        # Demonstrate problem behind Signalen #118
+        result_ids = self._request_filter_signals({'area_type_code': 'null'})
         self.assertEqual(1, len(result_ids))
 
 

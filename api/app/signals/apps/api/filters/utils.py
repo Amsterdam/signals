@@ -25,7 +25,9 @@ def area_type_code_choices():
 
 
 def area_type_choices():
-    return [(c, f'{n} ({c})') for c, n in AreaType.objects.values_list('code', 'name')]
+    return [
+        ('null', 'null'),
+    ] + [(c, f'{n} ({c})') for c, n in AreaType.objects.values_list('code', 'name')]
 
 
 def area_choices():
