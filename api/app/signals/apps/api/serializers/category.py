@@ -176,6 +176,10 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
                 action = f'Status gewijzigd naar:\n {"Actief" if value else "Inactief"}'
             elif key == 'handling_message':
                 action = f'Servicebelofte gewijzigd naar:\n {value}'
+            elif key == 'public_name':
+                action = f'Naam openbaar gewijzigd naar:\n {value}'
+            elif key == 'public_accessible':
+                action = f'Openbaar tonen gewijzigd in:\n {"Aan" if value else "Uit"}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 

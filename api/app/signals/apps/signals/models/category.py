@@ -106,7 +106,9 @@ class Category(models.Model):
 
     questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
-    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message'))
+    logger = ChangeLogger(track_fields=(
+        'name', 'description', 'is_active', 'slo', 'handling_message', 'public_name', 'public_accessible'
+    ))
 
     objects = CategoryManager()
 

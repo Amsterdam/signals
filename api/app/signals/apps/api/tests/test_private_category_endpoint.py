@@ -329,3 +329,68 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
 
         self.parent_category.refresh_from_db()
         self._assert_category_data(category=self.parent_category, data=response.json())
+
+    def test_history_public_parameters(self):
+        # Changes to the public parameters should be logged in the history of a Category
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+
+        # Test public_name changed in history
+
+        response = self.client.patch(url, data={'public_name': f'{self.parent_category.name} (Public name)'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        history_url = f'{url}/history'
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
+        self.assertIsNone(change_log_data['description'])
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertIn(f'Naam openbaar gewijzigd naar:\n {self.parent_category.name} (Public name)',
+                      change_log_data['action'])
+
+        # Test public_accessible set to True in history
+
+        response = self.client.patch(url, data={'public_accessible': True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
+        self.assertIsNone(change_log_data['description'])
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertIn(f'Openbaar tonen gewijzigd in:\n Aan', change_log_data['action'])
+
+        # Test public_accessible set to False in history
+
+        response = self.client.patch(url, data={'public_accessible': False})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        response = self.client.get(history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(len(response_data), 3)
+
+        change_log_data = response_data[0]
+        self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
+        self.assertIsNone(change_log_data['description'])
+        self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
+        self.assertIn(f'Openbaar tonen gewijzigd in:\n Uit', change_log_data['action'])
