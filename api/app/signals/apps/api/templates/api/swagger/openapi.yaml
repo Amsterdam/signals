@@ -872,6 +872,8 @@ paths:
         in: query
         description: The status text that must appear in the email preview
         required: false
+        schema:
+          type: string
     get:
       description: A email preview for the given status
       responses:
