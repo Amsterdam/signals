@@ -31,6 +31,7 @@ class CategoryHALSerializer(HALSerializer):
             'description',
             'handling_message',
             'questionnaire',
+            'public_name',
         )
 
     def get_departments(self, obj):
@@ -52,6 +53,7 @@ class ParentCategoryHALSerializer(HALSerializer):
             '_display',
             'name',
             'slug',
+            'public_name',
             'sub_categories',
         )
 
