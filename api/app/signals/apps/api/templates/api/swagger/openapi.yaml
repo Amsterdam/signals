@@ -1136,6 +1136,8 @@ paths:
           * is_active
           * description
           * slo (A new slo will be added to the sla list)
+          * public_name
+          * public_accessible
       responses:
         '200':
           description: Changes are made, returns the current state of the category
@@ -3087,6 +3089,18 @@ components:
         handling_message:
           type: string
           description: The handling message, used in the e-mail to the reporter
+        public_name:
+          type: string
+          nullable: true
+          description: The public name of a Category
+        public_accessible:
+          type: boolean
+          nullable: false
+          description: >-
+            This will toggle if the category (and it's signals) can be accessed 
+            through the public endpoin(s). Will be used for the public map
+            showing the reporter open siganls in the area for the categroy 
+            he/she is making a complaint.
 
     privateDepartmentListResponse:
       description: JSON data for a list of departments.
