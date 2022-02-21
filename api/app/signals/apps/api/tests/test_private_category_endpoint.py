@@ -56,6 +56,8 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(data['is_active'], category.is_active)
         self.assertEqual(data['description'], category.description)
         self.assertEqual(data['handling_message'], category.handling_message)
+        self.assertEqual(data['public_name'], category.public_name)
+        self.assertEqual(data['public_accessible'], category.public_accessible)
 
         self.assertIn('sla', data)
         if category.slo.count() > 0:
@@ -297,3 +299,33 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
 
         category.refresh_from_db()
         self.assertEqual(category.slo.count(), slo_count_at_start_of_tests + 1)
+
+    def test_patch_category_public_parameters(self):
+        """
+        Change the public_name and/or the public_accessible parameters of a Category
+        """
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        response = self.client.patch(url, data={'public_name': 'Public name', 'public_accessible': True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        response = self.client.patch(url, data={'public_name': f'{self.parent_category.name} (Public name)'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
+
+        response = self.client.patch(url, data={'public_accessible': False})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.parent_category.refresh_from_db()
+        self._assert_category_data(category=self.parent_category, data=response.json())
