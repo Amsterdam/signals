@@ -82,6 +82,10 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255)
 
+    # SIG-4403 A category can be publicly accessible
+    public_name = models.CharField(max_length=255, null=True, blank=True)
+    public_accessible = models.BooleanField(default=False)
+
     # SIG-2397 Handling is replaced by a handling_message
     # Notice: The handling_message will be used in communication (e-mail) to the citizen
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
