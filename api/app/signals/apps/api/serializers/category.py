@@ -107,6 +107,8 @@ class PrivateCategorySerializer(HALSerializer):
             'new_sla',
             'departments',
             'note',
+            'public_name',
+            'public_accessible',
         )
         read_only_fields = (
             'slug',
