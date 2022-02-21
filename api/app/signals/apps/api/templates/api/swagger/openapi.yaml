@@ -3013,6 +3013,19 @@ components:
           type: string
           nullable: true
           description: Note field, used internally.
+        public_name:
+          type: string
+          nullable: true
+          description: The public name of a Category
+        public_accessible:
+          type: boolean
+          nullable: false
+          default: false
+          description: >-
+            This will toggle if the category (and it's signals) can be accessed 
+            through the public endpoin(s). Will be used for the public map
+            showing the reporter open siganls in the area for the categroy 
+            he/she is making a complaint.
 
     privateCategoryListResponse:
       description: JSON data describing the category response
