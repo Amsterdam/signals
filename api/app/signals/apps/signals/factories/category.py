@@ -15,6 +15,8 @@ class ParentCategoryFactory(DjangoModelFactory):
     handling_message = 'Test handling message (parent category)'
     is_active = True
     questionnaire = None
+    public_name = None
+    public_accessible = False
 
     class Meta:
         model = Category
