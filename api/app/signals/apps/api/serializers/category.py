@@ -162,7 +162,7 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
     def get_what(self, log):
         return f'{log.get_action_display().upper()}_CATEGORY'
 
-    def get_action(self, log):
+    def get_action(self, log):  # noqa C901
         actions = []
         for key, value in log.data.items():
             if key == 'name':

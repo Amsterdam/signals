@@ -374,7 +374,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
         self.assertIsNone(change_log_data['description'])
         self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
-        self.assertIn(f'Openbaar tonen gewijzigd in:\n Aan', change_log_data['action'])
+        self.assertIn('Openbaar tonen gewijzigd in:\n Aan', change_log_data['action'])
 
         # Test public_accessible set to False in history
 
@@ -393,4 +393,4 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertEqual(change_log_data['what'], 'UPDATED_CATEGORY')
         self.assertIsNone(change_log_data['description'])
         self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
-        self.assertIn(f'Openbaar tonen gewijzigd in:\n Uit', change_log_data['action'])
+        self.assertIn('Openbaar tonen gewijzigd in:\n Uit', change_log_data['action'])
