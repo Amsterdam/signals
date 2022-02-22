@@ -186,7 +186,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(len(response.json()['features']), 1)
 
     @override_settings(DEBUG=True)  # we need access to the DB queries here
-    @patch("signals.apps.api.views.signal.SIGNALS_API_GEO_PAGINATE_BY", 2)
+    @patch("signals.apps.api.views.signals.private.signals.SIGNALS_API_GEO_PAGINATE_BY", 2)
     def test_geo_list_endpoint_queries(self):
         from django.db import connection
         SignalFactory.create_batch(size=8)

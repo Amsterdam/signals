@@ -6,6 +6,7 @@ Views dealing with 'signals.Attachment' model directly.
 from datapunt_api.rest import DatapuntViewSet
 from django.core.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from signals.apps.api.generics import mixins
@@ -14,20 +15,24 @@ from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
 )
-from signals.apps.api.views._base import PublicSignalGenericViewSet
 from signals.apps.services.domain.permissions.signal import SignalPermissionService
 from signals.apps.signals.models import Attachment, Signal
 from signals.auth.backend import JWTAuthBackend
 
 
-class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, PublicSignalGenericViewSet):
+class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, GenericViewSet):
+    lookup_field = 'uuid'
+    lookup_url_kwarg = 'uuid'
+
+    queryset = Signal.objects.all()
+
+    pagination_class = None
     serializer_class = PublicSignalAttachmentSerializer
 
     def get_signal(self):
         """
-        The get_object will return a Signal instance as seen in the PublicSignalGenericViewSet. However to keep the
-        serializer working we needed to add a `get_signal` function which maps to the `get_object` function of the
-        PublicSignalGenericViewSet class.
+        The get_object will return a Signal instance. However, to keep the serializer working we needed to add a
+        `get_signal` function which maps to the `get_object` function of the GenericViewSet class.
         """
         return self.get_object()
 
