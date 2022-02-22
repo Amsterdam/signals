@@ -3,6 +3,7 @@
 import copy
 import json
 import os
+from unittest import skip
 from unittest.mock import patch
 
 from django.conf import settings
@@ -478,10 +479,14 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         session.refresh_from_db()
         self.assertEqual(session._signal_id, another_signal.id)
 
+    @skip('Disbaled the check on the extra propeties, this causes an issue when creating "child" signals')
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_and_validate_extra_properties_for_streetlights(self, validate_address):
         """
+        Disabled the additional check. This check prevents the creation of a "child" signal in the
+        lantaarnpaal-straatverlichting category because there is no way to provide the streetlight
+
         SIG-4382 [BE] Extra check op formaat en inhoud van extra_properties bij de verlichting sub categorien
         (tbv koppeling Techview)
 
