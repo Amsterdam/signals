@@ -1149,7 +1149,7 @@ paths:
           * description
           * slo (A new slo will be added to the sla list)
           * public_name
-          * public_accessible
+          * is_public_accessible
       responses:
         '200':
           description: Changes are made, returns the current state of the category
@@ -3186,7 +3186,7 @@ components:
           type: string
           nullable: true
           description: The public name of a Category
-        public_accessible:
+        is_public_accessible:
           type: boolean
           nullable: false
           default: false
@@ -3260,7 +3260,7 @@ components:
           type: string
           nullable: true
           description: The public name of a Category
-        public_accessible:
+        is_public_accessible:
           type: boolean
           nullable: false
           description: >-

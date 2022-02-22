@@ -110,7 +110,7 @@ class PrivateCategorySerializer(HALSerializer):
             'departments',
             'note',
             'public_name',
-            'public_accessible',
+            'is_public_accessible',
         )
         read_only_fields = (
             'slug',
@@ -180,8 +180,8 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
                 action = f'Servicebelofte gewijzigd naar:\n {value}'
             elif key == 'public_name':
                 action = f'Naam openbaar gewijzigd naar:\n {value}'
-            elif key == 'public_accessible':
-                action = f'Openbaar tonen gewijzigd in:\n {"Aan" if value else "Uit"}'
+            elif key == 'is_public_accessible':
+                action = f'Openbaar tonen gewijzigd naar:\n {"Aan" if value else "Uit"}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 

@@ -16,7 +16,7 @@ class ParentCategoryFactory(DjangoModelFactory):
     is_active = True
     questionnaire = None
     public_name = None
-    public_accessible = False
+    is_public_accessible = False
 
     class Meta:
         model = Category
