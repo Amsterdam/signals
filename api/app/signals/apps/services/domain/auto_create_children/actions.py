@@ -86,7 +86,7 @@ class CreateChildrenContainerAction(ExtraPropertiesMixin):
             # Copy attachments to the child signal
             attachments_qs = signal.attachments.filter(is_image=True)
             if attachments_qs.count():
-                Signal.actions.copy_attachments(data=attachments_qs.all(), signal=child_signal)
+                Signal.actions.copy_attachments(data=attachments_qs.all(), signal=child_signal, created_by=None)
 
     def __str__(self):
         return f'{self.__class__.__name__}'
@@ -136,7 +136,8 @@ class CreateChildrenEikenprocessierupsAction(ExtraPropertiesMixin):
             # Copy attachments to the child signal
             attachments_qs = signal.attachments.filter(is_image=True)
             if attachments_qs.count():
-                Signal.actions.copy_attachments(data=attachments_qs.all(), signal=child_signal)
+                # created_by=None, because this runs in a Celery task and no request.user is known here
+                Signal.actions.copy_attachments(data=attachments_qs.all(), signal=child_signal, created_by=None)
 
     def __str__(self):
         return f'{self.__class__.__name__}'

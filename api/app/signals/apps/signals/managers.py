@@ -624,11 +624,12 @@ class SignalManager(models.Manager):
 
         return departments
 
-    def _copy_attachment_no_transaction(self, source_attachment, signal):
+    def _copy_attachment_no_transaction(self, source_attachment, signal, created_by):
         from signals.apps.signals.models import Attachment
 
         target_attachment = Attachment()
         target_attachment._signal = signal
+        target_attachment.created_by = created_by
 
         try:
             _, file_name = os.path.split(source_attachment.file.name)
@@ -639,7 +640,7 @@ class SignalManager(models.Manager):
             target_attachment.save()
             return target_attachment
 
-    def copy_attachments(self, data, signal):
+    def copy_attachments(self, data, signal, created_by):
         from signals.apps.signals.models import Signal
 
         with transaction.atomic():
@@ -649,7 +650,7 @@ class SignalManager(models.Manager):
             attachments = []
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
             for attachment in data:
-                attachments.append(self._copy_attachment_no_transaction(attachment, locked_signal))
+                attachments.append(self._copy_attachment_no_transaction(attachment, locked_signal, created_by))
                 to_send.append((add_attachment, {'sender': sender, 'signal_obj': signal, 'attachment': attachment}))
 
             transaction.on_commit(lambda: send_signals(to_send))  # SIG-2213
