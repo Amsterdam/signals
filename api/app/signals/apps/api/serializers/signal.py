@@ -453,15 +453,19 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
                     attrs['session'] = session
 
         # SIG-4382 additional check on the extra_properties if the category is lantaarpaal-straatverlichting
-        if attrs.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
-            validator = ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
-                                                                       'extra_properties_streetlights.json'))
-            try:
-                validator(attrs.get('extra_properties'))
-            except ValidationError:
-                errors.update({'extra_properties': [
-                    'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
-                ]})
+        #
+        # Disabled additional check. This check prevents the creation of a "child" signal in the
+        # lantaarnpaal-straatverlichting category because there is no way to provide the streetlight
+        #
+        # if attrs.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
+        #     validator = ExtraPropertiesValidator(filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
+        #                                                                'extra_properties_streetlights.json'))
+        #     try:
+        #         validator(attrs.get('extra_properties'))
+        #     except ValidationError:
+        #         errors.update({'extra_properties': [
+        #             'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
+        #         ]})
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -617,16 +621,20 @@ class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSeria
                     data['session'] = session
 
         # SIG-4382 additional check on the extra_properties if the category is lantaarpaal-straatverlichting
-        if data.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
-            validator = ExtraPropertiesValidator(
-                filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
-                                      'extra_properties_streetlights.json'))
-            try:
-                validator(data.get('extra_properties'))
-            except ValidationError:
-                errors.update({'extra_properties': [
-                    'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
-                ]})
+        #
+        # Disabled additional check. This check prevents the creation of a "child" signal in the
+        # lantaarnpaal-straatverlichting category because there is no way to provide the streetlight
+        #
+        # if data.get('category_assignment').get('category').slug == 'lantaarnpaal-straatverlichting':
+        #     validator = ExtraPropertiesValidator(
+        #         filename=os.path.join(os.path.dirname(__file__), '..', 'json_schema',
+        #                               'extra_properties_streetlights.json'))
+        #     try:
+        #         validator(data.get('extra_properties'))
+        #     except ValidationError:
+        #         errors.update({'extra_properties': [
+        #             'Extra properties not valid for category "lantaarnpaal-straatverlichting"'
+        #         ]})
 
         if errors:
             raise serializers.ValidationError(errors)
