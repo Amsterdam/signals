@@ -93,7 +93,7 @@ class PublicSignalViewSet(GenericViewSet):
             status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
 
             # Only return Signal's that are in categories that are publicly accessible
-            category_assignment__category__is_public_accessible=True,
+            category_assignment__category__is_public_accessible=False,
         ).order_by(
             # Newest signals first
             '-created_at',
