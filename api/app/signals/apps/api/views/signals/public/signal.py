@@ -3,7 +3,7 @@
 import logging
 
 from django.db.models import CharField, Value
-from django.db.models.functions import JSONObject, Coalesce
+from django.db.models.functions import Coalesce, JSONObject
 from django.http import Http404
 from rest_framework import status
 from rest_framework.decorators import action
@@ -17,7 +17,12 @@ from signals.apps.api.serializers import PublicSignalCreateSerializer, PublicSig
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
-from signals.apps.signals.workflow import AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN
+from signals.apps.signals.workflow import (
+    AFGEHANDELD,
+    AFGEHANDELD_EXTERN,
+    GEANNULEERD,
+    VERZOEK_TOT_HEROPENEN
+)
 from signals.throttling import PostOnlyNoUserRateThrottle
 
 logger = logging.getLogger(__name__)
@@ -58,7 +63,7 @@ class PublicSignalViewSet(GenericViewSet):
     @action(detail=False, url_path=r'geography/?$', methods=['GET'])
     def geography(self, request):
         """
-        Returns GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
+        Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
 
         TODO:
@@ -67,7 +72,8 @@ class PublicSignalViewSet(GenericViewSet):
         - Add filtering by BBOX
         """
         queryset = self.filter_queryset(
-            self.get_queryset().annotate(  # This will transform the output of the query to GeoJSON instead of using a Serializer
+            self.get_queryset().annotate(
+                # This will transform the output of the query to GeoJSON instead of using a Serializer
                 feature=JSONObject(
                     type=Value('Feature', output_field=CharField()),
                     geometry=AsGeoJSON('location__geometrie'),
@@ -86,7 +92,7 @@ class PublicSignalViewSet(GenericViewSet):
             # All signals that are in an "Open" state
             status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
 
-            # Only return Signal's that are in a category that is publicly accessible
+            # Only return Signal's that are in categories that are publicly accessible
             category_assignment__category__is_public_accessible=True,
         ).order_by(
             # Newest signals first
