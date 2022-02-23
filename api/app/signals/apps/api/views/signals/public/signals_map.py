@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class PublicSignalMapViewSet(ViewSet):
+    """
+    Deprecated PublicSignalMapViewSet, used by 's-Hertogenbosch.
+    Should be replaced by the new implementation A.S.A.P.
+    """
+
     renderer_classes = [SerializedJsonRenderer, BrowsableAPIRenderer]
     # django-drf has too much overhead with these kinds of 'fast' request.
     # When implemented using django-drf, retrieving a large number of elements cost around 4s (profiled)
