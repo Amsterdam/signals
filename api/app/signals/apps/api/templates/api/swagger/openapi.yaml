@@ -988,6 +988,10 @@ paths:
       responses:
         '200':
           description: List of all main categories with embedded sub categories.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/publicCategoryListResponse'
 
   /signals/v1/public/terms/categories/{main_slug}:
     get:
@@ -997,6 +1001,10 @@ paths:
       responses:
         '200':
           description: Detailed information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/publicCategoryParentResponse'
       parameters:
         - name: main_slug
           in: path
@@ -1011,6 +1019,10 @@ paths:
       responses:
         '200':
           description: Detailed information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/publicCategoryChildResponse'
       parameters:
         - name: main_slug
           in: path
@@ -1136,6 +1148,8 @@ paths:
           * is_active
           * description
           * slo (A new slo will be added to the sla list)
+          * public_name
+          * is_public_accessible
       responses:
         '200':
           description: Changes are made, returns the current state of the category
@@ -2904,6 +2918,161 @@ components:
               description: Note on this new user.
               type: string
 
+    publicCategoryListResponse:
+      description: JSON data describing the public category response
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the list endpoint
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the next page of the list endpoint (if not available this is null)
+                  format: uri
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the previous page of the list endpoint (if not available this is null)
+                  format: uri
+        count:
+          type: integer
+          description: Total count of results for the request
+        results:
+          type: array
+          description: A list of categories, paginated
+          items:
+            $ref: '#/components/schemas/publicCategoryParentResponse'
+
+    publicCategoryParentResponse:
+      description: JSON data describing the public parent category response
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            curies:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The compact URI (curie) named 'sia'
+                href:
+                  type: string
+                  format: uri
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the public category
+                  format: uri
+        _display:
+          type: string
+          description: The display value of the category
+          example: Afval
+        name:
+          type: string
+          description: The name of the category
+          example: Afval
+        slug:
+          type: string
+          description: The (generated) slug of the category
+          example: afval
+        public_name:
+          type: string
+          description: The public name
+          nullable: True
+        sub_categories:
+          type: array
+          description: A list of child categories
+          items:
+            $ref: '#/components/schemas/publicCategoryChildResponse'
+
+    publicCategoryChildResponse:
+      description: JSON data describing the public parent category response
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            curies:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The compact URI (curie) named 'sia'
+                href:
+                  type: string
+                  format: uri
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI to the public category
+                  format: uri
+        _display:
+          type: string
+          description: The display value of the category
+          example: Asbest / accu
+        name:
+          type: string
+          description: The name of the category
+          example: Asbest / accu
+        slug:
+          type: string
+          description: The (generated) slug of the category
+          example: asbest-accu
+        handling:
+          type: string
+          example: A3DMC
+        departments:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                description: The code of the department
+                type: string
+                example: ASC
+              name:
+                description: The name of the department
+                type: string
+                example: Actie service centrum
+              is_intern:
+                description: Department is internal or external
+                type: boolean
+                example: true
+        is_active:
+          type: boolean
+          description: If the current category is still active
+          example: false
+        description:
+          type: string
+          description: Description of the category
+          nullable: true
+        handling_message:
+          type: string
+          description: Handling message of the category (this is also mailed to the reporter)
+          example: We laten u binnen 3 werkdagen weten wat we hebben gedaan...
+        public_name:
+          type: string
+          description: The public name
+          nullable: True
+          example: Asbest / accu (Publieke naam)
+
     privateCategoryResponse:
       description: JSON data describing the category response
       type: object
@@ -3013,6 +3182,19 @@ components:
           type: string
           nullable: true
           description: Note field, used internally.
+        public_name:
+          type: string
+          nullable: true
+          description: The public name of a Category
+        is_public_accessible:
+          type: boolean
+          nullable: false
+          default: false
+          description: >-
+            This will toggle if the category (and it's signals) can be accessed 
+            through the public endpoin(s). Will be used for the public map
+            showing the reporter open siganls in the area for the categroy 
+            he/she is making a complaint.
 
     privateCategoryListResponse:
       description: JSON data describing the category response
@@ -3074,6 +3256,18 @@ components:
         handling_message:
           type: string
           description: The handling message, used in the e-mail to the reporter
+        public_name:
+          type: string
+          nullable: true
+          description: The public name of a Category
+        is_public_accessible:
+          type: boolean
+          nullable: false
+          description: >-
+            This will toggle if the category (and it's signals) can be accessed 
+            through the public endpoin(s). Will be used for the public map
+            showing the reporter open siganls in the area for the categroy 
+            he/she is making a complaint.
 
     privateDepartmentListResponse:
       description: JSON data for a list of departments.

@@ -82,6 +82,10 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255)
 
+    # SIG-4403 A category can be publicly accessible
+    public_name = models.CharField(max_length=255, null=True, blank=True)
+    is_public_accessible = models.BooleanField(default=False)
+
     # SIG-2397 Handling is replaced by a handling_message
     # Notice: The handling_message will be used in communication (e-mail) to the citizen
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
@@ -102,7 +106,9 @@ class Category(models.Model):
 
     questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
-    logger = ChangeLogger(track_fields=('name', 'description', 'is_active', 'slo', 'handling_message'))
+    logger = ChangeLogger(track_fields=(
+        'name', 'description', 'is_active', 'slo', 'handling_message', 'public_name', 'is_public_accessible'
+    ))
 
     objects = CategoryManager()
 

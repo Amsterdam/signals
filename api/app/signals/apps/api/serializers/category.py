@@ -31,6 +31,7 @@ class CategoryHALSerializer(HALSerializer):
             'description',
             'handling_message',
             'questionnaire',
+            'public_name',
         )
 
     def get_departments(self, obj):
@@ -52,6 +53,7 @@ class ParentCategoryHALSerializer(HALSerializer):
             '_display',
             'name',
             'slug',
+            'public_name',
             'sub_categories',
         )
 
@@ -107,6 +109,8 @@ class PrivateCategorySerializer(HALSerializer):
             'new_sla',
             'departments',
             'note',
+            'public_name',
+            'is_public_accessible',
         )
         read_only_fields = (
             'slug',
@@ -160,7 +164,7 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
     def get_what(self, log):
         return f'{log.get_action_display().upper()}_CATEGORY'
 
-    def get_action(self, log):
+    def get_action(self, log):  # noqa C901
         actions = []
         for key, value in log.data.items():
             if key == 'name':
@@ -174,6 +178,10 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
                 action = f'Status gewijzigd naar:\n {"Actief" if value else "Inactief"}'
             elif key == 'handling_message':
                 action = f'Servicebelofte gewijzigd naar:\n {value}'
+            elif key == 'public_name':
+                action = f'Naam openbaar gewijzigd naar:\n {value}'
+            elif key == 'is_public_accessible':
+                action = f'Openbaar tonen gewijzigd naar:\n {"Aan" if value else "Uit"}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 

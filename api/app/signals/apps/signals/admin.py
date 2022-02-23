@@ -61,8 +61,8 @@ class ParentCategoryFilter(admin.SimpleListFilter):
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    fields = ('name', 'parent', 'is_active', 'description', 'handling_message')
-    list_display = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message')
+    fields = ('name', 'parent', 'is_active', 'description', 'handling_message', 'public_name', 'is_public_accessible')
+    list_display = ('name', 'slug', 'parent', 'is_active', 'is_public_accessible', 'description', 'handling_message')
     ordering = ('parent__name', 'name',)
     list_per_page = 20
     list_filter = (ParentCategoryFilter,)
