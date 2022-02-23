@@ -11,6 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.utils import timezone
 
+from signals.apps.api.serializers.attachment import PUBLIC_UPLOAD_ALLOWED_STATES
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
@@ -22,6 +23,7 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
+from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES
 from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -217,7 +219,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertNotIn('attachments', response_json)
 
     def test_add_attachment_imagetype(self):
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(status__state=GEMELD)
 
         data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
 
@@ -231,7 +233,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIsNone(attachment.created_by)
 
     def test_add_attachment_extension_not_allowed(self):
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(status__state=GEMELD)
 
         doc_upload = os.path.join(THIS_DIR, 'test-data', 'sia-ontwerp-testfile.doc')
         with open(doc_upload, encoding='latin-1') as f:
@@ -240,6 +242,34 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
 
         self.assertEqual(response.status_code, 400)
+
+    def test_add_attachment_in_correct_state_allowed(self):
+        # Uploads should be allowed when a reaction is requested or when the signal is newly created.
+        signal = SignalFactory.create(status__state=GEMELD)
+
+        for state in PUBLIC_UPLOAD_ALLOWED_STATES:
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            signal.status.state = state
+            signal.status.save()
+
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 201)
+
+    def test_add_attachment_in_wrong_state_not_allowed(self):
+        # We don't want people to upload images long after creating the original
+        # nuisance complaint was created.
+        signal = SignalFactory.create(status__state=GEMELD)
+        not_allowed = set(x[0] for x in STATUS_CHOICES) - set(PUBLIC_UPLOAD_ALLOWED_STATES)
+
+        for state in not_allowed:
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            signal.status.state = state
+            signal.status.save()
+
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 400)
+            error_msg = response.json()[0]
+            self.assertEqual(error_msg, 'Public uploads not allowed in current signal state.')
 
     def test_cannot_access_attachments(self):
         # SIA must not publicly expose attachments

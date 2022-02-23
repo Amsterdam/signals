@@ -12,6 +12,9 @@ from signals.apps.api.fields import (
 )
 from signals.apps.services.domain.filescanner import FileRejectedError, UploadScannerService
 from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
+
+PUBLIC_UPLOAD_ALLOWED_STATES = (GEMELD, REACTIE_GEVRAAGD)
 
 
 class SignalAttachmentSerializerMixin:
@@ -62,6 +65,14 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
         )
 
         extra_kwargs = {'file': {'write_only': True}}
+
+    def create(self, validated_data):
+        signal = self.context['view'].get_signal()
+        if signal.status.state not in PUBLIC_UPLOAD_ALLOWED_STATES:
+            msg = 'Public uploads not allowed in current signal state.'
+            raise ValidationError(msg)
+
+        return super().create(validated_data)
 
 
 class PrivateSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):
