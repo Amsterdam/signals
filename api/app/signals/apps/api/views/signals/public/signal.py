@@ -5,6 +5,7 @@ import logging
 from django.db.models import CharField, Value
 from django.db.models.functions import Coalesce, JSONObject
 from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -12,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
+from signals.apps.api.filters.signal import PublicSignalGeographyFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.serializers import PublicSignalCreateSerializer, PublicSignalSerializerDetail
 from signals.apps.signals.models import Signal
@@ -39,6 +41,9 @@ class PublicSignalViewSet(GenericViewSet):
         'status',
     ).all()
 
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = None
+
     pagination_class = None
     serializer_class = PublicSignalSerializerDetail
 
@@ -60,7 +65,7 @@ class PublicSignalViewSet(GenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
-    @action(detail=False, url_path=r'geography/?$', methods=['GET'])
+    @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter)
     def geography(self, request):
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
@@ -68,7 +73,6 @@ class PublicSignalViewSet(GenericViewSet):
 
         TODO:
         - Determine the properties that must be returned
-        - Add filtering by category
         - Add filtering by BBOX
         """
         queryset = self.filter_queryset(
@@ -93,7 +97,7 @@ class PublicSignalViewSet(GenericViewSet):
             status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
 
             # Only return Signal's that are in categories that are publicly accessible
-            category_assignment__category__is_public_accessible=False,
+            # category_assignment__category__is_public_accessible=False,
         ).order_by(
             # Newest signals first
             '-created_at',

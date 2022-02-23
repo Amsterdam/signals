@@ -322,3 +322,23 @@ class SignalPromotedToParentFilter(FilterSet):
         queryset = super().filter_queryset(queryset=queryset)
         # Only return Signals of categories that a user can access
         return queryset.filter_for_user(user=self.request.user).distinct()
+
+
+class PublicSignalGeographyFilter(FilterSet):
+    maincategory_slug = filters.ModelMultipleChoiceFilter(
+        required=True, queryset=_get_parent_category_queryset(), to_field_name='slug',
+        field_name='category_assignment__category__parent__slug',
+    )
+    category_slug = filters.ModelMultipleChoiceFilter(
+        required=True, queryset=_get_child_category_queryset().filter(is_public_accessible=True),
+        to_field_name='slug', field_name='category_assignment__category__slug'
+    )
+
+    def filter_queryset(self, queryset):
+        main_categories = self.form.cleaned_data['maincategory_slug']
+        sub_categories = self.form.cleaned_data['category_slug']
+
+        return super().filter_queryset(queryset=queryset.filter(
+            Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) &
+            Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+        ))
