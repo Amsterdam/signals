@@ -72,12 +72,13 @@ class PublicSignalViewSet(GenericViewSet):
         Additional filtering can be done by adding query parameters.
 
         TODO:
-        - Determine the properties that must be returned
-        - Add filtering by BBOX
+        - Unit tests
+        - Update swagger documentation
         """
         queryset = self.filter_queryset(
             self.get_queryset().annotate(
-                # This will transform the output of the query to GeoJSON instead of using a Serializer
+                # Transform the output of the query to GeoJSON in the database.
+                # This is much faster than using a DRF Serializer.
                 feature=JSONObject(
                     type=Value('Feature', output_field=CharField()),
                     geometry=AsGeoJSON('location__geometrie'),
