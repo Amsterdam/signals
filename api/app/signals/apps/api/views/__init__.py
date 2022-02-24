@@ -19,7 +19,7 @@ from signals.apps.api.views.signals.private.signals import PrivateSignalViewSet
 from signals.apps.api.views.signals.private.signals_promoted_to_parent import (
     SignalPromotedToParentViewSet
 )
-from signals.apps.api.views.signals.public.signal import PublicSignalViewSet
+from signals.apps.api.views.signals.public.signals import PublicSignalViewSet
 from signals.apps.api.views.signals.public.signals_map import PublicSignalMapViewSet
 from signals.apps.api.views.source import PrivateSourcesViewSet
 from signals.apps.api.views.status_message_template import StatusMessageTemplatesViewSet

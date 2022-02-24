@@ -70,9 +70,6 @@ class PublicSignalViewSet(GenericViewSet):
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
-
-        TODO:
-        - Unit tests
         """
         queryset = self.filter_queryset(
             self.get_queryset().annotate(
