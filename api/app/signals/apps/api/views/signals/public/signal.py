@@ -73,7 +73,6 @@ class PublicSignalViewSet(GenericViewSet):
 
         TODO:
         - Unit tests
-        - Update swagger documentation
         """
         queryset = self.filter_queryset(
             self.get_queryset().annotate(
