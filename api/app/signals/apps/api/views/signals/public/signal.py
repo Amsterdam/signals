@@ -94,11 +94,11 @@ class PublicSignalViewSet(GenericViewSet):
                 )
             )
         ).exclude(
-            # All signals that are in an "Open" state
+            # Only signals that are in an "Open" state
             status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
 
-            # Only return Signal's that are in categories that are publicly accessible
-            # category_assignment__category__is_public_accessible=False,
+            # Only Signal's that are in categories that are publicly accessible
+            category_assignment__category__is_public_accessible=False,
         ).order_by(
             # Newest signals first
             '-created_at',
