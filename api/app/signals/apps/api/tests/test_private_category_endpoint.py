@@ -302,7 +302,7 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
 
     def test_patch_category_public_parameters(self):
         """
-        Change the public_name and/or the public_accessible parameters of a Category
+        Change the public_name and/or the is_public_accessible parameters of a Category
         """
         self.client.force_authenticate(user=self.sia_read_write_user)
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import base64
 import io
 import logging
@@ -77,8 +77,8 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
                     request, message=getattr(permission, 'message', None)
                 )
 
-    def get_object(self):
-        obj = super().get_object()
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
         self.check_object_permissions(request=self.request, obj=obj)
         return obj
 
