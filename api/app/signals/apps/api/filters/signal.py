@@ -326,7 +326,7 @@ class SignalPromotedToParentFilter(FilterSet):
 
 
 class PublicSignalGeographyFilter(FilterSet):
-    bbox = filters.CharFilter(required=True)  # min_lat,max_lat,min_lng,max_lng
+    bbox = filters.CharFilter(required=True)  # min_lon, min_lat, max_lon, max_lat
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         required=True, queryset=_get_parent_category_queryset(), to_field_name='slug',
         field_name='category_assignment__category__parent__slug',

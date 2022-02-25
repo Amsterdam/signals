@@ -987,7 +987,7 @@ paths:
       description: Public signals geography endpoint, returns GEOjson
       parameters:
         - name: bbox
-          description: A bounding box to filter. Format is min_lat,max_lat,min_lng,max_lng
+          description: A bounding box to filter. Format is min_lon, min_lat, max_lon, max_lat
           in: query
           required: True
           schema:
@@ -1018,7 +1018,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/V1PublicSignalGeographyGEOJson'
         '400':
-          description: Required query parametrs not provided
+          description: Required query parameters not provided
           content:
             application/json:
               description: JSON data describing the public category response

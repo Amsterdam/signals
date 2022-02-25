@@ -136,23 +136,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         parent_category = ParentCategoryFactory.create()
         child_category = CategoryFactory.create(parent=parent_category, is_public_accessible=False)
 
-        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
-                                   f'&category_slug={child_category.slug}')
-        self.assertEqual(400, response.status_code)
-
-        data = response.json()
-        # BBOX not provided so this error is also present in the response
-        self.assertIn('bbox', data.keys())
-        self.assertEqual(1, len(data['bbox']))
-        self.assertEqual('Dit veld is vereist.', data['bbox'][0])
-
-        self.assertNotIn('maincategory_slug', data.keys())
-
-        self.assertIn('category_slug', data.keys())
-        self.assertEqual(1, len(data['category_slug']))
-        self.assertEqual(f'Selecteer een geldige keuze. {child_category.slug} is geen beschikbare keuze.',
-                         data['category_slug'][0])
-
         # Now provide a BBOX, the only error should be the invalid category
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
