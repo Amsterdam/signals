@@ -1,0 +1,27 @@
+name: Build a Docker image and push to Docker when a new release is published
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build_and_push:
+    name: Build an Docker image for the release and push it to Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Docker
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Release tag
+        run: echo "${{ github.event.release.tag_name }}"
+
+      - name: Build the Docker image release
+        run: |
+          cd api/
+          docker build -t signalen/backend:${{ github.event.release.tag_name }} .
+
+      - name: Push the tagged image to Docker
+        run: docker push signalen/backend:${{ github.event.release.tag_name }}
