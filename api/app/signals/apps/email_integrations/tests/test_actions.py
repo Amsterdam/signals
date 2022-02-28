@@ -190,7 +190,7 @@ class ActionTestMixin:
         signal.refresh_from_db()
         self.assertEqual(signal.notes.count(), 1)
         self.assertEquals(signal.notes.first().text,
-                          'E-mail kon niet verzonden worden door aanwezigheid van verdachte tekens in de meldtekst')
+                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
 
 
 class TestSignalCreatedAction(ActionTestMixin, TestCase):

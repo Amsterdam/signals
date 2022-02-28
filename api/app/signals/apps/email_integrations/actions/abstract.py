@@ -99,7 +99,7 @@ class AbstractAction(ABC):
             logger.warning(f'URL encoded text found in Signal {signal.id}')
             Signal.actions.create_note(
                 {'text':
-                 'E-mail kon niet verzonden worden door aanwezigheid van verdachte tekens in de meldtekst'},
+                 'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.'},
                 signal=signal
             )
             return 0  # No mail sent, return 0. Same behaviour as send_mail()
