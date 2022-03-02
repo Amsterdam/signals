@@ -61,6 +61,36 @@ class SIAStadsdeelLoader(AreaLoader):
         geometries[0].srid = 4326  # Set SRID to WGS84
         return geometries[0]
 
+    def _combine_ouder_amstel_and_oost(self):
+        """
+        Meldingen in "Ouder-Amstel" should be tagged as stadsdeel "Oost". Therefore we need to combine the geometry of
+        Ouder-Amstel and Oost. In the Jira of Amsterdam see ticket SIG-4436
+        """
+        try:
+            sia_stadsdeel_oost = Area.objects.get(name__iexact='oost', _type__name=self.area_type)
+        except Area.DoesNotExist:
+            return
+
+        try:
+            cbs_gemeente_ouder_amstel = Area.objects.get(name__iexact='Ouder-Amstel',
+                                                         _type__code__in=['cbs-gemeente-2019', 'cbs-gemeente-2021'])
+        except Area.DoesNotExist:
+            return
+
+        # Combine SIA stadsdeel Oost and CBS Gemeente Ouder Amstel
+        combined_geometry = sia_stadsdeel_oost.geometry + cbs_gemeente_ouder_amstel.geometry
+
+        # Only handle non-pathological cases. We want the difference between Zuid
+        # and the hand drawn Amsterdamse Bos GeoJSON to be either a Polygon or a
+        # MultiPolygon. If the difference is empty, a line or a point it cannot
+        # serve as an Area in SIA.
+        assert combined_geometry.geom_typeid in [3, 6]
+        if combined_geometry.geom_typeid == 3:
+            combined_geometry = MultiPolygon([combined_geometry])
+
+        sia_stadsdeel_oost.geometry = combined_geometry
+        sia_stadsdeel_oost.save()
+
     def _load_sia_stadsdeel(self):
         """Load "Het Amsterdamse Bos", save it with AreaType "sia-stadsdeel"."""
         geometry = self._load_amsterdamse_bos_geometry()
@@ -112,6 +142,8 @@ class SIAStadsdeelLoader(AreaLoader):
             #     _type=self.area_type,
             #     geometry=weesp.geometry
             # )
+
+            self._combine_ouder_amstel_and_oost()
 
     def load(self):
         self._load_sia_stadsdeel()
