@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template import Context, Template, loader
 
+from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import make_email_context
 from signals.apps.signals.models import Signal
@@ -91,7 +92,18 @@ class AbstractAction(ABC):
         """
         Send the email to the reporter
         """
-        context = self.get_context(signal, dry_run)
+        try:
+            context = self.get_context(signal, dry_run)
+        except URLEncodedCharsFoundInText:
+            # Log a warning and add a note  to the Signal that the email could not be sent
+            logger.warning(f'URL encoded text found in Signal {signal.id}')
+            Signal.actions.create_note(
+                {'text':
+                 'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.'},
+                signal=signal
+            )
+            return 0  # No mail sent, return 0. Same behaviour as send_mail()
+
         subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
                          recipient_list=[signal.reporter.email, ], html_message=html_message)

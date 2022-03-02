@@ -11,6 +11,7 @@ from django.utils.timezone import now
 from mistune import create_markdown
 
 from signals.apps.email_integrations.admin import EmailTemplate
+from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls as get_feedback_urls_no_questionnaires
 from signals.apps.questionnaires.services.feedback_request import (
@@ -77,17 +78,39 @@ URL_PATTERN = re.compile(
     r'(?:[/?#][^\s]*)?', re.IGNORECASE
 )
 
+# Pattern to recognize URL encoded characters in the signal text and text_extra
+URL_ENCODED_CHARACTERS_PATTERN = re.compile(r'(%[\dA-Z]{2})', re.IGNORECASE)
+
+
+def _cleanup_signal_text(text: str) -> str:
+    """
+    Cleanup the text of a signal by removing all URL's and URL encoded characters
+    """
+    max_iterations = 5  # For now 5 iterations should be enough to remove all URLs. This could be a setting if needed
+    while (re.search(URL_ENCODED_CHARACTERS_PATTERN, text) and max_iterations > 0):
+        # Convert all URL encoded characters to their original form
+        text = unquote(text)
+        max_iterations = max_iterations - 1
+
+    if re.search(URL_ENCODED_CHARACTERS_PATTERN, text):
+        # After looping X times there are still URL encoded characters in the text, raise an exception
+        raise URLEncodedCharsFoundInText()
+
+    # Remove URLs from the text
+    text = re.sub(URL_PATTERN, '', text)
+
+    # This text is clean
+    return text
+
 
 def make_email_context(signal: Signal, additional_context: Optional[dict] = None) -> dict:
     """
     Makes a context dictionary containing all values needed for the email templates
     Can add additional context, but will make sure that none of the default values are overridden.
-
-    For backwards compatibility the Signal and the Status are still added to the context
     """
-    # Decode the text and text_area before removing any URL to make sure that urlencoded URL's are also removed.
-    text = re.sub(URL_PATTERN, '', unquote(signal.text))
-    text_extra = re.sub(URL_PATTERN, '', unquote(signal.text_extra))
+    # Decode the text and text_area before removing any URL to make sure that urlencoded URLs are also removed.
+    text = _cleanup_signal_text(signal.text)
+    text_extra = _cleanup_signal_text(signal.text_extra)
 
     context = {
         'signal_id': signal.id,

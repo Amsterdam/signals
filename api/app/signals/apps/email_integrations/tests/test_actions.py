@@ -2,6 +2,7 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from datetime import timedelta
 from unittest import mock
+from urllib.parse import quote
 
 from django.conf import settings
 from django.core import mail
@@ -160,6 +161,36 @@ class ActionTestMixin:
                                       status__send_email=True, reporter__email='test@example.com')
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_send_mail_fails_encoded_chars_in_text(self):
+        """
+        The action should not send an email if the text contains encoded characters. A note should be added so that
+        it is clear why the email was not sent. This is also logged in Sentry.
+        """
+        self.assertEqual(len(mail.outbox), 0)
+
+        unquoted_url = 'https://user:password@test-domain.com/?query=param&extra=param'
+        quoted_url = unquoted_url
+        # Let's encode the URL 10 times
+        for _ in range(10):
+            quoted_url = quote(quoted_url)
+
+        signal_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut ' \
+                      f'labore et dolore magna aliqua. {quoted_url} Ut enim ad minim veniam, quis nostrud ' \
+                      'exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+
+        status_text = FuzzyText(length=200)
+
+        signal = SignalFactory.create(text=signal_text, text_extra=signal_text, status__state=self.state,
+                                      status__text=status_text, status__send_email=True,
+                                      reporter__email='test@example.com')
+        self.assertFalse(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal.refresh_from_db()
+        self.assertEqual(signal.notes.count(), 1)
+        self.assertEquals(signal.notes.first().text,
+                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
 
 
 class TestSignalCreatedAction(ActionTestMixin, TestCase):
