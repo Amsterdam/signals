@@ -61,7 +61,7 @@ class AbstractAction(ABC):
         """
         Email context
         """
-        context = make_email_context(signal, self.get_additional_context(signal, dry_run))
+        context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
         return context
 
     def render_mail_data(self, context):

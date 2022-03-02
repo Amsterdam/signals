@@ -82,7 +82,7 @@ URL_PATTERN = re.compile(
 URL_ENCODED_CHARACTERS_PATTERN = re.compile(r'(%[\dA-Z]{2})', re.IGNORECASE)
 
 
-def _cleanup_signal_text(text: str) -> str:
+def _cleanup_signal_text(text: str, dry_run: bool = False) -> str:
     """
     Cleanup the text of a signal by removing all URL's and URL encoded characters
     """
@@ -94,6 +94,9 @@ def _cleanup_signal_text(text: str) -> str:
 
     if re.search(URL_ENCODED_CHARACTERS_PATTERN, text):
         # After looping X times there are still URL encoded characters in the text, raise an exception
+        if dry_run:
+            # Dry run enabled return the text as is
+            return text
         raise URLEncodedCharsFoundInText()
 
     # Remove URLs from the text
@@ -103,14 +106,14 @@ def _cleanup_signal_text(text: str) -> str:
     return text
 
 
-def make_email_context(signal: Signal, additional_context: Optional[dict] = None) -> dict:
+def make_email_context(signal: Signal, additional_context: Optional[dict] = None, dry_run: bool = False) -> dict:
     """
     Makes a context dictionary containing all values needed for the email templates
     Can add additional context, but will make sure that none of the default values are overridden.
     """
     # Decode the text and text_area before removing any URL to make sure that urlencoded URLs are also removed.
-    text = _cleanup_signal_text(signal.text)
-    text_extra = _cleanup_signal_text(signal.text_extra)
+    text = _cleanup_signal_text(signal.text, dry_run=dry_run)
+    text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
 
     context = {
         'signal_id': signal.id,
