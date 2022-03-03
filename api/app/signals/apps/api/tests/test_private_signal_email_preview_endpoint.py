@@ -37,10 +37,9 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         status_count = self.signal.statuses.count()
 
         text = f'Lorem ipsum {workflow.REACTIE_GEVRAAGD} ...'
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/' \
-                   f'?status={workflow.REACTIE_GEVRAAGD}&text={text}'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
 
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint, data={'status': workflow.REACTIE_GEVRAAGD, 'text': text}, format='json')
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -74,10 +73,9 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         status_count = self.signal.statuses.count()
 
         text = f'Lorem ipsum {workflow.AFGEHANDELD} ...'
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/' \
-                   f'?status={workflow.AFGEHANDELD}&text={text}'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
 
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint, data={'status': workflow.AFGEHANDELD, 'text': text}, format='json')
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -110,10 +108,9 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
 
         for new_status in [workflow.GEMELD, workflow.AFWACHTING, workflow.BEHANDELING, workflow.GEANNULEERD, ]:
             text = f'Lorem ipsum {new_status} ...'
-            endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/' \
-                       f'?status={new_status}&text={text}'
+            endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
 
-            response = self.client.get(endpoint)
+            response = self.client.post(endpoint, data={'status': new_status, 'text': text}, format='json')
             self.assertEqual(response.status_code, 200)
 
             response_data = response.json()
@@ -142,10 +139,10 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         status_count = self.signal.statuses.count()
 
         text = f'Lorem ipsum {workflow.VERZOEK_TOT_AFHANDELING} ...'
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/' \
-                   f'?status={workflow.VERZOEK_TOT_AFHANDELING}&text={text}'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
 
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint, data={'status': workflow.VERZOEK_TOT_AFHANDELING, 'text': text},
+                                    format='json')
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -167,23 +164,22 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
     def test_no_email_preview_available(self):
         # From GEMELD to REACTIE_ONTVANGEN is not allowed therefore we expect a 404 not found
         text = f'Lorem ipsum {workflow.REACTIE_ONTVANGEN} ...'
-        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/' \
-                   f'?status={workflow.REACTIE_ONTVANGEN}&text={text}'
+        endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
 
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint, data={'status': workflow.REACTIE_ONTVANGEN, 'text': text}, format='json')
         self.assertEqual(response.status_code, 404)
 
     def test_missing_required_query_parameter(self):
         # The status query parameter is required
         endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint, format='json')
         self.assertEqual(response.status_code, 400)
 
     def test_not_authenticated(self):
         self.client.logout()
 
         endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint)
         self.assertEqual(response.status_code, 401)
 
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -194,7 +190,7 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         self.client.force_authenticate(user=self.sia_read_user)
 
         endpoint = f'/signals/v1/private/signals/{self.signal.id}/email/preview/'
-        response = self.client.get(endpoint)
+        response = self.client.post(endpoint)
         self.assertEqual(response.status_code, 403)
 
         self.client.logout()

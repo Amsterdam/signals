@@ -11,7 +11,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
@@ -29,11 +28,13 @@ from signals.apps.api.serializers import (
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList
 )
-from signals.apps.api.serializers.email_preview import EmailPreviewSerializer
+from signals.apps.api.serializers.email_preview import (
+    EmailPreviewPostSerializer,
+    EmailPreviewSerializer
+)
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
-from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
@@ -249,7 +250,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = AbridgedChildSignalSerializer(child_qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
-    @action(detail=True, url_path=r'email/preview/?$', filterset_class=None)
+    @action(detail=True, url_path=r'email/preview/?$', methods=['POST', ], serializer_class=EmailPreviewPostSerializer,
+            serializer_detail_class=EmailPreviewPostSerializer, filterset_class=None)
     def email_preview(self, request, *args, **kwargs):
         """
         Render the email preview before transitioning to a specific status.
@@ -258,13 +260,11 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         """
         signal = self.get_object()
 
-        status = request.query_params.get('status', None)
-        if not status:
-            raise DRFValidationError('The \'status\' query parameter is required')
-        if status not in [status_choice[0] for status_choice in workflow.STATUS_CHOICES]:
-            raise DRFValidationError('Invalid \'status\' query parameter given')
+        post_serializer = self.get_serializer(data=request.data)
+        post_serializer.is_valid(raise_exception=True)
 
-        text = request.query_params.get('text', None)
+        status = post_serializer.validated_data.pop('status', None)
+        text = post_serializer.validated_data.pop('text', None)
 
         status_data = {'state': status, 'text': text, 'send_email': True}
         try:
