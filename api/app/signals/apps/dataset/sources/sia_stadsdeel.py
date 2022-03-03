@@ -80,9 +80,9 @@ class SIAStadsdeelLoader(AreaLoader):
         # Combine SIA stadsdeel Oost and CBS Gemeente Ouder Amstel
         combined_geometry = sia_stadsdeel_oost.geometry + cbs_gemeente_ouder_amstel.geometry
 
-        # Only handle non-pathological cases. We want the difference between Zuid
-        # and the hand drawn Amsterdamse Bos GeoJSON to be either a Polygon or a
-        # MultiPolygon. If the difference is empty, a line or a point it cannot
+        # Only handle non-pathological cases. We want to combine the geometry of Oost
+        # and the municipality of Ouder-Amstel to be either a Polygon or a
+        # MultiPolygon. If the combination is empty, a line or a point it cannot
         # serve as an Area in SIA.
         assert combined_geometry.geom_typeid in [3, 6]
         if combined_geometry.geom_typeid == 3:
