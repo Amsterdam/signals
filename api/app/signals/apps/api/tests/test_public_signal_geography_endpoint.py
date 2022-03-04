@@ -149,3 +149,29 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(1, len(data['category_slug']))
         self.assertEqual(f'Selecteer een geldige keuze. {child_category.slug} is geen beschikbare keuze.',
                          data['category_slug'][0])
+
+    def test_get_group_by(self):
+        """
+        Return the GEOJson containing the first created_at in a BBOX grouped by a category
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, public_name='Public category for testing',
+                                                is_public_accessible=True)
+
+        now = timezone.now()
+        for x in range(5):
+            with(freeze_time(now-timedelta(days=x))):
+                # Should appear in the response
+                SignalFactory.create(location__geometrie=Point(STADHUIS['lon'], STADHUIS['lat']),
+                                     location__buurt_code=STADHUIS['buurt_code'],
+                                     category_assignment__category=child_category)
+
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&bbox=4.875759,52.360656,4.921221,52.37942'
+                                   '&group_by=category')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, int(response.headers['X-Total-Count']))
+        
+        data = response.json()
+        self.assertEqual(1, len(data['features']))
+        self.assertEqual(data['features'][0]['properties']['category']['name'], child_category.public_name)
