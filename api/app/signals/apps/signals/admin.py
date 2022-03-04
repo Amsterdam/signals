@@ -34,11 +34,15 @@ class CategoryQuestionInline(admin.StackedInline):
 class QuestionAdmin(admin.ModelAdmin):
     inlines = (CategoryQuestionInline, )
     fields = ('key', 'field_type', 'meta', 'required')
-    list_display = ('key', 'field_type', 'meta', 'required')
+    list_display = ('key', 'field_type', 'meta', 'required', 'categories')
     ordering = ('-key',)
     list_per_page = 20
     list_select_related = True
     list_filter = ['category__slug']
+
+    def categories(self, obj):
+        categories = obj.category_set.values_list('name', flat=True)
+        return ', '.join(categories)
 
 
 admin.site.register(Question, QuestionAdmin)
@@ -224,6 +228,7 @@ admin.site.register(RoutingExpression, RoutingExpressionAdmin)
 
 class ExpressionAdmin(admin.ModelAdmin):
     list_filter = ['_type__name']
+    list_display = ['name', 'code', '_type']
 
 
 admin.site.register(Expression, ExpressionAdmin)
