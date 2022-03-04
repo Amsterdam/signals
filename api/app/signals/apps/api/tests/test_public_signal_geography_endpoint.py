@@ -171,7 +171,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
                                    '&group_by=category')
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, int(response.headers['X-Total-Count']))
-        
+
         data = response.json()
         self.assertEqual(1, len(data['features']))
         self.assertEqual(data['features'][0]['properties']['category']['name'], child_category.public_name)
