@@ -1009,6 +1009,14 @@ paths:
           schema:
             type: string
             example: overig-afval
+        - name: group_by
+          description: >-
+            Group the results by (at this moment the only option is 'category')
+          in: query
+          required: false
+          schema:
+            type: string
+            example: category
 
       responses:
         '200':
@@ -1021,14 +1029,15 @@ paths:
           description: Required query parameters not provided
           content:
             application/json:
-              description: JSON data describing the public category response
-              type: object
-              properties:
-                {name_of_query_param}:
-                  type: array
-                  items:
-                    type: string
-              example: {'bbox': ['Dit veld is vereist.']}
+              schema:
+                description: JSON data describing the public category response
+                type: object
+                properties:
+                  {name_of_query_param}:
+                    type: array
+                    items:
+                      type: string
+                example: {'bbox': ['Dit veld is vereist.']}
 
   /signals/v1/public/terms/categories:
     get:

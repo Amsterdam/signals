@@ -2,7 +2,7 @@
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import logging
 
-from django.db.models import CharField, Value
+from django.db.models import CharField, Min, Value
 from django.db.models.functions import Coalesce, JSONObject
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -75,8 +75,13 @@ class PublicSignalViewSet(GenericViewSet):
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
         """
+        qs = self.get_queryset()
+        if request.query_params.get('group_by', '').lower() == 'category':
+            # Group by category and return the oldest signal created_at date
+            qs = qs.values('category_assignment__category_id').annotate(created_at=Min('created_at'))
+
         queryset = self.filter_queryset(
-            self.get_queryset().annotate(
+            qs.annotate(
                 # Transform the output of the query to GeoJSON in the database.
                 # This is much faster than using a DRF Serializer.
                 feature=JSONObject(
