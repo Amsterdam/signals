@@ -8,6 +8,7 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -41,8 +42,10 @@ class PublicSignalViewSet(GenericViewSet):
         'status',
     ).all()
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     filterset_class = None
+    ordering = None
+    ordering_fields = None
 
     pagination_class = None
     serializer_class = PublicSignalSerializerDetail
@@ -65,7 +68,8 @@ class PublicSignalViewSet(GenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
-    @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter)
+    @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
+            ordering=('-created_at', ), ordering_fields=('created_at', ))
     def geography(self, request):
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
@@ -95,9 +99,6 @@ class PublicSignalViewSet(GenericViewSet):
 
             # Only Signal's that are in categories that are publicly accessible
             category_assignment__category__is_public_accessible=False,
-        ).order_by(
-            # Newest signals first
-            '-created_at',
         )
 
         # Paginate our queryset and turn it into a GeoJSON feature collection:
