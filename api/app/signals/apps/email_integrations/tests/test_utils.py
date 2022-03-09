@@ -135,6 +135,8 @@ class TestUtils(TestCase):
         self.assertEqual(context['ORGANIZATION_NAME'], settings.ORGANIZATION_NAME)
         self.assertEqual(context['main_category_name'], signal.category_assignment.category.parent.name)
         self.assertEqual(context['sub_category_name'], signal.category_assignment.category.name)
+        self.assertEqual(context['main_category_public_name'], signal.category_assignment.category.parent.public_name)
+        self.assertEqual(context['sub_category_public_name'], signal.category_assignment.category.public_name)
 
     def test_make_email_context_additional_context(self):
         signal = SignalFactory.create()

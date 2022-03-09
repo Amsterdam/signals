@@ -129,6 +129,8 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
         'main_category_name': category.parent.name if category.parent else '',
         'sub_category_name': category.name,
+        'main_category_public_name': category.parent.public_name if category.parent else '',
+        'sub_category_public_name': category.public_name,
     }
 
     if additional_context:
@@ -162,7 +164,11 @@ def validate_template(template: str) -> bool:
         'status_text': 'Gemeld',
         'status_state': 'm',
         'handling_message': 'Hartelijk dank voor uw melding. Wij gaan hier spoedig mee aan de slag',
-        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME
+        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        'main_category_name': 'Hoofdcategorie naam',
+        'sub_category_name': 'Subcategorie naam',
+        'main_category_public_name': 'Hoofdcategorie publieke naam',
+        'sub_category_public_name': 'Subcategorie publieke naam',
     }
 
     try:
