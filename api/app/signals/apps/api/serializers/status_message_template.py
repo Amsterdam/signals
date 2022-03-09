@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import copy
 from collections import OrderedDict
 
@@ -46,6 +46,7 @@ class StateStatusMessageTemplateListSerializer(serializers.ListSerializer):
                         'title': template['title'],
                         'text': template['text'],
                         'order': order,
+                        'is_active': template.get('is_active', False),
                     })
                     status_template_messages.append(status_template_message_copy)
             else:
@@ -79,6 +80,7 @@ class StateStatusMessageTemplateSerializer(serializers.Serializer):
         return {
             'title': obj.title,
             'text': obj.text,
+            'is_active': obj.is_active,
         }
 
     def validate(self, attrs):
