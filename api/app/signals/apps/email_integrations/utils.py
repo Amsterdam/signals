@@ -115,6 +115,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
     text = _cleanup_signal_text(signal.text, dry_run=dry_run)
     text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
 
+    category = signal.category_assignment.category
     context = {
         'signal_id': signal.id,
         'formatted_signal_id': signal.sia_id,
@@ -126,6 +127,8 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'status_state': signal.status.state,
         'handling_message': signal.category_assignment.stored_handling_message,
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        'main_category_name': category.parent.name if category.parent else '',
+        'sub_category_name': category.name,
     }
 
     if additional_context:
