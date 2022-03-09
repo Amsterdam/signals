@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
 
 from signals.apps.signals.factories import CategoryFactory, StatusMessageTemplateFactory
@@ -18,13 +18,12 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         self.subcategory = CategoryFactory.create()
-        self.link_cat_sub_templates = '/signals/v1/private/terms/categories/{}/sub_categories/{}/status-message-templates'.format(  # noqa
-            self.subcategory.parent.slug, self.subcategory.slug
-        )
 
-        self.link_cat_parent_templates = '/signals/v1/private/terms/categories/{}/status-message-templates'.format(  # noqa
-            self.subcategory.parent.slug
-        )
+        link_cat_parent = f'/signals/v1/private/terms/categories/{self.subcategory.parent.slug}'
+        link_cat_sub = f'{link_cat_parent}/sub_categories/{self.subcategory.slug}'
+
+        self.link_cat_parent_templates = f'{link_cat_parent}/status-message-templates'
+        self.link_cat_sub_templates = f'{link_cat_sub}/status-message-templates'
 
     def test_get_no_status_message_templates(self):
         response = self.client.get(self.link_cat_sub_templates)
@@ -33,11 +32,7 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(0, len(response.json()))
 
     def test_get_status_message_templates(self):
-        templates = StatusMessageTemplateFactory.create_batch(
-            5,
-            category=self.subcategory,
-            state='m'
-        )
+        templates = StatusMessageTemplateFactory.create_batch(5, category=self.subcategory, state='m')
 
         response = self.client.get(self.link_cat_sub_templates)
         self.assertEqual(200, response.status_code)
@@ -58,10 +53,12 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
                     {
                         'title': 'M Title #1',
                         'text': 'M Text #1',
+                        'is_active': True,
                     },
                     {
                         'title': 'M Title #2',
                         'text': 'M Text #2',
+                        'is_active': False,
                     },
                 ],
             },
@@ -71,6 +68,7 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
                     {
                         'title': 'O Title #1',
                         'text': 'O Text #1',
+                        # No is_active flag given should default to False
                     },
                 ],
             },
@@ -85,8 +83,11 @@ class TestPrivateCategoryStatusMessages(SIAReadWriteUserMixin, SignalsBaseApiTes
         self.assertEqual(2, len(response_data[0]['templates']))
         self.assertEqual('M Title #1', response_data[0]['templates'][0]['title'])
         self.assertEqual('M Text #1', response_data[0]['templates'][0]['text'])
+        self.assertTrue(response_data[0]['templates'][0]['is_active'])
+
         self.assertEqual('M Title #2', response_data[0]['templates'][1]['title'])
         self.assertEqual('M Text #2', response_data[0]['templates'][1]['text'])
+        self.assertFalse(response_data[0]['templates'][1]['is_active'])
 
         self.assertEqual('o', response_data[1]['state'])
         self.assertEqual(1, len(response_data[1]['templates']))
