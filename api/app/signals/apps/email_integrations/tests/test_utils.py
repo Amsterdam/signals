@@ -17,7 +17,7 @@ from signals.apps.email_integrations.utils import (
     validate_email_template,
     validate_template
 )
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import CategoryFactory, ParentCategoryFactory, SignalFactory
 
 
 class TestUtils(TestCase):
@@ -133,10 +133,28 @@ class TestUtils(TestCase):
         self.assertEqual(context['status_state'], signal.status.state)
         self.assertEqual(context['handling_message'], signal.category_assignment.stored_handling_message)
         self.assertEqual(context['ORGANIZATION_NAME'], settings.ORGANIZATION_NAME)
-        self.assertEqual(context['main_category_name'], signal.category_assignment.category.parent.name)
-        self.assertEqual(context['sub_category_name'], signal.category_assignment.category.name)
-        self.assertEqual(context['main_category_public_name'], signal.category_assignment.category.parent.public_name)
-        self.assertEqual(context['sub_category_public_name'], signal.category_assignment.category.public_name)
+
+    def test_make_email_context_for_category_with_or_without_public_name(self):
+        # Check categories with public names.
+        main_cat_with_public_name = ParentCategoryFactory.create(
+            parent=None, name='PRIVATE_MAIN_I', public_name='PUBLIC_MAIN_I')
+        sub_cat_with_public_name = CategoryFactory.create(
+            parent=main_cat_with_public_name, name='PRIVATE_SUB', public_name='PUBLIC_SUB_I')
+        signal_with_public_name = SignalFactory.create(category_assignment__category=sub_cat_with_public_name)
+
+        context_with = make_email_context(signal=signal_with_public_name)
+        self.assertEqual(context_with['main_category_public_name'], 'PUBLIC_MAIN_I')
+        self.assertEqual(context_with['sub_category_public_name'], 'PUBLIC_SUB_I')
+
+        # Check categories without public names.
+        main_cat_no_public_name = ParentCategoryFactory.create(parent=None, name='PRIVATE_MAIN_II', public_name=None)
+        sub_cat_no_public_name = CategoryFactory.create(
+            parent=main_cat_no_public_name, name='PRIVATE_SUB_II', public_name=None)
+        signal_no_public_name = SignalFactory.create(category_assignment__category=sub_cat_no_public_name)
+
+        context_without = make_email_context(signal=signal_no_public_name)
+        self.assertEqual(context_without['main_category_public_name'], 'PRIVATE_MAIN_II')
+        self.assertEqual(context_without['sub_category_public_name'], 'PRIVATE_SUB_II')
 
     def test_make_email_context_additional_context(self):
         signal = SignalFactory.create()
