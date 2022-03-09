@@ -1232,6 +1232,52 @@ paths:
         - OAuth2:
           - SIG/ALL
 
+  /signals/v1/private/terms/categories/{main_slug}/sub_categories/{sub_slug}:
+    parameters:
+      - name: main_slug
+        in: path
+        description: Slug that identifies the main category.
+        required: true
+        schema:
+          type: string
+      - name: sub_slug
+        in: path
+        description: Slug that identifies the sub category.
+        required: true
+        schema:
+          type: string
+    get:
+      description: List of all status message templates for the selected category per state
+      responses:
+        '200':
+          description: List of all categories available in the system
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesResponse'
+      security:
+        - OAuth2:
+          - SIG/ALL
+    post:
+      description: Create/Update all status message templates for the selected category per state
+      requestBody:
+        description: Serialized new user data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesRequest'
+      responses:
+        '201':
+          description: Status message templates created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesResponse'
+      security:
+        - OAuth2:
+          - SIG/ALL
+
   /signals/v1/private/csv:
     get:
       description: Retrieve datawarehouse csv dump as zip file if authorised (requires reporting permission)
@@ -3368,6 +3414,55 @@ components:
             through the public endpoin(s). Will be used for the public map
             showing the reporter open siganls in the area for the categroy 
             he/she is making a complaint.
+
+    privateCategoryStatusMessageTemplatesRequest:
+      description: JSON data describing the status message templates for a category and state (Request)
+      type: array
+      items:
+        type: object
+        properties:
+          state:
+            $ref: '#/components/schemas/StatusStateChoices'
+            example: 'm'
+          templates:
+            type: array
+            items:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title of the status message template
+                text:
+                  type: string
+                  example: The text of the status message template
+                is_active:
+                  description: Not required, will default to False
+                  type: boolean
+                  example: true
+
+    privateCategoryStatusMessageTemplatesResponse:
+      description: JSON data describing the status message templates for a category and state (Response)
+      type: array
+      items:
+        type: object
+        properties:
+          state:
+            $ref: '#/components/schemas/StatusStateChoices'
+            example: 'm'
+          templates:
+            type: array
+            items:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title of the status message template
+                text:
+                  type: string
+                  example: The text of the status message template
+                is_active:
+                  type: boolean
+                  example: true
 
     privateDepartmentListResponse:
       description: JSON data for a list of departments.
