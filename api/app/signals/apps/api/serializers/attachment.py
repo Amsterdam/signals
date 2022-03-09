@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from datetime import timedelta
+
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
+from django.utils import timezone
 from PIL.Image import DecompressionBombError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -10,11 +13,13 @@ from signals.apps.api.fields import (
     PrivateSignalAttachmentLinksField,
     PublicSignalAttachmentLinksField
 )
+from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
+from signals.apps.feedback.models import Feedback
 from signals.apps.services.domain.filescanner import FileRejectedError, UploadScannerService
 from signals.apps.signals.models import Attachment, Signal
-from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
+from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD
 
-PUBLIC_UPLOAD_ALLOWED_STATES = (GEMELD, REACTIE_GEVRAAGD)
+PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
 
 
 class SignalAttachmentSerializerMixin:
@@ -71,6 +76,20 @@ class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSeria
         if signal.status.state not in PUBLIC_UPLOAD_ALLOWED_STATES:
             msg = 'Public uploads not allowed in current signal state.'
             raise ValidationError(msg)
+
+        # Only allow uploads in state AFGEHANDELD if there is an open/active
+        # request for feedback from the reporter. Note several feedback requests
+        # can be open/active at once.
+        if signal.status.state == AFGEHANDELD:
+            qs = (
+                Feedback.objects.filter(_signal=signal)
+                .filter(submitted_at__isnull=True)
+                .filter(created_at__gte=timezone.now() - timedelta(days=FEEDBACK_EXPECTED_WITHIN_N_DAYS))
+            )
+
+            if not qs.exists():
+                msg = 'No feedback expected for this signal hence no uploads allowed.'
+                raise ValidationError(msg)
 
         return super().create(validated_data)
 

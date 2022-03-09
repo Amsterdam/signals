@@ -3,6 +3,7 @@
 import copy
 import json
 import os
+from datetime import timedelta
 from unittest import skip
 from unittest.mock import patch
 
@@ -10,9 +11,12 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.utils import timezone
+from freezegun import freeze_time
 
 from signals.apps.api.serializers.attachment import PUBLIC_UPLOAD_ALLOWED_STATES
 from signals.apps.api.validation.address.base import AddressValidationUnavailableException
+from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
+from signals.apps.feedback.models import Feedback
 from signals.apps.questionnaires.factories import SessionFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
@@ -23,7 +27,7 @@ from signals.apps.signals.factories import (
 )
 from signals.apps.signals.models import Attachment, Priority, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
-from signals.apps.signals.workflow import GEMELD, STATUS_CHOICES
+from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, STATUS_CHOICES
 from signals.test.utils import SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -247,13 +251,97 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         # Uploads should be allowed when a reaction is requested or when the signal is newly created.
         signal = SignalFactory.create(status__state=GEMELD)
 
-        for state in PUBLIC_UPLOAD_ALLOWED_STATES:
+        # AFGEHANDELD has extra rules, we do not test them here. See test_add_attachment_in_state_AFGEHANDELD.
+        allowed_states = set(PUBLIC_UPLOAD_ALLOWED_STATES)
+        allowed_states.remove(AFGEHANDELD)
+
+        for state in allowed_states:
             data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
             signal.status.state = state
             signal.status.save()
 
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
             self.assertEqual(response.status_code, 201)
+
+    @patch('signals.apps.api.serializers.attachment.PUBLIC_UPLOAD_ALLOWED_STATES', new=(AFGEHANDELD,))
+    def test_add_attachment_in_state_AFGEHANDELD(self):
+        # When a nuisance complaint is handled it transitions to the state
+        # AFGEHANDELD and a feedback request is potentially sent. If such a
+        # feedback request is open, images can be part of that feedback.
+        self.assertLess(0, FEEDBACK_EXPECTED_WITHIN_N_DAYS)
+        attachment_count = Attachment.objects.count()
+        now = timezone.now()
+
+        with freeze_time(now):
+            signal = SignalFactory.create(status__state=GEMELD)
+            signal.status.state = AFGEHANDELD
+            signal.status.save()
+
+        # No feedback requested => no uploads allowed.
+        with freeze_time(now + timedelta(seconds=3600)):
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('No feedback expected for this signal hence no uploads allowed.', response.json())
+            self.assertEqual(Attachment.objects.count(), attachment_count)
+
+        # Feedback requested and request still open => uploads allowed.
+        with freeze_time(now + timedelta(seconds=3600)):
+            feedback = Feedback.actions.request_feedback(signal)
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(Attachment.objects.count(), attachment_count + 1)
+
+        # Feedback requested and feedback too late => no uploads allowed.
+        with freeze_time(now + timedelta(days=2 * FEEDBACK_EXPECTED_WITHIN_N_DAYS)):
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('No feedback expected for this signal hence no uploads allowed.', response.json())
+            self.assertEqual(Attachment.objects.count(), attachment_count + 1)
+
+        # Feedback requested and feedback already filled out => no uploads allowed.
+        with freeze_time(now + timedelta(seconds=7200)):
+            feedback.submitted_at = now + timedelta(seconds=7200)
+            feedback.save()
+
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('No feedback expected for this signal hence no uploads allowed.', response.json())
+            self.assertEqual(Attachment.objects.count(), attachment_count + 1)
+
+    @patch('signals.apps.api.serializers.attachment.PUBLIC_UPLOAD_ALLOWED_STATES', new=(AFGEHANDELD,))
+    def test_add_attachment_in_state_AFGEHANDELD_several_feedback_requests(self):
+        # Several feedback requests can be open at once. In this test we open
+        # two feedback requests and provide feedback to the second one. The
+        # first one will still be open and we check that we can still upload
+        # attachments.
+        self.assertLess(0, FEEDBACK_EXPECTED_WITHIN_N_DAYS)
+        attachment_count = Attachment.objects.count()
+        now = timezone.now()
+
+        with freeze_time(now):
+            signal = SignalFactory.create(status__state=GEMELD)
+            signal.status.state = AFGEHANDELD
+            signal.status.save()
+
+        with freeze_time(now + timedelta(seconds=1800)):
+            # First feedback object that we leave open.
+            Feedback.actions.request_feedback(signal)
+
+        with freeze_time(now + timedelta(seconds=3600)):
+            # Second feedback object (closed state)
+            feedback2 = Feedback.actions.request_feedback(signal)
+            feedback2.submitted_at = now + timedelta(seconds=7200)
+            feedback2.save()
+
+        with freeze_time(now + timedelta(seconds=7200)):
+            data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
+            response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(Attachment.objects.count(), attachment_count + 1)
 
     def test_add_attachment_in_wrong_state_not_allowed(self):
         # We don't want people to upload images long after creating the original
@@ -268,8 +356,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
             response = self.client.post(self.attachment_endpoint.format(uuid=signal.uuid), data)
             self.assertEqual(response.status_code, 400)
-            error_msg = response.json()[0]
-            self.assertEqual(error_msg, 'Public uploads not allowed in current signal state.')
+            self.assertIn('Public uploads not allowed in current signal state.', response.json())
 
     def test_cannot_access_attachments(self):
         # SIA must not publicly expose attachments
