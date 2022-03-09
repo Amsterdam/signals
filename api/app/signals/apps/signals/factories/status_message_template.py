@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Gemeente Amsterdam
 from factory import SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText
@@ -14,6 +14,7 @@ class StatusMessageTemplateFactory(DjangoModelFactory):
     order = 0
     category = SubFactory('signals.apps.signals.factories.category.CategoryFactory')
     state = FuzzyChoice(STATUS_CHOICES_API)
+    is_active = True
 
     class Meta:
         model = StatusMessageTemplate

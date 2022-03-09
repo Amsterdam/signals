@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -22,6 +22,8 @@ class StatusMessageTemplate(CreatedUpdatedModel):
     title = models.CharField(max_length=255, blank=True, null=True)
     text = models.TextField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, db_index=True)
+
+    is_active = models.BooleanField(default=False)  # SIG-4379 Status message templates should have an is_active flag
 
     class Meta:
         permissions = (
