@@ -1232,7 +1232,47 @@ paths:
         - OAuth2:
           - SIG/ALL
 
-  /signals/v1/private/terms/categories/{main_slug}/sub_categories/{sub_slug}:
+  /signals/v1/private/terms/categories/{main_slug}/status-message-templates/:
+    parameters:
+      - name: main_slug
+        in: path
+        description: Slug that identifies the main category.
+        required: true
+        schema:
+          type: string
+    get:
+      description: List of all status message templates for the selected category per state
+      responses:
+        '200':
+          description: List of all categories available in the system
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesResponse'
+      security:
+        - OAuth2:
+          - SIG/ALL
+    post:
+      description: Create/Update all status message templates for the selected category per state
+      requestBody:
+        description: Serialized new user data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesRequest'
+      responses:
+        '201':
+          description: Status message templates created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/privateCategoryStatusMessageTemplatesResponse'
+      security:
+        - OAuth2:
+          - SIG/ALL
+
+  /signals/v1/private/terms/categories/{main_slug}/sub_categories/{sub_slug}/status-message-templates/:
     parameters:
       - name: main_slug
         in: path
