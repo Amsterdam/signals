@@ -115,6 +115,17 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
     text = _cleanup_signal_text(signal.text, dry_run=dry_run)
     text_extra = _cleanup_signal_text(signal.text_extra, dry_run=dry_run)
 
+    category = signal.category_assignment.category
+    if category.parent and category.parent.public_name:
+        # Category has a parent with a public name
+        parent_public_name = category.parent.public_name
+    elif category.parent and not category.parent.public_name:
+        #  Category has a parent without a public name
+        parent_public_name = category.parent.name
+    else:
+        # Fallback to a blank parent category name, this should not happen
+        parent_public_name = ''
+
     context = {
         'signal_id': signal.id,
         'formatted_signal_id': signal.sia_id,
@@ -126,6 +137,8 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'status_state': signal.status.state,
         'handling_message': signal.category_assignment.stored_handling_message,
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        'main_category_public_name': parent_public_name,
+        'sub_category_public_name': category.public_name if category.public_name else category.name,
     }
 
     if additional_context:
@@ -159,7 +172,9 @@ def validate_template(template: str) -> bool:
         'status_text': 'Gemeld',
         'status_state': 'm',
         'handling_message': 'Hartelijk dank voor uw melding. Wij gaan hier spoedig mee aan de slag',
-        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME
+        'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        'main_category_public_name': 'Hoofdcategorie publieke naam',
+        'sub_category_public_name': 'Subcategorie publieke naam',
     }
 
     try:
