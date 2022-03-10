@@ -485,6 +485,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_and_upload_image(self, validate_address):
+        attachment_count = Attachment.objects.count()
         attachments_url = self.detail_endpoint.format(pk=self.signal_no_image.pk) + '/attachments/'
 
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
@@ -495,6 +496,11 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         image2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(attachments_url, data={'file': image2})
         self.assertEqual(response.status_code, 201)
+
+        # Check that authenticated user is stored with attachment
+        self.assertEqual(Attachment.objects.count(), attachment_count + 2)
+        for attachment in Attachment.objects.all().order_by('created_at')[attachment_count:]:
+            self.assertEqual(self.sia_read_write_user.email, attachment.created_by)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
@@ -582,6 +588,11 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         new_url = response.json()['_links']['self']['href']
         response_json = self.client.get(new_url).json()
         self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+        # Attachment for child signal is attributed to the user that creates the
+        # child signals:
+        for attachment in Attachment.objects.all().order_by('created_at')[attachment_count:]:
+            self.assertEqual(self.sia_read_write_user.email, attachment.created_by)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
@@ -1787,6 +1798,17 @@ class TestPrivateSignalAttachments(SIAReadWriteUserMixin, SignalsBaseApiTestCase
         self.assertEqual(response.status_code, 201)
         self.assertIsInstance(self.signal.attachments.first(), Attachment)
         self.assertIsInstance(self.signal.attachments.filter(is_image=True).first(), Attachment)
+
+    def test_created_by_field_present(self):
+        # We must expose the username of the user who uploaded an attachment.
+        endpoint = self.attachment_endpoint.format(self.signal.id)
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+
+        response = self.client.post(endpoint, data={'file': image})
+
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+        self.assertEqual(response_json['created_by'], self.sia_read_write_user.email)
 
     def test_attachment_upload_extension_not_allowed(self):
         endpoint = self.attachment_endpoint.format(self.signal.id)

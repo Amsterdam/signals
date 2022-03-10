@@ -4400,16 +4400,22 @@ components:
                   type: string
                   description: URI to the attachment detail
         location:
-          description: The location of the attachment, for downloading
+          description: The location of the attachment, for downloading.
           type: string
           example: /signals/media/images/2020/01/01/happy-new-year.jpg
         is_image:
+          description: Boolean that indicates whether this attachment is image. Value is `true` if image else `false`.
           type: boolean
           example: true
         created_at:
+          description: Timestamp of attachment's creation (upload).
           type: string
           format: date-time
           example: "2020-01-01T00:00:00+00:00"
+        created_by:
+          description: Username of the attachment's uploader.
+          type: string
+          example: someuser@example.com
 
     privateContextResponse:
       description: JSON data describing the context overview of a Signal

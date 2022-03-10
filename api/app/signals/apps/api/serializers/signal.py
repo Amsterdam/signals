@@ -513,7 +513,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         )
 
         if attachments:
-            Signal.actions.copy_attachments(data=attachments, signal=signal)
+            Signal.actions.copy_attachments(data=attachments, signal=signal, created_by=logged_in_user.email)
 
         signal.refresh_from_db()
         return signal
