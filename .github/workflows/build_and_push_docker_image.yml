@@ -6,7 +6,7 @@ on:
 
 jobs:
   build_and_push:
-    name: Build an Docker image for the release and push it to Docker
+    name: Build a new Docker image for the release (and a latest) and push it to Docker
     runs-on: ubuntu-latest
 
     steps:
@@ -18,10 +18,18 @@ jobs:
       - name: Release tag
         run: echo "${{ github.event.release.tag_name }}"
 
-      - name: Build the Docker image release
+      - name: Build the release Docker image
         run: |
           cd api/
           docker build -t signalen/backend:${{ github.event.release.tag_name }} .
 
+      - name: Build the latest Docker image
+        run: |
+          cd api/
+          docker build -t signalen/backend:latest .
+
       - name: Push the tagged image to Docker
         run: docker push signalen/backend:${{ github.event.release.tag_name }}
+
+      - name: Push the latest image to Docker
+        run: docker push signalen/backend:latest
