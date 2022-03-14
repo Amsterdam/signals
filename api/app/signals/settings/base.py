@@ -16,7 +16,11 @@ DEFAULT_ALLOWED_HOSTS = 'api.data.amsterdam.nl,acc.api.data.amsterdam.nl,localho
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', DEFAULT_ALLOWED_HOSTS).split(',')
 
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
-CORS_ORIGIN_ALLOW_ALL = True
+
+DEFAULT_CORS_ALLOWED_ORIGINS = f'https://meldingen.amsterdam.nl,https://acc.meldingen.amsterdam.nl,http://127.0.0.1,http://0.0.0.0,http://localhost'  # noqa
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', DEFAULT_CORS_ALLOWED_ORIGINS).split(',')
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', True) in TRUE_VALUES
+
 SITE_ID = 1
 SITE_NAME = 'Signalen API'
 SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')

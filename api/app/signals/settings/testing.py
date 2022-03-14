@@ -2,6 +2,8 @@
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
 from signals.settings.base import *  # noqa
 
+CORS_ALLOW_ALL_ORIGINS = False
+
 DATABASES['default']['HOST'] = 'database'  # noqa: F405
 DATABASES['default']['PORT'] = '5432'  # noqa: F405
 
