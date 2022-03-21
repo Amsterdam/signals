@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 """
 Views dealing with 'signals.Attachment' model directly.
 """
 from datapunt_api.rest import DatapuntViewSet
-from django.core.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -37,7 +37,8 @@ class PublicSignalAttachmentsViewSet(mixins.CreateModelMixin, GenericViewSet):
         return self.get_object()
 
 
-class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, mixins.CreateModelMixin, DatapuntViewSet):
+class PrivateSignalAttachmentsViewSet(
+        NestedViewSetMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, DatapuntViewSet):
     queryset = Attachment.objects.all()
 
     serializer_class = PrivateSignalAttachmentSerializer
@@ -61,3 +62,27 @@ class PrivateSignalAttachmentsViewSet(NestedViewSetMixin, mixins.CreateModelMixi
         pk = self.kwargs.get('parent_lookup__signal__pk')
         signal = get_object_or_404(Signal.objects.filter_for_user(self.request.user), pk=pk)
         return signal
+
+    def destroy(self, *args, **kwargs):
+        user = self.request.user
+        signal = self.get_signal()
+        attachment = self.get_object()
+
+        if signal.is_parent and not user.has_perm('signals.delete_attachment_of_parent_signal'):
+            msg = 'Cannot delete attachment need "delete_attachment_of_parent_signal" permission.'
+            raise PermissionDenied(msg)
+        elif signal.is_child and not user.has_perm('signals.delete_attachment_of_child_signal'):
+            msg = 'Cannot delete attachment need "delete_attachment_of_child_signal" permission.'
+            raise PermissionDenied(msg)
+        elif (
+                not signal.is_parent and
+                not signal.is_child and
+                not user.has_perm('signals.delete_attachment_of_normal_signal')):
+            msg = 'Cannot delete attachment need "delete_attachment_of_normal_signal" permission.'
+            raise PermissionDenied(msg)
+
+        if attachment.created_by != user.email and not user.has_perm('signals.delete_attachment_of_other_user'):
+            msg = 'Cannot delete attachment need "delete_attachment_of_other_user" permission.'
+            raise PermissionDenied(msg)
+
+        return super().destroy(*args, **kwargs)
