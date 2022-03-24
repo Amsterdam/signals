@@ -79,11 +79,12 @@ def create_signals_assigned_user_csv(location: str) -> str:
     ).values(
         'id',
         assigned_to=F('user_assignment__user__email'),
+        assigned_at=F('user_assignment__created_at')
     ).exclude(user_assignment__user__isnull=True).exclude(user_assignment__user__email__exact='').order_by('created_at')
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'signals_assigned_user.csv'))
 
-    ordered_field_names = ['id', 'assigned_to', ]
+    ordered_field_names = ['id', 'assigned_to', 'assigned_at']
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name
