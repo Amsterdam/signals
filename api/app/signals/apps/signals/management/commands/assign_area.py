@@ -17,20 +17,27 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         area_type = AreaType.objects.get(code=options['area_type_code'])
-        areas = Area.objects.filter(area_type=area_type)
+        areas = Area.objects.filter(_type=area_type)
         n_assigned = 0
         n_unassigned = 0
 
-        self.stdout.write(f'(Re-)assigning Signals to areas of {options.area_type_code} AreaType.')
-        for signal in Signal.object.all().select_related('location').iterator(chunk_size=2000):
+        self.stdout.write(f'(Re-)assigning Signals to areas of {options["area_type_code"]} AreaType.')
+        for signal in Signal.objects.all().select_related('location').iterator(chunk_size=2000):
             qs = areas.filter(geometry__contains=signal.location.geometrie)
 
             if qs.exists():
                 area = qs.first()
-                signal.location.area_type_code = area_type.code
-                signal.location.area_code = area.code
-                signal.location.area_name = area.name
-                signal.location.save()
+                new_location = signal.location
+                new_location.id = None
+
+                new_location.area_type_code = area_type.code
+                new_location.area_code = area.code
+                new_location.area_name = area.name
+                new_location.save()
+
+                signal.location = new_location
+                signal.save()
+
                 n_assigned += 1
             else:
                 n_unassigned += 1
