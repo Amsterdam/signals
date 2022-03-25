@@ -15,10 +15,10 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('created_at',),
                 'permissions': [
-                    ('delete_attachment_of_normal_signal', 'Can delete attachment on normal signal.'),
-                    ('delete_attachment_of_parent_signal', 'Can delete attachment on parent signal.'),
-                    ('delete_attachment_of_child_signal', 'Can delete attachment on child signal.'),
-                    ('delete_attachment_of_other_user', 'Can delete attachment uploaded by another user.')
+                    ('sia_delete_attachment_of_normal_signal', 'Can delete attachment on normal signal.'),
+                    ('sia_delete_attachment_of_parent_signal', 'Can delete attachment on parent signal.'),
+                    ('sia_delete_attachment_of_child_signal', 'Can delete attachment on child signal.'),
+                    ('sia_delete_attachment_of_other_user', 'Can delete attachment uploaded by another user.')
                 ]
             },
         ),

@@ -68,21 +68,21 @@ class PrivateSignalAttachmentsViewSet(
         signal = self.get_signal()
         attachment = self.get_object()
 
-        if signal.is_parent and not user.has_perm('signals.delete_attachment_of_parent_signal'):
-            msg = 'Cannot delete attachment need "delete_attachment_of_parent_signal" permission.'
+        if signal.is_parent and not user.has_perm('signals.sia_delete_attachment_of_parent_signal'):
+            msg = 'Cannot delete attachment need "sia_delete_attachment_of_parent_signal" permission.'
             raise PermissionDenied(msg)
-        elif signal.is_child and not user.has_perm('signals.delete_attachment_of_child_signal'):
-            msg = 'Cannot delete attachment need "delete_attachment_of_child_signal" permission.'
+        elif signal.is_child and not user.has_perm('signals.sia_delete_attachment_of_child_signal'):
+            msg = 'Cannot delete attachment need "sia_delete_attachment_of_child_signal" permission.'
             raise PermissionDenied(msg)
         elif (
                 not signal.is_parent and
                 not signal.is_child and
-                not user.has_perm('signals.delete_attachment_of_normal_signal')):
-            msg = 'Cannot delete attachment need "delete_attachment_of_normal_signal" permission.'
+                not user.has_perm('signals.sia_delete_attachment_of_normal_signal')):
+            msg = 'Cannot delete attachment need "sia_delete_attachment_of_normal_signal" permission.'
             raise PermissionDenied(msg)
 
-        if attachment.created_by != user.email and not user.has_perm('signals.delete_attachment_of_other_user'):
-            msg = 'Cannot delete attachment need "delete_attachment_of_other_user" permission.'
+        if attachment.created_by != user.email and not user.has_perm('signals.sia_delete_attachment_of_other_user'):
+            msg = 'Cannot delete attachment need "sia_delete_attachment_of_other_user" permission.'
             raise PermissionDenied(msg)
 
         return super().destroy(*args, **kwargs)
