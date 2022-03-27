@@ -317,3 +317,55 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.delete(child_attachment_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=child_signal).count(), 0)
+
+    def test_delete_without_proper_department(self):
+        """
+        Check that the rules around deletion are only checked after the normal
+        access rules are checked (based on department).
+
+        This test hands out all custom attachment deletion permissions but does
+        associate the test user with the correct department.
+        """
+        self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        # hand out all of normal, parent, child signal's attachment delete permissions
+        self.sia_read_write_user.user_permissions.set([
+            self.permission_delete_other,
+            self.permission_delete_normal,
+            self.permission_delete_parent,
+            self.permission_delete_child,
+        ])
+        self.sia_read_write_user.save()
+        self.sia_read_write_user.refresh_from_db()
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        # cannot delete somebody else's attachments (to normal signal)
+        url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
+        response = self.client.get(url)
+        error_message = response.json()['detail']  # generic 403 message (translated hence not hardcoded below)
+        self.assertEqual(response.status_code, 403)
+
+        # cannot delete one's own attachments (to normal signal)
+        self.attachment.created_by = self.sia_read_write_user.email
+        self.attachment.save()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['detail'], error_message)
+
+        # cannot delete parent signal's attachment (even uploaded by oneself)
+        child_signal = SignalFactory.create(parent=self.signal, category_assignment__category=self.category)
+        child_attachment = ImageAttachmentFactory.create(
+            _signal=child_signal, created_by=self.sia_read_write_user.email)
+        child_attachment_url = self.attachments_endpoint_detail.format(child_signal.pk, child_attachment.pk)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['detail'], error_message)
+
+        # cannot delete child signal's attachment (even uploaded by oneself)
+        response = self.client.get(child_attachment_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['detail'], error_message)
+
+        # nothing was deleted:
+        self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
