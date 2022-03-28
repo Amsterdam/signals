@@ -10,7 +10,6 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from signals.apps.api.generics import mixins
-from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.serializers import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
@@ -45,8 +44,6 @@ class PrivateSignalAttachmentsViewSet(
     serializer_detail_class = PrivateSignalAttachmentSerializer
 
     authentication_classes = (JWTAuthBackend,)
-    permission_classes = (SIAPermissions,)
-    object_permission_classes = (SignalViewObjectPermission, )
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user
