@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import MaxLengthValidator
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -52,6 +54,14 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             if not signal.reporter.email:
                 msg = 'No email address known for signal with ID={{ signal.id }}.'
                 raise ValidationError({'state': msg})
+
+            # SIG-4511
+            # Check if the given text has a maximum length of 400 characters.
+            # If not, raise a validation error.
+            try:
+                MaxLengthValidator(limit_value=400)(attrs['text'])
+            except DjangoValidationError as e:
+                raise ValidationError({'text': e.messages})
 
         return super().validate(attrs=attrs)
 

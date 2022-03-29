@@ -48,7 +48,7 @@ def create_session_for_reaction_request(signal):
             required=True,
             field_type='plain_text',
             short_label='Reactie melder',
-            label=signal.status.text,  # <-- this should not be empty, max 200 characters
+            label=signal.status.text,  # <-- this should not be empty, max 400 characters
             analysis_key='reaction',
         )
         graph = QuestionGraph.objects.create(first_question=question, name='Reactie gevraagd.')

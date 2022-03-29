@@ -71,7 +71,7 @@ class ActionTestMixin:
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
@@ -85,7 +85,7 @@ class ActionTestMixin:
     def test_send_email_dry_run(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=True))
@@ -96,7 +96,7 @@ class ActionTestMixin:
     def test_send_email_anonymous(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=self.send_email, reporter__email='')
         self.assertFalse(self.action(signal, dry_run=False))
@@ -114,7 +114,7 @@ class ActionTestMixin:
     def test_send_email_for_parent_signals(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                              status__send_email=self.send_email, reporter__email='test@example.com')
         SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
@@ -127,7 +127,7 @@ class ActionTestMixin:
     def test_do_not_send_email_for_child_signals(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                              status__send_email=self.send_email, reporter__email='test@example.com')
         child_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
@@ -141,7 +141,7 @@ class ActionTestMixin:
     def test_do_not_send_email_invalid_states(self):
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         states = list(map(lambda x: x[0] and x[0] == self.state, workflow.STATUS_CHOICES))
         for state in states:
             signal = SignalFactory.create(status__state=state, status__text=status_text,
@@ -156,7 +156,7 @@ class ActionTestMixin:
 
         self.assertEqual(len(mail.outbox), 0)
 
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=True, reporter__email='test@example.com')
         self.assertFalse(self.action(signal, dry_run=False))
