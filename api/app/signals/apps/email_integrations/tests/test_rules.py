@@ -27,13 +27,13 @@ class RuleTestMixin:
     send_email = False
 
     def test_happy_flow(self):
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.rule(signal))
 
     def test_anonymous_reporter(self):
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
 
         signal = SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='')
         self.assertFalse(self.rule(signal))
@@ -42,7 +42,7 @@ class RuleTestMixin:
         self.assertFalse(self.rule(signal))
 
     def test_apply_for_parent_signals(self):
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
 
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                              status__send_email=self.send_email, reporter__email='test@example.com')
@@ -52,7 +52,7 @@ class RuleTestMixin:
         self.assertTrue(self.rule(parent_signal))
 
     def test_do_not_apply_for_child_signals(self):
-        status_text = FuzzyText(length=200) if self.state == workflow.REACTIE_GEVRAAGD else FuzzyText(length=400)
+        status_text = FuzzyText(length=400)
 
         parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                              reporter__email='test@example.com')

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 -2022 Gemeente Amsterdam
 import uuid
 
 from django.contrib.gis.db import models
@@ -22,7 +22,7 @@ class Question(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
-    label = models.CharField(max_length=255)
+    label = models.CharField(max_length=1000)  # noqa SIG-4511 raised the max length. The ticket states a max length of 400, but to be future proof raised to 1000
     short_label = models.CharField(max_length=255)
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
