@@ -31,10 +31,10 @@ class LocationFactory(DjangoModelFactory):
     buurt_code = FuzzyText(length=4)
     stadsdeel = FuzzyChoice(choices=(s[0] for s in STADSDELEN))
     geometrie = get_puntje()
-    address = {'straat': 'Sesamstraat',
+    address = {'openbare_ruimte': 'Sesamstraat',
                'huisnummer': 666,
                'postcode': '1011AA',
-               'openbare_ruimte': 'Ergens'}
+               'woonplaats': 'Ergens'}
 
     @post_generation
     def set_one_to_one_relation(self, create, extracted, **kwargs):

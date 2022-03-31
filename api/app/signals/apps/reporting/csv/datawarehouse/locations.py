@@ -46,6 +46,6 @@ def create_locations_csv(location: str) -> str:
     ordered_field_names = ['id', 'lat', 'lng', 'stadsdeel', 'buurt_code', 'address', 'address_text', 'created_at',
                            'updated_at', 'extra_properties', '_signal_id', 'address_street', 'address_number',
                            'address_postalcode', 'address_city']
-    reorder_csv(csv_file.name, ordered_field_names)
+    reorder_csv(csv_file.name, ordered_field_names, remove_leading_trailing_quotes=True)
 
     return csv_file.name

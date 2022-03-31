@@ -242,6 +242,12 @@ class TestDatawarehouse(testcases.TestCase):
 
                 self.assertEqual(row['extra_properties'], 'null')
 
+                # validate parsed json fields
+                self.assertEqual(row['address_street'], location.address['openbare_ruimte'])
+                self.assertEqual(row['address_number'], str(location.address['huisnummer']))
+                self.assertEqual(row['address_postalcode'], location.address['postcode'])
+                self.assertEqual(row['address_city'], location.address['woonplaats'])
+
     def test_create_reporters_csv(self):
         signal = SignalFactory.create()
         reporter = signal.reporter
