@@ -4,7 +4,7 @@ import uuid
 
 from django.contrib.gis.db import models
 
-from signals.apps.questionnaires.fieldtypes import field_type_choices
+from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 from signals.apps.questionnaires.managers import QuestionManager
 
 
@@ -41,3 +41,7 @@ class Question(models.Model):
         if self.analysis_key == 'PLACEHOLDER':
             self.analysis_key = f'PLACEHOLDER-{str(self.uuid)}'
         return super().save(*args, **kwargs)
+
+    @property
+    def field_type_class(self):
+        return get_field_type_class(self)
