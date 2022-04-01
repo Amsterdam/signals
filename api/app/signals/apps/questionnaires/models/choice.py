@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.fieldtypes import get_field_type_class
