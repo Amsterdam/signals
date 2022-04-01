@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
 from signals.apps.questionnaires.models import Question, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
+from signals.apps.questionnaires.rest_framework.serializers.public.attachment import (
+    PublicAttachmentSerializer
+)
 from signals.apps.questionnaires.rest_framework.serializers.public.sessions import (
     PublicSessionAnswerSerializer,
     PublicSessionSerializer
@@ -104,3 +107,20 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         serializer = self.serializer_detail_class(session, context=context)
         # TODO, consider status code - possibly return 400 if all answers were rejected
         return Response(serializer.data, status=200)
+
+    @action(detail=True, url_path=r'attachment/?$', methods=['POST', ], serializer_class=PublicAttachmentSerializer,
+            serializer_detail_class=PublicAttachmentSerializer)
+    def attachment(self, request, *args, **kwargs):
+        """
+        Upload attachment for a specific session/question. The attachment will be validated and stored in the
+        default_storage. The original name and location of the attachment will be stored in the payload of the answer.
+        """
+        session_service = get_session_service_or_404(self.get_object())
+        context = self.get_serializer_context(session_service=session_service)
+
+        serializer = self.serializer_class(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        serializer = PublicSessionSerializer(session_service.session, context=context)
+        return Response(serializer.data, status=201)
