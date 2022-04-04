@@ -27,7 +27,7 @@ def _init():
         if inspect.isclass(item) and issubclass(item, FieldType) and item != FieldType:
             key = _PATTERN_CAMEL_CASE.sub('_', item.__name__).lower()
             if key in field_type_choices:
-                raise Exception(f'Class "{item.__name__}" is bad!')
+                raise Exception(f'Class "{item.__name__}" is bad! Already registered!')
 
             field_type_choices[key] = item.verbose_name or item.__name__
             field_type_classes[key] = item
