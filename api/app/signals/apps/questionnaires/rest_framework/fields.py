@@ -68,7 +68,11 @@ class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serial
             ('curies', dict(name='sia', href=self.reverse('signal-namespace', request=self.context.get('request')))),
             ('self', dict(href=self._get_url(value, 'public-session-detail'))),
             ('sia:questionnaire', dict(href=self._reverse('public-questionnaire-detail',
-                                                          kwargs={'uuid': value.questionnaire.uuid})))
+                                                          kwargs={'uuid': value.questionnaire.uuid}))),
+            ('sia:post-answers', dict(href=self._reverse('public-session-answers',
+                                                         kwargs={'uuid': value.uuid}))),
+            ('sia:post-attachments', dict(href=self._reverse('public-session-attachments',
+                                                             kwargs={'uuid': value.uuid}))),
         ])
 
         if value._signal:

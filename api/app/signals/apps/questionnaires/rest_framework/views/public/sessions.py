@@ -108,11 +108,11 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         # TODO, consider status code - possibly return 400 if all answers were rejected
         return Response(serializer.data, status=200)
 
-    @action(detail=True, url_path=r'attachment/?$', methods=['POST', ], serializer_class=PublicAttachmentSerializer,
+    @action(detail=True, url_path=r'attachments/?$', methods=['POST', ], serializer_class=PublicAttachmentSerializer,
             serializer_detail_class=PublicAttachmentSerializer)
-    def attachment(self, request, *args, **kwargs):
+    def attachments(self, request, *args, **kwargs):
         """
-        Upload attachment for a specific session/question. The attachment will be validated and stored in the
+        Upload attachments for a specific session/question. The attachment will be validated and stored in the
         default_storage. The original name and location of the attachment will be stored in the payload of the answer.
         """
         session_service = get_session_service_or_404(self.get_object())
