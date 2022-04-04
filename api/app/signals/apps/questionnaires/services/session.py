@@ -19,6 +19,7 @@ class SessionService:
         self.session = session
         self.question_graph_service = QuestionGraphService(session.questionnaire.graph)
         self.answer_service = AnswerService
+        self._path_validation_errors_by_uuid = {}
 
     def is_publicly_accessible(self):
         """
@@ -256,7 +257,7 @@ class SessionService:
 
         # Cache our validation errors so that these can be accessed through the
         # path_validation_errors property.
-        self._path_validation_errors_by_uuid = errors_by_uuid
+        self._path_validation_errors_by_uuid.update(errors_by_uuid)
         return errors_by_uuid
 
     @property
