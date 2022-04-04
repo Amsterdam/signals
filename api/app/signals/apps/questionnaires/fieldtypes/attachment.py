@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
+from abc import ABC
+
 from signals.apps.questionnaires.fieldtypes.base import FieldType
 from signals.apps.services.domain.filescanner import UploadScannerService
 
 
-class Attachment(FieldType):
+class Attachment(ABC, FieldType):
+    """
+    The abstract Attachment class to be used as a base class for all attachment field types.
+    """
     submission_schema = {
         'type': 'object',
         'properties': {
@@ -25,7 +30,7 @@ class Attachment(FieldType):
         """
         Overwrite this function in the child class to validate the file.
         """
-        return False
+        raise NotImplementedError
 
 
 class Image(Attachment):
