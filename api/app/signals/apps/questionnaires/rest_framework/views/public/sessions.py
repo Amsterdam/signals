@@ -86,7 +86,6 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         answer_payloads = []
         questions = []
-
         retrieval_errors_by_uuid = {}
         for answer_data in serializer.data:
             uuid = answer_data['question_uuid']

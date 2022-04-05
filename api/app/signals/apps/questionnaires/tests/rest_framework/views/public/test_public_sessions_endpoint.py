@@ -3,6 +3,7 @@
 import os
 import uuid
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone
@@ -22,6 +23,7 @@ from signals.apps.questionnaires.factories import (
 from signals.apps.questionnaires.models import Question, Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.apps.signals.workflow import GEMELD, REACTIE_GEVRAAGD
 
 THIS_DIR = os.path.dirname(__file__)
@@ -289,3 +291,123 @@ class TestPublicSessionEndpointAnswerFlow(ValidateJsonSchemaMixin, APITestCase):
 
     def test_answer_question_that_does_not_exist(self):
         pass
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
+class TestPublicSessionEndpointAnswerAttachmentFlow(ValidateJsonSchemaMixin, APITestCase):
+    base_endpoint = '/public/qa/sessions/'
+
+    def setUp(self):
+        # sketch:
+        #    q1 <- first question (PlainText)
+        #    |
+        #    q2 <- second question (Image)
+        self.q1 = QuestionFactory.create(analysis_key='q1', label='q1', short_label='q1')
+        self.q2 = QuestionFactory.create(analysis_key='q2', label='q2', short_label='q2', field_type='image')
+        graph = QuestionGraphFactory.create(name='testgraph', first_question=self.q1)
+        EdgeFactory.create(graph=graph, question=self.q1, next_question=self.q2)
+
+        self.questionnaire = QuestionnaireFactory.create(graph=graph, name='test', flow=Questionnaire.EXTRA_PROPERTIES)
+
+        self.session = SessionFactory(questionnaire=self.questionnaire, submit_before=None, duration=None, frozen=False)
+
+    def test_answer_all_questions(self):
+        answer_data = [{'question_uuid': str(self.q1.uuid), 'payload': 'Answer to q1'}, ]
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/answers', data=answer_data, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 2)
+        self.assertIn('path_answered_question_uuids', response_json)
+
+        self.assertIn(str(self.q1.uuid), response_json['path_answered_question_uuids'])
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 1)
+
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 1)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], False)
+
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        data = {'question_uuid': str(self.q2.uuid), 'file': image}
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/attachments', data=data)
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 2)
+        self.assertIn('path_answered_question_uuids', response_json)
+
+        self.assertIn(str(self.q1.uuid), response_json['path_answered_question_uuids'])
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 2)
+
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 0)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], True)
+
+    def test_answer_question_q1_plain_text_correctly(self):
+        """
+        q1 is a PlainText question, so we can answer it with a string using the answers endpoint
+        """
+        answer_data = [{'question_uuid': str(self.q1.uuid), 'payload': 'Answer to q1'}, ]
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/answers', data=answer_data, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 2)
+        self.assertIn('path_answered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 1)
+        self.assertIn(str(self.q1.uuid), response_json['path_answered_question_uuids'])
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 1)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], False)
+
+    def test_answer_question_q2_image_correctly(self):
+        """
+        q2 is an Image question, so we can answer it with a file using the attachments endpoint
+        """
+        image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        answer_data = {'question_uuid': str(self.q2.uuid), 'file': image}
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/attachments', data=answer_data)
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 2)
+        self.assertIn('path_answered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 1)
+        self.assertIn(str(self.q2.uuid), response_json['path_answered_question_uuids'])
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 1)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], False)
+
+    def test_answer_question_q2_image_incorrectly_wrong_endpoint(self):
+        """
+        q2 is an Image question, we intentionally use the wrong endpoint to test the error handling
+        """
+        answer_data = [{'question_uuid': str(self.q2.uuid),
+                        'payload': 'should not be answered using the answer payload'}, ]
+
+        # Use answers instead of attachments endpoint should raise an error
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/answers', data=answer_data, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 1)
+        self.assertIn(str(self.q2.uuid), response_json['path_validation_errors_by_uuid'])
+        self.assertEqual(response_json['path_validation_errors_by_uuid'][str(self.q2.uuid)],
+                         'It is not possible to answer "Attachment" questions via this endpoint')
