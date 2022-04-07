@@ -18,6 +18,37 @@ class SignalCreatedAction(AbstractAction):
     note = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
     def get_additional_context(self, signal, dry_run=False):
-        return {
-            'afhandelings_text': signal.category_assignment.category.handling_message
-        }
+        context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
+
+        if signal.reporter and signal.reporter.phone:
+            """
+            If a reporter has given his/hers phone number it is added to the email context in a specific format.
+            Examples:
+                - +31 6 12 34 56 78 -> *******678
+                - +31612345678      -> *******678
+                - 06 12 34 56 78    -> *******678
+                - 0612345678        -> *******678
+            """
+            reporter_phone = signal.reporter.phone.replace(' ', '')
+            reporter_phone = reporter_phone[-3:].rjust(10, '*').replace('*', '\\*')  # noqa escape the * because it is used in markdown
+            context.update({'reporter_phone': reporter_phone})
+
+        if signal.reporter and signal.reporter.email:
+            """
+            If a reporter has given his/hers email address it is added to the email context in a specific format.
+            Examples:
+                - test@test.com         -> t**t@***t.com
+                - test.user@gmail.com   -> t*******r@****l.com
+                - test.user@amsterdam.nl-> t*******r@********m.nl
+                - test@tst.com          -> t**t@***.com
+                - tt@tst.com            -> tt@***.com
+            """
+            local, domain = signal.reporter.email.split('@')
+            local = local[0].ljust(len(local)-1, '*') + local[-1]
+            sd, tld = domain[:domain.rfind('.')], domain[domain.rfind('.'):]
+            sd = sd[-1:].rjust(len(sd), '*') if len(sd) > 3 else ''.join(['*' for _ in range(len(sd))])
+
+            reporter_email = f'{local}@{sd}{tld}'.replace('*', '\\*')  # noqa escape the * because it is used in markdown
+            context.update({'reporter_email': reporter_email})
+
+        return context

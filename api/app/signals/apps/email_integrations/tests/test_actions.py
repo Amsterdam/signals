@@ -240,6 +240,64 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
         self.assertEqual(Note.objects.count(), 0)
         self.assertFalse(Note.objects.filter(text=self.action.note).exists())
 
+    def test_signal_created_with_reporter_email(self):
+        email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
+        email_template.body = '{% if reporter_email %} {{ reporter_email }} {% endif %}'
+        email_template.save()
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
+
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn('t**t@******e.com', mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_signal_created_with_reporter_email_small_tld(self):
+        email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
+        email_template.body = '{% if reporter_email %} {{ reporter_email }} {% endif %}'
+        email_template.save()
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='tt@tt.com')
+
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn('tt@**.com', mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_signal_created_with_reporter_email_and_phone(self):
+        email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
+        email_template.body = '{% if reporter_email %} {{ reporter_email }} {% endif %} ' \
+                              '{% if reporter_phone %} {{ reporter_phone }} {% endif %}'
+        email_template.save()
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com',
+                                      reporter__phone='0612345678')
+
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+
+        self.assertIn('t**t@******e.com', mail.outbox[0].body)
+        self.assertIn('*******678', mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
 
 class TestSignalHandledAction(ActionTestMixin, TestCase):
     """
