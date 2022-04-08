@@ -8,7 +8,7 @@ from signals.apps.signals.factories import (
     ImageAttachmentFactory,
     SignalFactory
 )
-from signals.apps.signals.models import Attachment
+from signals.apps.signals.models import Attachment, Note
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -95,10 +95,12 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         # should not be able to delete other's attachment
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
 
     def test_delete_own_attachments_with_proper_department_ii(self):
         """
@@ -123,10 +125,12 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.attachment.created_by = self.sia_read_write_user.email
         self.attachment.save()
 
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
     def test_delete_others_attachments_with_proper_department_i(self):
         """
@@ -150,10 +154,12 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.client.force_authenticate(user=self.sia_read_write_user)
 
         # should be able to delete other's attachment
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
     def test_delete_others_attachments_with_proper_department_ii(self):
         """
@@ -181,10 +187,12 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.attachment.save()
 
         # should be able to delete a reporter's attachment
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
     def test_delete_others_attachments_with_proper_department_iii(self):
         """
@@ -212,10 +220,12 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.attachment.save()
 
         # should be able to delete a reporter's attachment
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
     def test_delete_normal_signals_attachments(self):
         """
@@ -242,9 +252,11 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.sia_read_write_user.refresh_from_db()
         self.client.force_authenticate(user=self.sia_read_write_user)
 
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
     def test_delete_parent_signal_attachments(self):
         """
@@ -278,9 +290,11 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.sia_read_write_user.refresh_from_db()
         self.client.force_authenticate(user=self.sia_read_write_user)
 
+        self.assertEqual(Note.objects.filter(_signal=parent_signal).count(), 0)
         response = self.client.delete(parent_attachment_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=parent_signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=parent_signal).count(), 1)
 
     def test_delete_child_signal_attachments(self):
         """
@@ -314,9 +328,11 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         self.assertTrue(self.sia_read_write_user.has_perm('signals.sia_delete_attachment_of_child_signal'))
 
+        self.assertEqual(Note.objects.filter(_signal=child_signal).count(), 0)
         response = self.client.delete(child_attachment_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=child_signal).count(), 0)
+        self.assertEqual(Note.objects.filter(_signal=child_signal).count(), 1)
 
     def test_delete_without_proper_department(self):
         """
@@ -339,18 +355,21 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.sia_read_write_user.save()
         self.sia_read_write_user.refresh_from_db()
         self.client.force_authenticate(user=self.sia_read_write_user)
+        self.assertEqual(Note.objects.count(), 0)
 
         # cannot delete somebody else's attachments (to normal signal)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
         response = self.client.get(url)
         error_message = response.json()['detail']  # generic 403 message (translated hence not hardcoded below)
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(Note.objects.count(), 0)
 
         # cannot delete one's own attachments (to normal signal)
         self.attachment.created_by = self.sia_read_write_user.email
         self.attachment.save()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()['detail'], error_message)
+        self.assertEqual(Note.objects.count(), 0)
 
         # cannot delete parent signal's attachment (even uploaded by oneself)
         child_signal = SignalFactory.create(parent=self.signal, category_assignment__category=self.category)
@@ -361,11 +380,14 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()['detail'], error_message)
+        self.assertEqual(Note.objects.count(), 0)
 
         # cannot delete child signal's attachment (even uploaded by oneself)
         response = self.client.get(child_attachment_url)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()['detail'], error_message)
+        self.assertEqual(Note.objects.count(), 0)
 
         # nothing was deleted:
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
+        self.assertEqual(Note.objects.filter(_signal=child_signal).count(), 0)

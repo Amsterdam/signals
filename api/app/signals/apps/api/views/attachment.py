@@ -3,9 +3,13 @@
 """
 Views dealing with 'signals.Attachment' model directly.
 """
+import os
+
 from datapunt_api.rest import DatapuntViewSet
+from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -82,4 +86,10 @@ class PrivateSignalAttachmentsViewSet(
             msg = 'Cannot delete attachment need "sia_delete_attachment_of_other_user" permission.'
             raise PermissionDenied(msg)
 
-        return super().destroy(*args, **kwargs)
+        # We are not calling super().destroy(*args, **kwargs) here because that
+        # would again run get_object() which we already did above.
+        self.perform_destroy(attachment)
+
+        att_filename = os.path.split(attachment.file.name)[1]
+        Signal.actions.create_note({'text': f'Attachment {att_filename} is verwijderd door {user}.'}, signal=signal)
+        return Response(status=status.HTTP_204_NO_CONTENT)
