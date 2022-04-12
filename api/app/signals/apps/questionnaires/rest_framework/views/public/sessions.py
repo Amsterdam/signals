@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.exceptions import SessionExpired, SessionFrozen
+from signals.apps.questionnaires.fieldtypes.attachment import Attachment
 from signals.apps.questionnaires.models import Question, Session
 from signals.apps.questionnaires.rest_framework.exceptions import Gone
+from signals.apps.questionnaires.rest_framework.serializers.public.attachment import (
+    PublicAttachmentSerializer
+)
 from signals.apps.questionnaires.rest_framework.serializers.public.sessions import (
     PublicSessionAnswerSerializer,
     PublicSessionSerializer
@@ -82,16 +86,22 @@ class PublicSessionViewSet(HALViewSetRetrieve):
 
         answer_payloads = []
         questions = []
-
-        retrieval_errors_by_uuid = []
+        retrieval_errors_by_uuid = {}
         for answer_data in serializer.data:
             uuid = answer_data['question_uuid']
             assert isinstance(uuid, str)
             try:
                 question = Question.objects.get_by_reference(uuid)
             except Question.DoesNotExist as e:
-                # we silently ignore retrieval errors for now (UUIDs to non existant questions)
-                retrieval_errors_by_uuid[answer_data[uuid]] = str(e)
+                # we silently ignore retrieval errors for now (UUIDs to non-existent questions)
+                retrieval_errors_by_uuid[uuid] = str(e)
+                continue
+
+            if issubclass(question.field_type_class, Attachment):
+                # It is not possible to answer "Attachment" questions via this endpoint
+                session_service._path_validation_errors_by_uuid.update({
+                    uuid: 'It is not possible to answer "Attachment" questions via this endpoint'
+                })
                 continue
 
             answer_payloads.append(answer_data['payload'])
@@ -104,3 +114,20 @@ class PublicSessionViewSet(HALViewSetRetrieve):
         serializer = self.serializer_detail_class(session, context=context)
         # TODO, consider status code - possibly return 400 if all answers were rejected
         return Response(serializer.data, status=200)
+
+    @action(detail=True, url_path=r'attachments/?$', methods=['POST', ], serializer_class=PublicAttachmentSerializer,
+            serializer_detail_class=PublicAttachmentSerializer)
+    def attachments(self, request, *args, **kwargs):
+        """
+        Upload attachments for a specific session/question. The attachment will be validated and stored in the
+        default_storage. The original name and location of the attachment will be stored in the payload of the answer.
+        """
+        session_service = get_session_service_or_404(self.get_object())
+        context = self.get_serializer_context(session_service=session_service)
+
+        serializer = self.serializer_class(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        serializer = PublicSessionSerializer(session_service.session, context=context)
+        return Response(serializer.data, status=201)

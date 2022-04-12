@@ -152,33 +152,6 @@ paths:
         '404':
           description: Question not found
 
-  /public/qa/sessions/{UUID}/submit:
-    parameters:
-      - name: UUID
-        in: path
-        description: UUID of Question
-        required: true
-        schema:
-          type: string
-          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
-          example: '00000000-0000-0000-0000-000000000000'
-    post:
-      description: Submit a session (i.e. freeze it)
-
-      responses:
-        '200':
-          description: Detail of the frozen Session
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PublicSession'
-        '400':
-          description: Request invalid
-        '404':
-          description: Session not found
-        '410':
-          description: Session already used or expired.
-
   /public/qa/sessions/{UUID}:
     parameters:
       - name: UUID
@@ -192,11 +165,104 @@ paths:
     get:
       responses:
         '200':
-          description: Detail of the selected Session
+          description: Detail of the requested Session
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicSession'
+
+  /public/qa/sessions/{UUID}/answers:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Session
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      description: Submit a set of answers for a specific Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicSessionAnswerQuestionList'
+
+      responses:
+        '200':
+          description: Detail of the current state of the Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Request invalid
+        '404':
+          description: Session not found
+        '410':
+          description: Session already used or expired.
+
+  /public/qa/sessions/{UUID}/attachments:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Session
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      description: Submit an attachment for a specific Session
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicSessionAnswerAttachmentQuestion'
+
+      responses:
+        '200':
+          description: Detail of the current state of the Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Request invalid
+        '404':
+          description: Session not found
+        '410':
+          description: Session already used or expired.
+
+  /public/qa/sessions/{UUID}/submit:
+    parameters:
+      - name: UUID
+        in: path
+        description: UUID of Session
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    post:
+      description: Submit a session (i.e. freeze it)
+
+      responses:
+        '200':
+          description: Detail of the current state of the Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSession'
+        '400':
+          description: Request invalid
+        '404':
+          description: Session not found
+        '410':
+          description: Session already used or expired.
 
 components:
   schemas:
@@ -506,6 +572,33 @@ components:
                 items:
                   type: string
           minItems: 0
+
+    PublicSessionAnswerQuestion:
+      type: object
+      properties:
+        payload:
+          type: string
+          example: 'This is an example of an answer to the question'
+        question_uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+
+    PublicSessionAnswerQuestionList:
+      type: array
+      items:
+        $ref: '#/components/schemas/PublicSessionAnswerQuestion'
+
+    PublicSessionAnswerAttachmentQuestion:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+        question_uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
 
   securitySchemes:
     OAuth2:

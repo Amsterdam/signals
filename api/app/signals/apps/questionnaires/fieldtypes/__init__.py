@@ -4,6 +4,7 @@ import inspect
 import re
 import sys
 
+from signals.apps.questionnaires.fieldtypes.attachment import Image
 from signals.apps.questionnaires.fieldtypes.base import FieldType
 from signals.apps.questionnaires.fieldtypes.boolean import Boolean
 from signals.apps.questionnaires.fieldtypes.integer import Integer
@@ -13,6 +14,7 @@ __all__ = [
     'PlainText',
     'Integer',
     'Boolean',
+    'Image',
 ]
 
 _PATTERN_CAMEL_CASE = re.compile(r'(?<!^)(?=[A-Z])')
