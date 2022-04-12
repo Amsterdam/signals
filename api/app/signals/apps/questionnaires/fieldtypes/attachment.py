@@ -10,6 +10,8 @@ class Attachment(ABC, FieldType):
     """
     The abstract Attachment class to be used as a base class for all attachment field types.
     """
+    # The content of this field is not given by the "user", it is generated in the Attachment uploade mechanism for
+    # questionnaires.
     submission_schema = {
         'type': 'object',
         'properties': {

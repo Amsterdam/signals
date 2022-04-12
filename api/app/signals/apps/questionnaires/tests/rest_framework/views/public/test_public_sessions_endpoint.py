@@ -302,8 +302,9 @@ class TestPublicSessionEndpointAnswerAttachmentFlow(ValidateJsonSchemaMixin, API
         #    q1 <- first question (PlainText)
         #    |
         #    q2 <- second question (Image)
-        self.q1 = QuestionFactory.create(analysis_key='q1', label='q1', short_label='q1')
-        self.q2 = QuestionFactory.create(analysis_key='q2', label='q2', short_label='q2', field_type='image')
+        self.q1 = QuestionFactory.create(analysis_key='q1', label='q1', short_label='q1', required=True)
+        self.q2 = QuestionFactory.create(analysis_key='q2', label='q2', short_label='q2', field_type='image',
+                                         required=True)
         graph = QuestionGraphFactory.create(name='testgraph', first_question=self.q1)
         EdgeFactory.create(graph=graph, question=self.q1, next_question=self.q2)
 
