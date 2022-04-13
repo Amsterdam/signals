@@ -757,10 +757,10 @@ paths:
         schema:
           type: integer
     get:
-      description: A list of attachments that belong to the Signal
+      description: Details for an attachment to a Signal.
       responses:
         '200':
-          description: A list of attachments
+          description: Details for an attachment to a Signal.
           content:
             application/json:
               schema:
@@ -770,7 +770,18 @@ paths:
         '403':
           description: Forbidden, user not authorized to request signal attachments.
         '404':
-          description: Signal not found.
+          description: Signal or attachment not found.
+    delete:
+      description: Delete attachment
+      responses:
+        '204':
+          description: Successfully deleted the attachment.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Forbidden, user not authorized to delete this attachment.
+        '404':
+          description: Signal or attachment not found.
 
   /signals/v1/private/signals/{id}/context/:
     parameters:

@@ -37,6 +37,12 @@ class Attachment(CreatedUpdatedModel):
             models.Index(fields=['is_image']),
             models.Index(fields=['_signal', 'is_image']),
         ]
+        permissions = [
+            ('sia_delete_attachment_of_normal_signal', 'Can delete attachment on normal signal.'),
+            ('sia_delete_attachment_of_parent_signal', 'Can delete attachment on parent signal.'),
+            ('sia_delete_attachment_of_child_signal',  'Can delete attachment on child signal.'),
+            ('sia_delete_attachment_of_other_user', 'Can delete attachment uploaded by another user.'),
+        ]
 
     def _check_if_file_is_image(self):
         try:
