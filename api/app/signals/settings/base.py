@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,8 +17,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', DEFAULT_ALLOWED_HOSTS).split(',')
 
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 
-DEFAULT_CORS_ALLOWED_ORIGINS = f'https://meldingen.amsterdam.nl,https://acc.meldingen.amsterdam.nl,http://meldingen.amsterdam.nl,http://acc.meldingen.amsterdam.nl,http://signals-acceptance.netlify.app,https://signals-acceptance.netlify.app,https://127.0.0.1,https://0.0.0.0,https://localhost,http://127.0.0.1,http://0.0.0.0,http://localhost,https://meldingen.weesp.nl,http://meldingen.weesp.nl'  # noqa
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', DEFAULT_CORS_ALLOWED_ORIGINS).split(',')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')]
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', True) in TRUE_VALUES
 
 SITE_ID = 1
