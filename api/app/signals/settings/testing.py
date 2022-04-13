@@ -1,7 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 from signals.settings.base import *  # noqa
 
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1',
+    'https://127.0.0.1',
+    'http://0.0.0.0',
+    'https://0.0.0.0',
+]
 CORS_ALLOW_ALL_ORIGINS = False
 
 DATABASES['default']['HOST'] = 'database'  # noqa: F405
