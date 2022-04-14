@@ -38,10 +38,10 @@ class Attachment(CreatedUpdatedModel):
             models.Index(fields=['_signal', 'is_image']),
         ]
         permissions = [
-            ('sia_delete_attachment_of_normal_signal', 'Can delete attachment on normal signal.'),
-            ('sia_delete_attachment_of_parent_signal', 'Can delete attachment on parent signal.'),
-            ('sia_delete_attachment_of_child_signal',  'Can delete attachment on child signal.'),
-            ('sia_delete_attachment_of_other_user', 'Can delete attachment uploaded by another user.'),
+            ('sia_delete_attachment_of_normal_signal', 'Kan bijlage bij standaard melding verwijderen.'),
+            ('sia_delete_attachment_of_parent_signal', 'Kan bijlage bij hoofdmelding verwijderen.'),
+            ('sia_delete_attachment_of_child_signal',  'Kan bijlage bij deelmelding verwijderen.'),
+            ('sia_delete_attachment_of_other_user', 'Kan bijlage bij melding van andere gebruiker verwijderen.'),
         ]
 
     def _check_if_file_is_image(self):
