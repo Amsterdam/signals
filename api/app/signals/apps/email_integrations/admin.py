@@ -35,6 +35,7 @@ class EmailTemplate(admin.ModelAdmin):
         models.TextField: {'widget': AdminMarkdownxWidget},
     }
 
+    save_on_top = True
     list_display = ('key', 'title', )
     readonly_fields = ('created_by', )
     form = EmailTemplateAdminForm
