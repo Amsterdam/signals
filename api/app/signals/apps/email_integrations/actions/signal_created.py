@@ -51,4 +51,42 @@ class SignalCreatedAction(AbstractAction):
             reporter_email = f'{local}@{sd}{tld}'.replace('*', '\\*')  # noqa escape the * because it is used in markdown
             context.update({'reporter_email': reporter_email})
 
+        # Add the extra properties to the context of the email template
+        context.update({'extra_properties': self._extra_properties_context(signal.extra_properties)})
+
         return context
+
+    def _extra_properties_context(self, extra_properties):
+        """
+        Renders the extra properties of the signals as a dict of key-value pairs so that they can be rendered in the
+        email template.
+        """
+        context = {}
+        for extra_property in extra_properties:
+            context[extra_property['label']] = []
+            if isinstance(extra_property['answer'], (list, tuple)):
+                for answer in extra_property['answer']:
+                    context[extra_property['label']].append(self._get_answer_from_extra_property(answer))
+            else:
+                context[extra_property['label']].append(self._get_answer_from_extra_property(extra_property['answer']))
+        return context
+
+    def _get_answer_from_extra_property(self, extra_property):
+        """
+        Returns the first option that is available in the extra property and not empty as the answer.
+        Defaults to '-' if no option is available.
+        """
+        if 'label' in extra_property and extra_property['label']:
+            return extra_property['label']
+        elif 'value' in extra_property and extra_property['value']:
+            return extra_property['value']
+        elif 'answer' in extra_property and extra_property['answer']:
+            return extra_property['answer']
+        elif 'id' in extra_property and extra_property['id']:
+            return extra_property['id']
+        elif 'type' in extra_property and extra_property['type']:
+            return extra_property['type']
+        elif extra_property:
+            return extra_property
+        else:
+            return '-'

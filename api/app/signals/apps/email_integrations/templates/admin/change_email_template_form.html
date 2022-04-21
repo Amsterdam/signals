@@ -69,11 +69,29 @@
             <li>sub_category_public_name</li>
         </ul>
         <h3>Variabelen welke in bepaalde templates beschikbaar zijn</h3>
+        <h4>Send mail signal created</h4>
         <ul>
-            <li>positive_feedback_url (alleen beschikbaar in de "afgehandeld" template)</li>
-            <li>negative_feedback_url (alleen beschikbaar in de "afgehandeld" template)</li>
-            <li>reaction_url (alleen beschikbaar in de "reactie gevraagd" template)</li>
-            <li>reaction_request_answer (alleen beschikbaar in de "reactie ontvangen" template)</li>
+            <li>extra_properties, vraag => lijst met antwoorden</li>
+            <li>reporter_phone (Alleen beschikbaar als er een telefoonnummer is opgegeven)</li>
+            <li>reporter_email (Alleen beschikbaar als er een email adres is opgegeven)</li>
+        </ul>
+        <h4>Send mail signal handeld</h4>
+        <ul>
+            <li>positive_feedback_url</li>
+            <li>negative_feedback_url</li>
+        </ul>
+        <h4>Send mail signal optional</h4>
+        <ul>
+            <li>afhandelings_text</li>
+        </ul>
+        <h4>Send mail signal reaction requested</h4>
+        <ul>
+            <li>reaction_url</li>
+            <li>reaction_request_answer</li>
+        </ul>
+        <h4>Send mail signal reaction requested received</h4>
+        <ul>
+            <li>reaction_request_answer</li>
         </ul>
     </div>
 
