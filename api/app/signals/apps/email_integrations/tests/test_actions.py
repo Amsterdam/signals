@@ -327,6 +327,25 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
                     "type": "not-on-map"
                 }],
                 "category_url": "/signals/v1/public/terms/categories/overig/sub_categories/overig"
+            }, {
+                "id": "extra_straatverlichting_probleem",
+                "label": "Probleem",
+                "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",  # noqa
+                "answer": {
+                    "id": "lamp_doet_het_niet",
+                    "label": "Lamp doet het niet",
+                    "info": ""
+                }
+            },
+            {
+                "id": "extra_straatverlichting",
+                "label": "Denkt u dat de situatie gevaarlijk is?",
+                "category_url": "/signals/v1/public/terms/categories/wegen-verkeer-straatmeubilair/sub_categories/lantaarnpaal-straatverlichting",  # noqa
+                "answer": {
+                    "id": "niet_gevaarlijk",
+                    "label": "Nee, niet gevaarlijk",
+                    "info": ""
+                }
             }
         ]
 
@@ -342,6 +361,10 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
         self.assertIn('Is dit de eerste vraag?', mail.outbox[0].body)
         self.assertIn('Ja, en dit is het antwoord op de eerste vraag', mail.outbox[0].body)
         self.assertIn('Overig lichtpunt, Lichtpunt niet op de kaart, not-on-map', mail.outbox[0].body)
+        self.assertIn('Probleem', mail.outbox[0].body)
+        self.assertIn('Lamp doet het niet', mail.outbox[0].body)
+        self.assertIn('Denkt u dat de situatie gevaarlijk is?', mail.outbox[0].body)
+        self.assertIn('Nee, niet gevaarlijk', mail.outbox[0].body)
         self.assertEqual(Note.objects.count(), 1)
         self.assertTrue(Note.objects.filter(text=self.action.note).exists())
 
