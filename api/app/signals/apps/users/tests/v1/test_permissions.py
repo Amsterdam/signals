@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from signals.test.utils import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
@@ -7,7 +7,8 @@ class TestPermissionsViews(SIAReadUserMixin, SignalsBaseApiTestCase):
     def test_get_permissions(self):
         self.client.force_authenticate(user=self.sia_read_user)
 
-        response = self.client.get('/signals/v1/private/permissions/')
+        with self.settings(FEATURE_FLAGS={'EXCLUDED_PERMISSIONS_IN_RESPONSE': None}):
+            response = self.client.get('/signals/v1/private/permissions/')
         self.assertEqual(response.status_code, 200)
 
         data = response.json()

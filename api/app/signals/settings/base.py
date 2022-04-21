@@ -426,6 +426,15 @@ FEATURE_FLAGS = {
     # Enabled the history_log based response, disables the signal_history_view based response
     'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
     'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
+
+    # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
+    # the frontend
+    # TODO: Remove this when the frontend is updated
+    'EXCLUDED_PERMISSIONS_IN_RESPONSE': os.getenv('EXCLUDED_PERMISSIONS_IN_RESPONSE',
+                                                  'sia_delete_attachment_of_normal_signal,'
+                                                  'sia_delete_attachment_of_parent_signal,'
+                                                  'sia_delete_attachment_of_child_signal,'
+                                                  'sia_delete_attachment_of_other_user').split(','),
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
