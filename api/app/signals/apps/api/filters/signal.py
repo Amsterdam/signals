@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django.db.models import Count, F, Max, Min, Q
 from django.utils.timezone import now
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.filters.utils import (
     _get_child_category_queryset,
@@ -339,6 +340,21 @@ class PublicSignalGeographyFilter(FilterSet):
         required=True, queryset=_get_child_category_queryset().filter(is_public_accessible=True),
         to_field_name='slug', field_name='category_assignment__category__slug'
     )  # Only child categories that are public accessible are allowed
+
+    def is_valid(self):
+        """
+        Validate if the bbox or lon/lat variable are filled in
+        """
+        data = self.form.data
+
+        if data.get('bbox') or (data.get('lon') and data.get('lat')):
+            return self.form.is_valid()
+
+        raise ValidationError({
+            "non_field_errors": [
+                "Either bbox or lon/lat must be filled in"
+            ]
+        })
 
     def filter_queryset(self, queryset):
         """

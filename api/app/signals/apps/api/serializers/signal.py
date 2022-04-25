@@ -543,30 +543,6 @@ class PublicSignalSerializerDetail(HALSerializer):
         return obj.sia_id
 
 
-class PublicSignalGeographtSerializer(serializers.Serializer):
-    """"
-    Custom serializer to validate if either bbox or lat/lon is set
-    """
-
-    bbox = serializers.CharField(required=False)
-    lat = serializers.FloatField(required=False)
-    lon = serializers.FloatField(required=False)
-
-    maincategory_slug = serializers.CharField()
-    category_slug = serializers.CharField()
-
-    def validate(self, attrs: Dict) -> Dict:
-        """"
-        Validate if the with bbox or lat/long is set
-        """
-        if attrs.get('bbox') or (attrs.get('lat') and attrs.get('lon')):
-            return attrs
-        raise ValidationError("Either bbox or lon/lat must be filled in")
-
-    class Meta:
-        pass
-
-
 class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):
     """
     This serializer allows anonymous users to report `signals.Signals`.

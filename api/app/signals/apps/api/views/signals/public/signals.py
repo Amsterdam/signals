@@ -70,15 +70,12 @@ class PublicSignalViewSet(GenericViewSet):
         return Response(data)
 
     @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
-            ordering=('-created_at', ), ordering_fields=('created_at', ),
-            serializer_class=PublicSignalGeographtSerializer)
+            ordering=('-created_at', ), ordering_fields=('created_at', ))
     def geography(self, request) -> Response:
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
         """
-        serializer = self.serializer_class(data=request.GET)
-        serializer.is_valid(raise_exception=True)
 
         qs = self.get_queryset()
 
