@@ -21,7 +21,7 @@ class FieldType:
         try:
             jsonschema.validate(payload, self.submission_schema)
         except js_schema_error:
-            msg = f'JSONSchema for {self.__name__} is not valid.'
+            msg = f'JSONSchema for {self.verbose_name or self.__class__.__name__} is not valid.'
             raise django_validation_error(msg)
         except js_validation_error:
             msg = 'Submitted answer does not validate.'
