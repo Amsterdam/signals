@@ -211,3 +211,33 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIn('non_field_errors', data.keys())
         self.assertEqual(1, len(data['non_field_errors']))
         self.assertEqual('Either bbox or lon/lat must be filled in', data['non_field_errors'][0])
+
+    def test_missing_lat(self):
+        """
+        Validate that both lat /lon parameters have to be filled in if lat parameter is missing
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, is_public_accessible=False)
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&lon=5')
+
+        data = response.json()
+        self.assertEqual(400, response.status_code)
+        self.assertIn('non_field_errors', data.keys())
+        self.assertEqual(1, len(data['non_field_errors']))
+        self.assertEqual('Either bbox or lon/lat must be filled in', data['non_field_errors'][0])
+
+    def test_missing_lon(self):
+        """
+        Validate that both lat /lon parameters have to be filled in if lons parameter is missing
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, is_public_accessible=False)
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&lat=5')
+
+        data = response.json()
+        self.assertEqual(400, response.status_code)
+        self.assertIn('non_field_errors', data.keys())
+        self.assertEqual(1, len(data['non_field_errors']))
+        self.assertEqual('Either bbox or lon/lat must be filled in', data['non_field_errors'][0])

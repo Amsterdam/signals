@@ -328,8 +328,8 @@ class SignalPromotedToParentFilter(FilterSet):
 class PublicSignalGeographyFilter(FilterSet):
 
     bbox = filters.CharFilter()  # min_lon, min_lat, max_lon, max_lat
-    lat = filters.CharFilter()
-    lon = filters.CharFilter()
+    lat = filters.NumberFilter()
+    lon = filters.NumberFilter()
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         required=True, queryset=_get_parent_category_queryset(), to_field_name='slug',
@@ -352,7 +352,7 @@ class PublicSignalGeographyFilter(FilterSet):
         lat = self.form.cleaned_data.pop('lat', None)
         lon = self.form.cleaned_data.pop('lon', None)
 
-        geometri_filter = Q(location__geometrie__within=Polygon.from_bbox(bbox)) if bbox \
+        geometrie_filter = Q(location__geometrie__within=Polygon.from_bbox(bbox)) if bbox \
             else Q(location__geometrie=Point(float(lon), float(lat), srid=4326))
 
         return super().filter_queryset(queryset=queryset.filter(
@@ -360,5 +360,5 @@ class PublicSignalGeographyFilter(FilterSet):
             Q(category_assignment__category_id__in=[c.pk for c in sub_categories]) &
 
             # Filter Signal's in the given bounding box
-            geometri_filter
+            geometrie_filter
         ))

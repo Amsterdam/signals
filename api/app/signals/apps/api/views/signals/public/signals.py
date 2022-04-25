@@ -78,9 +78,7 @@ class PublicSignalViewSet(GenericViewSet):
         Additional filtering can be done by adding query parameters.
         """
         serializer = self.serializer_class(data=request.GET)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
 
         qs = self.get_queryset()
 
