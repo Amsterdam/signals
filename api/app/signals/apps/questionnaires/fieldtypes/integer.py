@@ -5,3 +5,8 @@ from signals.apps.questionnaires.fieldtypes.base import FieldType
 
 class Integer(FieldType):
     submission_schema = {'type': 'integer'}
+
+
+class PositiveInteger(FieldType):
+    submission_schema = {'type': 'integer', 'minimum': 0}
+
