@@ -189,3 +189,4 @@ dwh_media/
 *.lock
 *.env
 *.esri.gz
+my_shell.py

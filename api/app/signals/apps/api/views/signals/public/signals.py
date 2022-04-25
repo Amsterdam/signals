@@ -17,6 +17,7 @@ from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters.signal import PublicSignalGeographyFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.serializers import PublicSignalCreateSerializer, PublicSignalSerializerDetail
+from signals.apps.api.serializers.signal import PublicSignalGeographtSerializer
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
@@ -69,13 +70,20 @@ class PublicSignalViewSet(GenericViewSet):
         return Response(data)
 
     @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
-            ordering=('-created_at', ), ordering_fields=('created_at', ))
-    def geography(self, request):
+            ordering=('-created_at', ), ordering_fields=('created_at', ),
+            serializer_class=PublicSignalGeographtSerializer)
+    def geography(self, request) -> Response:
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
         """
+        serializer = self.serializer_class(data=request.GET)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
         qs = self.get_queryset()
+
         if request.query_params.get('group_by', '').lower() == 'category':
             # Group by category and return the oldest signal created_at date
             qs = qs.values('category_assignment__category_id').annotate(created_at=Min('created_at'))

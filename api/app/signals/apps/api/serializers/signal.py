@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import os
+from typing import Dict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings
@@ -540,6 +541,30 @@ class PublicSignalSerializerDetail(HALSerializer):
 
     def get__display(self, obj):
         return obj.sia_id
+
+
+class PublicSignalGeographtSerializer(serializers.Serializer):
+    """"
+    Custom serializer to validate if either bbox or lat/lon is set
+    """
+
+    bbox = serializers.CharField(required=False)
+    lat = serializers.FloatField(required=False)
+    lon = serializers.FloatField(required=False)
+
+    maincategory_slug = serializers.CharField()
+    category_slug = serializers.CharField()
+
+    def validate(self, attrs: Dict) -> Dict:
+        """"
+        Validate if the with bbox or lat/long is set
+        """
+        if attrs.get('bbox') or (attrs.get('lat') and attrs.get('lon')):
+            return attrs
+        raise ValidationError("Either bbox or lon/lat must be filled in")
+
+    class Meta:
+        pass
 
 
 class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):
