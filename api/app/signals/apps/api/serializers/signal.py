@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import os
-from typing import Dict
 
 from datapunt_api.rest import DisplayField, HALSerializer
 from django.conf import settings

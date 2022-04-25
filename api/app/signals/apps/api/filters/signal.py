@@ -346,7 +346,6 @@ class PublicSignalGeographyFilter(FilterSet):
         Validate if the bbox or lon/lat variable are filled in
         """
         data = self.form.data
-
         if data.get('bbox') or (data.get('lon') and data.get('lat')):
             return self.form.is_valid()
 

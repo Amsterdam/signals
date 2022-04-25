@@ -17,7 +17,6 @@ from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters.signal import PublicSignalGeographyFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.serializers import PublicSignalCreateSerializer, PublicSignalSerializerDetail
-from signals.apps.api.serializers.signal import PublicSignalGeographtSerializer
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON

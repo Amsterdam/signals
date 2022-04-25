@@ -117,14 +117,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(400, response.status_code)
 
         data = response.json()
-
-        self.assertIn('maincategory_slug', data.keys())
-        self.assertEqual(1, len(data['maincategory_slug']))
-        self.assertEqual('Dit veld is vereist.', data['maincategory_slug'][0])
-
-        self.assertIn('category_slug', data.keys())
-        self.assertEqual(1, len(data['category_slug']))
-        self.assertEqual('Dit veld is vereist.', data['category_slug'][0])
+        self.assertIn('non_field_errors', data.keys())
+        self.assertEqual(1, len(data['non_field_errors']))
+        self.assertEqual('Either bbox or lon/lat must be filled in', data['non_field_errors'][0])
 
     def test_get_invalid_category_in_query_parameters(self):
         """
