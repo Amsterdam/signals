@@ -7,6 +7,7 @@ import sys
 from signals.apps.questionnaires.fieldtypes.attachment import Image
 from signals.apps.questionnaires.fieldtypes.base import FieldType
 from signals.apps.questionnaires.fieldtypes.boolean import Boolean
+from signals.apps.questionnaires.fieldtypes.datetime import Date, DateTime, Time
 from signals.apps.questionnaires.fieldtypes.float import Float
 from signals.apps.questionnaires.fieldtypes.integer import Integer, PositiveInteger
 from signals.apps.questionnaires.fieldtypes.text import PlainText
@@ -18,6 +19,9 @@ __all__ = [
     'Boolean',
     'Image',
     'Float',
+    'Date',
+    'DateTime',
+    'Time',
 ]
 
 _PATTERN_CAMEL_CASE = re.compile(r'(?<!^)(?=[A-Z])')
