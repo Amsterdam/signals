@@ -9,4 +9,3 @@ class Integer(FieldType):
 
 class PositiveInteger(FieldType):
     submission_schema = {'type': 'integer', 'minimum': 0}
-
