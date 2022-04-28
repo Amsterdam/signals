@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2022 Gemeente Amsterdam
 from django.conf import settings
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Point, Polygon
 from django.db.models import Count, F, Max, Min, Q
 from django.utils.timezone import now
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.api.filters.utils import (
     _get_child_category_queryset,
@@ -326,7 +327,11 @@ class SignalPromotedToParentFilter(FilterSet):
 
 
 class PublicSignalGeographyFilter(FilterSet):
-    bbox = filters.CharFilter(required=True)  # min_lon, min_lat, max_lon, max_lat
+
+    bbox = filters.CharFilter()  # min_lon, min_lat, max_lon, max_lat
+    lat = filters.NumberFilter()
+    lon = filters.NumberFilter()
+
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         required=True, queryset=_get_parent_category_queryset(), to_field_name='slug',
         field_name='category_assignment__category__parent__slug',
@@ -336,18 +341,39 @@ class PublicSignalGeographyFilter(FilterSet):
         to_field_name='slug', field_name='category_assignment__category__slug'
     )  # Only child categories that are public accessible are allowed
 
+    def is_valid(self):
+        """
+        Validate if the bbox or lon/lat variable are filled in
+        """
+        data = self.form.data
+        if data.get('bbox') or (data.get('lon') and data.get('lat')):
+            return self.form.is_valid()
+
+        raise ValidationError({
+            "non_field_errors": [
+                "Either bbox or lon/lat must be filled in"
+            ]
+        })
+
     def filter_queryset(self, queryset):
         """
         Filters Signal's in a given bbox and category
         """
-        bbox = self.form.cleaned_data.pop('bbox').split(',')
+        bbox = self.form.cleaned_data.pop('bbox', None)
+        bbox = bbox.split(',') if bbox else None
         main_categories = self.form.cleaned_data.pop('maincategory_slug')
         sub_categories = self.form.cleaned_data.pop('category_slug')
+
+        lat = self.form.cleaned_data.pop('lat', None)
+        lon = self.form.cleaned_data.pop('lon', None)
+
+        geometrie_filter = Q(location__geometrie__within=Polygon.from_bbox(bbox)) if bbox \
+            else Q(location__geometrie=Point(float(lon), float(lat), srid=4326))
 
         return super().filter_queryset(queryset=queryset.filter(
             Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories]) &
             Q(category_assignment__category_id__in=[c.pk for c in sub_categories]) &
 
             # Filter Signal's in the given bounding box
-            Q(location__geometrie__within=Polygon.from_bbox(bbox))
+            geometrie_filter
         ))

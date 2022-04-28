@@ -994,15 +994,29 @@ paths:
 
   /signals/v1/public/signals/geography:
     get:
-      description: Public signals geography endpoint, returns GEOjson
+      description: Public signals geography endpoint, returns GEOjson. For this endpoint either bbox or lon/lat parameters are required.If both bbox and lon/lat are filled in only the bbox files wil be use.
       parameters:
         - name: bbox
           description: A bounding box to filter. Format is min_lon, min_lat, max_lon, max_lat
           in: query
-          required: True
+          required: False
           schema:
             type: string
             example: 4.877157,52.357204,4.929686,52.385239
+        - name: lon
+          description: A longitude field to filter.
+          in: query
+          required: False
+          schema:
+            type: string
+            example: 4.877157
+        - name: lat
+          description: A latitude field to filter.
+          in: query
+          required: False
+          schema:
+            type: string
+            example: 58.877157
         - name: maincategory_slug
           description: Filter returns only signals with matching main category
             slug.

@@ -70,12 +70,14 @@ class PublicSignalViewSet(GenericViewSet):
 
     @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
             ordering=('-created_at', ), ordering_fields=('created_at', ))
-    def geography(self, request):
+    def geography(self, request) -> Response:
         """
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
         """
+
         qs = self.get_queryset()
+
         if request.query_params.get('group_by', '').lower() == 'category':
             # Group by category and return the oldest signal created_at date
             qs = qs.values('category_assignment__category_id').annotate(created_at=Min('created_at'))
