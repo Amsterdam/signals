@@ -1,19 +1,19 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import unittest
 
 from signals.apps.signals.factories import StoredSignalFilterFactory
 from signals.apps.signals.models import StoredSignalFilter
-from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
+from signals.test.utils import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
-class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+class TestStoredSignalFilters(SIAReadUserMixin, SignalsBaseApiTestCase):
     test_host = 'http://testserver'
     endpoint = '/signals/v1/private/me/filters/'
 
     def setUp(self):
         # Forcing authentication
-        self.client.force_authenticate(user=self.sia_read_write_user)
+        self.client.force_authenticate(user=self.sia_read_user)
 
     def test_no_filters(self):
         response = self.client.get(self.endpoint)
@@ -35,7 +35,7 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(0, len(data['results']))
 
     def test_filters_for_current_user(self):
-        StoredSignalFilterFactory.create_batch(5, created_by=self.sia_read_write_user)
+        StoredSignalFilterFactory.create_batch(5, created_by=self.sia_read_user)
         self.assertEqual(5, StoredSignalFilter.objects.count())
 
         response = self.client.get(self.endpoint)
@@ -80,10 +80,10 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             response_data['non_field_errors'][0], 'No filters specified, "options" object missing.')
 
     def test_update_filter(self):
-        sia_read_write_user_filter = StoredSignalFilterFactory.create(
-            created_by=self.sia_read_write_user
+        sia_read_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_user
         )
-        uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
+        uri = '{}{}'.format(self.endpoint, sia_read_user_filter.id)
 
         response = self.client.get(uri)
         self.assertEqual(200, response.status_code)
@@ -105,15 +105,15 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIn('status', response_data['options'])
         self.assertEqual(1, len(response_data['options']['status']))
         self.assertIn('i', response_data['options']['status'])
-        self.assertEqual(sia_read_write_user_filter.refresh, response_data['refresh'])
+        self.assertEqual(sia_read_user_filter.refresh, response_data['refresh'])
         self.assertFalse(response_data['show_on_overview'])
 
     def test_delete_filter(self):
-        sia_read_write_user_filter = StoredSignalFilterFactory.create(
-            created_by=self.sia_read_write_user
+        sia_read_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_user
         )
 
-        uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
+        uri = '{}{}'.format(self.endpoint, sia_read_user_filter.id)
         response = self.client.delete(uri)
         self.assertEqual(204, response.status_code)
 
@@ -254,10 +254,10 @@ class TestStoredSignalFilters(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         """
         SIG-3923 Added 'show_on_overview' flag
         """
-        sia_read_write_user_filter = StoredSignalFilterFactory.create(
-            created_by=self.sia_read_write_user
+        sia_read_user_filter = StoredSignalFilterFactory.create(
+            created_by=self.sia_read_user
         )
-        uri = '{}{}'.format(self.endpoint, sia_read_write_user_filter.id)
+        uri = '{}{}'.format(self.endpoint, sia_read_user_filter.id)
 
         response = self.client.get(uri, format='json')
         self.assertEqual(200, response.status_code)
