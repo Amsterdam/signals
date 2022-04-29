@@ -12,18 +12,20 @@ class FieldType:
     # Overwrite this class variable in subclasses, will default to the class name
     verbose_name = None
 
-    def validate_submission_payload(self, payload):
+    def validate_submission_payload(self, payload: dict) -> dict:
         """
         Check Answer or Choice payload matches the FieldType subclass JSONSchema
         """
         # We raise Django ValidationErrors here because this function is called
         # from model.clean functions and services that underlie REST API calls.
+        schema = self.submission_schema
+
         try:
-            jsonschema.validate(payload, self.submission_schema)
+            jsonschema.validate(payload, schema)
         except js_schema_error:
-            msg = f'JSONSchema for {self.__name__} is not valid.'
+            msg = f'JSONSchema for {self.verbose_name or self.__class__.__name__} is not valid.'
             raise django_validation_error(msg)
-        except js_validation_error:
-            msg = 'Submitted answer does not validate.'
+        except js_validation_error as jsve:
+            msg = f'Submitted answer does not validate. {jsve.message}'
             raise django_validation_error(msg)
         return payload
