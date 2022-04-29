@@ -5,3 +5,7 @@ from signals.apps.questionnaires.fieldtypes.base import FieldType
 
 class PlainText(FieldType):
     submission_schema = {'type': 'string'}
+
+
+class Email(FieldType):
+    submission_schema = {'type': 'string', 'format': 'email'}

@@ -10,10 +10,11 @@ from signals.apps.questionnaires.fieldtypes.boolean import Boolean
 from signals.apps.questionnaires.fieldtypes.datetime import Date, DateTime, Time
 from signals.apps.questionnaires.fieldtypes.float import Float
 from signals.apps.questionnaires.fieldtypes.integer import Integer, PositiveInteger
-from signals.apps.questionnaires.fieldtypes.text import PlainText
+from signals.apps.questionnaires.fieldtypes.text import Email, PlainText
 
 __all__ = [
     'PlainText',
+    'Email',
     'Integer',
     'PositiveInteger',
     'Boolean',

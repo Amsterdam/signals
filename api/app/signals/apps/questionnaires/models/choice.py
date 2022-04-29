@@ -16,7 +16,7 @@ class Choice(models.Model):
 
     def clean_payload(self):
         field_type_class = get_field_type_class(self.question)
-        return field_type_class.validate_submission_payload(self.answer_payload)
+        return field_type_class.validate_submission_payload(self.answer_payload, self.question)
 
     def get_display(self):
         return self.display if self.display else self.payload
