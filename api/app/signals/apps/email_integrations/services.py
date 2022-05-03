@@ -64,17 +64,3 @@ class MailService:
             return True
 
         return action.mail_with_context(signal, dry_run, **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
