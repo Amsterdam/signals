@@ -60,7 +60,7 @@ class ServiceLevelObjectiveInline(admin.TabularInline):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'public_name', 'parent', 'is_active', 'is_public_accessible',)
     list_per_page = 20
-    list_filter = ('is_active', 'is_public_accessible', 'parent', ParentCategoryFilter,)
+    list_filter = ('is_active', 'is_public_accessible', ParentCategoryFilter,)
     sortable_by = ('name', 'parent', 'is_active',)
 
     inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline,)
