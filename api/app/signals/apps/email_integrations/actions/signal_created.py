@@ -61,6 +61,9 @@ class SignalCreatedAction(AbstractAction):
         Renders the extra properties of the signals as a dict of key-value pairs so that they can be rendered in the
         email template.
         """
+        if not extra_properties:
+            return {}
+
         context = {}
         for extra_property in extra_properties:
             context[extra_property['label']] = []
