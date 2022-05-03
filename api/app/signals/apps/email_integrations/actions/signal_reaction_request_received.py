@@ -17,5 +17,5 @@ class SignalReactionRequestReceivedAction(AbstractAction):
 
     note = 'Automatische e-mail bij Reactie ontvangen is verzonden aan de melder.'
 
-    def get_additional_context(self, signal, dry_run=False):
+    def get_additional_context(self, signal, dry_run=False, **kwargs):
         return {'reaction_request_answer': signal.status.text}

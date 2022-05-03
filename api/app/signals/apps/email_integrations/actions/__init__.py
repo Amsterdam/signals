@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
+from signals.apps.email_integrations.actions.feedback_received_action import FeedbackReceivedAction
 from signals.apps.email_integrations.actions.signal_created import SignalCreatedAction
 from signals.apps.email_integrations.actions.signal_handeld import SignalHandledAction
 from signals.apps.email_integrations.actions.signal_optional import SignalOptionalAction
@@ -20,4 +21,5 @@ __all__ = [
     'SignalOptionalAction',
     'SignalReactionRequestAction',
     'SignalReactionRequestReceivedAction',
+    'FeedbackReceivedAction',
 ]

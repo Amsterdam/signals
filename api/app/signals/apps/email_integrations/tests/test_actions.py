@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
+import uuid
 from datetime import timedelta
 from unittest import mock
 from urllib.parse import quote
@@ -21,6 +22,8 @@ from signals.apps.email_integrations.actions import (
     SignalScheduledAction
 )
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.services import MailService
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Note
@@ -608,3 +611,90 @@ class TestSignalCreatedActionNoTemplate(TestCase):
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
         self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+
+class TestSignalStatusActions(TestCase):
+
+    def test_always_require_rule(self):
+        """
+        Verify that status actions always have a rule attached
+        """
+        for action in MailService._status_actions:
+            self.assertIsNotNone(action.rule)
+
+
+class TestSignalSystemActions(TestCase):
+
+    def setUp(self) -> None:
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_FEEDBACK_RECEIVED,
+                                     title='Uw feedback is ontvangen',
+                                     body='{{ feedback_text }} {{ feedback_text_extra }}')
+
+    def test_no_rule(self):
+        """
+        Mail actions from the _system_actions in MailService are not allowed to have a Rule attached
+        """
+        for key, action in MailService._system_actions.items():
+            self.assertIsNone(action.rule)
+
+    def test_send_system_email_with_context(self):
+        """
+        Check if the email with context is send to the user
+        """
+        action = MailService._system_actions.get('feedback_received')()
+        signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
+
+        text = 'my text _1234567'
+        text_extra = 'my extra text _extra_987654321'
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            text=text,
+            text_extra=text_extra,
+            token=uuid.uuid4()
+        )
+        result = action.mail_with_context(signal=signal, dry_run=False,
+                                          feedback_token=feedback.token)
+        self.assertTrue(result)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn(text, mail.outbox[0].body)
+        self.assertIn(text_extra, mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+
+    def test_send_system_email_dry_run(self):
+        action = MailService._system_actions.get('feedback_received')()
+        self.assertTrue(action.mail_with_context(signal='fake', dry_run=True))
+
+    def test_feedback_received_action_context_no_feedback(self):
+        """
+        Check the get_additional_context when the feedback object does not exist
+        """
+        fake_token = uuid.uuid4()
+        action = MailService._system_actions.get('feedback_received')()
+        result = action.get_additional_context(signal='not_required_atm',
+                                               feedback_token=fake_token)
+
+        self.assertIn('feedback_text', result)
+        self.assertIn('feedback_text_extra', result)
+        self.assertEqual(result['feedback_text'], '')
+        self.assertEqual(result['feedback_text_extra'], '')
+
+    def test_feedback_received_action_context(self):
+        text = 'my text'
+        text_extra = 'my extra text'
+        feedback = FeedbackFactory.create(
+            text=text,
+            text_extra=text_extra,
+            token=uuid.uuid4()
+        )
+
+        action = MailService._system_actions.get('feedback_received')()
+        result = action.get_additional_context(signal='not_required_atm',
+                                               feedback_token=feedback.token)
+
+        self.assertIn('feedback_text', result)
+        self.assertIn('feedback_text_extra', result)
+        self.assertEqual(result['feedback_text'], text)
+        self.assertEqual(result['feedback_text_extra'], text_extra)

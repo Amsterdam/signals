@@ -23,7 +23,7 @@ class TestEmailTemplates(TestCase):
 
         signal = SignalFactory.create(reporter__email='test@example.com')
 
-        MailService.mail(signal=signal)
+        MailService.status_mail(signal=signal)
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {signal.id} {signal.text}\n'
@@ -38,7 +38,7 @@ class TestEmailTemplates(TestCase):
         signal = SignalFactory.create(reporter__email='test@example.com')
 
         with self.settings(ORGANIZATION_NAME='Gemeente \'s-Hertogenbosch'):
-            MailService.mail(signal=signal)
+            MailService.status_mail(signal=signal)
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {signal.id} {signal.text}\n'
@@ -48,7 +48,7 @@ class TestEmailTemplates(TestCase):
         evil_signal = SignalFactory.create(reporter__email='test@example.com',
                                            text='<script>alert("something evil");</script>')
 
-        MailService.mail(signal=evil_signal)
+        MailService.status_mail(signal=evil_signal)
 
         self.assertEqual(f'Template title {evil_signal.id}', mail.outbox[0].subject)
         self.assertEqual(f'Template title\n\nThanks a lot for reporting {evil_signal.id} '

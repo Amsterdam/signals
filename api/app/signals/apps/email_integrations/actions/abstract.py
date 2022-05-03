@@ -51,17 +51,28 @@ class AbstractAction(ABC):
 
         return False
 
-    def get_additional_context(self, signal, dry_run=False):
+    def mail_with_context(self, signal: Signal, dry_run=False, **kwargs):
+        """"
+        Send a system mail where additional parameters can be sent for the context
+        """
+        if dry_run:
+            return True
+
+        if self.send_mail(signal, **kwargs):
+            self.add_note(signal)
+            return True
+
+    def get_additional_context(self, signal, dry_run=False, **kwargs):
         """
         Overwrite this function if additional email context is needed.
         """
         return {}
 
-    def get_context(self, signal, dry_run=False):
+    def get_context(self, signal, dry_run=False, **kwargs):
         """
         Email context
         """
-        context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
+        context = make_email_context(signal, self.get_additional_context(signal, dry_run, **kwargs), dry_run)
         return context
 
     def render_mail_data(self, context):
@@ -88,12 +99,12 @@ class AbstractAction(ABC):
 
         return subject, message, html_message
 
-    def send_mail(self, signal, dry_run=False):
+    def send_mail(self, signal, dry_run=False, **kwargs):
         """
         Send the email to the reporter
         """
         try:
-            context = self.get_context(signal, dry_run)
+            context = self.get_context(signal, dry_run, **kwargs)
         except URLEncodedCharsFoundInText:
             # Log a warning and add a note  to the Signal that the email could not be sent
             logger.warning(f'URL encoded text found in Signal {signal.id}')
