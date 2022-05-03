@@ -3,14 +3,14 @@
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
+    FeedbackReceivedAction,
     SignalCreatedAction,
     SignalHandledAction,
     SignalOptionalAction,
     SignalReactionRequestAction,
     SignalReactionRequestReceivedAction,
     SignalReopenedAction,
-    SignalScheduledAction,
-    FeedbackReceivedAction,
+    SignalScheduledAction
 )
 from signals.apps.signals.models import Signal
 
@@ -55,7 +55,7 @@ class MailService:
         """
         action = cls._system_actions.get(action_name)()
         if not action:
-            raise NotImplemented(f'{action_name} is not implemented')
+            raise NotImplementedError(f'{action_name} is not implemented')
 
         if not isinstance(signal, Signal):
             signal = Signal.objects.get(pk=signal)
