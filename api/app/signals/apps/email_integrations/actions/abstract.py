@@ -51,28 +51,17 @@ class AbstractAction(ABC):
 
         return False
 
-    def mail_with_context(self, signal: Signal, dry_run=False, **kwargs):
-        """"
-        Send a system mail where additional parameters can be sent for the context
-        """
-        if dry_run:
-            return True
-
-        if self.send_mail(signal, **kwargs):
-            self.add_note(signal)
-            return True
-
-    def get_additional_context(self, signal, dry_run=False, **kwargs):
+    def get_additional_context(self, signal, dry_run=False):
         """
         Overwrite this function if additional email context is needed.
         """
         return {}
 
-    def get_context(self, signal, dry_run=False, **kwargs):
+    def get_context(self, signal, dry_run=False):
         """
         Email context
         """
-        context = make_email_context(signal, self.get_additional_context(signal, dry_run, **kwargs), dry_run)
+        context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
         return context
 
     def render_mail_data(self, context):
@@ -99,12 +88,12 @@ class AbstractAction(ABC):
 
         return subject, message, html_message
 
-    def send_mail(self, signal, dry_run=False, **kwargs):
+    def send_mail(self, signal, dry_run=False):
         """
         Send the email to the reporter
         """
         try:
-            context = self.get_context(signal, dry_run, **kwargs)
+            context = self.get_context(signal, dry_run)
         except URLEncodedCharsFoundInText:
             # Log a warning and add a note  to the Signal that the email could not be sent
             logger.warning(f'URL encoded text found in Signal {signal.id}')
@@ -122,3 +111,18 @@ class AbstractAction(ABC):
     def add_note(self, signal):
         if self.note:
             Signal.actions.create_note({'text': self.note}, signal=signal)
+
+
+class AbstractSystemAction(AbstractAction):
+    _required_call_kwargs = None
+    kwargs = None
+
+    # No rules are used by system actions so return True by default
+    rule = lambda signal: True
+
+    def __call__(self, signal, dry_run=False, **kwargs):
+        if self._required_call_kwargs and kwargs.keys() not in self._required_call_kwargs:
+            raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
+
+        self.kwargs = kwargs
+        return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

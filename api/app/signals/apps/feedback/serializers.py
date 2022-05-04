@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from signals.apps.email_integrations import tasks
+from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -63,7 +64,6 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 }
                 Signal.actions.update_status(payload, signal)
 
-        tasks.send_system_mail.delay(
-            signal_id=instance._signal.pk, action_name='feedback_received', feedback_token=instance.token)
+        MailService.system_mail(instance._signal.pk, 'feedback_received', feedback=instance)
 
         return super().update(instance, validated_data)

@@ -7,11 +7,3 @@ from signals.celery import app
 @app.task
 def send_mail_reporter(pk):
     MailService.status_mail(signal=pk)
-
-
-@app.task
-def send_system_mail(signal_id: str, action_name: str, **kwargs):
-    """
-    Task to send a specific mail based for a signal
-    """
-    MailService.system_mail(signal_id, action_name, **kwargs)

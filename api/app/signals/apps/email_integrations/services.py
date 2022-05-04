@@ -63,4 +63,4 @@ class MailService:
         if dry_run:
             return True
 
-        return action.mail_with_context(signal, dry_run, **kwargs)
+        return action(signal, dry_run, **kwargs)
