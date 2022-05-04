@@ -18,5 +18,5 @@ class SignalHandledAction(AbstractAction):
 
     note = 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
 
-    def get_additional_context(self, signal, dry_run=False, **kwargs):
+    def get_additional_context(self, signal, dry_run=False):
         return create_feedback_and_mail_context(signal, dry_run)

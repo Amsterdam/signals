@@ -2,6 +2,7 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 import logging
 from abc import ABC
+from typing import List
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -118,10 +119,14 @@ class AbstractSystemAction(AbstractAction):
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    rule = lambda signal: True
+    rule = lambda self, signal: True
 
     def __call__(self, signal, dry_run=False, **kwargs):
-        if self._required_call_kwargs and kwargs.keys() not in self._required_call_kwargs:
+        """
+        check if the required parameters are in the kwargs
+        """
+        if self._required_call_kwargs and \
+                not all(x in kwargs.keys() for x in self._required_call_kwargs):
             raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
 
         self.kwargs = kwargs

@@ -41,7 +41,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         with freeze_time(self.t_creation):
             self.reporter = ReporterFactory()
             self.signal = SignalFactoryValidLocation(
-                reporter=self.reporter,
+                # reporter=self.reporter,
                 status__state=workflow.AFGEHANDELD,
             )
 

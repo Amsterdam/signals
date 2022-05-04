@@ -17,7 +17,7 @@ class SignalCreatedAction(AbstractAction):
 
     note = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
-    def get_additional_context(self, signal, dry_run=False, **kwargs):
+    def get_additional_context(self, signal, dry_run=False):
         context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
         if signal.reporter and signal.reporter.phone:

@@ -18,5 +18,5 @@ class SignalReactionRequestAction(AbstractAction):
 
     note = 'E-mail met vraag verstuurd aan melder'
 
-    def get_additional_context(self, signal, dry_run=False, **kwargs):
+    def get_additional_context(self, signal, dry_run=False):
         return create_reaction_request_and_mail_context(signal, dry_run)

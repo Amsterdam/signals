@@ -64,6 +64,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 }
                 Signal.actions.update_status(payload, signal)
 
-        MailService.system_mail(instance._signal.pk, 'feedback_received', feedback=instance)
+        MailService.system_mail(signal=instance._signal,
+                                action_name='feedback_received',
+                                feedback=instance)
 
         return super().update(instance, validated_data)

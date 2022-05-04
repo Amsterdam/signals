@@ -622,6 +622,10 @@ class TestSignalStatusActions(TestCase):
         for action in MailService._status_actions:
             self.assertIsNotNone(action.rule)
 
+class TestAbstractSystemAction(TestCase):
+    pass
+
+
 
 class TestSignalSystemActions(TestCase):
 
@@ -631,12 +635,12 @@ class TestSignalSystemActions(TestCase):
                                      title='Uw feedback is ontvangen',
                                      body='{{ feedback_text }} {{ feedback_text_extra }}')
 
-    def test_no_rule(self):
+    def test_system_action_rule(self):
         """
-        Mail actions from the _system_actions in MailService are not allowed to have a Rule attached
+        Mail actions from the _system_actions in MailService dont have a rule and always return True
         """
         for key, action in MailService._system_actions.items():
-            self.assertIsNone(action.rule)
+            self.assertTrue(action().rule('fake_signal'))
 
     def test_send_system_email_with_context(self):
         """
@@ -653,8 +657,7 @@ class TestSignalSystemActions(TestCase):
             text_extra=text_extra,
             token=uuid.uuid4()
         )
-        result = action.mail_with_context(signal=signal, dry_run=False,
-                                          feedback_token=feedback.token)
+        result = action(signal=signal, dry_run=False, feedback=feedback)
         self.assertTrue(result)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
@@ -665,34 +668,24 @@ class TestSignalSystemActions(TestCase):
 
     def test_send_system_email_dry_run(self):
         action = MailService._system_actions.get('feedback_received')()
-        self.assertTrue(action.mail_with_context(signal='fake', dry_run=True))
-
-    def test_feedback_received_action_context_no_feedback(self):
-        """
-        Check the get_additional_context when the feedback object does not exist
-        """
-        fake_token = uuid.uuid4()
-        action = MailService._system_actions.get('feedback_received')()
-        result = action.get_additional_context(signal='not_required_atm',
-                                               feedback_token=fake_token)
-
-        self.assertIn('feedback_text', result)
-        self.assertIn('feedback_text_extra', result)
-        self.assertEqual(result['feedback_text'], '')
-        self.assertEqual(result['feedback_text_extra'], '')
+        signal = SignalFactory()
+        feedback = FeedbackFactory.create(
+            token=uuid.uuid4(), _signal=signal)
+        self.assertTrue(action(signal=signal, dry_run=True, feedback=feedback))
 
     def test_feedback_received_action_context(self):
         text = 'my text'
         text_extra = 'my extra text'
+        signal = SignalFactory()
         feedback = FeedbackFactory.create(
             text=text,
             text_extra=text_extra,
-            token=uuid.uuid4()
+            token=uuid.uuid4(),
+            _signal=signal
         )
 
         action = MailService._system_actions.get('feedback_received')()
-        result = action.get_additional_context(signal='not_required_atm',
-                                               feedback_token=feedback.token)
+        result = action(signal=signal, feedback=feedback)
 
         self.assertIn('feedback_text', result)
         self.assertIn('feedback_text_extra', result)

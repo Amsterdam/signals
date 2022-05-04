@@ -49,7 +49,7 @@ class TestMailActions(TestCase):
             text_extra=text_extra,
         )
         result = MailService.system_mail(
-            signal=signal, action_name='feedback_received', feedback_token=feedback.token)
+            signal=signal, action_name='feedback_received', feedback=feedback)
 
         self.assertTrue(result)
         self.assertEqual(len(mail.outbox), 1)

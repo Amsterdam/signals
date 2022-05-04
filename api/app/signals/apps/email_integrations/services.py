@@ -28,8 +28,8 @@ class MailService:
         SignalReactionRequestAction(),
         SignalReactionRequestReceivedAction(),
     )
-    # System actions are use to send specific emails based
-    # they do not have a rule and are should NOT be added to the status_actions
+    # System actions are use to send specific emails
+    # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions = {
         'feedback_received': FeedbackReceivedAction
     }
