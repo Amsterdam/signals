@@ -12,7 +12,7 @@ from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
 from signals.apps.feedback.utils import get_feedback_urls
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import ReporterFactory, SignalFactoryValidLocation
+from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import Signal
 from signals.test.utils import SignalsBaseApiTestCase
 
@@ -39,9 +39,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 
         # Setup our test signal and feedback instances
         with freeze_time(self.t_creation):
-            self.reporter = ReporterFactory()
             self.signal = SignalFactoryValidLocation(
-                # reporter=self.reporter,
                 status__state=workflow.AFGEHANDELD,
             )
 

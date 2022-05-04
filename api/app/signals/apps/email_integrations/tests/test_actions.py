@@ -622,9 +622,12 @@ class TestSignalStatusActions(TestCase):
         for action in MailService._status_actions:
             self.assertIsNotNone(action.rule)
 
-class TestAbstractSystemAction(TestCase):
-    pass
 
+class TestAbstractSystemAction(TestCase):
+
+    def test_call_invalid_kwargs(self):
+        action = MailService._system_actions.get('feedback_received')()
+        self.assertRaises(TypeError, action, signal='fake_test_signal')
 
 
 class TestSignalSystemActions(TestCase):
@@ -685,7 +688,8 @@ class TestSignalSystemActions(TestCase):
         )
 
         action = MailService._system_actions.get('feedback_received')()
-        result = action(signal=signal, feedback=feedback)
+        action(signal=signal, feedback=feedback)
+        result = action.get_additional_context(signal)
 
         self.assertIn('feedback_text', result)
         self.assertIn('feedback_text_extra', result)

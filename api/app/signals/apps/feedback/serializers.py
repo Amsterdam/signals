@@ -3,7 +3,6 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from signals.apps.email_integrations import tasks
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.signals import workflow

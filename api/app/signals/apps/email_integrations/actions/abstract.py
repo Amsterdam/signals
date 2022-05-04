@@ -2,7 +2,6 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 import logging
 from abc import ABC
-from typing import List
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -119,7 +118,7 @@ class AbstractSystemAction(AbstractAction):
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    rule = lambda self, signal: True
+    rule = lambda self, signal: True  # noqa: E731
 
     def __call__(self, signal, dry_run=False, **kwargs):
         """
