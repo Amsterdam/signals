@@ -50,6 +50,7 @@ uwsgi --master \
   --static-index=index.html \
   --static-map=/signals/static=/static \
   --static-map=/signals/media=/media \
+  --buffer-size=8192 \
   --harakiri=15 \
   --py-auto-reload=1 \
   --die-on-term
