@@ -68,6 +68,12 @@ class ActionTestMixin:
                                      body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
                                           '{{ ORGANIZATION_NAME }}')
 
+        EmailTemplate.objects.create(key=EmailTemplate.Signal_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT,
+                                     title='Uw melding {{ signal_id }}'
+                                           f' {EmailTemplate.Signal_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT}',
+                                     body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
+                                          '{{ ORGANIZATION_NAME }}')
+
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
 

@@ -3,6 +3,7 @@
 from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
     SignalHandledAction,
+    SignalHandledNegativeAction,
     SignalOptionalAction,
     SignalReactionRequestAction,
     SignalReactionRequestReceivedAction,
@@ -21,6 +22,7 @@ class MailService:
         SignalOptionalAction(),
         SignalReactionRequestAction(),
         SignalReactionRequestReceivedAction(),
+        SignalHandledNegativeAction()
     )
 
     @staticmethod

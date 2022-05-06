@@ -2,6 +2,9 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from signals.apps.email_integrations.rules.signal_created import SignalCreatedRule
 from signals.apps.email_integrations.rules.signal_handeld import SignalHandledRule
+from signals.apps.email_integrations.rules.signal_handeld_negative_contact import (
+    SignalHandledNegativeRule
+)
 from signals.apps.email_integrations.rules.signal_optional import SignalOptionalRule
 from signals.apps.email_integrations.rules.signal_reaction_request import SignalReactionRequestRule
 from signals.apps.email_integrations.rules.signal_reaction_request_received import (
@@ -18,4 +21,5 @@ __all__ = [
     'SignalOptionalRule',
     'SignalReactionRequestRule',
     'SignalReactionRequestReceivedRule',
+    'SignalHandledNegativeRule',
 ]

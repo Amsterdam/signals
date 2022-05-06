@@ -2,6 +2,9 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from signals.apps.email_integrations.actions.signal_created import SignalCreatedAction
 from signals.apps.email_integrations.actions.signal_handeld import SignalHandledAction
+from signals.apps.email_integrations.actions.signal_handeld_negative_contact import (
+    SignalHandledNegativeAction
+)
 from signals.apps.email_integrations.actions.signal_optional import SignalOptionalAction
 from signals.apps.email_integrations.actions.signal_reaction_request import (
     SignalReactionRequestAction
@@ -15,6 +18,7 @@ from signals.apps.email_integrations.actions.signal_scheduled import SignalSched
 __all__ = [
     'SignalCreatedAction',
     'SignalHandledAction',
+    'SignalHandledNegativeAction',
     'SignalScheduledAction',
     'SignalReopenedAction',
     'SignalOptionalAction',
