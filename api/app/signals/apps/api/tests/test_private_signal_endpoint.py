@@ -22,6 +22,7 @@ from signals.apps.api.validation.address.base import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.reporting.csv.utils import map_choices
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     AreaFactory,
@@ -41,6 +42,7 @@ from signals.apps.signals.tests.attachment_helpers import (
     add_non_image_attachments,
     small_gif
 )
+from signals.apps.signals.workflow import STATUS_CHOICES
 from signals.test.utils import (
     SIAReadUserMixin,
     SIAReadWriteUserMixin,
@@ -1765,6 +1767,133 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         deadline_factor_3 = dateutil.parser.parse(result_json['results'][0]['category']['deadline_factor_3'])
         self.assertEqual(deadline, signal.category_assignment.deadline)
         self.assertEqual(deadline_factor_3, signal.category_assignment.deadline_factor_3)
+
+
+class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    """
+    Test ordering of Signals in REST API.
+    """
+
+    def setUp(self):
+        # No URL reversing here, these endpoints are part of the spec (and thus
+        # should not change).
+        self.list_endpoint = '/signals/v1/private/signals/'
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+    def _get_signal_ids(self, response_json):
+        return [result['id'] for result in response_json['results']]
+
+    def test_order_by_area_name_or_stadsdeel(self):
+        # Sort by area_name, add the ,id to the ordering query parameter to make
+        # the order of None values predictable. Default behavior of Postgres is
+        # to sort NULLS LAST for ascending order en NULLS FIRST for descending.
+        # This test also checks that area_name and stadsdeel ordering behave
+        # the same.
+        signal_a = SignalFactoryValidLocation.create(location__area_name='A')
+        signal_a.location.stadsdeel = 'A'  # factory overwrites this property post generation
+        signal_a.location.save()
+        signal_b = SignalFactoryValidLocation.create(location__area_name='B')
+        signal_b.location.stadsdeel = 'B'
+        signal_b.location.save()
+        signal_none1 = SignalFactoryValidLocation.create(location__area_name=None)
+        signal_none1.location.stadsdeel = None
+        signal_none1.location.save()
+        signal_none2 = SignalFactoryValidLocation.create(location__area_name=None)
+        signal_none2.location.stadsdeel = None
+        signal_none2.location.save()
+
+        # ascending
+        response = self.client.get(f'{self.list_endpoint}?ordering=area_name,id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_area_name_asc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=stadsdeel,id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_stadsdeel_asc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_area_name_asc, [signal_a.id, signal_b.id, signal_none1.id, signal_none2.id])
+        self.assertEqual(signal_ids_area_name_asc, signal_ids_stadsdeel_asc)
+
+        # descending
+        response = self.client.get(f'{self.list_endpoint}?ordering=-area_name,-id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_area_name_desc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-stadsdeel,-id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_stadsdeel_desc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_area_name_desc, [signal_none2.id, signal_none1.id, signal_b.id, signal_a.id])
+        self.assertEqual(signal_ids_area_name_desc, signal_ids_stadsdeel_desc)
+
+    def test_order_by_created_at_or_updated_at(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=3)):
+            signal_1 = SignalFactoryValidLocation.create()
+        with freeze_time(now - timedelta(hours=2)):
+            signal_2 = SignalFactoryValidLocation.create()
+        with freeze_time(now - timedelta(hours=1)):
+            signal_3 = SignalFactoryValidLocation.create()
+
+        # ascending
+        response = self.client.get(f'{self.list_endpoint}?ordering=created_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_created_at_asc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=updated_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_updated_at_asc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_created_at_asc, [signal_1.id, signal_2.id, signal_3.id])
+        self.assertEqual(signal_ids_created_at_asc, signal_ids_updated_at_asc)
+
+        # descending
+        response = self.client.get(f'{self.list_endpoint}?ordering=-created_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_created_at_desc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-updated_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_updated_at_desc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_created_at_desc, [signal_3.id, signal_2.id, signal_1.id])
+        self.assertEqual(signal_ids_created_at_desc, signal_ids_updated_at_desc)
+
+    def test_order_by_status(self):
+        # Document ordering behavior with respect to state. Current behavior is
+        # to sort by code and not by human readable text - this mismatch means
+        # that to a user the Signal instances do not appear to be sorted
+        # alphabetically. (We sort on state, user sees state_display.)
+        for code, _ in STATUS_CHOICES:
+            SignalFactoryValidLocation.create(status__state=code)
+
+        # sort ascending
+        response = self.client.get(f'{self.list_endpoint}?ordering=status')
+        self.assertEqual(response.status_code, 200)
+
+        response_state_displays = []
+        response_states = []
+        for result in response.json()['results']:
+            response_state_displays.append(result['status']['state_display'])
+            response_states.append(result['status']['state'])
+
+        # States are sorted correctly, state_displays are not. We use the DB to
+        # get ordered lists because the endpoint uses the DB to do ordering and
+        # Python list sort behaves differently when strings contain special
+        # characters like a space.
+        ordered_states = list(Signal.objects.all().order_by('status__state').values_list('status__state', flat=True))
+        ordered_state_displays = list(
+            Signal.objects.all()
+            .annotate(state_display=map_choices('status__state', STATUS_CHOICES))
+            .order_by('state_display')
+            .values_list('state_display', flat=True)
+        )
+
+        self.assertEqual(ordered_states, response_states)
+        # REST API users do not get properly sorted state displays:
+        self.assertNotEqual(ordered_state_displays, response_state_displays)
 
 
 @override_settings(FEATURE_FLAGS={
