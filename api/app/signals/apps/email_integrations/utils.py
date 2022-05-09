@@ -206,7 +206,7 @@ def trigger_mail_action_for_email_preview(signal, status_data):
     status.id = 0  # Fake id so that we still can trigger the action rule
 
     subject = message = html_message = None
-    for action in MailService.actions:
+    for action in MailService._status_actions:
         # Execute the rule associated with the action
         if action.rule.validate(signal, status):
             # action found now render the subject, message and html_message and break the loop

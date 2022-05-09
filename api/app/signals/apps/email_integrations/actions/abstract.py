@@ -111,3 +111,22 @@ class AbstractAction(ABC):
     def add_note(self, signal):
         if self.note:
             Signal.actions.create_note({'text': self.note}, signal=signal)
+
+
+class AbstractSystemAction(AbstractAction):
+    _required_call_kwargs = None
+    kwargs = None
+
+    # No rules are used by system actions so return True by default
+    rule = lambda self, signal: True  # noqa: E731
+
+    def __call__(self, signal, dry_run=False, **kwargs):
+        """
+        check if the required parameters are in the kwargs
+        """
+        if self._required_call_kwargs and \
+                not all(x in kwargs.keys() for x in self._required_call_kwargs):
+            raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
+
+        self.kwargs = kwargs
+        return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

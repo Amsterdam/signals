@@ -3,6 +3,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
@@ -38,10 +39,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
         # Check whether the relevant Signal instance should possibly be
         # reopened (i.e. transition to VERZOEK_TOT_HEROPENEN state).
         is_satisfied = validated_data['is_satisfied']
-
-        if is_satisfied:
-            reopen = False
-        else:
+        reopen = False
+        if not is_satisfied:
             feedback_text = validated_data['text']
 
             try:
@@ -63,5 +62,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
                     'state': workflow.VERZOEK_TOT_HEROPENEN,
                 }
                 Signal.actions.update_status(payload, signal)
+
+        MailService.system_mail(signal=instance._signal,
+                                action_name='feedback_received',
+                                feedback=instance)
 
         return super().update(instance, validated_data)

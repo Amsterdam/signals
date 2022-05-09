@@ -34,7 +34,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
             location__address=valid_location,
         )
 
-        MailService.mail(signal=signal)
+        MailService.status_mail(signal=signal)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
@@ -65,7 +65,7 @@ class TestEmailTemplateAddressFormatting(TestCase):
             location__address=None,
         )
 
-        MailService.mail(signal=signal)
+        MailService.status_mail(signal=signal)
 
         self.assertEqual(f'Template title {signal.id}', mail.outbox[0].subject)
         self.assertEqual('Locatie is gepind op de kaart\n\n', mail.outbox[0].body)

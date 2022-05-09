@@ -6,4 +6,4 @@ from signals.celery import app
 
 @app.task
 def send_mail_reporter(pk):
-    MailService.mail(signal=pk)
+    MailService.status_mail(signal=pk)
