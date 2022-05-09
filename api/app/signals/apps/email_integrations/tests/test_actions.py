@@ -346,6 +346,12 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
                     "label": "Nee, niet gevaarlijk",
                     "info": ""
                 }
+            },
+            {
+                "id": "extra_fietswrak",
+                "label": "Extra informatie",
+                "answer": "2 wrakken met hele oude gemeentelijke labels en 2 tegen een lantaarnpaal in het gras en nog een losse zwarte met zachte band",  # noqa
+                "category_url": "/signals/v1/public/terms/categories/overlast-in-de-openbare-ruimte/sub_categories/fietswrak"  # noqa
             }
         ]
 
