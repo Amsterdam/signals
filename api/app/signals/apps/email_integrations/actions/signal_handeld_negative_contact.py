@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class SignalHandledNegativeAction(AbstractAction):
     rule = SignalHandledNegativeRule()
 
-    key = EmailTemplate.Signal_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
+    key = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
     subject = 'Meer over uw melding {signal_id}'
 
     note = 'Automatische e-mail bij afhandelen heropenen negatieve feedback'
