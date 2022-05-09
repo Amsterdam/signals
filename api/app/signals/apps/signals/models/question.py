@@ -12,7 +12,7 @@ class Question(models.Model):
     SELECT_INPUT = 'select_input'
     TEXT_AREA_INPUT = 'text_area_input'
     ASSET_SELECT = 'asset_select'
-    LOCATION = 'location'
+    LOCATION_SELECT = 'location_select'
 
     FIELD_TYPE_CHOICES = (
         (PLAIN_TEXT, 'PlainText'),
@@ -23,7 +23,7 @@ class Question(models.Model):
         (SELECT_INPUT, 'SelectInput'),
         (TEXT_AREA_INPUT, 'TextareaInput'),
         (ASSET_SELECT, 'AssetSelect'),
-        (LOCATION, 'Location')
+        (LOCATION_SELECT, 'LocationSelect')
     )
 
     key = models.CharField(max_length=255)
