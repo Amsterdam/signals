@@ -79,7 +79,9 @@ class SignalCreatedAction(AbstractAction):
         Returns the first option that is available in the extra property and not empty as the answer.
         Defaults to '-' if no option is available.
         """
-        if 'label' in extra_property and extra_property['label']:
+        if isinstance(extra_property, str):
+            return extra_property
+        elif 'label' in extra_property and extra_property['label']:
             return extra_property['label']
         elif 'value' in extra_property and extra_property['value']:
             return extra_property['value']
