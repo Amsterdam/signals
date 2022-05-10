@@ -661,7 +661,8 @@ class TestSignalSystemActions(TestCase):
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_FEEDBACK_RECEIVED,
                                      title='Uw feedback is ontvangen',
-                                     body='{{ feedback_text }} {{ feedback_text_extra }}')
+                                     body='{{ feedback_text }} {{ feedback_text_extra }} '
+                                          '{{ feedback_allows_contact }} {{ feedback_is_satisfied }}')
 
     def test_system_action_rule(self):
         """
@@ -708,6 +709,8 @@ class TestSignalSystemActions(TestCase):
         feedback = FeedbackFactory.create(
             text=text,
             text_extra=text_extra,
+            allows_contact=True,
+            is_satisfied=False,
             token=uuid.uuid4(),
             _signal=signal
         )
@@ -718,5 +721,9 @@ class TestSignalSystemActions(TestCase):
 
         self.assertIn('feedback_text', result)
         self.assertIn('feedback_text_extra', result)
+        self.assertIn('feedback_allows_contact', result)
+        self.assertIn('feedback_is_satisfied', result)
         self.assertEqual(result['feedback_text'], text)
         self.assertEqual(result['feedback_text_extra'], text_extra)
+        self.assertTrue(result['feedback_allows_contact'])
+        self.assertFalse(result['feedback_is_satisfied'])
