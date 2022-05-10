@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from factory.fuzzy import FuzzyText
 from freezegun import freeze_time
@@ -727,3 +727,19 @@ class TestSignalSystemActions(TestCase):
         self.assertEqual(result['feedback_text_extra'], text_extra)
         self.assertTrue(result['feedback_allows_contact'])
         self.assertFalse(result['feedback_is_satisfied'])
+
+    @override_settings(FEATURE_FLAGS={'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': False})
+    def test_feedback_received_action_disabled(self):
+        """
+        FeedbackReceivedAction is disabled in settings
+        """
+        action = MailService._system_actions.get('feedback_received')()
+        signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
+
+        text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+        text_extra = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+        feedback = FeedbackFactory.create(_signal=signal, text=text, text_extra=text_extra, token=uuid.uuid4())
+
+        result = action(signal=signal, dry_run=False, feedback=feedback)
+        self.assertFalse(result)
+        self.assertEqual(len(mail.outbox), 0)
