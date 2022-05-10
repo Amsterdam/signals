@@ -435,6 +435,9 @@ FEATURE_FLAGS = {
                                                   'sia_delete_attachment_of_parent_signal,'
                                                   'sia_delete_attachment_of_child_signal,'
                                                   'sia_delete_attachment_of_other_user').split(','),
+
+    # Enable system mail for Feedback Received
+    'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': os.getenv('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', True) in TRUE_VALUES,  # noqa
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
