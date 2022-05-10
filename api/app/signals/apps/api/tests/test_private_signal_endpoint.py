@@ -1880,12 +1880,16 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         # to sort NULLS LAST for ascending order en NULLS FIRST for descending.
         # This test also checks that area_name and stadsdeel ordering behave
         # the same.
-        signal_a = SignalFactoryValidLocation.create(location__area_name='A')
-        signal_a.location.stadsdeel = 'A'  # factory overwrites this property post generation
+        signal_a = SignalFactoryValidLocation.create(location__area_name='a')
+        signal_a.location.stadsdeel = 'a'  # factory overwrites this property post generation
         signal_a.location.save()
-        signal_b = SignalFactoryValidLocation.create(location__area_name='B')
-        signal_b.location.stadsdeel = 'B'
-        signal_b.location.save()
+        signal_A = SignalFactoryValidLocation.create(location__area_name='A')
+        signal_A.location.stadsdeel = 'A'
+        signal_A.location.save()
+        signal_B = SignalFactoryValidLocation.create(location__area_name='B')
+        signal_B.location.stadsdeel = 'B'
+        signal_B.location.save()
+
         signal_none1 = SignalFactoryValidLocation.create(location__area_name=None)
         signal_none1.location.stadsdeel = None
         signal_none1.location.save()
@@ -1893,7 +1897,7 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         signal_none2.location.stadsdeel = None
         signal_none2.location.save()
 
-        # ascending
+        # ascending (add the ,id to order Nones predictably)
         response = self.client.get(f'{self.list_endpoint}?ordering=area_name,id')
         self.assertEqual(response.status_code, 200)
         signal_ids_area_name_asc = self._get_signal_ids(response.json())
@@ -1902,7 +1906,8 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         self.assertEqual(response.status_code, 200)
         signal_ids_stadsdeel_asc = self._get_signal_ids(response.json())
 
-        self.assertEqual(signal_ids_area_name_asc, [signal_a.id, signal_b.id, signal_none1.id, signal_none2.id])
+        self.assertEqual(
+            signal_ids_area_name_asc, [signal_a.id, signal_A.id, signal_B.id, signal_none1.id, signal_none2.id])
         self.assertEqual(signal_ids_area_name_asc, signal_ids_stadsdeel_asc)
 
         # descending
@@ -1914,7 +1919,8 @@ class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, 
         self.assertEqual(response.status_code, 200)
         signal_ids_stadsdeel_desc = self._get_signal_ids(response.json())
 
-        self.assertEqual(signal_ids_area_name_desc, [signal_none2.id, signal_none1.id, signal_b.id, signal_a.id])
+        self.assertEqual(
+            signal_ids_area_name_desc, [signal_none2.id, signal_none1.id, signal_B.id, signal_A.id, signal_a.id])
         self.assertEqual(signal_ids_area_name_desc, signal_ids_stadsdeel_desc)
 
     def test_order_by_created_at_or_updated_at(self):
