@@ -33,6 +33,8 @@ paths:
               - -updated_at
               - stadsdeel
               - -stadsdeel
+              - area_name
+              - -area_name
               - sub_category
               - -sub_category
               - main_category
@@ -2158,13 +2160,25 @@ components:
       example: 'SIG'
 
     _NestedLocationRequestData:
-      description: JSON Data
+      description: JSON Data for location of this Signal.
       type: object
       properties:
         stadsdeel:
           type: string
         buurt_code:
           type: string
+        area_code:
+          description: Code of specific geographic area this Signal lies in.
+          type: string
+          nullable: true
+        area_name:
+          description: Name of specific geographic area this Signal lies in.
+          type: string
+          nullable: true
+        area_type_code:
+          description: Code for the geographic area type used to localize Signals.
+          type: string
+          nullable: true
         address:
           type: object
           properties:

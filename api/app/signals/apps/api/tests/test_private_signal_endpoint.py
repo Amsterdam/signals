@@ -361,6 +361,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_without_stadsdeel(self, validate_address):
         # Create initial Signal, check that it reached the database.
+        # This test documents Signalen Amsterdam flow as of May 2022.
         signal_count = Signal.objects.count()
 
         create_initial_data = self.create_initial_data
@@ -387,6 +388,46 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertIsNotNone(response_json['location']['stadsdeel'])
         self.assertEqual(response_json['location']['stadsdeel'], STADSDEEL_CENTRUM)
         self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+
+    @override_settings(DEFAULT_SIGNAL_AREA_TYPE='district')
+    @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_assign_area(self, validate_address):
+        # Create initial Signal, check that it is created and that area_name,
+        # area_code, and area_type_code are set on the Location model.
+        # This test documents the Signalen VNG installations' behavior.
+        BBOX = [4.877157, 52.357204, 4.929686, 52.385239]
+        lon = (BBOX[0] + BBOX[2]) / 2
+        lat = (BBOX[1] + BBOX[3]) / 2
+        geometry = MultiPolygon([Polygon.from_bbox(BBOX)], srid=4326)
+        AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
+
+        signal_count = Signal.objects.count()
+        create_initial_data = self.create_initial_data
+        create_initial_data['location']['geometrie']['coordinates'] = [lon, lat]
+        del(create_initial_data['location']['stadsdeel'])
+        del(create_initial_data['location']['address'])
+        del(create_initial_data['location']['buurt_code'])
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # Check that the actions are logged with the correct user email
+        new_url = response.json()['_links']['self']['href']
+        response = self.client.get(new_url)
+        response_json = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+        # Check that the area_name, area_code, and area_type_code fields are set correctly.
+        self.assertIsNone(response_json['location']['stadsdeel'])
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['location']['area_type_code'], 'district')
+        self.assertEqual(response_json['location']['area_code'], 'centrum')
+        self.assertEqual(response_json['location']['area_name'], 'Centrum')
 
     @skip('Disabled for now, it no longer throws an error but logs a warning and stores the unvalidated address')
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
@@ -681,6 +722,54 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # JSONSchema validation
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
+
+    @override_settings(DEFAULT_SIGNAL_AREA_TYPE='district')
+    @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_update_location_assign_area(self, validate_address):
+        # Update location check that area_name, area_code, and area_type_code
+        # are set on the Location model. This test documents the Signalen VNG
+        # installations' behavior.
+        BBOX = [4.877157, 52.357204, 4.929686, 52.385239]
+        lon = (BBOX[0] + BBOX[2]) / 2
+        lat = (BBOX[1] + BBOX[3]) / 2
+        geometry = MultiPolygon([Polygon.from_bbox(BBOX)], srid=4326)
+        AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
+
+        # Partial update to update the location, all interaction via API.
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        data['location']['geometrie']['coordinates'] = [lon, lat]
+        del data['location']['address']
+        del data['location']['stadsdeel']
+        del data['location']['buurt_code']
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two Locations is in the history
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # Check that the area_name, area_code, and area_type_code fields are set correctly.
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertIsNone(response_json['location']['stadsdeel'])
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['location']['area_type_code'], 'district')
+        self.assertEqual(response_json['location']['area_code'], 'centrum')
+        self.assertEqual(response_json['location']['area_name'], 'Centrum')
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address")
     def test_update_location_no_address(self, validate_address):

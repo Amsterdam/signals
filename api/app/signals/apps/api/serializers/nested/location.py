@@ -15,6 +15,7 @@ class _NestedLocationModelSerializer(WithinBoundingBoxValidatorMixin, SIAModelSe
             'buurt_code',
             'area_type_code',
             'area_code',
+            'area_name',
             'address',
             'address_text',
             'geometrie',
