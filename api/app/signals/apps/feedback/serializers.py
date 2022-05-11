@@ -63,8 +63,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
                 }
                 Signal.actions.update_status(payload, signal)
 
+        instance = super().update(instance, validated_data)
+        # trigger the mail to be after the instance update to have the new data
         MailService.system_mail(signal=instance._signal,
                                 action_name='feedback_received',
                                 feedback=instance)
-
-        return super().update(instance, validated_data)
+        return instance

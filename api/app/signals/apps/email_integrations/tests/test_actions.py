@@ -756,7 +756,8 @@ class TestSignalSystemActions(TestCase):
     def setUp(self) -> None:
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_FEEDBACK_RECEIVED,
                                      title='Uw feedback is ontvangen',
-                                     body='{{ feedback_text }} {{ feedback_text_extra }}')
+                                     body='{{ feedback_text }} {{ feedback_text_extra }} '
+                                          '{{ feedback_allows_contact }} {{ feedback_is_satisfied }}')
 
     def test_system_action_rule(self):
         """
@@ -803,6 +804,8 @@ class TestSignalSystemActions(TestCase):
         feedback = FeedbackFactory.create(
             text=text,
             text_extra=text_extra,
+            allows_contact=True,
+            is_satisfied=False,
             token=uuid.uuid4(),
             _signal=signal
         )
@@ -813,5 +816,25 @@ class TestSignalSystemActions(TestCase):
 
         self.assertIn('feedback_text', result)
         self.assertIn('feedback_text_extra', result)
+        self.assertIn('feedback_allows_contact', result)
+        self.assertIn('feedback_is_satisfied', result)
         self.assertEqual(result['feedback_text'], text)
         self.assertEqual(result['feedback_text_extra'], text_extra)
+        self.assertTrue(result['feedback_allows_contact'])
+        self.assertFalse(result['feedback_is_satisfied'])
+
+    @override_settings(FEATURE_FLAGS={'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': False})
+    def test_feedback_received_action_disabled(self):
+        """
+        FeedbackReceivedAction is disabled in settings
+        """
+        action = MailService._system_actions.get('feedback_received')()
+        signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
+
+        text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+        text_extra = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+        feedback = FeedbackFactory.create(_signal=signal, text=text, text_extra=text_extra, token=uuid.uuid4())
+
+        result = action(signal=signal, dry_run=False, feedback=feedback)
+        self.assertFalse(result)
+        self.assertEqual(len(mail.outbox), 0)
