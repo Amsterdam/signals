@@ -25,7 +25,7 @@ class EmailTemplate(CreatedUpdatedModel):
         (SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD, 'Send mail signal reaction requested'),
         (SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN, 'Send mail signal reaction requested received'),
         (SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN, 'Send mail signal reaction requested received'),
-        (SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT, 'Send mail signal '),
+        (SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT, 'Send mail signal'),
         (SIGNAL_FEEDBACK_RECEIVED, 'Send mail signal feedback received'),
     ]
 

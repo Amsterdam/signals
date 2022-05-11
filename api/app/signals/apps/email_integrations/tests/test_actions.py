@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from factory.fuzzy import FuzzyText
 from freezegun import freeze_time
@@ -15,6 +15,7 @@ from freezegun import freeze_time
 from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
     SignalHandledAction,
+    SignalHandledNegativeAction,
     SignalOptionalAction,
     SignalReactionRequestAction,
     SignalReactionRequestReceivedAction,
@@ -476,6 +477,95 @@ class TestSignalHandledAction(ActionTestMixin, TestCase):
         self.assertTrue(Note.objects.filter(text=self.action.note).exists())
 
 
+class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
+    action = SignalHandledNegativeAction()
+    state = workflow.AFGEHANDELD
+    prev_state = workflow.VERZOEK_TOT_HEROPENEN
+    signal = None
+    feedback = None
+
+    def setUp(self):
+        status_text = FuzzyText(length=400)
+        self.signal = SignalFactory.create(status__state=self.prev_state, status__text=status_text,
+                                           status__send_email=self.send_email, reporter__email='test@example.com')
+
+        # create the new current state
+        status = StatusFactory.create(_signal=self.signal, state=self.state)
+        self.signal.status = status
+        self.signal.save()
+        self.feedback = FeedbackFactory.create(
+            _signal=self.signal,
+            allows_contact=True,
+            is_satisfied=False
+        )
+        self.feedback.save()
+
+    def test_send_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertTrue(self.action(self.signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {self.signal.id}')
+        self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_send_email_dry_run(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        self.assertTrue(self.action(self.signal, dry_run=True))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
+        self.assertFalse(Note.objects.filter(text=self.action.note).exists())
+
+    def test_send_email_for_parent_signals(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = FuzzyText(length=400)
+        parent_signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                             status__send_email=self.send_email, reporter__email='test@example.com')
+        SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
+                             parent=self.signal)
+
+        self.assertFalse(self.action(parent_signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_send_mail_fails_encoded_chars_in_text(self):
+        """
+        The action should not send an email if the text contains encoded characters. A note should be added so that
+        it is clear why the email was not sent. This is also logged in Sentry.
+        """
+        self.assertEqual(len(mail.outbox), 0)
+
+        unquoted_url = 'https://user:password@test-domain.com/?query=param&extra=param'
+        quoted_url = unquoted_url
+        # Let's encode the URL 10 times
+        for _ in range(10):
+            quoted_url = quote(quoted_url)
+
+        signal_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut ' \
+                      f'labore et dolore magna aliqua. {quoted_url} Ut enim ad minim veniam, quis nostrud ' \
+                      'exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+
+        self.signal.text_extra = signal_text
+        self.signal.save()
+
+        self.assertFalse(self.action(self.signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+
+        self.signal.refresh_from_db()
+        self.assertEqual(self.signal.notes.count(), 1)
+        self.assertEquals(self.signal.notes.first().text,
+                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
+
+    @override_settings(FEATURE_FLAGS={
+        'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': False,
+    })
+    def test_feature_flag_disabled(self):
+        self.assertFalse(self.action(self.signal, dry_run=False))
+
+
 class TestSignalScheduledAction(ActionTestMixin, TestCase):
     """
     Test the SignalScheduledAction. The action should only be triggerd when the following rules apply:
@@ -664,7 +754,6 @@ class TestAbstractSystemAction(TestCase):
 class TestSignalSystemActions(TestCase):
 
     def setUp(self) -> None:
-
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_FEEDBACK_RECEIVED,
                                      title='Uw feedback is ontvangen',
                                      body='{{ feedback_text }} {{ feedback_text_extra }}')

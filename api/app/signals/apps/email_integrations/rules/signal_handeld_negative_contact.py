@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
+from django.conf import settings
+
 from signals.apps.email_integrations.rules.abstract import AbstractRule
 from signals.apps.signals.models import Status
 from signals.apps.signals.workflow import AFGEHANDELD, VERZOEK_TOT_HEROPENEN
@@ -49,3 +51,6 @@ class SignalHandledNegativeRule(AbstractRule):
         except AttributeError:
             # if no feedback exists return False
             return False
+
+    def _validate(self, signal):
+        return settings.FEATURE_FLAGS.get('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', True)
