@@ -9,6 +9,7 @@ from freezegun import freeze_time
 
 from signals.apps.email_integrations.rules import (
     SignalCreatedRule,
+    SignalHandledNegativeRule,
     SignalHandledRule,
     SignalOptionalRule,
     SignalReactionRequestReceivedRule,
@@ -16,6 +17,7 @@ from signals.apps.email_integrations.rules import (
     SignalReopenedRule,
     SignalScheduledRule
 )
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.questionnaires.app_settings import NO_REACTION_RECEIVED_TEXT
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
@@ -198,6 +200,86 @@ class TestSignalReactionRequestReceivedRule(RuleTestMixin, TestCase):
         signal = SignalFactory.create(status__state=workflow.REACTIE_ONTVANGEN,
                                       status__text=NO_REACTION_RECEIVED_TEXT,
                                       reporter__email='test@example.com')
+
+        self.assertFalse(self.rule(signal))
+
+
+class TestSignalHandledNegative(RuleTestMixin, TestCase):
+
+    rule = SignalHandledNegativeRule()
+    state = workflow.AFGEHANDELD
+    prev_state = workflow.VERZOEK_TOT_HEROPENEN
+
+    def test_allows_contact_on_feedback(self):
+        status_text = FuzzyText(length=400)
+
+        # create signal in prev status
+        signal = SignalFactory.create(status__state=self.prev_state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+
+        # create the new current state
+        status = StatusFactory.create(_signal=signal, state=self.state)
+        signal.status = status
+        signal.save()
+
+        feedback = FeedbackFactory.create(
+            allows_contact=True,
+            _signal=signal,
+        )
+        feedback.save()
+        self.assertTrue(self.rule(signal))
+
+    def test_happy_flow(self):
+        status_text = FuzzyText(length=400)
+
+        # create signal in prev status
+        signal = SignalFactory.create(status__state=self.prev_state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+
+        # create the new current state
+        status = StatusFactory.create(_signal=signal, state=self.state)
+        signal.status = status
+        signal.save()
+
+        feedback = FeedbackFactory.create(
+            allows_contact=True,
+            _signal=signal,
+        )
+        feedback.save()
+        self.assertTrue(self.rule(signal))
+
+    def test_apply_for_parent_signals(self):
+        status_text = FuzzyText(length=400)
+
+        parent_signal = SignalFactory.create(status__state=self.prev_state, status__text=status_text,
+                                             status__send_email=self.send_email, reporter__email='test@example.com')
+        SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
+                             parent=parent_signal)
+
+        # create the new current state
+        status = StatusFactory.create(_signal=parent_signal, state=self.state)
+        parent_signal.status = status
+        parent_signal.save()
+
+        feedback = FeedbackFactory.create(
+            allows_contact=True,
+            _signal=parent_signal,
+        )
+        feedback.save()
+
+        self.assertTrue(self.rule(parent_signal))
+
+    def test_no_feedback(self):
+        status_text = FuzzyText(length=400)
+
+        # create signal in prev status
+        signal = SignalFactory.create(status__state=self.prev_state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+
+        # create the new current state
+        status = StatusFactory.create(_signal=signal, state=self.state)
+        signal.status = status
+        signal.save()
 
         self.assertFalse(self.rule(signal))
 
