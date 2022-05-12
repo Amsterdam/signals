@@ -238,10 +238,12 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIsNone(attachment.created_by)
 
         # Check that history contains notes that show photo's were uploaded.
-        filename = os.path.basename(attachment.file.name)
         self.assertEqual(Note.objects.count(), note_count + 1)
-        for note in Note.objects.filter(_signal=signal):
-            self.assertIn(f'Foto toegevoegd door melder: {filename}', note.text)
+        attachment = Attachment.objects.last()
+        note = Note.objects.last()
+
+        filename = os.path.basename(attachment.file.name)
+        self.assertEqual(f'Foto toegevoegd door melder: {filename}', note.text)
 
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create(status__state=GEMELD)

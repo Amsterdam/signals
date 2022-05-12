@@ -554,7 +554,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         for note, attachment in zip(note_qs, attachment_qs):
             filename = os.path.basename(attachment.file.name)
-            self.assertIn(f'Foto toegevoegd door {self.sia_read_write_user}: {filename}', note.text)
+            self.assertEqual(f'Foto toegevoegd door {self.sia_read_write_user}: {filename}', note.text)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation
