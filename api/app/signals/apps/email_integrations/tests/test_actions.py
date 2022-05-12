@@ -76,7 +76,7 @@ class ActionTestMixin:
                                      title='Uw melding {{ signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT}',
                                      body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
-                                          '{{ ORGANIZATION_NAME }}')
+                                          '{{ ORGANIZATION_NAME }} {{ feedback_text }} {{ feedback_text_extra }} ')
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
@@ -499,12 +499,13 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
             is_satisfied=False
         )
         self.feedback.save()
+        super().setUp()
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
         self.assertTrue(self.action(self.signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {self.signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.id} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
@@ -564,6 +565,44 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
     })
     def test_feature_flag_disabled(self):
         self.assertFalse(self.action(self.signal, dry_run=False))
+
+    def test_get_additional_context(self):
+        self.feedback.text = 'ahoy'
+        self.feedback.text_extra = 'ahoy extra'
+        self.feedback.allows_contact = True
+        self.feedback.is_satisfied = False
+        self.feedback.save()
+        context = self.action.get_additional_context(self.signal)
+
+        self.assertIn('feedback_text', context)
+        self.assertIn('feedback_text_extra', context)
+        self.assertIn('feedback_allows_contact', context)
+        self.assertIn('feedback_is_satisfied', context)
+        self.assertEqual(context['feedback_text'], self.feedback.text)
+        self.assertEqual(context['feedback_text_extra'], self.feedback.text_extra)
+        self.assertEqual(context['feedback_allows_contact'], self.feedback.allows_contact)
+        self.assertEqual(context['feedback_is_satisfied'], self.feedback.is_satisfied)
+
+    def test_get_additional_context_no_feedback(self):
+
+        signal = SignalFactory.create(status__state=self.state, status__text='some_text',
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+        context = self.action.get_additional_context(signal)
+        self.assertFalse(any(context))
+
+    def test_context_in_template(self):
+
+        self.feedback.text = 'text_12345'
+        self.feedback.text_extra = 'text_extra_9876'
+        self.feedback.allows_contact = True
+        self.feedback.is_satisfied = False
+        self.feedback.save()
+
+        self.assertTrue(self.action(self.signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        body = mail.outbox[0].body
+        self.assertIn(self.feedback.text, body)
+        self.assertIn(self.feedback.text_extra, body)
 
 
 class TestSignalScheduledAction(ActionTestMixin, TestCase):

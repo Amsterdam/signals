@@ -16,3 +16,19 @@ class SignalHandledNegativeAction(AbstractAction):
     subject = 'Meer over uw melding {signal_id}'
 
     note = 'Automatische e-mail bij afhandelen heropenen negatieve feedback'
+
+    def get_additional_context(self, signal, dry_run=False):
+        """
+        Add the extra feedback essences to the email template
+        """
+        feedback = signal.feedback.last()
+
+        if not feedback:
+            return {}
+
+        return {
+            'feedback_allows_contact': feedback.allows_contact,
+            'feedback_is_satisfied': feedback.is_satisfied,
+            'feedback_text': feedback.text,
+            'feedback_text_extra': feedback.text_extra
+        }
