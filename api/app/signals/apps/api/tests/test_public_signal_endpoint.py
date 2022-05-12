@@ -25,7 +25,7 @@ from signals.apps.signals.factories import (
     SignalFactory,
     SourceFactory
 )
-from signals.apps.signals.models import Attachment, Priority, Signal, Type
+from signals.apps.signals.models import Attachment, Note, Priority, Signal, Type
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, STATUS_CHOICES
 from signals.test.utils import SignalsBaseApiTestCase
@@ -224,6 +224,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
     def test_add_attachment_imagetype(self):
         signal = SignalFactory.create(status__state=GEMELD)
+        note_count = Note.objects.count()
 
         data = {"file": SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')}
 
@@ -235,6 +236,12 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         attachment = Attachment.objects.last()
         self.assertEqual("image/gif", attachment.mimetype)
         self.assertIsNone(attachment.created_by)
+
+        # Check that history contains notes that show photo's were uploaded.
+        filename = os.path.basename(attachment.file.name)
+        self.assertEqual(Note.objects.count(), note_count + 1)
+        for note in Note.objects.filter(_signal=signal):
+            self.assertIn(f'Foto toegevoegd door melder: {filename}', note.text)
 
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create(status__state=GEMELD)
