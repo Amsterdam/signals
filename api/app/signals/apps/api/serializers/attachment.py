@@ -39,7 +39,7 @@ class SignalAttachmentSerializerMixin:
         msg = f'Foto toegevoegd door melder: {filename}'
         if user:
             msg = f'Foto toegevoegd door {user.email}: {filename}'
-        Signal.actions.create_note({'text': msg}, self.context['view'].get_signal())
+        Signal.actions.create_note({'text': msg}, signal)
 
         return attachment
 
