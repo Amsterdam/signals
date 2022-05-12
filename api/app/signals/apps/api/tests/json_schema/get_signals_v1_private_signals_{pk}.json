@@ -171,6 +171,15 @@
 				"buurt_code": {
 					"type": ["string", "null"]
 				},
+				"area_type_code": {
+					"type": ["string", "null"]
+				},
+				"area_code": {
+					"type": ["string", "null"]
+				},
+				"area_name": {
+					"type": ["string", "null"]
+				},
 				"address": {
                     "anyOf": [
                         {

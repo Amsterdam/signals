@@ -22,6 +22,7 @@ from signals.apps.api.validation.address.base import (
     AddressValidationUnavailableException,
     NoResultsException
 )
+from signals.apps.reporting.csv.utils import map_choices
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     AreaFactory,
@@ -41,6 +42,7 @@ from signals.apps.signals.tests.attachment_helpers import (
     add_non_image_attachments,
     small_gif
 )
+from signals.apps.signals.workflow import STATUS_CHOICES
 from signals.test.utils import (
     SIAReadUserMixin,
     SIAReadWriteUserMixin,
@@ -359,6 +361,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
            side_effect=AddressValidationUnavailableException)  # Skip address validation
     def test_create_initial_without_stadsdeel(self, validate_address):
         # Create initial Signal, check that it reached the database.
+        # This test documents Signalen Amsterdam flow as of May 2022.
         signal_count = Signal.objects.count()
 
         create_initial_data = self.create_initial_data
@@ -385,6 +388,46 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertIsNotNone(response_json['location']['stadsdeel'])
         self.assertEqual(response_json['location']['stadsdeel'], STADSDEEL_CENTRUM)
         self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+
+    @override_settings(DEFAULT_SIGNAL_AREA_TYPE='district')
+    @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_create_initial_assign_area(self, validate_address):
+        # Create initial Signal, check that it is created and that area_name,
+        # area_code, and area_type_code are set on the Location model.
+        # This test documents the Signalen VNG installations' behavior.
+        BBOX = [4.877157, 52.357204, 4.929686, 52.385239]
+        lon = (BBOX[0] + BBOX[2]) / 2
+        lat = (BBOX[1] + BBOX[3]) / 2
+        geometry = MultiPolygon([Polygon.from_bbox(BBOX)], srid=4326)
+        AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
+
+        signal_count = Signal.objects.count()
+        create_initial_data = self.create_initial_data
+        create_initial_data['location']['geometrie']['coordinates'] = [lon, lat]
+        del(create_initial_data['location']['stadsdeel'])
+        del(create_initial_data['location']['address'])
+        del(create_initial_data['location']['buurt_code'])
+
+        response = self.client.post(self.list_endpoint, create_initial_data, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Signal.objects.count(), signal_count + 1)
+
+        # Check that the actions are logged with the correct user email
+        new_url = response.json()['_links']['self']['href']
+        response = self.client.get(new_url)
+        response_json = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_signal_schema, response_json)
+
+        # Check that the area_name, area_code, and area_type_code fields are set correctly.
+        self.assertIsNone(response_json['location']['stadsdeel'])
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['location']['area_type_code'], 'district')
+        self.assertEqual(response_json['location']['area_code'], 'centrum')
+        self.assertEqual(response_json['location']['area_name'], 'Centrum')
 
     @skip('Disabled for now, it no longer throws an error but logs a warning and stores the unvalidated address')
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
@@ -679,6 +722,54 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # JSONSchema validation
         response_json = response.json()
         self.assertJsonSchema(self.list_history_schema, response_json)
+
+    @override_settings(DEFAULT_SIGNAL_AREA_TYPE='district')
+    @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
+           side_effect=AddressValidationUnavailableException)  # Skip address validation
+    def test_update_location_assign_area(self, validate_address):
+        # Update location check that area_name, area_code, and area_type_code
+        # are set on the Location model. This test documents the Signalen VNG
+        # installations' behavior.
+        BBOX = [4.877157, 52.357204, 4.929686, 52.385239]
+        lon = (BBOX[0] + BBOX[2]) / 2
+        lat = (BBOX[1] + BBOX[3]) / 2
+        geometry = MultiPolygon([Polygon.from_bbox(BBOX)], srid=4326)
+        AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='district')
+
+        # Partial update to update the location, all interaction via API.
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
+        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
+
+        # check that only one Location is in the history
+        querystring = urlencode({'what': 'UPDATE_LOCATION'})
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 1)
+
+        # retrieve relevant fixture
+        fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
+        with open(fixture_file, 'r') as f:
+            data = json.load(f)
+        data['location']['geometrie']['coordinates'] = [lon, lat]
+        del data['location']['address']
+        del data['location']['stadsdeel']
+        del data['location']['buurt_code']
+
+        # update location
+        response = self.client.patch(detail_endpoint, data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        # check that there are two Locations is in the history
+        response = self.client.get(history_endpoint + '?' + querystring)
+        self.assertEqual(len(response.json()), 2)
+
+        # Check that the area_name, area_code, and area_type_code fields are set correctly.
+        response = self.client.get(detail_endpoint)
+        response_json = response.json()
+        self.assertIsNone(response_json['location']['stadsdeel'])
+        self.assertEqual(response_json['location']['created_by'], self.sia_read_write_user.email)
+        self.assertEqual(response_json['location']['area_type_code'], 'district')
+        self.assertEqual(response_json['location']['area_code'], 'centrum')
+        self.assertEqual(response_json['location']['area_name'], 'Centrum')
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address")
     def test_update_location_no_address(self, validate_address):
@@ -1765,6 +1856,139 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         deadline_factor_3 = dateutil.parser.parse(result_json['results'][0]['category']['deadline_factor_3'])
         self.assertEqual(deadline, signal.category_assignment.deadline)
         self.assertEqual(deadline_factor_3, signal.category_assignment.deadline_factor_3)
+
+
+class TestPrivateSignalViewSetOrdering(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    """
+    Test ordering of Signals in REST API.
+    """
+
+    def setUp(self):
+        # No URL reversing here, these endpoints are part of the spec (and thus
+        # should not change).
+        self.list_endpoint = '/signals/v1/private/signals/'
+
+        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+    def _get_signal_ids(self, response_json):
+        return [result['id'] for result in response_json['results']]
+
+    def test_order_by_area_name_or_stadsdeel(self):
+        # Sort by area_name, add the ,id to the ordering query parameter to make
+        # the order of None values predictable. Default behavior of Postgres is
+        # to sort NULLS LAST for ascending order en NULLS FIRST for descending.
+        # This test also checks that area_name and stadsdeel ordering behave
+        # the same.
+        signal_a = SignalFactoryValidLocation.create(location__area_name='a')
+        signal_a.location.stadsdeel = 'a'  # factory overwrites this property post generation
+        signal_a.location.save()
+        signal_A = SignalFactoryValidLocation.create(location__area_name='A')
+        signal_A.location.stadsdeel = 'A'
+        signal_A.location.save()
+        signal_B = SignalFactoryValidLocation.create(location__area_name='B')
+        signal_B.location.stadsdeel = 'B'
+        signal_B.location.save()
+
+        signal_none1 = SignalFactoryValidLocation.create(location__area_name=None)
+        signal_none1.location.stadsdeel = None
+        signal_none1.location.save()
+        signal_none2 = SignalFactoryValidLocation.create(location__area_name=None)
+        signal_none2.location.stadsdeel = None
+        signal_none2.location.save()
+
+        # ascending (add the ,id to order Nones predictably)
+        response = self.client.get(f'{self.list_endpoint}?ordering=area_name,id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_area_name_asc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=stadsdeel,id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_stadsdeel_asc = self._get_signal_ids(response.json())
+
+        self.assertEqual(
+            signal_ids_area_name_asc, [signal_a.id, signal_A.id, signal_B.id, signal_none1.id, signal_none2.id])
+        self.assertEqual(signal_ids_area_name_asc, signal_ids_stadsdeel_asc)
+
+        # descending
+        response = self.client.get(f'{self.list_endpoint}?ordering=-area_name,-id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_area_name_desc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-stadsdeel,-id')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_stadsdeel_desc = self._get_signal_ids(response.json())
+
+        self.assertEqual(
+            signal_ids_area_name_desc, [signal_none2.id, signal_none1.id, signal_B.id, signal_A.id, signal_a.id])
+        self.assertEqual(signal_ids_area_name_desc, signal_ids_stadsdeel_desc)
+
+    def test_order_by_created_at_or_updated_at(self):
+        now = timezone.now()
+        with freeze_time(now - timedelta(hours=3)):
+            signal_1 = SignalFactoryValidLocation.create()
+        with freeze_time(now - timedelta(hours=2)):
+            signal_2 = SignalFactoryValidLocation.create()
+        with freeze_time(now - timedelta(hours=1)):
+            signal_3 = SignalFactoryValidLocation.create()
+
+        # ascending
+        response = self.client.get(f'{self.list_endpoint}?ordering=created_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_created_at_asc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=updated_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_updated_at_asc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_created_at_asc, [signal_1.id, signal_2.id, signal_3.id])
+        self.assertEqual(signal_ids_created_at_asc, signal_ids_updated_at_asc)
+
+        # descending
+        response = self.client.get(f'{self.list_endpoint}?ordering=-created_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_created_at_desc = self._get_signal_ids(response.json())
+
+        response = self.client.get(f'{self.list_endpoint}?ordering=-updated_at')
+        self.assertEqual(response.status_code, 200)
+        signal_ids_updated_at_desc = self._get_signal_ids(response.json())
+
+        self.assertEqual(signal_ids_created_at_desc, [signal_3.id, signal_2.id, signal_1.id])
+        self.assertEqual(signal_ids_created_at_desc, signal_ids_updated_at_desc)
+
+    def test_order_by_status(self):
+        # Document ordering behavior with respect to state. Current behavior is
+        # to sort by code and not by human readable text - this mismatch means
+        # that to a user the Signal instances do not appear to be sorted
+        # alphabetically. (We sort on state, user sees state_display.)
+        for code, _ in STATUS_CHOICES:
+            SignalFactoryValidLocation.create(status__state=code)
+
+        # sort ascending
+        response = self.client.get(f'{self.list_endpoint}?ordering=status')
+        self.assertEqual(response.status_code, 200)
+
+        response_state_displays = []
+        response_states = []
+        for result in response.json()['results']:
+            response_state_displays.append(result['status']['state_display'])
+            response_states.append(result['status']['state'])
+
+        # States are sorted correctly, state_displays are not. We use the DB to
+        # get ordered lists because the endpoint uses the DB to do ordering and
+        # Python list sort behaves differently when strings contain special
+        # characters like a space.
+        ordered_states = list(Signal.objects.all().order_by('status__state').values_list('status__state', flat=True))
+        ordered_state_displays = list(
+            Signal.objects.all()
+            .annotate(state_display=map_choices('status__state', STATUS_CHOICES))
+            .order_by('state_display')
+            .values_list('state_display', flat=True)
+        )
+
+        self.assertEqual(ordered_states, response_states)
+        # REST API users do not get properly sorted state displays:
+        self.assertNotEqual(ordered_state_displays, response_state_displays)
 
 
 @override_settings(FEATURE_FLAGS={

@@ -79,6 +79,7 @@ class SignalManager(models.Manager):
             if area:
                 location_data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
                 location_data['area_code'] = area.code
+                location_data['area_name'] = area.name
 
         # Create dependent model instances with correct foreign keys to Signal
         location = Location.objects.create(**location_data, _signal_id=signal.pk)
@@ -181,6 +182,7 @@ class SignalManager(models.Manager):
             if area:
                 data['area_type_code'] = DEFAULT_SIGNAL_AREA_TYPE
                 data['area_code'] = area.code
+                data['area_name'] = area.name
 
         prev_location = signal.location
         location = Location.objects.create(**data, _signal_id=signal.id)
