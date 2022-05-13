@@ -21,7 +21,7 @@ from signals.apps.signals.factories import (
     SignalFactoryWithImage,
     SourceFactory
 )
-from signals.apps.signals.models import Attachment, Signal
+from signals.apps.signals.models import Attachment, Note, Signal
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -290,11 +290,13 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         parent_signal_count = Signal.objects.filter(parent_id__isnull=True).count()
         child_signal_count = Signal.objects.filter(parent_id__isnull=False).count()
         attachment_count = Attachment.objects.count()
+        note_count = Note.objects.count()
 
         self.assertEqual(signal_count, 1)
         self.assertEqual(parent_signal_count, 1)
         self.assertEqual(child_signal_count, 0)
         self.assertEqual(attachment_count, 1)
+        self.assertEqual(note_count, 0)
 
         attachment = parent_signal.attachments.first()
 
@@ -312,6 +314,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
         self.assertEqual(Signal.objects.filter(parent_id__isnull=True).count(), 1)
         self.assertEqual(Signal.objects.filter(parent_id__isnull=False).count(), 2)
         self.assertEqual(Attachment.objects.count(), 3)
+        self.assertEqual(Note.objects.count(), 2)
 
         # JSONSchema validation
         response_json = response.json()
@@ -320,6 +323,14 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
             self.assertEqual(len(detail_response_json['attachments']), 1)
             self.assertJsonSchema(self.retrieve_signal_schema, detail_response_json)
+
+        # Check that the notes are created with correct messages:
+        note_qs = Note.objects.order_by('created_at')
+        attachment_qs = Attachment.objects.order_by('created_at')[1:]
+
+        for note, attachment in zip(note_qs, attachment_qs):
+            filename = os.path.basename(attachment.file.name)
+            self.assertEqual(f'Foto gekopieerd van hoofdmelding: {filename}', note.text)
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',
            side_effect=AddressValidationUnavailableException)  # Skip address validation
