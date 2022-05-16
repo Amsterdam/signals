@@ -124,7 +124,7 @@ class TestUtils(TestCase):
         context = make_email_context(signal=signal)
 
         self.assertEqual(context['signal_id'], signal.id)
-        self.assertEqual(context['formatted_signal_id'], signal.sia_id)
+        self.assertEqual(context['formatted_signal_id'], signal.get_id_display())
         self.assertEqual(context['created_at'], signal.created_at)
         self.assertEqual(context['text'], signal.text)
         self.assertEqual(context['text_extra'], signal.text_extra)
@@ -161,7 +161,7 @@ class TestUtils(TestCase):
         context = make_email_context(signal=signal, additional_context={'extra': 'context'})
 
         self.assertEqual(context['signal_id'], signal.id)
-        self.assertEqual(context['formatted_signal_id'], signal.sia_id)
+        self.assertEqual(context['formatted_signal_id'], signal.get_id_display())
         self.assertEqual(context['created_at'], signal.created_at)
         self.assertEqual(context['text'], signal.text)
         self.assertEqual(context['text_extra'], signal.text_extra)
