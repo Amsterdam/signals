@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Melding Signalen-{{ signal.id }} </title>
+    <title>Melding {{ signal.get_id_display }} </title>
     <style type="text/css">
         * {
             font-family: Avenir Next LT W01 Demi,arial,sans-serif;
@@ -99,7 +99,7 @@
         </table>
     </div>
 
-    <h1>Signalen-{{ signal.id }}</h1>
+    <h1>{{ signal.get_id_display }}</h1>
     <div style="width: 680px; height: 250px; background-color: lightgray; margin-bottom: 25px; position:relative; top:0px; left:0px;">
         {% if img_data_uri %}
         <img src="{{img_data_uri}}" style="position:relative; top:0px; left:0px;"/>
@@ -114,7 +114,7 @@
         {% if signal.is_child %}
         <tr>
             <td>Hoofdmelding</td>
-            <td>: Signalen-{{ signal.parent.id }}</td>
+            <td>: {{ signal.parent.get_id_display }}</td>
         </tr>
         {% endif %}
         <tr>
