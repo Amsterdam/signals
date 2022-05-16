@@ -107,9 +107,22 @@ class Signal(CreatedUpdatedModel):
     def is_child(self):
         return self.parent is not None
 
+    def get_id_display(self):
+        """
+        Signals Identifier used for external communication.
+        Can be configured in the settings, defaults to 'SIG-' + id.
+        """
+        return f'{settings.SIGNAL_ID_DISPLAY_PREFIX or ""}{self.id}'
+
     @property
     def sia_id(self):
         """
+        Deprecated in favour of `id_display`. Will be removed a.s.a.p.
+
+        TODO:
+        - Check if this can be changed in the SIGMAX communication
+        - Remove this property
+
         SIA identifier used for external communication.
         """
         return f'SIA-{self.id}'
