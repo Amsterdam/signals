@@ -178,6 +178,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         ]
     )
 
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
     attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
                                                       required=False, read_only=True)
 
@@ -188,6 +189,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             '_display',
             'category',
             'id',
+            'id_display',
             'has_attachments',
             'location',
             'status',
@@ -347,6 +349,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     # The Session containing the given answers of a Questionnaire
     session = serializers.UUIDField(default=None, write_only=True, required=False)
 
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
+
     class Meta:
         model = Signal
         list_serializer_class = _SignalListSerializer
@@ -354,6 +358,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             '_links',
             '_display',
             'id',
+            'id_display',
             'signal_id',
             'source',
             'text',

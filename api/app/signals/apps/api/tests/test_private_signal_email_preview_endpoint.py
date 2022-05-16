@@ -116,7 +116,7 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
             self.assertEqual(response.status_code, 200)
 
             response_data = response.json()
-            self.assertEqual(f'Meer over uw melding {self.signal.id}', response_data['subject'])
+            self.assertEqual(f'Meer over uw melding {self.signal.get_id_display()}', response_data['subject'])
             self.assertIn(text, response_data['html'])
 
             # Refresh the Signal
@@ -148,7 +148,7 @@ class TestPrivateSignalEmailPreview(SIAReadUserMixin, SIAReadWriteUserMixin, Sig
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
-        self.assertEqual(f'Meer over uw melding {self.signal.id}', response_data['subject'])
+        self.assertEqual(f'Meer over uw melding {self.signal.get_id_display()}', response_data['subject'])
         self.assertIn(text, response_data['html'])
 
         # Refresh the Signal
