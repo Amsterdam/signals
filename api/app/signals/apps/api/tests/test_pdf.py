@@ -21,7 +21,7 @@ class TestPDFView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.get('Content-Type'), 'application/pdf')
         self.assertEqual(
             response.get('Content-Disposition'),
-            'attachment;filename="Signalen-{}.pdf"'.format(self.signal.pk)
+            f'attachment;filename="{self.signal.get_id_display()}.pdf"'
         )
 
     def test_get_pdf_signal_does_not_exists(self):

@@ -12,7 +12,7 @@ class PDFTemplateResponseMixin(TemplateResponseMixin):
 
     def get_pdf_filename(self):
         if not self.pdf_filename:
-            self.pdf_filename = 'Signalen-{}.pdf'.format(self.object.pk)
+            self.pdf_filename = f'{self.object.get_id_display()}.pdf'
         return self.pdf_filename
 
     def render_to_response(self, context, **response_kwargs):
