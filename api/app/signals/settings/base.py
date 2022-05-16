@@ -441,6 +441,9 @@ FEATURE_FLAGS = {
 
     # Enable/disable status mail for Handled after negative feedback
     'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', False) in TRUE_VALUES, # noqa
+
+    # Enable/disable only mail when Feedback allows_contact is True
+    'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': os.getenv('REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT', True) in TRUE_VALUES, # noqa
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
