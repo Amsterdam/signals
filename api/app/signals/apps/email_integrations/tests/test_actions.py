@@ -172,6 +172,42 @@ class ActionTestMixin:
         self.assertFalse(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_allowed_contact_false(self):
+        """
+        Disable all emails when a signal has a feedback object with allows_contact False
+        """
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False
+        )
+        feedback.save()
+        signal.save()
+        self.assertFalse(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+
+    @override_settings(FEATURE_FLAGS={
+        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+    })
+    def test_allowed_contact_disable_flag(self):
+        """
+        When the flag is set to false the feature should always return true and still mail the users
+        """
+        print(self)
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state, status__text=status_text,
+                                      status__send_email=self.send_email, reporter__email='test@example.com')
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False
+        )
+        feedback.save()
+        signal.save()
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertTrue(len(mail.outbox) > 0)
+
     def test_send_mail_fails_encoded_chars_in_text(self):
         """
         The action should not send an email if the text contains encoded characters. A note should be added so that
@@ -531,6 +567,16 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
         self.assertFalse(self.action(parent_signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(Note.objects.count(), 0)
+
+    @override_settings(FEATURE_FLAGS={
+        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+    })
+    def test_allowed_contact_disable_flag(self):
+        """
+        When the flag is set to false the feature should always return true and still mail the users
+        """
+        self.assertTrue(self.action(self.signal, dry_run=False))
+        self.assertTrue(len(mail.outbox) > 0)
 
     def test_send_mail_fails_encoded_chars_in_text(self):
         """
