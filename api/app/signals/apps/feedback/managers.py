@@ -9,4 +9,4 @@ logger = logging.getLogger(__name__)
 
 class FeedbackManager(models.Manager):
     def request_feedback(self, signal):
-        return self.create(**{'_signal': signal, 'allows_contact': True})
+        return self.create(**{'_signal': signal})
