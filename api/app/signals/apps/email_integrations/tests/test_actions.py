@@ -181,7 +181,8 @@ class ActionTestMixin:
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         feedback = FeedbackFactory.create(
             _signal=signal,
-            allows_contact=False
+            allows_contact=False,
+            submitted_at='2022-01-01'
         )
         feedback.save()
         signal.save()
@@ -195,13 +196,13 @@ class ActionTestMixin:
         """
         When the flag is set to false the feature should always return true and still mail the users
         """
-        print(self)
         status_text = FuzzyText(length=400)
         signal = SignalFactory.create(status__state=self.state, status__text=status_text,
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         feedback = FeedbackFactory.create(
             _signal=signal,
-            allows_contact=False
+            allows_contact=False,
+            submitted_at='2022-01-01'
         )
         feedback.save()
         signal.save()

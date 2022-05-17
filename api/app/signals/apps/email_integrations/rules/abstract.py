@@ -78,7 +78,7 @@ class AbstractRule(ABC):
             return True
 
         try:
-            return signal.feedback.last().allows_contact
+            return signal.feedback.filter(submitted_at__isnull=False).order_by('submitted_at').last().allows_contact
         except AttributeError:
             # if no feedback exists return True because the user has never specified not to.
             return True
