@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.core import mail
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
@@ -281,6 +282,48 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.AFGEHANDELD)
         self.assertEqual(status_id_before, self.signal.status.id)
+
+    def test_send_mail_is_satisfied_false_feedback_email(self):
+        """"
+        if is_satisfied is false is should send an email
+        """
+        self.assertEqual(len(mail.outbox), 0)
+        token = self.feedback.token
+        data = {
+            'allows_contact': True,
+            'text': 'probleem niet opgelost.',
+            'is_satisfied': False,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_send_mail_is_satisfied_true_feedback_email(self):
+        """"
+        if is_satisfied is true is should not send an email
+        """
+        self.assertEqual(len(mail.outbox), 0)
+        token = self.feedback.token
+        data = {
+            'allows_contact': True,
+            'text': 'opgelost.',
+            'is_satisfied': True,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 0)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
