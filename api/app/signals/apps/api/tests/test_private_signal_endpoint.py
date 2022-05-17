@@ -36,7 +36,7 @@ from signals.apps.signals.factories import (
     SourceFactory
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
-from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Signal
+from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Note, Signal
 from signals.apps.signals.tests.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
@@ -530,6 +530,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_create_initial_and_upload_image(self, validate_address):
         attachment_count = Attachment.objects.count()
         attachments_url = self.detail_endpoint.format(pk=self.signal_no_image.pk) + '/attachments/'
+        note_count = Note.objects.count()
 
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         response = self.client.post(attachments_url, data={'file': image})
@@ -544,6 +545,16 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(Attachment.objects.count(), attachment_count + 2)
         for attachment in Attachment.objects.all().order_by('created_at')[attachment_count:]:
             self.assertEqual(self.sia_read_write_user.email, attachment.created_by)
+
+        # Check that history contains notes that show photo's were uploaded.
+        self.assertEqual(Note.objects.count(), note_count + 2)
+
+        note_qs = Note.objects.filter(_signal=self.signal_no_image).order_by('created_at')
+        attachment_qs = Attachment.objects.filter(_signal=self.signal_no_image).order_by('created_at')
+
+        for note, attachment in zip(note_qs, attachment_qs):
+            filename = os.path.basename(attachment.file.name)
+            self.assertEqual(f'Foto toegevoegd door {self.sia_read_write_user}: {filename}', note.text)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation

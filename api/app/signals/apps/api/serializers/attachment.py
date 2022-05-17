@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+import os
 from datetime import timedelta
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -24,11 +25,21 @@ PUBLIC_UPLOAD_ALLOWED_STATES = (AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD)
 
 class SignalAttachmentSerializerMixin:
     def create(self, validated_data):
-        attachment = Signal.actions.add_attachment(validated_data['file'], self.context['view'].get_signal())
+        user = self.context['request'].user
+        signal = self.context['view'].get_signal()
 
-        if self.context['request'].user:
-            attachment.created_by = self.context['request'].user.email
+        # save our attachment
+        attachment = Signal.actions.add_attachment(validated_data['file'], signal)
+        if user:
+            attachment.created_by = user.email
             attachment.save()
+
+        # add a note that an attachment (currently only images allowed) was uploaded
+        filename = os.path.basename(attachment.file.name)
+        msg = f'Foto toegevoegd door melder: {filename}'
+        if user:
+            msg = f'Foto toegevoegd door {user.email}: {filename}'
+        Signal.actions.create_note({'text': msg}, signal)
 
         return attachment
 
