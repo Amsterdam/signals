@@ -1,16 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from rest_framework import serializers
+
 from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Reporter
 
 
 class _NestedReporterModelSerializer(SIAModelSerializer):
+
+    allows_contact = serializers.SerializerMethodField()
+
     class Meta:
         model = Reporter
         fields = (
             'email',
             'phone',
             'sharing_allowed',
+            'allows_contact'
         )
 
     def to_representation(self, instance):
@@ -39,3 +45,10 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
             data['phone'] = None
 
         return super().to_internal_value(data)
+
+    def get_allows_contact(self, instance) -> bool:
+        """
+        Check if the reporters last feedback object allows for contact
+        if not feedback exists return True
+        """
+        return instance._signal.allows_contact

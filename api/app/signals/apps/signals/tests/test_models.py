@@ -10,6 +10,7 @@ from django.test import LiveServerTestCase, TestCase, TransactionTestCase, overr
 from django.utils import timezone
 from django.utils.text import slugify
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import factories, workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -353,6 +354,39 @@ class TestSignalModel(TestCase):
         created_at = signal.created_at.astimezone(timezone.get_current_timezone())
 
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
+
+    def test_allows_contact(self):
+        signal = factories.SignalFactory.create()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_False(self):
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            submitted_at='2022-01-01',
+            allows_contact=False
+        )
+        feedback.save()
+        self.assertFalse(signal.allows_contact)
+
+    def test_allows_contact_True(self):
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            submitted_at='2022-01-01',
+            allows_contact=True
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_True_unsummited(self):
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
 
 
 class TestStatusModel(TestCase):
