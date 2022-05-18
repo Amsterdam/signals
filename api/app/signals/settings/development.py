@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import os
 
 from signals.settings.base import *  # noqa
@@ -8,7 +8,6 @@ SITE_DOMAIN = 'localhost:8000'
 SECRET_KEY = 'insecure'
 DEBUG = True
 ALLOWED_HOSTS = ['*', ]
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 DATABASES['default']['HOST'] = 'database'  # noqa: F405
 DATABASES['default']['PORT'] = '5432'  # noqa: F405
 SIGNALS_AUTH = {
