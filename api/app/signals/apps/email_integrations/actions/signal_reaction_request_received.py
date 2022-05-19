@@ -13,7 +13,7 @@ class SignalReactionRequestReceivedAction(AbstractAction):
     rule = SignalReactionRequestReceivedRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'Automatische e-mail bij Reactie ontvangen is verzonden aan de melder.'
 

@@ -13,6 +13,6 @@ class SignalReopenedAction(AbstractAction):
     rule = SignalReopenedRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'Automatische e-mail bij heropenen is verzonden aan de melder.'

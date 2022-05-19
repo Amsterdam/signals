@@ -82,7 +82,7 @@ class AbstractAction(ABC):
         except EmailTemplate.DoesNotExist:
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
-            subject = self.subject.format(signal_id=context['signal_id'])
+            subject = self.subject.format(formatted_signal_id=context['formatted_signal_id'])
             message = loader.get_template('email/signal_default.txt').render(context)
             html_message = loader.get_template('email/signal_default.html').render(context)
 

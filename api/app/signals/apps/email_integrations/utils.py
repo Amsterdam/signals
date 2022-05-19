@@ -131,7 +131,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
 
     context = {
         'signal_id': signal.id,
-        'formatted_signal_id': signal.sia_id,
+        'formatted_signal_id': signal.get_id_display(),
         'created_at': signal.created_at,
         'text': text,
         'text_extra': text_extra,

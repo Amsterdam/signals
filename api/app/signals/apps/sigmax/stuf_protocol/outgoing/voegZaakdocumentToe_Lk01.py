@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 """
 Support for voegZaakdocumentToe_Lk01 messages to send to CityControl.
 
@@ -31,7 +31,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal, seq_no):
         'DOC_UUID': str(uuid.uuid4()),
         'DATA': encoded_pdf.decode('utf-8'),
         'DOC_TYPE': 'PDF',
-        'FILE_NAME': f'{signal.sia_id}.pdf'
+        'FILE_NAME': f'{signal.get_id_display()}.pdf'
     })
 
 

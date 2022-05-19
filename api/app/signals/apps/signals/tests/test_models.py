@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import os
 from unittest import mock
 
@@ -246,6 +246,19 @@ class TestSignalManager(TransactionTestCase):
 
 
 class TestSignalModel(TestCase):
+
+    def test_get_id_display(self):
+        signal = factories.SignalFactory.create(id=999)
+        self.assertEqual('SIG-999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX='SIGNALS-'):
+            self.assertEqual('SIGNALS-999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX=''):
+            self.assertEqual('999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX=None):
+            self.assertEqual('999', signal.get_id_display())
 
     def test_sia_id(self):
         signal = factories.SignalFactory.create(id=999)

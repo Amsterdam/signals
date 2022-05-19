@@ -14,7 +14,7 @@ class SignalReactionRequestAction(AbstractAction):
     rule = SignalReactionRequestRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'E-mail met vraag verstuurd aan melder'
 

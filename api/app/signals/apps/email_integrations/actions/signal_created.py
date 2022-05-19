@@ -13,7 +13,7 @@ class SignalCreatedAction(AbstractAction):
     rule = SignalCreatedRule()
 
     key = EmailTemplate.SIGNAL_CREATED
-    subject = 'Bedankt voor uw melding {signal_id}'
+    subject = 'Bedankt voor uw melding {formatted_signal_id}'
 
     note = 'Automatische e-mail bij registratie van de melding is verzonden aan de melder.'
 
