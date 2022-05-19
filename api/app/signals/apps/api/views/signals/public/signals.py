@@ -3,7 +3,8 @@
 import logging
 
 from django.db.models import CharField, Min, Value
-from django.db.models.functions import Coalesce, JSONObject
+from django.db.models.expressions import Case, When
+from django.db.models.functions import JSONObject
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -92,8 +93,16 @@ class PublicSignalViewSet(GenericViewSet):
                     properties=JSONObject(
                         category=JSONObject(
                             # Return the category public_name. If the public_name is empty, return the category name
-                            name=Coalesce('category_assignment__category__public_name',
-                                          'category_assignment__category__name'),
+                            # name=Coalesce('category_assignment__category__public_name',
+                            #               'category_assignment__category__name'),
+                            name=Case(
+                                When(category_assignment__category__public_name__exact='',
+                                     then='category_assignment__category__name'),
+                                When(category_assignment__category__public_name__isnull=True,
+                                     then='category_assignment__category__name'),
+                                default='category_assignment__category__public_name',
+                                output_field=CharField(),
+                            )
                         ),
                         # Creation date of the Signal
                         created_at='created_at',

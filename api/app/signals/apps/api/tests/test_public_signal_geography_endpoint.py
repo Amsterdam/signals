@@ -236,3 +236,55 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertIn('non_field_errors', data.keys())
         self.assertEqual(1, len(data['non_field_errors']))
         self.assertEqual('Either bbox or lon/lat must be filled in', data['non_field_errors'][0])
+
+    def test_public_name_isset(self):
+        """
+        An empty public_name (None) must fallback to the name
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, public_name='test', is_public_accessible=True)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, int(response.headers['X-Total-Count']))
+
+        data = response.json()
+        self.assertEqual(1, len(data['features']))
+        self.assertEqual(child_category.public_name, data['features'][0]['properties']['category']['name'])
+        self.assertNotEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+
+    def test_public_name_is_none(self):
+        """
+        An empty public_name (None) must fallback to the name
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, public_name=None, is_public_accessible=True)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, int(response.headers['X-Total-Count']))
+
+        data = response.json()
+        self.assertEqual(1, len(data['features']))
+        self.assertEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+
+    def test_public_name_is_empty(self):
+        """
+        An empty public_name ('') must fallback to the name
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, public_name='', is_public_accessible=True)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+
+        response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
+                                   f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, int(response.headers['X-Total-Count']))
+
+        data = response.json()
+        self.assertEqual(1, len(data['features']))
+        self.assertEqual(child_category.name, data['features'][0]['properties']['category']['name'])
