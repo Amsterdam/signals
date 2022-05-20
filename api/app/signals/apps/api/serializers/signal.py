@@ -534,12 +534,14 @@ class PublicSignalSerializerDetail(HALSerializer):
     serializer_url_field = PublicSignalLinksField
     _display = serializers.SerializerMethodField(method_name='get__display')
     signal_id = serializers.UUIDField(source='uuid')
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
 
     class Meta:
         model = Signal
         fields = (
             '_display',
             'id',
+            'id_display',
             'signal_id',
             'status',
             'created_at',
@@ -549,7 +551,7 @@ class PublicSignalSerializerDetail(HALSerializer):
         )
 
     def get__display(self, obj):
-        return obj.sia_id
+        return obj.get_id_display()
 
 
 class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):
