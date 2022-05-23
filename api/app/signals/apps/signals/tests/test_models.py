@@ -369,10 +369,16 @@ class TestSignalModel(TestCase):
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
 
     def test_allows_contact(self):
+        """
+        No feedback so needs to return True
+        """
         signal = factories.SignalFactory.create()
         self.assertTrue(signal.allows_contact)
 
     def test_allows_contact_False(self):
+        """
+        Submitted feedback with allows_contantact False
+        """
         signal = factories.SignalFactory.create()
         feedback = FeedbackFactory.create(
             _signal=signal,
@@ -383,6 +389,9 @@ class TestSignalModel(TestCase):
         self.assertFalse(signal.allows_contact)
 
     def test_allows_contact_True(self):
+        """
+        Submitted feedback with allows_contantact True
+        """
         signal = factories.SignalFactory.create()
         feedback = FeedbackFactory.create(
             _signal=signal,
@@ -393,6 +402,21 @@ class TestSignalModel(TestCase):
         self.assertTrue(signal.allows_contact)
 
     def test_allows_contact_True_unsummited(self):
+        """
+        Unsubmitedd Feedback with Allows Contact True
+        """
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=True
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_False_unsummited(self):
+        """
+        Unsubmitedd Feedback with Allows Contact False
+        """
         signal = factories.SignalFactory.create()
         feedback = FeedbackFactory.create(
             _signal=signal,
