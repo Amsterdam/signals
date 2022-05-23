@@ -14,7 +14,7 @@ class SignalHandledAction(AbstractAction):
     rule = SignalHandledRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'Automatische e-mail bij afhandelen is verzonden aan de melder.'
 

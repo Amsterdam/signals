@@ -15,7 +15,7 @@ from signals.apps.signals.models import Note
 class TestMailActions(TestCase):
     def setUp(self):
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_CREATED,
-                                     title='Uw melding {{ signal_id }}',
+                                     title='Uw melding {{ formatted_signal_id }}',
                                      body='{{ text }} {{ created_at }} {{ handling_message }} {{ ORGANIZATION_NAME }}')
 
     def test_send_status_email(self):
@@ -24,7 +24,7 @@ class TestMailActions(TestCase):
         signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
         self.assertTrue(MailService.status_mail(signal))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
@@ -78,7 +78,7 @@ class TestMailActions(TestCase):
 
         self.assertTrue(MailService.status_mail(signal))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Meer over uw melding {signal.get_id_display()}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)

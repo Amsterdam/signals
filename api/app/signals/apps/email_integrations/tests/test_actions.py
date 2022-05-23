@@ -35,45 +35,45 @@ class ActionTestMixin:
 
     def setUp(self):
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_CREATED,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_CREATED}',
                                      body='{{ text }} {{ created_at }} {{ handling_message }} {{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD}',
                                      body='{{ text }} {{ created_at }} {{ positive_feedback_url }} '
                                           '{{ negative_feedback_url }}{{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_INGEPLAND}',
                                      body='{{ text }} {{ created_at }} {{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_HEROPEND}',
                                      body='{{ text }} {{ created_at }} {{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL}',
                                      body='{{ text }} {{ created_at }} {{ status_text }} {{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_GEVRAAGD}',
                                      body='{{ text }} {{ created_at }} {{ status_text }} {{ reaction_url }} '
                                           '{{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN}',
                                      body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
                                           '{{ ORGANIZATION_NAME }}')
 
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT,
-                                     title='Uw melding {{ signal_id }}'
+                                     title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT}',
                                      body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
                                           '{{ ORGANIZATION_NAME }} {{ feedback_text }} {{ feedback_text_extra }} ')
@@ -86,7 +86,7 @@ class ActionTestMixin:
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
@@ -261,7 +261,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn('t**t@******e.com', mail.outbox[0].body)
@@ -279,7 +279,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertIn('tt@**.com', mail.outbox[0].body)
@@ -299,7 +299,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
@@ -370,7 +370,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
@@ -396,7 +396,7 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
 
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
 
@@ -505,7 +505,7 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
         self.assertEqual(len(mail.outbox), 0)
         self.assertTrue(self.action(self.signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {self.signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [self.signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
@@ -666,7 +666,7 @@ class TestSignalReactionRequestReceivedAction(ActionTestMixin, TestCase):
                                       status__send_email=self.send_email, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.id} {self.action.key}')
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
@@ -766,7 +766,7 @@ class TestSignalCreatedActionNoTemplate(TestCase):
         signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {signal.id}')
+        self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {signal.get_id_display()}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)

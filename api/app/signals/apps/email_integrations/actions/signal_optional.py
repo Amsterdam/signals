@@ -13,7 +13,7 @@ class SignalOptionalAction(AbstractAction):
     rule = SignalOptionalRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'De statusupdate is per e-mail verzonden aan de melder'
 
