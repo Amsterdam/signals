@@ -8,7 +8,7 @@ from signals.apps.signals.models import Reporter
 
 class _NestedReporterModelSerializer(SIAModelSerializer):
 
-    allows_contact = serializers.SerializerMethodField()
+    allows_contact = serializers.BooleanField(source='_signal.allows_contact', read_only=True)
 
     class Meta:
         model = Reporter
@@ -45,10 +45,3 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
             data['phone'] = None
 
         return super().to_internal_value(data)
-
-    def get_allows_contact(self, instance) -> bool:
-        """
-        Check if the reporters last feedback object allows for contact
-        if not feedback exists return True
-        """
-        return instance._signal.allows_contact
