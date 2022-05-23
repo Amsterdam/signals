@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from signals.apps.signals.models.area import Area, AreaType
 from signals.apps.signals.models.attachment import Attachment
 from signals.apps.signals.models.buurt import Buurt
@@ -7,6 +7,7 @@ from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.category_question import CategoryQuestion
+from signals.apps.signals.models.deleted_signal import DeletedSignal, DeletedSignalLog
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.expression import Expression, ExpressionContext, ExpressionType
 from signals.apps.signals.models.history import History
@@ -82,4 +83,6 @@ __all__ = [
     'StoredSignalFilter',
     'Type',
     'RoutingExpression',
+    'DeletedSignal',
+    'DeletedSignalLog',
 ]
