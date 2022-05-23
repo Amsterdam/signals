@@ -430,6 +430,7 @@ FEATURE_FLAGS = {
     # Enabled the history_log based response, disables the signal_history_view based response
     'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
     'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
+
     # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
     # the frontend
     # TODO: Remove this when the frontend is updated
@@ -447,6 +448,9 @@ FEATURE_FLAGS = {
 
     # Enable/disable only mail when Feedback allows_contact is True
     'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True) in TRUE_VALUES, # noqa
+
+    # Enable/disable the deletion of signals in a certain state for a certain amount of time
+    'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'
