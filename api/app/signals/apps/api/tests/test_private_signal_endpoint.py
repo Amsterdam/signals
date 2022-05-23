@@ -36,7 +36,7 @@ from signals.apps.signals.factories import (
     SourceFactory
 )
 from signals.apps.signals.factories.category_departments import CategoryDepartmentFactory
-from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Note, Signal
+from signals.apps.signals.models import STADSDEEL_CENTRUM, Attachment, Note, Signal, SignalUser
 from signals.apps.signals.tests.attachment_helpers import (
     add_image_attachments,
     add_non_image_attachments,
@@ -91,8 +91,8 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
     def setUp(self):
         # initialize database with 2 Signals
-        self.signal_no_image = SignalFactoryValidLocation.create()
-        self.signal_with_image = SignalFactoryWithImage.create()
+        self.signal_no_image = SignalFactoryValidLocation.create(user_assignment=None)
+        self.signal_with_image = SignalFactoryWithImage.create(user_assignment=None)
 
         # No URL reversing here, these endpoints are part of the spec (and thus
         # should not change).
@@ -2663,12 +2663,14 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
     def setUp(self):
         self.list_endpoint = '/signals/v1/private/signals/'
         self.detail_endpoint = '/signals/v1/private/signals/{pk}'
+        self.history_endpoint = '/signals/v1/private/signals/{pk}/history'
         self.subcategory_url_pattern = '/signals/v1/public/terms/categories/{}/sub_categories/{}'
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
 
         # test signals
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(user_assignment=None)
         self.department = DepartmentFactory.create()
+        self.category = CategoryFactory.create()
 
     def test_routing_add_remove(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -2714,7 +2716,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)
+        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)  # <- hierzo
 
         # remove user assignment
         data = {
@@ -2723,7 +2725,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment.user, None)
+        self.assertEqual(self.signal.user_assignment.user, None)  # <- hierzo
 
     def test_routing_add_and_check_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -2804,7 +2806,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment, None)
+        self.assertEqual(self.signal.user_assignment, None)  # <- hierzo
 
     def test_routing_change_category_and_check_user_and_routing(self):
         # adds routing to signal, add user (from dept)
@@ -2848,5 +2850,66 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment, None)
+        self.assertEqual(self.signal.user_assignment, None)  # <- hierzo
         self.assertEqual(self.signal.routing_assignment, None)
+
+    def test_history_of_user_assignment(self):
+        # VNG issue: https://github.com/Signalen/product-steering/issues/136
+        # Setting a user and then removing a user should remain visible in
+        # the Signal's history.
+        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
+        history_endpoint = self.history_endpoint.format(pk=self.signal.id)
+        self.client.force_authenticate(user=self.sia_read_write_user)
+
+        signal_user_count = SignalUser.objects.count()
+
+        # set assigned user to a user
+        data = {'assigned_user_email': self.sia_read_write_user.email}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(response_json['assigned_user_email'], self.sia_read_write_user.email)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 1)  # one user assignment in history
+        self.assertEqual(
+            response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+
+        self.assertEqual(SignalUser.objects.count(), signal_user_count + 1)
+
+        # remove assigned user by setting it to None
+        data = {'assigned_user_email': None}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(response_json['assigned_user_email'], None)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 2)  # two user assignments in history
+        self.assertEqual(response_json[0]['action'], 'Melding toewijzing gewijzigd naar: niemand.')
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+
+        self.assertEqual(SignalUser.objects.count(), signal_user_count + 2)
+
+        # again set assigned user to a user
+        data = {'assigned_user_email': self.sia_read_write_user.email}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(response_json['assigned_user_email'], self.sia_read_write_user.email)
+
+        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 3)  # three user assignments in history
+        self.assertEqual(
+            response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+
+        self.assertEqual(SignalUser.objects.count(), signal_user_count + 3)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from django.contrib.gis.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
@@ -54,7 +54,9 @@ class History(models.Model):
             extra = self.extra or 'Verantwoordelijke afdeling (routering)'
             return f'Routering: afdeling/afdelingen gewijzigd naar: {extra}'
         elif self.what == 'UPDATE_USER_ASSIGNMENT':
-            return f'Melding toewijzing gewijzigd naar: {self.extra}'
+            if self.extra:
+                return f'Melding toewijzing gewijzigd naar: {self.extra}'
+            return 'Melding toewijzing gewijzigd naar: niemand.'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
         elif self.what == 'UPDATE_SLA':
