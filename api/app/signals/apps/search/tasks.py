@@ -2,6 +2,8 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from elasticsearch import NotFoundError
+
 from signals.apps.search.documents.signal import SignalDocument
 from signals.apps.signals.models import Signal
 from signals.celery import app
@@ -28,3 +30,19 @@ def rebuild_index():
 
     SignalDocument.index_documents()
     log.info('rebuild_index - done!')
+
+
+@app.task
+def delete_from_elastic(signal):
+    if not SignalDocument.ping():
+        raise Exception('Elastic cluster is unreachable')
+
+    if isinstance(signal, int):
+        signal = Signal.objects.get(id=signal)
+
+    signal_document = SignalDocument.create_document(signal)
+
+    try:
+        signal_document.delete()
+    except NotFoundError:
+        log.warning(f'Signal {signal.id} not found in Elasticsearch')
