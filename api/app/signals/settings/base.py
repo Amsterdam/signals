@@ -430,8 +430,6 @@ FEATURE_FLAGS = {
     # Enabled the history_log based response, disables the signal_history_view based response
     'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
     'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
-    'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', True) in TRUE_VALUES, # noqa
-    'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': os.getenv('REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT', True) in TRUE_VALUES, # noqa
     # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
     # the frontend
     # TODO: Remove this when the frontend is updated

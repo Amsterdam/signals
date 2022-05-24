@@ -2,7 +2,6 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from abc import ABC, abstractmethod
 
-from django.conf import settings
 from django.db.models import Q
 
 from signals.apps.signals import workflow
@@ -67,18 +66,11 @@ class AbstractRule(ABC):
         """
         return False
 
-    def _validate_allows_contact(self, signal):
+    def _validate_allows_contact(self, signal: Signal):
         """
         Validate if the user want to be contacted and if allows_contact on feedback is False t
         o never send ANY emails to the user
 
         If the feature flag is False we return True to still send emails to the user.
         """
-        if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT', True):
-            return True
-
-        try:
-            return signal.feedback.filter(submitted_at__isnull=False).order_by('submitted_at').last().allows_contact
-        except AttributeError:
-            # if no feedback exists return True because the user has never specified not to.
-            return True
+        return signal.allows_contact

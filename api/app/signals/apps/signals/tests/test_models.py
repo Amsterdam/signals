@@ -425,6 +425,23 @@ class TestSignalModel(TestCase):
         feedback.save()
         self.assertTrue(signal.allows_contact)
 
+    @override_settings(FEATURE_FLAGS={
+        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+    })
+    def test_allowed_contact_disabled_flag(self):
+        """
+        When the flag is set to false the feature should always return true even if allows_contact is set to false
+        """
+
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False,
+            submitted_at='2022-01-01'
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
+
 
 class TestStatusModel(TestCase):
 
