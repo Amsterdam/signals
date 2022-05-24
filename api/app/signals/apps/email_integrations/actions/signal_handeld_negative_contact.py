@@ -13,7 +13,7 @@ class SignalHandledNegativeAction(AbstractAction):
     rule = SignalHandledNegativeRule()
 
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT
-    subject = 'Meer over uw melding {signal_id}'
+    subject = 'Meer over uw melding {formatted_signal_id}'
 
     note = 'Automatische e-mail bij afhandelen heropenen negatieve feedback'
 

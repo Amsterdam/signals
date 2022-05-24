@@ -26,6 +26,10 @@ SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
 
 ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
 
+# The prefix of the display value of the signal ID. Defaults to 'SIG-'. This wil generate an id like SIG-123456 when
+# using the `signal.get_id_display()` class method.
+SIGNAL_ID_DISPLAY_PREFIX = os.getenv('SIGNAL_ID_DISPLAY_PREFIX', 'SIG-')
+
 # Accept signals within this geographic bounding box in
 # format: <lon_min>,<lat_min>,<lon_max>,<lat_max> (WS84)
 # default value covers The Netherlands

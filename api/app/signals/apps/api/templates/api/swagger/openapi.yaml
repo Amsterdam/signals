@@ -2395,6 +2395,10 @@ components:
           type: boolean
           description: Reporter allows their contact information to be shared (true) or not (false).
           example: false
+        allows_contact:
+          type: boolean
+          description:  Check if the reporter wants to be contacted or not
+          example: true
 
     _NestedPriorityRequestData:
       description: JSON Data

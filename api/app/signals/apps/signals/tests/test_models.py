@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import os
 from unittest import mock
 
@@ -10,6 +10,7 @@ from django.test import LiveServerTestCase, TestCase, TransactionTestCase, overr
 from django.utils import timezone
 from django.utils.text import slugify
 
+from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.signals import factories, workflow
 from signals.apps.signals.models import (
     STADSDEEL_CENTRUM,
@@ -247,6 +248,19 @@ class TestSignalManager(TransactionTestCase):
 
 class TestSignalModel(TestCase):
 
+    def test_get_id_display(self):
+        signal = factories.SignalFactory.create(id=999)
+        self.assertEqual('SIG-999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX='SIGNALS-'):
+            self.assertEqual('SIGNALS-999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX=''):
+            self.assertEqual('999', signal.get_id_display())
+
+        with override_settings(SIGNAL_ID_DISPLAY_PREFIX=None):
+            self.assertEqual('999', signal.get_id_display())
+
     def test_sia_id(self):
         signal = factories.SignalFactory.create(id=999)
 
@@ -353,6 +367,63 @@ class TestSignalModel(TestCase):
         created_at = signal.created_at.astimezone(timezone.get_current_timezone())
 
         self.assertEqual(f'{signal.id} - {state} - ABCD - {created_at.isoformat()}', signal.__str__())
+
+    def test_allows_contact(self):
+        """
+        No feedback so needs to return True
+        """
+        signal = factories.SignalFactory.create()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_False(self):
+        """
+        Submitted feedback with allows_contantact False
+        """
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            submitted_at='2022-01-01',
+            allows_contact=False
+        )
+        feedback.save()
+        self.assertFalse(signal.allows_contact)
+
+    def test_allows_contact_True(self):
+        """
+        Submitted feedback with allows_contantact True
+        """
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            submitted_at='2022-01-01',
+            allows_contact=True
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_True_unsummited(self):
+        """
+        Unsubmitedd Feedback with Allows Contact True
+        """
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=True
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
+
+    def test_allows_contact_False_unsummited(self):
+        """
+        Unsubmitedd Feedback with Allows Contact False
+        """
+        signal = factories.SignalFactory.create()
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False
+        )
+        feedback.save()
+        self.assertTrue(signal.allows_contact)
 
 
 class TestStatusModel(TestCase):

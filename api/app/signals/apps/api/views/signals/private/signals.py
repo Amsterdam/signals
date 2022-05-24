@@ -4,7 +4,6 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
 from django_filters.rest_framework import DjangoFilterBackend
@@ -269,10 +268,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         text = post_serializer.validated_data.pop('text', None)
 
         status_data = {'state': status, 'text': text, 'send_email': True}
-        try:
-            subject, _, html_message = trigger_mail_action_for_email_preview(signal, status_data)
-        except ValidationError:
-            raise NotFound('No email preview available for given status transition')
+        subject, _, html_message = trigger_mail_action_for_email_preview(signal, status_data)
 
         context = self.get_serializer_context()
         context.update({'email_preview': {'subject': subject, 'html_message': html_message}})

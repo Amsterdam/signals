@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -178,6 +178,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
         ]
     )
 
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
     attachments = PrivateSignalAttachmentRelatedField(view_name='private-signals-attachments-detail', many=True,
                                                       required=False, read_only=True)
 
@@ -188,6 +189,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             '_display',
             'category',
             'id',
+            'id_display',
             'has_attachments',
             'location',
             'status',
@@ -347,6 +349,8 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
     # The Session containing the given answers of a Questionnaire
     session = serializers.UUIDField(default=None, write_only=True, required=False)
 
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
+
     class Meta:
         model = Signal
         list_serializer_class = _SignalListSerializer
@@ -354,6 +358,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             '_links',
             '_display',
             'id',
+            'id_display',
             'signal_id',
             'source',
             'text',
@@ -529,12 +534,14 @@ class PublicSignalSerializerDetail(HALSerializer):
     serializer_url_field = PublicSignalLinksField
     _display = serializers.SerializerMethodField(method_name='get__display')
     signal_id = serializers.UUIDField(source='uuid')
+    id_display = serializers.CharField(source='get_id_display', read_only=True)
 
     class Meta:
         model = Signal
         fields = (
             '_display',
             'id',
+            'id_display',
             'signal_id',
             'status',
             'created_at',
@@ -544,7 +551,7 @@ class PublicSignalSerializerDetail(HALSerializer):
         )
 
     def get__display(self, obj):
-        return obj.sia_id
+        return obj.get_id_display()
 
 
 class PublicSignalCreateSerializer(SignalValidationMixin, serializers.ModelSerializer):

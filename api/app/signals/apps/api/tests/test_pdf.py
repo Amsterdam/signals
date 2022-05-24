@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 
 from django.contrib.auth.models import Permission
 
@@ -21,7 +21,7 @@ class TestPDFView(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.get('Content-Type'), 'application/pdf')
         self.assertEqual(
             response.get('Content-Disposition'),
-            'attachment;filename="Signalen-{}.pdf"'.format(self.signal.pk)
+            f'attachment;filename="{self.signal.get_id_display()}.pdf"'
         )
 
     def test_get_pdf_signal_does_not_exists(self):
