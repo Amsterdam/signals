@@ -1,16 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+from rest_framework import serializers
+
 from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Reporter
 
 
 class _NestedReporterModelSerializer(SIAModelSerializer):
+
+    allows_contact = serializers.BooleanField(source='_signal.allows_contact', read_only=True)
+
     class Meta:
         model = Reporter
         fields = (
             'email',
             'phone',
             'sharing_allowed',
+            'allows_contact'
         )
 
     def to_representation(self, instance):

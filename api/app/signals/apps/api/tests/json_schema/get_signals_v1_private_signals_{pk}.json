@@ -333,6 +333,9 @@
 				},
 				"sharing_allowed": {
 					"type": "boolean"
+				},
+				"allows_contact": {
+					"type": "boolean"
 				}
 			},
 			"required": [

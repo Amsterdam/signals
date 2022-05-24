@@ -153,3 +153,15 @@ class Signal(CreatedUpdatedModel):
     def save(self, *args, **kwargs):
         self._validate()
         super().save(*args, **kwargs)
+
+    @property
+    def allows_contact(self) -> bool:
+        """
+        Check if the signal allows for contacting the reporter based on the feedback forms that are filled in
+        based on the latest filled in feedback object
+        If no feedback object exists allowing contact is True
+        """
+        try:
+            return self.feedback.filter(submitted_at__isnull=False).order_by('submitted_at').last().allows_contact
+        except AttributeError:
+            return True
