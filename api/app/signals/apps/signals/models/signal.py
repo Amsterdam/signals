@@ -161,6 +161,9 @@ class Signal(CreatedUpdatedModel):
         based on the latest filled in feedback object
         If no feedback object exists allowing contact is True
         """
+        if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
+            return True
+
         try:
             return self.feedback.filter(submitted_at__isnull=False).order_by('submitted_at').last().allows_contact
         except AttributeError:

@@ -30,6 +30,7 @@ class AbstractRule(ABC):
         """
         return (self._validate_reporter_email(signal) and
                 self._validate_historical_data(signal) and
+                self._validate_allows_contact(signal) and
                 self._validate_status(status) and
                 self._validate(signal))
 
@@ -64,3 +65,12 @@ class AbstractRule(ABC):
         overwrite this function in the defined Rule to add the additional status validation checks
         """
         return False
+
+    def _validate_allows_contact(self, signal: Signal):
+        """
+        Validate if the user want to be contacted and if allows_contact on feedback is False t
+        o never send ANY emails to the user
+
+        If the feature flag is False we return True to still send emails to the user.
+        """
+        return signal.allows_contact
