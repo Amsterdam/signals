@@ -426,7 +426,7 @@ class TestSignalModel(TestCase):
         self.assertTrue(signal.allows_contact)
 
     @override_settings(FEATURE_FLAGS={
-        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+        'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': False,
     })
     def test_allowed_contact_disabled_flag(self):
         """

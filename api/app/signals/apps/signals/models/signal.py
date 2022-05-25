@@ -161,7 +161,7 @@ class Signal(CreatedUpdatedModel):
         based on the latest filled in feedback object
         If no feedback object exists allowing contact is True
         """
-        if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT', True):
+        if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
             return True
 
         try:

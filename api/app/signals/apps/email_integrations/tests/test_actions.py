@@ -190,7 +190,7 @@ class ActionTestMixin:
         self.assertEqual(len(mail.outbox), 0)
 
     @override_settings(FEATURE_FLAGS={
-        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+        'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': False,
     })
     def test_allowed_contact_disable_flag(self):
         """
@@ -570,7 +570,7 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
         self.assertEqual(Note.objects.count(), 0)
 
     @override_settings(FEATURE_FLAGS={
-        'REPORTER_MAIL_DISABLE_CONTACT_FEEDBACK_ALLOWS_CONTACT': False,
+        'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': False,
     })
     def test_allowed_contact_disable_flag(self):
         """
