@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
@@ -554,7 +554,8 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         for note, attachment in zip(note_qs, attachment_qs):
             filename = os.path.basename(attachment.file.name)
-            self.assertEqual(f'Foto toegevoegd door {self.sia_read_write_user}: {filename}', note.text)
+            self.assertEqual(f'Foto toegevoegd: {filename}', note.text)
+            self.assertEqual(self.sia_read_write_user.email, note.created_by)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
            side_effect=AddressValidationUnavailableException)  # Skip address validation

@@ -91,5 +91,7 @@ class PrivateSignalAttachmentsViewSet(
         self.perform_destroy(attachment)
 
         att_filename = os.path.split(attachment.file.name)[1]
-        Signal.actions.create_note({'text': f'Attachment {att_filename} is verwijderd door {user}.'}, signal=signal)
+        Signal.actions.create_note({
+            'text': f'Foto {att_filename} is verwijderd.', 'created_by': user
+        }, signal=signal)
         return Response(status=status.HTTP_204_NO_CONTENT)
