@@ -2892,7 +2892,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(len(response_json), 2)  # two user assignments in history
-        self.assertEqual(response_json[0]['action'], 'Melding toewijzing gewijzigd naar: niemand.')
+        self.assertEqual(response_json[0]['action'], 'Melding niet meer toegewezen aan behandelaar.')
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
 
         self.assertEqual(SignalUser.objects.count(), signal_user_count + 2)

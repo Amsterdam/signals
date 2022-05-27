@@ -56,7 +56,7 @@ class History(models.Model):
         elif self.what == 'UPDATE_USER_ASSIGNMENT':
             if self.extra:
                 return f'Melding toewijzing gewijzigd naar: {self.extra}'
-            return 'Melding toewijzing gewijzigd naar: niemand.'
+            return 'Melding niet meer toegewezen aan behandelaar.'
         elif self.what == 'CHILD_SIGNAL_CREATED':
             return 'Deelmelding toegevoegd'
         elif self.what == 'UPDATE_SLA':
