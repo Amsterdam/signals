@@ -2716,7 +2716,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)  # <- hierzo
+        self.assertEqual(self.signal.user_assignment.user.id, self.sia_read_write_user.id)
 
         # remove user assignment
         data = {
@@ -2725,7 +2725,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment.user, None)  # <- hierzo
+        self.assertEqual(self.signal.user_assignment.user, None)
 
     def test_routing_add_and_check_user(self):
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -2806,7 +2806,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment, None)  # <- hierzo
+        self.assertEqual(self.signal.user_assignment, None)
 
     def test_routing_change_category_and_check_user_and_routing(self):
         # adds routing to signal, add user (from dept)
@@ -2850,7 +2850,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
         self.assertIsNone(data['assigned_user_email'])
 
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.user_assignment, None)  # <- hierzo
+        self.assertEqual(self.signal.user_assignment, None)
         self.assertEqual(self.signal.routing_assignment, None)
 
     def test_history_of_user_assignment(self):
