@@ -6,6 +6,19 @@ from django.db.models import Model
 from signals.apps.signals import workflow
 
 
+class DeleteSignalManager(models.Manager):
+    def create_from_signal(self, signal, deleted_by=None, batch_uuid=None):
+        return super().create(signal_id=signal.id,
+                              signal_uuid=signal.uuid,
+                              parent_signal_id=signal.parent_id,
+                              category=signal.category_assignment.category,
+                              signal_state=signal.status.state,
+                              signal_state_set_at=signal.status.created_at,
+                              signal_created_at=signal.created_at,
+                              deleted_by=deleted_by,
+                              batch_uuid=batch_uuid)
+
+
 class DeletedSignal(Model):
     """
     Model for storing meta data of deleted Signals
@@ -42,13 +55,15 @@ class DeletedSignal(Model):
     # Used when deleting Signals by running the "delete_signals" Django management command
     batch_uuid = models.UUIDField(null=True, blank=True, editable=False)
 
+    objects = DeleteSignalManager()
+
 
 class DeletedSignalLog(Model):
     """
     Model for logging all actions when deleting a Signal
     """
 
-    deleted_signal = models.ForeignKey('signals.DeletedSignal', on_delete=models.DO_NOTHING, related_name='logs')
+    deleted_signal = models.ForeignKey('signals.DeletedSignal', on_delete=models.DO_NOTHING, related_name='log')
 
     # Indicates if an automatic or manual action deleted the Signal
     action = models.CharField(choices=(('automatic', 'Automatic'), ('manual', 'Manual'), ), max_length=12,
