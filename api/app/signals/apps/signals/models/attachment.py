@@ -42,6 +42,7 @@ class Attachment(CreatedUpdatedModel):
             ('sia_delete_attachment_of_parent_signal', 'Kan bijlage bij hoofdmelding verwijderen.'),
             ('sia_delete_attachment_of_child_signal',  'Kan bijlage bij deelmelding verwijderen.'),
             ('sia_delete_attachment_of_other_user', 'Kan bijlage bij melding van andere gebruiker verwijderen.'),
+            ('sia_delete_attachment_of_reporter', 'Kan bijlage toegevoegd door melder verwijderen.')
         ]
 
     def _check_if_file_is_image(self):

@@ -82,7 +82,13 @@ class PrivateSignalAttachmentsViewSet(
             msg = 'Cannot delete attachment need "sia_delete_attachment_of_normal_signal" permission.'
             raise PermissionDenied(msg)
 
-        if attachment.created_by != user.email and not user.has_perm('signals.sia_delete_attachment_of_other_user'):
+        if not attachment.created_by and not user.has_perm('signals.sia_delete_attachment_of_reporter'):
+            msg = 'Cannot delete attachment need "sia_delete_attachment_of_reporter" permission.'
+            raise PermissionDenied(msg)
+        elif (
+                attachment.created_by
+                and attachment.created_by != user.email
+                and not user.has_perm('signals.sia_delete_attachment_of_other_user')):
             msg = 'Cannot delete attachment need "sia_delete_attachment_of_other_user" permission.'
             raise PermissionDenied(msg)
 
