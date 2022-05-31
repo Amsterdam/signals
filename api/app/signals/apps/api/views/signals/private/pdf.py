@@ -109,12 +109,13 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
                 rd_coordinates.x + 340.00,
                 rd_coordinates.y + 125.00,
             )
-        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
+        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+            DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
 
         return super().get_context_data(
             bbox=bbox,
             img_data_uri=img_data_uri,
-            jpg_data_uris=jpg_data_uris,
+            attachment_images=zip(jpg_data_uris, att_filenames, user_emails, att_created_ats),
             user=self.request.user,
             logo_src=logo_src,
         )

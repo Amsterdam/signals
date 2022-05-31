@@ -33,14 +33,15 @@ def _render_html(signal: Signal):
         rd_coordinates.y + 125.00,
     )
     # HOTFIX for SIG-1473
-    jpg_data_uris = DataUriImageEncodeService.get_context_data_images(signal, 800)
+    jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+        DataUriImageEncodeService.get_context_data_images(signal, 800)
 
     context = {
         'signal': signal,
         'now': timezone.datetime.now(),
         'bbox': bbox,
         'user': None,
-        'jpg_data_uris': jpg_data_uris,
+        'attachment_images': zip(jpg_data_uris, att_filenames, user_emails, att_created_ats),
     }
     return render_to_string('api/pdf/print_signal.html', context=context)
 
