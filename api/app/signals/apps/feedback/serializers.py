@@ -73,7 +73,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
                     'state': workflow.VERZOEK_TOT_HEROPENEN,
                 }
                 Signal.actions.update_status(payload, signal)
-        instance.submitted_at = None
+
         instance = super().update(instance, validated_data)
         # trigger the mail to be after the instance update to have the new data
         if not is_satisfied:
