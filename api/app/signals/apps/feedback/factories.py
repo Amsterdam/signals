@@ -39,4 +39,5 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     is_satisfied = fuzzy.FuzzyChoice([True, False])
     allows_contact = fuzzy.FuzzyChoice([True, False])
     text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
+    text_list = [fuzzy.FuzzyText(), fuzzy.FuzzyText(), fuzzy.FuzzyText()]
     text_extra = fuzzy.FuzzyChoice([None, 'Daarom is waarom.'])

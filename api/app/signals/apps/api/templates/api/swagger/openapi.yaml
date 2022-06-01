@@ -1075,6 +1075,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/publicCategoryListResponse'
+  /signals/v1/public/feedback/forms/{feedback_token}/:
+    get:
+      description: Get the feedback details
+      parameters:
+        - name: feedback_token
+          in: path
+          description: Feedback token for fetching the form
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: details parameters is present if the form is already filled in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  details:
+                    type: string
+                    example: filled out
+    patch:
+      description: Update the feedback form
+      parameters:
+        - name: feedback_token
+          in: path
+          description: Feedback token for fetching the form
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: JSON data to update signal
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/publicFeedbackForm'
+      responses:
+
+
 
   /signals/v1/public/terms/categories/{main_slug}:
     get:
@@ -4797,6 +4839,32 @@ components:
         show_on_overview:
           type: boolean
           default: False
+
+    publicFeedbackForm:
+      description: JSON data for category updates
+      type: object
+      properties:
+        is_satisfied:
+          type: boolean
+          description: Flag if the reporter is satisfied or not
+        allows_contact:
+          type: boolean
+          description: Flag if the reporter allows for contacting
+        text:
+          type: string
+          description: text giving by the reporter
+        text_list:
+          description: List of texts from the reporter
+          type: array
+          items:
+            type: string
+        text_extra:
+          type: string
+          description: Extra set of text from the reporter
+      required:
+        - is_satisfied
+        - allows_contact
+        - text_extra
 
   securitySchemes:
     OAuth2:

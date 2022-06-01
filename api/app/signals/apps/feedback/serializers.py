@@ -2,9 +2,11 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.feedback.utils import validate_answers
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -20,7 +22,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ('is_satisfied', 'allows_contact', 'text', 'text_extra', 'signal_id')
+        fields = ('is_satisfied', 'allows_contact', 'text',
+                  'text_list', 'text_extra', 'signal_id')
         # The 'required': True for is_satisfied field is only validated for JSON
         # updloads, a form upload defaults to False if is_satisfied is left out.
         # See the Django Rest Framework docs:
@@ -28,9 +31,23 @@ class FeedbackSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'is_satisfied': {'write_only': True, 'required': True},
             'allows_contact': {'write_only': True},
-            'text': {'write_only': True},
+            'text': {'write_only': True, "required": False},
+            'text_list': {'write_only': True, "required": False},
             'text_extra': {'write_only': True},
         }
+
+    def validate(self, attrs):
+        """
+        Validate if either text of text_list is filled in
+        """
+        if attrs.get('text') or attrs.get('text_list'):
+            return attrs
+
+        raise ValidationError({
+            "non_field_errors": [
+                "Either text or text_list must be filled in"
+            ]
+        })
 
     def update(self, instance, validated_data):
         # TODO: consider whether using a StandardAnswer while overriding the
@@ -43,15 +60,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         is_satisfied = validated_data['is_satisfied']
         reopen = False
         if not is_satisfied:
-            feedback_text = validated_data['text']
-
-            try:
-                sa = StandardAnswer.objects.get(text=feedback_text)
-            except StandardAnswer.DoesNotExist:
-                reopen = True
-            else:
-                if not sa.is_satisfied:
-                    reopen = sa.reopens_when_unhappy
+            reopen = validate_answers(validated_data)
 
         # Reopen the Signal (melding) if need be.
         if reopen:
@@ -64,7 +73,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
                     'state': workflow.VERZOEK_TOT_HEROPENEN,
                 }
                 Signal.actions.update_status(payload, signal)
-
+        instance.submitted_at = None
         instance = super().update(instance, validated_data)
         # trigger the mail to be after the instance update to have the new data
         if not is_satisfied:

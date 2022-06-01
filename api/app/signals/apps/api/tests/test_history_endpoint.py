@@ -328,6 +328,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.feedback.is_satisfied = True
         self.feedback.allows_contact = False
         self.feedback.text = text
+        self.feedback.text_list = None
         self.feedback.text_extra = text_extra
         self.feedback.submitted_at = self.feedback.created_at + timedelta(days=1)
         self.feedback.save()
