@@ -66,10 +66,10 @@ class SignalLogService:
         if not isinstance(category_assignment, CategoryAssignment):
             return
 
-        if category_assignment.category.slo.exists():
+        if category_assignment.category.slo.exists() and category_assignment._signal.categories.count() == 1:
             category_assignment.category.slo.first().history_log.create(
                 action=Log.ACTION_UPDATE,
-                description=category_assignment.category.handling_message,
+                description=category_assignment.stored_handling_message,
                 created_by=category_assignment.created_by,
                 created_at=category_assignment.created_at,
                 _signal=category_assignment._signal,
