@@ -108,13 +108,13 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.assertEqual(response.json()['detail'], 'filled out')
 
     def test_200_if_feedback_requested(self):
-        """Test that we receive an empty JSON object HTTP 200 reply."""
+        """Test that we receive an JSON object containing the signal_id (signal.uuid) HTTP 200 reply."""
         token = self.feedback.token
 
         with freeze_time(self.t_now):
             response = self.client.get('/forms/{}/'.format(token))
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {})
+            self.assertEqual(response.json(), {'signal_id': f'{self.feedback._signal.uuid}'})
 
     def test_200_on_submit_feedback(self):
         """Test that the feedback can be PUT once."""
