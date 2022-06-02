@@ -2,6 +2,7 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.conf import settings
 
+from signals.apps.feedback.models import Feedback, _get_description_of_receive_feedback
 from signals.apps.history.models import Log
 from signals.apps.signals.models import (
     CategoryAssignment,
@@ -179,4 +180,25 @@ class SignalLogService:
             created_by=signal_departments.created_by,
             created_at=signal_departments.created_at,
             _signal=signal_departments._signal,
+        )
+
+    @staticmethod
+    def log_receive_feedback(feedback: Feedback) -> None:
+        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(feedback, Feedback):
+            return
+
+        if feedback.submitted_at is None:
+            # No feedback was submitted, so we don't log anything
+            return
+
+        feedback.history_log.create(
+            action=Log.ACTION_CREATE,
+            extra='Feedback ontvangen',
+            description=_get_description_of_receive_feedback(feedback.token),
+            created_by=None,
+            created_at=feedback.submitted_at,
+            _signal=feedback._signal,
         )

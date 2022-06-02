@@ -4,6 +4,7 @@ import secrets
 import uuid
 from datetime import timedelta
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.utils import timezone
 
@@ -46,6 +47,8 @@ class Feedback(models.Model):
 
     objects = models.Manager()
     actions = FeedbackManager()
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     class Meta:
         ordering = ('_signal', '-created_at')
