@@ -3,11 +3,22 @@
 from django.conf import settings
 
 from signals.apps.history.models import Log
+from signals.apps.signals.models import (
+    CategoryAssignment,
+    Location,
+    Note,
+    Priority,
+    Signal,
+    SignalDepartments,
+    SignalUser,
+    Status
+)
+from signals.apps.signals.models import Type as _Type
 
 
 class SignalLogService:
     @staticmethod
-    def log_create_initial(signal):
+    def log_create_initial(signal: Signal) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
             return
 
@@ -30,8 +41,11 @@ class SignalLogService:
         SignalLogService.log_update_type(signal.type_assignment)
 
     @staticmethod
-    def log_create_note(note):
+    def log_create_note(note: Note) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(note, Note):
             return
 
         note.history_log.create(
@@ -44,8 +58,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_category_assignment(category_assignment):
+    def log_update_category_assignment(category_assignment: CategoryAssignment) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(category_assignment, CategoryAssignment):
             return
 
         if category_assignment.category.slo.exists():
@@ -66,8 +83,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_location(location):
+    def log_update_location(location: Location) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(location, Location):
             return
 
         location.history_log.create(
@@ -79,8 +99,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_priority(priority):
+    def log_update_priority(priority: Priority) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(priority, Priority):
             return
 
         priority.history_log.create(
@@ -92,8 +115,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_status(status):
+    def log_update_status(status: Status) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(status, Status):
             return
 
         status.history_log.create(
@@ -106,8 +132,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_type(_type):
+    def log_update_type(_type: _Type) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(_type, _Type):
             return
 
         _type.history_log.create(
@@ -119,8 +148,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_user_assignment(user_assignment):
+    def log_update_user_assignment(user_assignment: SignalUser) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(user_assignment, SignalUser):
             return
 
         log_extra = user_assignment.user.email if user_assignment.user else None
@@ -133,8 +165,11 @@ class SignalLogService:
         )
 
     @staticmethod
-    def log_update_signal_departments(signal_departments):
+    def log_update_signal_departments(signal_departments: SignalDepartments) -> None:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(signal_departments, SignalDepartments):
             return
 
         log_description = ', '.join(signal_departments.departments.values_list('code', flat=True))
