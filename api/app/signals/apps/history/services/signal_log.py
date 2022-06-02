@@ -50,7 +50,7 @@ class SignalLogService:
             return
 
         note.history_log.create(
-            action=Log.ACTION_UPDATE,
+            action=Log.ACTION_CREATE,
             description=note.text,
             extra='Notitie toegevoegd',
             created_by=note.created_by,

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+from django.db.models.signals import post_save
 from django.test import TestCase, override_settings
 from django.utils import timezone
+from factory.django import mute_signals
 
 from signals.apps.history.models import Log
 from signals.apps.history.services import SignalLogService
@@ -17,6 +19,16 @@ from signals.apps.signals.factories import (
     StatusFactory,
     StoredSignalFilterFactory,
     TypeFactory
+)
+from signals.apps.signals.managers import (
+    create_initial,
+    update_category_assignment,
+    update_location,
+    update_priority,
+    update_signal_departments,
+    update_status,
+    update_type,
+    update_user_assignment
 )
 
 
@@ -37,6 +49,8 @@ class AssertSignalsNotInLogMixin:
     'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': False,
     'SIGNAL_HISTORY_LOG_ENABLED': True
 })
+@mute_signals(post_save, create_initial, update_category_assignment, update_location, update_priority,
+              update_signal_departments, update_status, update_type, update_user_assignment)
 class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
     """
     Simple test case to check if logs are created using the SignalLogService
