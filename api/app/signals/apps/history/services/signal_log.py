@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.conf import settings
 
 from signals.apps.history.models import Log
@@ -18,6 +18,8 @@ class SignalLogService:
                 action=Log.ACTION_CREATE,
                 extra=signal.id,
                 object=signal,
+                created_by=None,
+                created_at=signal.created_at,
                 _signal=signal.parent,
             )
 
@@ -37,6 +39,7 @@ class SignalLogService:
             description=note.text,
             extra='Notitie toegevoegd',
             created_by=note.created_by,
+            created_at=note.created_at,
             _signal=note._signal,
         )
 
@@ -49,6 +52,7 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             extra=category_assignment.category.name,
             created_by=category_assignment.created_by,
+            created_at=category_assignment.created_at,
             _signal=category_assignment._signal,
         )
 
@@ -57,6 +61,7 @@ class SignalLogService:
                 action=Log.ACTION_UPDATE,
                 description=category_assignment.category.handling_message,
                 created_by=category_assignment.created_by,
+                created_at=category_assignment.created_at,
                 _signal=category_assignment._signal,
             )
 
@@ -69,6 +74,7 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             extra='Locatie gewijzigd',
             created_by=location.created_by,
+            created_at=location.created_at,
             _signal=location._signal,
         )
 
@@ -81,6 +87,7 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             extra=priority.priority,
             created_by=priority.created_by,
+            created_at=priority.created_at,
             _signal=priority._signal,
         )
 
@@ -94,6 +101,7 @@ class SignalLogService:
             description=status.text,
             extra=status.state,
             created_by=status.created_by,
+            created_at=status.created_at,
             _signal=status._signal,
         )
 
@@ -106,6 +114,7 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             extra=_type.name,
             created_by=_type.created_by,
+            created_at=_type.created_at,
             _signal=_type._signal,
         )
 
@@ -119,6 +128,7 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             extra=log_extra,
             created_by=user_assignment.created_by,
+            created_at=user_assignment.created_at,
             _signal=user_assignment._signal,
         )
 
@@ -132,5 +142,6 @@ class SignalLogService:
             action=Log.ACTION_UPDATE,
             description=log_description,
             created_by=signal_departments.created_by,
+            created_at=signal_departments.created_at,
             _signal=signal_departments._signal,
         )

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from signals.apps.history.models import Log
 from signals.apps.history.services import SignalLogService
@@ -175,7 +176,8 @@ class TestSignalLogService(AssertSignalsNotInLogMixin, TestCase):
         self.assertEqual(0, Log.objects.count())
 
         stored_signal_filter = StoredSignalFilterFactory.create()
-        Log.objects.create(action=Log.ACTION_CREATE, extra=stored_signal_filter.id, object=stored_signal_filter)
+        Log.objects.create(action=Log.ACTION_CREATE, extra=stored_signal_filter.id, object=stored_signal_filter,
+                           created_at=timezone.now())
 
         self.assertEqual(1, Log.objects.count())
         self.assertEqual(1, Log.objects.filter(content_type__app_label__iexact='signals',

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 import uuid
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -37,7 +37,7 @@ class Log(models.Model):
     extra = models.TextField(max_length=255, null=True, blank=True)
 
     created_by = models.EmailField(null=True, blank=True)
-    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+    created_at = models.DateTimeField(editable=False)
 
     # This is a reference to a specific Signal. It can be blank if the object does not have a relation to a Signal.
     #
