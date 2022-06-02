@@ -140,7 +140,7 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             self.feedback.refresh_from_db()
             self.assertEqual(self.feedback.is_satisfied, True)
             self.assertEqual(self.feedback.allows_contact, True)
-            self.assertEqual(self.feedback.text, reason)
+            self.assertIn(reason, self.feedback.text_list)
 
     def test_400_on_submit_feedback_without_is_satisfied(self):
         """Test that the feedback can be PUT once."""
@@ -324,6 +324,81 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
             )
             self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_text_to_text_list(self):
+        """Test that the feedback can be PUT once."""
+        token = self.feedback.token
+        reason = 'testen is leuk'
+        explanation = 'ook voor de lunch'
+
+        data = {
+            'is_satisfied': True,
+            'allows_contact': True,
+            'text': reason,
+            'text_area': explanation,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.feedback.refresh_from_db()
+        self.assertIsNone(self.feedback.text)
+        self.assertIn(reason, self.feedback.text_list)
+
+    def test_text_and_text_list(self):
+        """Test that the feedback can be PUT once."""
+        token = self.feedback.token
+        reason = 'testen is leuk'
+        multi_reason = ['dit is een test', 'dit is een 2de test']
+        explanation = 'ook voor de lunch'
+
+        data = {
+            'is_satisfied': True,
+            'allows_contact': True,
+            'text': reason,
+            'text_list': multi_reason,
+            'text_area': explanation,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.feedback.refresh_from_db()
+        self.assertIsNone(self.feedback.text)
+        multi_reason.append(reason)
+        self.assertEqual(multi_reason, self.feedback.text_list)
+
+    def test_text_list(self):
+        """Test that the feedback can be PUT once."""
+        token = self.feedback.token
+        multi_reason = ['dit is een test', 'dit is een 2de test']
+        explanation = 'ook voor de lunch'
+
+        data = {
+            'is_satisfied': True,
+            'allows_contact': True,
+            'text_list': multi_reason,
+            'text_area': explanation,
+        }
+
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.feedback.refresh_from_db()
+        self.assertIsNone(self.feedback.text)
+        self.assertEqual(multi_reason, self.feedback.text_list)
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)

@@ -36,8 +36,8 @@ def create_kto_feedback_csv(location: str) -> str:
 
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, file_name))
 
-    ordered_field_names = ['_signal_id', 'is_satisfied', 'allows_contact', 'text', 'text_list',
-                           'text_extra', 'created_at', 'submitted_at', ]
+    ordered_field_names = ['_signal_id', 'is_satisfied', 'allows_contact', 'text',
+                           'text_extra', 'created_at', 'submitted_at', 'text_list']
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name

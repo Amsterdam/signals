@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.utils import validate_answers
+from signals.apps.feedback.utils import validate_answers, merge_texts
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 
@@ -31,8 +31,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'is_satisfied': {'write_only': True, 'required': True},
             'allows_contact': {'write_only': True},
-            'text': {'write_only': True, "required": False},
-            'text_list': {'write_only': True, "required": False},
+            'text': {'write_only': True, 'required': False},
+            'text_list': {'write_only': True, 'required': False},
             'text_extra': {'write_only': True},
         }
 
@@ -58,6 +58,12 @@ class FeedbackSerializer(serializers.ModelSerializer):
         # Check whether the relevant Signal instance should possibly be
         # reopened (i.e. transition to VERZOEK_TOT_HEROPENEN state).
         is_satisfied = validated_data['is_satisfied']
+
+        # @TODO: When text field is depricated the following can be removed
+        validated_data = merge_texts(validated_data)
+        instance.text = None
+        instance.text_list = validated_data['text_list']
+
         reopen = False
         if not is_satisfied:
             reopen = validate_answers(validated_data)
