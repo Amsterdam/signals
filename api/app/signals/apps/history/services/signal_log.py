@@ -48,14 +48,6 @@ class SignalLogService:
         if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
             return
 
-        category_assignment.history_log.create(
-            action=Log.ACTION_UPDATE,
-            extra=category_assignment.category.name,
-            created_by=category_assignment.created_by,
-            created_at=category_assignment.created_at,
-            _signal=category_assignment._signal,
-        )
-
         if category_assignment.category.slo.exists():
             category_assignment.category.slo.first().history_log.create(
                 action=Log.ACTION_UPDATE,
@@ -64,6 +56,14 @@ class SignalLogService:
                 created_at=category_assignment.created_at,
                 _signal=category_assignment._signal,
             )
+
+        category_assignment.history_log.create(
+            action=Log.ACTION_UPDATE,
+            extra=category_assignment.category.name,
+            created_by=category_assignment.created_by,
+            created_at=category_assignment.created_at,
+            _signal=category_assignment._signal,
+        )
 
     @staticmethod
     def log_update_location(location):
