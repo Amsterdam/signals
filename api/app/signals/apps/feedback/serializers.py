@@ -16,9 +16,11 @@ class StandardAnswerSerializer(serializers.ModelSerializer):
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
+    signal_id = serializers.UUIDField(source='_signal.uuid', read_only=True)
+
     class Meta:
         model = Feedback
-        fields = ('is_satisfied', 'allows_contact', 'text', 'text_extra')
+        fields = ('is_satisfied', 'allows_contact', 'text', 'text_extra', 'signal_id')
         # The 'required': True for is_satisfied field is only validated for JSON
         # updloads, a form upload defaults to False if is_satisfied is left out.
         # See the Django Rest Framework docs:
