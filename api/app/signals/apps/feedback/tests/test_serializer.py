@@ -11,14 +11,12 @@ class TestFeedbackSerializer(TestCase):
 
     def setUp(self):
         self.data = {
-            'text': 'fake_text',
             'is_satisfied': False,
             'allows_contact': True,
             'text_extra': 'fake_text_extra'
         }
 
     def test_validate_text(self):
-
         self.data['text'] = 'fake_text'
 
         serializer = FeedbackSerializer(data=self.data)
@@ -40,4 +38,8 @@ class TestFeedbackSerializer(TestCase):
     def test_validate_missing_both(self):
         serializer = FeedbackSerializer(data=self.data)
         self.assertFalse(serializer.is_valid())
-        print(serializer.errors)
+        err = serializer.errors
+        self.assertIn('non_field_errors', err)
+        self.assertEqual(str(err['non_field_errors'][0]),
+                         'Either text or text_list must be filled in')
+        self.assertTrue(len(err['non_field_errors']) == 1)

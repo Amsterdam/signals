@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.utils import validate_answers, merge_texts
+from signals.apps.feedback.utils import merge_texts, validate_answers
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
 

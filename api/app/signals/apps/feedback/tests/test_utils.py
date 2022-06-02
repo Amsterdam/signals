@@ -3,7 +3,7 @@
 
 from django.test import TestCase
 
-from signals.apps.feedback.utils import validate_answers, merge_texts
+from signals.apps.feedback.utils import merge_texts, validate_answers
 
 
 class TestFeedbackUtils(TestCase):
