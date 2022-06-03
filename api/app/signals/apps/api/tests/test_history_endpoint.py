@@ -306,13 +306,6 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertEqual(self.feedback.is_satisfied, True)
         self.assertNotEqual(self.feedback.submitted_at, None)
 
-        # check have an entry in the history for the feedback
-        response = self.client.get(history_url)
-        self.assertEqual(response.status_code, 200)
-
-        response_data = response.json()
-        self.assertEqual(len(response_data), 7)
-
         # check that filtering by RECEIVE_FEEDBACK works
         response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
         self.assertEqual(response.status_code, 200)
