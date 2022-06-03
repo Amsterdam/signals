@@ -11,8 +11,8 @@ def convert_validation_error(error):
     Convert a Django ValidationError to a DRF ValidationError.
     """
     # TODO: handle Django ValidationError properties other than message
-    if hasattr(error, 'message'):
-        return DRFValidationError(error.message)
+    if hasattr(error, 'messages'):
+        return DRFValidationError(error.messages)
     else:
         return DRFValidationError('Validation error on underlying data.')
 
