@@ -16,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument('--to', type=str, dest='to', help='History logged before date (YYYY-MM-DD)')
 
     def handle(self, *args, **options):
-        self.stdout.write(f'* Migrate history')
+        self.stdout.write('* Migrate history')
 
         self._dry_run = options['_dry_run']
         self.stdout.write(f'* [dry-run] mode: {"on" if self._dry_run else "off"}')
