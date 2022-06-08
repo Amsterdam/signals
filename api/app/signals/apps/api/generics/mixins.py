@@ -1,18 +1,20 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import mixins
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 
-def convert_validation_error(error):
+def convert_validation_error(error: DjangoValidationError) -> DRFValidationError:
     """
     Convert a Django ValidationError to a DRF ValidationError.
     """
     # TODO: handle Django ValidationError properties other than message
-    if hasattr(error, 'message'):
+    if hasattr(error, 'message') and error.message:
         return DRFValidationError(error.message)
+    elif hasattr(error, 'messages') and error.messages:
+        return DRFValidationError(error.messages)
     else:
         return DRFValidationError('Validation error on underlying data.')
 
