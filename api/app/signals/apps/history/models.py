@@ -135,7 +135,7 @@ class Log(models.Model):
             action = 'Locatie gewijzigd naar:'
         elif what == 'CREATE_NOTE':
             action = 'Notitie toegevoegd:'
-        elif what == 'RECEIVE_FEEDBACK':
+        elif what == 'RECEIVE_FEEDBACK' or what == 'CREATE_FEEDBACK':
             action = 'Feedback van melder ontvangen'
         elif what == 'UPDATE_TYPE_ASSIGNMENT':
             action = f'Type gewijzigd naar: {_history_translated_action(self.extra)}'
