@@ -107,7 +107,7 @@ class Command(BaseCommand):
             insert_content_type_case = f'{insert_content_type_case} WHEN lower(substr(shv.what, strpos(shv.what, \'_\')+1)) = \'{ct_name}\' THEN {ct_pk}'  # noqa
 
         content_type = ContentType.objects.get(model='signaldepartments')
-        insert_content_type_case = f'{insert_content_type_case} WHEN lower(substr(shv.what, strpos(shv.what, \'_\')+1)) = \'routing_assignment_\' THEN {content_type.pk}'  # noqa
+        insert_content_type_case = f'{insert_content_type_case} WHEN lower(substr(shv.what, strpos(shv.what, \'_\')+1)) = \'routing_assignment\' THEN {content_type.pk}'  # noqa
         insert_content_type_case = f'{insert_content_type_case} WHEN lower(substr(shv.what, strpos(shv.what, \'_\')+1)) = \'directing_departments_assignment\' THEN {content_type.pk}'  # noqa
 
         content_type = ContentType.objects.get(model='signal')
