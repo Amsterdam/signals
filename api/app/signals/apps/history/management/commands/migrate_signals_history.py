@@ -113,7 +113,7 @@ class Command(BaseCommand):
         content_type = ContentType.objects.get(model='signal')
         insert_content_type_case = f'{insert_content_type_case} WHEN lower(shv.what) = \'child_signal_created\' THEN {content_type.pk}'  # noqa
 
-        content_type = ContentType.objects.get(model='signaluser')
+        content_type = ContentType.objects.get(app_label='signals', model='signaluser')
         insert_content_type_case = f'{insert_content_type_case} WHEN lower(shv.what) = \'UPDATE_USER_ASSIGNMENT\' THEN {content_type.pk}'  # noqa
 
         insert_content_type_case = f'{insert_content_type_case} ELSE 0 END'
