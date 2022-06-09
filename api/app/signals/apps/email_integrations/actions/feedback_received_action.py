@@ -25,5 +25,6 @@ class FeedbackReceivedAction(AbstractSystemAction):
             'feedback_allows_contact': self.kwargs['feedback'].allows_contact,
             'feedback_is_satisfied': self.kwargs['feedback'].is_satisfied,
             'feedback_text': self.kwargs['feedback'].text,
-            'feedback_text_extra': self.kwargs['feedback'].text_extra
+            'feedback_text_extra': self.kwargs['feedback'].text_extra,
+            'feedback_text_list': self.kwargs['feedback'].text_list
         }

@@ -30,5 +30,6 @@ class SignalHandledNegativeAction(AbstractAction):
             'feedback_allows_contact': feedback.allows_contact,
             'feedback_is_satisfied': feedback.is_satisfied,
             'feedback_text': feedback.text,
-            'feedback_text_extra': feedback.text_extra
+            'feedback_text_extra': feedback.text_extra,
+            'feedback_text_list': feedback.text_list,
         }
