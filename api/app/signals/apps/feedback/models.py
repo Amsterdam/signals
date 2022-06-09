@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
@@ -43,6 +44,7 @@ class Feedback(models.Model):
     is_satisfied = models.BooleanField(null=True)
     allows_contact = models.BooleanField(default=False)
     text = models.TextField(max_length=1000, null=True, blank=True)
+    text_list = ArrayField(models.TextField(max_length=1000, blank=True), null=True, blank=True)
     text_extra = models.TextField(max_length=1000, null=True, blank=True)
 
     objects = models.Manager()
@@ -55,25 +57,33 @@ class Feedback(models.Model):
 
     @property
     def is_too_late(self):
-        """Feedback still on time"""
+        """
+        Feedback still on time
+        """
         open_period = timedelta(days=FEEDBACK_EXPECTED_WITHIN_N_DAYS)
 
         return timezone.now() > self.created_at + open_period
 
     @property
     def is_filled_out(self):
-        """Feedback form already filled out and submitted."""
+        """
+        Feedback form already filled out and submitted.
+        """
         return self.submitted_at is not None
 
 
-def _get_description_of_receive_feedback(feedback_id):
-    """Given a history entry for submission of feedback create descriptive text."""
-    feedback = Feedback.objects.get(token=feedback_id)
+def _get_description_of_receive_feedback(feedback_token):
+    """
+    Given a history entry for submission of feedback create descriptive text.
+    """
+    feedback = Feedback.objects.get(token=feedback_token)
 
     # Craft a message for UI
     desc = 'Ja, de melder is tevreden\n' if feedback.is_satisfied else \
         'Nee, de melder is ontevreden\n'
-    desc += 'Waarom: {}'.format(feedback.text)
+
+    text = ",". join(feedback.text_list) if feedback.text_list else feedback.text or "Geen Feedback"
+    desc += 'Waarom: {}'.format(text)
 
     if feedback.text_extra:
         desc += '\nToelichting: {}'.format(feedback.text_extra)
