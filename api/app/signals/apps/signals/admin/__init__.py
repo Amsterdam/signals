@@ -4,6 +4,7 @@ from django.contrib import admin
 
 from signals.apps.signals.admin.area import AreaAdmin
 from signals.apps.signals.admin.category import CategoryAdmin, StatusMessageTemplatesAdmin
+from signals.apps.signals.admin.deleted_signals import DeletedSignalAdmin
 from signals.apps.signals.admin.department import DepartmentAdmin
 from signals.apps.signals.admin.expression import (
     ExpressionAdmin,
@@ -17,6 +18,7 @@ from signals.apps.signals.admin.source import SourceAdmin
 from signals.apps.signals.models import (
     Area,
     Category,
+    DeletedSignal,
     Department,
     Expression,
     ExpressionContext,
@@ -39,3 +41,4 @@ admin.site.register(RoutingExpression, RoutingExpressionAdmin)
 admin.site.register(Expression, ExpressionAdmin)
 admin.site.register(ExpressionType, ExpressionTypeAdmin)
 admin.site.register(ExpressionContext, ExpressionContextAdmin)
+admin.site.register(DeletedSignal, DeletedSignalAdmin)
