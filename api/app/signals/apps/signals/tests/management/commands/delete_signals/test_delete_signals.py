@@ -23,15 +23,14 @@ class TestDeleteSignals(TestCase):
         Signal created 370 days ago and the final state set 369 days ago. The feature flag is disabled. So the signals
         should not be deleted.
         """
-        feature_flags = self.feature_flags
-        feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = False
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = False
 
         with freeze_time(timezone.now() - timezone.timedelta(days=370)):
             signal = SignalFactory.create(status__state=AFGEHANDELD)
 
         buffer = StringIO()
-        with override_settings(FEATURE_FLAGS=feature_flags):
-            call_command('delete_signals', f'{AFGEHANDELD}', '365', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', AFGEHANDELD, '365', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertNotIn(f'Deleted Signal: #{signal.id}', output)
@@ -43,11 +42,14 @@ class TestDeleteSignals(TestCase):
         Signal created 370 days ago and the final state set 369 days ago. The dry run flag is set. So the signals should
         not be deleted.
         """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
         with freeze_time(timezone.now() - timezone.timedelta(days=370)):
             signal = SignalFactory.create(status__state=GEANNULEERD)
 
         buffer = StringIO()
-        call_command('delete_signals', f'{GEANNULEERD}', '365', '--dry-run', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', GEANNULEERD, '365', '--dry-run', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertIn(f'Deleted Signal: #{signal.id} (dry-run)', output)
@@ -58,11 +60,14 @@ class TestDeleteSignals(TestCase):
         """
         Signal created 6 days ago and the final state set 5 days ago. So the signals should not be deleted.
         """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
         with freeze_time(timezone.now() - timezone.timedelta(days=6)):
             signal = SignalFactory.create(status__state=AFGEHANDELD)
 
         buffer = StringIO()
-        call_command('delete_signals', f'{AFGEHANDELD}', '365', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', AFGEHANDELD, '365', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertNotIn(f'Deleted Signal: #{signal.id}', output)
@@ -73,11 +78,14 @@ class TestDeleteSignals(TestCase):
         """
         Signal created 370 days ago and the final state set 369 days ago. So the signals should be deleted.
         """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
         with freeze_time(timezone.now() - timezone.timedelta(days=370)):
             signal = SignalFactory.create(status__state=GEANNULEERD)
 
         buffer = StringIO()
-        call_command('delete_signals', f'{GEANNULEERD}', '365', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', GEANNULEERD, '365', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertIn(f'Deleted Signal: #{signal.id}', output)
@@ -88,11 +96,14 @@ class TestDeleteSignals(TestCase):
         """
         Signal created 370 days ago and the wrong state set 369 days ago. So the signals should be deleted.
         """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
         with freeze_time(timezone.now() - timezone.timedelta(days=370)):
             signal = SignalFactory.create(status__state=GEMELD)
 
         buffer = StringIO()
-        call_command('delete_signals', f'{AFGEHANDELD}', '365', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', AFGEHANDELD, '365', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertNotIn(f'Deleted Signal: #{signal.id}', output)
@@ -104,12 +115,15 @@ class TestDeleteSignals(TestCase):
         Parent signal created 370 days ago and the final state set 369 days ago. So the signal and its children should
         be deleted.
         """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
         with freeze_time(timezone.now() - timezone.timedelta(days=370)):
             parent_signal = SignalFactory.create(status__state=GEANNULEERD)
             child_signal = SignalFactory.create(parent=parent_signal)
 
         buffer = StringIO()
-        call_command('delete_signals', f'{GEANNULEERD}', '365', stdout=buffer)
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', GEANNULEERD, '365', stdout=buffer)
         output = buffer.getvalue()
 
         self.assertIn(f'Deleted Signal: #{parent_signal.id}', output)
