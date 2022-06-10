@@ -3,13 +3,14 @@
 from io import StringIO
 
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.factories import SignalFactory
+from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from signals.apps.signals.models import DeletedSignal, Signal
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GEMELD
 
@@ -18,7 +19,7 @@ class TestDeleteSignals(TestCase):
     def setUp(self):
         self.feature_flags = settings.FEATURE_FLAGS
 
-    def test_signals_should_not_be_deleted_feature_disabled(self):
+    def test_signal_should_not_be_deleted_feature_disabled(self):
         """
         Signal created 370 days ago and the final state set 369 days ago. The feature flag is disabled. So the signals
         should not be deleted.
@@ -37,9 +38,9 @@ class TestDeleteSignals(TestCase):
         self.assertTrue(Signal.objects.filter(id=signal.id).exists())
         self.assertFalse(DeletedSignal.objects.filter(signal_id=signal.id).exists())
 
-    def test_signals_should_not_be_deleted_dry_run(self):
+    def test_signal_should_not_be_deleted_dry_run(self):
         """
-        Signal created 370 days ago and the final state set 369 days ago. The dry run flag is set. So the signals should
+        Signal created 370 days ago and the final state set 369 days ago. The dry run flag is set. So the signal should
         not be deleted.
         """
         self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
@@ -56,9 +57,9 @@ class TestDeleteSignals(TestCase):
         self.assertTrue(Signal.objects.filter(id=signal.id).exists())
         self.assertFalse(DeletedSignal.objects.filter(signal_id=signal.id).exists())
 
-    def test_signals_should_not_be_deleted(self):
+    def test_signal_should_not_be_deleted(self):
         """
-        Signal created 6 days ago and the final state set 5 days ago. So the signals should not be deleted.
+        Signal created 6 days ago and the final state set 5 days ago. So the signal should not be deleted.
         """
         self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
 
@@ -74,9 +75,9 @@ class TestDeleteSignals(TestCase):
         self.assertTrue(Signal.objects.filter(id=signal.id).exists())
         self.assertFalse(DeletedSignal.objects.filter(signal_id=signal.id).exists())
 
-    def test_signals_should_be_deleted(self):
+    def test_signal_should_be_deleted(self):
         """
-        Signal created 370 days ago and the final state set 369 days ago. So the signals should be deleted.
+        Signal created 370 days ago and the final state set 369 days ago. So the signal should be deleted.
         """
         self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
 
@@ -92,9 +93,9 @@ class TestDeleteSignals(TestCase):
         self.assertFalse(Signal.objects.filter(id=signal.id).exists())
         self.assertTrue(DeletedSignal.objects.filter(signal_id=signal.id).exists())
 
-    def test_signals_should_not_be_deleted_wrong_states(self):
+    def test_signal_should_not_be_deleted_wrong_states(self):
         """
-        Signal created 370 days ago and the wrong state set 369 days ago. So the signals should be deleted.
+        Signal created 370 days ago and the wrong state set 369 days ago. So the signal should be deleted.
         """
         self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
 
@@ -133,3 +134,26 @@ class TestDeleteSignals(TestCase):
         self.assertIn(f'Deleted Signal: #{child_signal.id}', output)
         self.assertFalse(Signal.objects.filter(id=child_signal.id).exists())
         self.assertTrue(DeletedSignal.objects.filter(signal_id=child_signal.id).exists())
+
+    def test_signal_and_attachments_should_be_deleted(self):
+        """
+        Signal created 370 days ago and the final state set 369 days ago. So the signal should be deleted.
+        The attachment should be deleted.
+        """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
+        with freeze_time(timezone.now() - timezone.timedelta(days=370)):
+            signal = SignalFactoryWithImage.create(status__state=GEANNULEERD)
+
+        attachment_file_path = signal.attachments.first().file.path
+        self.assertTrue(default_storage.exists(attachment_file_path))
+
+        buffer = StringIO()
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', GEANNULEERD, '365', stdout=buffer)
+        output = buffer.getvalue()
+
+        self.assertIn(f'Deleted Signal: #{signal.id}', output)
+        self.assertFalse(Signal.objects.filter(id=signal.id).exists())
+        self.assertTrue(DeletedSignal.objects.filter(signal_id=signal.id).exists())
+        self.assertFalse(default_storage.exists(attachment_file_path))

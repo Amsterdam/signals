@@ -3,12 +3,13 @@
 import uuid
 
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
 from signals.apps.search.tasks import delete_from_elastic
-from signals.apps.signals.models import DeletedSignal, DeletedSignalLog, Signal
+from signals.apps.signals.models import DeletedSignal, Signal
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD
 
 
@@ -78,7 +79,7 @@ class Command(BaseCommand):
             # A specific Signal ID was given, only select that Signal
             queryset = queryset.filter(id=self.signal_id)
 
-        return queryset.filter()
+        return queryset
 
     def _loop_through_signals(self, signal_qs):
         for signal in signal_qs:
@@ -96,19 +97,26 @@ class Command(BaseCommand):
         signal_id = signal.id
         if not self._dry_run:
             # Meta data needed for reporting
-            deleted_signal = DeletedSignal.objects.create_from_signal(signal=signal, batch_uuid=self.batch_uuid)
+            DeletedSignal.objects.create_from_signal(
+                signal=signal,
+                action='automatic',
+                note=self.get_log_note(signal),
+                batch_uuid=self.batch_uuid
+            )
 
-            # The log explaining how and why the signal was deleted
-            note = self.get_log_note(signal)
-            DeletedSignalLog.objects.create(deleted_signal=deleted_signal, action='automatic', note=note)
-
+            attachment_files = [attachment.file.path for attachment in signal.attachments.all()]
             signal.attachments.all().delete()
+
             try:
                 delete_from_elastic(signal=signal)
             except Exception:
                 pass
 
             signal.delete()
+
+            for attachment_file in attachment_files:
+                if default_storage.exists(attachment_file):
+                    default_storage.delete(attachment_file)
 
         self.stdout.write(f'Deleted Signal: #{signal_id}{" (dry-run)" if self._dry_run else ""}')
 

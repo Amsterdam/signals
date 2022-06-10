@@ -7,7 +7,7 @@ from signals.apps.signals.models.category import Category
 from signals.apps.signals.models.category_assignment import CategoryAssignment
 from signals.apps.signals.models.category_departments import CategoryDepartment
 from signals.apps.signals.models.category_question import CategoryQuestion
-from signals.apps.signals.models.deleted_signal import DeletedSignal, DeletedSignalLog
+from signals.apps.signals.models.deleted_signal import DeletedSignal
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.expression import Expression, ExpressionContext, ExpressionType
 from signals.apps.signals.models.history import History
@@ -84,5 +84,4 @@ __all__ = [
     'Type',
     'RoutingExpression',
     'DeletedSignal',
-    'DeletedSignalLog',
 ]
