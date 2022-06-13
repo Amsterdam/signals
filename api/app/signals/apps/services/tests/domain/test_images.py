@@ -30,13 +30,21 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_get_context_data_no_images(self):
         AttachmentFactory(_signal=self.signal, file__filename='blah.txt', file__data=b'blah', is_image=False)
-        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 800)
+        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+            DataUriImageEncodeService.get_context_data_images(self.signal, 800)
         self.assertEqual(len(jpg_data_uris), 0)
+        self.assertEqual(len(att_filenames), 0)
+        self.assertEqual(len(user_emails), 0)
+        self.assertEqual(len(att_created_ats), 0)
 
     def test_get_context_data_invalid_images(self):
         AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=b'blah', is_image=True)
-        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 800)
+        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+            DataUriImageEncodeService.get_context_data_images(self.signal, 800)
         self.assertEqual(len(jpg_data_uris), 0)
+        self.assertEqual(len(att_filenames), 0)
+        self.assertEqual(len(user_emails), 0)
+        self.assertEqual(len(att_created_ats), 0)
 
     def test_get_context_data_valid_image(self):
         image = Image.new("RGB", (100, 100), (0, 0, 0))
@@ -44,8 +52,12 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         image.save(buffer, format='JPEG')
 
         AttachmentFactory.create(_signal=self.signal, file__filename='blah.jpg', file__data=buffer.getvalue())
-        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 80)
+        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+            DataUriImageEncodeService.get_context_data_images(self.signal, 800)
         self.assertEqual(len(jpg_data_uris), 1)
+        self.assertEqual(len(att_filenames), 1)
+        self.assertEqual(len(user_emails), 1)
+        self.assertEqual(len(att_created_ats), 1)
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
 
@@ -56,7 +68,11 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         image.save(buffer, format='PNG')
 
         AttachmentFactory.create(_signal=self.signal, file__filename='blah.png', file__data=buffer.getvalue())
-        jpg_data_uris = DataUriImageEncodeService.get_context_data_images(self.signal, 200)
+        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
+            DataUriImageEncodeService.get_context_data_images(self.signal, 800)
         self.assertEqual(len(jpg_data_uris), 1)
+        self.assertEqual(len(att_filenames), 1)
+        self.assertEqual(len(user_emails), 1)
+        self.assertEqual(len(att_created_ats), 1)
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)

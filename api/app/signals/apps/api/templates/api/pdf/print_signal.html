@@ -180,10 +180,14 @@
 
     <div class="divider">&nbsp;</div>
     <h2>Foto's</h2>
-    {% if jpg_data_uris %}
-        {% for data_uri in jpg_data_uris %}
+    {% if attachment_images %}
+        {% for data_uri, att_filename, user_email, created_at in attachment_images %}
             {% if data_uri %}
-                <p><img src="{{ data_uri|safe }}" style="width:680px" alt=""></p>
+                <p>
+                    <img src="{{ data_uri|safe }}" style="width:680px" alt="">
+                    {{ att_filename}} op {{ created_at | date:"d-m-Y" }} {{ created_at | date:"H:i" }} door
+                    {% if user_email %}{{ user_email }}{% else %}melder{% endif %}
+                </p>
             {% else %}
                 <p>Image not available</p>
             {% endif %}
@@ -192,6 +196,7 @@
     {% else %}
         <p>Er zijn geen foto's beschikbaar omdat de melder in Signalen geen foto's heeft meegeleverd.</p>
     {% endif %}
+
 
     <div class="divider">&nbsp;</div>
     <h2>Geschiedenis</h2>

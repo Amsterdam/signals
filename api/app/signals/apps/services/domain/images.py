@@ -29,6 +29,10 @@ class DataUriImageEncodeService:
     @staticmethod
     def get_context_data_images(signal, max_size):
         jpg_data_uris = []
+        att_filenames = []
+        user_emails = []
+        att_created_ats = []
+
         for att in signal.attachments.all():
             # Attachment is_image property is currently not reliable
             _, ext = os.path.splitext(att.file.name)
@@ -62,6 +66,11 @@ class DataUriImageEncodeService:
                     image.save(new_buffer, format='JPEG')
                     encoded = f'data:image/jpg;base64,{base64.b64encode(new_buffer.getvalue()).decode("utf-8")}'
 
-            jpg_data_uris.append(encoded)
+            att_filename = os.path.basename(att.file.name)
 
-        return jpg_data_uris
+            jpg_data_uris.append(encoded)
+            att_filenames.append(att_filename)
+            user_emails.append(att.created_by)
+            att_created_ats.append(att.created_at)
+
+        return jpg_data_uris, att_filenames, user_emails, att_created_ats
