@@ -8,7 +8,7 @@ SIA purposes).
 import os
 
 from django.contrib.gis.db.models.functions import MakeValid
-from django.contrib.gis.gdal import DataSource
+from django.contrib.gis.gdal import CoordTransform, DataSource, SpatialReference
 from django.contrib.gis.geos import MultiPolygon
 from django.db import transaction
 from django.utils.text import slugify
@@ -61,6 +61,29 @@ class SIAStadsdeelLoader(AreaLoader):
         geometries[0].srid = 4326  # Set SRID to WGS84
         return geometries[0]
 
+    def _load_ouder_amstel_geometry(self):
+        """
+        Load the GeoJSON containing Ouder Amsterl.
+        """
+        ds = DataSource(os.path.join(THIS_DIR, 'ouder-amstel.json'))
+
+        assert len(ds) == 1
+        assert len(ds[0]) == 136
+        assert ds[0].srs
+        assert ds[0].geom_type == 'Polygon'
+
+        geometries = ds[0].get_geoms(geos=True)
+
+        import pdb
+        pdb.set_trace()
+
+        for geometry in geometries:
+            geometry.transform(CoordTransform(SpatialReference(28992), SpatialReference(4326)))
+
+        pdb.set_trace()
+
+        return geometries
+
     def _combine_ouder_amstel_and_oost(self):
         """
         Meldingen in "Ouder-Amstel" should be tagged as stadsdeel "Oost". Therefore we need to combine the geometry of
@@ -71,14 +94,13 @@ class SIAStadsdeelLoader(AreaLoader):
         except Area.DoesNotExist:
             return
 
-        try:
-            cbs_gemeente_ouder_amstel = Area.objects.get(name__iexact='Ouder-Amstel',
-                                                         _type__code__in=['cbs-gemeente-2019', 'cbs-gemeente-2021'])
-        except Area.DoesNotExist:
-            return
+        geometries = self._load_ouder_amstel_geometry()
 
-        # Combine SIA stadsdeel Oost and CBS Gemeente Ouder Amstel
-        combined_geometry = sia_stadsdeel_oost.geometry + cbs_gemeente_ouder_amstel.geometry
+        # Combine SIA stadsdeel Oost and Gemeente Ouder Amstel geometry
+        combined_geometry = sia_stadsdeel_oost.geometry + MultiPolygon([g for g in geometries])
+
+        import pdb
+        pdb.set_trace()
 
         # Only handle non-pathological cases. We want to combine the geometry of Oost
         # and the municipality of Ouder-Amstel to be either a Polygon or a
