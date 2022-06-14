@@ -64,11 +64,12 @@ services:
       - EMAIL_PORT=1025
       - EMAIL_USE_TLS=False
       - EMAIL_USE_SSL=False
-      - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - DJANGO_SETTINGS_MODULE=signals.settings
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
       - ELASTICSEARCH_HOST=elasticsearch:9200
+      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -84,10 +85,11 @@ services:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
-      - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - DJANGO_SETTINGS_MODULE=signals.settings
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
+      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -105,7 +107,7 @@ services:
     environment:
       - DB_NAME=signals
       - DB_PASSWORD=insecure
-      - DJANGO_SETTINGS_MODULE=signals.settings.development
+      - DJANGO_SETTINGS_MODULE=signals.settings
       - FRONTEND_URL=http://localhost:3001
       - SWIFT_ENABLED=False
       - SIGMAX_AUTH_TOKEN
@@ -115,6 +117,7 @@ services:
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
+      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

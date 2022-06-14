@@ -13,6 +13,7 @@ jobs:
           POSTGRES_USER: signals
           POSTGRES_PASSWORD: insecure
           POSTGRES_DB: signals
+          IS_GITHUB_WORKFLOW: True
         ports: ['5432:5432']
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
@@ -41,7 +42,7 @@ jobs:
       - name: Run tests
         run: |
           cd api/app
-          tox -- --ds signals.settings.github
+          tox -- --ds signals.settings
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v1
