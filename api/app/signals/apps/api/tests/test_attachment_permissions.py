@@ -27,7 +27,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # Various Attachment delete permissions
         self.permission_delete_other = Permission.objects.get(codename='sia_delete_attachment_of_other_user')
-        self.permission_delete_reporter = Permission.objects.get(codename='sia_delete_attachment_of_reporter')
+        self.permission_delete_reporter = Permission.objects.get(codename='sia_delete_attachment_of_anonymous_user')
         self.permission_delete_normal = Permission.objects.get(codename='sia_delete_attachment_of_normal_signal')
         self.permission_delete_parent = Permission.objects.get(codename='sia_delete_attachment_of_parent_signal')
         self.permission_delete_child = Permission.objects.get(codename='sia_delete_attachment_of_child_signal')
@@ -147,7 +147,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         """
         Check that "sia_delete_attachment_of_normal_signal" is needed to delete a
         normal signal's attachments. Note: test uses the same user that uploaded
-        to delete the attachments, so "sia_delete_attachment_of_reporter" and
+        to delete the attachments, so "sia_delete_attachment_of_anonymous_user" and
         "sia_delete_attachment_of_other_user" are not needed.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -180,7 +180,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         """
         Check that "sia_delete_attachment_of_parent_signal" is needed to delete a
         parent signal's attachments. Note: test uses the same user that uploaded
-        to delete the attachments, so "sia_delete_attachment_of_reporter" and
+        to delete the attachments, so "sia_delete_attachment_of_anonymous_user" and
         "sia_delete_attachment_of_other_user" are not needed.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -220,7 +220,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         """
         Check that "sia_delete_attachment_of_child_signal" is needed to delete a
         child signal's attachments. Note: test uses the same user that uploaded
-        to delete the attachments, so "sia_delete_attachment_of_reporter" and
+        to delete the attachments, so "sia_delete_attachment_of_anonymous_user" and
         "sia_delete_attachment_of_other_user" are not needed.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -260,7 +260,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_own_attachments_no_extra_rights(self):
         """
         Test that user without "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" permission can delete their own
+        "sia_delete_attachment_of_anonymous_user" permission can delete their own
         attachments.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -300,7 +300,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 >>>>>>> Add sia_delete_attachment_of_reporter and reorganize attachment permission tests
         """
         Test that user without "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" permission cannot delete reporter's
+        "sia_delete_attachment_of_anonymous_user" permission cannot delete reporter's
         attachment.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -337,7 +337,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_others_attachments_with_proper_department_ii(self):
         """
         Test that user without "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" permission cannot delete another
+        "sia_delete_attachment_of_anonymous_user" permission cannot delete another
         user's attachments.
         """
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
@@ -373,7 +373,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_delete_others_attachments_with_proper_department_iii(self):
         """
-        Test that user with "sia_delete_attachment_of_reporter" and without
+        Test that user with "sia_delete_attachment_of_anonymous_user" and without
         "sia_delete_attachment_of_other_user" permission can delete a their own
         attachments.
         """
@@ -412,7 +412,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_delete_normal_signals_attachments(self):
         """
-        Test that user with "sia_delete_attachment_of_reporter" and without
+        Test that user with "sia_delete_attachment_of_anonymous_user" and without
         "sia_delete_attachment_of_other_user" permission can delete a reporter's
         attachments.
         """
@@ -445,9 +445,9 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
 
-        self.assertEqual(self.permission_delete_reporter.codename, 'sia_delete_attachment_of_reporter')
+        self.assertEqual(self.permission_delete_reporter.codename, 'sia_delete_attachment_of_anonymous_user')
         self.assertTrue(self.sia_read_write_user.has_perm('signals.sia_delete_attachment_of_child_signal'))
-        self.assertTrue(self.sia_read_write_user.has_perm('signals.sia_delete_attachment_of_reporter'))
+        self.assertTrue(self.sia_read_write_user.has_perm('signals.sia_delete_attachment_of_anonymous_user'))
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)  # <-- hierzo !!!
@@ -460,7 +460,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_delete_parent_signal_attachments(self):
         """
-        Test that user with "sia_delete_attachment_of_reporter" and without
+        Test that user with "sia_delete_attachment_of_anonymous_user" and without
         "sia_delete_attachment_of_other_user" cannot delete another user's
         attachments.
         """
@@ -507,7 +507,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_child_signal_attachments(self):
         """
         Test that user with "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" permission can delete their own
+        "sia_delete_attachment_of_anonymous_user" permission can delete their own
         attachments.
         """
         # OK
@@ -542,7 +542,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_reporters_attachments_with_delete_other_user(self):
         """
         Test that user with "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" cannot delete a reporter's
+        "sia_delete_attachment_of_anonymous_user" cannot delete a reporter's
         attachments.
         """
         # OK
@@ -577,7 +577,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def test_delete_other_users_attachments_with_delete_other_user(self):
         """
         Test that user with "sia_delete_attachment_of_other_user" and without
-        "sia_delete_attachment_of_reporter" permission can delete another
+        "sia_delete_attachment_of_anonymous_user" permission can delete another
         user's attachments.
         """
         # OK
