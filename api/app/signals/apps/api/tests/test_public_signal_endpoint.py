@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
@@ -243,7 +243,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         note = Note.objects.last()
 
         filename = os.path.basename(attachment.file.name)
-        self.assertEqual(f'Foto toegevoegd door melder: {filename}', note.text)
+        self.assertEqual(f'Bijlage toegevoegd door melder: {filename}', note.text)
 
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create(status__state=GEMELD)

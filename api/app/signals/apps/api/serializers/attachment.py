@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -36,10 +36,10 @@ class SignalAttachmentSerializerMixin:
 
         # add a note that an attachment (currently only images allowed) was uploaded
         filename = os.path.basename(attachment.file.name)
-        msg = f'Foto toegevoegd door melder: {filename}'
         if user:
-            msg = f'Foto toegevoegd door {user.email}: {filename}'
-        Signal.actions.create_note({'text': msg}, signal)
+            Signal.actions.create_note({'text': f'Bijlage toegevoegd: {filename}', 'created_by': user}, signal)
+        else:
+            Signal.actions.create_note({'text': f'Bijlage toegevoegd door melder: {filename}'}, signal)
 
         return attachment
 

@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+import os
+
 from django.contrib.auth.models import Permission
 
 from signals.apps.signals.factories import (
@@ -110,6 +112,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
         self.client.force_authenticate(user=self.sia_read_write_user)
         self.sia_read_write_user.profile.departments.add(self.department)
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # hand out all of normal, parent, child signal's attachment delete permissions
         self.sia_read_write_user.user_permissions.set([
@@ -132,6 +135,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
+
     def test_delete_others_attachments_with_proper_department_i(self):
         """
         Test that user with "sia_delete_attachment_of_other_user" permission
@@ -140,6 +147,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 1)
         self.client.force_authenticate(user=self.sia_read_write_user)
         self.sia_read_write_user.profile.departments.add(self.department)
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # hand out all of normal, parent, child signal's attachment delete permissions
         # and permission to delete other's attachments
@@ -160,6 +168,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
+
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_others_attachments_with_proper_department_ii(self):
         """
@@ -185,6 +197,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # let's pretend a reporter (i.e. never logged-in) uploaded the attachment
         self.attachment.created_by = None
         self.attachment.save()
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # should be able to delete a reporter's attachment
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
@@ -193,6 +206,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
+
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_others_attachments_with_proper_department_iii(self):
         """
@@ -218,6 +235,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # let's pretend our test user uploaded the attachment
         self.attachment.created_by = self.sia_read_write_user.email
         self.attachment.save()
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # should be able to delete a reporter's attachment
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 0)
@@ -226,6 +244,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
+
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_normal_signals_attachments(self):
         """
@@ -239,6 +261,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # let's pretend our test user uploaded the attachment (no "sia_delete_attachment_of_other_user" needed)
         self.attachment.created_by = self.sia_read_write_user.email
         self.attachment.save()
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # Try to delete without "sia_delete_attachment_of_normal_signal"
         url = self.attachments_endpoint_detail.format(self.signal.pk, self.attachment.pk)
@@ -258,6 +281,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Attachment.objects.filter(_signal=self.signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
+
     def test_delete_parent_signal_attachments(self):
         """
         Check that "sia_delete_attachment_of_parent_signal" is needed to delete a
@@ -273,6 +300,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         ImageAttachmentFactory.create(_signal=child_signal)
         self.attachment.created_by = self.sia_read_write_user.email
         self.attachment.save()
+        att_filename = os.path.basename(self.attachment.file.name)
 
         # Try to delete without "sia_delete_attachment_of_parent_signal"
         parent_signal = self.signal
@@ -295,6 +323,10 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Attachment.objects.filter(_signal=parent_signal).count(), 0)
         self.assertEqual(Note.objects.filter(_signal=parent_signal).count(), 1)
+
+        n = Note.objects.all().first()
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
+        self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_child_signal_attachments(self):
         """
