@@ -554,7 +554,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         for note, attachment in zip(note_qs, attachment_qs):
             filename = os.path.basename(attachment.file.name)
-            self.assertEqual(f'Foto toegevoegd: {filename}', note.text)
+            self.assertEqual(f'Bijlage toegevoegd: {filename}', note.text)
             self.assertEqual(self.sia_read_write_user.email, note.created_by)
 
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",

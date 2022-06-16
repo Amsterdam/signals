@@ -243,7 +243,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         note = Note.objects.last()
 
         filename = os.path.basename(attachment.file.name)
-        self.assertEqual(f'Foto toegevoegd door melder: {filename}', note.text)
+        self.assertEqual(f'Bijlage toegevoegd door melder: {filename}', note.text)
 
     def test_add_attachment_extension_not_allowed(self):
         signal = SignalFactory.create(status__state=GEMELD)

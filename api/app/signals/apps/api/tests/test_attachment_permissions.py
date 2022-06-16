@@ -136,7 +136,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_others_attachments_with_proper_department_i(self):
@@ -170,7 +170,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_others_attachments_with_proper_department_ii(self):
@@ -208,7 +208,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_others_attachments_with_proper_department_iii(self):
@@ -246,7 +246,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_normal_signals_attachments(self):
@@ -282,7 +282,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=self.signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_parent_signal_attachments(self):
@@ -325,7 +325,7 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(Note.objects.filter(_signal=parent_signal).count(), 1)
 
         n = Note.objects.all().first()
-        self.assertEqual(n.text, f'Foto {att_filename} is verwijderd.')
+        self.assertEqual(n.text, f'Bijlage {att_filename} is verwijderd.')
         self.assertEqual(n.created_by, self.sia_read_write_user.email)
 
     def test_delete_child_signal_attachments(self):

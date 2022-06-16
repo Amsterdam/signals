@@ -37,9 +37,9 @@ class SignalAttachmentSerializerMixin:
         # add a note that an attachment (currently only images allowed) was uploaded
         filename = os.path.basename(attachment.file.name)
         if user:
-            Signal.actions.create_note({'text': f'Foto toegevoegd: {filename}', 'created_by': user}, signal)
+            Signal.actions.create_note({'text': f'Bijlage toegevoegd: {filename}', 'created_by': user}, signal)
         else:
-            Signal.actions.create_note({'text': f'Foto toegevoegd door melder: {filename}'}, signal)
+            Signal.actions.create_note({'text': f'Bijlage toegevoegd door melder: {filename}'}, signal)
 
         return attachment
 
