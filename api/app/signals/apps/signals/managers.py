@@ -557,7 +557,7 @@ class SignalManager(models.Manager):
         try:
             assigned_user = User.objects.get(email=assigned_user_email) if assigned_user_email else None
         except User.DoesNotExist:
-            raise ValidationError('Could not set user assignment')
+            raise ValidationError('Could not set user assignment, user does not exist')
 
         signal.user_assignment = SignalUser.objects.create(
             _signal=signal,
