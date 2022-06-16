@@ -330,7 +330,7 @@ class TestPrivateSignalViewSetCreate(SIAReadWriteUserMixin, SignalsBaseApiTestCa
 
         for note, attachment in zip(note_qs, attachment_qs):
             filename = os.path.basename(attachment.file.name)
-            self.assertEqual(f'Foto gekopieerd van hoofdmelding: {filename}', note.text)
+            self.assertEqual(f'Bijlage gekopieerd van hoofdmelding: {filename}', note.text)
             self.assertEqual(None, note.created_by)
 
     @patch('signals.apps.api.validation.address.base.BaseAddressValidation.validate_address',

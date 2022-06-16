@@ -522,7 +522,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             # Add history entries for every attachment that was copied. Only photos allowed for now.
             for attachment in Attachment.objects.filter(_signal=signal).order_by('created_at'):
                 filename = os.path.basename(attachment.file.name)
-                msg = f'Foto gekopieerd van hoofdmelding: {filename}'
+                msg = f'Bijlage gekopieerd van hoofdmelding: {filename}'
                 Signal.actions.create_note(data={'text': msg}, signal=signal)
 
         signal.refresh_from_db()
