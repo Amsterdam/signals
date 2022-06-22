@@ -22,6 +22,25 @@ def track_fields_data_from_instance(instance, track_fields=None):
     return initial_data
 
 
+def changed_field_data(instance):
+    if not hasattr(instance._state, 'initial_data'):
+        return {}  # Could not determine changed data
+
+    current_data = track_fields_data_from_instance(instance, instance.track_fields)
+
+    changed_data = {}
+    for field_name in instance.track_fields:
+        initial_value = instance._state.initial_data[field_name]
+        current_value = current_data[field_name]
+
+        if initial_value != current_value:
+            if isinstance(current_value, list):
+                # Only store the difference
+                current_value = list(set(current_value) - set(initial_value))
+            changed_data.update({field_name: current_value})
+    return changed_data
+
+
 class TrackFields:
     """
     Mixin stores initial data from the db when creating a model instance. Updates the datat when refresh_from_db
@@ -41,19 +60,4 @@ class TrackFields:
         self._state.initial_data = track_fields_data_from_instance(self, self.track_fields)
 
     def changed_data(self):
-        if not hasattr(self._state, 'initial_data'):
-            return {}  # Could not determine changed data
-
-        current_data = track_fields_data_from_instance(self, self.track_fields)
-
-        changed_data = {}
-        for field_name in self.track_fields:
-            initial_value = self._state.initial_data[field_name]
-            current_value = current_data[field_name]
-
-            if initial_value != current_value:
-                if isinstance(current_value, list):
-                    # Only store the difference
-                    current_value = list(set(current_value) - set(initial_value))
-                changed_data.update({field_name: current_value})
-        return changed_data
+        return changed_field_data(self)
