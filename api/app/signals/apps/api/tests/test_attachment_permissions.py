@@ -27,7 +27,8 @@ class TestAttachmentPermissions(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # Various Attachment delete permissions
         self.permission_delete_other = Permission.objects.get(codename='sia_delete_attachment_of_other_user')
-        self.permission_delete_anonymous_user = Permission.objects.get(codename='sia_delete_attachment_of_anonymous_user')
+        self.permission_delete_anonymous_user = Permission.objects.get(
+            codename='sia_delete_attachment_of_anonymous_user')
         self.permission_delete_normal = Permission.objects.get(codename='sia_delete_attachment_of_normal_signal')
         self.permission_delete_parent = Permission.objects.get(codename='sia_delete_attachment_of_parent_signal')
         self.permission_delete_child = Permission.objects.get(codename='sia_delete_attachment_of_child_signal')
