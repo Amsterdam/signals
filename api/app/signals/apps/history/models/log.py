@@ -71,7 +71,8 @@ class Log(models.Model):
         """
         content_type_translations = {'category assignment': 'category_assignment',
                                      'service level objective': 'sla',
-                                     'type': 'type_assignment'}
+                                     'type': 'type_assignment',
+                                     'signal user': 'user_assignment'}
         if content_type_name in content_type_translations:
             return content_type_translations[content_type_name]
         return content_type_name
@@ -88,8 +89,12 @@ class Log(models.Model):
         """
         Present for backwards compatibility
         """
+        # NOTE: THIS SHOULD PRODUCE A CONTENT_TYPE.MODEL NOT .NAME!!!! (SEE CALL SITE)
         content_type = what[what.find('_') + 1:].lower()
-        t = {'category_assignment': 'categoryassignment', 'sla': 'servicelevelobjective', 'type_assignment': 'type'}
+        t = {'category_assignment': 'categoryassignment',
+             'sla': 'servicelevelobjective',
+             'type_assignment': 'type',
+             'user_assignment': 'signaluser'}
         if content_type in t:
             content_type = t[content_type]
         return content_type
@@ -108,8 +113,10 @@ class Log(models.Model):
         "what" in the style of the signals_history_view
         Present for backwards compatibility
         """
+#        import pdb; pdb.set_trace()
         translated_content_type = self.translate_content_type(self.content_type.name)
-        return f'{self.action}_{translated_content_type}'.upper()
+        tmp = f'{self.action}_{translated_content_type}'.upper()
+        return tmp
 
     @property
     def who(self):
@@ -124,6 +131,7 @@ class Log(models.Model):
         "get_action" copied from History
         Present for backwards compatibility
         """
+#        import pdb; pdb.set_trace()
         what = self.what
         if what == 'UPDATE_STATUS':
             action = f'Status gewijzigd naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
@@ -145,7 +153,10 @@ class Log(models.Model):
         elif what == 'UPDATE_ROUTING_ASSIGNMENT':
             action = f'Routering: afdeling/afdelingen gewijzigd naar: {self.extra or "Verantwoordelijke afdeling (routering)"}'  # noqa
         elif what == 'UPDATE_USER_ASSIGNMENT':
-            action = f'Melding toewijzing gewijzigd naar: {self.extra}'
+            if self.extra:
+                action = f'Melding toewijzing gewijzigd naar: {self.extra}'
+            else:
+                action = 'Melding niet meer toegewezen aan behandelaar.'
         elif what == 'CHILD_SIGNAL_CREATED':
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':

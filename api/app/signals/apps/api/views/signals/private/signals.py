@@ -152,6 +152,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             # TODO remove when the transition to the new history app is completed.
             return self.history_view(*args, **kwargs)
 
+        # serializer = HistoryLogHalSerializer(history_log_qs, many=True)
+        # return Response(serializer.data)
+
     @action(detail=True, url_path=r'history-view/?$')
     def history_view(self, *args, **kwargs):
         """
