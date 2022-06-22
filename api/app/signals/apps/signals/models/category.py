@@ -153,8 +153,8 @@ class Category(TrackFields, models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
-        from signals.apps.history.services import CategoryLogService
-        CategoryLogService.log_update(self)
+        from signals.apps.history.services import HistoryLogService
+        HistoryLogService.log_update(self)
 
     def get_absolute_url(self, request=None):
         """

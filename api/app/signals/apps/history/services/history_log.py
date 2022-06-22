@@ -12,6 +12,9 @@ class HistoryLogService:
 
     @staticmethod
     def log_update(instance) -> None:
+        if not hasattr(instance, 'changed_data') or not callable(instance.changed_data):
+            return
+
         changed_data = instance.changed_data()
         if changed_data:
             if HistoryLogService.thread.request and HistoryLogService.thread.request.user:

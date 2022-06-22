@@ -37,6 +37,6 @@ class UsersConfig(AppConfig):
         def save(self, *args, **kwargs):
             super(user_model, self).save(*args, **kwargs)
 
-            from signals.apps.history.services.history_log import HistoryLogService
+            from signals.apps.history.services import HistoryLogService
             HistoryLogService.log_update(self)
         user_model.add_to_class('save', save)

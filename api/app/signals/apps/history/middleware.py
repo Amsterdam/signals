@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
-from signals.apps.history.services import CategoryLogService
-from signals.apps.history.services.history_log import HistoryLogService
+from signals.apps.history.services import HistoryLogService
 
 
 class HistoryMiddleware:
@@ -9,6 +8,5 @@ class HistoryMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        CategoryLogService.thread.request = request
         HistoryLogService.thread.request = request
         return self.get_response(request)
