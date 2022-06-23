@@ -15,6 +15,9 @@ class HistoryMiddleware:
             #
             # Created ticket SIG-4657 on the Amsterdam JIRA backlog to find a better solution than using threading for
             # this.
+            #
+            # Currently this is used to determine who made the request when storing the history. This has been copied
+            # from the change_log and will be refactored in SIG-4657 as mentioned above.
             HistoryLogService.thread.request = request
 
         return self.get_response(request)

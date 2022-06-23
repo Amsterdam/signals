@@ -5,6 +5,12 @@ from django.core.exceptions import FieldDoesNotExist
 
 
 def track_fields_data_from_instance(instance, track_fields=None):
+    """
+    This function is used to create a dict containing the data of the fields that are tracked.
+
+    This is used to store the initial data for an instance and to compare the initial data with the current data of
+    the tracked fields in the function changed_field_data
+    """
     initial_data = {}
     for field_name in track_fields or []:
         try:
@@ -23,6 +29,9 @@ def track_fields_data_from_instance(instance, track_fields=None):
 
 
 def changed_field_data(instance):
+    """
+    This function is used to determine the changed data comparing the initial_data with the current_data
+    """
     if not hasattr(instance._state, 'initial_data'):
         return {}  # Could not determine changed data
 
@@ -43,7 +52,7 @@ def changed_field_data(instance):
 
 class TrackFields:
     """
-    Mixin stores initial data from the db when creating a model instance. Updates the datat when refresh_from_db
+    Mixin stores initial data from the db when creating a model instance. Updates the data when refresh_from_db
     has been called. Also adds a function that returns the changed data. All data stored and checked are based on the
     set track_fields.
     """
