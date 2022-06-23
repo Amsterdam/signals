@@ -5,7 +5,6 @@ import uuid
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import JSONField
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
@@ -36,7 +35,7 @@ class Log(models.Model):
     action = models.CharField(editable=False, max_length=16, choices=ACTION_CHOICES, default=ACTION_UNKNOWN)
     description = models.TextField(max_length=3000, null=True, blank=True)
     extra = models.TextField(max_length=255, null=True, blank=True)
-    data = JSONField(null=True)
+    data = models.JSONField(null=True)
 
     created_by = models.EmailField(null=True, blank=True)
     created_at = models.DateTimeField(editable=False)
