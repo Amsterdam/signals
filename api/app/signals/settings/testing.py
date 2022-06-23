@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2022 Gemeente Amsterdam
-from signals.settings.base import *  # noqa
+import os
+
+from .base import INSTALLED_APPS
+from .feature_flags import FEATURE_FLAGS
+
+LOGGING_LEVEL = "INFO"
+
+ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1',
@@ -10,17 +17,18 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 
-DATABASES['default']['HOST'] = 'database'  # noqa: F405
-DATABASES['default']['PORT'] = '5432'  # noqa: F405
+DATABASE_HOST = os.getenv('DATABASE_HOST', 'database')
+DATABASE_PORT = '5432'
 
 SECRET_KEY = 'insecure'
 CELERY_TASK_ALWAYS_EAGER = True
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 TEST_LOGIN = 'signals.admin@example.com'
 SITE_DOMAIN = 'localhost:8000'
-INSTALLED_APPS += [  # noqa
-    'change_log.tests',  # Added so that we can test the chane_log with a "test only" model
-]
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 # This is a test public/private key def and added for testing .
 JWKS_TEST_KEY = """
@@ -50,6 +58,10 @@ SIGNALS_AUTH = {
 
 FRONTEND_URL = 'http://dummy_link'
 
-FEATURE_FLAGS['SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED'] = True  # noqa
-FEATURE_FLAGS['REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED'] = True  # noqa
-FEATURE_FLAGS['SIGNAL_HISTORY_LOG_ENABLED'] = True  # noqa
+INSTALLED_APPS += [  # noqa
+    'change_log.tests',  # Added so that we can test the chane_log with a "test only" model
+]
+
+FEATURE_FLAGS['SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED'] = True
+FEATURE_FLAGS['REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED'] = True
+FEATURE_FLAGS['SIGNAL_HISTORY_LOG_ENABLED'] = True

@@ -20,7 +20,7 @@ RUN apt-get update \
 
 RUN mkdir -p /media && mkdir -p /static && chown datapunt /media && chown datapunt /static
 
-ENV DJANGO_SETTINGS_MODULE=signals.settings.production
+ENV DJANGO_SETTINGS_MODULE=signals.settings
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 
 COPY app /app/

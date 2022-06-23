@@ -1,9 +1,19 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
-import logging
+# Copyright (C) 2022 Gemeente Amsterdam
+from logging import LogRecord, Filter
+
+from django.conf import settings
 
 
-class StaticFieldFilter(logging.Filter):
+class DebugQueryFilter(Filter):
+    """
+    Makes the query debug information dependant on the settings.
+    """
+    def filter(self, record: LogRecord) -> bool:
+        return settings.LOG_QUERIES and settings.DEBUG
+
+
+class StaticFieldFilter(Filter):
     """
     Python logging filter that adds the given static contextual information
     in the ``fields`` dictionary to all logging records.

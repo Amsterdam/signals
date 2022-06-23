@@ -8,7 +8,11 @@ TRUE_VALUES = [True, 'True', 'true', '1']
 
 # Django settings
 SECRET_KEY = os.getenv('SECRET_KEY')
+
+# Debug Logging
 DEBUG = False
+LOG_QUERIES = False
+LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
 
 # localhost and 127.0.0.1 are allowed because the deployment process checks the health endpoint with a
 # request to localhost:port
@@ -41,20 +45,9 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
-INSTALLED_APPS = [
-    # Django
-    'django.contrib.contenttypes',
-    'django.contrib.staticfiles',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.auth',
-    'django.contrib.admin',
-    'django.contrib.gis',
-
+SIGNAL_APPS = [
     # Signals project
     'signals.apps.history',
-
     'signals.apps.email_integrations',
     'signals.apps.health',
     'signals.apps.signals',
@@ -66,9 +59,20 @@ INSTALLED_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-
     'change_log',
+    'logs'
+]
 
+INSTALLED_APPS = [
+    # Django
+    'django.contrib.contenttypes',
+    'django.contrib.staticfiles',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.gis',
     # Third party
     'corsheaders',
     'datapunt_api',
@@ -82,7 +86,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'storages',
-]
+] + SIGNAL_APPS
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -121,16 +125,28 @@ TEMPLATES = [
     }
 ]
 
-DATABASES = {
+# Database settings
+DATABASE_NAME = os.getenv('DATABASE_NAME', 'signals')
+DATABASE_USER = os.getenv('DATABASE_USER', 'signals')
+DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'insecure')
+DATABASE_HOST = os.getenv('DATABASE_HOST_OVERRIDE')
+DATABASE_PORT = os.getenv('DATABASE_PORT_OVERRIDE')
+
+
+# Django cache settings
+CACHES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'signals'),
-        'USER': os.getenv('DATABASE_USER', 'signals'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': None,
-        'PORT': None
-    },
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
 }
+
+# Django security settings
+SECURE_SSL_REDIRECT = True
+SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 # Internationalization
 LANGUAGE_CODE = 'nl-NL'
@@ -238,128 +254,9 @@ EMAIL_REST_ENDPOINT_CLIENT_KEY = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_KEY', Non
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Meldingen gemeente Amsterdam <noreply@meldingen.amsterdam.nl>')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# Django cache settings
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-
 # Sentry logging
 RAVEN_CONFIG = {
     'dsn': os.getenv('SENTRY_RAVEN_DSN'),
-}
-
-# Django Logging settings
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console', 'sentry'],
-    },
-    'formatters': {
-        'console': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        }
-    },
-    'filters': {
-        'static_fields': {
-            '()': 'signals.utils.staticfieldfilter.StaticFieldFilter',
-            'fields': {
-                'project': 'SignalsAPI',
-                'environment': 'Any',
-                'hideme': 'True'
-            },
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'console',
-        },
-        'sentry': {
-            'level': 'WARNING',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
-    },
-    'loggers': {
-        'signals': {
-            'level': 'WARNING',
-            'handlers': ['console'],
-            'propagate': True,
-        },
-        'django': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': True,
-        },
-        'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-
-        # Debug all batch jobs
-        'doc': {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'index': {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'search': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'elasticsearch': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'urllib3': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'factory.containers': {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'factory.generate': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'requests.packages.urllib3.connectionpool': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'signals.apps.reporting.management.commands.dump_horeca_csv_files': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-
-        # Log all unhandled exceptions
-        'django.request': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-    },
 }
 
 # Django REST framework settings
@@ -418,39 +315,6 @@ SEARCH = {
         'HOST': os.getenv('ELASTICSEARCH_HOST', 'elastic-index.service.consul:9200'),
         'INDEX': os.getenv('ELASTICSEARCH_INDEX', 'signals'),
     },
-}
-
-FEATURE_FLAGS = {
-    'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
-    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
-
-    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
-    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
-
-    # Enabled the history_log based response, disables the signal_history_view based response
-    'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
-    'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
-
-    # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
-    # the frontend
-    # TODO: Remove this when the frontend is updated
-    'EXCLUDED_PERMISSIONS_IN_RESPONSE': os.getenv('EXCLUDED_PERMISSIONS_IN_RESPONSE',
-                                                  'sia_delete_attachment_of_normal_signal,'
-                                                  'sia_delete_attachment_of_parent_signal,'
-                                                  'sia_delete_attachment_of_child_signal,'
-                                                  'sia_delete_attachment_of_other_user').split(','),
-
-    # Enable/disable system mail for Feedback Received
-    'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': os.getenv('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', False) in TRUE_VALUES,  # noqa
-
-    # Enable/disable status mail for Handled after negative feedback
-    'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', False) in TRUE_VALUES, # noqa
-
-    # Enable/disable only mail when Feedback allows_contact is True
-    'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True) in TRUE_VALUES, # noqa
-
-    # Enable/disable the deletion of signals in a certain state for a certain amount of time
-    'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
 }
 
 API_DETERMINE_STADSDEEL_ENABLED_AREA_TYPE = 'sia-stadsdeel'

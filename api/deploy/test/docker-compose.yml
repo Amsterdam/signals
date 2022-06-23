@@ -26,7 +26,7 @@ services:
       DATABASE_USER: signals
       DATABASE_PASSWORD: insecure
       ENVIRONMENT: test
-      DJANGO_SETTINGS_MODULE: signals.settings.testing
+      DJANGO_SETTINGS_MODULE: signals.settings
     volumes:
     - ./run_tests.sh:/app/run_tests.sh
     user: root
