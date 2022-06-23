@@ -164,8 +164,6 @@ class SignalLogService:
             created_at=user_assignment.created_at,
             _signal=user_assignment._signal,
         )
-#        import pdb; pdb.set_trace()
-#        print(user_assignment.history_log)
 
     @staticmethod
     def log_update_signal_departments(signal_departments: SignalDepartments) -> None:

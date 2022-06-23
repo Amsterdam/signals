@@ -89,7 +89,7 @@ class Log(models.Model):
         """
         Present for backwards compatibility
         """
-        # NOTE: THIS SHOULD PRODUCE A CONTENT_TYPE.MODEL NOT .NAME!!!! (SEE CALL SITE)
+        # Note: this should produce a content_type.model not .name
         content_type = what[what.find('_') + 1:].lower()
         t = {'category_assignment': 'categoryassignment',
              'sla': 'servicelevelobjective',
@@ -113,10 +113,8 @@ class Log(models.Model):
         "what" in the style of the signals_history_view
         Present for backwards compatibility
         """
-#        import pdb; pdb.set_trace()
         translated_content_type = self.translate_content_type(self.content_type.name)
-        tmp = f'{self.action}_{translated_content_type}'.upper()
-        return tmp
+        return f'{self.action}_{translated_content_type}'.upper()
 
     @property
     def who(self):
@@ -131,7 +129,6 @@ class Log(models.Model):
         "get_action" copied from History
         Present for backwards compatibility
         """
-#        import pdb; pdb.set_trace()
         what = self.what
         if what == 'UPDATE_STATUS':
             action = f'Status gewijzigd naar: {dict(STATUS_CHOICES).get(self.extra, "Onbekend")}'
