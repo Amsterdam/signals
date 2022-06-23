@@ -27,7 +27,6 @@ services:
       DATABASE_PASSWORD: insecure
       ENVIRONMENT: test
       DJANGO_SETTINGS_MODULE: signals.settings
-      IS_DOCKER: True
     volumes:
     - ./run_tests.sh:/app/run_tests.sh
     user: root

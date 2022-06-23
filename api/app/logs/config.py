@@ -5,7 +5,7 @@ BASE_LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'elaborate': {
-            'format': '{levelname} {name} {module}.{filename} {message}',
+            'format': '{levelname} {module}.{filename} {message}',
             'style': '{'
         }
     },

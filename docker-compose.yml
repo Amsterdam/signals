@@ -69,7 +69,6 @@ services:
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
       - ELASTICSEARCH_HOST=elasticsearch:9200
-      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -89,7 +88,6 @@ services:
       - SWIFT_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
-      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy
@@ -117,7 +115,6 @@ services:
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
-      - IS_DOCKER=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

@@ -31,15 +31,14 @@ Django settings
 
 Settings for all different environments are defined in `app/signals/settings/...`. The file
 `base.py` contains all the default settings. Defaults should be production ready. You can
-override this, if needed, in one of the other specific settings files (e.g. `testing`).
+override this, if needed, in the other specific settings files (e.g. `testing`, `local`).
 
 Current available settings:
 
-- `production`      -> Used for Acceptance/Production instances
-- `testing`         -> Used for Jenkins test pipeline and testing with `tox`
-- `development`     -> Used for Local Docker instances
-- `local`           -> Override settings in `development` for local usage (not tracked in Git)
-
+- `base`      -> Used for Acceptance/Production instances
+- `testing`   -> Used for Jenkins test pipeline and testing with `tox`
+- `local`     -> Used for Local Docker instances.
+                 Override settings in `local` for local usage (not tracked in Git)
 
 Tox usage
 =========

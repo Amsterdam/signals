@@ -73,7 +73,6 @@ class ColoredHandler(Handler):
             try:
                 parsed_message = self.colorize(record=record)
             except Exception:
-                print('error called')
                 parsed_message = self.format(record=record)
 
             stream = self.output
@@ -81,5 +80,4 @@ class ColoredHandler(Handler):
             stream.write(self.terminator)
             self.flush()
         except Exception:
-            print('error2 called')
             self.handleError(record)

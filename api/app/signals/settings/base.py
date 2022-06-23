@@ -125,7 +125,7 @@ TEMPLATES = [
     }
 ]
 
-#DATABASE
+# Database settings
 DATABASE_NAME = os.getenv('DATABASE_NAME', 'signals')
 DATABASE_USER = os.getenv('DATABASE_USER', 'signals')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'insecure')
@@ -258,111 +258,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 RAVEN_CONFIG = {
     'dsn': os.getenv('SENTRY_RAVEN_DSN'),
 }
-
-# Django Logging settings
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'root': {
-#         'level': 'INFO',
-#         'handlers': ['console', 'sentry'],
-#     },
-#     'formatters': {
-#         'console': {
-#             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-#         }
-#     },
-#     'filters': {
-#
-#     },
-#     'handlers': {
-#         'console': {
-#             'level': 'INFO',
-#             'class': 'logs.handlers.ColoredHandler',
-#             'formatter': 'console',
-#         },
-#         'sentry': {
-#             'level': 'WARNING',
-#             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-#         },
-#     },
-#     'loggers': {
-#         'signals': {
-#             'level': 'WARNING',
-#             'handlers': ['console'],
-#             'propagate': True,
-#         },
-#         'django': {
-#             'level': 'DEBUG',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'raven': {
-#             'level': 'DEBUG',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'sentry.errors': {
-#             'level': 'DEBUG',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#
-#         # Debug all batch jobs
-#         'doc': {
-#             'level': 'INFO',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'index': {
-#             'level': 'INFO',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'search': {
-#             'level': 'ERROR',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'elasticsearch': {
-#             'level': 'ERROR',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'urllib3': {
-#             'level': 'ERROR',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'factory.containers': {
-#             'level': 'INFO',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'factory.generate': {
-#             'handlers': ['console'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#         'requests.packages.urllib3.connectionpool': {
-#             'level': 'ERROR',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#         'signals.apps.reporting.management.commands.dump_horeca_csv_files': {
-#             'level': 'DEBUG',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#
-#         # Log all unhandled exceptions
-#         'django.request': {
-#             'level': 'ERROR',
-#             'handlers': ['console'],
-#             'propagate': False,
-#         },
-#     },
-# }
 
 # Django REST framework settings
 REST_FRAMEWORK = dict(

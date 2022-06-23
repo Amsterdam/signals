@@ -67,6 +67,9 @@ request, as any failed checks will abort the build pipeline.
 
 ### Running and developing locally using Docker and docker-compose
 
+Starting the project for the first time requires you to copy the local.py.dist file 
+in the signals.settings folder and rename this copied file to local.py.
+
 Assuming no services are running, start the database and queue:
 
 ```console
