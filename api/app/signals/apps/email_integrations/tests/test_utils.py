@@ -133,6 +133,7 @@ class TestUtils(TestCase):
         self.assertEqual(context['status_state'], signal.status.state)
         self.assertEqual(context['handling_message'], signal.category_assignment.stored_handling_message)
         self.assertEqual(context['ORGANIZATION_NAME'], settings.ORGANIZATION_NAME)
+        self.assertEqual(context['source'], signal.source)
 
     def test_make_email_context_for_category_with_or_without_public_name(self):
         # Check categories with public names.

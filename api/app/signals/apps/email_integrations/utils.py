@@ -142,6 +142,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
         'main_category_public_name': parent_public_name,
         'sub_category_public_name': category.public_name if category.public_name else category.name,
+        'source': signal.source,
     }
 
     if additional_context:
