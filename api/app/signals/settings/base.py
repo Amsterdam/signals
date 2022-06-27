@@ -59,7 +59,6 @@ SIGNAL_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
-    'change_log',
     'logs'
 ]
 
@@ -100,7 +99,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
     'signals.apps.history.middleware.HistoryMiddleware',
-    'change_log.middleware.ChangeLoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
