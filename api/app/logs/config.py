@@ -46,5 +46,9 @@ BASE_LOGGING = {
             'filters': ['require_debug_queries'],
             'propagate': False,
         },
+        'django.utils.autoreload': {
+            'level': 'ERROR',
+            'propagate': False,
+        }
     },
 }
