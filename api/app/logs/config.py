@@ -5,7 +5,7 @@ BASE_LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'elaborate': {
-            'format': '{levelname} {module}.{filename} {message}',
+            'format': '{levelname} {name} {module}.{filename} {message}',
             'style': '{'
         }
     },
@@ -46,5 +46,9 @@ BASE_LOGGING = {
             'filters': ['require_debug_queries'],
             'propagate': False,
         },
+        'django.utils.autoreload': {
+            'level': 'ERROR',
+            'propagate': False,
+        }
     },
 }
