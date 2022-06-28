@@ -19,10 +19,9 @@ INSERT INTO history_log
     LEFT JOIN history_log hl on (
         hl.content_type_id = cl.content_type_id and
         hl.object_pk = CAST(cl.object_id AS TEXT) and
-        hl.created_at = cl.when and
-        hl._signal_id = null
+        hl.created_at = cl.when
     )
-    WHERE hl.object_pk = null;
+    WHERE hl.object_pk IS NULL AND hl._signal_id IS NULL;
 """
 
 reverse_sql_migrate = """
@@ -44,7 +43,7 @@ INSERT INTO change_log
         CAST(hl.object_pk AS INTEGER) = cl.object_id and
         hl.created_at = cl."when"
     )
-    WHERE cl.object_id IS NULL;
+    WHERE cl.object_id IS NULL AND hl._signal_id IS NULL;
 """
 
 
