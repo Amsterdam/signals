@@ -2,6 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from urllib.parse import urlparse
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.db.models.deletion import DO_NOTHING
@@ -9,7 +10,7 @@ from django.urls import resolve
 from django_extensions.db.fields import AutoSlugField
 from rest_framework_extensions.settings import extensions_api_settings
 
-from change_log.logger import ChangeLogger
+from signals.apps.history.models.mixins import TrackFields
 
 
 class CategoryManager(models.Manager):
@@ -24,7 +25,7 @@ class CategoryManager(models.Manager):
             return self.get_queryset().get(slug=kwargs['slug'], parent__isnull=True)
 
 
-class Category(models.Model):
+class Category(TrackFields, models.Model):
     HANDLING_A3DMC = 'A3DMC'
     HANDLING_A3DEC = 'A3DEC'
     HANDLING_A3WMC = 'A3WMC'
@@ -106,9 +107,11 @@ class Category(models.Model):
 
     questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
-    logger = ChangeLogger(track_fields=(
-        'name', 'description', 'is_active', 'slo', 'handling_message', 'public_name', 'is_public_accessible'
-    ))
+    # History log
+    track_fields = ('name', 'description', 'is_active', 'slo', 'handling_message', 'public_name',
+                    'is_public_accessible',)
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
+    # End History log
 
     objects = CategoryManager()
 
@@ -149,6 +152,9 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+        from signals.apps.history.services import HistoryLogService
+        HistoryLogService.log_update(self)
 
     def get_absolute_url(self, request=None):
         """

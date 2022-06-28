@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, User
 from django.core.validators import EmailValidator
 from rest_framework import serializers
 
-from change_log.models import Log
 from signals.apps.api.generics.mixins import WriteOnceMixin
+from signals.apps.history.models import Log
 from signals.apps.users.v1.fields.user import UserHyperlinkedIdentityField
 from signals.apps.users.v1.serializers import (
     PermissionSerializer,
@@ -133,6 +133,7 @@ class UserDetailHALSerializer(WriteOnceMixin, HALSerializer):
 
 class PrivateUserHistoryHalSerializer(serializers.ModelSerializer):
     identifier = serializers.SerializerMethodField()
+    when = serializers.DateTimeField(source='created_at', read_only=True)
     what = serializers.SerializerMethodField()
     action = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DatapuntViewSetWritable
 from django.contrib.auth import get_user_model
@@ -69,7 +69,7 @@ class UserViewSet(DatapuntViewSetWritable):
         This is read-only!
         """
         user = self.get_object()
-        serializer = PrivateUserHistoryHalSerializer(user.logs, many=True)
+        serializer = PrivateUserHistoryHalSerializer(user.history_log, many=True)
         return Response(serializer.data)
 
 

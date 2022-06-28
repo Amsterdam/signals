@@ -3,12 +3,12 @@
 from datapunt_api.rest import DisplayField, HALSerializer
 from rest_framework import serializers
 
-from change_log.models import Log
 from signals.apps.api.fields import (
     CategoryHyperlinkedIdentityField,
     PrivateCategoryHyperlinkedIdentityField
 )
 from signals.apps.api.serializers.nested import _NestedPublicDepartmentSerializer
+from signals.apps.history.models import Log
 from signals.apps.signals.models import Category, CategoryDepartment, ServiceLevelObjective
 
 
@@ -134,7 +134,6 @@ class PrivateCategorySerializer(HALSerializer):
 
             if create_new_slo:
                 ServiceLevelObjective.objects.create(**new_sla)
-                instance.refresh_from_db()
 
         return super().update(instance, validated_data)
 
@@ -144,6 +143,7 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
     what = serializers.SerializerMethodField()
     action = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
+    when = serializers.DateTimeField(source='created_at', read_only=True)
     _category = serializers.IntegerField(source='object_id', read_only=True)
 
     class Meta:

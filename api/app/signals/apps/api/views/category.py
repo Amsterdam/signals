@@ -56,5 +56,5 @@ class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
         This is read-only!
         """
         category = self.get_object()
-        serializer = PrivateCategoryHistoryHalSerializer(category.logs, many=True)
+        serializer = PrivateCategoryHistoryHalSerializer(category.history_log.all(), many=True)
         return Response(serializer.data)
