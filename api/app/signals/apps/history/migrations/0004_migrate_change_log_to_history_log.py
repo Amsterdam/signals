@@ -54,7 +54,7 @@ class CustomRunSql(migrations.RunSQL):
         Added because the change_log itself was removed and therefore the change_log table does not exists in
         new installations and when running tests
         """
-        query = "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'change_log_bla');"
+        query = "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'change_log');"
         with schema_editor.connection.cursor() as cursor:
             cursor.execute(query)
             result = cursor.fetchone()
