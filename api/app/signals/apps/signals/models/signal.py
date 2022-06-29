@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import uuid
-import logging
 
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -12,8 +11,6 @@ from pytz import utc
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 from signals.apps.signals.querysets import SignalQuerySet
-
-logger = logging.getLogger(__name__)
 
 
 class Signal(CreatedUpdatedModel):
