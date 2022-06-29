@@ -2,7 +2,6 @@
 # Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import os
 
-from .base import INSTALLED_APPS
 from .feature_flags import FEATURE_FLAGS
 
 LOGGING_LEVEL = "INFO"
@@ -57,10 +56,6 @@ SIGNALS_AUTH = {
 }
 
 FRONTEND_URL = 'http://dummy_link'
-
-INSTALLED_APPS += [  # noqa
-    'change_log.tests',  # Added so that we can test the chane_log with a "test only" model
-]
 
 FEATURE_FLAGS['SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED'] = True
 FEATURE_FLAGS['REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED'] = True

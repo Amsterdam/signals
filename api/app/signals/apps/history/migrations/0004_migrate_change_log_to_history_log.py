@@ -47,6 +47,28 @@ INSERT INTO change_log
 """
 
 
+class CustomRunSql(migrations.RunSQL):
+    def _table_exists(self, schema_editor):
+        """
+        Only run if the change_log table exists
+        Added because the change_log itself was removed and therefore the change_log table does not exists in
+        new installations and when running tests
+        """
+        query = "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'change_log');"
+        with schema_editor.connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchone()
+        return result[0] if result else False
+
+    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        if self._table_exists(schema_editor):
+            super(CustomRunSql, self).database_forwards(app_label, schema_editor, from_state, to_state)
+
+    def database_backwards(self, app_label, schema_editor, from_state, to_state):
+        if self._table_exists(schema_editor):
+            super(CustomRunSql, self).database_backwards(app_label, schema_editor, from_state, to_state)
+
+
 class Migration(migrations.Migration):
     check_exists_query = 'SELECT relname FROM pg_class WHERE relname='
 
@@ -55,5 +77,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(forward_sql_migrate, reverse_sql=reverse_sql_migrate),
+        CustomRunSql(forward_sql_migrate, reverse_sql=reverse_sql_migrate),
     ]
