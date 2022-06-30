@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 
 from datapunt_api.rest import DisplayField, HALSerializer
@@ -253,7 +253,7 @@ class PrivateSignalSerializerDetail(HALSerializer, AddressValidationMixin):
             validated_data['routing_assignment']['created_by'] = user_email
 
         if 'user_assignment' in validated_data and validated_data['user_assignment']:
-            validated_data['created_by'] = user_email
+            validated_data['user_assignment']['created_by'] = user_email
 
         signal = Signal.actions.update_multiple(validated_data, instance)
         return signal

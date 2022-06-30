@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -26,7 +26,7 @@ SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
 
 class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(user_assignment=None)
 
         self.list_history_schema = self.load_json_schema(
             os.path.join(
@@ -257,7 +257,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def setUp(self):
-        self.signal = SignalFactoryValidLocation()
+        self.signal = SignalFactoryValidLocation(user_assignment=None)
         self.feedback = FeedbackFactory(
             _signal=self.signal,
             is_satisfied=None,

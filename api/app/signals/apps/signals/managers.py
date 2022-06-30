@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 
 from django.contrib.gis.db import models
@@ -552,16 +552,19 @@ class SignalManager(models.Manager):
         from signals.apps.signals.models.signal_user import SignalUser
         from signals.apps.users.models import User
 
+        created_by = data['user_assignment']['created_by'] if 'created_by' in data['user_assignment'] else None
+        assigned_user_email = data['user_assignment']['user']['email'] if data['user_assignment'] else None
         try:
-            user_email = data['user_assignment']['user']['email']
-            signal.user_assignment, _ = SignalUser.objects.get_or_create(
-                _signal=signal,
-                user=None if not user_email else User.objects.get(email=user_email),
-                created_by=data['created_by'] if 'created_by' in data else None
-            )
-            signal.save()
-        except Exception:
-            raise ValidationError('Could not set user assignment')
+            assigned_user = User.objects.get(email=assigned_user_email) if assigned_user_email else None
+        except User.DoesNotExist:
+            raise ValidationError('Could not set user assignment, user does not exist')
+
+        signal.user_assignment = SignalUser.objects.create(
+            _signal=signal,
+            user=assigned_user,
+            created_by=created_by
+        )
+        signal.save()
 
         return signal.user_assignment
 
