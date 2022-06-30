@@ -130,7 +130,7 @@
             {% if signal.location.stadsdeel %}
             <td>: {{ signal.location.get_stadsdeel_display }}</td>
             {% else %}
-            <td>: {{ signal.location.area_code }}</td>
+            <td>: {% if signal.location.area_name %}{{ signal.location.area_name }}{% else %}{{ signal.location.area_code }}{% endif %}</td>
             {% endif %}
         </tr>
         <tr>
