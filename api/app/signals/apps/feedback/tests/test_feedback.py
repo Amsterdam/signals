@@ -349,6 +349,69 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
         self.assertIsNone(self.feedback.text)
         self.assertIn(reason, self.feedback.text_list)
 
+    def test_no_contact(self):
+        """
+        Test to not send an email when allow_contact is set false
+        """
+        token = self.feedback.token
+        data = {
+            'is_satisfied': False,
+            'allows_contact': False,
+            'text': 'reason',
+            'text_area': 'explanation',
+        }
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_allows_contact(self):
+        """
+        Test to send an email when allow_contact is set True
+        """
+        token = self.feedback.token
+        data = {
+            'is_satisfied': False,
+            'allows_contact': True,
+            'text': 'reason',
+            'text_area': 'explanation',
+        }
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(FEATURE_FLAGS={
+        "REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED": False
+    })
+    def test_allows_contact_feature_flag_false(self):
+        """
+        With the feature flag disabled still send emails even if allows contact is False
+        """
+        token = self.feedback.token
+        data = {
+            'is_satisfied': False,
+            'allows_contact': False,
+            'text': 'reason',
+            'text_area': 'explanation',
+        }
+        with freeze_time(self.t_now):
+            response = self.client.put(
+                '/forms/{}/'.format(token),
+                data=data,
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
     def test_text_and_text_list(self):
         """Test that the feedback can be PUT once."""
         token = self.feedback.token
