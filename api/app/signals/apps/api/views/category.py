@@ -13,6 +13,7 @@ from signals.apps.api.serializers import (
     PrivateCategorySerializer
 )
 from signals.apps.api.serializers.category import PrivateCategoryHistoryHalSerializer
+from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category
 from signals.auth.backend import JWTAuthBackend
 
@@ -48,6 +49,13 @@ class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
 
     authentication_classes = (JWTAuthBackend,)
     permission_classes = (SIAPermissions & ModelWritePermissions,)
+
+    def perform_update(self, serializer):
+        """
+        perform the update and also add it to the history log
+        """
+        instance = serializer.save()
+        HistoryLogService.log_update(request=self.request, instance=instance)
 
     @action(detail=True, url_path=r'history/?$')
     def history(self, request, pk=None):

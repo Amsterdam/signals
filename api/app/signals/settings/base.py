@@ -98,7 +98,6 @@ MIDDLEWARE = [
     'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
-    'signals.apps.history.middleware.HistoryMiddleware',
 ]
 
 ROOT_URLCONF = 'signals.urls'
