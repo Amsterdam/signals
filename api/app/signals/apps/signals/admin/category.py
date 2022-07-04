@@ -81,7 +81,7 @@ class CategoryAdmin(admin.ModelAdmin):
         On the save from the model also add an history log in the admin panel
         """
 
-        obj.save(request=request)
+        obj.save()
         if change:  # only trigger when an object has been changed
             HistoryLogService.log_update(request, obj)
 
