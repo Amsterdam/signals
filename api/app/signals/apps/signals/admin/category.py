@@ -76,13 +76,14 @@ class CategoryAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj: Category, form, change):
+    def save_model(self, request, obj, form, change):
         """
         On the save from the model also add an history log in the admin panel
         """
 
         obj.save(request=request)
-        HistoryLogService.log_update(request, obj)
+        if change:  # only trigger when an object has been changed
+            HistoryLogService.log_update(request, obj)
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):
