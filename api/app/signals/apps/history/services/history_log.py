@@ -1,24 +1,21 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
-import threading
-
 from django.utils import timezone
 
 from signals.apps.history.models import Log
 
 
 class HistoryLogService:
-    thread = threading.local()
 
     @staticmethod
-    def log_update(instance) -> None:
+    def log_update(instance, user) -> None:
         if not hasattr(instance, 'changed_data') or not callable(instance.changed_data):
             return
 
         changed_data = instance.changed_data()
         if changed_data:
-            if HistoryLogService.thread.request and HistoryLogService.thread.request.user:
-                created_by = HistoryLogService.thread.request.user.username
+            if user:
+                created_by = user.username
             else:
                 created_by = None
 

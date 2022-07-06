@@ -11,6 +11,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions, SIAUserPermissions
+from signals.apps.history.services import HistoryLogService
 from signals.apps.users.v1.filters import UserFilterSet, UserNameListFilterSet
 from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
 from signals.apps.users.v1.serializers.user import (
@@ -61,6 +62,13 @@ class UserViewSet(DatapuntViewSetWritable):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_update(self, serializer):
+        """
+        perform the update and also add it to the history log
+        """
+        instance = serializer.save()
+        HistoryLogService.log_update(instance=instance, user=self.request.user)
 
     @action(detail=True)
     def history(self, request, pk=None):

@@ -3,6 +3,7 @@
 from django.contrib import admin
 from django.db.models import Q
 
+from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category, ServiceLevelObjective
 
 
@@ -74,6 +75,15 @@ class CategoryAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        """
+        On the save from the model also add an history log in the admin panel
+        """
+
+        obj.save()
+        if change:  # only trigger when an object has been changed
+            HistoryLogService.log_update(instance=obj, user=request.user)
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):
