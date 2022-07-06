@@ -68,7 +68,7 @@ class UserViewSet(DatapuntViewSetWritable):
         perform the update and also add it to the history log
         """
         instance = serializer.save()
-        HistoryLogService.log_update(request=self.request, instance=instance)
+        HistoryLogService.log_update(instance=instance, user=self.request.user)
 
     @action(detail=True)
     def history(self, request, pk=None):

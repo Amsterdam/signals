@@ -83,7 +83,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
         obj.save()
         if change:  # only trigger when an object has been changed
-            HistoryLogService.log_update(request, obj)
+            HistoryLogService.log_update(instance=obj, user=request.user)
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):

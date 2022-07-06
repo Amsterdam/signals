@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
-from django.core.handlers.wsgi import WSGIRequest
 from django.utils import timezone
 
 from signals.apps.history.models import Log
@@ -9,14 +8,14 @@ from signals.apps.history.models import Log
 class HistoryLogService:
 
     @staticmethod
-    def log_update(request: WSGIRequest, instance) -> None:
+    def log_update(instance, user) -> None:
         if not hasattr(instance, 'changed_data') or not callable(instance.changed_data):
             return
 
         changed_data = instance.changed_data()
         if changed_data:
-            if request and request.user:
-                created_by = request.user.username
+            if user:
+                created_by = user.username
             else:
                 created_by = None
 

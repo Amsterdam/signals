@@ -33,7 +33,3 @@ class UsersConfig(AppConfig):
             from signals.apps.history.models.mixins import changed_field_data
             return changed_field_data(self)
         user_model.add_to_class('changed_data', changed_data)
-
-        def save(self, *args, **kwargs):
-            super(user_model, self).save(*args, **kwargs)
-        user_model.add_to_class('save', save)
