@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from signals.apps.history.services import HistoryLogService
 from signals.apps.users.models import Profile
 
 User = get_user_model()
@@ -71,6 +72,16 @@ class SignalsUserAdmin(UserAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        """
+        On the save from the model also add an history log in the admin panel
+        """
+        # TODO:: This currently only saves the changes on the user object.
+        # it does not log the users rights/group and related Profile changes
+        obj.save()
+        if change:  # only trigger when an object has been changed
+            HistoryLogService.log_update(instance=obj, user=request.user)
 
 
 admin.site.unregister(User)
