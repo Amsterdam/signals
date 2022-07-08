@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import weasyprint
 from django.template.response import TemplateResponse
+
+from signals.apps.services.domain.pdf_summary import PDFSummaryService
 
 
 class PDFTemplateResponse(TemplateResponse):
@@ -16,5 +17,4 @@ class PDFTemplateResponse(TemplateResponse):
 
     @property
     def rendered_content(self):
-        html = weasyprint.HTML(string=super().rendered_content)
-        return html.write_pdf()
+        return PDFSummaryService.get_pdf(self.context_data['signal'], self.context_data['user'])

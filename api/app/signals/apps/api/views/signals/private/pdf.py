@@ -84,38 +84,7 @@ class GeneratePdfView(SingleObjectMixin, PDFTemplateView):
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
-        logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
-        img_data_uri = None
-        bbox = None
-
-        if settings.DEFAULT_MAP_TILE_SERVER:
-            map_img = self.map_generator.make_map(
-                url_template=settings.DEFAULT_MAP_TILE_SERVER,
-                lat=self.object.location.geometrie.coords[1],
-                lon=self.object.location.geometrie.coords[0],
-                zoom=17,
-                img_size=[680, 250]
-            )
-            # transform image to png -> bytes -> data uri
-            png_array = io.BytesIO()
-            map_img.save(png_array, format='png')
-            encoded = base64.b64encode(png_array.getvalue()).decode()
-            img_data_uri = 'data:image/png;base64,{}'.format(encoded)
-        else:
-            rd_coordinates = self.object.location.get_rd_coordinates()
-            bbox = '{},{},{},{}'.format(
-                rd_coordinates.x - 340.00,
-                rd_coordinates.y - 125.00,
-                rd_coordinates.x + 340.00,
-                rd_coordinates.y + 125.00,
-            )
-        jpg_data_uris, att_filenames, user_emails, att_created_ats = \
-            DataUriImageEncodeService.get_context_data_images(self.object, self.max_size)
-
-        return super().get_context_data(
-            bbox=bbox,
-            img_data_uri=img_data_uri,
-            attachment_images=zip(jpg_data_uris, att_filenames, user_emails, att_created_ats),
-            user=self.request.user,
-            logo_src=logo_src,
-        )
+        return {
+            'signal': self.object,
+            'user': self.request.user
+        }

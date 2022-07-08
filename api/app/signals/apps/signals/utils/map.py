@@ -8,7 +8,7 @@ from PIL import Image
 
 TILE_SIZE = 256
 
-
+# CANDIDATE FOR SERVICE
 #  https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._3
 class MapGenerator:
     def _deg2num(self, lat_deg, lon_deg, zoom):
