@@ -48,7 +48,7 @@ class TestDeleteSignalsBase(TestCase):
         err_output = err_buffer.getvalue()
 
         self.assertEqual(output, '')
-        self.assertIn('Invalid state(s) provided must be one of "o, a"', err_output)
+        self.assertIn('Invalid state(s) provided must be one of "o, a, s"', err_output)
 
         buffer = StringIO()
         err_buffer = StringIO()

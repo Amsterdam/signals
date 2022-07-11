@@ -12,7 +12,7 @@ from freezegun import freeze_time
 
 from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage
 from signals.apps.signals.models import DeletedSignal, Signal
-from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GEMELD
+from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GEMELD, GESPLITST
 
 
 class TestDeleteSignals(TestCase):
@@ -157,3 +157,27 @@ class TestDeleteSignals(TestCase):
         self.assertFalse(Signal.objects.filter(id=signal.id).exists())
         self.assertTrue(DeletedSignal.objects.filter(signal_id=signal.id).exists())
         self.assertFalse(default_storage.exists(attachment_file_path))
+
+    def test_gesplits_parent_and_child_signals_should_be_deleted(self):
+        """
+        Parent signal created 370 days ago and the final state set 369 days ago. So the signal and its children should
+        be deleted.
+        """
+        self.feature_flags['DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED'] = True
+
+        with freeze_time(timezone.now() - timezone.timedelta(days=370)):
+            parent_signal = SignalFactory.create(status__state=GESPLITST)
+            child_signal = SignalFactory.create(parent=parent_signal)
+
+        buffer = StringIO()
+        with override_settings(FEATURE_FLAGS=self.feature_flags):
+            call_command('delete_signals', GESPLITST, '365', stdout=buffer)
+        output = buffer.getvalue()
+
+        self.assertIn(f'Deleted Signal: #{parent_signal.id}', output)
+        self.assertFalse(Signal.objects.filter(id=parent_signal.id).exists())
+        self.assertTrue(DeletedSignal.objects.filter(signal_id=parent_signal.id).exists())
+
+        self.assertIn(f'Deleted Signal: #{child_signal.id}', output)
+        self.assertFalse(Signal.objects.filter(id=child_signal.id).exists())
+        self.assertTrue(DeletedSignal.objects.filter(signal_id=child_signal.id).exists())
