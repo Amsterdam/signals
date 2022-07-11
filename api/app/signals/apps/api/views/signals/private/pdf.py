@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import base64
-import io
 import logging
 import os
 
@@ -13,7 +12,6 @@ from django.views.generic.detail import SingleObjectMixin
 
 from signals.apps.api.generics.permissions import SIAPermissions, SignalViewObjectPermission
 from signals.apps.api.pdf.views import PDFTemplateView  # TODO: move these
-from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.map import MapGenerator
 from signals.auth.backend import JWTAuthBackend

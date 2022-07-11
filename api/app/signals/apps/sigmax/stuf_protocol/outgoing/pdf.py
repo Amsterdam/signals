@@ -6,15 +6,8 @@ This module contains the PDF generation code used for Sigmax.
 import base64
 import logging
 
-import weasyprint
-from django.template.loader import render_to_string
-from django.utils import timezone
-
-from signals.apps.services.domain.images import DataUriImageEncodeService
-from signals.apps.signals.models import Signal
-
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
-
+from signals.apps.signals.models import Signal
 
 # Because weasyprint can produce a lot of warnings (unsupported
 # CSS etc.) we ignore them.

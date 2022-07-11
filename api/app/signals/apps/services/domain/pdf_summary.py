@@ -1,8 +1,11 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 import base64
 import io
 import logging
 import os
 
+import weasyprint
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
@@ -10,10 +13,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
-
 from signals.apps.signals.utils.map import MapGenerator
-
-import weasyprint
 
 logger = logging.getLogger(__name__)
 

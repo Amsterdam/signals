@@ -5,6 +5,7 @@ import logging
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -33,6 +34,7 @@ from signals.apps.api.serializers.email_preview import (
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
+from signals.apps.services.domain.pdf_summary import PDFSummaryService
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
@@ -265,6 +267,17 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         serializer = EmailPreviewSerializer(signal, context=context)
         return Response(serializer.data)
+
+    @action(detail=True, url_path=r'email/pdf_new/?$', methods=['GET'])
+    def pdf(self, request, *args, **kwargs):
+        signal = self.get_object()
+        user = request.user
+
+        pdf = PDFSummaryService.get_pdf(signal, user)
+        pdf_filename = f'{self.object.get_id_display()}.pdf'
+        return HttpResponse(pdf, content_type='application/pdf', headers={
+            'Content-Disposition': f'attachment;filename="{pdf_filename}"'
+        })
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):

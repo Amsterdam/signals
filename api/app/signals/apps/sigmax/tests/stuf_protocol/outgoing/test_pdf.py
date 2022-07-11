@@ -5,7 +5,8 @@ from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 
-from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf, _render_html
+from signals.apps.services.domain.pdf_summary import PDFSummaryService
+from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf
 from signals.apps.signals import factories, workflow
 
 
@@ -38,7 +39,7 @@ class TestPDF(TestCase):
         signal.status = status
         signal.save()
 
-        html = _render_html(signal)
+        html = PDFSummaryService._get_html(signal, None)
 
         # General information about the `Signal` object.
         current_tz = timezone.get_current_timezone()
@@ -70,20 +71,21 @@ class TestPDF(TestCase):
         self.assertIn('Is de situatie gevaarlijk?', html)
         self.assertIn('Niet gevaarlijk', html)
 
-    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.pdf._render_html')
-    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.pdf.weasyprint')
+    @mock.patch('signals.apps.services.domain.pdf_summary.PDFSummaryService._get_html')
+    @mock.patch('signals.apps.services.domain.pdf_summary.weasyprint')
     def test_generate_pdf(self, mocked_weasyprint, mocked_render_html):
+        rendered_html = mock.Mock()
+        mocked_render_html.return_value = rendered_html
+
         fake_pdf = b'abc'
-        mocked_rendered_html = mock.Mock()
         mocked_weasyprint_html = mock.Mock()
         mocked_weasyprint_html.write_pdf.return_value = fake_pdf
-        mocked_render_html.return_value = mocked_rendered_html
         mocked_weasyprint.HTML.return_value = mocked_weasyprint_html
 
         signal = factories.SignalFactory.create()
 
         pdf = _generate_pdf(signal)
 
-        mocked_render_html.assert_called_once_with(signal)
-        mocked_weasyprint.HTML.assert_called_once_with(string=mocked_rendered_html)
+        mocked_render_html.assert_called_once_with(signal, None)
+        mocked_weasyprint.HTML.assert_called_once_with(string=rendered_html)
         self.assertEqual(pdf, b'YWJj')  # base64 encoded `fake_pdf`
