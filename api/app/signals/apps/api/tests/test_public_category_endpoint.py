@@ -112,3 +112,82 @@ class TestCategoryTermsEndpoints(SignalsBaseApiTestCase):
         self.assertJsonSchema(self.retrieve_sub_category_schema, data)
         self.assertIsNotNone(data['_links']['sia:questionnaire'])
         self.assertEqual(data['questionnaire'], str(sub_category.questionnaire.uuid))
+
+    def test_parent_category_public_name_and_is_public_accessible_true(self):
+        """
+        Parent category has a public name and is_public_accessible set to True
+        Child category has a public name and is_public_accessible set to False
+
+        The is_public_accessible of the parent category should be True in the response and the is_public_accessible
+        of the child category should be False.
+        """
+        parent_category = ParentCategoryFactory.create(public_name='Publieke naam hoofdcategorie',
+                                                       is_public_accessible=True)
+        sub_category = CategoryFactory.create(parent=parent_category,
+                                              public_name='Publieke naam kindcategorie',
+                                              is_public_accessible=False)
+
+        url = f'/signals/v1/public/terms/categories/{parent_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_category_schema, data)
+        self.assertEqual(data['public_name'], parent_category.public_name)
+        self.assertTrue(data['is_public_accessible'])
+
+        self.assertEqual(data['sub_categories'][0]['public_name'], sub_category.public_name)
+        self.assertFalse(data['sub_categories'][0]['is_public_accessible'])
+
+        url = f'/signals/v1/public/terms/categories/{parent_category.slug}/sub_categories/{sub_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+        self.assertEqual(data['public_name'], sub_category.public_name)
+        self.assertFalse(data['is_public_accessible'])
+
+    def test_child_category_public_name_and_is_public_accessible_true(self):
+        """
+        Parent category has a public name and is_public_accessible set to False
+        Child category has a public name and is_public_accessible set to True
+
+        The is_public_accessible of the parent category should be True because there is at least one child category that
+        has the is_public_accessible set to True. The is_public_accessible of the child category should be True in the
+        response.
+        """
+        parent_category = ParentCategoryFactory.create(public_name='Publieke naam hoofdcategorie',
+                                                       is_public_accessible=False)
+        sub_category = CategoryFactory.create(parent=parent_category,
+                                              public_name='Publieke naam kindcategorie',
+                                              is_public_accessible=True)
+
+        url = f'/signals/v1/public/terms/categories/{parent_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_category_schema, data)
+        self.assertEqual(data['public_name'], parent_category.public_name)
+        self.assertTrue(data['is_public_accessible'])
+
+        self.assertEqual(data['sub_categories'][0]['public_name'], sub_category.public_name)
+        self.assertTrue(data['sub_categories'][0]['is_public_accessible'])
+
+        url = f'/signals/v1/public/terms/categories/{parent_category.slug}/sub_categories/{sub_category.slug}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        # JSONSchema validation
+        self.assertJsonSchema(self.retrieve_sub_category_schema, data)
+        self.assertEqual(data['public_name'], sub_category.public_name)
+        self.assertTrue(data['is_public_accessible'])

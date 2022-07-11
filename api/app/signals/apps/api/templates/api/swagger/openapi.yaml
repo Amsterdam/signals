@@ -3264,6 +3264,14 @@ components:
           type: string
           description: The public name
           nullable: True
+        is_public_accessible:
+          type: boolean
+          description: >-
+            Returns True if there are child signals that have been marked as public accessible OR True if the parent
+            category has been marked public accessible. If the value is True than the categories contains Signals that
+            can be shown on for example a public map containing Signals in the city (Only certain properties of the 
+            Signal will be exposed).
+          example: True
         sub_categories:
           type: array
           description: A list of child categories
@@ -3342,6 +3350,13 @@ components:
           description: The public name
           nullable: True
           example: Asbest / accu (Publieke naam)
+        is_public_accessible:
+          type: boolean
+          description: >-
+            Returns True if the category has been marked public accessible. If the value is True than the category 
+            contains Signals that can be shown on for example a public map containing Signals in the city (Only certain 
+            properties of the Signal will be exposed).
+          example: True
 
     privateCategoryResponse:
       description: JSON data describing the category response
