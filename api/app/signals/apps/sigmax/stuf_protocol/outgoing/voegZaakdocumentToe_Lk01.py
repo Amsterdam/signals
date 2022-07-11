@@ -5,13 +5,14 @@ Support for voegZaakdocumentToe_Lk01 messages to send to CityControl.
 
 Note: currently only used to send PDF documents to CityControl
 """
+import base64
 import logging
 import uuid
 
 from django.template.loader import render_to_string
 
+from signals.apps.services.domain.pdf_summary import PDFSummaryService
 from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import _send_stuf_message
-from signals.apps.sigmax.stuf_protocol.outgoing.pdf import _generate_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,8 @@ def _generate_voegZaakdocumentToe_Lk01(signal, seq_no):
     """
     Generate XML for Sigmax voegZaakdocumentToe_Lk01 (for the PDF case)
     """
-    encoded_pdf = _generate_pdf(signal)
+    pdf = PDFSummaryService.get_pdf(signal, None)
+    encoded_pdf = base64.b64encode(pdf)
 
     return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={
         'signal': signal,
