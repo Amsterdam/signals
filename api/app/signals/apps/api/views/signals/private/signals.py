@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
@@ -268,13 +268,13 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = EmailPreviewSerializer(signal, context=context)
         return Response(serializer.data)
 
-    @action(detail=True, url_path=r'email/pdf_new/?$', methods=['GET'])
+    @action(detail=True, url_path=r'pdf/?$', methods=['GET'], url_name='pdf-download')
     def pdf(self, request, *args, **kwargs):
         signal = self.get_object()
         user = request.user
 
         pdf = PDFSummaryService.get_pdf(signal, user)
-        pdf_filename = f'{self.object.get_id_display()}.pdf'
+        pdf_filename = f'{signal.get_id_display()}.pdf'
         return HttpResponse(pdf, content_type='application/pdf', headers={
             'Content-Disposition': f'attachment;filename="{pdf_filename}"'
         })

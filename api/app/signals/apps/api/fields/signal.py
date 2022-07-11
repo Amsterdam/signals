@@ -18,7 +18,7 @@ class PrivateSignalLinksFieldWithArchives(serializers.HyperlinkedIdentityField):
             ('sia:attachments', dict(href=self.reverse("private-signals-attachments-list",
                                                        kwargs={'parent_lookup__signal__pk': value.pk},
                                                        request=request))),
-            ('sia:pdf', dict(href=self.get_url(value, "signal-pdf-download", request, None))),
+            ('sia:pdf', dict(href=self.get_url(value, "private-signals-pdf-download", request, None))),
             ('sia:context', dict(href=self.get_url(value, 'private-signal-context', request, None))),
         ])
 

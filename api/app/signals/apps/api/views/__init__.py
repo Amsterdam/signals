@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from signals.apps.api.views.area import PrivateAreasViewSet, PublicAreasViewSet
 from signals.apps.api.views.attachment import (
     PrivateSignalAttachmentsViewSet,
@@ -13,7 +13,6 @@ from signals.apps.api.views.expression import PrivateExpressionViewSet
 from signals.apps.api.views.ml_tool_proxy import LegacyMlPredictCategoryView
 from signals.apps.api.views.namespace import NamespaceView
 from signals.apps.api.views.questions import PublicQuestionViewSet
-from signals.apps.api.views.signals.private.pdf import GeneratePdfView
 from signals.apps.api.views.signals.private.signal_context import SignalContextViewSet
 from signals.apps.api.views.signals.private.signals import PrivateSignalViewSet
 from signals.apps.api.views.signals.private.signals_promoted_to_parent import (
@@ -38,7 +37,6 @@ __all__ = (
     'PublicQuestionViewSet',
     'LegacyMlPredictCategoryView',
     'NamespaceView',
-    'GeneratePdfView',
     'PrivateDepartmentViewSet',
     'StatusMessageTemplatesViewSet',
     'StoredSignalFilterViewSet',

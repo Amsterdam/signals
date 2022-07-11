@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 from django.conf import settings
 from django.urls import include, path, re_path
 
 from signals.apps.api.generics.routers import SignalsRouter
 from signals.apps.api.generics.views import SwaggerView
 from signals.apps.api.views import (
-    GeneratePdfView,
     LegacyMlPredictCategoryView,
     NamespaceView,
     PrivateAreasViewSet,
@@ -107,7 +106,6 @@ urlpatterns = [
                 name='private-status-message-templates-child'),
 
         # Additional Signals endpoints
-        re_path(r'signals/(?P<pk>\d+)/pdf/?$', GeneratePdfView.as_view(), name='signal-pdf-download'),
         re_path(r'signals/category/removed/?$', SignalCategoryRemovedAfterViewSet.as_view({'get': 'list'}),
                 name='signal-category-changed-since'),
 
