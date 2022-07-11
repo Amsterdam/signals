@@ -10,11 +10,11 @@ from django.utils import timezone
 
 from signals.apps.search.tasks import delete_from_elastic
 from signals.apps.signals.models import DeletedSignal, Signal
-from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD
+from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GESPLITST
 
 
 class Command(BaseCommand):
-    STATE_CHOICES = (AFGEHANDELD, GEANNULEERD, )
+    STATE_CHOICES = (AFGEHANDELD, GEANNULEERD, GESPLITST, )
     _dry_run = False
 
     def add_arguments(self, parser):
