@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
-import logging
-
 from django.db.models import CharField, Min, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import JSONObject
@@ -28,8 +26,6 @@ from signals.apps.signals.workflow import (
     VERZOEK_TOT_HEROPENEN
 )
 from signals.throttling import PostOnlyNoUserRateThrottle
-
-logger = logging.getLogger(__name__)
 
 
 class PublicSignalViewSet(GenericViewSet):
@@ -76,7 +72,6 @@ class PublicSignalViewSet(GenericViewSet):
         Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
         Additional filtering can be done by adding query parameters.
         """
-
         qs = self.get_queryset()
 
         if request.query_params.get('group_by', '').lower() == 'category':
