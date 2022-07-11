@@ -32,6 +32,7 @@ class CategoryHALSerializer(HALSerializer):
             'handling_message',
             'questionnaire',
             'public_name',
+            'is_public_accessible',
         )
 
     def get_departments(self, obj):
@@ -45,6 +46,7 @@ class ParentCategoryHALSerializer(HALSerializer):
     serializer_url_field = CategoryHyperlinkedIdentityField
     _display = DisplayField()
     sub_categories = CategoryHALSerializer(many=True, source='children')
+    is_public_accessible = serializers.SerializerMethodField(method_name='get_is_public_accessible')
 
     class Meta:
         model = Category
@@ -54,8 +56,19 @@ class ParentCategoryHALSerializer(HALSerializer):
             'name',
             'slug',
             'public_name',
+            'is_public_accessible',
             'sub_categories',
         )
+
+    def get_is_public_accessible(self, obj):
+        """
+        If there are child categories that are public accessible this should return True OR return the value of
+        'is_public_accessible' of the ParentCategory
+        """
+        return any([
+            child_is_public_accessible
+            for child_is_public_accessible in obj.children.values_list('is_public_accessible', flat=True)
+        ]) or obj.is_public_accessible
 
 
 class PrivateCategorySLASerializer(serializers.ModelSerializer):

@@ -103,6 +103,19 @@
 		"questionnaire": {
 			"type": "string",
 			"pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+		},
+		"public_name": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"is_public_accessible": {
+			"type": "boolean"
 		}
 	},
 	"required": [
@@ -112,6 +125,8 @@
 		"slug",
 		"handling",
 		"departments",
-		"is_active"
+		"is_active",
+		"public_name",
+		"is_public_accessible"
 	]
 }
