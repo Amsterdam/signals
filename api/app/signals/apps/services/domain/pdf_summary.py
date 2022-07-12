@@ -56,12 +56,31 @@ class PDFSummaryService:
     max_size = settings.API_PDF_RESIZE_IMAGES_TO
 
     @staticmethod
-    def _get_context_data(signal, user):
-        logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
+    def _get_contact_details(signal, user, include_contact_details):
+        """
+        Get reporter email and phone, redacted if needed.
+
+        Note: contact details are redacted if the requesting user does not have
+        "signals.sia_can_view_contact_details" and the override is not used.
+        The override `include_contact_details` is used when a PDF generation is
+        not triggerd by a user but the contact details are needed.
+        """
+        # Note: CityControl/Sigmax uses the `include_contact_details` override.
+        if user and user.has_perm('signals.sia_can_view_contact_details') or include_contact_details:
+            return signal.reporter.email, signal.reporter.phone
+
+        return '*****' if signal.reporter.email else None, '*****' if signal.reporter.phone else None
+
+    @staticmethod
+    def _get_map_data(signal):
+        """
+        Get context data for map in PDF.
+        """
         img_data_uri = None
         bbox = None
 
         if settings.DEFAULT_MAP_TILE_SERVER:
+            # This flow is meant for WMTS services.
             map_img = WMTSMapGenerator.make_map(
                 url_template=settings.DEFAULT_MAP_TILE_SERVER,
                 lat=signal.location.geometrie.coords[1],
@@ -75,6 +94,8 @@ class PDFSummaryService:
             encoded = base64.b64encode(png_array.getvalue()).decode()
             img_data_uri = 'data:image/png;base64,{}'.format(encoded)
         else:
+            # This flow is meant for WMS services that serve data in EPSG:28992
+            # (Rijksdriehoek) coordinate system (continental Netherlands).
             rd_coordinates = signal.location.get_rd_coordinates()
             bbox = '{},{},{},{}'.format(
                 rd_coordinates.x - 340.00,
@@ -82,8 +103,19 @@ class PDFSummaryService:
                 rd_coordinates.x + 340.00,
                 rd_coordinates.y + 125.00,
             )
+        return bbox, img_data_uri
+
+    @staticmethod
+    def _get_context_data(signal, user, include_contact_details):
+        """
+        Context data for the PDF HTML template.
+        """
+        logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
+
+        bbox, img_data_uri = PDFSummaryService._get_map_data(signal)
         jpg_data_uris, att_filenames, user_emails, att_created_ats = \
             DataUriImageEncodeService.get_context_data_images(signal, PDFSummaryService.max_size)
+        reporter_email, reporter_phone = PDFSummaryService._get_contact_details(signal, user, include_contact_details)
 
         return {
             'signal': signal,
@@ -93,14 +125,22 @@ class PDFSummaryService:
             'user': user,
             'logo_src': logo_src,
             'now': timezone.now(),
+            'reporter_email': reporter_email,
+            'reporter_phone': reporter_phone,
         }
 
     @staticmethod
-    def _get_html(signal, user):
-        context = PDFSummaryService._get_context_data(signal, user)
+    def _get_html(signal, user, include_contact_details):
+        """
+        Render PDF HTML template.
+        """
+        context = PDFSummaryService._get_context_data(signal, user, include_contact_details)
         return render_to_string('api/pdf/print_signal.html', context=context)
 
     @staticmethod
-    def get_pdf(signal, user):
-        html = PDFSummaryService._get_html(signal, user)
+    def get_pdf(signal, user, include_contact_details=False):
+        """
+        Get PDF summary for a given signal.
+        """
+        html = PDFSummaryService._get_html(signal, user, include_contact_details)
         return weasyprint.HTML(string=html).write_pdf()

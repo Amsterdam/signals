@@ -24,7 +24,7 @@ def _generate_voegZaakdocumentToe_Lk01(signal, seq_no):
     """
     Generate XML for Sigmax voegZaakdocumentToe_Lk01 (for the PDF case)
     """
-    pdf = PDFSummaryService.get_pdf(signal, None)
+    pdf = PDFSummaryService.get_pdf(signal, None, True)
     encoded_pdf = base64.b64encode(pdf)
 
     return render_to_string('sigmax/voegZaakdocumentToe_Lk01.xml', context={

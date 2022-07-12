@@ -166,11 +166,11 @@
     <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
         <tr>
             <td style="width: 200px;">E-mail</td>
-            <td>: {{ signal.reporter.email|default:"Onbekend" }}</td>
+            <td>: {{ reporter_email|default:"Onbekend" }}</td>
         </tr>
         <tr>
             <td>Telefoonnummer</td>
-            <td>: {{ signal.reporter.phone|default:"Onbekend" }}</td>
+            <td>: {{ reporter_phone|default:"Onbekend" }}</td>
         </tr>
         <tr>
             <td>Verklaring contactgegevens delen</td>
