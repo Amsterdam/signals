@@ -144,6 +144,14 @@ class TestPDFSummaryService(TestCase):
         self.assertIn('foo@bar.com', html)
         self.assertIn('0612345678', html)
 
+    def test_location_entry(self):
+        pass
+        # TODO:
+        # test stadsdeel present
+        # test area_name and area_code present
+        # test only area_code present
+        # test no area present
+
 
 class TestPDFSummaryServiceWithExtraProperties(TestCase):
     def setUp(self):

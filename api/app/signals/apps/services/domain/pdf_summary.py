@@ -63,7 +63,8 @@ class PDFSummaryService:
         Note: contact details are redacted if the requesting user does not have
         "signals.sia_can_view_contact_details" and the override is not used.
         The override `include_contact_details` is used when a PDF generation is
-        not triggerd by a user but the contact details are needed.
+        not triggered by a user but the contact details are needed. If no
+        email or phone number is known it must not be redacted.
         """
         # Note: CityControl/Sigmax uses the `include_contact_details` override.
         if user and user.has_perm('signals.sia_can_view_contact_details') or include_contact_details:
