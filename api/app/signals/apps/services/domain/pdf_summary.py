@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
-from signals.apps.signals.utils.map import MapGenerator
+from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +61,8 @@ class PDFSummaryService:
         img_data_uri = None
         bbox = None
 
-        map_generator = MapGenerator()
-
         if settings.DEFAULT_MAP_TILE_SERVER:
-            map_img = map_generator.make_map(
+            map_img = WMTSMapGenerator.make_map(
                 url_template=settings.DEFAULT_MAP_TILE_SERVER,
                 lat=signal.location.geometrie.coords[1],
                 lon=signal.location.geometrie.coords[0],

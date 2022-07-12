@@ -1,25 +1,24 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import io
 from unittest.mock import patch
 
 from django.test import TestCase
 from PIL import Image
 
-from signals.apps.signals.utils.map import MapGenerator
+from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
 
 
-class MapGeneratorTest(TestCase):
+class WMTSMapGeneratorTest(TestCase):
 
     def test_tile_calculation(self):
-        mg = MapGenerator()
         # nassaulaan, the hague
-        x, y = mg.deg2num(lat_deg=52.0870974, lon_deg=4.3075533, zoom=17)
+        x, y = WMTSMapGenerator.deg2num(lat_deg=52.0870974, lon_deg=4.3075533, zoom=17)
         self.assertEqual(x, 67104)
         self.assertEqual(y, 43243)
 
         # weesperstraat, amsterdam
-        x, y = mg.deg2num(lat_deg=52.3628026, lon_deg=4.9075201, zoom=17)
+        x, y = WMTSMapGenerator.deg2num(lat_deg=52.3628026, lon_deg=4.9075201, zoom=17)
         self.assertEqual(x, 67322)
         self.assertEqual(y, 43079)
 
@@ -31,8 +30,7 @@ class MapGeneratorTest(TestCase):
         urlopen.return_value.__enter__.return_value.read.return_value = png_array.getvalue()
 
         try:
-            mg = MapGenerator()
-            map = mg.make_map(
+            map = WMTSMapGenerator.make_map(
                 url_template="https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:28992/{z}/{x}/{y}.png", # noqa
                 lat=52.0870974,
                 lon=4.3075533,
