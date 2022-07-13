@@ -7,6 +7,7 @@ import os
 
 import weasyprint
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
 from django.template.loader import render_to_string
@@ -123,7 +124,7 @@ class PDFSummaryService:
             'bbox': bbox,
             'img_data_uri': img_data_uri,
             'attachment_images': zip(jpg_data_uris, att_filenames, user_emails, att_created_ats),
-            'user': user,
+            'user': user if user else AnonymousUser(),
             'logo_src': logo_src,
             'now': timezone.now(),
             'reporter_email': reporter_email,

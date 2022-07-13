@@ -13,9 +13,11 @@ from signals.apps.services.domain.pdf_summary import PDFSummaryService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     CategoryFactory,
+    LocationFactory,
     ParentCategoryFactory,
     SignalFactoryWithImage,
-    StatusFactory
+    StatusFactory,
+    ValidLocationFactory
 )
 from signals.apps.users.factories import SuperUserFactory, UserFactory
 
@@ -26,6 +28,7 @@ class TestPDFSummaryService(TestCase):
         self.child_category = CategoryFactory.create(name='CHILD-CATEGORY', parent=self.parent_category)
 
         self.signal = SignalFactoryWithImage.create(
+            text='BLAH BLAH BLAH',
             incident_date_start=timezone.now(),
             category_assignment__category=self.child_category,
             reporter__email='foo@bar.com',
@@ -144,13 +147,37 @@ class TestPDFSummaryService(TestCase):
         self.assertIn('foo@bar.com', html)
         self.assertIn('0612345678', html)
 
-    def test_location_entry(self):
-        pass
-        # TODO:
+    def test_location_has_stadsdeel(self):
         # test stadsdeel present
+        location = ValidLocationFactory.create(_signal=self.signal)
+        self.signal.location = location
+        self.signal.save()
+        self.signal.refresh_from_db()
+
+        html = PDFSummaryService._get_html(self.signal, None, False)
+        self.assertIn(self.signal.location.get_stadsdeel_display(), html)
+
+    def test_location_has_area_code_and_area_name(self):
         # test area_name and area_code present
+        location = LocationFactory.create(
+            _signal=self.signal, area_name='AREA-NAME', area_code='AREA-CODE', stadsdeel=None)
+        self.signal.location = location
+        self.signal.save()
+        self.signal.refresh_from_db()
+
+        html = PDFSummaryService._get_html(self.signal, None, False)
+        self.assertIn(self.signal.location.area_name, html)
+        self.assertNotIn(self.signal.location.area_code, html)
+
+    def test_location_has_no_area_name_and_area_code(self):
         # test only area_code present
-        # test no area present
+        location = LocationFactory.create(_signal=self.signal, area_name=None, area_code='AREA-CODE', stadsdeel=None)
+        self.signal.location = location
+        self.signal.save()
+        self.signal.refresh_from_db()
+
+        html = PDFSummaryService._get_html(self.signal, None, False)
+        self.assertIn(self.signal.location.area_code, html)
 
 
 class TestPDFSummaryServiceWithExtraProperties(TestCase):
