@@ -1023,7 +1023,7 @@ paths:
           description: Filter returns only signals with matching main category
             slug.
           in: query
-          required: true
+          required: false
           schema:
             type: string
             example: afval
@@ -1031,7 +1031,7 @@ paths:
           description: >-
             Filter returns only signals with matching sub category slug.
           in: query
-          required: true
+          required: false
           schema:
             type: string
             example: overig-afval

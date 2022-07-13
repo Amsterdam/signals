@@ -288,3 +288,64 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         self.assertEqual(1, len(data['features']))
         self.assertEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+
+    def test_no_category_filters(self):
+        """
+        Get all the signals when no category is set
+        """
+        cat1 = ParentCategoryFactory.create(name='trash')
+
+        SignalFactoryValidLocation.create(category_assignment__category=cat1)
+
+        cat2 = ParentCategoryFactory.create(name='animals')
+        SignalFactoryValidLocation.create(category_assignment__category=cat2)
+        SignalFactoryValidLocation.create(category_assignment__category=cat2)
+
+        response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000')
+
+        data = response.json()
+        self.assertEqual(3, len(data['features']))
+
+    def test_only_category_filter(self):
+        """
+        unit test to only filter items with the category
+        create 3 signals and only 2 signals with the category 'plastic_trash"
+        """
+        cat1 = ParentCategoryFactory.create(name='trash')
+        plastic = CategoryFactory.create(parent=cat1, public_name='plastic_trash', is_public_accessible=True)
+        compost = CategoryFactory.create(parent=cat1, public_name='compost_trash', is_public_accessible=True)
+
+        SignalFactoryValidLocation.create(category_assignment__category=plastic)
+        SignalFactoryValidLocation.create(category_assignment__category=plastic)
+
+        SignalFactoryValidLocation.create(category_assignment__category=compost)
+
+        response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
+                                   f'category_slug={plastic.slug}')
+
+        data = response.json()
+        self.assertEqual(2, len(data['features']))
+
+    def test_only_main_category_filter(self):
+        """
+        unit test to only filter items with the main category
+        create 5 signals and only 3 under the main category 'trash' that should be returned
+        """
+        parent_cat = ParentCategoryFactory.create(name='trash')
+        child_category = CategoryFactory.create(parent=parent_cat, public_name='', is_public_accessible=True)
+        child_category_2 = CategoryFactory.create(parent=parent_cat, public_name='', is_public_accessible=True)
+
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category_2)
+
+        parent_cat_2 = ParentCategoryFactory.create(name='animal')
+        child_animal = CategoryFactory.create(parent=parent_cat_2, public_name='', is_public_accessible=True)
+        SignalFactoryValidLocation.create(category_assignment__category=child_animal)
+        SignalFactoryValidLocation.create(category_assignment__category=child_animal)
+
+        response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
+                                   f'maincategory_slug={parent_cat.slug}')
+
+        data = response.json()
+        self.assertEqual(3, len(data['features']))
