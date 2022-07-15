@@ -21,17 +21,20 @@ class SignalCreatedAction(AbstractAction):
     def get_additional_context(self, signal, dry_run=False):
         context = {'afhandelings_text': signal.category_assignment.category.handling_message, }
 
-        if signal.reporter and signal.reporter.phone:
-            """
-            If a reporter has given his/hers phone number it is added to the email context in a specific format.
-            """
-            context.update({'reporter_phone': ContactDetailsService.obscure_phone(signal.reporter.phone, True)})
+        if signal.reporter:
+            if signal.reporter.phone:
+                """
+                If a reporter has given his/hers phone number it is added to the email context in a specific format.
+                """
+                context.update({'reporter_phone': ContactDetailsService.obscure_phone(signal.reporter.phone, True)})
 
-        if signal.reporter and signal.reporter.email:
-            """
-            If a reporter has given his/hers email address it is added to the email context in a specific format.
-            """
-            context.update({'reporter_email': ContactDetailsService.obscure_email(signal.reporter.email, True)})
+            if signal.reporter.email:
+                """
+                If a reporter has given his/hers email address it is added to the email context in a specific format.
+                """
+                context.update({'reporter_email': ContactDetailsService.obscure_email(signal.reporter.email, True)})
+
+            context.update({'reporter_sharing_allowed': signal.reporter.sharing_allowed})
 
         # Add the extra properties to the context of the email template
         context.update({'extra_properties': self._extra_properties_context(signal.extra_properties)})

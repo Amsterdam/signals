@@ -345,6 +345,52 @@ class TestSignalCreatedAction(ActionTestMixin, TestCase):
         self.assertEqual(Note.objects.count(), 1)
         self.assertTrue(Note.objects.filter(text=self.action.note).exists())
 
+    def test_signal_created_sharing_allowed_reporter(self):
+        """
+        Test the sharing allowed if it is enabled
+        """
+        email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
+        email_template.body = '{% if reporter_sharing_allowed %} is allowed {% else %} not allowed {% endif %}'
+        email_template.save()
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com',
+                                      reporter__sharing_allowed=True)
+
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+
+        self.assertIn('is allowed', mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_signal_created_sharing_NOT_allowed_reporter(self):
+        """
+        Test the sharing allowed if it is enabled
+        """
+        email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
+        email_template.body = '{% if reporter_sharing_allowed %} is allowed {% else %} not allowed {% endif %}'
+        email_template.save()
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com',
+                                      reporter__sharing_allowed=False)
+
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+
+        self.assertIn('not allowed', mail.outbox[0].body)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
     def test_signal_created_with_extra_properties(self):
         email_template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_CREATED)
         email_template.body = '{% for label, answers in extra_properties.items %}{{ label }} {% for answer in answers %}{{ answer}}{% if not forloop.last %}, {% endif %}{% endfor %} {% endfor %}'  # noqa

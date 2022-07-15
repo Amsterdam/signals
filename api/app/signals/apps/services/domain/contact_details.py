@@ -25,6 +25,7 @@ class ContactDetailsService:
             obscured_email = obscured_email.replace('*', '\\*')  # noqa escape the * because it is used in markdown
         return obscured_email
 
+    @staticmethod
     def obscure_phone(phone, escape_for_markdown):
         """
         Partially obscure a phone number.
