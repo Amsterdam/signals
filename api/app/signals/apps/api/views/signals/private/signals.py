@@ -146,13 +146,22 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
             history_log_qs = history_log_qs.filter(action__iexact=action, content_type__model__iexact=content_type)
 
-        if history_log_qs.exists():
+        # During tests remove the fallback to the old behavior, use only old or
+        # only new - no mix. TODO: remove before final commit
+        from django.conf import settings
+        if settings.FEATURE_FLAGS['SIGNAL_HISTORY_LOG_ENABLED']:
             serializer = HistoryLogHalSerializer(history_log_qs, many=True)
             return Response(serializer.data)
         else:
-            # Try the view as a fallback
-            # TODO remove when the transition to the new history app is completed.
             return self.history_view(*args, **kwargs)
+
+        # if history_log_qs.exists():
+        #     serializer = HistoryLogHalSerializer(history_log_qs, many=True)
+        #     return Response(serializer.data)
+        # else:
+        #     # Try the view as a fallback
+        #     # TODO remove when the transition to the new history app is completed.
+        #     return self.history_view(*args, **kwargs)
 
     @action(detail=True, url_path=r'history-view/?$')
     def history_view(self, *args, **kwargs):

@@ -9,6 +9,7 @@ from django.db import models
 from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from signals.apps.signals.models.location import _get_description_of_update_location
+from signals.apps.signals.models.signal_departments import SignalDepartments
 from signals.apps.signals.models.type import _history_translated_action
 from signals.apps.signals.workflow import STATUS_CHOICES
 
@@ -64,17 +65,24 @@ class Log(models.Model):
     #
     # To keep the history endpoint intact the following functions are defined to mimic the history view in the database
 
-    @staticmethod
-    def translate_content_type(content_type_name):
+    def translate_content_type(self, content_type_name):
         """
         Present for backwards compatibility
         """
-        content_type_translations = {'category assignment': 'category_assignment',
-                                     'service level objective': 'sla',
-                                     'type': 'type_assignment',
-                                     'signal user': 'user_assignment'}
+        content_type_translations = {
+            'category assignment': 'category_assignment',
+            'service level objective': 'sla',
+            'type': 'type_assignment',
+            'signal user': 'user_assignment',
+        }
+
         if content_type_name in content_type_translations:
             return content_type_translations[content_type_name]
+        elif content_type_name == 'signal departments':
+            if self.object.relation_type == SignalDepartments.REL_ROUTING:
+                content_type_name = 'routing_assignment'
+            elif self.object.relation_type == SignalDepartments.REL_DIRECTING:
+                content_type_name = 'directing_departments_assignment'
         return content_type_name
 
     @staticmethod
@@ -90,13 +98,18 @@ class Log(models.Model):
         Present for backwards compatibility
         """
         # Note: this should produce a content_type.model not .name
+        translations = {
+            'category_assignment': 'categoryassignment',
+            'sla': 'servicelevelobjective',
+            'type_assignment': 'type',
+            'user_assignment': 'signaluser',
+            'routing_assignment': 'signaldepartments',
+            'directing_departments_assignment': 'signaldepartments',
+        }
+
         content_type = what[what.find('_') + 1:].lower()
-        t = {'category_assignment': 'categoryassignment',
-             'sla': 'servicelevelobjective',
-             'type_assignment': 'type',
-             'user_assignment': 'signaluser'}
-        if content_type in t:
-            content_type = t[content_type]
+        if content_type in translations:
+            content_type = translations[content_type]
         return content_type
 
     @property

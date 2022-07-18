@@ -60,7 +60,7 @@ class TestRoutingMechanism(TestCase):
         signal_inside.refresh_from_db()
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside)  # <- HIERZO
         signal_inside.refresh_from_db()
         self.assertIsNotNone(signal_inside.routing_assignment)
         self.assertEqual(len(signal_inside.routing_assignment.departments.all()), 1)
@@ -87,7 +87,7 @@ class TestRoutingMechanism(TestCase):
         )
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside)  # <- HIERZO
         signal_inside.refresh_from_db()
 
         # routing rule will be de-activated due to syntax/compilation errors
@@ -120,7 +120,7 @@ class TestRoutingMechanism(TestCase):
         )
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside)  # <- HIERZO
         signal_inside.refresh_from_db()
 
         # runtime errors should not effect is_active status
