@@ -51,8 +51,6 @@ from signals.test.utils import (
     SignalsBaseApiTestCase
 )
 
-from unittest import skip
-
 THIS_DIR = os.path.dirname(__file__)
 
 
@@ -1800,7 +1798,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(len(response.json()), 0)
 
         # update location
-        response = self.client.patch(detail_endpoint, data, format='json')  # <- HIERZO
+        response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
         response_data = response.json()
@@ -2685,7 +2683,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
                 }
             ]
         }
-        response = self.client.patch(detail_endpoint, data=data, format='json')  # <- HIERZO
+        response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.routing_assignment.departments.count(), 1)
@@ -2709,7 +2707,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
                 }
             ]
         }
-        response = self.client.patch(detail_endpoint, data=data, format='json')  # <-- HIERZO
+        response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
 
@@ -2751,7 +2749,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
                 }
             ]
         }
-        response = self.client.patch(detail_endpoint, data=data, format='json')  # <-- HIERZO
+        response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
 
@@ -2779,7 +2777,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
                 }
             ]
         }
-        response = self.client.patch(detail_endpoint, data=data, format='json')  # <- HIERZO
+        response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
 
@@ -2824,7 +2822,7 @@ class TestSignalEndpointRouting(SIAReadWriteUserMixin, SIAReadUserMixin, Signals
                 }
             ]
         }
-        response = self.client.patch(detail_endpoint, data=data, format='json')  # <- HIERZO
+        response = self.client.patch(detail_endpoint, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.signal.refresh_from_db()
 
@@ -2869,7 +2867,7 @@ class TestSignalUserAssignmentHistory(SIAReadWriteUserMixin, SIAReadUserMixin, S
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
 
         # test signals
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(user_assignment=None)
         self.department = DepartmentFactory.create()
         self.category = CategoryFactory.create()
 
@@ -2961,8 +2959,6 @@ class TestSignalUserAssignmentHistory(SIAReadWriteUserMixin, SIAReadUserMixin, S
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
 
-        import pdb; pdb.set_trace()
-
         self.assertEqual(len(response_json), 1)  # one user assignment in history
         self.assertEqual(
             response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
@@ -3047,8 +3043,10 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         # Check log entry contents
         self.assertEqual(len(response_json), 1)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(response_json[0]['action'], 
-            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}')
+        self.assertEqual(
+            response_json[0]['action'],
+            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}'
+        )
         self.assertEqual(None, response_json[0]['description'])
 
         # Reset routing departments to empty
@@ -3068,8 +3066,10 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         response_json = response.json()
         self.assertEqual(len(response_json), 2)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(response_json[0]['action'], 
-            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)')
+        self.assertEqual(
+            response_json[0]['action'],
+            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)'
+        )
         self.assertEqual(response_json[0]['description'], None)
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
@@ -3103,8 +3103,10 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         # Check log entry contents
         self.assertEqual(len(response_json), 1)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(response_json[0]['action'], 
-            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}')
+        self.assertEqual(
+            response_json[0]['action'],
+            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}'
+        )
         self.assertEqual(None, response_json[0]['description'])
 
         # Reset routing departments to empty
@@ -3125,8 +3127,10 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         response_json = response.json()
         self.assertEqual(len(response_json), 2)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(response_json[0]['action'], 
-            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)')
+        self.assertEqual(
+            response_json[0]['action'],
+            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)'
+        )
         self.assertEqual(response_json[0]['description'], None)
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})

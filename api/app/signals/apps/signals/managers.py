@@ -582,7 +582,7 @@ class SignalManager(models.Manager):
             if signal.routing_assignment and signal.routing_assignment.departments.exclude(
                 id__in=[dept.id for dept in relation.departments.all()]
             ).exists():
-                signal.user_assignment = None  # <- Should have log entry.
+                signal.user_assignment = None  # TODO: consider adding log-entry here
 
         for department_data in data['departments']:
             relation.departments.add(department_data['id'])

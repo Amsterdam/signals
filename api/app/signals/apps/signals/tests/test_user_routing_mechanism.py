@@ -37,7 +37,7 @@ class TestRoutingMechanism(TestCase):
         # simulate applying routing rules
         dsl_service = SignalDslService()
 
-        dsl_service.process_routing_rules(signal)  # <- HIERZO
+        dsl_service.process_routing_rules(signal)
 
         signal.refresh_from_db()
         self.assertEqual(signal.user_assignment.user.id, user.id)
