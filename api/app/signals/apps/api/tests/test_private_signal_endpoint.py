@@ -2960,6 +2960,9 @@ class TestSignalUserAssignmentHistory(SIAReadWriteUserMixin, SIAReadUserMixin, S
         response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
+
+        import pdb; pdb.set_trace()
+
         self.assertEqual(len(response_json), 1)  # one user assignment in history
         self.assertEqual(
             response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
@@ -3016,33 +3019,58 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
     def test_history_of_routing_assignment_old_history_implementation(self):
-        """
-        Test setting, clearing, and resetting routing departments.
-        """
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         history_endpoint = self.history_endpoint.format(pk=self.signal.id)
 
+        # Check initial conditions
         self.assertEqual(Log.objects.count(), 0)
+        self.assertEqual(self.signal.routing_assignment, None)
+        self.assertEqual(self.client.get(detail_endpoint).json()['routing_departments'], None)
 
-        # Assign a routing department, check that routing department was updated
-        # and that it shows correctly in the signal's history.
-        querystring = urlencode({'what': 'UPDATE_ROUTING_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 0)
-
+        # Set routing departments via REST API
         data = {'routing_departments': [{'id': self.department.id}]}
         response = self.client.patch(detail_endpoint, data=data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that routing department was set
+        self.signal.refresh_from_db()
+        self.assertEqual(set(self.signal.routing_assignment.departments.all()), set([self.department]))
         response_json = response.json()
         self.assertEqual(len(response_json['routing_departments']), 1)
         self.assertEqual(response_json['routing_departments'][0]['id'], self.department.pk)
 
-        querystring = urlencode({'what': 'UPDATE_ROUTING_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
+        # Check that setting routing deparment is visible in history
+        self.assertEqual(Log.objects.count(), 0)
+        response = self.client.get(history_endpoint + '?what=UPDATE_ROUTING_ASSIGNMENT')
+        response_json = response.json()
 
-        self.assertEqual(Log.objects.count(), 0)  # no new-style history log entries
+        # Check log entry contents
+        self.assertEqual(len(response_json), 1)
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+        self.assertEqual(response_json[0]['action'], 
+            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}')
+        self.assertEqual(None, response_json[0]['description'])
+
+        # Reset routing departments to empty
+        data = {'routing_departments': []}
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that we have no routing department
+        self.signal.refresh_from_db()
+        self.assertEqual(set(self.signal.routing_assignment.departments.all()), set())
+        response_json = response.json()
+        self.assertEqual(response_json['routing_departments'], [])  # also accepts None
+
+        # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
+        self.assertEqual(Log.objects.count(), 0)
+        response = self.client.get(history_endpoint + '?what=UPDATE_ROUTING_ASSIGNMENT')
+        response_json = response.json()
+        self.assertEqual(len(response_json), 2)
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+        self.assertEqual(response_json[0]['action'], 
+            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)')
+        self.assertEqual(response_json[0]['description'], None)
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
     def test_history_of_routing_assignment_new_history_implementation(self):
@@ -3076,8 +3104,8 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         self.assertEqual(len(response_json), 1)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
         self.assertEqual(response_json[0]['action'], 
-            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)')
-        self.assertIn( self.department.code, response_json[0]['description'])
+            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}')
+        self.assertEqual(None, response_json[0]['description'])
 
         # Reset routing departments to empty
         data = {'routing_departments': []}
@@ -3089,7 +3117,7 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         self.signal.refresh_from_db()
         self.assertEqual(set(self.signal.routing_assignment.departments.all()), set())
         response_json = response.json()
-        self.assertEqual(len(response_json['routing_departments']), 0)
+        self.assertEqual(response_json['routing_departments'], [])  # also accepts None
 
         # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
         self.assertEqual(Log.objects.count(), 2)
@@ -3099,40 +3127,69 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
         self.assertEqual(response_json[0]['action'], 
             'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)')
-        self.assertEqual(response_json[0]['description'], '')
+        self.assertEqual(response_json[0]['description'], None)
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
     def test_history_of_directing_departments_assignment_old_history_implementation(self):
-
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         history_endpoint = self.history_endpoint.format(pk=self.signal.id)
 
+        # Directing departments can only be set for parent signals, hence
         child_signal = SignalFactoryValidLocation.create()
         child_signal.parent = self.signal
         child_signal.save()
 
-        self.assertEqual(Log.objects.count(), 0)
+        # Check initial conditions
+        self.assertEqual(Log.objects.count(), 0)  # Factories don't keep history in new set-up
+        self.assertEqual(self.signal.directing_departments_assignment, None)
 
-        # Assign a routing department, check that routing department was updated
-        # and that it shows correctly in the signal's history.
-        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 0)
+        self.assertEqual(Signal.objects.count(), 2)
+        response_json = self.client.get(detail_endpoint).json()
+        self.assertNotIn('directing_departments', response_json)
 
+        # Set routing departments via REST API
         data = {'directing_departments': [{'id': self.department.pk}, ]}
         response = self.client.patch(detail_endpoint, data=data, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Check that directing department was set
+        self.signal.refresh_from_db()
+        self.assertEqual(set(self.signal.directing_departments_assignment.departments.all()), set([self.department]))
         response_json = response.json()
-
         self.assertEqual(len(response_json['directing_departments']), 1)
         self.assertEqual(response_json['directing_departments'][0]['id'], self.department.pk)
 
-        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
+        # Check that setting directing deparment is visible in history
+        self.assertEqual(Log.objects.count(), 0)
+        response = self.client.get(history_endpoint + '?what=UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT')
+        response_json = response.json()
 
-        self.assertEqual(Log.objects.count(), 0)  # no new-style history log entries
+        # Check log entry contents
+        self.assertEqual(len(response_json), 1)
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+
+        self.assertEqual(f'Regie gewijzigd naar: {self.department.code}', response_json[0]['action'])
+        self.assertEqual(None, response_json[0]['description'])
+
+        # Reset directing departments to empty
+        data = {'directing_departments': []}  # does not accept None
+        response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that we have no routing department
+        self.signal.refresh_from_db()
+        self.assertEqual(set(self.signal.directing_departments_assignment.departments.all()), set())
+        response_json = response.json()
+        self.assertEqual(response_json['directing_departments'], [])
+
+        # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
+        self.assertEqual(Log.objects.count(), 0)
+        response = self.client.get(history_endpoint + '?what=UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT')
+        response_json = response.json()
+
+        self.assertEqual(len(response_json), 2)
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+        self.assertEqual(response_json[0]['action'], 'Regie gewijzigd naar: Verantwoordelijke afdeling')
+        self.assertEqual(response_json[0]['description'], None)
 
     @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
     def test_history_of_directing_departments_assignment_new_history_implementation(self):
@@ -3173,7 +3230,26 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         self.assertEqual(len(response_json), 1)
         self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
 
-        import pdb; pdb.set_trace()
+        self.assertEqual(f'Regie gewijzigd naar: {self.department.code}', response_json[0]['action'])
+        self.assertEqual(None, response_json[0]['description'])
 
-        self.assertIn('Regie gewijzigd naar:', response_json[0]['action'])
-        self.assertIn(self.department.code, response_json[0]['description'])
+        # Reset directing departments to empty
+        data = {'directing_departments': []}  # does not accept None
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.patch(detail_endpoint, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that we have no routing department
+        self.signal.refresh_from_db()
+        self.assertEqual(set(self.signal.directing_departments_assignment.departments.all()), set())
+        response_json = response.json()
+        self.assertEqual(response_json['directing_departments'], [])
+
+        # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
+        self.assertEqual(Log.objects.count(), 2)
+        response = self.client.get(history_endpoint + '?what=UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT')
+        response_json = response.json()
+        self.assertEqual(len(response_json), 2)
+        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
+        self.assertEqual(response_json[0]['action'], 'Regie gewijzigd naar: Verantwoordelijke afdeling')
+        self.assertEqual(response_json[0]['description'], None)
