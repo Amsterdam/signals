@@ -129,7 +129,7 @@ DATABASE_USER = os.getenv('DATABASE_USER', 'signals')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'insecure')
 DATABASE_HOST = os.getenv('DATABASE_HOST_OVERRIDE')
 DATABASE_PORT = os.getenv('DATABASE_PORT_OVERRIDE')
-
+DATABASE_REQUIRE_SSL = os.getenv('DATABASE_REQUIRE_SSL', False) in TRUE_VALUES
 
 # Django cache settings
 CACHES = {

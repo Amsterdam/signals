@@ -33,3 +33,6 @@ DATABASES = {
         'PORT': DATABASE_PORT # noqa
     },
 } # noqa
+
+if DATABASE_REQUIRE_SSL: # noqa
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
