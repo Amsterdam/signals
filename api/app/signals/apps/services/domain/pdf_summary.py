@@ -4,6 +4,7 @@ import base64
 import io
 import logging
 import os
+from urllib.parse import urlparse
 
 import weasyprint
 from django.conf import settings
@@ -12,6 +13,7 @@ from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
 from django.template.loader import render_to_string
 from django.utils import timezone
+import requests
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
@@ -53,8 +55,45 @@ def _get_data_uri(static_file):
         return ''  # missing static file, results in missing image
 
 
+def _get_data_uri_remote(logo_url):
+    formats = {
+        '.svg': 'data:image/svg+xml;base64,',
+        '.jpg': 'data:image/jpeg;base64',
+        '.png': 'data:image/png;base64,',
+    }
+
+    parsed = urlparse(logo_url, scheme='')
+    if not parsed.scheme in ('https', 'http'):
+        return ''
+
+    path = parsed.path
+    _, ext = os.path.splitext(path)
+
+    try:
+        start = formats[ext]
+    except KeyError:
+        return ''  # We want no HTTP 500, just a missing image
+
+    response = requests.get(logo_url)
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        return ''
+
+    encoded = base64.b64encode(response.content).decode('utf-8')
+    data_uri = start + encoded
+    return data_uri
+
 class PDFSummaryService:
     max_size = settings.API_PDF_RESIZE_IMAGES_TO
+
+    @staticmethod
+    def _get_logo_data(logo_url):
+        parsed = urlparse(logo_url, scheme='')
+        if not parsed.scheme:
+            return _get_data_uri(logo_url)
+
+        return _get_data_uri_remote(logo_url)
 
     @staticmethod
     def _get_contact_details(signal, user, include_contact_details):
@@ -112,7 +151,8 @@ class PDFSummaryService:
         """
         Context data for the PDF HTML template.
         """
-        logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
+        # logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
+        logo_src = PDFSummaryService._get_logo_data(settings.API_PDF_LOGO_STATIC_FILE)
 
         bbox, img_data_uri = PDFSummaryService._get_map_data(signal)
         jpg_data_uris, att_filenames, user_emails, att_created_ats = \
