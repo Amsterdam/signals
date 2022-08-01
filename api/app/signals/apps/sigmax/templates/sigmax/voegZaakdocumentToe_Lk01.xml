@@ -5,8 +5,8 @@
          <ZKN:stuurgegevens>
             <StUF:berichtcode>Lk01</StUF:berichtcode>
             <StUF:zender>
-               <StUF:organisatie>AMS</StUF:organisatie>
-               <StUF:applicatie>SIA</StUF:applicatie>
+               <StUF:organisatie>SIG</StUF:organisatie>
+               <StUF:applicatie>SIG</StUF:applicatie>
             </StUF:zender>
             <StUF:ontvanger>
                <StUF:organisatie>SMX</StUF:organisatie>

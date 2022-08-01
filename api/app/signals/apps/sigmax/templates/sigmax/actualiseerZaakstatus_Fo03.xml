@@ -8,8 +8,8 @@
          <stuurgegevens>
             <berichtcode>Fo03</berichtcode>
             <zender>
-               <organisatie>AMS</organisatie>
-               <applicatie>SIA</applicatie>
+               <organisatie>SIG</organisatie>
+               <applicatie>SIG</applicatie>
             </zender>
             <ontvanger>
                <organisatie>SMX</organisatie>
