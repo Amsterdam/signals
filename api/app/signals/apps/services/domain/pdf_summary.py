@@ -6,6 +6,7 @@ import logging
 import os
 from urllib.parse import urlparse
 
+import requests
 import weasyprint
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -13,7 +14,6 @@ from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
 from django.template.loader import render_to_string
 from django.utils import timezone
-import requests
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
@@ -21,79 +21,72 @@ from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
 logger = logging.getLogger(__name__)
 
 
-def _get_data_uri(static_file):
-    formats = {
-        '.svg': 'data:image/svg+xml;base64,',
-        '.jpg': 'data:image/jpeg;base64',
-        '.png': 'data:image/png;base64,',
-    }
-
-    if not static_file:  # protect against None or ''
-        return ''
-
-    try:
-        result = finders.find(static_file)
-    except SuspiciousFileOperation:  # when file path starts with /
-        return ''
-
-    if result:
-        _, ext = os.path.splitext(result)
-        if not ext:
-            return ''
-
-        try:
-            start = formats[ext]
-        except KeyError:
-            return ''  # We want no HTTP 500, just a missing image
-
-        with open(result, 'rb') as f:
-            encoded = base64.b64encode(f.read()).decode('utf-8')
-        data_uri = start + encoded
-
-        return data_uri
-    else:
-        return ''  # missing static file, results in missing image
-
-
-def _get_data_uri_remote(logo_url):
-    formats = {
-        '.svg': 'data:image/svg+xml;base64,',
-        '.jpg': 'data:image/jpeg;base64',
-        '.png': 'data:image/png;base64,',
-    }
-
-    parsed = urlparse(logo_url, scheme='')
-    if not parsed.scheme in ('https', 'http'):
-        return ''
-
-    path = parsed.path
-    _, ext = os.path.splitext(path)
-
-    try:
-        start = formats[ext]
-    except KeyError:
-        return ''  # We want no HTTP 500, just a missing image
-
-    response = requests.get(logo_url)
-    try:
-        response.raise_for_status()
-    except requests.HTTPError:
-        return ''
-
-    encoded = base64.b64encode(response.content).decode('utf-8')
-    data_uri = start + encoded
-    return data_uri
-
 class PDFSummaryService:
     max_size = settings.API_PDF_RESIZE_IMAGES_TO
+    logo_formats = {
+        '.svg': 'data:image/svg+xml;base64,',
+        '.jpg': 'data:image/jpeg;base64',
+        '.png': 'data:image/png;base64,',
+    }
+
+    @staticmethod
+    def _get_logo_data_from_static_file(logo_url):
+        """
+        Retrieve static file, base64 encode it.
+        """
+        try:
+            result = finders.find(logo_url)
+        except SuspiciousFileOperation:  # when file path starts with /
+            return ''
+
+        if not result:
+            return ''
+
+        with open(result, 'rb') as f:
+            return base64.b64encode(f.read()).decode('utf-8')
+
+    @staticmethod
+    def _get_logo_data_from_remote_url(logo_url):
+        """
+        Download external file, base64 encode it.
+        """
+        response = requests.get(logo_url)
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            return ''
+
+        return base64.b64encode(response.content).decode('utf-8')
 
     @staticmethod
     def _get_logo_data(logo_url):
-        parsed = urlparse(logo_url, scheme='')
-        if not parsed.scheme:
-            return _get_data_uri(logo_url)
+        """
+        Get base64 encoded image data for logo.
 
-        return _get_data_uri_remote(logo_url)
+        Note: path without scheme is assumed to be a static file reference and
+        path with scheme is considered an external URL.
+        """
+        if not logo_url:  # protect against None or ''
+            return ''
+
+        # Check whether we have one of the allowable filetypes specified
+        parsed = urlparse(logo_url, scheme='')
+        _, ext = os.path.splitext(parsed.path)
+        try:
+            start = PDFSummaryService.logo_formats[ext]
+        except KeyError:
+            return ''  # We want no HTTP 500, just a missing image
+
+        # Retrieve the base64 encoded image data
+        data = ''
+        if not parsed.scheme:
+            data = PDFSummaryService._get_logo_data_from_static_file(logo_url)
+        elif parsed.scheme in ('https', 'http'):
+            data = PDFSummaryService._get_logo_data_from_remote_url(logo_url)
+
+        if data:
+            return start + data
+        return ''
 
     @staticmethod
     def _get_contact_details(signal, user, include_contact_details):
