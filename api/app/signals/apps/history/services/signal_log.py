@@ -173,10 +173,11 @@ class SignalLogService:
         if not isinstance(signal_departments, SignalDepartments):
             return
 
-        log_description = ', '.join(signal_departments.departments.values_list('code', flat=True))
+        extra = ', '.join(signal_departments.departments.values_list('code', flat=True))
         signal_departments.history_log.create(
             action=Log.ACTION_UPDATE,
-            description=log_description,
+            extra=extra,
+            description=None,
             created_by=signal_departments.created_by,
             created_at=signal_departments.created_at,
             _signal=signal_departments._signal,
