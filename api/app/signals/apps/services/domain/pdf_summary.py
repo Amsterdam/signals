@@ -144,7 +144,6 @@ class PDFSummaryService:
         """
         Context data for the PDF HTML template.
         """
-        # logo_src = _get_data_uri(settings.API_PDF_LOGO_STATIC_FILE)
         logo_src = PDFSummaryService._get_logo_data(settings.API_PDF_LOGO_STATIC_FILE)
 
         bbox, img_data_uri = PDFSummaryService._get_map_data(signal)
