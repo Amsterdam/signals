@@ -3,6 +3,7 @@
 from datetime import timedelta
 from unittest import mock
 
+from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
@@ -40,7 +41,7 @@ class TestReactionRequestSessionService(TestCase):
     def test_get_reaction_url(self):
         session = SessionFactory.create()
         reaction_url = get_reaction_url(session)
-        self.assertEqual(reaction_url, f'http://dummy_link/incident/reactie/{session.uuid}')
+        self.assertEqual(reaction_url, f'{settings.FRONTEND_URL}/incident/reactie/{session.uuid}')
 
     def test_create_session(self):
         session = create_session_for_reaction_request(self.signal_reaction_requested)

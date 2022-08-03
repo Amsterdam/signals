@@ -10,8 +10,8 @@ TRUE_VALUES = [True, 'True', 'true', '1']
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Debug Logging
-DEBUG = False
-LOG_QUERIES = False
+DEBUG = os.getenv('DEBUG', default=False) in TRUE_VALUES
+LOG_QUERIES = os.getenv('LOG_QUERIES', default=False) in TRUE_VALUES
 LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
 
 # localhost and 127.0.0.1 are allowed because the deployment process checks the health endpoint with a
@@ -124,11 +124,16 @@ TEMPLATES = [
 ]
 
 # Database settings
-DATABASE_NAME = os.getenv('DATABASE_NAME', 'signals')
-DATABASE_USER = os.getenv('DATABASE_USER', 'signals')
-DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', 'insecure')
-DATABASE_HOST = os.getenv('DATABASE_HOST_OVERRIDE')
-DATABASE_PORT = os.getenv('DATABASE_PORT_OVERRIDE')
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'signals'),
+        'USER': os.getenv('DATABASE_USER', 'signals'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
+        'HOST': os.getenv('DATABASE_HOST_OVERRIDE'),
+        'PORT': os.getenv('DATABASE_PORT_OVERRIDE')
+    },
+}
 
 
 # Django cache settings
@@ -139,11 +144,11 @@ CACHES = {
 }
 
 # Django security settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', default=True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', default=True) in TRUE_VALUES
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', default=True) in TRUE_VALUES
 
 
 # Internationalization
@@ -210,11 +215,20 @@ DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
 HEALTH_MODEL = 'signals.Signal'
 
 SIGNALS_AUTH = {
-    'JWKS': os.getenv('PUB_JWKS'),
-    'JWKS_URL': os.getenv('JWKS_URL'),
     'USER_ID_FIELDS': os.getenv('USER_ID_FIELDS', 'email').split(','),
-    'ALWAYS_OK': False,
+    'ALWAYS_OK': os.getenv('SIGNALS_AUTH_ALWAYS_OK', default=False) in TRUE_VALUES,
 }
+
+if PUB_JWKS := os.getenv('PUB_JWKS', default=None):
+    SIGNALS_AUTH.update({'JWKS': PUB_JWKS})
+if os.getenv('TEST_JWKS', default=False) in TRUE_VALUES:
+    SIGNALS_AUTH.update({'JWKS': '{"keys": [{"kty": "EC", "key_ops": ["verify", "sign"], "kid": "2aedafba-8170-4064-b704-ce92b7c89cc6", "crv": "P-256", "x": "6r8PYwqfZbq_QzoMA4tzJJsYUIIXdeyPA27qTgEJCDw=", "y": "Cf2clfAfFuuCB06NMfIat9ultkMyrMQO9Hd2H7O9ZVE=", "d": "N1vu0UQUp0vLfaNeM0EDbl4quvvL6m_ltjoAXXzkI3U="}]}'})  # noqa
+if JWKS_URL := os.getenv('JWKS_URL', default=None):
+    SIGNALS_AUTH.update({'JWKS_URL': JWKS_URL})
+
+# Only used for testing and local development
+# When ALWAYS_OK is set to True the TEST_LOGIN must be provided
+TEST_LOGIN = os.getenv('TEST_LOGIN')
 
 # Celery settings
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'signals')
@@ -366,3 +380,38 @@ STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_I
 
 MARKDOWNX_MARKDOWNIFY_FUNCTION = 'signals.apps.email_integrations.utils.markdownx_md'  # noqa Renders markdown as HTML using Mistune
 MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Signals has for markdownx
+
+
+# Feature flags
+FEATURE_FLAGS = {
+    'API_DETERMINE_STADSDEEL_ENABLED': os.getenv('API_DETERMINE_STADSDEEL_ENABLED', True) in TRUE_VALUES,
+    'API_TRANSFORM_SOURCE_BASED_ON_REPORTER': os.getenv('API_TRANSFORM_SOURCE_BASED_ON_REPORTER', True) in TRUE_VALUES,
+
+    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER', False) in TRUE_VALUES,  # noqa
+    'AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE': os.getenv('AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_EIKENPROCESSIERUPS_TREE', False) in TRUE_VALUES,  # noqa
+
+    # Enabled the history_log based response, disables the signal_history_view based response
+    'SIGNAL_HISTORY_LOG_ENABLED': os.getenv('SIGNAL_HISTORY_LOG_ENABLED', False) in TRUE_VALUES,
+    'API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK': os.getenv('API_USE_QUESTIONNAIRES_APP_FOR_FEEDBACK', False) in TRUE_VALUES,  # noqa
+
+    # Temporary added to exclude permissions in the signals/v1/permissions endpoint that are not yet implemented in
+    # the frontend
+    # TODO: Remove this when the frontend is updated
+    'EXCLUDED_PERMISSIONS_IN_RESPONSE': os.getenv('EXCLUDED_PERMISSIONS_IN_RESPONSE',
+                                                  'sia_delete_attachment_of_normal_signal,'
+                                                  'sia_delete_attachment_of_parent_signal,'
+                                                  'sia_delete_attachment_of_child_signal,'
+                                                  'sia_delete_attachment_of_other_user').split(','),
+
+    # Enable/disable system mail for Feedback Received
+    'SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED': os.getenv('SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED', False) in TRUE_VALUES,  # noqa
+
+    # Enable/disable status mail for Handled after negative feedback
+    'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED', False) in TRUE_VALUES, # noqa
+
+    # Enable/disable only mail when Feedback allows_contact is True
+    'REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED': os.getenv('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True) in TRUE_VALUES, # noqa
+
+    # Enable/disable the deletion of signals in a certain state for a certain amount of time
+    'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
+}

@@ -14,7 +14,9 @@ Project structure
             health
             signals    (SIA core)
             ...
-        settings.py
+        settings
+            __init__.py
+            base.py
         urls.py
         wsgi.py
         ...
@@ -29,16 +31,48 @@ Project structure
 Django settings
 ===============
 
-Settings for all different environments are defined in `app/signals/settings/...`. The file
-`base.py` contains all the default settings. Defaults should be production ready. You can
-override this, if needed, in the other specific settings files (e.g. `testing`, `local`).
+Settings are defined in `app/signals/settings/...`. The file `base.py` contains all settings. Defaults should be 
+production ready. 
 
-Current available settings:
+Settings location:
+```
+/app
+    /signals
+        settings
+            __init__.py
+            base.py
+```
 
-- `base`      -> Used for Acceptance/Production instances
-- `testing`   -> Used for Jenkins test pipeline and testing with `tox`
-- `local`     -> Used for Local Docker instances.
-                 Override settings in `local` for local usage (not tracked in Git)
+You can override the settings, if needed, in the docker-compose.yml file. When not using docker-compose make sure to set
+the environment variables (see the docker-compose.yml file for reference when setting these environment variables).
+
+Example docker-compose.yml api setup:
+```yaml
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    links:
+      - database
+      - elasticsearch
+      - dex
+      - celery
+    environment:
+      - DEBUG=True
+      - LOGGING_LEVEL=DEBUG
+      - SITE_DOMAIN=localhost:8000
+      - SECRET_KEY=insecure
+      ...
+    volumes:
+      - ./api/app:/app
+      - ./api/deploy:/deploy
+      - ./dwh_media:/dwh_media
+      - ./scripts/initialize.sh:/initialize.sh
+    command:
+      - /initialize.sh
+
+```
+
 
 Tox usage
 =========

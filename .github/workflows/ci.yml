@@ -41,7 +41,24 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_HOST: localhost
+          SECRET_KEY: insecure
+          DATABASE_HOST_OVERRIDE: localhost
+          DJANGO_SETTINGS_MODULE: signals.settings
+          SITE_DOMAIN: localhost:8000
+          FRONTEND_URL: http://dummy_link
+          ALLOWED_HOSTS: '*'
+          CORS_ALLOW_ALL_ORIGINS: True
+          TEST_JWKS: True
+          SIGNALS_AUTH_ALWAYS_OK: True
+          TEST_LOGIN: signals.admin@example.com
+          SECURE_SSL_REDIRECT: False
+          SESSION_COOKIE_SECURE: False
+          CSRF_COOKIE_SECURE: False
+          CELERY_TASK_ALWAYS_EAGER: True
+          EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+          SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED: True
+          REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED: True
+          SIGNAL_HISTORY_LOG_ENABLED: True
         run: |
           cd api/app
           tox

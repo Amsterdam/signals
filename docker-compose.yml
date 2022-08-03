@@ -57,8 +57,11 @@ services:
       - elasticsearch
       - mailhog
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DATABASE_NAME=signals
+      - DATABASE_USER=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
       - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
       - EMAIL_HOST=mailhog
       - EMAIL_PORT=1025
@@ -81,8 +84,11 @@ services:
       - database
       - rabbit
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DATABASE_NAME=signals
+      - DATABASE_USER=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings
       - SWIFT_ENABLED=False
@@ -103,10 +109,27 @@ services:
       - dex
       - celery
     environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
+      - DEBUG=False
+      - LOGGING_LEVEL=INFO
+      - SITE_DOMAIN=localhost:8000
+      - SECRET_KEY=insecure
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOW_ALL_ORIGINS=True
+      - DATABASE_NAME=signals
+      - DATABASE_USER=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
       - DJANGO_SETTINGS_MODULE=signals.settings
       - FRONTEND_URL=http://localhost:3001
+      - JWKS_URL=http://dex:5556/keys
+      - USER_ID_FIELDS=email
+      - SIGNALS_AUTH_ALWAYS_OK=True
+      - TEST_LOGIN=signals.admin@example.com
+      - SECURE_SSL_REDIRECT=False
+      - SESSION_COOKIE_SECURE=False
+      - CSRF_COOKIE_SECURE=False
+      - CELERY_TASK_ALWAYS_EAGER=True
       - SWIFT_ENABLED=False
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
@@ -115,6 +138,9 @@ services:
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
+      - SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED=True
+      - REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED=True
+      - SIGNAL_HISTORY_LOG_ENABLED=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

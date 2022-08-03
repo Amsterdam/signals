@@ -22,11 +22,31 @@ services:
     links:
     - database
     environment:
-      DATABASE_NAME: signals
-      DATABASE_USER: signals
-      DATABASE_PASSWORD: insecure
-      ENVIRONMENT: test
-      DJANGO_SETTINGS_MODULE: signals.settings
+      - LOGGING_LEVEL=INFO
+      - SITE_DOMAIN=localhost:8000
+      - SECRET_KEY=insecure
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOWED_ORIGINS=http://127.0.0.1,https://127.0.0.1,http://0.0.0.0,https://0.0.0.0
+      - CORS_ALLOW_ALL_ORIGINS=True
+      - DATABASE_NAME=signals
+      - DATABASE_USER=signals
+      - DATABASE_PASSWORD=insecure
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - DJANGO_SETTINGS_MODULE=signals.settings
+      - FRONTEND_URL=http://dummy_link
+      - TEST_JWKS=True
+      - USER_ID_FIELDS=email
+      - SIGNALS_AUTH_ALWAYS_OK=True
+      - TEST_LOGIN=signals.admin@example.com
+      - SECURE_SSL_REDIRECT=False
+      - SESSION_COOKIE_SECURE=False
+      - CSRF_COOKIE_SECURE=False
+      - CELERY_TASK_ALWAYS_EAGER=True
+      - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
+      - SYSTEM_MAIL_FEEDBACK_RECEIVED_ENABLED=True
+      - REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED=True
+      - SIGNAL_HISTORY_LOG_ENABLED=True
     volumes:
     - ./run_tests.sh:/app/run_tests.sh
     user: root
