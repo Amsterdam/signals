@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'storages',
+    'mozilla_django_oidc',
 ] + SIGNAL_APPS
 
 MIDDLEWARE = [
@@ -102,6 +103,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'signals.oidc.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID', 'signals')
+OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET', 'somethingsecret')
+OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv('OIDC_OP_AUTHORIZATION_ENDPOINT', 'http://localhost:5556/auth')
+OIDC_OP_TOKEN_ENDPOINT = os.getenv('OIDC_OP_TOKEN_ENDPOINT', 'http://localhost:5556/token')
+OIDC_OP_USER_ENDPOINT = os.getenv('OIDC_OP_USER_ENDPOINT', 'http://localhost:5556/userinfo')
+OIDC_OP_JWKS_ENDPOINT = os.getenv('OIDC_OP_JWKS_ENDPOINT', 'http://localhost:5556/keys')
+OIDC_RP_SIGN_ALGO = 'RS256'
+OIDC_CREATE_USER = False
+
+LOGIN_REDIRECT_URL = '/signals/admin/'
+LOGIN_REDIRECT_URL_FAILURE = '/signals/admin/'
+LOGOUT_REDIRECT_URL = '/signals/admin/'
 
 ROOT_URLCONF = 'signals.urls'
 WSGI_APPLICATION = 'signals.wsgi.application'

@@ -17,6 +17,7 @@ urlpatterns = [
 
     # The Django admin
     path('signals/admin/', admin.site.urls),
+    path('signals/oidc/', include('mozilla_django_oidc.urls')),
     url(r'^signals/markdownx/', include('markdownx.urls')),
 
     # SOAP stand-in endpoints

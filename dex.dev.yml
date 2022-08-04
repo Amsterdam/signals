@@ -11,9 +11,11 @@ web:
 staticClients:
 - id: signals
   redirectURIs:
-    - 'http://localhost:3001/manage/incidents'
-    - 'http://127.0.0.1:3001/manage/incidents'
-  name: 'Signals'
+    - http://localhost:3001/manage/incidents
+    - http://127.0.0.1:3001/manage/incidents
+    - http://localhost:8001/signals/oidc/callback/
+    - http://127.0.0.1:8001/signals/oidc/callback/
+  name: Signals
   secret: ZXhhbXBsZS1hcHAtc2VjcmV0
 
 enablePasswordDB: true
@@ -26,5 +28,5 @@ staticPasswords:
   name: "Signals admin"
 
 oauth2:
-  responseTypes: [ "token", "id_token" ]
+  responseTypes: [ "code", "token", "id_token" ]
   skipApprovalScreen: true

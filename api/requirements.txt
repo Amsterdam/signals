@@ -81,6 +81,7 @@ Markdown==3.4.1
 MarkupSafe==2.1.1
 mccabe==0.7.0
 mistune==2.0.4
+mozilla-django-oidc==2.0.0
 msal==1.20.0
 msal-extensions==1.0.0
 msgpack==1.0.4
