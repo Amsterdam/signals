@@ -49,7 +49,7 @@ class TestDescriptionReceived(TestCase):
             allows_contact=True,
         )
         response = _get_description_of_receive_feedback(feedback.token)
-        validate_text = "Ja, de melder is tevreden\nWaarom: my,test,list\nToelichting: extra_text\n" \
+        validate_text = "Ja, de melder is tevreden\nWaarom: my,\ntest,\nlist\nToelichting: extra_text\n" \
                         "Toestemming contact opnemen: Ja"
         self.assertEqual(response, validate_text)
 
