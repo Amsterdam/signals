@@ -29,7 +29,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         now = timezone.now()
         for x in range(5):
-            with(freeze_time(now-timedelta(days=x))):
+            with (freeze_time(now-timedelta(days=x))):
                 SignalFactoryValidLocation.create(category_assignment__category=child_category)
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
@@ -53,7 +53,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         now = timezone.now()
         for x in range(5):
-            with(freeze_time(now-timedelta(days=x))):
+            with (freeze_time(now-timedelta(days=x))):
                 # Should appear in the response
                 SignalFactory.create(location__geometrie=Point(STADHUIS['lon'], STADHUIS['lat']),
                                      location__buurt_code=STADHUIS['buurt_code'],
@@ -152,7 +152,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         now = timezone.now()
         for x in range(5):
-            with(freeze_time(now-timedelta(days=x))):
+            with (freeze_time(now-timedelta(days=x))):
                 # Should appear in the response
                 SignalFactory.create(location__geometrie=Point(STADHUIS['lon'], STADHUIS['lat']),
                                      location__buurt_code=STADHUIS['buurt_code'],

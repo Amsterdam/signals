@@ -16,13 +16,13 @@ from signals.apps.signals.models import Signal, Status
 class TestFailStuckSendingSignalsTask(TestCase):
     def setUp(self):
         now = timezone.now()
-        with(freeze_time(now)):
+        with (freeze_time(now)):
             SignalFactory.create_batch(
                 5, status__state=workflow.TE_VERZENDEN, status__target_api=Status.TARGET_API_SIGMAX
             )
 
         past = now - timedelta(hours=48)
-        with(freeze_time(past)):
+        with (freeze_time(past)):
             SignalFactory.create_batch(
                 5, status__state=workflow.TE_VERZENDEN, status__target_api=Status.TARGET_API_SIGMAX
             )
