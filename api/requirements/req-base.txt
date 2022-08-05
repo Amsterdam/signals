@@ -1,4 +1,5 @@
-# Bleeding edge Django
+# LTS Django 3.2.x
+Django==3.2.15
 
 # Django packages
 django-celery-beat
@@ -37,8 +38,10 @@ Celery
 raven
 
 # PDF
+weasyprint==52.5
+cairocffi
+CairoSVG
 lxml
-WeasyPrint
 
 # Images
 Pillow
@@ -63,3 +66,10 @@ python-magic
 # Graph handling
 networkx
 matplotlib
+pydot
+
+# Markdown
+django-markdownx
+Markdown
+
+uWSGI
