@@ -8,8 +8,8 @@ django-cors-headers
 django-extensions
 django-filter
 django-rest-swagger
-django-storage-swift
 django-storages
+django-storages[azure]
 
 # Database
 psycopg2-binary

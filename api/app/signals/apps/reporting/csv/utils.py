@@ -11,7 +11,7 @@ from typing import TextIO
 from django.db import connection
 from django.db.models import Case, CharField, QuerySet, Value, When
 from django.utils import timezone
-from swift.storage import SwiftStorage
+from storages.backends.azure_storage import AzureStorage
 
 from signals.apps.reporting.utils import _get_storage_backend
 
@@ -60,7 +60,7 @@ def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
 def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
     """
     Writes the CSV files to the configured storage backend
-    This could either be the SwiftStorage or a local FileSystemStorage
+    This could either be the AzureStorage or a local FileSystemStorage
 
     :param csv_files:
     :param using:
@@ -72,7 +72,7 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             file_path = None
-            if isinstance(storage, SwiftStorage):
+            if isinstance(storage, AzureStorage):
                 file_path = f'{path}{file_name}' if path else file_name
                 storage.save(name=file_path, content=opened_csv_file)
             else:

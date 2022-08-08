@@ -3,7 +3,7 @@
 from unittest import mock
 
 from django.core.exceptions import ValidationError
-from django.test import testcases
+from django.test import testcases, override_settings
 
 from signals.apps.reporting.csv.horeca import (
     _create_extra_properties_headers,
@@ -168,7 +168,7 @@ class TestHoreca(testcases.TestCase):
 
         self.assertGreater(len(csv_files), 0)
 
-    @mock.patch.dict('os.environ', {'SWIFT_ENABLED': 'true'}, clear=True)
+    @override_settings(AZURE_ENABLED=True)
     @mock.patch('signals.apps.reporting.csv.horeca.HorecaCSVExport', autospec=True)
     def test_create_csv_files_save(self, patched_model):
         # Usage of Django storage means the difference between local and remote

@@ -4,6 +4,11 @@ appdirs==1.4.4
 Arpeggio==1.10.1
 asgiref==3.3.4
 attrs==20.3.0
+azure-common==1.1.28
+azure-core==1.24.2
+azure-identity==1.10.0
+azure-storage-blob==2.1.0
+azure-storage-common==2.1.0
 billiard==3.6.4.0
 cairocffi==1.2.0
 CairoSVG==2.5.2
@@ -33,8 +38,8 @@ django-cors-headers==3.11.0
 django-extensions==3.1.2
 django-filter==2.4.0
 django-rest-swagger==2.2.0
-django-storage-swift==1.2.19
 django-storages==1.11.1
+django-storages-azure==1.6.8
 django-timezone-field==4.1.2
 djangorestframework==3.12.4
 djangorestframework-csv==2.1.0
@@ -101,7 +106,6 @@ python-crontab==2.5.1
 python-dateutil==2.8.1
 python-keystoneclient==4.2.0
 python-magic==0.4.22
-python-swiftclient==3.11.1
 pytz==2022.1
 PyYAML==5.4.1
 raven==6.10.0

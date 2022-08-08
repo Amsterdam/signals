@@ -135,37 +135,23 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(list_of_files[0].endswith('20200910_150000UTC.zip'))
 
     @override_settings(
-        SWIFT={
+        AZURE_ENABLED=True,
+        AZURE_CONTAINERS={
             'datawarehouse': {
-                'api_auth_url': 'dwh_auth_url',
-                'api_username': 'dwh_username',
-                'api_key': 'dwh_password',
-                'tenant_name': 'dwh_tenant_name',
-                'tenant_id': 'dwh_tenant_id',
-                'region_name': 'dwh_region_name',
-                'container_name': 'dwh_container_name',
-                'auto_overwrite': True
+                'azure_container': 'dwh_container_name',
             }
         }
     )
-    @mock.patch.dict(os.environ, {'SWIFT_ENABLED': 'true'})
-    @mock.patch('signals.apps.reporting.utils.SwiftStorage', autospec=True)
-    def test_get_storage_backend(self, mocked_swift_storage):
-        mocked_swift_storage_instance = mock.Mock()
-        mocked_swift_storage.return_value = mocked_swift_storage_instance
+    @mock.patch('signals.apps.reporting.utils.AzureStorage', autospec=True)
+    def test_get_storage_backend(self, mocked_azure_storage):
+        mocked_azure_storage_instance = mock.Mock()
+        mocked_azure_storage.return_value = mocked_azure_storage_instance
 
         result = _get_storage_backend(using='datawarehouse')
 
-        self.assertEqual(result, mocked_swift_storage_instance)
-        mocked_swift_storage.assert_called_once_with(
-            api_auth_url='dwh_auth_url',
-            api_username='dwh_username',
-            api_key='dwh_password',
-            tenant_name='dwh_tenant_name',
-            tenant_id='dwh_tenant_id',
-            region_name='dwh_region_name',
-            container_name='dwh_container_name',
-            auto_overwrite=True
+        self.assertEqual(result, mocked_azure_storage_instance)
+        mocked_azure_storage.assert_called_once_with(
+            azure_container='dwh_container_name',
         )
 
     def test_create_signals_csv(self):

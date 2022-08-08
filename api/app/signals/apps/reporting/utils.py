@@ -1,31 +1,31 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Gemeente Amsterdam
 import os
 from typing import Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
-from swift.storage import SwiftStorage
+from storages.backends.azure_storage import AzureStorage
 
 
-def _get_storage_backend(using: str) -> Union[FileSystemStorage, SwiftStorage]:
+def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage]:
     """
-    Returns a SwiftStorage class OR a FileSystemStorage
+    Returns a AzureStorage class OR a FileSystemStorage
 
-    When providing a "using" value the code will look for the settings in the SWIFT dict where "using" must be a
+    When providing a "using" value the code will look for the settings in the Azure dict where "using" must be a
     existing key containing a dict of settings.
 
-    To disable Swift storage the SWIFT_ENABLED environment variable can be set to anything but
-    True, 1, '1', 'True', 'true'. When the Swift storage is disabled a FileSystemStorage will be returned.
+    To disable Azure storage the AZURE_ENABLED environment variable can be set to anything but
+    True, 1, '1', 'True', 'true'. When the Azure storage is disabled a FileSystemStorage will be returned.
 
     :param using:
-    :returns: FileSystemStorage or SwiftStorage instance
+    :returns: FileSystemStorage or AzureStorage instance
     """
-    if os.getenv('SWIFT_ENABLED', False) not in [True, 1, '1', 'True', 'true']:
+    if not settings.AZURE_ENABLED:
         return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
 
-    if not hasattr(settings, 'SWIFT'):
-        raise ImproperlyConfigured('SWIFT settings must be set!')
+    if not hasattr(settings, 'AZURE_CONTAINERS'):
+        raise ImproperlyConfigured('AZURE_CONTAINERS settings must be set!')
 
-    return SwiftStorage(**settings.SWIFT.get(using, {}))
+    return AzureStorage(**settings.AZURE_CONTAINERS.get(using, {}))

@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
+from django.conf import settings
 
 from signals.apps.reporting.csv.datawarehouse import save_csv_file_datawarehouse
 
@@ -29,17 +30,16 @@ class Command(BaseCommand):
 
         very_verbose = kwargs['verbosity'] >= 2
 
-        swift_enabled = os.getenv('SWIFT_ENABLED', False) in [True, 1, '1', 'True', 'true']
-        if swift_enabled:
-            self.stdout.write('* SwiftStorage enabled, file will be sent to the ObjectStore')
+        if settings.AZURE_ENABLED:
+            self.stdout.write('* AzureStorage enabled, file will be sent to the ObjectStore')
         else:
             self.stdout.write('* FileSystemStorage enabled, file will be sent to the local storage')
 
-        if swift_enabled and very_verbose:
-            swift_parameters = settings.SWIFT.get('datawarehouse')
-            self.stdout.write('* DWH SwiftStorage parameters:')
+        if settings.AZURE_ENABLED and very_verbose:
+            azure_parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
+            self.stdout.write('* DWH AzureStorage parameters:')
 
-            for key, value in swift_parameters.items():
+            for key, value in azure_parameters.items():
                 if key.lower() in ['api_key', ]:
                     continue
 
