@@ -366,9 +366,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         signal_count = Signal.objects.count()
 
         create_initial_data = self.create_initial_data
-        del(create_initial_data['location']['stadsdeel'])
-        del(create_initial_data['location']['address'])
-        del(create_initial_data['location']['buurt_code'])
+        del (create_initial_data['location']['stadsdeel'])
+        del (create_initial_data['location']['address'])
+        del (create_initial_data['location']['buurt_code'])
 
         geometry = MultiPolygon([Polygon.from_bbox([4.877157, 52.357204, 4.929686, 52.385239])], srid=4326)
         AreaFactory.create(geometry=geometry, name='Centrum', code='centrum', _type__code='sia-stadsdeel')
@@ -406,9 +406,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         signal_count = Signal.objects.count()
         create_initial_data = self.create_initial_data
         create_initial_data['location']['geometrie']['coordinates'] = [lon, lat]
-        del(create_initial_data['location']['stadsdeel'])
-        del(create_initial_data['location']['address'])
-        del(create_initial_data['location']['buurt_code'])
+        del (create_initial_data['location']['stadsdeel'])
+        del (create_initial_data['location']['address'])
+        del (create_initial_data['location']['buurt_code'])
 
         response = self.client.post(self.list_endpoint, create_initial_data, format='json')
 
@@ -1006,7 +1006,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         with open(fixture_file, 'r') as f:
             data = json.load(f)
 
-        del(data['category']['sub_category'])
+        del (data['category']['sub_category'])
         data['category']['category_url'] = self.link_subcategory
 
         response = self.client.patch(detail_endpoint, data, format='json')
@@ -1039,7 +1039,7 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_category_assignment.json')
         with open(fixture_file, 'r') as f:
             data = json.load(f)
-        del(data['category']['sub_category'])
+        del (data['category']['sub_category'])
         data['category']['category_url'] = self.link_subcategory
 
         Signal.actions.update_category_assignment({'category': self.subcategory}, self.signal_no_image)

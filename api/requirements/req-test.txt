@@ -23,3 +23,6 @@ xmlunittest
 
 # JSONSchema
 jsonschema
+
+# requests
+requests_mock
