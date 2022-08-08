@@ -184,7 +184,7 @@
         {% for data_uri, att_filename, user_email, created_at in attachment_images %}
             {% if data_uri %}
                 <p>
-                    <img src="{{ data_uri|safe }}" style="width:680px" alt="">
+                    <img src="{{ data_uri|safe }}" style="object-fit: contain; width:680px; max-height:500px;" alt=""><br>
                     {{ att_filename}} op {{ created_at | date:"d-m-Y" }} {{ created_at | date:"H:i" }} door
                     {% if user_email %}{{ user_email }}{% else %}melder{% endif %}
                 </p>
