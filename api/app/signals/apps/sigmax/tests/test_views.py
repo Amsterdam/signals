@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 Test reception of StUF SOAP requests.
 """
 
 from unittest import mock
 
+from django.contrib.auth.models import Permission
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from lxml import etree
+from rest_framework.status import HTTP_200_OK
 
 from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 import (
     ACTUALISEER_ZAAK_STATUS
@@ -16,22 +18,31 @@ from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 impor
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactoryValidLocation
 from signals.apps.signals.models import History, Signal
-from signals.test.utils import SignalsBaseApiTestCase
+from signals.apps.users.factories import UserFactory
+from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 SOAP_ENDPOINT = '/signals/sigmax/soap'
 
 
-class TestSoapEndpoint(SignalsBaseApiTestCase):
+class TestSoapEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
+    def setUp(self):
+        sigmax_user = UserFactory.create(first_name='sigmax', last_name='sigmax')
+        sigmax_permission = Permission.objects.get(codename="perform_sigmax_updates")
+        sigmax_user.user_permissions.add(sigmax_permission)
+        sigmax_user.save()
+
+        self.sigmax_user = sigmax_user
+
     def test_routing(self):
         """Check that routing for Sigmax is active and correct"""
         response = self.client.get(SOAP_ENDPOINT)
         self.assertNotEqual(response.status_code, 404)
 
-    def test_http_verbs(self):
+    @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
+    def test_http_verbs(self, patched):
         """Check that the SOAP endpoint only accepts POST and OPTIONS"""
+        # Test following methods are not allowed:
         not_allowed = ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']
-        allowed = ['POST', 'OPTIONS']
-
         self.client.force_authenticate(user=self.superuser)
 
         for verb in not_allowed:
@@ -43,18 +54,41 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
                 f'{SOAP_ENDPOINT} must not accept HTTP method {verb}'
             )
 
-        for verb in allowed:
-            method = getattr(self.client, verb.lower())
-            response = method(SOAP_ENDPOINT)
-            self.assertNotEqual(
-                response.status_code,
-                405,
-                f'{SOAP_ENDPOINT} must accept HTTP method {verb}'
-            )
+        # Test allowed methods:
+        response = self.client.options(SOAP_ENDPOINT)
+        self.assertEqual(response.status_code, 200)  # OPTIONS is exempt from authorization checks
+
+        patched.return_value = HttpResponse(status=HTTP_200_OK)
+        self.client.force_authenticate(user=self.sigmax_user)
+        response = self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS)
+        self.assertEqual(response.status_code, 200)
+
+    @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
+    def test_authentication_and_authorization(self, patched):
+        # Not authenticated
+        response = self.client.post(SOAP_ENDPOINT)
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.options(SOAP_ENDPOINT)
+        self.assertEqual(response.status_code, 401)
+
+        # Authenticated, not authorized
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        response = self.client.post(SOAP_ENDPOINT)
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.options(SOAP_ENDPOINT)
+        self.assertEqual(response.status_code, 200)
+
+        # Authenticated and authorized
+        patched.return_value = HttpResponse(status=HTTP_200_OK)
+        self.client.force_authenticate(user=self.sigmax_user)
+        response = self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS)
+        self.assertEqual(response.status_code, 200)
 
     def test_soap_action_missing(self):
         """SOAP endpoint must reject messages with missing SOAPaction header"""
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         response = self.client.post(SOAP_ENDPOINT)
         self.assertEqual(response.status_code, 500)
@@ -68,7 +102,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         handle_known.return_value = HttpResponse('Required by view function')
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # check that actualiseerZaakstatus_lk01 is routed correctly
         self.client.post(SOAP_ENDPOINT, HTTP_SOAPACTION=ACTUALISEER_ZAAK_STATUS,
@@ -89,7 +123,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
     def test_wrong_soapaction_results_in_fo03(self):
         """Check that we send a StUF Fo03 when we receive an unsupported SOAPAction"""
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # Check that wrong action is replied to with XML, StUF Fo03, status 500, utf-8 encoding.
         wrong_action = 'http://example.com/unsupported'
@@ -119,7 +153,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         })
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -142,7 +176,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         })
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -177,7 +211,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -224,7 +258,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # call our SOAP endpoint
         response = self.client.post(
@@ -270,7 +304,7 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         incoming_msg = render_to_string('sigmax/actualiseerZaakstatus_Lk01.xml', incoming_context)
 
         # authenticate
-        self.client.force_authenticate(user=self.superuser)
+        self.client.force_authenticate(user=self.sigmax_user)
 
         # call our SOAP endpoint
         response = self.client.post(

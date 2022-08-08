@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+
 import uuid
 
 from django.conf import settings
@@ -69,6 +70,9 @@ class Signal(CreatedUpdatedModel):
             ('sia_signal_change_category', 'Wijzigen van categorie van een melding'),  # SIG-2192
             ('sia_signal_export', 'Meldingen exporteren'),  # SIG-2192
             ('sia_signal_report', 'Rapportage beheren'),  # SIG-2192
+            # Following permission has no sia prefix, so cannot be set through
+            # backoffice/frontend (product-steering/241):
+            ('perform_sigmax_updates', 'Updates door CityControl uitvoeren'),
         )
         ordering = ('created_at',)
         indexes = [

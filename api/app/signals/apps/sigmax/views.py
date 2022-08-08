@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 This module contains a minimal implementation of the StUF standard as it
 applies to communication between the SIA system and Sigmax CityControl.
@@ -7,6 +7,7 @@ applies to communication between the SIA system and Sigmax CityControl.
 import logging
 
 from django.shortcuts import render
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 
 from signals.apps.sigmax.stuf_protocol.incoming import (
@@ -29,6 +30,9 @@ class CityControlReceiver(APIView):
         """
         Handle SOAP requests, dispatch on SOAPAction header.
         """
+        if not request.user.has_perm('signals.perform_sigmax_updates'):
+            raise PermissionDenied(detail='Not authorized to perform updates on behalf of CityControl!')
+
         # https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383528
         if 'HTTP_SOAPACTION' not in request.META:
             error_msg = 'SOAPAction header not set'
