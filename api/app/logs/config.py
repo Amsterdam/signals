@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
+import os
 BASE_LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -23,10 +24,6 @@ BASE_LOGGING = {
         },
     },
     'handlers': {
-        'sentry': {
-            'level': 'WARNING',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
         'colorize': {
             'class': 'logs.handlers.ColoredHandler',
             'formatter': 'elaborate'
