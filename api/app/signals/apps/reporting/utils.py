@@ -24,7 +24,7 @@ def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage]:
     """
     if not settings.AZURE_ENABLED:
         return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
-
+    print(settings.AZURE_CONTAINERS)
     if not hasattr(settings, 'AZURE_CONTAINERS'):
         raise ImproperlyConfigured('AZURE_CONTAINERS settings must be set!')
 

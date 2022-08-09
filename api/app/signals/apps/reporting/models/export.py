@@ -4,7 +4,7 @@ from django.contrib.gis.db import models
 
 from signals.apps.reporting.utils import _get_storage_backend
 
-storage = _get_storage_backend(using='horeca')
+# storage = _get_storage_backend(using='horeca')
 
 
 class HorecaCSVExport(models.Model):
@@ -16,4 +16,4 @@ class HorecaCSVExport(models.Model):
 
     isoweek = models.IntegerField()
     isoyear = models.IntegerField()
-    uploaded_file = models.FileField(upload_to='exports/%Y', storage=storage)
+    uploaded_file = models.FileField(upload_to='exports/%Y', storage=None)

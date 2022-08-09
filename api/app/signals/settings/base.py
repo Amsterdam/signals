@@ -161,24 +161,38 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 # Object store / Azure
-AZURE_ENABLED = os.getenv('AZURE_ENABLED', False) in TRUE_VALUES
+# AZURE_ENABLED = os.getenv('AZURE_ENABLED', False) in TRUE_VALUES
+# if AZURE_ENABLED or True:
+#     # Azure Settings
+#     AZURE_CONNECTION_STRING = os.getenv('AZURE_CONNECTION_STRING')
+#     AZURE_ACCOUNT_KEY= 'dUTSO74wt8HQH6x7TAAmhqIdEwXiTLYKjkQunMroc3nDC/7xYowja4lrTXe1QQLyG6MoOwA8F/57+AStyP1mlg=='
+#     AZURE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=tempteststorageone;AccountKey=dUTSO74wt8HQH6x7TAAmhqIdEwXiTLYKjkQunMroc3nDC/7xYowja4lrTXe1QQLyG6MoOwA8F/57+AStyP1mlg==;EndpointSuffix=core.windows.net'
+#     AZURE_CONTAINERS = {
+#         'main': {
+#             'azure_container': os.getenv('AZURE_CONTAINER_NAME')
+#         },
+#         'datawarehouse': {
+#             'azure_container': os.getenv('AZURE_DWH_CONTAINER_NAME')
+#         }
+#     }
+#     # This is the default container used by django to upload items
+#     AZURE_CONTAINER = AZURE_CONTAINERS['main']['azure_container']
+#     AZURE_CONTAINER = 'test1'
 
-if AZURE_ENABLED:
-    # Azure Settings
-    AZURE_CONNECTION_STRING = os.getenv('AZURE_CONNECTION_STRING')
-    AZURE_CONTAINERS = {
-        'main': {
-            'azure_container': os.getenv('AZURE_CONTAINER_NAME')
-        },
-        'datawarehouse': {
-            'azure_container': os.getenv('AZURE_DWH_CONTAINER_NAME')
-        }
-    }
-    # This is the default container used by django to upload items
-    AZURE_CONTAINER = AZURE_CONTAINERS['main']['container']
 
-    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-    STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+
+
+
+# AZURE_ACCOUNT_NAME = 'tempteststorageone'
+# AZURE_ACCOUNT_KEY = 'dUTSO74wt8HQH6x7TAAmhqIdEwXiTLYKjkQunMroc3nDC/7xYowja4lrTXe1QQLyG6MoOwA8F/57+AStyP1mlg=='
+AZURE_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=tempteststorageone;AccountKey=dUTSO74wt8HQH6x7TAAmhqIdEwXiTLYKjkQunMroc3nDC/7xYowja4lrTXe1QQLyG6MoOwA8F/57+AStyP1mlg==;EndpointSuffix=core.windows.net'
+AZURE_CONTAINER = 'test1'
+
+
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
 # Object store - Datawarehouse (DWH)
 DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
