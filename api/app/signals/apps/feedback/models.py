@@ -82,7 +82,7 @@ def _get_description_of_receive_feedback(feedback_token):
     desc = 'Ja, de melder is tevreden\n' if feedback.is_satisfied else \
         'Nee, de melder is ontevreden\n'
 
-    text = ",". join(feedback.text_list) if feedback.text_list else feedback.text or "Geen Feedback"
+    text = ",\n". join(feedback.text_list) if feedback.text_list else feedback.text or "Geen Feedback"
     desc += 'Waarom: {}'.format(text)
 
     if feedback.text_extra:

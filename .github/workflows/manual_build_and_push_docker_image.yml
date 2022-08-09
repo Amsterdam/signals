@@ -1,0 +1,33 @@
+name: Manually build a Docker image for a given tag and push to Docker hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build and push an image for
+        required: true
+
+jobs:
+  build_and_push:
+    name: Build a new Docker image for the given tag and push it to Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
+
+      - name: Login to Docker
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Tag to build and push an image for
+        run: echo "${{ github.event.inputs.tag }}"
+
+      - name: Build the Docker image
+        run: |
+          cd api/
+          docker build -t signalen/backend:${{ github.event.inputs.tag }} .
+
+
+      - name: Push the tagged image to Docker
+        run: docker push signalen/backend:${{ github.event.inputs.tag }}
