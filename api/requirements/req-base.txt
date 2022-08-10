@@ -65,8 +65,6 @@ python-magic
 
 # Graph handling
 networkx
-matplotlib
-pydot
 
 # Markdown
 django-markdownx

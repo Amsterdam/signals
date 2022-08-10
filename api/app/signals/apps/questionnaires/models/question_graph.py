@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.contrib.gis.db import models
-from django.utils.safestring import mark_safe
 
 from signals.apps.questionnaires.models.edge import Edge
 from signals.apps.questionnaires.models.trigger import Trigger
@@ -30,6 +29,22 @@ class QuestionGraph(models.Model):
 
         return model.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
+    def get_nodes(self):
+        nodes = {}
+        seen = set()
+
+        for edge in Edge.objects.filter(graph=self):
+            if edge.question_id not in seen:
+                seen.add(edge.question_id)
+                nodes.update({edge.question.id: edge.question})
+            if edge.next_question_id not in seen:
+                seen.add(edge.next_question_id)
+                nodes.update({edge.next_question.id: edge.next_question})
+
+        if self.first_question_id not in seen:
+            nodes.update({self.first_question.id: self.first_question})
+        return nodes
+
     def get_edges(self, question):
         return Edge.objects.filter(graph=self, question=question)
 
@@ -47,27 +62,3 @@ class QuestionGraph(models.Model):
 
     def set_trigger_order(self, question, ids):
         return self._set_model_order(question, Trigger, ids)
-
-    def draw(self, location=None):
-        from signals.apps.questionnaires.models.utils import draw_graph
-        return draw_graph(self, location=location)
-
-    def draw_base64(self):
-        """
-        Image as base64 encoded string
-        """
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            with open(self.draw(location=tmp_dir), "rb") as img_file:
-                import base64
-                return base64.b64encode(img_file.read()).decode("utf-8")
-
-    @mark_safe
-    def image_tag(self):
-        """
-        This function will return an image tag with a bas64 encoded image of the Graph.
-        Used to show a visual representation of the Graph in the Django admin.
-        """
-        return f'<img src="data:image/png;base64, {self.draw_base64()}" />'
-    image_tag.short_description = 'Visual representation'
-    image_tag.allow_tags = True

@@ -71,7 +71,6 @@ kombu==5.2.4
 lxml==4.9.1
 Markdown==3.4.1
 MarkupSafe==2.1.1
-matplotlib==3.5.2
 mccabe==0.7.0
 mistune==2.0.4
 msgpack==1.0.4
@@ -95,7 +94,6 @@ psycopg2-binary==2.9.3
 py==1.11.0
 pycodestyle==2.9.1
 pycparser==2.21
-pydot==1.4.2
 pyflakes==2.5.0
 pyparsing==3.0.9
 pyphen==0.12.0

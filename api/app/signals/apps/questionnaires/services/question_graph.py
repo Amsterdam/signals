@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 """
 QuestionGraph service contains functionality that deals with QuestionGraph
 structure (reachable questions and the like).
@@ -45,12 +45,16 @@ class QuestionGraphService:
         # To allow for matching rule and default rule (i.e. a double edge).
         nx_graph = networkx.MultiDiGraph()
 
+        for _, question in q_graph.get_nodes().items():
+            nx_graph.add_node(question.id, label=question.label)
+
         for edge in edges:
-            # Needed for rule matching and dertermining next questions (edge
+            # Needed for rule matching and determining next questions (edge
             # ordering is important if several rules match and we want
             # consistent results):
             edge_kwargs = {
                 'choice_payload': None if edge.choice is None else edge.choice.payload,
+                'choice_payload_display': '' if edge.choice is None else edge.choice.display,
                 'edge_id': edge.id,
                 'order': edge.order,
             }
@@ -67,8 +71,6 @@ class QuestionGraphService:
                 msg = f'Question graph {q_graph.name} contains too many questions.'
                 raise Exception(msg)
 
-        if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
-            nx_graph.add_node(q_graph.first_question.id)
         return nx_graph
 
     @staticmethod
