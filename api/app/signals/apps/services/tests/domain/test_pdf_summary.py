@@ -158,6 +158,29 @@ class TestPDFSummaryService(TestCase):
         self.assertIn('foo@bar.com', html)
         self.assertIn('0612345678', html)
 
+    @override_settings(FEATURE_FLAGS={'SHOW_REPORTER_CONTACT_DETAILS_IN_PDF': False})
+    def test_no_contact_details_when_feature_flag_is_disabled(self):
+        """
+        When the feature flag SHOW_REPORTER_CONTACT_DETAILS_IN_PDF is disabled
+        the PDF export should not contain any personal details
+        """
+        # No "signals.sia_can_view_contact_details" and no CityControl/Sigmax
+        # override mean no contact details.
+        user = UserFactory.create()
+
+        # Check user has "signals.sia_can_view_contact_details"
+        sia_can_view_contact_details = Permission.objects.get(codename='sia_can_view_contact_details')
+        user.user_permissions.add(sia_can_view_contact_details)
+        user = User.objects.get(pk=user.id)
+
+        self.assertTrue(user.has_perm('signals.sia_can_view_contact_details'))
+
+        # Check if the HTML still does not contain the contact details
+        html = PDFSummaryService._get_html(self.signal, None, True)
+        self.assertNotIn('foo@bar.com', html)
+        self.assertNotIn('0612345678', html)
+
+
     def test_location_has_stadsdeel(self):
         # test stadsdeel present
         location = ValidLocationFactory.create(_signal=self.signal)

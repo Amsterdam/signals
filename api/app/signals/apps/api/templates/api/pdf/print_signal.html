@@ -161,22 +161,24 @@
 
     {% include 'api/pdf/extra_properties.html' with signal=signal %}
 
-    <div class="divider">&nbsp;</div>
-    <h2>Melder</h2>
-    <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
-        <tr>
-            <td style="width: 200px;">E-mail</td>
-            <td>: {{ reporter_email|default:"Onbekend" }}</td>
-        </tr>
-        <tr>
-            <td>Telefoonnummer</td>
-            <td>: {{ reporter_phone|default:"Onbekend" }}</td>
-        </tr>
-        <tr>
-            <td>Verklaring contactgegevens delen</td>
-            <td>: {{ signal.reporter.sharing_allowed|yesno:"Toegestaan,Niet toegestaan" }}</td>
-        </tr>
-    </table>
+    {% if FEATURE_FLAGS.SHOW_REPORTER_CONTACT_DETAILS_IN_PDF %}
+        <div class="divider">&nbsp;</div>
+        <h2>Melder</h2>
+        <table class="results" style="page-break-after: avoid; page-break-before: avoid; -pdf-page-break: avoid; margin: 30px 0 30px 0;">
+            <tr>
+                <td style="width: 200px;">E-mail</td>
+                <td>: {{ reporter_email|default:"Onbekend" }}</td>
+            </tr>
+            <tr>
+                <td>Telefoonnummer</td>
+                <td>: {{ reporter_phone|default:"Onbekend" }}</td>
+            </tr>
+            <tr>
+                <td>Verklaring contactgegevens delen</td>
+                <td>: {{ signal.reporter.sharing_allowed|yesno:"Toegestaan,Niet toegestaan" }}</td>
+            </tr>
+        </table>
+    {% endif %}
 
     <div class="divider">&nbsp;</div>
     <h2>Foto's</h2>

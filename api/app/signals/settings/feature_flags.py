@@ -34,4 +34,7 @@ FEATURE_FLAGS = {
 
     # Enable/disable the deletion of signals in a certain state for a certain amount of time
     'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
+
+    # Show/hide reporter contact details in PDF export
+    'SHOW_REPORTER_CONTACT_DETAILS_IN_PDF': os.getenv('SHOW_REPORTER_CONTACT_DETAILS_IN_PDF', True) in TRUE_VALUES,
 }
