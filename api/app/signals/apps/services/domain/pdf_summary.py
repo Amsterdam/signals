@@ -161,6 +161,7 @@ class PDFSummaryService:
             'now': timezone.now(),
             'reporter_email': reporter_email,
             'reporter_phone': reporter_phone,
+            'FEATURE_FLAGS': settings.FEATURE_FLAGS,
         }
 
     @staticmethod
