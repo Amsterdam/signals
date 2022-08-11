@@ -7,4 +7,5 @@ def settings_in_context(request):
     return {
         'FEATURE_FLAGS': settings.FEATURE_FLAGS,
         'ORGANIZATION_NAME': settings.ORGANIZATION_NAME,
+        'OIDC_RP_CLIENT_ID': settings.OIDC_RP_CLIENT_ID,
     }

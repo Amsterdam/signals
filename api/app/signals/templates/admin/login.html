@@ -77,9 +77,11 @@
 </div>
 </form>
 
+{% if OIDC_RP_CLIENT_ID %}
 <div class="sso">
     <a href="{% url 'oidc_authentication_init' %}?next={{next}}" class="button">Inloggen via Single Sign On</a>
 </div>
+{% endif %}
 
 </div>
 {% endblock %}
