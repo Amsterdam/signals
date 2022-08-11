@@ -12,6 +12,9 @@ django-rest-swagger
 django-storages
 django-storages[azure]
 
+#Azure insight
+opencensus-ext-azure
+
 # Database
 psycopg2-binary
 
@@ -33,9 +36,6 @@ coreapi
 
 # Celery
 Celery
-
-# Sentry
-raven
 
 # PDF
 weasyprint==52.5
