@@ -68,8 +68,8 @@ class QuestionGraphService:
             nx_graph.add_edge(edge.question_id, edge.next_question_id, **edge_kwargs)
 
             # Add node metadata
-            nx_graph.add_node(edge.question.id, label=edge.question.label)
-            nx_graph.add_node(edge.next_question.id, label=edge.next_question.label)
+            nx_graph.add_node(edge.question.id, label=edge.question.label, ref=edge.question.ref)
+            nx_graph.add_node(edge.next_question.id, label=edge.next_question.label, ref=edge.next_question.ref)
 
             if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {q_graph.name} contains too many questions.'

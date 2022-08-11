@@ -44,11 +44,11 @@ def mermaidx(graph, direction=DIRECTION_TD):
                     node_label = f'["{graph.nodes[node].get("label")}"]' if graph.nodes[node].get('label') else ''
                     neighbour_node_label = f'["{graph.nodes[neighbour_node].get("label")}"]' if graph.nodes[neighbour_node].get('label') else ''  # noqa
 
-                    _write(f'{node}{node_label} -->{choice_payload_display} {neighbour_node}{neighbour_node_label}')
+                    _write(f'{graph.nodes[node].get("ref")}{node_label} -->{choice_payload_display} {graph.nodes[neighbour_node].get("ref")}{neighbour_node_label}')  # noqa
 
                     stack.append(neighbour_node)  # push neighbour on stack
             else:
                 node_label = f'["{graph.nodes[node].get("label")}"]' if graph.nodes[node].get('label') else ''
-                _write(f'{node}{node_label}')
+                _write(f'{graph.nodes[node].get("ref")}{node_label}')
 
     return '\n'.join(print_buffer)
