@@ -16,7 +16,7 @@ staticClients:
     - http://localhost:8001/signals/oidc/callback/
     - http://127.0.0.1:8001/signals/oidc/callback/
   name: Signals
-  secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+  secret: insecure
 
 enablePasswordDB: true
 
