@@ -104,19 +104,20 @@ MIDDLEWARE = [
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
 
-AUTHENTICATION_BACKENDS = [
-    'signals.admin.oidc.backends.AuthenticationBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
+if os.getenv('OIDC_RP_CLIENT_ID'):
+    OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
+    OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
+    OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv('OIDC_OP_AUTHORIZATION_ENDPOINT')
+    OIDC_OP_TOKEN_ENDPOINT = os.getenv('OIDC_OP_TOKEN_ENDPOINT')
+    OIDC_OP_USER_ENDPOINT = os.getenv('OIDC_OP_USER_ENDPOINT')
+    OIDC_OP_JWKS_ENDPOINT = os.getenv('OIDC_OP_JWKS_ENDPOINT')
+    OIDC_RP_SIGN_ALGO = 'RS256'
+    OIDC_CREATE_USER = False
 
-OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
-OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
-OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv('OIDC_OP_AUTHORIZATION_ENDPOINT')
-OIDC_OP_TOKEN_ENDPOINT = os.getenv('OIDC_OP_TOKEN_ENDPOINT')
-OIDC_OP_USER_ENDPOINT = os.getenv('OIDC_OP_USER_ENDPOINT')
-OIDC_OP_JWKS_ENDPOINT = os.getenv('OIDC_OP_JWKS_ENDPOINT')
-OIDC_RP_SIGN_ALGO = 'RS256'
-OIDC_CREATE_USER = False
+    AUTHENTICATION_BACKENDS = [
+        'signals.admin.oidc.backends.AuthenticationBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 LOGIN_REDIRECT_URL = '/signals/admin/'
 LOGIN_REDIRECT_URL_FAILURE = '/signals/oidc/login_failure/'
