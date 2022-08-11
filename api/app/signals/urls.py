@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from signals.apps.api.generics.routers import BaseSignalsAPIRootView
+from signals.admin.oidc import views as admin_oidc_views
 
 urlpatterns = [
     # Used to determine API health when deploying
@@ -17,6 +18,7 @@ urlpatterns = [
 
     # The Django admin
     path('signals/admin/', admin.site.urls),
+    path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
     path('signals/oidc/', include('mozilla_django_oidc.urls')),
     url(r'^signals/markdownx/', include('markdownx.urls')),
 

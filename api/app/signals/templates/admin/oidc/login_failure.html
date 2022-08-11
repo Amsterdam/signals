@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/login.css" %}">{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<p class="errornote">
+{% blocktrans trimmed %}
+    Inloggen met het huidige account is niet toegestaan omdat het account niet bestaat in de database.
+{% endblocktrans %}
+</p>
+
+<a href="{% url 'admin:login' %}" class="button">{% trans 'Terug naar inloggen' %}</a>
+{% endblock %}

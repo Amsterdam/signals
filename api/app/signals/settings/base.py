@@ -105,7 +105,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'signals.oidc.AuthenticationBackend',
+    'signals.admin.oidc.backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -119,7 +119,7 @@ OIDC_RP_SIGN_ALGO = 'RS256'
 OIDC_CREATE_USER = False
 
 LOGIN_REDIRECT_URL = '/signals/admin/'
-LOGIN_REDIRECT_URL_FAILURE = '/signals/admin/'
+LOGIN_REDIRECT_URL_FAILURE = '/signals/oidc/login_failure/'
 LOGOUT_REDIRECT_URL = '/signals/admin/'
 
 ROOT_URLCONF = 'signals.urls'
