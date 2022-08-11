@@ -12,7 +12,7 @@ class AuthenticationBackend(OIDCAuthenticationBackend):
         return self.UserModel.objects.filter(username__iexact=email)
 
     def create_user(self, claims):
-        return None # do not create users when they do not exist in the database
+        return None  # do not create users when they do not exist in the database
 
     def update_user(self, user, claims):
         return user  # do not update any attributes in the database based on claims
