@@ -29,22 +29,6 @@ class QuestionGraph(models.Model):
 
         return model.objects.filter(graph=self, question=question).values_list('id', flat=True)
 
-    def get_nodes(self):
-        nodes = {}
-        seen = set()
-
-        for edge in Edge.objects.filter(graph=self):
-            if edge.question_id not in seen:
-                seen.add(edge.question_id)
-                nodes.update({edge.question.id: edge.question})
-            if edge.next_question_id not in seen:
-                seen.add(edge.next_question_id)
-                nodes.update({edge.next_question.id: edge.next_question})
-
-        if self.first_question_id not in seen:
-            nodes.update({self.first_question.id: self.first_question})
-        return nodes
-
     def get_edges(self, question):
         return Edge.objects.filter(graph=self, question=question)
 

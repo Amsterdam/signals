@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 QuestionGraph service contains functionality that deals with QuestionGraph
 structure (reachable questions and the like).
@@ -35,7 +35,10 @@ class QuestionGraphService:
         """
         List of Edge instances decsribing QuestionGraph structure.
         """
-        return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
+        return list(Edge.objects.filter(graph=q_graph)
+                                .select_related('choice')
+                                .select_related('question')
+                                .select_related('next_question'))
 
     @staticmethod
     def _build_nx_graph(q_graph, edges):
@@ -44,9 +47,6 @@ class QuestionGraphService:
         """
         # To allow for matching rule and default rule (i.e. a double edge).
         nx_graph = networkx.MultiDiGraph()
-
-        for _, question in q_graph.get_nodes().items():
-            nx_graph.add_node(question.id, label=question.label)
 
         for edge in edges:
             # Needed for rule matching and determining next questions (edge
@@ -67,9 +67,16 @@ class QuestionGraphService:
             # Add the edge with all relevant information:
             nx_graph.add_edge(edge.question_id, edge.next_question_id, **edge_kwargs)
 
+            # Add node metadata
+            nx_graph.add_node(edge.question.id, label=edge.question.label)
+            nx_graph.add_node(edge.next_question.id, label=edge.next_question.label)
+
             if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {q_graph.name} contains too many questions.'
                 raise Exception(msg)
+
+        if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
+            nx_graph.add_node(q_graph.first_question.id)
 
         return nx_graph
 
