@@ -174,7 +174,7 @@ class TestPDFSummaryService(TestCase):
 
         # Check if the HTML does not contain the contact details
         # although the signal does contain these details
-        html = PDFSummaryService._get_html(self.signal, None, True)
+        html = PDFSummaryService._get_html(self.signal, user, True)
         self.assertNotIn('foo@bar.com', html)
         self.assertNotIn('0612345678', html)
 
