@@ -18,8 +18,6 @@ urlpatterns = [
 
     # The Django admin
     path('signals/admin/', admin.site.urls),
-    path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
-    path('signals/oidc/', include('mozilla_django_oidc.urls')),
     url(r'^signals/markdownx/', include('markdownx.urls')),
 
     # SOAP stand-in endpoints
@@ -31,3 +29,9 @@ if settings.DEBUG:
 
     media_root = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += media_root
+
+if settings.OIDC_RP_CLIENT_ID:
+    urlpatterns += [
+        path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
+        path('signals/oidc/', include('mozilla_django_oidc.urls')),
+    ]
