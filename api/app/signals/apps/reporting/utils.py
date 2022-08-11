@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2020 - 2022 Gemeente Amsterdam
-import os
 from typing import Union
 
 from django.conf import settings
@@ -24,7 +23,7 @@ def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage]:
     """
     if not settings.AZURE_ENABLED:
         return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
-    print(settings.AZURE_CONTAINERS)
+
     if not hasattr(settings, 'AZURE_CONTAINERS'):
         raise ImproperlyConfigured('AZURE_CONTAINERS settings must be set!')
 

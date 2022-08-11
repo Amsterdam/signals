@@ -2,7 +2,8 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
-from signals.apps.reporting.utils import _get_storage_backend
+# TODO:: Verify that Horeca is unused and maby delete?
+# from signals.apps.reporting.utils import _get_storage_backend
 
 # storage = _get_storage_backend(using='horeca')
 

@@ -3,7 +3,7 @@
 from unittest import mock
 
 from django.core.exceptions import ValidationError
-from django.test import testcases, override_settings
+from django.test import override_settings, testcases
 
 from signals.apps.reporting.csv.horeca import (
     _create_extra_properties_headers,

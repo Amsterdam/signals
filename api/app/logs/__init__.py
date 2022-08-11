@@ -19,10 +19,9 @@ def add_azure(_config):
     The reason it is not done with a filter is because of the registration of the
     connection_string that would cause issues and the connection to azure
     """
-    print("ADD AZURE IS CALLED")
     _config['handlers']['azure'] = {
-            "class": "opencensus.ext.azure.log_exporter.AzureLogHandler",
-            'connection_string': os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING'),
+            'class': 'opencensus.ext.azure.log_exporter.AzureLogHandler',
+            'connection_string': os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING', ''),
          }
 
     _config['loggers']['django']['handlers'] = ['azure', 'colorless']
@@ -45,8 +44,6 @@ def get_configuration(local_apps: List[str], logging_level: Union[str, int]):
     _config = copy.deepcopy(BASE_LOGGING)
 
     _handlers = ["colorize"]
-    print('AZURE_ENABLED')
-    print(os.getenv('AZURE_ENABLED') in [True, 'True', 'true', '1'])
     if os.getenv('AZURE_ENABLED') in [True, 'True', 'true', '1']:
         add_azure(_config)
         _handlers.append('azure')

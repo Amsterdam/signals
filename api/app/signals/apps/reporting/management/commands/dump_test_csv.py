@@ -7,7 +7,6 @@ from timeit import default_timer as timer
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
-from django.conf import settings
 
 from signals.apps.reporting.csv.datawarehouse import save_csv_file_datawarehouse
 

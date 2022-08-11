@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import os
 from timeit import default_timer as timer
 
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
-from django.conf import settings
+
 from signals.apps.reporting.csv.tdo import (
     create_signals_csv,
     create_statuses_csv,
@@ -29,7 +28,7 @@ class Command(BaseCommand):
         start = timer()
 
         self.stdout.write('Azure storage: '
-                          f'{"Enabled" if settings.AZURE_ENABLED else "Disabled (Files will be stored in local file storage"}')
+                          f'{"Enabled" if settings.AZURE_ENABLED else "Disabled (Files will be stored in local file storage"}') # noqa
         if settings.AZURE_ENABLED:
             azure_parameters = settings.AZURE_CONTAINERS.get('tdo')
             self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')

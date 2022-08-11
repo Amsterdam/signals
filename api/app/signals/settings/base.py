@@ -178,9 +178,8 @@ if AZURE_ENABLED:
     # This is the default container used by django to upload items
     AZURE_CONTAINER = AZURE_CONTAINERS['main']['azure_container']
 
-
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
 # Object store - Datawarehouse (DWH)
 DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
