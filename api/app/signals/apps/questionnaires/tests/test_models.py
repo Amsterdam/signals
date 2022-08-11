@@ -3,7 +3,6 @@
 """
 Test models and associated manager functions for the questionnaires app.
 """
-import base64
 import uuid
 from datetime import datetime, timedelta
 
@@ -158,21 +157,6 @@ class TestOne(TestCase):
         questions = Question.objects.get_reachable_from_question_graph(question_graph)
         self.assertEqual(len(questions), 1)
 
-    def test_draw_base64(self):
-        question_graph = QuestionGraph.objects.get(name='one')
-        base64_encoded_image = question_graph.draw_base64()
-
-        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
-
-    def test_image_tag(self):
-        question_graph = QuestionGraph.objects.get(name='one')
-        image_tag = question_graph.image_tag()
-
-        self.assertIn('<img src="data:image/png;base64, ', image_tag)
-
-        base64_encoded_image = image_tag[32:-4].strip()
-        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
-
 
 class TestDiamond(TestCase):
     def setUp(self):
@@ -193,21 +177,6 @@ class TestDiamond(TestCase):
         question_graph = QuestionGraph.objects.get(name='diamond')
         questions = Question.objects.get_reachable_from_question_graph(question_graph)
         self.assertEqual(len(questions), 5)
-
-    def test_draw_base64(self):
-        question_graph = QuestionGraph.objects.get(name='diamond')
-        base64_encoded_image = question_graph.draw_base64()
-
-        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
-
-    def test_image_tag(self):
-        question_graph = QuestionGraph.objects.get(name='diamond')
-        image_tag = question_graph.image_tag()
-
-        self.assertIn('<img src="data:image/png;base64, ', image_tag)
-
-        base64_encoded_image = image_tag[32:-4].strip()
-        self.assertEqual(base64.b64encode(base64.b64decode(base64_encoded_image)), bytes(base64_encoded_image, 'utf-8'))
 
 
 class TestDiamondPlus(TestCase):
