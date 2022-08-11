@@ -5,8 +5,8 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
 
-from signals.apps.api.generics.routers import BaseSignalsAPIRootView
 from signals.admin.oidc import views as admin_oidc_views
+from signals.apps.api.generics.routers import BaseSignalsAPIRootView
 
 urlpatterns = [
     # Used to determine API health when deploying
