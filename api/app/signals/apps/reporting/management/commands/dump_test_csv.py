@@ -36,21 +36,17 @@ class Command(BaseCommand):
         else:
             self.stdout.write('* FileSystemStorage enabled, file will be sent to the local storage')
 
+        parameters = {}
         if settings.AZURE_ENABLED and very_verbose:
-            azure_parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
+            parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
             self.stdout.write('* DWH AzureStorage parameters:')
 
-            for key, value in azure_parameters.items():
-                if key.lower() in ['api_key', ]:
-                    continue
-
-                self.stdout.write(f'** {key}: {value}')
-
         if settings.SWIFT_ENABLED and very_verbose:  # TODO:: SIG-4733 azure-afterwork-delete
-            swift_parameters = settings.SWIFT.get('datawarehouse')
+            parameters = settings.SWIFT.get('datawarehouse')
             self.stdout.write('* DWH SwiftStorage parameters:')
 
-            for key, value in swift_parameters.items():
+        if parameters:
+            for key, value in parameters.items():
                 if key.lower() in ['api_key', ]:
                     continue
 

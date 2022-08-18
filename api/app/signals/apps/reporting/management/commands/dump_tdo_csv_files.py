@@ -30,7 +30,7 @@ class Command(BaseCommand):
         self.stdout.write('Azure storage: '
                           f'{"Enabled" if settings.AZURE_ENABLED else "Disabled (Files will be stored in local file storage"}') # noqa
         self.stdout.write('Swift storage: '
-                          f'{"Enabled" if settings.SWIFT_ENABLED else "Disabled (Files will be stored in local file storage"}')
+                          f'{"Enabled" if settings.SWIFT_ENABLED else "Disabled (Files will be stored in local file storage"}') # noqa
         if settings.AZURE_ENABLED:
             azure_parameters = settings.AZURE_CONTAINERS.get('tdo')
             self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')
