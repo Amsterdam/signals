@@ -59,6 +59,11 @@ class Command(BaseCommand):
         if settings.AZURE_ENABLED:
             azure_parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
             self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')
+
+        elif settings.SWIFT_ENABLED:  # TODO:: SIG-4733 azure-afterwork-delete
+            swift_parameters = settings.SWIFT.get('tdo')
+            self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
+
         else:
             now = timezone.now()
             self.stdout.write(f'* Local File storage directory: {now:%Y}/{now:%m}/{now:%d}/')

@@ -6,9 +6,10 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from storages.backends.azure_storage import AzureStorage
+from swift.storage import SwiftStorage
 
 
-def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage]:
+def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage, SwiftStorage]:
     """
     Returns a AzureStorage class OR a FileSystemStorage
 
@@ -21,10 +22,14 @@ def _get_storage_backend(using: str) -> Union[FileSystemStorage, AzureStorage]:
     :param using:
     :returns: FileSystemStorage or AzureStorage instance
     """
-    if not settings.AZURE_ENABLED:
-        return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)
+    if settings.AZURE_ENABLED:
+        if not hasattr(settings, 'AZURE_CONTAINERS'):
+            raise ImproperlyConfigured('AZURE_CONTAINERS settings must be set!')
+        return AzureStorage(**settings.AZURE_CONTAINERS.get(using, {}))
 
-    if not hasattr(settings, 'AZURE_CONTAINERS'):
-        raise ImproperlyConfigured('AZURE_CONTAINERS settings must be set!')
+    if settings.SWIFT_ENABLED:  # TODO:: SIG-4733 azure-afterwork-delete
+        if not hasattr(settings, 'SWIFT'):
+            raise ImproperlyConfigured('SWIFT settings must be set!')
+        return SwiftStorage(**settings.SWIFT.get(using, {}))
 
-    return AzureStorage(**settings.AZURE_CONTAINERS.get(using, {}))
+    return FileSystemStorage(location=settings.DWH_MEDIA_ROOT)

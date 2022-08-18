@@ -9,6 +9,7 @@ django-cors-headers
 django-extensions
 django-filter
 django-rest-swagger
+django-storage-swift
 django-storages
 django-storages[azure]
 
@@ -36,6 +37,9 @@ coreapi
 
 # Celery
 Celery
+
+# Sentry
+raven
 
 # PDF
 weasyprint==52.5

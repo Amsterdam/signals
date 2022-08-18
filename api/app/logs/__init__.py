@@ -28,6 +28,17 @@ def add_azure(_config):
     _config['loggers']['django.db.backends']['handlers'] = ['azure', 'colorless']
 
 
+def add_sentry(_config):
+    """
+    When azure is not enabled add the sentry handler to the config
+    TODO:: SIG-4733 azure-afterwork-delete
+    """
+    _config['handlers']['sentry'] = {
+            'level': 'WARNING',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+
+
 def get_configuration(local_apps: List[str], logging_level: Union[str, int]):
     """
     This function returns a dictionary config object that can be used as the
@@ -47,6 +58,8 @@ def get_configuration(local_apps: List[str], logging_level: Union[str, int]):
     if os.getenv('AZURE_ENABLED') in [True, 'True', 'true', '1']:
         add_azure(_config)
         _handlers.append('azure')
+    else:
+        add_sentry(_config)  # TODO:: SIG-4733 azure-afterwork-delete
 
     for app_name in local_apps:
         _config["loggers"].update(

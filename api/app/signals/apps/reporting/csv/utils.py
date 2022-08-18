@@ -12,6 +12,7 @@ from django.db import connection
 from django.db.models import Case, CharField, QuerySet, Value, When
 from django.utils import timezone
 from storages.backends.azure_storage import AzureStorage
+from swift.storage import SwiftStorage
 
 from signals.apps.reporting.utils import _get_storage_backend
 
@@ -64,6 +65,7 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
 
     :param csv_files:
     :param using:
+    :param path:
     :returns None:
     """
     storage = _get_storage_backend(using=using)
@@ -72,7 +74,8 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             file_path = None
-            if isinstance(storage, AzureStorage):
+            # TODO:: SIG-4733 azure-afterwork-delete
+            if isinstance(storage, AzureStorage) or isinstance(storage, SwiftStorage):
                 file_path = f'{path}{file_name}' if path else file_name
                 storage.save(name=file_path, content=opened_csv_file)
             else:

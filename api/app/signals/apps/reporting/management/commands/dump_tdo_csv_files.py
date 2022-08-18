@@ -29,9 +29,15 @@ class Command(BaseCommand):
 
         self.stdout.write('Azure storage: '
                           f'{"Enabled" if settings.AZURE_ENABLED else "Disabled (Files will be stored in local file storage"}') # noqa
+        self.stdout.write('Swift storage: '
+                          f'{"Enabled" if settings.SWIFT_ENABLED else "Disabled (Files will be stored in local file storage"}')
         if settings.AZURE_ENABLED:
             azure_parameters = settings.AZURE_CONTAINERS.get('tdo')
             self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')
+
+        elif settings.SWIFT_ENABLED:  # TODO:: SIG-4733 azure-afterwork-delete
+            swift_parameters = settings.SWIFT.get('tdo')
+            self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
         else:
             now = timezone.now()
             self.stdout.write(f'* Local File storage directory: {now:%Y}/{now:%m}/{now:%d}/')

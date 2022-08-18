@@ -31,6 +31,8 @@ class Command(BaseCommand):
 
         if settings.AZURE_ENABLED:
             self.stdout.write('* AzureStorage enabled, file will be sent to the ObjectStore')
+        elif settings.SWIFT_ENABLED:
+            self.stdout.write('* SwiftStorage enabled, file will be sent to the ObjectStore')
         else:
             self.stdout.write('* FileSystemStorage enabled, file will be sent to the local storage')
 
@@ -43,6 +45,14 @@ class Command(BaseCommand):
                     continue
 
                 self.stdout.write(f'** {key}: {value}')
+
+        if settings.SWIFT_ENABLED and very_verbose:  # TODO:: SIG-4733 azure-afterwork-delete
+            swift_parameters = settings.SWIFT.get('datawarehouse')
+            self.stdout.write('* DWH SwiftStorage parameters:')
+
+            for key, value in swift_parameters.items():
+                if key.lower() in ['api_key', ]:
+                    continue
 
         self.stdout.write('* Create CSV')
         save_csv_file_datawarehouse(_test_file)

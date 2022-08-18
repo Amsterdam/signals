@@ -26,12 +26,3 @@ class StaticFieldFilter(Filter):
         for k, v in self.static_fields.items():
             setattr(record, k, v)
         return True
-
-
-class AzureEnabled(Filter):
-    """
-    Check for the Azure enabled flag to enable the azure logging
-    """
-
-    def filter(self, record: LogRecord):
-        return False

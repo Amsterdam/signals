@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
-import os
+
 BASE_LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
