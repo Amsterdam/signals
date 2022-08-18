@@ -65,6 +65,7 @@ services:
       - EMAIL_USE_TLS=False
       - EMAIL_USE_SSL=False
       - DJANGO_SETTINGS_MODULE=signals.settings
+      - SWIFT_ENABLED=False
       - AZURE_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
@@ -85,6 +86,7 @@ services:
       - DB_PASSWORD=insecure
       - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
       - DJANGO_SETTINGS_MODULE=signals.settings
+      - SWIFT_ENABLED=False
       - AZURE_ENABLED=False
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
@@ -107,6 +109,7 @@ services:
       - DB_PASSWORD=insecure
       - DJANGO_SETTINGS_MODULE=signals.settings
       - FRONTEND_URL=http://localhost:3001
+      - SWIFT_ENABLED=False
       - AZURE_ENABLED=False
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
