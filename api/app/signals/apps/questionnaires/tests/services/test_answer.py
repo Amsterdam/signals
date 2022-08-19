@@ -55,3 +55,42 @@ class TestAnswerService(TestCase):
             validate_answer(123456, plaintext_question)
         with self.assertRaises(django_validation_error):
             validate_answer({'some': 'thing', 'complicated': {}}, plaintext_question)
+
+    def test_validated_selected_object(self):
+        selected_object_question = QuestionFactory(field_type='selected_object', label='selected_object',
+                                                   short_label='selected_object')
+        validate_answer = AnswerService.validate_answer_payload
+
+        # Basic payloads that should raise a validation error
+        with self.assertRaises(django_validation_error):
+            validate_answer('Invalid payload', selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(123456789, selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(True, selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(False, selected_object_question)
+
+        # These payloads should be valid
+        payload_not_on_map_simple = {'type': 'not-on-map'}
+        validate_answer(payload_not_on_map_simple, selected_object_question)
+
+        payload_not_on_map_complex = {'id': 123456, 'type': 'not-on-map', 'label': 'Niet op de kaart - 123456'}
+        validate_answer(payload_not_on_map_complex, selected_object_question)
+
+        payload_object_selected = {'id': '123456', 'type': 'type-of-object', 'description': 'description',
+                                   'isReported': False, 'label': 'Label - 123456'}
+        validate_answer(payload_object_selected, selected_object_question)
+
+        payload_object_selected = {'id': 123456, 'type': 'type-of-object', 'description': 'description',
+                                   'isReported': False, 'label': 'Label - 123456',
+                                   'location': {'coordinates': {'lat': 52.36768424, 'lon': 4.90022563}}}
+        validate_answer(payload_object_selected, selected_object_question)
+
+        payload_object_selected = {'id': 123456, 'type': 'type-of-object', 'description': 'description',
+                                   'isReported': False, 'label': 'Label - 123456',
+                                   'location': {'coordinates': {'lat': 52.36768424, 'lon': 4.90022563},
+                                                'address': {'openbare_ruimte': 'De Ruijterkade', 'huisnummer': '36',
+                                                            'huisletter': 'A', 'huisnummer_toevoeging': '',
+                                                            'postcode': '1012AA', 'woonplaats': 'Amsterdam'}}}
+        validate_answer(payload_object_selected, selected_object_question)
