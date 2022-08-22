@@ -21,6 +21,8 @@ def create_category_assignments_csv(location: str) -> str:
         'id',
         'created_at',
         'updated_at',
+        'deadline',
+        'deadline_factor_3',
         '_signal_id',
         main=F('category__parent__name'),
         sub=F('category__name'),
@@ -35,7 +37,7 @@ def create_category_assignments_csv(location: str) -> str:
     csv_file = queryset_to_csv_file(queryset, os.path.join(location, 'categories.csv'))
 
     ordered_field_names = ['id', 'main', 'sub', 'departments', 'created_at', 'updated_at', 'extra_properties',
-                           '_signal_id', ]
+                           '_signal_id', 'deadline', 'deadline_factor_3', ]
     reorder_csv(csv_file.name, ordered_field_names)
 
     return csv_file.name
