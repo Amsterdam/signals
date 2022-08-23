@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from rest_framework.reverse import reverse
 
+from signals.apps.questionnaires.admin.forms import QuestionAdminForm
 from signals.apps.questionnaires.admin.inlines import ChoiceStackedInline, EdgeStackedInline
 
 
@@ -59,8 +60,11 @@ class QuestionGraphAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    form = QuestionAdminForm
+
     inlines = (ChoiceStackedInline,)
-    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'created_at',)
+    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'extra_properties',
+              'required', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
 
     list_display = ('retrieval_key', 'analysis_key', 'uuid', 'field_type', 'created_at',)

@@ -152,3 +152,21 @@ class SelectedObject(FieldType):
             },
         },
     }
+
+    # The question_extra_properties_schema defines which extra properties are allowed for a specific question type.
+    #
+    # To select an object from a list of objects, the following extra properties are allowed:
+    # - source_url: The url to the source of the list of objects
+    extra_properties_schema = {
+        'type': 'object',
+        'properties': {
+            'source_url': {
+                'type': 'string',
+                'format': 'uri',
+            },
+        },
+        'required': [
+            'source_url',
+        ],
+        'additionalProperties': False
+    }
