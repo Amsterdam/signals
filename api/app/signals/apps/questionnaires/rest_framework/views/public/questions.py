@@ -20,7 +20,7 @@ class PublicQuestionViewSet(DatapuntViewSet):
     lookup_field = 'retrieval_key'
     lookup_url_kwarg = 'retrieval_key'
 
-    queryset = Question.objects.all()
+    queryset = Question.objects.all().order_by('-created_at')
     queryset_detail = Question.objects.all()
 
     serializer_class = PublicQuestionSerializer

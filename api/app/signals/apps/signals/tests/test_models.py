@@ -382,7 +382,7 @@ class TestSignalModel(TestCase):
         signal = factories.SignalFactory.create()
         feedback = FeedbackFactory.create(
             _signal=signal,
-            submitted_at='2022-01-01',
+            submitted_at='2022-01-01 00:00:00+00:00',
             allows_contact=False
         )
         feedback.save()
@@ -395,7 +395,7 @@ class TestSignalModel(TestCase):
         signal = factories.SignalFactory.create()
         feedback = FeedbackFactory.create(
             _signal=signal,
-            submitted_at='2022-01-01',
+            submitted_at='2022-01-01 00:00:00+00:00',
             allows_contact=True
         )
         feedback.save()
@@ -437,7 +437,7 @@ class TestSignalModel(TestCase):
         feedback = FeedbackFactory.create(
             _signal=signal,
             allows_contact=False,
-            submitted_at='2022-01-01'
+            submitted_at='2022-01-01 00:00:00+00:00'
         )
         feedback.save()
         self.assertTrue(signal.allows_contact)

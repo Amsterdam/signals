@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
 
+import pytz
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 from freezegun import freeze_time
@@ -475,8 +476,8 @@ class TestSessionService(TestCase):
 
     def test_create_answer_session_expired(self):
         # expired session must not accept answers
-        t_creation = datetime(2021, 1, 1, 0, 0, 0)
-        t_now = datetime(2021, 6, 1, 0, 0, 0)
+        t_creation = datetime(2021, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+        t_now = datetime(2021, 6, 1, 0, 0, 0, tzinfo=pytz.UTC)
 
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph, created_at=t_creation, submit_before=t_creation)
@@ -523,8 +524,8 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         # Sessions that have expired because the submit_before deadline was
         # passed are no longer publicly available:
-        t_creation = datetime(2021, 1, 1, 0, 0, 0)
-        t_now = datetime(2021, 6, 1, 0, 0, 0)
+        t_creation = datetime(2021, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+        t_now = datetime(2021, 6, 1, 0, 0, 0, tzinfo=pytz.UTC)
 
         session_expired_i = SessionFactory.create(
             questionnaire__graph=q_graph,
