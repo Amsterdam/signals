@@ -38,5 +38,6 @@ class TestCSVHorecaCommand(TransactionTestCase):
 class TestCleanUpDatawarehouseDisk(TransactionTestCase):
     @patch('signals.apps.reporting.services.clean_up_datawarehouse.DataWarehouseDiskCleaner.clean_up', autospec=True)
     def test_command(self, patched):
+        patched.return_value = [], []
         call_command('clean_up_datawarehouse_disk', '--keep-n-days=20', '--dry-run')
         patched.assert_called_once()
