@@ -13,6 +13,8 @@ staticClients:
   redirectURIs:
     - http://localhost:3001/manage/incidents
     - http://127.0.0.1:3001/manage/incidents
+    - http://localhost:8000/signals/oidc/callback/
+    - http://127.0.0.1:8000/signals/oidc/callback/
     - http://localhost:8001/signals/oidc/callback/
     - http://127.0.0.1:8001/signals/oidc/callback/
   name: Signals
