@@ -33,3 +33,10 @@ class TestCSVHorecaCommand(TransactionTestCase):
         self.assertEqual(err.getvalue(), '')
 
         patched_create_csv_files.assert_called_once()
+
+
+class TestCleanUpDatawarehouseDisk(TransactionTestCase):
+    @patch('signals.apps.reporting.services.clean_up_datawarehouse.DataWarehouseDiskCleaner.clean_up', autospec=True)
+    def test_command(self, patched):
+        call_command('clean_up_datawarehouse_disk', '--keep-n-days=20', '--dry-run')
+        patched.assert_called_once()
