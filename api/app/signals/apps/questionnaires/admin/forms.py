@@ -2,11 +2,13 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 
 # TODO: Make this available for the whole project
+import copy
 
-from django.forms import modelformset_factory
+from django.forms import JSONField, modelformset_factory
 from django.forms.models import BaseModelFormSet, ModelForm
 
 from signals.apps.api.validators.json_schema import JSONSchemaValidator
+from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
 
 
 class NonRelatedInlineFormSet(BaseModelFormSet):
@@ -40,17 +42,15 @@ def non_related_inlineformset_factory(model, obj=None, queryset=None, formset=No
 
 
 class QuestionAdminForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    extra_properties = JSONField(widget=PrettyJSONWidget)
 
+    def clean_extra_properties(self):
         if hasattr(self.instance.field_type_class, 'extra_properties_schema'):
-            # Let's add the extra properties validator to the form
-            self.fields['extra_properties'].required = True
-            self.fields['extra_properties'].empty = False
-            self.fields['extra_properties'].validators.append(
-                JSONSchemaValidator(self.instance.field_type_class.extra_properties_schema)
-            )
-        else:
-            # Extra properties are not required so disable the field
-            self.fields['extra_properties'].required = False
-            self.fields['extra_properties'].disabled = True
+            schema = copy.deepcopy(self.instance.field_type_class.extra_properties_schema)
+            if self.cleaned_data['multiple_answers']:
+                schema['properties'].update(copy.deepcopy(self.instance.multiple_answer_schema['properties']))
+                schema['required'].extend(copy.deepcopy(self.instance.multiple_answer_schema['required']))
+
+            validator = JSONSchemaValidator(schema)
+            validator(self.cleaned_data['extra_properties'])
+        return self.cleaned_data['extra_properties']

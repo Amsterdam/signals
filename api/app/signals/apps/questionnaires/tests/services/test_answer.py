@@ -109,3 +109,30 @@ class TestAnswerService(TestCase):
             payload_not_on_map['onMap'] = invalid_on_map
             with self.assertRaises(django_validation_error):
                 validate_answer(False, selected_object_question)
+
+        selected_object_question.multiple_answers = True
+        selected_object_question.save()
+
+        validate_answer([payload_object_selected for x in range(3)], selected_object_question)
+
+    def test_validate_multiple_answers(self):
+        q = QuestionFactory.create(field_type='plain_text', multiple_answers=True, required=True,
+                                   extra_properties={'answers': {'minItems': 2, 'maxItems': 5}})
+
+        AnswerService.validate_answer_payload(['answer 1', 'answer 2'], q)
+        AnswerService.validate_answer_payload([f'answer {x}' for x in range(5)], q)
+        with self.assertRaises(django_validation_error):
+            # Not a list
+            AnswerService.validate_answer_payload('answer is not a list', q)
+
+            # Only one answer is given, the minimum is 2
+            AnswerService.validate_answer_payload(['answer 1', ], q)
+
+            # An empty list
+            AnswerService.validate_answer_payload([], q)
+
+            # Not strings
+            AnswerService.validate_answer_payload([1, 2, 3], q)
+
+            # Too much answers
+            AnswerService.validate_answer_payload([f'answer {x}' for x in range(6)], q)

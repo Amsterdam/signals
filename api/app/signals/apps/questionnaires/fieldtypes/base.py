@@ -12,13 +12,31 @@ class FieldType:
     # Overwrite this class variable in subclasses, will default to the class name
     verbose_name = None
 
+    _multiple_answers_schema = {
+        'type': 'array',
+        'items': {},  # Default value, will be overridden with the correct schema for the given field_type
+        'minItems': 1,  # Default value, configurable via the extra_properties on the question (minItems)
+        'maxItems': 10  # Default value, configurable via the extra_properties on the question (maxItems)
+    }
+
+    def __init__(self, multiple_answers=False, min_items=None, max_items=None):
+        self._multiple_answers = multiple_answers
+        self._min_items = min_items or None
+        self._max_items = max_items or None
+
     def validate_submission_payload(self, payload: dict) -> dict:
         """
         Check Answer or Choice payload matches the FieldType subclass JSONSchema
         """
         # We raise Django ValidationErrors here because this function is called
         # from model.clean functions and services that underlie REST API calls.
-        schema = self.submission_schema
+        if self._multiple_answers:
+            schema = self._multiple_answers_schema
+            schema['items'].update(self.submission_schema)
+            schema['minItems'] = self._min_items
+            schema['maxItems'] = self._max_items
+        else:
+            schema = self.submission_schema
 
         try:
             jsonschema.validate(payload, schema)

@@ -27,6 +27,34 @@ class Question(models.Model):
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
     enforce_choices = models.BooleanField(default=False)
+    multiple_answers = models.BooleanField(default=False)
+    multiple_answer_schema = {
+        'type': 'object',
+        'properties': {
+            'answers': {
+                'type': 'object',
+                'properties': {
+                    'minItems': {
+                        'type': 'integer',
+                        'minimum': 1,
+                        'maximum': 100,
+                    },
+                    'maxItems': {
+                        'type': 'integer',
+                        'minimum': 1,
+                        'maximum': 100,
+                    },
+                },
+                'required': [
+                    'minItems',
+                    'maxItems',
+                ],
+            },
+        },
+        'required': [
+            'answers',
+        ],
+    }
 
     extra_properties = models.JSONField(blank=True, null=True)
 
@@ -48,3 +76,14 @@ class Question(models.Model):
     @property
     def field_type_class(self):
         return get_field_type_class(self)
+
+    def get_field_type(self):
+        kwargs = {}
+        if self.multiple_answers and self.extra_properties and 'answers' in self.extra_properties:
+            min_items = self.extra_properties['answers']['minItems']
+            max_items = self.extra_properties['answers']['maxItems']
+            kwargs.update({'multiple_answers': self.multiple_answers, 'min_items': min_items, 'max_items': max_items})
+        elif self.multiple_answers:
+            kwargs.update({'multiple_answers': self.multiple_answers, 'min_items': 1, 'max_items': 10})
+
+        return self.field_type_class(**kwargs)
