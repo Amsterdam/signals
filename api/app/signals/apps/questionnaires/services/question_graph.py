@@ -76,7 +76,8 @@ class QuestionGraphService:
                 raise Exception(msg)
 
         if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
-            nx_graph.add_node(q_graph.first_question.id)
+            nx_graph.add_node(q_graph.first_question.id, label=q_graph.first_question.label,
+                              ref=q_graph.first_question.ref)
 
         return nx_graph
 
