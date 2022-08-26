@@ -56,7 +56,7 @@ class TestAnswerService(TestCase):
         with self.assertRaises(django_validation_error):
             validate_answer({'some': 'thing', 'complicated': {}}, plaintext_question)
 
-    def test_validated_selected_object(self):
+    def test_validate_field_type_select_object(self):
         selected_object_question = QuestionFactory(field_type='selected_object', label='selected_object',
                                                    short_label='selected_object')
         validate_answer = AnswerService.validate_answer_payload
