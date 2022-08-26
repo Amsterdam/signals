@@ -19,9 +19,13 @@ def add_azure(_config):
     The reason it is not done with a filter is because of the registration of the
     connection_string that would cause issues and the connection to azure
     """
+    connection_string = os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING', False)
+    if not connection_string:
+        return
+
     _config['handlers']['azure'] = {
             'class': 'opencensus.ext.azure.log_exporter.AzureLogHandler',
-            'connection_string': os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING', ''),
+            'connection_string': connection_string,
          }
 
     _config['loggers']['django']['handlers'] = ['azure', 'colorless']
