@@ -46,6 +46,8 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             'department_ids',
             'created_at',
             'updated_at',
+            'notification_on_assigment_to_user',
+            'notification_on_assigment_to_department',
         )
 
     def get_departments(self, obj):
