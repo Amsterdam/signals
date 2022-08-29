@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.db.models import CharField, Min, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import JSONObject

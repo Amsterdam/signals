@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from datetime import timedelta
 
 from django.contrib.gis.geos import Point
@@ -301,12 +301,13 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         Get all the signals when no category is set
         """
         cat1 = ParentCategoryFactory.create(name='trash')
+        plastic = CategoryFactory.create(parent=cat1, public_name='plastic_trash', is_public_accessible=True)
+        compost = CategoryFactory.create(parent=cat1, public_name='compost_trash', is_public_accessible=True)
 
-        SignalFactoryValidLocation.create(category_assignment__category=cat1)
+        SignalFactoryValidLocation.create(category_assignment__category=plastic)
+        SignalFactoryValidLocation.create(category_assignment__category=plastic)
 
-        cat2 = ParentCategoryFactory.create(name='animals')
-        SignalFactoryValidLocation.create(category_assignment__category=cat2)
-        SignalFactoryValidLocation.create(category_assignment__category=cat2)
+        SignalFactoryValidLocation.create(category_assignment__category=compost)
 
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000')
 
@@ -371,7 +372,6 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         SignalFactoryValidLocation.create(category_assignment__category=child_cat, status__state=GEANNULEERD)
         SignalFactoryValidLocation.create(category_assignment__category=child_cat, status__state=VERZOEK_TOT_HEROPENEN)
         SignalFactoryValidLocation.create(category_assignment__category=child_cat, status__state=GEMELD)
-
 
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'maincategory_slug={parent_cat.slug}')
