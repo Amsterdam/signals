@@ -493,6 +493,7 @@ class SignalManager(models.Manager):
                 }))
 
             if 'routing_assignment' in data:
+                previous_signal_departments = locked_signal.routing_assignment
                 update_detail_data = data['routing_assignment']
                 signal_departments = self._update_signal_departments_no_transaction(
                     update_detail_data,
@@ -502,17 +503,20 @@ class SignalManager(models.Manager):
                 to_send.append((update_signal_departments, {
                     'sender': sender,
                     'signal_obj': locked_signal,
-                    'signal_departments': signal_departments
+                    'signal_departments': signal_departments,
+                    'prev_signal_departments': previous_signal_departments
                 }))
 
             if 'user_assignment' in data:
+                previous_user_assignment = locked_signal.user_assignment
                 user_assignment = self._update_user_signal_no_transaction(
                     data, locked_signal
                 )
                 to_send.append((update_user_assignment, {
                     'sender': sender,
                     'signal_obj': locked_signal,
-                    'user_assignment': user_assignment
+                    'user_assignment': user_assignment,
+                    'prev_user_assignment': previous_user_assignment
                 }))
 
             # Send out all Django signals:

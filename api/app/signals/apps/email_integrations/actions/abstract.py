@@ -44,12 +44,12 @@ class AbstractAction(ABC):
     # Will be used to create a note on the Signal after the email has been sent
     note = None
 
-    def __call__(self, signal, dry_run=False):
+    def __call__(self, signal, dry_run=False, recipient_list=[]):
         if self.rule(signal):
             if dry_run:
                 return True
 
-            if self.send_mail(signal):
+            if self.send_mail(signal, recipient_list):
                 self.add_note(signal)
                 return True
 
@@ -98,7 +98,7 @@ class AbstractAction(ABC):
 
         return subject, message, html_message
 
-    def send_mail(self, signal, dry_run=False):
+    def send_mail(self, signal, recipient_list=[], dry_run=False):
         """
         Send the email to the reporter
         """
@@ -115,8 +115,12 @@ class AbstractAction(ABC):
             return 0  # No mail sent, return 0. Same behaviour as send_mail()
 
         subject, message, html_message = self.render_mail_data(context)
+
+        if len(recipient_list) == 0:
+            recipient_list = [signal.reporter.email, ]
+
         return send_mail(subject=subject, message=message, from_email=self.from_email,
-                         recipient_list=self.get_recipient_list(signal), html_message=html_message)
+                         recipient_list=recipient_list, html_message=html_message)
 
     def add_note(self, signal):
         if self.note:
@@ -128,9 +132,9 @@ class AbstractSystemAction(AbstractAction):
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    rule = lambda self, signal: True  # noqa: E731
+    def rule(self, signal): return True  # noqa: E731
 
-    def __call__(self, signal, dry_run=False, **kwargs):
+    def __call__(self, signal, dry_run=False, recipient_list=[], **kwargs):
         """
         check if the required parameters are in the kwargs
         """
@@ -140,4 +144,4 @@ class AbstractSystemAction(AbstractAction):
 
         self.kwargs = kwargs
 
-        return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)
+        return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run, recipient_list=recipient_list)

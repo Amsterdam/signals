@@ -1,0 +1,13 @@
+Beste,
+
+De volgende melding is aan jou toegewezen:
+
+- Nummer: {{ formatted_signal_id }}
+- Subcategorie: {{ sub_category_public_name }}
+- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
+
+{{ signal_url }}
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}

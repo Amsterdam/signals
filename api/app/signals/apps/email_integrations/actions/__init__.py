@@ -4,6 +4,7 @@ from signals.apps.email_integrations.actions.feedback_received_action import Fee
 from signals.apps.email_integrations.actions.forward_to_external_reaction_received import (
     ForwardToExternalReactionReceivedAction
 )
+from signals.apps.email_integrations.actions.assigned_action import AssignedAction
 from signals.apps.email_integrations.actions.signal_created import SignalCreatedAction
 from signals.apps.email_integrations.actions.signal_forward_to_external import (
     SignalForwardToExternalAction
@@ -34,4 +35,5 @@ __all__ = [
     'SignalReactionRequestReceivedAction',
     'FeedbackReceivedAction',
     'ForwardToExternalReactionReceivedAction',
+    'AssignedAction',
 ]
