@@ -107,7 +107,7 @@ class PublicSignalViewSet(GenericViewSet):
         ).exclude(
             # Only signals that are in an "Open" state
             status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
-
+        ).exclude(
             # Only Signal's that are in categories that are publicly accessible
             category_assignment__category__is_public_accessible=False,
         )
