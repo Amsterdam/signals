@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
-from django.db.models import CharField, Min, Value
+from django.db.models import CharField, Min, Q, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import JSONObject
 from django.http import Http404
@@ -106,10 +106,10 @@ class PublicSignalViewSet(GenericViewSet):
             )
         ).exclude(
             # Only signals that are in an "Open" state
-            status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
-        ).exclude(
+            Q(status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN]) |
+
             # Only Signal's that are in categories that are publicly accessible
-            category_assignment__category__is_public_accessible=False,
+            Q(category_assignment__category__is_public_accessible=False),
         )
 
         # Paginate our queryset and turn it into a GeoJSON feature collection:
