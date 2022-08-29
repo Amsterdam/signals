@@ -24,11 +24,15 @@ class Profile(CreatedUpdatedModel):
     )
 
     departments = models.ManyToManyField(
-        to='signals.Department'
+        to='signals.Department',
+        related_name='profiles'
     )
 
     # SIG-2016 Added a note field to the profile
     note = models.TextField(null=True, blank=True)
+
+    notification_on_assigment_to_user = models.BooleanField('Send e-mail notification when a Signal is assigned to the user', default=False)
+    notification_on_assigment_to_department = models.BooleanField('Send e-mail notification when a Signal is assigned to the department of the user', default=False)
 
     def __str__(self):
         return self.user.username

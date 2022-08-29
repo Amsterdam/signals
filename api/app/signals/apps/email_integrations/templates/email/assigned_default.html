@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Melding aan jou toegewezen: {{ formatted_signal_id }}</title>
+</head>
+<body>
+    <p>
+        <h1>Beste,</h1>
+    </p>
+
+    <p>
+        De volgende melding is aan jou toegewezen:
+    </p>
+
+    <p>
+        Nummer: <i>{{ formatted_signal_id }}</i><br />
+        Subcategorie: <i>{{ sub_category_public_name }}</i><br/>
+        Gemeld op: <i>{{ created_at|date:"DATETIME_FORMAT" }}</i><br/>
+    </p>
+
+    <a href="{{ signal_url }}">{{ signal_url }}</a>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        {{ ORGANIZATION_NAME }}
+    </p>
+</body>
+</html>

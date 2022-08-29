@@ -4,6 +4,7 @@ from typing import Union
 
 from signals.apps.email_integrations.actions import (
     FeedbackReceivedAction,
+    AssignedAction,
     SignalCreatedAction,
     SignalHandledAction,
     SignalHandledNegativeAction,
@@ -33,7 +34,8 @@ class MailService:
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions = {
-        'feedback_received': FeedbackReceivedAction
+        'feedback_received': FeedbackReceivedAction,
+        'assigned': AssignedAction,
     }
 
     @classmethod
@@ -51,7 +53,7 @@ class MailService:
         return False
 
     @classmethod
-    def system_mail(cls, signal: Union[str, Signal], action_name: str, dry_run=False, **kwargs) -> bool:
+    def system_mail(cls, signal: Union[str, Signal], action_name: str, dry_run=False, recipient_list=[], **kwargs) -> bool:
         """
         Send a specific mail trigger based on the trigger name
         """
@@ -65,4 +67,4 @@ class MailService:
         if dry_run:
             return True
 
-        return action(signal, dry_run, **kwargs)
+        return action(signal, dry_run, recipient_list, **kwargs)
