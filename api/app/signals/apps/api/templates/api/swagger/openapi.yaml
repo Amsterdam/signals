@@ -1115,8 +1115,16 @@ paths:
             schema:
               $ref: '#/components/schemas/publicFeedbackForm'
       responses:
-
-
+        '200':
+          description: Update the feedback model
+          content:
+            aplication/json:
+              schema:
+                type: object
+                properties:
+                  signal_id:
+                    type: string
+                    format: uuid
 
   /signals/v1/public/terms/categories/{main_slug}:
     get:
