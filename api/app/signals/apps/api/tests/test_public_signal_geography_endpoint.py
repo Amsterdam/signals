@@ -25,6 +25,7 @@ from signals.test.utils import SignalsBaseApiTestCase
 
 class TestPublicSignalViewSet(SignalsBaseApiTestCase):
     geography_endpoint = "/signals/v1/public/signals/geography"
+    geography_map_endpoint = "/signals/v1/public/signals/geography/map"
 
     def test_get_geojson(self):
         """
@@ -420,3 +421,20 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(200, response.status_code)
         data = response.json()
         self.assertEqual(None, data['features'])
+
+    def test_geography_map_parameters(self):
+        """
+        The geography map endpoint to ensure the parameters are there for the signals map to be used
+        """
+        parent_category = ParentCategoryFactory.create()
+        child_category = CategoryFactory.create(parent=parent_category, is_public_accessible=True)
+        SignalFactoryValidLocation.create(category_assignment__category=child_category)
+
+        SignalFactoryValidLocation.create(category_assignment__category=child_category, status__state=AFGEHANDELD)
+        response = self.client.get(f'{self.geography_map_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000')
+        data = response.json()
+        record = data['features'][0]
+        self.assertIn('location', record)
+        self.assertIn('address', record['location'])
+        self.assertTrue('sub', record['properties']['category'])
+        self.assertTrue('main', record['properties']['category'])

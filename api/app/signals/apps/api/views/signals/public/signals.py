@@ -65,6 +65,33 @@ class PublicSignalViewSet(GenericViewSet):
         data = PublicSignalSerializerDetail(signal, context=self.get_serializer_context()).data
         return Response(data)
 
+    def guery_geography(self, request, qs):
+        """
+        Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
+        Additional filtering can be done by adding query parameters.
+        """
+        queryset = self.filter_queryset(
+            qs
+        ).filter(
+            # Only signals that are in an "Open" state
+            # Only Signal's that are in categories that are publicly accessible
+            ~Q(status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN]),
+            Q(category_assignment__category__is_public_accessible=True),
+        )
+
+        # Paginate our queryset and turn it into a GeoJSON feature collection:
+        headers = []
+        feature_collection = {'type': 'FeatureCollection', 'features': []}
+        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
+        page_qs = paginator.paginate_queryset(queryset, self.request, view=self)
+
+        if page_qs is not None:
+            features = page_qs.aggregate(features=JSONAgg('feature'))
+            feature_collection.update(features)
+            headers = paginator.get_pagination_headers()
+
+        return Response(feature_collection, headers=headers)
+
     @action(detail=False, url_path=r'geography/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
             ordering=('-created_at', ), ordering_fields=('created_at', ))
     def geography(self, request) -> Response:
@@ -73,13 +100,10 @@ class PublicSignalViewSet(GenericViewSet):
         Additional filtering can be done by adding query parameters.
         """
         qs = self.get_queryset()
-
         if request.query_params.get('group_by', '').lower() == 'category':
             # Group by category and return the oldest signal created_at date
             qs = qs.values('category_assignment__category_id').annotate(created_at=Min('created_at'))
-
-        queryset = self.filter_queryset(
-            qs.annotate(
+        qs = qs.annotate(
                 # Transform the output of the query to GeoJSON in the database.
                 # This is much faster than using a DRF Serializer.
                 feature=JSONObject(
@@ -104,23 +128,50 @@ class PublicSignalViewSet(GenericViewSet):
                     ),
                 )
             )
-        ).exclude(
-            # Only signals that are in an "Open" state
-            Q(status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN]) |
 
-            # Only Signal's that are in categories that are publicly accessible
-            Q(category_assignment__category__is_public_accessible=False),
+        return self.guery_geography(request, qs)
+
+    @action(detail=False, url_path=r'geography/map/?$', methods=['GET'], filterset_class=PublicSignalGeographyFilter,
+            ordering=('-created_at', ), ordering_fields=('created_at', ))
+    def geography_map(self, request) -> Response:
+        """
+        Returns a GeoJSON of all Signal's that are in an "Open" state and in a publicly available category.
+        Additional filtering can be done by adding query parameters.
+        This endpoint is used for the showing of signals on the signals map
+        """
+        qs = self.get_queryset()
+        qs = qs.annotate(
+            # Transform the output of the query to GeoJSON in the database.
+            # This is much faster than using a DRF Serializer.
+            feature=JSONObject(
+                type=Value('Feature', output_field=CharField()),
+                location=JSONObject(
+                    geometry=AsGeoJSON('location__geometrie'),
+                    address='location__address',
+                ),
+                properties=JSONObject(
+                    category=JSONObject(
+                        main=Case(
+                            When(category_assignment__category__public_name__exact='',
+                                 then='category_assignment__category__parent__name'),
+                            When(category_assignment__category__public_name__isnull=True,
+                                 then='category_assignment__category__parent__name'),
+                            default='category_assignment__category__parent__name',
+                            output_field=CharField(),
+                        ),
+                        sub=Case(
+                            When(category_assignment__category__public_name__exact='',
+                                 then='category_assignment__category__name'),
+                            When(category_assignment__category__public_name__isnull=True,
+                                 then='category_assignment__category__name'),
+                            default='category_assignment__category__public_name',
+                            output_field=CharField(),
+                        )
+                    ),
+                    # Creation date of the Signal
+                    created_at='created_at',
+                ),
+            )
         )
 
-        # Paginate our queryset and turn it into a GeoJSON feature collection:
-        headers = []
-        feature_collection = {'type': 'FeatureCollection', 'features': []}
-        paginator = LinkHeaderPaginationForQuerysets(page_query_param='geopage', page_size=SIGNALS_API_GEO_PAGINATE_BY)
-        page_qs = paginator.paginate_queryset(queryset, self.request, view=self)
-
-        if page_qs is not None:
-            features = page_qs.aggregate(features=JSONAgg('feature'))
-            feature_collection.update(features)
-            headers = paginator.get_pagination_headers()
-
-        return Response(feature_collection, headers=headers)
+        return self.guery_geography(request, qs)

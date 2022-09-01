@@ -1064,6 +1064,68 @@ paths:
                     items:
                       type: string
                 example: {'bbox': ['Dit veld is vereist.']}
+  /signals/v1/public/signals/geography/map/:
+    get:
+      description: Public signals geography endpoint, returns GEOjson. For this endpoint either bbox or lon/lat parameters are required.If both bbox and lon/lat are filled in only the bbox files wil be use.
+      parameters:
+        - name: bbox
+          description: A bounding box to filter. Format is min_lon, min_lat, max_lon, max_lat
+          in: query
+          required: False
+          schema:
+            type: string
+            example: 4.877157,52.357204,4.929686,52.385239
+        - name: lon
+          description: A longitude field to filter.
+          in: query
+          required: False
+          schema:
+            type: string
+            example: 4.877157
+        - name: lat
+          description: A latitude field to filter.
+          in: query
+          required: False
+          schema:
+            type: string
+            example: 58.877157
+        - name: maincategory_slug
+          description: Filter returns only signals with matching main category
+            slug.
+          in: query
+          required: false
+          schema:
+            type: string
+            example: afval
+        - name: category_slug
+          description: >-
+            Filter returns only signals with matching sub category slug.
+          in: query
+          required: false
+          schema:
+            type: string
+            example: overig-afval
+
+      responses:
+        '200':
+          description: List of signals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1PublicSignalGeographyMapGEOJson'
+        '400':
+          description: Required query parameters not provided
+          content:
+            application/json:
+              schema:
+                description: JSON data describing the public category response
+                type: object
+                properties:
+                  { name_of_query_param }:
+                    type: array
+                    items:
+                      type: string
+                example: { 'bbox': [ 'Dit veld is vereist.' ] }
 
   /signals/v1/public/terms/categories:
     get:
@@ -3127,6 +3189,72 @@ components:
                       name:
                         description: The public name of the category (fallback is the internal name)
                         example: Zwerfvuil op straat
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2022-02-24T00:00:00+00:00"
+
+    V1PublicSignalGeographyMapGEOJson:
+      description: Signals in a GEOjson format
+      type: object
+      properties:
+        'type':
+          type: string
+          example: "FeatureCollection"
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              'type':
+                type: string
+                example: "Feature"
+              location:
+                type: object
+                properties:
+                  address:
+                    type: object
+                    properties:
+                      postcode:
+                        type: string
+                        example: "1234AB"
+                      huisnummer:
+                        type: number
+                        example: 12
+                      woonplaats:
+                        type: string
+                        example: "Amsterdam"
+                      openbare_ruimte:
+                        type: string
+                        example: "marktplein"
+                  geometry:
+                    type: object
+                    properties:
+                      'type':
+                        type: string
+                        example: "Point"
+                      coordinates:
+                        type: array
+                        items:
+                          type: integer
+                        minItems: 0
+                        maxItems: 2
+                        example: [ 4.890986949631043, 52.41875227274259 ]
+
+              'properties':
+                type: object
+                properties:
+                  category:
+                    description: The category the signal is in
+                    type: object
+                    properties:
+                      sub:
+                        type: string
+                        description: The public name of the category (fallback is the internal name)
+                        example: Zwerfvuil op straat
+                      main:
+                        type: string
+                        example: Afval
                   created_at:
                     type: string
                     format: date-time
