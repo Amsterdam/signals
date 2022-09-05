@@ -34,7 +34,7 @@ class TestReporterSerializer(TestCase):
 
         feedback = FeedbackFactory.create(
             _signal=self.signal,
-            submitted_at='2022-01-01',
+            submitted_at='2022-01-01 00:00:00+00:00',
             allows_contact=False
         )
         feedback.save()

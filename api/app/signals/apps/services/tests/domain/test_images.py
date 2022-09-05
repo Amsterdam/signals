@@ -19,14 +19,14 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         too_wide.width = 1600
         too_wide.height = 800
         DataUriImageEncodeService.resize(too_wide, 800)
-        too_wide.resize.assert_called_with(size=(800, 400), resample=Image.LANCZOS)
+        too_wide.resize.assert_called_with(size=(800, 400), resample=Image.Resampling.LANCZOS)
 
     def test_resize_iamge_too_heigh(self):
         too_heigh = MagicMock()
         too_heigh.width = 800
         too_heigh.height = 1600
         DataUriImageEncodeService.resize(too_heigh, 800)
-        too_heigh.resize.assert_called_with(size=(400, 800), resample=Image.LANCZOS)
+        too_heigh.resize.assert_called_with(size=(400, 800), resample=Image.Resampling.LANCZOS)
 
     def test_get_context_data_no_images(self):
         AttachmentFactory(_signal=self.signal, file__filename='blah.txt', file__data=b'blah', is_image=False)
