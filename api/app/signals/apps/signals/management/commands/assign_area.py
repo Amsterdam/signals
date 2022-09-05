@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 new_location.save()
 
                 signal.location = new_location
-                signal.save()
+                signal.save(update_fields=['location', 'updated_at'])
 
                 n_assigned += 1
             else:
