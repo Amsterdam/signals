@@ -190,11 +190,7 @@ class SessionService:
         # TBD, still how do we mark answers with the proper category
         extra_props = []
         for answer in self._path_answers_by_question_id.values():
-            entry = {
-                'id': answer.question.analysis_key,
-                'label': answer.question.short_label,
-                'answer': answer.payload,
-            }
+            entry = answer.extra_property()
             if category_url:
                 entry['category_url'] = category_url
             extra_props.append(entry)

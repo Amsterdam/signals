@@ -16,3 +16,20 @@ class Answer(models.Model):
 
     def __str__(self):
         return f'Answer (id={self.id}) to question with analysis_key={self.question.analysis_key}.'
+
+    def extra_property(self):
+        """
+        Helper function for backwards compatibility with the "old" way how the extra_properties where populated.
+        Will be removed when the FE has been migrated to only use the new Questionnaires app.
+        """
+        # Check if the field type of the question knows how to represent itself as an old extra property
+        field_type = self.question.field_type_class()
+        if extra_property_representation := field_type.extra_property(self):
+            return extra_property_representation
+
+        # Default
+        return {
+            'id': self.question.analysis_key,
+            'label': self.question.short_label,
+            'answer': self.payload,
+        }
