@@ -113,7 +113,7 @@ class TestAnswerService(TestCase):
         selected_object_question.multiple_answers = True
         selected_object_question.save()
 
-        validate_answer([payload_object_selected for x in range(3)], selected_object_question)
+        validate_answer([payload_not_on_map for x in range(3)], selected_object_question)
 
     def test_validate_multiple_answers(self):
         q = QuestionFactory.create(field_type='plain_text', multiple_answers=True, required=True,
