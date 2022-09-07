@@ -173,7 +173,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         data = response.json()
         self.assertEqual(1, len(data['features']))
-        self.assertEqual(data['features'][0]['properties']['category']['name'], child_category.public_name)
+        self.assertEqual(child_category.public_name, data['features'][0]['properties']['category']['name'])
+        self.assertEqual(child_category.slug, data['features'][0]['properties']['category']['slug'])
+        self.assertEqual(parent_category.name, data['features'][0]['properties']['category']['parent']['name'])
+        self.assertEqual(parent_category.slug, data['features'][0]['properties']['category']['parent']['slug'])
 
     def test_lon_lat_parameters(self):
         """
@@ -197,7 +200,10 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(1, len(data['features']))
 
         for feature in data['features']:
-            self.assertEqual(feature['properties']['category']['name'], child_category.public_name)
+            self.assertEqual(child_category.public_name, feature['properties']['category']['name'])
+            self.assertEqual(child_category.slug, feature['properties']['category']['slug'])
+            self.assertEqual(parent_category.name, feature['properties']['category']['parent']['name'])
+            self.assertEqual(parent_category.slug, feature['properties']['category']['parent']['slug'])
 
     def test_missing_bbox_and_lonlat(self):
         """
@@ -248,7 +254,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         """
         An empty public_name (None) must fallback to the name
         """
-        parent_category = ParentCategoryFactory.create()
+        parent_category = ParentCategoryFactory.create(public_name='parent-test')
         child_category = CategoryFactory.create(parent=parent_category, public_name='test', is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
 
@@ -261,12 +267,15 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         self.assertEqual(1, len(data['features']))
         self.assertEqual(child_category.public_name, data['features'][0]['properties']['category']['name'])
         self.assertNotEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+        self.assertEqual(child_category.slug, data['features'][0]['properties']['category']['slug'])
+        self.assertEqual(parent_category.public_name, data['features'][0]['properties']['category']['parent']['name'])
+        self.assertEqual(parent_category.slug, data['features'][0]['properties']['category']['parent']['slug'])
 
     def test_public_name_is_none(self):
         """
         An empty public_name (None) must fallback to the name
         """
-        parent_category = ParentCategoryFactory.create()
+        parent_category = ParentCategoryFactory.create(public_name=None)
         child_category = CategoryFactory.create(parent=parent_category, public_name=None, is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
 
@@ -278,12 +287,15 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         self.assertEqual(1, len(data['features']))
         self.assertEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+        self.assertEqual(child_category.slug, data['features'][0]['properties']['category']['slug'])
+        self.assertEqual(parent_category.name, data['features'][0]['properties']['category']['parent']['name'])
+        self.assertEqual(parent_category.slug, data['features'][0]['properties']['category']['parent']['slug'])
 
     def test_public_name_is_empty(self):
         """
         An empty public_name ('') must fallback to the name
         """
-        parent_category = ParentCategoryFactory.create()
+        parent_category = ParentCategoryFactory.create(public_name='')
         child_category = CategoryFactory.create(parent=parent_category, public_name='', is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
 
@@ -295,6 +307,9 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         data = response.json()
         self.assertEqual(1, len(data['features']))
         self.assertEqual(child_category.name, data['features'][0]['properties']['category']['name'])
+        self.assertEqual(child_category.slug, data['features'][0]['properties']['category']['slug'])
+        self.assertEqual(parent_category.name, data['features'][0]['properties']['category']['parent']['name'])
+        self.assertEqual(parent_category.slug, data['features'][0]['properties']['category']['parent']['slug'])
 
     def test_no_category_filters(self):
         """

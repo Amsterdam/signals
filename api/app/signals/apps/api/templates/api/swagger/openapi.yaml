@@ -3127,6 +3127,19 @@ components:
                       name:
                         description: The public name of the category (fallback is the internal name)
                         example: Zwerfvuil op straat
+                      slug:
+                        description: The slug of the category
+                        example: zwerfvuil-op-straat
+                      parent:
+                        description: The parent category the signal is in
+                        type: object
+                        properties:
+                          name:
+                            description: The public name of the parent category (fallback is the internal name)
+                            example: Afval
+                          slug:
+                            description: The slug of the parent category
+                            example: afval
                   created_at:
                     type: string
                     format: date-time
