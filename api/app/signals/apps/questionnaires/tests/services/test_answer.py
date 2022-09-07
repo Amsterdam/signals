@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import copy
+
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
@@ -61,6 +63,16 @@ class TestAnswerService(TestCase):
                                                    short_label='selected_object')
         validate_answer = AnswerService.validate_answer_payload
 
+        base_payload = {
+            'id': None,
+            'type': None,
+            'on-map': None,
+            'coordinates': {
+                'lat': None,
+                'lng': None
+            }
+        }
+
         # Basic payloads that should raise a validation error
         with self.assertRaises(django_validation_error):
             validate_answer('Invalid payload', selected_object_question)
@@ -71,26 +83,24 @@ class TestAnswerService(TestCase):
         with self.assertRaises(django_validation_error):
             validate_answer(False, selected_object_question)
 
+        # Layout of the payload is correct, the contents is empty. Should raise an error.
+        # Only the id is allowed to be None
+        with self.assertRaises(django_validation_error):
+            validate_answer(base_payload, selected_object_question)
+
         # These payloads should be valid
-        payload_not_on_map_simple = {'type': 'not-on-map'}
-        validate_answer(payload_not_on_map_simple, selected_object_question)
+        payload_not_on_map = copy.deepcopy(base_payload)
 
-        payload_not_on_map_complex = {'id': 123456, 'type': 'not-on-map', 'label': 'Niet op de kaart - 123456'}
-        validate_answer(payload_not_on_map_complex, selected_object_question)
+        payload_not_on_map['id'] = 123456
+        payload_not_on_map['type'] = 'container'
+        payload_not_on_map['on-map'] = True
+        payload_not_on_map['type'] = 'not-on-map'
+        payload_not_on_map['coordinates']['lat'] = 4.90022563
+        payload_not_on_map['coordinates']['lng'] = 52.36768424
 
-        payload_object_selected = {'id': '123456', 'type': 'type-of-object', 'description': 'description',
-                                   'isReported': False, 'label': 'Label - 123456'}
-        validate_answer(payload_object_selected, selected_object_question)
+        for _id in [None, 123456, '123456-TEST']:
+            payload_not_on_map['id'] = _id
+            validate_answer(payload_not_on_map, selected_object_question)
 
-        payload_object_selected = {'id': 123456, 'type': 'type-of-object', 'description': 'description',
-                                   'isReported': False, 'label': 'Label - 123456',
-                                   'location': {'coordinates': {'lat': 52.36768424, 'lon': 4.90022563}}}
-        validate_answer(payload_object_selected, selected_object_question)
-
-        payload_object_selected = {'id': 123456, 'type': 'type-of-object', 'description': 'description',
-                                   'isReported': False, 'label': 'Label - 123456',
-                                   'location': {'coordinates': {'lat': 52.36768424, 'lon': 4.90022563},
-                                                'address': {'openbare_ruimte': 'De Ruijterkade', 'huisnummer': '36',
-                                                            'huisletter': 'A', 'huisnummer_toevoeging': '',
-                                                            'postcode': '1012AA', 'woonplaats': 'Amsterdam'}}}
-        validate_answer(payload_object_selected, selected_object_question)
+        payload_not_on_map['on-map'] = False
+        validate_answer(payload_not_on_map, selected_object_question)
