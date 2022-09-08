@@ -97,7 +97,19 @@ class PublicSignalViewSet(GenericViewSet):
                                      then='category_assignment__category__name'),
                                 default='category_assignment__category__public_name',
                                 output_field=CharField(),
-                            )
+                            ),
+                            slug='category_assignment__category__slug',
+                            parent=JSONObject(
+                                name=Case(
+                                    When(category_assignment__category__parent__public_name__exact='',
+                                         then='category_assignment__category__parent__name'),
+                                    When(category_assignment__category__parent__public_name__isnull=True,
+                                         then='category_assignment__category__parent__name'),
+                                    default='category_assignment__category__parent__public_name',
+                                    output_field=CharField(),
+                                ),
+                                slug='category_assignment__category__parent__slug'
+                            ),
                         ),
                         # Creation date of the Signal
                         created_at='created_at',
