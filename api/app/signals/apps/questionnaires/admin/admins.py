@@ -63,8 +63,8 @@ class QuestionAdmin(admin.ModelAdmin):
     form = QuestionAdminForm
 
     inlines = (ChoiceStackedInline,)
-    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'multiple_answers',
-              'required',  'extra_properties', 'created_at',)
+    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'extra_properties',
+              'required', 'multiple_answers_allowed', 'additional_validation', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
 
     list_display = ('retrieval_key', 'analysis_key', 'uuid', 'field_type', 'created_at',)

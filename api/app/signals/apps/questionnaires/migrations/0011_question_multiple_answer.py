@@ -14,7 +14,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='question',
-            name='multiple_answers',
+            name='multiple_answers_allowed',
             field=models.BooleanField(default=False),
+        ),
+        migrations.AddField(
+            model_name='question',
+            name='additional_validation',
+            field=models.JSONField(blank=True, null=True),
         ),
     ]

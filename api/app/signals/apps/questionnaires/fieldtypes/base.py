@@ -19,8 +19,8 @@ class FieldType:
         'maxItems': 10  # Default value, configurable via the extra_properties on the question (maxItems)
     }
 
-    def __init__(self, multiple_answers=False, min_items=None, max_items=None):
-        self._multiple_answers = multiple_answers
+    def __init__(self, multiple_answers_allowed=False, min_items=None, max_items=None):
+        self.multiple_answers_allowed = multiple_answers_allowed
         self._min_items = min_items or None
         self._max_items = max_items or None
 
@@ -30,7 +30,7 @@ class FieldType:
         """
         # We raise Django ValidationErrors here because this function is called
         # from model.clean functions and services that underlie REST API calls.
-        if self._multiple_answers:
+        if self.multiple_answers_allowed:
             schema = self._multiple_answers_schema
             schema['items'].update(self.submission_schema)
             schema['minItems'] = self._min_items

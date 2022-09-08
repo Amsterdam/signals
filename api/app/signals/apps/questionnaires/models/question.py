@@ -27,7 +27,8 @@ class Question(models.Model):
     field_type = models.CharField(choices=field_type_choices(), max_length=255)
     required = models.BooleanField(default=False)
     enforce_choices = models.BooleanField(default=False)
-    multiple_answers = models.BooleanField(default=False)
+
+    multiple_answers_allowed = models.BooleanField(default=False)
     multiple_answer_schema = {
         'type': 'object',
         'properties': {
@@ -56,6 +57,12 @@ class Question(models.Model):
         ],
     }
 
+    # JSON schema for additional validation of the payload of a given answer/answers
+    # For example the minItems and the maxItems when given multiple ansers
+    additional_validation = models.JSONField(null=True, blank=True)
+
+    # Extra properties needed for the question
+    # For example the field_type selected_object has a property that stores the source URL of the objects
     extra_properties = models.JSONField(blank=True, null=True)
 
     objects = QuestionManager()
@@ -79,11 +86,12 @@ class Question(models.Model):
 
     def get_field_type(self):
         kwargs = {}
-        if self.multiple_answers and self.extra_properties and 'answers' in self.extra_properties:
-            min_items = self.extra_properties['answers']['minItems']
-            max_items = self.extra_properties['answers']['maxItems']
-            kwargs.update({'multiple_answers': self.multiple_answers, 'min_items': min_items, 'max_items': max_items})
-        elif self.multiple_answers:
-            kwargs.update({'multiple_answers': self.multiple_answers, 'min_items': 1, 'max_items': 10})
+        if self.multiple_answers_allowed and self.additional_validation and 'answers' in self.extra_properties:
+            min_items = self.additional_validation['answers']['minItems']
+            max_items = self.additional_validation['answers']['maxItems']
+            kwargs.update({'multiple_answers_allowed': self.multiple_answers_allowed, 'min_items': min_items,
+                           'max_items': max_items})
+        elif self.multiple_answers_allowed:
+            kwargs.update({'multiple_answers_allowed': self.multiple_answers_allowed, 'min_items': 1, 'max_items': 10})
 
         return self.field_type_class(**kwargs)

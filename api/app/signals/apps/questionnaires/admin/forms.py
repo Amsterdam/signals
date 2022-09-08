@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 
 # TODO: Make this available for the whole project
-import copy
-
 from django.forms import JSONField, modelformset_factory
 from django.forms.models import BaseModelFormSet, ModelForm
 
@@ -43,14 +41,16 @@ def non_related_inlineformset_factory(model, obj=None, queryset=None, formset=No
 
 class QuestionAdminForm(ModelForm):
     extra_properties = JSONField(widget=PrettyJSONWidget)
+    additional_validation = JSONField(widget=PrettyJSONWidget)
 
     def clean_extra_properties(self):
         if hasattr(self.instance.field_type_class, 'extra_properties_schema'):
-            schema = copy.deepcopy(self.instance.field_type_class.extra_properties_schema)
-            if self.cleaned_data['multiple_answers']:
-                schema['properties'].update(copy.deepcopy(self.instance.multiple_answer_schema['properties']))
-                schema['required'].extend(copy.deepcopy(self.instance.multiple_answer_schema['required']))
-
-            validator = JSONSchemaValidator(schema)
+            validator = JSONSchemaValidator(self.instance.field_type_class.extra_properties_schema)
             validator(self.cleaned_data['extra_properties'])
         return self.cleaned_data['extra_properties']
+
+    def clean_additional_validation(self):
+        if self.cleaned_data['multiple_answers_allowed']:
+            validator = JSONSchemaValidator(self.instance.multiple_answer_schema)
+            validator(self.cleaned_data['additional_validation'])
+        return self.cleaned_data['additional_validation']
