@@ -40,8 +40,8 @@ def non_related_inlineformset_factory(model, obj=None, queryset=None, formset=No
 
 
 class QuestionAdminForm(ModelForm):
-    extra_properties = JSONField(widget=PrettyJSONWidget)
-    additional_validation = JSONField(widget=PrettyJSONWidget)
+    extra_properties = JSONField(widget=PrettyJSONWidget, required=False)
+    additional_validation = JSONField(widget=PrettyJSONWidget, required=False)
 
     def clean_extra_properties(self):
         if hasattr(self.instance.field_type_class, 'extra_properties_schema'):

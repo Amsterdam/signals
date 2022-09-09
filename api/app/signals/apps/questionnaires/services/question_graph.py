@@ -68,7 +68,8 @@ class QuestionGraphService:
             nx_graph.add_edge(edge.question_id, edge.next_question_id, **edge_kwargs)
 
             # Add node metadata
-            nx_graph.add_node(edge.question.id, label=edge.question.label, ref=edge.question.ref)
+            nx_graph.add_node(edge.question.id, label=edge.question.label, ref=edge.question.ref,
+                              multiple_answers_allowed=edge.question.multiple_answers_allowed)
             nx_graph.add_node(edge.next_question.id, label=edge.next_question.label, ref=edge.next_question.ref)
 
             if len(nx_graph) > MAX_QUESTIONS:
@@ -77,7 +78,8 @@ class QuestionGraphService:
 
         if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
             nx_graph.add_node(q_graph.first_question.id, label=q_graph.first_question.label,
-                              ref=q_graph.first_question.ref)
+                              ref=q_graph.first_question.ref,
+                              multiple_answers_allowed=q_graph.first_question.multiple_answers_allowed)
 
         return nx_graph
 
