@@ -126,14 +126,18 @@ class TestAnswerService(TestCase):
             # Not a list
             AnswerService.validate_answer_payload('answer is not a list', q)
 
+        with self.assertRaises(django_validation_error):
             # Only one answer is given, the minimum is 2
             AnswerService.validate_answer_payload(['answer 1', ], q)
 
+        with self.assertRaises(django_validation_error):
             # An empty list
             AnswerService.validate_answer_payload([], q)
 
+        with self.assertRaises(django_validation_error):
             # Not strings
             AnswerService.validate_answer_payload([1, 2, 3], q)
 
+        with self.assertRaises(django_validation_error):
             # Too much answers
             AnswerService.validate_answer_payload([f'answer {x}' for x in range(6)], q)
