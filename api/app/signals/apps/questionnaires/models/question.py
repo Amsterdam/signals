@@ -86,7 +86,7 @@ class Question(models.Model):
 
     def get_field_type(self):
         kwargs = {}
-        if self.multiple_answers_allowed and self.additional_validation and 'answers' in self.extra_properties:
+        if self.multiple_answers_allowed and self.additional_validation and 'answers' in self.additional_validation:
             min_items = self.additional_validation['answers']['minItems']
             max_items = self.additional_validation['answers']['maxItems']
             kwargs.update({'multiple_answers_allowed': self.multiple_answers_allowed, 'min_items': min_items,

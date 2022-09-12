@@ -2,7 +2,7 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.core.exceptions import ValidationError as django_validation_error
 
-from signals.apps.questionnaires.fieldtypes import SelectedObject, get_field_type_class
+from signals.apps.questionnaires.fieldtypes import SelectedObject
 
 
 class AnswerService:

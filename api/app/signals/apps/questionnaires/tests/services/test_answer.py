@@ -110,14 +110,15 @@ class TestAnswerService(TestCase):
             with self.assertRaises(django_validation_error):
                 validate_answer(False, selected_object_question)
 
-        selected_object_question.multiple_answers = True
+        payload_not_on_map['onMap'] = True
+        selected_object_question.multiple_answers_allowed = True
         selected_object_question.save()
 
         validate_answer([payload_not_on_map for x in range(3)], selected_object_question)
 
     def test_validate_multiple_answers(self):
         q = QuestionFactory.create(field_type='plain_text', multiple_answers_allowed=True, required=True,
-                                   extra_properties={'answers': {'minItems': 2, 'maxItems': 5}})
+                                   additional_validation={'answers': {'minItems': 2, 'maxItems': 5}})
 
         AnswerService.validate_answer_payload(['answer 1', 'answer 2'], q)
         AnswerService.validate_answer_payload([f'answer {x}' for x in range(5)], q)
