@@ -29,9 +29,3 @@ class FieldType:
             msg = f'Submitted answer does not validate. {jsve.message}'
             raise django_validation_error(msg)
         return payload
-
-    def extra_property(self, answer):
-        """
-        Overwrite this functionality when a special representation of the extra_property is needed
-        """
-        return False

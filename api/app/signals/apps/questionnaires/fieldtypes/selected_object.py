@@ -86,22 +86,3 @@ class SelectedObject(FieldType):
         ],
         'additionalProperties': False
     }
-
-    def extra_property(self, answer):
-        transformed_payload = {}
-
-        if answer.payload['id']:
-            transformed_payload.update({'id': answer.payload['id']})
-
-        if not answer.payload['onMap']:
-            transformed_payload.update({'type': 'not-on-map'})
-        else:
-            transformed_payload.update({'type': answer.payload['type']})
-
-        transformed_payload.update({'location': {'coordinates': answer.payload['coordinates']}})
-
-        return {
-            'id': answer.question.analysis_key,
-            'label': answer.question.short_label,
-            'answer': transformed_payload,
-        }
