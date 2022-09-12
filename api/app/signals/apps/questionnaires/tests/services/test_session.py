@@ -709,7 +709,7 @@ class TestSessionService(TestCase):
             payload={
                 'id': 'C-123.456_test',
                 'type': 'container',
-                'on-map': True,
+                'onMap': True,
                 'coordinates': {
                     'lat': 4.90022563,
                     'lng': 52.36768424

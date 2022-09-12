@@ -66,7 +66,7 @@ class TestAnswerService(TestCase):
         base_payload = {
             'id': None,
             'type': None,
-            'on-map': None,
+            'onMap': None,
             'coordinates': {
                 'lat': None,
                 'lng': None
@@ -91,9 +91,8 @@ class TestAnswerService(TestCase):
         # These payloads should be valid
         payload_not_on_map = copy.deepcopy(base_payload)
 
-        payload_not_on_map['id'] = 123456
         payload_not_on_map['type'] = 'container'
-        payload_not_on_map['on-map'] = True
+        payload_not_on_map['onMap'] = True
         payload_not_on_map['type'] = 'not-on-map'
         payload_not_on_map['coordinates']['lat'] = 4.90022563
         payload_not_on_map['coordinates']['lng'] = 52.36768424
@@ -102,5 +101,11 @@ class TestAnswerService(TestCase):
             payload_not_on_map['id'] = _id
             validate_answer(payload_not_on_map, selected_object_question)
 
-        payload_not_on_map['on-map'] = False
+        payload_not_on_map['onMap'] = False
         validate_answer(payload_not_on_map, selected_object_question)
+
+        # Invalid types for onMap
+        for invalid_on_map in ['True', 'False', 1, 0, '', None]:
+            payload_not_on_map['onMap'] = invalid_on_map
+            with self.assertRaises(django_validation_error):
+                validate_answer(False, selected_object_question)

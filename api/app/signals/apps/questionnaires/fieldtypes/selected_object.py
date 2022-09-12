@@ -11,7 +11,7 @@ class SelectedObject(FieldType):
     # {
     #   "id": 123456789,
     #   "type": "papier-container",
-    #   "on-map": true,
+    #   "onMap": true,
     #   "coordinates": {
     #     "lat": 4.75029,
     #     "lng": 51.198302
@@ -38,7 +38,7 @@ class SelectedObject(FieldType):
             'type': {
                 'type': 'string'
             },
-            'on-map': {
+            'onMap': {
                 'type': 'boolean'
             },
             'coordinates': {
@@ -64,7 +64,7 @@ class SelectedObject(FieldType):
         'required': [
             'id',
             'type',
-            'on-map',
+            'onMap',
             'coordinates'
         ]
     }
@@ -93,7 +93,7 @@ class SelectedObject(FieldType):
         if answer.payload['id']:
             transformed_payload.update({'id': answer.payload['id']})
 
-        if not answer.payload['on-map']:
+        if not answer.payload['onMap']:
             transformed_payload.update({'type': 'not-on-map'})
         else:
             transformed_payload.update({'type': answer.payload['type']})
