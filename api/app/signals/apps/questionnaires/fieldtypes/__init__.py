@@ -10,6 +10,7 @@ from signals.apps.questionnaires.fieldtypes.boolean import Boolean
 from signals.apps.questionnaires.fieldtypes.datetime import Date, DateTime, Time
 from signals.apps.questionnaires.fieldtypes.float import Float
 from signals.apps.questionnaires.fieldtypes.integer import Integer, PositiveInteger
+from signals.apps.questionnaires.fieldtypes.selected_object import SelectedObject
 from signals.apps.questionnaires.fieldtypes.text import DutchTelephoneNumber, Email, PlainText
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     'Date',
     'DateTime',
     'Time',
+    'SelectedObject',
 ]
 
 _PATTERN_CAMEL_CASE = re.compile(r'(?<!^)(?=[A-Z])')

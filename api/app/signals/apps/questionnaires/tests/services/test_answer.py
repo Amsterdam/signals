@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import copy
+
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 
@@ -55,3 +57,55 @@ class TestAnswerService(TestCase):
             validate_answer(123456, plaintext_question)
         with self.assertRaises(django_validation_error):
             validate_answer({'some': 'thing', 'complicated': {}}, plaintext_question)
+
+    def test_validate_field_type_select_object(self):
+        selected_object_question = QuestionFactory(field_type='selected_object', label='selected_object',
+                                                   short_label='selected_object')
+        validate_answer = AnswerService.validate_answer_payload
+
+        base_payload = {
+            'id': None,
+            'type': None,
+            'onMap': None,
+            'coordinates': {
+                'lat': None,
+                'lng': None
+            }
+        }
+
+        # Basic payloads that should raise a validation error
+        with self.assertRaises(django_validation_error):
+            validate_answer('Invalid payload', selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(123456789, selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(True, selected_object_question)
+        with self.assertRaises(django_validation_error):
+            validate_answer(False, selected_object_question)
+
+        # Layout of the payload is correct, the contents is empty. Should raise an error.
+        # Only the id is allowed to be None
+        with self.assertRaises(django_validation_error):
+            validate_answer(base_payload, selected_object_question)
+
+        # These payloads should be valid
+        payload_not_on_map = copy.deepcopy(base_payload)
+
+        payload_not_on_map['type'] = 'container'
+        payload_not_on_map['onMap'] = True
+        payload_not_on_map['type'] = 'not-on-map'
+        payload_not_on_map['coordinates']['lat'] = 4.90022563
+        payload_not_on_map['coordinates']['lng'] = 52.36768424
+
+        for _id in [None, 123456, '123456-TEST']:
+            payload_not_on_map['id'] = _id
+            validate_answer(payload_not_on_map, selected_object_question)
+
+        payload_not_on_map['onMap'] = False
+        validate_answer(payload_not_on_map, selected_object_question)
+
+        # Invalid types for onMap
+        for invalid_on_map in ['True', 'False', 1, 0, '', None]:
+            payload_not_on_map['onMap'] = invalid_on_map
+            with self.assertRaises(django_validation_error):
+                validate_answer(False, selected_object_question)

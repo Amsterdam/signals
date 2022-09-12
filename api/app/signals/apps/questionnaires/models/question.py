@@ -28,6 +28,8 @@ class Question(models.Model):
     required = models.BooleanField(default=False)
     enforce_choices = models.BooleanField(default=False)
 
+    extra_properties = models.JSONField(blank=True, null=True)
+
     objects = QuestionManager()
 
     def __str__(self):
@@ -40,6 +42,7 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         if self.analysis_key == 'PLACEHOLDER':
             self.analysis_key = f'PLACEHOLDER-{str(self.uuid)}'
+
         return super().save(*args, **kwargs)
 
     @property
