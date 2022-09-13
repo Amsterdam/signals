@@ -34,7 +34,7 @@ class PublicAttachmentSerializer(serializers.Serializer):
 
         file = validated_data.pop('file')
         try:
-            question.field_type_class().validate_file(file)
+            question.get_field_type().validate_file(file)
         except (FileRejectedError, DecompressionBombError) as e:
             raise ValidationError({'file': [str(e)]})
 

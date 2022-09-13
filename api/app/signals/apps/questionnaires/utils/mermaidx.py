@@ -41,14 +41,14 @@ def mermaidx(graph, direction=DIRECTION_TD):
                     choice_payload_display = edge_choice_payload_display[(node, neighbour_node, 0)]
                     choice_payload_display = f'|{choice_payload_display}|' if choice_payload_display else ''
 
-                    node_label = f'["{graph.nodes[node].get("label")}"]' if graph.nodes[node].get('label') else ''
+                    node_label = f'{graph.nodes[node].get("label", "")}{" *" if graph.nodes[node].get("multiple_answers_allowed", False) else ""}'  # noqa
                     neighbour_node_label = f'["{graph.nodes[neighbour_node].get("label")}"]' if graph.nodes[neighbour_node].get('label') else ''  # noqa
 
-                    _write(f'{graph.nodes[node].get("ref")}{node_label} -->{choice_payload_display} {graph.nodes[neighbour_node].get("ref")}{neighbour_node_label}')  # noqa
+                    _write(f'{graph.nodes[node].get("ref")}["{node_label}"] -->{choice_payload_display} {graph.nodes[neighbour_node].get("ref")}{neighbour_node_label}')  # noqa
 
                     stack.append(neighbour_node)  # push neighbour on stack
             else:
-                node_label = f'["{graph.nodes[node].get("label")}"]' if graph.nodes[node].get('label') else ''
-                _write(f'{graph.nodes[node].get("ref")}{node_label}')
+                label = f'{graph.nodes[node].get("label", "")}{" *" if graph.nodes[node].get("multiple_answers_allowed", False) else ""}'  # noqa
+                _write(f'{graph.nodes[node].get("ref")}["{label}"]')
 
     return '\n'.join(print_buffer)

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 
 # TODO: Make this available for the whole project
-
-from django.forms import modelformset_factory
+from django.forms import JSONField, modelformset_factory
 from django.forms.models import BaseModelFormSet, ModelForm
 
 from signals.apps.api.validators.json_schema import JSONSchemaValidator
+from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
 
 
 class NonRelatedInlineFormSet(BaseModelFormSet):
@@ -40,17 +40,17 @@ def non_related_inlineformset_factory(model, obj=None, queryset=None, formset=No
 
 
 class QuestionAdminForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    extra_properties = JSONField(widget=PrettyJSONWidget, required=False)
+    additional_validation = JSONField(widget=PrettyJSONWidget, required=False)
 
+    def clean_extra_properties(self):
         if hasattr(self.instance.field_type_class, 'extra_properties_schema'):
-            # Let's add the extra properties validator to the form
-            self.fields['extra_properties'].required = True
-            self.fields['extra_properties'].empty = False
-            self.fields['extra_properties'].validators.append(
-                JSONSchemaValidator(self.instance.field_type_class.extra_properties_schema)
-            )
-        else:
-            # Extra properties are not required so disable the field
-            self.fields['extra_properties'].required = False
-            self.fields['extra_properties'].disabled = True
+            validator = JSONSchemaValidator(self.instance.field_type_class.extra_properties_schema)
+            validator(self.cleaned_data['extra_properties'])
+        return self.cleaned_data['extra_properties']
+
+    def clean_additional_validation(self):
+        if self.cleaned_data['multiple_answers_allowed']:
+            validator = JSONSchemaValidator(self.instance.multiple_answer_schema)
+            validator(self.cleaned_data['additional_validation'])
+        return self.cleaned_data['additional_validation']

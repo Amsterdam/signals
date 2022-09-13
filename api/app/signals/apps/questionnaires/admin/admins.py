@@ -34,7 +34,8 @@ class QuestionnaireAdmin(admin.ModelAdmin):
         from signals.apps.questionnaires.utils.mermaidx import mermaidx
 
         question_graph_service = QuestionGraphService(q_graph=obj.graph)
-        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>'
+        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
+               '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
 
     mermaid_js.short_description = 'Visual representation (mermaid.js)'
     mermaid_js.allow_tags = True
@@ -54,7 +55,8 @@ class QuestionGraphAdmin(admin.ModelAdmin):
         from signals.apps.questionnaires.utils.mermaidx import mermaidx
 
         question_graph_service = QuestionGraphService(q_graph=obj)
-        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>'
+        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
+               '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
     mermaid_js.short_description = 'Visual representation (mermaid.js)'
     mermaid_js.allow_tags = True
 
@@ -64,7 +66,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
     inlines = (ChoiceStackedInline,)
     fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'extra_properties',
-              'required', 'created_at',)
+              'required', 'multiple_answers_allowed', 'additional_validation', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
 
     list_display = ('retrieval_key', 'analysis_key', 'uuid', 'field_type', 'created_at',)

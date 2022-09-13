@@ -2,7 +2,7 @@
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.core.exceptions import ValidationError as django_validation_error
 
-from signals.apps.questionnaires.fieldtypes import SelectedObject, get_field_type_class
+from signals.apps.questionnaires.fieldtypes import SelectedObject
 
 
 class AnswerService:
@@ -40,8 +40,8 @@ class AnswerService:
             return answer_payload
 
         # FieldType subclass schema check
-        field_type_class = get_field_type_class(question)
-        field_type_class().validate_submission_payload(answer_payload)
+        field_type = question.get_field_type()
+        field_type.validate_submission_payload(answer_payload)
 
         # If a questions has pre-defined answers (see the Choice model), the
         # answer payload should match one of these predefined answers.
