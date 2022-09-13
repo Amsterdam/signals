@@ -21,6 +21,8 @@ from signals.apps.reporting.csv.datawarehouse.signals import (
 )
 from signals.apps.reporting.csv.datawarehouse.statusses import create_statuses_csv
 from signals.apps.reporting.csv.utils import rotate_zip_files, save_csv_files, zip_csv_files
+from signals.apps.reporting.services.clean_up_datawarehouse import DataWarehouseDiskCleaner
+from signals.apps.reporting.utils import _get_storage_backend
 from signals.celery import app
 
 
@@ -88,3 +90,13 @@ def save_and_zip_csv_files_endpoint(max_csv_amount: int = 30):
     created_files = save_csv_files_datawarehouse(using=None)
     zip_csv_files(files_to_zip=created_files, using='datawarehouse')
     rotate_zip_files(using='datawarehouse', max_csv_amount=max_csv_amount)
+
+
+@app.task
+def task_clean_datawarehouse_disk():
+    """
+    Clean up local disk storage used by Datawarehouse dumps. Use only if
+    Signalen is configured to use local disk.
+    """
+    storage = _get_storage_backend(using='datawarehouse')
+    DataWarehouseDiskCleaner.clean_up(storage.location)
