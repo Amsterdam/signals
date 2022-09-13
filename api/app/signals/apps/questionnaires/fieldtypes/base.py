@@ -12,11 +12,26 @@ class FieldType:
     # Overwrite this class variable in subclasses, will default to the class name
     verbose_name = None
 
+    # _multiple_answers_schema contains the JSONSchema that will be used to validate if the given answer meets the min
+    # and max items required.
+    #
+    # The default minItems is set to 1.
+    # The default for maxItems is set to 10.
+    # To overwrite the minItems and the maxItems the Question.additional_validation can be overwritten.
+    #
+    # For example:
+    # {
+    #   "answers":
+    #   {
+    #       "minItems": 3,
+    #       "maxItems": 5
+    #   }
+    # }
     _multiple_answers_schema = {
         'type': 'array',
         'items': {},  # Default value, will be overridden with the correct schema for the given field_type
-        'minItems': 1,  # Default value, configurable via the extra_properties on the question (minItems)
-        'maxItems': 10  # Default value, configurable via the extra_properties on the question (maxItems)
+        'minItems': 1,  # Default value
+        'maxItems': 10  # Default value
     }
 
     def __init__(self, multiple_answers_allowed=False, min_items=None, max_items=None):
