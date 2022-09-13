@@ -74,18 +74,6 @@ class TestDataWarehouseDiskCleaner(TestCase):
         removed = DataWarehouseDiskCleaner._delete_files_from_directory(path, dry_run=True)
         self.assertEqual(removed, [a])
 
-    def AAAAAtest___delete_files_from_directory(self):
-        test_path = MagicMock()
-        test_file_matching = MagicMock()
-        test_file_matching.is_file.return_value = True
-        test_file_non_matching = MagicMock()
-        test_file_non_matching.is_file.return_value = False
-        test_path.rglob = MagicMock()
-        test_path.rglob.return_value = [test_file_matching, test_file_non_matching]
-
-        removed = DataWarehouseDiskCleaner._delete_files_from_directory(test_path, dry_run=True)
-        self.assertEqual(removed, [test_file_matching])
-
     @patch('signals.apps.reporting.services.clean_up_datawarehouse.DataWarehouseDiskCleaner._delete_files_from_directory',  # noqa: 501
            autospec=True)
     @patch('signals.apps.reporting.services.clean_up_datawarehouse.DataWarehouseDiskCleaner._find_data_directories',
