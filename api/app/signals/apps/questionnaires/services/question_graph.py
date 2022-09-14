@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 QuestionGraph service contains functionality that deals with QuestionGraph
 structure (reachable questions and the like).
@@ -35,7 +35,10 @@ class QuestionGraphService:
         """
         List of Edge instances decsribing QuestionGraph structure.
         """
-        return list(Edge.objects.filter(graph=q_graph).select_related('choice'))
+        return list(Edge.objects.filter(graph=q_graph)
+                                .select_related('choice')
+                                .select_related('question')
+                                .select_related('next_question'))
 
     @staticmethod
     def _build_nx_graph(q_graph, edges):
@@ -46,11 +49,12 @@ class QuestionGraphService:
         nx_graph = networkx.MultiDiGraph()
 
         for edge in edges:
-            # Needed for rule matching and dertermining next questions (edge
+            # Needed for rule matching and determining next questions (edge
             # ordering is important if several rules match and we want
             # consistent results):
             edge_kwargs = {
                 'choice_payload': None if edge.choice is None else edge.choice.payload,
+                'choice_payload_display': '' if edge.choice is None else edge.choice.display,
                 'edge_id': edge.id,
                 'order': edge.order,
             }
@@ -63,12 +67,20 @@ class QuestionGraphService:
             # Add the edge with all relevant information:
             nx_graph.add_edge(edge.question_id, edge.next_question_id, **edge_kwargs)
 
+            # Add node metadata
+            nx_graph.add_node(edge.question.id, label=edge.question.label, ref=edge.question.ref,
+                              multiple_answers_allowed=edge.question.multiple_answers_allowed)
+            nx_graph.add_node(edge.next_question.id, label=edge.next_question.label, ref=edge.next_question.ref)
+
             if len(nx_graph) > MAX_QUESTIONS:
                 msg = f'Question graph {q_graph.name} contains too many questions.'
                 raise Exception(msg)
 
         if q_graph.first_question and q_graph.first_question not in nx_graph.nodes:
-            nx_graph.add_node(q_graph.first_question.id)
+            nx_graph.add_node(q_graph.first_question.id, label=q_graph.first_question.label,
+                              ref=q_graph.first_question.ref,
+                              multiple_answers_allowed=q_graph.first_question.multiple_answers_allowed)
+
         return nx_graph
 
     @staticmethod

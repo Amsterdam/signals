@@ -51,7 +51,12 @@ SIGMAX_STADSDEEL_MAPPING = {
 def _generate_omschrijving(signal, seq_no):
     """Generate brief descriptive text for list view in CityControl"""
     # Note: we do not mention main or category here (too many characters)
-    is_urgent = 'URGENT' if signal.priority.priority == Priority.PRIORITY_HIGH else 'Terugkerend'
+    if signal.priority.priority == Priority.PRIORITY_HIGH:
+        is_urgent = 'URGENT'
+    elif signal.priority.priority == Priority.PRIORITY_NORMAL:
+        is_urgent = 'Terugkerend'
+    else:
+        is_urgent = 'Signalering'
 
     # Borough (stadsdeel) codes for Sigmax/CityControl are custom and do not
     # match the official ones as used by the municipality of Amsterdam; hence:

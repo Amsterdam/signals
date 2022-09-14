@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.contrib import admin, messages
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from rest_framework.reverse import reverse
 
+from signals.apps.questionnaires.admin.forms import QuestionAdminForm
 from signals.apps.questionnaires.admin.inlines import ChoiceStackedInline, EdgeStackedInline
 
 
@@ -12,9 +14,9 @@ class QuestionnaireAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('uuid', 'created_at',)}),
         ('Details', {'fields': ('name', 'description', 'flow', 'is_active',)}),
-        ('Question Graph', {'fields': ('graph',)}),
+        ('Question Graph', {'fields': ('graph', 'mermaid_js')}),
     )
-    readonly_fields = ('uuid', 'created_at',)
+    readonly_fields = ('uuid', 'created_at', 'mermaid_js')
 
     list_display = ('name', 'uuid', 'is_active', 'created_at',)
     list_display_links = ('name', 'uuid',)
@@ -26,19 +28,45 @@ class QuestionnaireAdmin(admin.ModelAdmin):
 
     ordering = ('-created_at',)
 
+    @mark_safe
+    def mermaid_js(self, obj):
+        from signals.apps.questionnaires.services import QuestionGraphService
+        from signals.apps.questionnaires.utils.mermaidx import mermaidx
+
+        question_graph_service = QuestionGraphService(q_graph=obj.graph)
+        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
+               '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
+
+    mermaid_js.short_description = 'Visual representation (mermaid.js)'
+    mermaid_js.allow_tags = True
+
 
 class QuestionGraphAdmin(admin.ModelAdmin):
     inlines = (EdgeStackedInline,)
-    fields = ('name', 'first_question', 'image_tag',)
-    readonly_fields = ('image_tag', )
+    fields = ('name', 'first_question', 'mermaid_js', )
+    readonly_fields = ('mermaid_js', )
 
     list_display = ('name', 'first_question', )
     list_per_page = 20
 
+    @mark_safe
+    def mermaid_js(self, obj):
+        from signals.apps.questionnaires.services import QuestionGraphService
+        from signals.apps.questionnaires.utils.mermaidx import mermaidx
+
+        question_graph_service = QuestionGraphService(q_graph=obj)
+        return f'<div class="mermaid">{mermaidx(question_graph_service.nx_graph)}</div>' \
+               '<hr/><div><strong>*</strong> meerdere antwoorden mogelijk</div>'
+    mermaid_js.short_description = 'Visual representation (mermaid.js)'
+    mermaid_js.allow_tags = True
+
 
 class QuestionAdmin(admin.ModelAdmin):
+    form = QuestionAdminForm
+
     inlines = (ChoiceStackedInline,)
-    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'required', 'created_at',)
+    fields = ('retrieval_key', 'analysis_key', 'uuid', 'label', 'short_label', 'field_type', 'extra_properties',
+              'required', 'multiple_answers_allowed', 'additional_validation', 'created_at',)
     readonly_fields = ('uuid', 'created_at',)
 
     list_display = ('retrieval_key', 'analysis_key', 'uuid', 'field_type', 'created_at',)

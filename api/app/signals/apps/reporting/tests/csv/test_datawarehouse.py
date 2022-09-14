@@ -10,6 +10,7 @@ from glob import glob
 from os import path
 from unittest import mock
 
+import dateutil
 import pytz
 from django.core.files.storage import FileSystemStorage
 from django.test import override_settings, testcases
@@ -18,7 +19,13 @@ from freezegun import freeze_time
 from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.reporting.csv import datawarehouse
 from signals.apps.reporting.utils import _get_storage_backend
-from signals.apps.signals.factories import DepartmentFactory, NoteFactory, SignalFactory
+from signals.apps.signals.factories import (
+    CategoryFactory,
+    DepartmentFactory,
+    NoteFactory,
+    ServiceLevelObjectiveFactory,
+    SignalFactory
+)
 from signals.apps.signals.models import SignalDepartments
 
 
@@ -255,7 +262,10 @@ class TestDatawarehouse(testcases.TestCase):
                 # self.assertIn(row['updated_at'], str(reporter.updated_at))
 
     def test_create_category_assignments_csv(self):
-        signal = SignalFactory.create()
+        category = CategoryFactory.create()
+        ServiceLevelObjectiveFactory.create(n_days=1, use_calendar_days=False, category=category)
+
+        signal = SignalFactory.create(category_assignment__category=category)
         category_assignment = signal.category_assignment
 
         csv_file = datawarehouse.create_category_assignments_csv(self.csv_tmp_dir)
@@ -272,6 +282,11 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['sub'], str(category_assignment.category.name))
                 self.assertEqual(row['departments'],
                                  ', '.join(category_assignment.category.departments.values_list('name', flat=True)))
+
+                deadline = dateutil.parser.parse(row['deadline'])
+                deadline_factor_3 = dateutil.parser.parse(row['deadline_factor_3'])
+                self.assertEqual(deadline, category_assignment.deadline)
+                self.assertEqual(deadline_factor_3, category_assignment.deadline_factor_3)
 
                 # noqa Disabled because the Postgres format is slightly different than the Python format, so we decided to comment these checks for now
                 # self.assertEqual(row['created_at'], str(category_assignment.created_at))

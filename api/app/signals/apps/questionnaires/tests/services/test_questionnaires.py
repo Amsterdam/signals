@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
 
+import pytz
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 from freezegun import freeze_time
@@ -556,7 +557,7 @@ class TestQuestionnairesService(TestCase):
 
     def test_get_session_expired(self):
         # A session that expired should raise a SessionExpired
-        signal_created_at = datetime(2021, 8, 18, 12, 0, 0)
+        signal_created_at = datetime(2021, 8, 18, 12, 0, 0, tzinfo=pytz.UTC)
         submit_before = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN)
         get_session_at = signal_created_at + timedelta(days=REACTION_REQUEST_DAYS_OPEN * 2)
 
@@ -590,14 +591,14 @@ class TestGetAnswersFromSession(TestCase):
         self.graph = _question_graph_with_decision()
         self.session = SessionFactory.create(questionnaire__graph=self.graph)
 
-        with freeze_time('2021-08-17 12:00:00'):
+        with freeze_time('2021-08-17 12:00:00+00:00'):
             AnswerFactory.create(session=self.session, question=self.graph.first_question, payload='no')
 
-        with freeze_time('2021-08-17 12:10:00'):
+        with freeze_time('2021-08-17 12:10:00+00:00'):
             AnswerFactory.create(session=self.session, question=self.graph.first_question, payload='yes')
 
         self.q2 = Question.objects.get(retrieval_key='q_yes')
-        with freeze_time('2021-08-17 12:20:00'):
+        with freeze_time('2021-08-17 12:20:00+00:00'):
             AnswerFactory.create(session=self.session, question=self.q2, payload='yes happy')
 
     def test_get_latest_answers(self):

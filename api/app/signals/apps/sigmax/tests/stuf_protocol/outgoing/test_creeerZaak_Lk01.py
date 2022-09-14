@@ -146,6 +146,32 @@ class TestGenerateOmschrijving(TestCase):
             self.signal.refresh_from_db()
             self.assertNotRegex(_generate_omschrijving(self.signal, seq_no), 'SD--')
 
+    def test_generate_omschrijving_terugkerend(self):
+        signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_NORMAL)
+        stadsdeel = signal.location.stadsdeel
+
+        correct = 'SIA-{}.01 Terugkerend {} {}'.format(
+            signal.pk,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
+            signal.location.short_address_text
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
+    def test_generate_omschrijving_signalering(self):
+        signal = SignalFactoryValidLocation(priority__priority=Priority.PRIORITY_LOW)
+        stadsdeel = signal.location.stadsdeel
+
+        correct = 'SIA-{}.01 Signalering {} {}'.format(
+            signal.pk,
+            SIGMAX_STADSDEEL_MAPPING.get(stadsdeel, 'SD--'),
+            signal.location.short_address_text
+        )
+
+        seq_no = '01'
+        self.assertEqual(_generate_omschrijving(signal, seq_no), correct)
+
 
 class TestAddressMatchesSigmaxExpectation(TestCase):
     def setUp(self):

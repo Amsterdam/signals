@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datetime import datetime, timedelta
 
+import pytz
 from django.core.exceptions import ValidationError as django_validation_error
 from django.test import TestCase
 from freezegun import freeze_time
@@ -15,7 +16,11 @@ from signals.apps.questionnaires.factories import (
 )
 from signals.apps.questionnaires.models import Answer, Edge
 from signals.apps.questionnaires.services.session import SessionService
-from signals.apps.questionnaires.tests.test_models import create_cycle, create_diamond_plus
+from signals.apps.questionnaires.tests.test_models import (
+    create_cycle,
+    create_diamond_plus,
+    create_empty
+)
 
 
 class TestSessionService(TestCase):
@@ -475,8 +480,8 @@ class TestSessionService(TestCase):
 
     def test_create_answer_session_expired(self):
         # expired session must not accept answers
-        t_creation = datetime(2021, 1, 1, 0, 0, 0)
-        t_now = datetime(2021, 6, 1, 0, 0, 0)
+        t_creation = datetime(2021, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+        t_now = datetime(2021, 6, 1, 0, 0, 0, tzinfo=pytz.UTC)
 
         q_graph = create_diamond_plus()
         session = SessionFactory.create(questionnaire__graph=q_graph, created_at=t_creation, submit_before=t_creation)
@@ -523,8 +528,8 @@ class TestSessionService(TestCase):
         q_graph = create_diamond_plus()
         # Sessions that have expired because the submit_before deadline was
         # passed are no longer publicly available:
-        t_creation = datetime(2021, 1, 1, 0, 0, 0)
-        t_now = datetime(2021, 6, 1, 0, 0, 0)
+        t_creation = datetime(2021, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+        t_now = datetime(2021, 6, 1, 0, 0, 0, tzinfo=pytz.UTC)
 
         session_expired_i = SessionFactory.create(
             questionnaire__graph=q_graph,
@@ -687,3 +692,40 @@ class TestSessionService(TestCase):
         self.assertEqual(len(service.path_validation_errors_by_uuid), 4)
         self.assertEqual(len(service.path_answered_question_uuids), 0)
         self.assertEqual(len(service.path_unanswered_question_uuids), 4)
+
+    def test_get_extra_properties_one_answer_selected_object(self):
+        q_graph = create_empty()
+        q1 = QuestionFactory.create(analysis_key='q1', field_type='selected_object')
+        q_graph.first_question = q1
+        q_graph.save()
+
+        session = SessionFactory.create(questionnaire__graph=q_graph)
+        service = SessionService(session)
+
+        # Answer questions
+        answer = Answer.objects.create(
+            session=session,
+            question=q_graph.first_question,
+            payload={
+                'id': 'C-123.456_test',
+                'type': 'container',
+                'onMap': True,
+                'coordinates': {
+                    'lat': 4.90022563,
+                    'lng': 52.36768424
+                }
+            }
+        )
+        service.refresh_from_db()
+        extra_properties = service.get_extra_properties('URL')
+
+        self.assertEqual(len(extra_properties), 1)
+        self.assertEqual(extra_properties[0]['category_url'], 'URL')
+        self.assertEqual(extra_properties[0]['id'], answer.question.analysis_key)
+        self.assertEqual(extra_properties[0]['label'], answer.question.short_label)
+        self.assertEqual(extra_properties[0]['answer']['id'], answer.payload['id'])
+        self.assertEqual(extra_properties[0]['answer']['type'], answer.payload['type'])
+        self.assertEqual(extra_properties[0]['answer']['location']['coordinates']['lat'],
+                         answer.payload['coordinates']['lat'])
+        self.assertEqual(extra_properties[0]['answer']['location']['coordinates']['lng'],
+                         answer.payload['coordinates']['lng'])

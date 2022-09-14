@@ -182,7 +182,7 @@ class ActionTestMixin:
         feedback = FeedbackFactory.create(
             _signal=signal,
             allows_contact=False,
-            submitted_at='2022-01-01'
+            submitted_at='2022-01-01 00:00:00+00:00'
         )
         feedback.save()
         signal.save()
@@ -202,7 +202,7 @@ class ActionTestMixin:
         feedback = FeedbackFactory.create(
             _signal=signal,
             allows_contact=False,
-            submitted_at='2022-01-01'
+            submitted_at='2022-01-01 00:00:00+00:00'
         )
         feedback.save()
         signal.save()
@@ -236,8 +236,8 @@ class ActionTestMixin:
 
         signal.refresh_from_db()
         self.assertEqual(signal.notes.count(), 1)
-        self.assertEquals(signal.notes.first().text,
-                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
+        self.assertEqual(signal.notes.first().text,
+                         'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
 
 
 class TestSignalCreatedAction(ActionTestMixin, TestCase):
@@ -650,8 +650,8 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
 
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.notes.count(), 1)
-        self.assertEquals(self.signal.notes.first().text,
-                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
+        self.assertEqual(self.signal.notes.first().text,
+                         'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
 
     @override_settings(FEATURE_FLAGS={
         'REPORTER_MAIL_HANDLED_NEGATIVE_CONTACT_ENABLED': False,

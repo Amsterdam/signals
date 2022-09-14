@@ -24,7 +24,7 @@ class DataUriImageEncodeService:
             width = int((max_size / image.height) * image.width)
             height = max_size
 
-        return image.resize(size=(width, height), resample=Image.LANCZOS).convert('RGB')
+        return image.resize(size=(width, height), resample=Image.Resampling.LANCZOS).convert('RGB')
 
     @staticmethod
     def get_context_data_images(signal, max_size):

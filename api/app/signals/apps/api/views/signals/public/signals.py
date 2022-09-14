@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
-from django.db.models import CharField, Min, Value
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+from django.db.models import CharField, Min, Q, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import JSONObject
 from django.http import Http404
@@ -97,7 +97,19 @@ class PublicSignalViewSet(GenericViewSet):
                                      then='category_assignment__category__name'),
                                 default='category_assignment__category__public_name',
                                 output_field=CharField(),
-                            )
+                            ),
+                            slug='category_assignment__category__slug',
+                            parent=JSONObject(
+                                name=Case(
+                                    When(category_assignment__category__parent__public_name__exact='',
+                                         then='category_assignment__category__parent__name'),
+                                    When(category_assignment__category__parent__public_name__isnull=True,
+                                         then='category_assignment__category__parent__name'),
+                                    default='category_assignment__category__parent__public_name',
+                                    output_field=CharField(),
+                                ),
+                                slug='category_assignment__category__parent__slug'
+                            ),
                         ),
                         # Creation date of the Signal
                         created_at='created_at',
@@ -106,10 +118,10 @@ class PublicSignalViewSet(GenericViewSet):
             )
         ).exclude(
             # Only signals that are in an "Open" state
-            status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN],
+            Q(status__state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN]) |
 
             # Only Signal's that are in categories that are publicly accessible
-            category_assignment__category__is_public_accessible=False,
+            Q(category_assignment__category__is_public_accessible=False),
         )
 
         # Paginate our queryset and turn it into a GeoJSON feature collection:
