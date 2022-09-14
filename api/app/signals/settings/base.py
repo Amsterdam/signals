@@ -160,6 +160,8 @@ STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
+FILE_UPLOAD_PERMISSIONS = None # Use os-specific behavior
+
 # Object store / Swift
 if os.getenv('SWIFT_ENABLED', False) in TRUE_VALUES:
     # The default settings when using SwiftStorage to the general SIA ObjectStore
