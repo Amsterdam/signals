@@ -173,6 +173,6 @@ that reaches the SIA acceptance or production environments had a succesfull run
 through the aforementioned checks.
 
 ### Logging
-SIA uses Azure insight monitoring to track application errors. SIA HTTP traffic is logged in the
+SIA uses Sentry and/ or Azure insight monitoring to track application errors. SIA HTTP traffic is logged in the
 general Datapunt logging as well, because SIA is running on Datapunt
 infrastructure.
