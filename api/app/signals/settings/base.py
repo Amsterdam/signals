@@ -165,8 +165,9 @@ AZURE_ENABLED = os.getenv('AZURE_ENABLED', False) in TRUE_VALUES
 SWIFT_ENABLED = os.getenv('SWIFT_ENABLED', False) in TRUE_VALUES
 if AZURE_ENABLED:
     # Azure Settings
-    AZURE_CONNECTION_STRING = os.getenv('AZURE_CONNECTION_STRING')
-    APPLICATIONINSIGHTS_CONNECTION_STRING = os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING')
+    AZURE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
+    AZURE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
+    APPLICATIONINSIGHTS_CONNECTION_STRING = os.getenv('AZURE_APPLICATIONINSIGHTS_CONNECTION_STRING')
 
     AZURE_CONTAINERS = {
         'main': {
@@ -179,6 +180,7 @@ if AZURE_ENABLED:
     # This is the default container used by django to upload items
     AZURE_CONTAINER = AZURE_CONTAINERS['main']['azure_container']
 
+    AZURE_URL_EXPIRATION_SECS = os.getenv('AZURE_URL_EXPIRATION_SECS', None)
     DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
     STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
