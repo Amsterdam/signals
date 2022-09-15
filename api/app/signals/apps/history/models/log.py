@@ -167,7 +167,7 @@ class Log(models.Model):
                 action = f'Melding toewijzing gewijzigd naar: {self.extra}'
             else:
                 action = 'Melding niet meer toegewezen aan behandelaar.'
-        elif what == 'CHILD_SIGNAL_CREATED':
+        elif what == 'CREATE_SIGNAL' and self.object_pk != self._signal_id:
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
