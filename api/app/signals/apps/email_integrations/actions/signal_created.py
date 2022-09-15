@@ -59,7 +59,7 @@ class SignalCreatedAction(AbstractAction):
                 context[extra_property['label']].append(self._get_answer_from_extra_property(extra_property['answer']))
         return context
 
-    def _get_answer_from_extra_property(self, extra_property):
+    def _get_answer_from_extra_property(self, extra_property):  # noqa C901
         """
         Returns the first option that is available in the extra property and not empty as the answer.
         Defaults to '-' if no option is available.
@@ -76,6 +76,12 @@ class SignalCreatedAction(AbstractAction):
             return extra_property['id']
         elif 'type' in extra_property and extra_property['type']:
             return extra_property['type']
+        elif set(extra_property.keys()) == {'location'}:
+            # Hacky solution that will be refactored when Questionnaires will be in use.
+            #
+            # Sometimes it happens the extra_properties of a selected object only contains a location
+            # In this case we want to show "Locatie gepind op de kaart"
+            return 'Locatie gepind op de kaart'
         elif extra_property:
             return extra_property
         else:
