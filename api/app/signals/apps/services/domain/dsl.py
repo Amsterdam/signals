@@ -2,6 +2,8 @@
 # Copyright (C) 2020 - 2021 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import time
 
+from django.utils import timezone
+
 from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Area, AreaType, RoutingExpression, Signal
@@ -48,7 +50,8 @@ class SignalContext:
 
     def __call__(self, signal: Signal):
 
-        t = signal.incident_date_start.strftime("%H:%M:%S")
+        t = timezone.make_naive(signal.incident_date_start).strftime("%H:%M:%S")
+
         tmp = {
             'sub': signal.category_assignment.category.name,
             'main': signal.category_assignment.category.parent.name,
