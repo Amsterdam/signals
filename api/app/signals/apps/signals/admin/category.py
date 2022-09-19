@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
+import csv
+
 from django.contrib import admin
 from django.db.models import Q
+from django.http import HttpResponse
+from django.utils import timezone
 
 from signals.apps.history.services import HistoryLogService
 from signals.apps.signals.models import Category, ServiceLevelObjective
@@ -73,6 +77,8 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'public_name',)
     ordering = ('parent__name', 'name',)
 
+    actions = ['download_csv']
+
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -84,6 +90,39 @@ class CategoryAdmin(admin.ModelAdmin):
         obj.save()
         if change:  # only trigger when an object has been changed
             HistoryLogService.log_update(instance=obj, user=request.user)
+
+    def download_csv(self, request, queryset):
+        """
+        Download a CSV file containing the selected categories
+        """
+        now = timezone.localtime(timezone.now())
+        filename = 'category-report-{}.csv'.format(now.strftime('%Y%m%d_%H%M'))
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+
+        writer = csv.writer(response, delimiter=';', quotechar='"', escapechar='"')
+
+        column_headers = ['parent_name', 'name', 'public name', 'is public accessible', 'slug', 'description',
+                          'is active', 'note', 'responsible departments', ]
+        writer.writerow(column_headers)
+
+        for category in queryset:
+            writer.writerow([
+                category.parent.name,
+                category.name,
+                category.public_name,
+                'Yes' if category.is_public_accessible else 'No',
+                category.slug,
+                category.description,
+                'Yes' if category.is_active else 'No',
+                category.note,
+                ', '.join([department.name
+                           for department in category.departments.filter(categorydepartment__is_responsible=True)]),
+            ])
+
+        self.message_user(request, 'Created Category CSV file: {}'.format(filename))
+        return response
 
 
 class ChildCategoryFilter(admin.SimpleListFilter):
@@ -106,3 +145,33 @@ class StatusMessageTemplatesAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'state', 'order', 'text',)
     list_display_links = list_display
     list_filter = (ChildCategoryFilter,)
+
+    actions = ['download_csv']
+
+    def download_csv(self, request, queryset):
+        """
+        Download a CSV file containing the selected status message templates
+        """
+        now = timezone.localtime(timezone.now())
+        filename = 'status-message-template-report-{}.csv'.format(now.strftime('%Y%m%d_%H%M'))
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+
+        writer = csv.writer(response, delimiter=';', quotechar='"', escapechar='"')
+
+        column_headers = ['parent category name', 'category name', 'state', 'title', 'text', 'is_active']
+        writer.writerow(column_headers)
+
+        for status_message_template in queryset:
+            writer.writerow([
+                status_message_template.category.parent.name,
+                status_message_template.category.name,
+                status_message_template.get_state_display(),
+                status_message_template.title,
+                status_message_template.text,
+                'Yes' if status_message_template.is_active else 'No'
+            ])
+
+        self.message_user(request, 'Created Status message template CSV file: {}'.format(filename))
+        return response
