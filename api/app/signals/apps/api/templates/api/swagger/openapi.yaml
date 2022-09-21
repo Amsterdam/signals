@@ -3269,6 +3269,14 @@ components:
                   type: string
                   description: URI to the public category
                   format: uri
+            sia:icon:
+              type: object
+              description: If a icon is set the sia:icon will be present
+              properties:
+                href:
+                  type: string
+                  description: URI to the category icon
+                  format: uri
         _display:
           type: string
           description: The display value of the category
@@ -3321,6 +3329,14 @@ components:
                 href:
                   type: string
                   description: URI to the public category
+                  format: uri
+            sia:icon:
+              type: object
+              description: If a icon is set the sia:icon will be present
+              properties:
+                href:
+                  type: string
+                  description: URI to the category icon
                   format: uri
         _display:
           type: string

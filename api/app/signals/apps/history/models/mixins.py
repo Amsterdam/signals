@@ -2,6 +2,7 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 from django.contrib.gis.db import models
 from django.core.exceptions import FieldDoesNotExist
+from django.db.models.fields.files import FieldFile
 
 
 def track_fields_data_from_instance(instance, track_fields=None):
@@ -46,6 +47,8 @@ def changed_field_data(instance):
             if isinstance(current_value, list):
                 # Only store the difference
                 current_value = list(set(current_value) - set(initial_value))
+            elif isinstance(current_value, FieldFile):
+                current_value = current_value.name
             changed_data.update({field_name: current_value})
     return changed_data
 

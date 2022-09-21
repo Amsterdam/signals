@@ -41,6 +41,17 @@
 					"required": [
 						"href"
 					]
+				},
+				"sia:icon": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
 				}
 			},
 			"required": [

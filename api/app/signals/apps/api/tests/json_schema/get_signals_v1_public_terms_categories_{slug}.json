@@ -41,6 +41,17 @@
 					"required": [
 						"href"
 					]
+				},
+				"sia:icon": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"href"
+					]
 				}
 			},
 			"required": [
@@ -106,6 +117,17 @@
 									]
 								},
 								"sia:questionnaire": {
+									"type": "object",
+									"properties": {
+										"href": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"href"
+									]
+								},
+								"sia:icon": {
 									"type": "object",
 									"properties": {
 										"href": {

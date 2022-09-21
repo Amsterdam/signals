@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from urllib.parse import urlparse
 
 from django.contrib.contenttypes.fields import GenericRelation
@@ -11,6 +11,7 @@ from django_extensions.db.fields import AutoSlugField
 from rest_framework_extensions.settings import extensions_api_settings
 
 from signals.apps.history.models.mixins import TrackFields
+from signals.apps.signals.models.utils import upload_category_icon_to, validate_category_icon
 
 
 class CategoryManager(models.Manager):
@@ -107,9 +108,12 @@ class Category(TrackFields, models.Model):
 
     questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
+    icon = models.FileField(upload_to=upload_category_icon_to, null=True, blank=True, max_length=255,
+                            validators=[validate_category_icon])
+
     # History log
     track_fields = ('name', 'description', 'is_active', 'slo', 'handling_message', 'public_name',
-                    'is_public_accessible',)
+                    'is_public_accessible', 'icon', )
     history_log = GenericRelation('history.Log', object_id_field='object_pk')
     # End History log
 
@@ -138,6 +142,9 @@ class Category(TrackFields, models.Model):
 
     def is_child(self):
         return self.parent is not None
+
+    def has_icon(self):
+        return bool(self.icon)
 
     def clean(self):
         super().clean()

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from collections import OrderedDict
 
 from rest_framework import serializers
@@ -33,6 +33,14 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
                                                             kwargs={'uuid': value.questionnaire.uuid},
                                                             request=request)),
             })
+
+        if value.has_icon():
+            # Return the icon
+            result.update({'sia:icon': {'href': request.build_absolute_uri(value.icon.url)}})
+        elif value.is_child() and value.parent.has_icon():
+            # Return the icon from the parent if no icon has been set on the child category
+            result.update({'sia:icon': {'href': request.build_absolute_uri(value.parent.icon.url)}})
+
         return result
 
 
@@ -95,5 +103,12 @@ class PrivateCategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityFie
                     href=self.reverse('questionnaires:public-questionnaire-detail',
                                       kwargs={'uuid': value.questionnaire.uuid}, request=request)),
             })
+
+        if value.has_icon():
+            # Return the icon
+            result.update({'sia:icon': {'href': request.build_absolute_uri(value.icon.url)}})
+        elif value.is_child() and value.parent.has_icon():
+            # Return the icon from the parent if no icon has been set on the child category
+            result.update({'sia:icon': {'href': request.build_absolute_uri(value.parent.icon.url)}})
 
         return result

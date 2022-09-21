@@ -195,6 +195,8 @@ class PrivateCategoryHistoryHalSerializer(serializers.ModelSerializer):
                 action = f'Naam openbaar gewijzigd naar:\n {value}'
             elif key == 'is_public_accessible':
                 action = f'Openbaar tonen gewijzigd naar:\n {"Aan" if value else "Uit"}'
+            elif key == 'icon':
+                action = f'Icoon gewijzigd naar:\n {value[value.rindex("/")+1:]}'
             else:
                 continue  # We do not show other tracked values, so on to the next one
 
