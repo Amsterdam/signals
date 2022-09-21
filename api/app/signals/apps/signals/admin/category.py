@@ -109,7 +109,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
         for category in queryset:
             writer.writerow([
-                category.parent.name,
+                category.parent.name if category.parent else '',
                 category.name,
                 category.public_name,
                 'Yes' if category.is_public_accessible else 'No',
@@ -165,7 +165,7 @@ class StatusMessageTemplatesAdmin(admin.ModelAdmin):
 
         for status_message_template in queryset:
             writer.writerow([
-                status_message_template.category.parent.name,
+                status_message_template.category.parent.name if status_message_template.category.parent else '',
                 status_message_template.category.name,
                 status_message_template.get_state_display(),
                 status_message_template.title,
