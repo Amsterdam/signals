@@ -11,7 +11,8 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', ]
+ALLOWED_SVG_MIME_TYPES = ['image/svg+xml', 'image/svg', ]
+ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', ] + ALLOWED_SVG_MIME_TYPES
 
 
 class FileRejectedError(Exception):
@@ -52,11 +53,15 @@ class UploadScannerService:
         seen.add(UploadScannerService._get_mime_from_extension(uploaded_file))
         seen.add(UploadScannerService._get_mime_from_content(uploaded_file))
 
-        if len(seen) == 1 and list(seen)[0] in ALLOWED_MIME_TYPES:
-            if list(seen)[0] == 'image/svg+xml':
-                # PIL does not recognize svg files so skip the check
-                return uploaded_file
-
+        if (len(seen) == 1 or len(seen) == 2) and seen.issubset(set(ALLOWED_SVG_MIME_TYPES)):
+            # The UploadScannerService._get_mime_from_extension returns "image/svg+xml" where
+            # UploadScannerService._get_mime_from_content can return "image/svg+xml" and "image/svg" therefore if the
+            # len of seen is 1 or 2 we need to check if seen is a subset of the ALLOWED_SVG_MIME_TYPES.
+            #
+            # If seen is {"image/svg+xml"} this is a subset set of {"image/svg+xml", "image/svg"}
+            # If seen is {"image/svg+xml", "image/svg"} this is also a subset set of {"image/svg+xml", "image/svg"}
+            return uploaded_file
+        elif len(seen) == 1 and list(seen)[0] in ALLOWED_MIME_TYPES:
             # Let's see if PIL raises the DecompressionBombError
             Image.open(uploaded_file.file)
 
