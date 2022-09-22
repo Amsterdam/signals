@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import csv
 
 from django.contrib import admin
@@ -24,9 +24,17 @@ class ProfileInline(admin.StackedInline):
 
 
 class SignalsUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'departments')
     inlines = (ProfileInline, )
 
     actions = ['download_csv']
+
+    def departments(self, obj):
+        if obj.profile and obj.profile.departments.exists():
+            return ', '.join(obj.profile.departments.values_list('code', flat=True).order_by('code'))
+        return ''
+    departments.short_description = 'Afdeling(en)'
+    departments.allow_tags = True
 
     def download_csv(self, request, queryset):
         """Download CSV of user accounts."""
@@ -39,6 +47,7 @@ class SignalsUserAdmin(UserAdmin):
             'Staf',
             'Superuser',
             'Actief',
+            'Afdeling(en)',
         ]
 
         now = timezone.localtime(timezone.now())
@@ -65,6 +74,9 @@ class SignalsUserAdmin(UserAdmin):
                 ja_nee(user.is_staff),
                 ja_nee(user.is_superuser),
                 ja_nee(user.is_active),
+                ', '.join(
+                    user.profile.departments.values_list('code', flat=True).order_by('code')
+                ) if user.profile and user.profile.departments.exists() else '',
             ])
 
         self.message_user(request, 'Created summary CSV file: {}'.format(filename))
