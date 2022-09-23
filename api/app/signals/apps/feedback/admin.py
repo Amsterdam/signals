@@ -5,11 +5,12 @@ Allow standard feedback answers to be managed through Django Admin.
 """
 from django.contrib import admin
 
-from signals.apps.feedback.models import StandardAnswer
+from signals.apps.feedback.models import StandardAnswer, StandardAnswerTopic
 
 
 class StandardAnswerAdmin(admin.ModelAdmin):
-    list_display = ('pos_or_neg', 'text', 'is_visible', 'reopens_when_unhappy')
+    list_display = ('pos_or_neg', 'text', 'is_visible',
+                    'reopens_when_unhappy', 'topic', 'order')
     list_display_links = list_display
 
     def pos_or_neg(self, obj):
@@ -18,4 +19,10 @@ class StandardAnswerAdmin(admin.ModelAdmin):
         return 'NEGATIEF'
 
 
+class StandardAnswerTopicAdmin(admin.ModelAdmin):
+    list_display = ('name', 'text', 'order')
+    list_display_links = list_display
+
+
 admin.site.register(StandardAnswer, StandardAnswerAdmin)
+admin.site.register(StandardAnswerTopic, StandardAnswerTopicAdmin)

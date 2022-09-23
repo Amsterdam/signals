@@ -4,7 +4,7 @@ import factory
 from django.utils import timezone
 from factory import fuzzy
 
-from signals.apps.feedback.models import Feedback, StandardAnswer
+from signals.apps.feedback.models import Feedback, StandardAnswer, StandardAnswerTopic
 
 REASONS = [
     'Wind uit het oosten.',
@@ -19,6 +19,14 @@ REASONS = [
 ]
 
 
+class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = StandardAnswerTopic
+    name = factory.Sequence(lambda n: 'topic name: {}'.format(n))
+    text = factory.Sequence(lambda n: 'topic text: {}'.format(n))
+    order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
+
+
 class StandardAnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswer
@@ -26,6 +34,8 @@ class StandardAnswerFactory(factory.django.DjangoModelFactory):
     text = factory.Sequence(lambda n: 'Unieke klaag tekst nummer: {}'.format(n))
     is_visible = fuzzy.FuzzyChoice([True, False])
     is_satisfied = fuzzy.FuzzyChoice([True, False])
+    topic = factory.SubFactory(StandardAnswerTopicFactory)
+    order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
 
 
 class FeedbackFactory(factory.django.DjangoModelFactory):

@@ -14,7 +14,8 @@ from signals.apps.feedback.serializers import FeedbackSerializer, StandardAnswer
 class StandardAnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """View to list all currently visible Standard Answers."""
     serializer_class = StandardAnswerSerializer
-    queryset = StandardAnswer.objects.filter(is_visible=True).order_by('-id')
+    queryset = StandardAnswer.objects.select_related('topic')\
+        .filter(is_visible=True).order_by('topic__order', 'order')
     pagination_class = HALPagination
 
 
