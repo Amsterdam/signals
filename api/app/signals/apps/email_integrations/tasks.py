@@ -6,4 +6,5 @@ from signals.celery import app
 
 @app.task
 def send_mail_reporter(pk):
+    # Can also mail an external person with requests ps-261
     MailService.status_mail(signal=pk)

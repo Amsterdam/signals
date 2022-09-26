@@ -9,6 +9,7 @@ class Department(models.Model):
     name = models.CharField(max_length=255)
     is_intern = models.BooleanField(default=True)
     can_direct = models.BooleanField(default=False)
+    allows_assignment_by_email = models.BooleanField(default=False)
 
     class Meta:
         permissions = (

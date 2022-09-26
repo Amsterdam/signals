@@ -25,6 +25,10 @@ from signals.apps.questionnaires.services.reaction_request import (
     create_session_for_reaction_request,
     get_reaction_url
 )
+from signals.apps.questionnaires.services.external_reaction_request import (
+    create_session_for_external_reaction_request,
+    get_external_reaction_url
+)
 from signals.apps.signals.models import Signal, Status
 from signals.apps.signals.tests.valid_locations import STADHUIS
 
@@ -69,6 +73,18 @@ def create_reaction_request_and_mail_context(signal: Signal, dry_run: bool = Fal
 
     return {'reaction_url': reaction_url}
 
+
+def create_external_reaction_request_and_mail_context(signal: Signal, dry_run: bool = False) -> dict:
+    """
+    Create question, questionnaire and prepared session for external reaction request mails.
+    """
+    if dry_run:
+        return {'reaction_url': f'{settings.FRONTEND_URL}/incident/external/00000000-0000-0000-0000-000000000000'}
+
+    session = create_session_for_external_reaction_request(signal)
+    reaction_url = get_external_reaction_url(session)
+
+    return {'reaction_url': reaction_url}
 
 # Pattern used to filter links from the Signal text and text_extra
 # Let's use the regex that is also used by Django to validate a URL (URLValidator)
