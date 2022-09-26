@@ -278,6 +278,44 @@ class TestPDFSummaryService(TestCase):
         data = PDFSummaryService._get_logo_data_from_static_file('this/file/does/not/exist/anywhere')
         self.assertEqual(data, '')
 
+    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
+    def test_pdf_has_history_i(self):
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, text='SHOULD BE IN HISTORY')
+        self.signal.status = new_status
+        self.signal.save()
+        self.signal.refresh_from_db()
+
+        html = PDFSummaryService._get_html(self.signal, None, False)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, None, True)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, self.user, False)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, self.user, True)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
+    def test_pdf_has_history_i(self):
+        new_status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, text='SHOULD BE IN HISTORY')
+        self.signal.status = new_status
+        self.signal.save()
+        self.signal.refresh_from_db()
+
+        html = PDFSummaryService._get_html(self.signal, None, False)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, None, True)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, self.user, False)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
+        html = PDFSummaryService._get_html(self.signal, self.user, True)
+        self.assertIn('SHOULD BE IN HISTORY', html)
+
 
 class TestPDFSummaryServiceWithExtraProperties(TestCase):
     def setUp(self):
