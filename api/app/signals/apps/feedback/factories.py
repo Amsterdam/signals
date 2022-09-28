@@ -22,7 +22,7 @@ REASONS = [
 class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswerTopic
-    name = factory.Sequence(lambda n: 'topic name: {}'.format(n))
+    description = factory.Sequence(lambda n: 'topic name: {}'.format(n))
     text = factory.Sequence(lambda n: 'topic text: {}'.format(n))
     order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
 

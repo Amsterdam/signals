@@ -19,8 +19,8 @@ class Migration(migrations.Migration):
                 ('description', models.CharField(max_length=255, unique=True)),
                 ('text', models.TextField(max_length=1000)),
                 ('order', models.IntegerField(blank=True, default=0,
-                    help_text='De volgorde van de antwoorden onderwerpen voor het KTP proces.',
-                    null=True)),
+                    help_text='De volgorde van de antwoorden onderwerpen voor het KTP proces.',  # noqa
+                    null=True)), # noqa
             ],
             options={
                 'verbose_name': 'Standaard antwoord onderwerp',
@@ -31,10 +31,10 @@ class Migration(migrations.Migration):
             model_name='standardanswer',
             name='order',
             field=models.IntegerField(blank=True, default=0,
-                help_text='De volgorde van de antwoorden tijdens het KTO proces. '
-                          'Bij een selectie van een onderwerp is de volgorde van het '
-                          'antwoord binnen het geselecteerde onderwerp.',
-                null=True),
+                help_text='De volgorde van de antwoorden tijdens het KTO proces. ' # noqa
+                          'Bij een selectie van een onderwerp is de volgorde van het ' # noqa
+                          'antwoord binnen het geselecteerde onderwerp.',  # noqa
+                null=True), # noqa
         ),
         migrations.AddField(
             model_name='standardanswer',
