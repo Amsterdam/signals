@@ -5,6 +5,7 @@ from django.contrib.gis.db import models
 from signals.apps.questionnaires.models.attached_section import AttachedSection
 from signals.apps.questionnaires.models.stored_file import StoredFile
 
+
 class AttachedFile(models.Model):
     """
     Images can be attached to both Questionnaires and Questions.

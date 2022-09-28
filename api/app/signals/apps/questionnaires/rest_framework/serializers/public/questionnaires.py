@@ -6,13 +6,14 @@ from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.rest_framework.fields import (
     QuestionnairePublicHyperlinkedIdentityField
 )
+from signals.apps.questionnaires.rest_framework.serializers.public.attached_section import (
+    NestedPublicAttachedSectionSerializer
+)
 from signals.apps.questionnaires.rest_framework.serializers.public.questions import (
     PublicQuestionDetailedSerializer,
     PublicQuestionSerializer
 )
-from signals.apps.questionnaires.rest_framework.serializers.public.attached_section import (
-    NestedPublicAttachedSectionSerializer
-)
+
 
 class PublicQuestionnaireSerializer(HALSerializer):
     serializer_url_field = QuestionnairePublicHyperlinkedIdentityField

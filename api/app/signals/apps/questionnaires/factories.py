@@ -1,24 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import factory
+from django.contrib.contenttypes.models import ContentType
 from factory import LazyFunction, SelfAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 from faker import Faker
 
 from signals.apps.questionnaires.models import (
     Answer,
+    AttachedSection,
     Choice,
     Edge,
     Question,
     QuestionGraph,
     Questionnaire,
     Session,
-    Trigger,
-
-    AttachedSection
+    Trigger
 )
-
-from django.contrib.contenttypes.models import ContentType
-import factory
 
 fake = Faker()
 
