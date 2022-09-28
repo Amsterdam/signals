@@ -2,10 +2,12 @@
 # Copyright (C) 2021 -2022 Gemeente Amsterdam
 import uuid
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 from signals.apps.questionnaires.managers import QuestionManager
+from signals.apps.questionnaires.models.attached_section import AttachedSection
 
 
 class Question(models.Model):
@@ -64,6 +66,9 @@ class Question(models.Model):
     # Extra properties needed for the question
     # For example the field_type selected_object has a property that stores the source URL of the objects
     extra_properties = models.JSONField(blank=True, null=True)
+
+    # Attached images and text allow extra information to be shown to users.
+    attached_sections = GenericRelation(AttachedSection)
 
     objects = QuestionManager()
 

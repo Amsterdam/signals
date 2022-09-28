@@ -9,6 +9,10 @@ from signals.apps.questionnaires.models.questionnaire import Questionnaire
 from signals.apps.questionnaires.models.session import Session
 from signals.apps.questionnaires.models.trigger import Trigger
 
+from signals.apps.questionnaires.models.attached_section import AttachedSection
+from signals.apps.questionnaires.models.attached_file import AttachedFile
+from signals.apps.questionnaires.models.stored_file import StoredFile
+
 __all__ = [
     'Answer',
     'Choice',
@@ -17,5 +21,9 @@ __all__ = [
     'QuestionGraph',
     'Questionnaire',
     'Session',
-    'Trigger'
+    'Trigger',
+
+    'AttachedSection',
+    'AttachedFile',
+    'StoredFile',
 ]

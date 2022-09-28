@@ -254,7 +254,41 @@
 									"type": "null"
 								}
 							]
+						},
+
+
+						"attached_sections": {
+							"anyOf": [
+								{
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"title": {
+												"type": "string"
+											},
+											"text": {
+												"type": "string"
+											},
+											"attached_files": {
+												"type": "array"
+											}
+										},
+										"required": [
+											"title",
+											"text",
+											"attached_files"
+										]
+									}
+								},
+								{
+									"type": "null"
+								}
+							]
 						}
+				
+
+
 					},
 					"required": [
 						"_links",
@@ -263,8 +297,10 @@
 						"name",
 						"description",
 						"is_active",
-						"first_question"
-					]
+						"first_question",
+						"attached_sections"
+					],
+					"additionalProperties": false
 				}
 			]
 		}

@@ -2,9 +2,11 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import uuid
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.managers import QuestionnaireManager
+from signals.apps.questionnaires.models.attached_section import AttachedSection
 
 
 class Questionnaire(models.Model):
@@ -36,6 +38,10 @@ class Questionnaire(models.Model):
     graph = models.ForeignKey(
         'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
+
+    # Attached section comprise of a title, a text and possibly zero or more
+    # images. A questionnaire can have zero or more of these sections.
+    attached_sections = GenericRelation(AttachedSection)
 
     objects = QuestionnaireManager()
 

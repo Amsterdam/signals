@@ -12,9 +12,11 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
-    QuestionnaireFactory
+    QuestionnaireFactory,
+
+    QuestionnaireAttachedSectionFactory
 )
-from signals.apps.questionnaires.models import Questionnaire
+from signals.apps.questionnaires.models import Questionnaire, AttachedSection
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -46,6 +48,18 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         )
         self.list_schema = self.load_json_schema(
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
+        )
+
+        # TODO: move this to factories
+        self.attached_section_1 = AttachedSection.objects.create(
+            title='TITLE 1',
+            text='TEXT 1',
+            content_object=self.questionnaire
+        )
+        self.attached_section_2 = AttachedSection.objects.create(
+            title='TITLE 2',
+            text='TEXT 2',
+            content_object=self.questionnaire
         )
 
     def test_questionnaire_list(self):
