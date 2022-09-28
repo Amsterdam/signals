@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 """
 Allow standard feedback answers to be managed through Django Admin.
 """
@@ -20,7 +20,7 @@ class StandardAnswerAdmin(admin.ModelAdmin):
 
 
 class StandardAnswerTopicAdmin(admin.ModelAdmin):
-    list_display = ('name', 'text', 'order')
+    list_display = ('description', 'text', 'order')
     list_display_links = list_display
 
 

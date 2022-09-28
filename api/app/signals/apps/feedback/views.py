@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 """
 Views for feedback handling.
 """
@@ -15,7 +15,7 @@ class StandardAnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """View to list all currently visible Standard Answers."""
     serializer_class = StandardAnswerSerializer
     queryset = StandardAnswer.objects.select_related('topic')\
-        .filter(is_visible=True).order_by('topic__order', 'order')
+        .filter(is_visible=True).order_by('topic__order', 'order', '-id')
     pagination_class = HALPagination
 
 
