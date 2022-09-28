@@ -39,8 +39,9 @@ class StandardAnswer(models.Model):
     reopens_when_unhappy = models.BooleanField(default=False)
     text = models.TextField(max_length=1000, unique=True)
     order = models.IntegerField(default=0, null=True, blank=True,
-                                help_text='De volgorde van de antwoorden tijdens het KTO proces'
-                                          'Bij een selectie van een onderwerp is de volgorde van het antwoord binnen het geselecteerde onderwerp.')
+                                help_text='De volgorde van de antwoorden tijdens het KTO proces. '
+                                          'Bij een selectie van een onderwerp is de volgorde van het '
+                                          'antwoord binnen het geselecteerde onderwerp.')
 
     topic = models.ForeignKey(
         StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
