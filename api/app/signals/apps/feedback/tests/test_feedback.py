@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datetime import timedelta
 
 from django.conf import settings
@@ -8,7 +8,11 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.feedback.factories import FeedbackFactory, StandardAnswerFactory
+from signals.apps.feedback.factories import (
+    FeedbackFactory,
+    StandardAnswerFactory,
+    StandardAnswerTopicFactory
+)
 from signals.apps.feedback.models import Feedback, StandardAnswer
 from signals.apps.feedback.routers import feedback_router
 from signals.apps.feedback.utils import get_feedback_urls
@@ -468,24 +472,49 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 class TestStandardAnswers(SignalsBaseApiTestCase):
     def setUp(self):
         StandardAnswer.objects.all().delete()
-        self.standard_answer_1 = StandardAnswerFactory(is_visible=True, is_satisfied=True)
-        self.standard_answer_2 = StandardAnswerFactory(is_visible=True, is_satisfied=False)
-        self.standard_answer_3 = StandardAnswerFactory(is_visible=False, is_satisfied=True)
-        self.standard_answer_4 = StandardAnswerFactory(is_visible=False, is_satisfied=False)
+        self.topic_1 = StandardAnswerTopicFactory(name='topic_1', order=0)
+        self.topic_2 = StandardAnswerTopicFactory(name='topic_2', order=1)
+        self.standard_answer_1 = StandardAnswerFactory(
+            is_visible=True, is_satisfied=True, topic=self.topic_1, order=2)
+        self.standard_answer_2 = StandardAnswerFactory(
+            is_visible=True, is_satisfied=False, topic=self.topic_1, order=0)
+        self.standard_answer_3 = StandardAnswerFactory(
+            is_visible=False, is_satisfied=True, topic=self.topic_2, order=0)
+        self.standard_answer_4 = StandardAnswerFactory(
+            is_visible=False, is_satisfied=False, topic=self.topic_2, order=5)
+        self.standard_answer_5 = StandardAnswerFactory(
+            is_visible=True, is_satisfied=False, topic=None)
 
     def test_setup(self):
         response = self.client.get('/standard_answers/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(StandardAnswer.objects.count(), 4)
-        self.assertEqual(response.json()['count'], 2)
+        self.assertEqual(StandardAnswer.objects.count(), 5)
+        self.assertEqual(response.json()['count'], 3)
 
     def test_factories(self):
-        self.assertEqual(StandardAnswer.objects.count(), 4)
+        self.assertEqual(StandardAnswer.objects.count(), 5)
 
         self.assertIn('POSITIEF ', str(self.standard_answer_1))
         self.assertIn('NEGATIEF ', str(self.standard_answer_2))
         self.assertIn('POSITIEF ', str(self.standard_answer_3))
         self.assertIn('NEGATIEF ', str(self.standard_answer_4))
+
+    def test_ordering_topics(self):
+        self.standard_answer_3.is_visible = True
+        self.standard_answer_4.is_visible = True
+        self.standard_answer_3.save()
+        self.standard_answer_4.save()
+        response = self.client.get('/standard_answers/')
+        expected_order = [
+            [self.standard_answer_2.text, self.topic_1.description],
+            [self.standard_answer_1.text, self.topic_1.description],
+            [self.standard_answer_3.text, self.topic_2.description],
+            [self.standard_answer_4.text, self.topic_2.description],
+            [self.standard_answer_5.text, None],
+
+        ]
+        response_order = [[item['text'], item['topic']] for item in response.json()['results']]
+        self.assertEqual(expected_order, response_order)
 
 
 class TestUtils(TestCase):

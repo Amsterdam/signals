@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import secrets
 import uuid
 from datetime import timedelta
@@ -18,11 +18,33 @@ def generate_token():
     return uuid.UUID(hex=secrets.token_hex(16))
 
 
+class StandardAnswerTopic(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(max_length=1000)
+    order = models.IntegerField(default=0, null=True, blank=True,
+                                help_text='De volgorde van de antwoorden '
+                                          'onderwerpen voor het KTP proces.')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Standaard antwoord onderwerp'
+        verbose_name_plural = 'Standaard antwoorden onderwerpen'
+
+
 class StandardAnswer(models.Model):
     is_visible = models.BooleanField(default=True)
     is_satisfied = models.BooleanField(default=True)
     reopens_when_unhappy = models.BooleanField(default=False)
     text = models.TextField(max_length=1000, unique=True)
+    order = models.IntegerField(default=0, null=True, blank=True,
+                                help_text='De volgorde van de antwoorden tijdens het KTO proces. '
+                                          'Bij een selectie van een onderwerp is de volgorde van het '
+                                          'antwoord binnen het geselecteerde onderwerp.')
+
+    topic = models.ForeignKey(
+        StandardAnswerTopic, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         pos_neg = 'POSITIEF' if self.is_satisfied else 'NEGATIEF'

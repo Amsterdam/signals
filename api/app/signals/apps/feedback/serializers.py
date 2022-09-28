@@ -12,9 +12,11 @@ from signals.apps.signals.models import Signal
 
 
 class StandardAnswerSerializer(serializers.ModelSerializer):
+    topic = serializers.ReadOnlyField(source='topic.description', default=None)
+
     class Meta:
         model = StandardAnswer
-        fields = ('is_satisfied', 'text')
+        fields = ('is_satisfied', 'text', 'topic')
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
