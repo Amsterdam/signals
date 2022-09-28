@@ -19,14 +19,14 @@ def generate_token():
 
 
 class StandardAnswerTopic(models.Model):
-    description = models.CharField(max_length=255, unique=True)
-    text = models.TextField(max_length=1000)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(max_length=1000)
     order = models.IntegerField(default=0, null=True, blank=True,
                                 help_text='De volgorde van de antwoorden '
                                           'onderwerpen voor het KTP proces.')
 
     def __str__(self):
-        return self.description
+        return self.name
 
     class Meta:
         verbose_name = 'Standaard antwoord onderwerp'

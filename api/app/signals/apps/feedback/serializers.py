@@ -12,7 +12,7 @@ from signals.apps.signals.models import Signal
 
 
 class StandardAnswerSerializer(serializers.ModelSerializer):
-    topic = serializers.ReadOnlyField(source='topic.text', default=None)
+    topic = serializers.ReadOnlyField(source='topic.description', default=None)
 
     class Meta:
         model = StandardAnswer

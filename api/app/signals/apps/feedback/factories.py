@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 import factory
 from django.utils import timezone
 from factory import fuzzy
@@ -22,8 +22,8 @@ REASONS = [
 class StandardAnswerTopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StandardAnswerTopic
-    description = factory.Sequence(lambda n: 'topic name: {}'.format(n))
-    text = factory.Sequence(lambda n: 'topic text: {}'.format(n))
+    name = factory.Sequence(lambda n: 'topic name: {}'.format(n))
+    description = factory.Sequence(lambda n: 'topic text: {}'.format(n))
     order = fuzzy.FuzzyChoice([0, 1, 2, 3, 4, 5])
 
 

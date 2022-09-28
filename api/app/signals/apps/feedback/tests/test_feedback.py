@@ -472,8 +472,8 @@ class TestFeedbackFlow(SignalsBaseApiTestCase):
 class TestStandardAnswers(SignalsBaseApiTestCase):
     def setUp(self):
         StandardAnswer.objects.all().delete()
-        self.topic_1 = StandardAnswerTopicFactory(description='topic_1', order=0)
-        self.topic_2 = StandardAnswerTopicFactory(description='topic_2', order=1)
+        self.topic_1 = StandardAnswerTopicFactory(name='topic_1', order=0)
+        self.topic_2 = StandardAnswerTopicFactory(name='topic_2', order=1)
         self.standard_answer_1 = StandardAnswerFactory(
             is_visible=True, is_satisfied=True, topic=self.topic_1, order=2)
         self.standard_answer_2 = StandardAnswerFactory(
@@ -506,10 +506,10 @@ class TestStandardAnswers(SignalsBaseApiTestCase):
         self.standard_answer_4.save()
         response = self.client.get('/standard_answers/')
         expected_order = [
-            [self.standard_answer_2.text, self.topic_1.text],
-            [self.standard_answer_1.text, self.topic_1.text],
-            [self.standard_answer_3.text, self.topic_2.text],
-            [self.standard_answer_4.text, self.topic_2.text],
+            [self.standard_answer_2.text, self.topic_1.description],
+            [self.standard_answer_1.text, self.topic_1.description],
+            [self.standard_answer_3.text, self.topic_2.description],
+            [self.standard_answer_4.text, self.topic_2.description],
             [self.standard_answer_5.text, None],
 
         ]

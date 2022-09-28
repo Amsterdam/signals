@@ -20,7 +20,7 @@ class StandardAnswerAdmin(admin.ModelAdmin):
 
 
 class StandardAnswerTopicAdmin(admin.ModelAdmin):
-    list_display = ('description', 'text', 'order')
+    list_display = ('name', 'description', 'order')
     list_display_links = list_display
 
 
