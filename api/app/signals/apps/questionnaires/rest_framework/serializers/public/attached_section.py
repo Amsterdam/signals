@@ -9,12 +9,13 @@ from signals.apps.questionnaires.rest_framework.serializers.public.attached_file
 
 
 class NestedPublicAttachedSectionSerializer(ModelSerializer):
-    files = NestedPublicAttachedFileSerializer(many=True)
+    attached_files = NestedPublicAttachedFileSerializer(many=True)
 
     class Meta:
         model = AttachedSection
         fields = (
-            'header',
+            'title',
             'text',
-            'files',
+
+            'attached_files',
         )

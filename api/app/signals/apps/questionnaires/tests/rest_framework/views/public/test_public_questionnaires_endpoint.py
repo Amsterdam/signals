@@ -12,9 +12,11 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
-    QuestionnaireFactory
+    QuestionnaireFactory,
+
+    QuestionnaireAttachedSectionFactory
 )
-from signals.apps.questionnaires.models import Questionnaire
+from signals.apps.questionnaires.models import Questionnaire, AttachedSection
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
@@ -52,17 +54,17 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
         )
 
-        # set up explanatory text + images
-        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
-        self.illustrated_text = illustrated_text
-        self.section_1 = section_1
-        self.section_2 = section_2
-        self.attached_file_1 = attached_file_1
-        self.attached_file_2 = attached_file_2
-        self.explanation = illustrated_text
-
-        self.questionnaire.explanation = self.explanation
-        self.questionnaire.save()
+        # TODO: move this to factories
+        self.attached_section_1 = AttachedSection.objects.create(
+            title='TITLE 1',
+            text='TEXT 1',
+            content_object=self.questionnaire
+        )
+        self.attached_section_2 = AttachedSection.objects.create(
+            title='TITLE 2',
+            text='TEXT 2',
+            content_object=self.questionnaire
+        )
 
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')

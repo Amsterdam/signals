@@ -13,7 +13,9 @@ from signals.apps.questionnaires.rest_framework.serializers.public.questions imp
     PublicQuestionDetailedSerializer,
     PublicQuestionSerializer
 )
-
+from signals.apps.questionnaires.rest_framework.serializers.public.attached_section import (
+    NestedPublicAttachedSectionSerializer
+)
 
 class PublicQuestionnaireSerializer(HALSerializer):
     serializer_url_field = QuestionnairePublicHyperlinkedIdentityField

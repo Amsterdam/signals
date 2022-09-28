@@ -12,8 +12,13 @@ from signals.apps.questionnaires.models import (
     QuestionGraph,
     Questionnaire,
     Session,
-    Trigger
+    Trigger,
+
+    AttachedSection
 )
+
+from django.contrib.contenttypes.models import ContentType
+import factory
 
 fake = Faker()
 
@@ -97,3 +102,30 @@ class AnswerFactory(DjangoModelFactory):
 
     class Meta:
         model = Answer
+
+
+class AttachedSectionFactory(DjangoModelFactory):
+    title = Sequence(lambda n: f'Title for attached section {n}')
+    text = LazyFunction(fake.sentence)
+
+    object_id = factory.SelfAttribute('content_type.id')
+    content_type = factory.LazyAttribute(
+        lambda o: ContentType.objects.get_for_model(o.content_object)
+    )
+
+    class Meta:
+        exclude = ['content_object']
+        abstract = True
+
+
+class QuestionnaireAttachedSectionFactory(AttachedSectionFactory):
+    content_object = factory.SubFactory(QuestionnaireFactory)
+
+    class Meta:
+        model = AttachedSection
+
+# class TaggedUserFactory(TaggedItemFactory):
+#     content_object = factory.SubFactory(UserFactory)
+
+#     class Meta:
+#         model = TaggedItem
