@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
-from django.contrib.gis.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.db import models
 
 
 class AttachedSection(models.Model):
     """
     Section of text with title and possible images
-    
+
     This model represents extra information for users of question / questionnaires.
     """
     title = models.CharField(max_length=255)

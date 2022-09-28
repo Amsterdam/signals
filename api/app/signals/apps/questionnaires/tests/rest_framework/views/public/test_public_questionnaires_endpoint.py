@@ -12,11 +12,9 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
-    QuestionnaireFactory,
-
-    QuestionnaireAttachedSectionFactory
+    QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import Questionnaire, AttachedSection
+from signals.apps.questionnaires.models import AttachedSection, Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
