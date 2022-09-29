@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone

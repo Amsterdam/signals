@@ -88,8 +88,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             section=self.attached_section_2
         )
 
-        self.assertIsInstance(self.attached_section_2.attached_files.all()[0].stored_file, StoredFile)
-
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
