@@ -18,9 +18,10 @@ class AttachedSection(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
-    # order
+    order = models.IntegerField(default=0)
 
     class Meta:
         indexes = [
             models.Index(fields=["content_type", "object_id"]),
         ]
+        ordering = ['order', 'id']

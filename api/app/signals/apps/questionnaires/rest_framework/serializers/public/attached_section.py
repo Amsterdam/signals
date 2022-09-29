@@ -16,6 +16,7 @@ class NestedPublicAttachedSectionSerializer(ModelSerializer):
         fields = (
             'title',
             'text',
+            'order',
 
             'attached_files',
         )
