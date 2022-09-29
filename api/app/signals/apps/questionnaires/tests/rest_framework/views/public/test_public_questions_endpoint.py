@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import os
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone
@@ -17,7 +18,13 @@ from signals.apps.questionnaires.factories import (
     QuestionnaireFactory,
     SessionFactory
 )
-from signals.apps.questionnaires.models import Answer, Session
+from signals.apps.questionnaires.models import (
+    Answer,
+    AttachedFile,
+    AttachedSection,
+    Session,
+    StoredFile
+)
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -35,6 +42,9 @@ class NameSpace:
 
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
+
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
@@ -54,6 +64,34 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         )
         self.post_answer_schema = self.load_json_schema(
             os.path.join(THIS_DIR, '../../json_schema/public_post_question_answer_response.json')
+        )
+
+        # TODO: move this to factories
+        self.attached_section_1 = AttachedSection.objects.create(
+            title='TITLE 1',
+            text='TEXT 1',
+            content_object=self.questionnaire,
+            order=2
+        )
+        self.attached_section_2 = AttachedSection.objects.create(
+            title='TITLE 2',
+            text='TEXT 2',
+            content_object=self.questionnaire,
+        )
+
+        with open(GIF_FILE, 'rb') as f:
+            suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
+            stored_file = StoredFile.objects.create(file=suf)
+
+        self.attached_file_1 = AttachedFile.objects.create(
+            stored_file=stored_file,
+            description='IMAGE 1',
+            section=self.attached_section_2
+        )
+        self.attached_file_2 = AttachedFile.objects.create(
+            stored_file=stored_file,
+            description='IMAGE 2',
+            section=self.attached_section_2
         )
 
     def test_question_list(self):

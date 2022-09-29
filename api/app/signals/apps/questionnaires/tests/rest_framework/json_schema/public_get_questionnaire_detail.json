@@ -167,6 +167,35 @@
 						},
 						"required": {
 							"type": "boolean"
+						},
+						"attached_sections": {
+							"anyOf": [
+								{
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"title": {
+												"type": "string"
+											},
+											"text": {
+												"type": "string"
+											},
+											"attached_files": {
+												"type": "array"
+											}
+										},
+										"required": [
+											"title",
+											"text",
+											"attached_files"
+										]
+									}
+								},
+								{
+									"type": "null"
+								}
+							]
 						}
 					},
 					"required": [
@@ -180,7 +209,8 @@
 						"short_label",
 						"field_type",
 						"next_rules",
-						"required"
+						"required",
+						"attached_sections"
 					],
 					"additionalProperties": false
 				},
