@@ -2049,6 +2049,19 @@ paths:
         '404':
           description: Not Found.
 
+  /signals/v1/public/standard_answers/:
+    get:
+      description: Retrieve a list of all standard answers than can be given during a feedback round
+      responses:
+        '200':
+          description: List of questions data json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StandardAnswersList'
+        '404':
+          description: Not Found.
+
   /signals/v1/private/sources/:
     get:
       description: Retrieve a list of signal sources.
@@ -4917,6 +4930,64 @@ components:
         - is_satisfied
         - allows_contact
         - text_extra
+
+    V1StandardAnswersList:
+      description: List of standard answers
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of current page
+                  format: uri
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the next page
+                  format: uri
+                  nullable: true
+            previous:
+              type: object
+              properties:
+                href:
+                  type: string
+                  description: URI of the previous page
+                  format: uri
+                  nullable: true
+                  example: null
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 1
+        results:
+          type: array
+          description: A list of standard answers, paginated
+          items:
+            $ref: '#/components/schemas/V1StandardAnswers'
+
+    V1StandardAnswers:
+      description: Standard answer
+      type: object
+      properties:
+        is_satisfied:
+          description: If a standard answer is a positive or negative answer
+          type: boolean
+          example: True
+        text:
+          description: The text of the standard asnwer
+          type: string
+          example: Ik ben goed geholpen
+        topic:
+          description: The topic a standard answer belongs to
+          type: string
+          example: Hoe heeft de gemeente u geholpen?
 
   securitySchemes:
     OAuth2:
