@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 import os
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from rest_framework.test import APITestCase
@@ -14,7 +15,12 @@ from signals.apps.questionnaires.factories import (
     QuestionGraphFactory,
     QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import AttachedSection, Questionnaire
+from signals.apps.questionnaires.models import (
+    AttachedFile,
+    AttachedSection,
+    Questionnaire,
+    StoredFile
+)
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -32,6 +38,9 @@ class NameSpace:
 
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
+
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
@@ -52,23 +61,53 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.attached_section_1 = AttachedSection.objects.create(
             title='TITLE 1',
             text='TEXT 1',
-            content_object=self.questionnaire
+            content_object=self.questionnaire,
+            order=2
         )
         self.attached_section_2 = AttachedSection.objects.create(
             title='TITLE 2',
             text='TEXT 2',
-            content_object=self.questionnaire
+            content_object=self.questionnaire,
         )
+
+        with open(GIF_FILE, 'rb') as f:
+            suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
+            stored_file = StoredFile.objects.create(file=suf)
+
+        self.attached_file_1 = AttachedFile.objects.create(
+            stored_file=stored_file,
+            description='IMAGE 1',
+            section=self.attached_section_2
+        )
+        self.attached_file_2 = AttachedFile.objects.create(
+            stored_file=stored_file,
+            description='IMAGE 2',
+            section=self.attached_section_2
+        )
+
+        self.assertIsInstance(self.attached_section_2.attached_files.all()[0].stored_file, StoredFile)
 
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
+
+        response_json = response.json()
+        self.assertIn('attached_sections', response_json['results'][0])
+        self.assertEqual(len(response_json['results'][0]['attached_sections']), 2)
 
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
 
         self.assertJsonSchema(self.detail_schema, response.json())
+
+        response_json = response.json()
+        self.assertIn('attached_sections', response_json)
+        self.assertEqual(len(response_json['attached_sections']), 2)
+        self.assertEqual(response_json['attached_sections'][0]['order'], 0)
+        self.assertEqual(response_json['attached_sections'][1]['order'], 2)
+
+        self.assertEqual(len(response_json['attached_sections'][0]['attached_files']), 2)
 
     def test_questionnaire_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})
