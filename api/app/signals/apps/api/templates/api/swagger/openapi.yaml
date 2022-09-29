@@ -2049,7 +2049,7 @@ paths:
         '404':
           description: Not Found.
 
-  /signals/v1/public/standard_answers/:
+  /signals/v1/public/feedback/standard_answers/:
     get:
       description: Retrieve a list of all standard answers than can be given during a feedback round
       responses:
