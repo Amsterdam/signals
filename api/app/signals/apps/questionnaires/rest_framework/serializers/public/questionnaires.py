@@ -32,7 +32,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
             'description',
             'is_active',
             'first_question',
-            'attached_sections'
+            'attached_sections',
         )
         read_only_fields = fields  # No create or update allowed
 

@@ -5,6 +5,9 @@ from rest_framework import serializers
 
 from signals.apps.questionnaires.models import Edge, Question
 from signals.apps.questionnaires.rest_framework.fields import QuestionHyperlinkedIdentityField
+from signals.apps.questionnaires.rest_framework.serializers.public.attached_section import (
+    NestedPublicAttachedSectionSerializer
+)
 
 
 class PublicQuestionSerializer(HALSerializer):
@@ -12,6 +15,7 @@ class PublicQuestionSerializer(HALSerializer):
     next_rules = serializers.SerializerMethodField()
     _display = DisplayField()
     key = serializers.CharField(source='retrieval_key')
+    attached_sections = NestedPublicAttachedSectionSerializer(many=True)
 
     class Meta:
         model = Question
@@ -27,6 +31,7 @@ class PublicQuestionSerializer(HALSerializer):
             'field_type',
             'next_rules',
             'required',
+            'attached_sections',
         )
         read_only_fields = fields  # No create or update allowed
 
