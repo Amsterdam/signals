@@ -2,11 +2,10 @@
 # Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.managers import QuestionnaireManager
-from signals.apps.questionnaires.models.attached_section import AttachedSection
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 
 
 class Questionnaire(models.Model):
@@ -39,9 +38,8 @@ class Questionnaire(models.Model):
         'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
 
-    # Attached section comprise of a title, a text and possibly zero or more
-    # images. A questionnaire can have zero or more of these sections.
-    attached_sections = GenericRelation(AttachedSection)
+    # Explanation comprises zero or more sections of text + (optional) images.
+    explanation = models.OneToOneField(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True)
 
     objects = QuestionnaireManager()
 

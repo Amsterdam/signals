@@ -8,12 +8,14 @@ from signals.apps.questionnaires.models.stored_file import StoredFile
 
 class AttachedFile(models.Model):
     """
-    Images can be attached to both Questionnaires and Questions.
+    Images to be used with an AttachedSection of text.
     """
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+
     # Actual file on disk is referenced by a AttachedFile instance, allowing
     # for deduplication.
-    stored_file = models.ForeignKey(StoredFile, on_delete=models.CASCADE)
+    stored_file = models.ForeignKey(StoredFile, on_delete=models.CASCADE, related_name='attached_files')
     description = models.CharField(max_length=255, null=True, blank=True)
-    section = models.ForeignKey(AttachedSection, on_delete=models.CASCADE, related_name='attached_files')
+    section = models.ForeignKey(AttachedSection, on_delete=models.CASCADE, related_name='files')
 
-    # created_at, created_by, uploaded_at ? (track origin of file)
+    # created_by, uploaded_at ? (track origin of file)

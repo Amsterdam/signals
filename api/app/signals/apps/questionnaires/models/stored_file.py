@@ -7,6 +7,8 @@ class StoredFile(models.Model):
     """
     Image stored for use in Questionnaires app.
     """
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+
     # This model exists to allow deduplication of images that are used in
     # potentially a large number of questionnaires.
     file = models.FileField(
@@ -15,3 +17,10 @@ class StoredFile(models.Model):
         blank=False,
         max_length=255
     )
+
+    def get_reference_count(self):
+        """
+        Number of AttachedFile instances referencing this StoredFile instance.
+        """
+        from signals.apps.questionnaires.models.attached_file import AttachedFile
+        return AttachedFile.filter(stored_file=self).count()

@@ -25,6 +25,7 @@ from signals.apps.questionnaires.models import (
     Session,
     StoredFile
 )
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -67,16 +68,17 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         )
 
         # TODO: move this to factories
+        self.explanation = IllustratedText.objects.create(title='Questionnaire title')
+
         self.attached_section_1 = AttachedSection.objects.create(
-            title='TITLE 1',
+            header='TITLE 1',
             text='TEXT 1',
-            content_object=self.questionnaire,
-            order=2
+            illustrated_text=self.explanation,
         )
         self.attached_section_2 = AttachedSection.objects.create(
-            title='TITLE 2',
+            header='TITLE 2',
             text='TEXT 2',
-            content_object=self.questionnaire,
+            illustrated_text=self.explanation,
         )
 
         with open(GIF_FILE, 'rb') as f:
@@ -93,6 +95,9 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
             description='IMAGE 2',
             section=self.attached_section_2
         )
+
+        self.question.explanation = self.explanation
+        self.question.save()
 
     def test_question_list(self):
         response = self.client.get(f'{self.base_endpoint}')

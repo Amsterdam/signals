@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
+
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 
 
 class AttachedSection(models.Model):
@@ -11,17 +11,12 @@ class AttachedSection(models.Model):
 
     This model represents extra information for users of question / questionnaires.
     """
-    title = models.CharField(max_length=255)
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
+
+    header = models.CharField(max_length=255)
     text = models.TextField()
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    order = models.IntegerField(default=0)
+    illustrated_text = models.ForeignKey(IllustratedText, related_name='sections', on_delete=models.CASCADE)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["content_type", "object_id"]),
-        ]
-        ordering = ['order', 'id']
+        order_with_respect_to = 'illustrated_text'
