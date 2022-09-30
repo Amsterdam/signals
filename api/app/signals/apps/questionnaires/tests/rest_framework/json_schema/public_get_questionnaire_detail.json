@@ -195,6 +195,7 @@
 					"type": "null"
 				},
 				{
+<<<<<<< HEAD
 					"type": "object",
 					"properties": {
 						"title": {
@@ -230,6 +231,9 @@
 						"title",
 						"sections"
 					]
+=======
+					"type": "object"
+>>>>>>> Remove Django generic foreign keys and relations
 				}
 			]
 		}

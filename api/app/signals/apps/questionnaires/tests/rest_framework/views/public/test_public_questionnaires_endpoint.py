@@ -23,6 +23,7 @@ from signals.apps.questionnaires.models import (
     Questionnaire,
     StoredFile
 )
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
@@ -61,16 +62,17 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         )
 
         # TODO: move this to factories
+        self.explanation = IllustratedText.objects.create(title='Questionnaire title')
+
         self.attached_section_1 = AttachedSection.objects.create(
-            title='TITLE 1',
+            header='HEADER 1',
             text='TEXT 1',
-            content_object=self.questionnaire,
-            order=2
+            illustrated_text=self.explanation
         )
         self.attached_section_2 = AttachedSection.objects.create(
-            title='TITLE 2',
+            header='HEADER 2',
             text='TEXT 2',
-            content_object=self.questionnaire,
+            illustrated_text=self.explanation
         )
 
         with open(GIF_FILE, 'rb') as f:
@@ -88,13 +90,16 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             section=self.attached_section_2
         )
 
+        self.questionnaire.explanation = self.explanation
+        self.questionnaire.save()
+
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
 
         response_json = response.json()
-        self.assertIn('attached_sections', response_json['results'][0])
-        self.assertEqual(len(response_json['results'][0]['attached_sections']), 2)
+        self.assertIn('explanation', response_json['results'][0])
+        self.assertEqual(len(response_json['results'][0]['explanation']['sections']), 2)
 
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
@@ -108,14 +113,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response_json = response.json()
         self.assertIn('explanation', response_json)
         self.assertEqual(len(response_json['explanation']['sections']), 2)
-
-        response_json = response.json()
-        self.assertIn('attached_sections', response_json)
-        self.assertEqual(len(response_json['attached_sections']), 2)
-        self.assertEqual(response_json['attached_sections'][0]['order'], 0)
-        self.assertEqual(response_json['attached_sections'][1]['order'], 2)
-
-        self.assertEqual(len(response_json['attached_sections'][0]['attached_files']), 2)
 
     def test_questionnaire_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})
