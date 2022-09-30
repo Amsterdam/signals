@@ -1,14 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-import factory
-from django.contrib.contenttypes.models import ContentType
 from factory import LazyFunction, SelfAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 from faker import Faker
 
 from signals.apps.questionnaires.models import (
     Answer,
-    AttachedSection,
     Choice,
     Edge,
     Question,
@@ -100,30 +97,3 @@ class AnswerFactory(DjangoModelFactory):
 
     class Meta:
         model = Answer
-
-
-class AttachedSectionFactory(DjangoModelFactory):
-    title = Sequence(lambda n: f'Title for attached section {n}')
-    text = LazyFunction(fake.sentence)
-
-    object_id = factory.SelfAttribute('content_type.id')
-    content_type = factory.LazyAttribute(
-        lambda o: ContentType.objects.get_for_model(o.content_object)
-    )
-
-    class Meta:
-        exclude = ['content_object']
-        abstract = True
-
-
-class QuestionnaireAttachedSectionFactory(AttachedSectionFactory):
-    content_object = factory.SubFactory(QuestionnaireFactory)
-
-    class Meta:
-        model = AttachedSection
-
-# class TaggedUserFactory(TaggedItemFactory):
-#     content_object = factory.SubFactory(UserFactory)
-
-#     class Meta:
-#         model = TaggedItem

@@ -2,12 +2,11 @@
 # Copyright (C) 2021 -2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 from signals.apps.questionnaires.managers import QuestionManager
-from signals.apps.questionnaires.models.attached_section import AttachedSection
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 
 
 class Question(models.Model):
@@ -67,8 +66,9 @@ class Question(models.Model):
     # For example the field_type selected_object has a property that stores the source URL of the objects
     extra_properties = models.JSONField(blank=True, null=True)
 
-    # Attached images and text allow extra information to be shown to users.
-    attached_sections = GenericRelation(AttachedSection)
+    # Explanation comprises zero or more sections of text + (optional) images.
+    # This allows extra information to be shown to users.
+    explanation = models.OneToOneField(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True)
 
     objects = QuestionManager()
 

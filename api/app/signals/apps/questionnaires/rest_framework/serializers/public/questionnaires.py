@@ -6,8 +6,8 @@ from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.rest_framework.fields import (
     QuestionnairePublicHyperlinkedIdentityField
 )
-from signals.apps.questionnaires.rest_framework.serializers.public.attached_section import (
-    NestedPublicAttachedSectionSerializer
+from signals.apps.questionnaires.rest_framework.serializers.public.illustrated_text import (
+    NestedPublicIllustratedTextSerializer
 )
 from signals.apps.questionnaires.rest_framework.serializers.public.questions import (
     PublicQuestionDetailedSerializer,
@@ -20,7 +20,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
 
     _display = DisplayField()
     first_question = PublicQuestionSerializer()
-    attached_sections = NestedPublicAttachedSectionSerializer(many=True)
+    explanation = NestedPublicIllustratedTextSerializer()
 
     class Meta:
         model = Questionnaire
@@ -32,7 +32,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
             'description',
             'is_active',
             'first_question',
-            'attached_sections',
+            'explanation',
         )
         read_only_fields = fields  # No create or update allowed
 

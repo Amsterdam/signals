@@ -234,32 +234,13 @@
 										"required": {
 											"type": "boolean"
 										},
-										"attached_sections": {
+										"explanation": {
 											"anyOf": [
 												{
-													"type": "array",
-													"items": {
-														"type": "object",
-														"properties": {
-															"title": {
-																"type": "string"
-															},
-															"text": {
-																"type": "string"
-															},
-															"attached_files": {
-																"type": "array"
-															}
-														},
-														"required": [
-															"title",
-															"text",
-															"attached_files"
-														]
-													}
+													"type": "null"
 												},
 												{
-													"type": "null"
+													"type": "object"
 												}
 											]
 										}
@@ -276,7 +257,7 @@
 										"field_type",
 										"next_rules",
 										"required",
-										"attached_sections"
+										"explanation"
 									],
 									"additionalProperties": false
 								},
@@ -285,32 +266,13 @@
 								}
 							]
 						},
-						"attached_sections": {
+						"explanation": {
 							"anyOf": [
 								{
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"title": {
-												"type": "string"
-											},
-											"text": {
-												"type": "string"
-											},
-											"attached_files": {
-												"type": "array"
-											}
-										},
-										"required": [
-											"title",
-											"text",
-											"attached_files"
-										]
-									}
+									"type": "null"
 								},
 								{
-									"type": "null"
+									"type": "object"
 								}
 							]
 						}
@@ -323,7 +285,7 @@
 						"description",
 						"is_active",
 						"first_question",
-						"attached_sections"
+						"explanation"
 					],
 					"additionalProperties": false
 				}
