@@ -23,6 +23,7 @@ from signals.apps.questionnaires.models import (
     StoredFile
 )
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
+from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -58,34 +59,14 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
         )
 
-        # TODO: move this to factories
-        self.explanation = IllustratedText.objects.create(title='Questionnaire title')
-
-        self.attached_section_1 = AttachedSection.objects.create(
-            header='HEADER 1',
-            text='TEXT 1',
-            illustrated_text=self.explanation
-        )
-        self.attached_section_2 = AttachedSection.objects.create(
-            header='HEADER 2',
-            text='TEXT 2',
-            illustrated_text=self.explanation
-        )
-
-        with open(GIF_FILE, 'rb') as f:
-            suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
-            stored_file = StoredFile.objects.create(file=suf)
-
-        self.attached_file_1 = AttachedFile.objects.create(
-            stored_file=stored_file,
-            description='IMAGE 1',
-            section=self.attached_section_2
-        )
-        self.attached_file_2 = AttachedFile.objects.create(
-            stored_file=stored_file,
-            description='IMAGE 2',
-            section=self.attached_section_2
-        )
+        # set up explanatory text + images
+        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text = illustrated_text
+        self.section_1 = section_1
+        self.section_2 = section_2
+        self.attached_file_1 = attached_file_1
+        self.attached_file_2 = attached_file_2
+        self.explanation = illustrated_text
 
         self.questionnaire.explanation = self.explanation
         self.questionnaire.save()
