@@ -18,10 +18,10 @@ from signals.apps.questionnaires.factories import (
 from signals.apps.questionnaires.models import (
     AttachedFile,
     AttachedSection,
+    IllustratedText,
     Questionnaire,
     StoredFile
 )
-from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
 THIS_DIR = os.path.dirname(__file__)
@@ -104,6 +104,8 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
         response_json = response.json()
+        self.assertEqual(len(response_json['explanation']['sections']), 2)
+        self.assertIn('title', response_json['explanation'])
 
         self.assertJsonSchema(self.detail_schema, response_json)
 

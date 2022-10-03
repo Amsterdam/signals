@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021-2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 Test models and associated manager functions for the questionnaires app.
 """
+import os
 import uuid
 from datetime import datetime, timedelta
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils.timezone import make_aware
 from freezegun import freeze_time
@@ -15,10 +17,22 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
+    QuestionnaireFactory,
     SessionFactory,
     TriggerFactory
 )
-from signals.apps.questionnaires.models import Edge, Question, QuestionGraph
+from signals.apps.questionnaires.models import (
+    AttachedFile,
+    AttachedSection,
+    Edge,
+    IllustratedText,
+    Question,
+    QuestionGraph,
+    StoredFile
+)
+
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, 'test-data', 'test.gif')
 
 
 def create_diamond(graph_name='diamond'):
@@ -120,6 +134,26 @@ def create_too_many_questions(graph_name='too_many'):
         EdgeFactory.create(graph=graph, question=questions[i], next_question=questions[i + 1], choice=None)
 
     return graph
+
+
+def create_illustrated_text():
+    """
+    Create an IllustratedText instance that can be used for explanatory text.
+
+    Note, for now only Question an Questionnaire instances get this explanatory
+    text.
+    """
+    illustrated_text = IllustratedText.objects.create(title='TITLE')
+    section_1 = AttachedSection.objects.create(header='HEADER 1', text='SECTION 1', illustrated_text=illustrated_text)
+    section_2 = AttachedSection.objects.create(header='HEADER 2', text='SECTION 2', illustrated_text=illustrated_text)
+
+    with open(GIF_FILE, 'rb') as f:
+        suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
+        stored_file = StoredFile.objects.create(file=suf)
+    attached_file_1 = AttachedFile.objects.create(description='IMAGE 1', stored_file=stored_file, section=section_1)
+    attached_file_2 = AttachedFile.objects.create(description='IMAGE 2', stored_file=stored_file, section=section_2)
+
+    return illustrated_text, section_1, section_2, attached_file_1, attached_file_2
 
 
 class TestEmpty(TestCase):
@@ -457,7 +491,95 @@ class TestQuestion(TestCase):
 
 
 class TestQuestionModel(TestCase):
-    def test_analysis_key_default(self):
+    def setUp(self):
+        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text = illustrated_text
+        self.section_1 = section_1
+        self.section_2 = section_2
+        self.attached_file_1 = attached_file_1
+        self.attached_file_2 = attached_file_2
+
         # We set this to the default because it is normally overwritten by QuestionFactory:
-        q = QuestionFactory.create(analysis_key='PLACEHOLDER')
+        self.question = QuestionFactory.create(analysis_key='PLACEHOLDER', explanation=illustrated_text)
+
+    def test_analysis_key_default(self):
+        # We cannot test this using the QuestionFactory because it overwrites
+        # the `analysis_key` placeholder value.
+        q = Question.objects.create(
+            label='label',
+            short_label='short_label',
+            field_type='plain_text'
+        )
         self.assertEqual(q.analysis_key, f'PLACEHOLDER-{str(q.uuid)}')
+
+    def test_question_explanation(self):
+        self.assertEqual(self.question.explanation, self.illustrated_text)
+        self.assertEqual(list(self.question.explanation.sections.all()), [self.section_1, self.section_2])
+        self.assertEqual(
+            list(self.question.explanation.sections.first().files.all()), [self.attached_file_1])
+        self.assertEqual(
+            list(self.question.explanation.sections.last().files.all()), [self.attached_file_2])
+
+        self.assertEqual(StoredFile.objects.count(), 1)
+        stored_file = StoredFile.objects.first()
+        self.assertEqual(set(stored_file.attached_files.all()), set([self.attached_file_1, self.attached_file_2]))
+        self.assertEqual(self.question.explanation.sections.first().files.first().stored_file, stored_file)
+        self.assertEqual(self.question.explanation.sections.last().files.first().stored_file, stored_file)
+
+    def test_question_explanation_section_order(self):
+        # sections of text in an explanation can be reordered
+        order = self.question.explanation.get_attachedsection_order()
+        self.assertEqual(list(order), [self.section_1.id, self.section_2.id])
+
+        self.question.explanation.set_attachedsection_order([self.section_2.id, self.section_1.id])
+        order = self.question.explanation.get_attachedsection_order()
+        self.assertEqual(list(order), [self.section_2.id, self.section_1.id])
+
+
+class TestQuestionnaireModel(TestCase):
+    def setUp(self):
+        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text = illustrated_text
+        self.section_1 = section_1
+        self.section_2 = section_2
+        self.attached_file_1 = attached_file_1
+        self.attached_file_2 = attached_file_2
+
+        self.questionnaire = QuestionnaireFactory.create(explanation=illustrated_text)
+
+    def test_questionnaire_explanation(self):
+        self.assertEqual(self.questionnaire.explanation, self.illustrated_text)
+        self.assertEqual(list(self.questionnaire.explanation.sections.all()), [self.section_1, self.section_2])
+        self.assertEqual(
+            list(self.questionnaire.explanation.sections.first().files.all()), [self.attached_file_1])
+        self.assertEqual(
+            list(self.questionnaire.explanation.sections.last().files.all()), [self.attached_file_2])
+
+        self.assertEqual(StoredFile.objects.count(), 1)
+        stored_file = StoredFile.objects.first()
+        self.assertEqual(set(stored_file.attached_files.all()), set([self.attached_file_1, self.attached_file_2]))
+        self.assertEqual(
+            self.questionnaire.explanation.sections.first().files.first().stored_file, stored_file)
+        self.assertEqual(self.questionnaire.explanation.sections.last().files.first().stored_file, stored_file)
+
+    def test_questionnaire_explanation_section_order(self):
+        # sections of text in an explanation can be reordered
+        order = self.questionnaire.explanation.get_attachedsection_order()
+        self.assertEqual(list(order), [self.section_1.id, self.section_2.id])
+
+        self.questionnaire.explanation.set_attachedsection_order([self.section_2.id, self.section_1.id])
+        order = self.questionnaire.explanation.get_attachedsection_order()
+        self.assertEqual(list(order), [self.section_2.id, self.section_1.id])
+
+
+class TestStoredFile(TestCase):
+    def setUp(self):
+        illustrated_text_1, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text_1 = illustrated_text_1
+        self.attached_file_1 = attached_file_1
+        self.stored_file = attached_file_1.stored_file
+
+    def test_stored_file_get_reference_count(self):
+        self.assertEqual(self.stored_file.get_reference_count(), 2)
+        self.attached_file_1.delete()
+        self.assertEqual(self.stored_file.get_reference_count(), 1)

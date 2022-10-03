@@ -178,7 +178,41 @@
 									"type": "null"
 								},
 								{
-									"type": "object"
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"sections": {
+											"array": {
+												"items": {
+													"type": "object",
+													"properties": {
+														"files": {
+															"type": "array",
+															"items": {
+																"type": "object",
+																"properties": {
+																	"description": "string",
+																	"file": "string"
+																}
+															}
+														},
+														"header": {
+															"type": "string"
+														},
+														"text": {
+															"type": "string"
+														}
+													}
+												}
+											}
+										}
+									},
+									"required": [
+										"title",
+										"sections"
+									]
 								}
 							]
 						}
