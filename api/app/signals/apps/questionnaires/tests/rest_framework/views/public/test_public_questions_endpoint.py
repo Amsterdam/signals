@@ -108,6 +108,13 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertJsonSchema(self.detail_schema, response.json())
+        response_json = response.json()
+        self.assertIn('explanation', response_json)
+        import pprint
+        pprint.pprint(response_json['explanation'])
+        print('\n\n\n')
+        pprint.pprint(response_json)
+        print('\n\n\n')
 
     def test_question_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})

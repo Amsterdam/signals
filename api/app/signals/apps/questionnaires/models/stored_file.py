@@ -23,4 +23,4 @@ class StoredFile(models.Model):
         Number of AttachedFile instances referencing this StoredFile instance.
         """
         from signals.apps.questionnaires.models.attached_file import AttachedFile
-        return AttachedFile.filter(stored_file=self).count()
+        return AttachedFile.objects.filter(stored_file=self).count()
