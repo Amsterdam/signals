@@ -68,7 +68,7 @@ class Question(models.Model):
 
     # Explanation comprises zero or more sections of text + (optional) images.
     # This allows extra information to be shown to users.
-    explanation = models.OneToOneField(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True)
+    explanation = models.ForeignKey(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     objects = QuestionManager()
 

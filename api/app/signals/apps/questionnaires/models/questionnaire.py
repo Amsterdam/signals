@@ -39,7 +39,7 @@ class Questionnaire(models.Model):
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
 
     # Explanation comprises zero or more sections of text + (optional) images.
-    explanation = models.OneToOneField(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True)
+    explanation = models.ForeignKey(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     objects = QuestionnaireManager()
 

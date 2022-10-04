@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+import os
 import uuid
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from signals.apps.questionnaires.factories import (
     ChoiceFactory,
@@ -9,7 +12,32 @@ from signals.apps.questionnaires.factories import (
     QuestionGraphFactory,
     QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import Questionnaire
+from signals.apps.questionnaires.models import (
+    AttachedFile,
+    AttachedSection,
+    IllustratedText,
+    Questionnaire,
+    StoredFile
+)
+
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, '..', 'test-data', 'test.gif')
+
+
+def explanation_for_geluidsoverlast():
+    explanation = IllustratedText.objects.create(title='Geluidsoverlast')
+    section_1 = AttachedSection.objects.create(
+        header='Wat te doen?',
+        text='Vul de vragenlijst in als u geluidsoverlast ondervindt.',
+        illustrated_text=explanation)
+
+    with open(GIF_FILE, 'rb') as f:
+        suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
+        stored_file = StoredFile.objects.create(file=suf)
+
+    AttachedFile.objects.create(description='IMAGE 1', stored_file=stored_file, section=section_1)
+
+    return explanation
 
 
 def questionnaire_geluidsoverlast():
@@ -48,7 +76,8 @@ def questionnaire_geluidsoverlast():
                                                 name='Test questionnaire ("geluidsoverlast")',
                                                 description='Based upon the "geluidsoverlast" category',
                                                 graph=None,
-                                                flow=Questionnaire.EXTRA_PROPERTIES)
+                                                flow=Questionnaire.EXTRA_PROPERTIES,
+                                                explanation=explanation_for_geluidsoverlast())
 
     # Create all questions needed
     q1 = QuestionFactory(label='Wanneer was het?',
