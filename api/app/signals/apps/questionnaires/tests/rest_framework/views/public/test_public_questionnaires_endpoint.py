@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from rest_framework.test import APITestCase
@@ -15,13 +14,7 @@ from signals.apps.questionnaires.factories import (
     QuestionGraphFactory,
     QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import (
-    AttachedFile,
-    AttachedSection,
-    IllustratedText,
-    Questionnaire,
-    StoredFile
-)
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 

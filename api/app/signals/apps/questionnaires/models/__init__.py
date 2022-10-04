@@ -15,16 +15,15 @@ from signals.apps.questionnaires.models.trigger import Trigger
 
 __all__ = [
     'Answer',
+    'AttachedFile',
+    'AttachedSection',
     'Choice',
     'Edge',
+    'IllustratedText',
     'Question',
     'QuestionGraph',
     'Questionnaire',
     'Session',
-    'Trigger',
-
-    'AttachedSection',
-    'AttachedFile',
-    'IllustratedText',
     'StoredFile',
+    'Trigger',
 ]

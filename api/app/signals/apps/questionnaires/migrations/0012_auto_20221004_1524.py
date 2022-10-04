@@ -39,7 +39,8 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name='sections',
-                        to='questionnaires.illustratedtext')
+                        to='questionnaires.illustratedtext'
+                    )
                 ),
             ],
             options={
@@ -73,20 +74,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='question',
             name='explanation',
-            field=models.OneToOneField(
+            field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
+                related_name='+',
                 to='questionnaires.illustratedtext'
             ),
         ),
         migrations.AddField(
             model_name='questionnaire',
             name='explanation',
-            field=models.OneToOneField(
+            field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
+                related_name='+',
                 to='questionnaires.illustratedtext'
             ),
         ),
