@@ -34,4 +34,7 @@ FEATURE_FLAGS = {
 
     # Enable/disable the deletion of signals in a certain state for a certain amount of time
     'DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED': os.getenv('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False) in TRUE_VALUES,  # noqa
+
+    # Enable/Disable the "my signals" endpoint/flows (Disabled by default)
+    'MY_SIGNALS_ENABLED': os.getenv('MY_SIGNALS_ENABLED', False) in TRUE_VALUES,
 }

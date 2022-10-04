@@ -61,6 +61,7 @@ SIGNAL_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
+    'signals.apps.my_signals',
     'logs'
 ]
 
