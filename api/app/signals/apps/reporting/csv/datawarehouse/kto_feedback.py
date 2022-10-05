@@ -2,6 +2,9 @@
 # Copyright (C) 2020 - 2021 Gemeente Amsterdam
 import os
 
+from django.db.models import CharField, Value
+from django.db.models.functions import Cast, Coalesce, NullIf
+
 from signals.apps.feedback.models import Feedback
 from signals.apps.reporting.csv.utils import map_choices, queryset_to_csv_file, reorder_csv
 
@@ -22,14 +25,16 @@ def create_kto_feedback_csv(location: str) -> str:
 
     file_name = f'kto-feedback-{environment}.csv'
 
-    # TODO Fix order of fields
     queryset = Feedback.objects.values(
         '_signal_id',
-        'text',
-        'text_list',
         'text_extra',
         'created_at',
         'submitted_at',
+        'text_list',
+
+        _text=Coalesce(Cast(NullIf('text', Value('', output_field=CharField())), output_field=CharField()),
+                       Cast('text_list__0', output_field=CharField()),
+                       Value('', output_field=CharField())),
         _is_satisfied=map_choices('is_satisfied', [(True, 'True'), (False, 'False')]),
         _allows_contact=map_choices('allows_contact', [(True, 'True'), (False, 'False')]),
     ).filter(submitted_at__isnull=False)
