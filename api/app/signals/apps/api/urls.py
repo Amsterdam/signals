@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.conf import settings
 from django.urls import include, path, re_path
 
@@ -30,7 +30,7 @@ from signals.apps.api.views import (
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.views import SearchView
-from signals.apps.users.v1.views import (
+from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
     LoggedInUserView,
     PermissionViewSet,

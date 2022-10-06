@@ -8,8 +8,8 @@ from rest_framework import serializers
 
 from signals.apps.api.generics.mixins import WriteOnceMixin
 from signals.apps.history.models import Log
-from signals.apps.users.v1.fields.user import UserHyperlinkedIdentityField
-from signals.apps.users.v1.serializers import (
+from signals.apps.users.rest_framework.fields.user import UserHyperlinkedIdentityField
+from signals.apps.users.rest_framework.serializers import (
     PermissionSerializer,
     ProfileDetailSerializer,
     ProfileListSerializer,

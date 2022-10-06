@@ -12,9 +12,12 @@ from rest_framework.response import Response
 
 from signals.apps.api.generics.permissions import SIAPermissions, SIAUserPermissions
 from signals.apps.history.services import HistoryLogService
-from signals.apps.users.v1.filters import UserFilterSet, UserNameListFilterSet
-from signals.apps.users.v1.serializers import UserDetailHALSerializer, UserListHALSerializer
-from signals.apps.users.v1.serializers.user import (
+from signals.apps.users.rest_framework.filters import UserFilterSet, UserNameListFilterSet
+from signals.apps.users.rest_framework.serializers import (
+    UserDetailHALSerializer,
+    UserListHALSerializer
+)
+from signals.apps.users.rest_framework.serializers.user import (
     PrivateUserHistoryHalSerializer,
     UserNameListSerializer
 )
