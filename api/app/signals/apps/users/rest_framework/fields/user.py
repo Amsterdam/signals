@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Gemeente Amsterdam
 from collections import OrderedDict
 
 from rest_framework import serializers

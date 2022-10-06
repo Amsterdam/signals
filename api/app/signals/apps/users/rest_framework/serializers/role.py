@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datapunt_api.rest import HALSerializer
 from datapunt_api.serializers import DisplayField
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
 
-from signals.apps.users.v1.serializers import PermissionSerializer
+from signals.apps.users.rest_framework.serializers import PermissionSerializer
 
 
 def _get_permissions_queryset():

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from django.contrib.auth.models import Group
 from django.db.models.functions import Lower
 from django_filters.rest_framework import FilterSet, filters
