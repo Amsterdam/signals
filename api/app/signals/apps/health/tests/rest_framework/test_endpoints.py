@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
@@ -17,7 +17,7 @@ class TestHealthEndpoints(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'Connectivity OK')
 
-    @mock.patch('signals.apps.health.views.connection')
+    @mock.patch('signals.apps.health.rest_framework.views.connection')
     def test_status_health_failed(self, mocked_connection):
         mocked_cursor = mock.MagicMock()
         mocked_cursor.execute.side_effect = Error()
