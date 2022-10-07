@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 """
 Test reception of StUF SOAP requests.
 """
@@ -60,8 +60,8 @@ class TestSoapEndpoint(SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
 
-    @mock.patch('signals.apps.sigmax.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
-    @mock.patch('signals.apps.sigmax.views.handle_unsupported_soap_action', autospec=True)
+    @mock.patch('signals.apps.sigmax.rest_framework.views.handle_actualiseerZaakstatus_Lk01', autospec=True)
+    @mock.patch('signals.apps.sigmax.rest_framework.views.handle_unsupported_soap_action', autospec=True)
     def test_soap_action_routing(self, handle_unsupported, handle_known):
         """Check that correct function is called based on SOAPAction header"""
         handle_unsupported.return_value = HttpResponse('Required by view function')

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 """
 This module contains a minimal implementation of the StUF standard as it
 applies to communication between the SIA system and Sigmax CityControl.
