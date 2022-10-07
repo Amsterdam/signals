@@ -4,7 +4,7 @@
 
 from django.test import TestCase
 
-from signals.apps.feedback.serializers import FeedbackSerializer
+from signals.apps.feedback.rest_framework.serializers import FeedbackSerializer
 
 
 class TestFeedbackSerializer(TestCase):
