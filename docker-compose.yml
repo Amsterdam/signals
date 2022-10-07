@@ -108,6 +108,11 @@ services:
       - DJANGO_SETTINGS_MODULE=signals.settings
       - FRONTEND_URL=http://localhost:3001
       - SWIFT_ENABLED=False
+      - AZURE_STORAGE_ENABLED=False
+      - AZURE_STORAGE_ACCOUNT_NAME=
+      - AZURE_STORAGE_ACCOUNT_KEY=
+      - AZURE_STORAGE_CONTAINER_NAME=
+      - DWH_AZURE_STORAGE_CONTAINER_NAME=
       - SIGMAX_AUTH_TOKEN
       - SIGMAX_SERVER
       - DWH_MEDIA_ROOT=/dwh_media

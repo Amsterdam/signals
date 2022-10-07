@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam
 import csv
 import json
 import os
@@ -82,7 +82,7 @@ class TestDatawarehouse(testcases.TestCase):
     @freeze_time('2020-09-10T12:00:00+00:00')
     def test_save_zip_csv_endpoint(self, mocked_get_storage_backend):
         # Mocking the storage backend to local file system with tmp directory.
-        # In this test case we don't want to make usage of the remote Object
+        # In this test case we don't( want to make usage of the remote Object
         # Store.
         mocked_get_storage_backend.return_value = FileSystemStorage(location=self.file_backend_tmp_dir)
 
@@ -142,6 +142,8 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(list_of_files[0].endswith('20200910_150000UTC.zip'))
 
     @override_settings(
+        AZURE_STORAGE_ENABLED=False,
+        SWIFT_STORAGE_ENABLED=True,
         SWIFT={
             'datawarehouse': {
                 'api_auth_url': 'dwh_auth_url',
@@ -155,9 +157,8 @@ class TestDatawarehouse(testcases.TestCase):
             }
         }
     )
-    @mock.patch.dict(os.environ, {'SWIFT_ENABLED': 'true'})
     @mock.patch('signals.apps.reporting.utils.SwiftStorage', autospec=True)
-    def test_get_storage_backend(self, mocked_swift_storage):
+    def test_get_swift_storage_backend(self, mocked_swift_storage):
         mocked_swift_storage_instance = mock.Mock()
         mocked_swift_storage.return_value = mocked_swift_storage_instance
 
@@ -173,6 +174,27 @@ class TestDatawarehouse(testcases.TestCase):
             region_name='dwh_region_name',
             container_name='dwh_container_name',
             auto_overwrite=True
+        )
+
+    @override_settings(
+        SWIFT_STORAGE_ENABLED=False,
+        AZURE_STORAGE_ENABLED=True,
+        AZURE_CONTAINERS={
+            'datawarehouse': {
+                'azure_container': 'dwh_container_name',
+            }
+        }
+    )
+    @mock.patch('signals.apps.reporting.utils.AzureStorage', autospec=True)
+    def test_get_azure_storage_backend(self, mocked_azure_storage):
+        mocked_azure_storage_instance = mock.Mock()
+        mocked_azure_storage.return_value = mocked_azure_storage_instance
+
+        result = _get_storage_backend(using='datawarehouse')
+
+        self.assertEqual(result, mocked_azure_storage_instance)
+        mocked_azure_storage.assert_called_once_with(
+            azure_container='dwh_container_name',
         )
 
     def test_create_signals_csv(self):

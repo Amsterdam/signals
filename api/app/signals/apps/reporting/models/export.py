@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from django.contrib.gis.db import models
 
-from signals.apps.reporting.utils import _get_storage_backend
+# TODO: Can this be removed?
+# from signals.apps.reporting.utils import _get_storage_backend
 
-storage = _get_storage_backend(using='horeca')
+# storage = _get_storage_backend(using='horeca')
+storage = None
 
 
 class HorecaCSVExport(models.Model):
