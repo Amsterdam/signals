@@ -29,7 +29,7 @@ from signals.apps.api.views import (
     StoredSignalFilterViewSet
 )
 from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
-from signals.apps.search.views import SearchView
+from signals.apps.search.rest_framework.views import SearchView
 from signals.apps.users.rest_framework.views import (
     AutocompleteUsernameListView,
     LoggedInUserView,
