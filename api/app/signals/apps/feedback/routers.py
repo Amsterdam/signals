@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from rest_framework import routers
 
-from signals.apps.feedback.views import FeedbackViewSet, StandardAnswerViewSet
+from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
 
 feedback_router = routers.SimpleRouter()
 feedback_router.register(

@@ -6,9 +6,12 @@ Views for feedback handling.
 from datapunt_api.pagination import HALPagination
 from rest_framework import mixins, viewsets
 
-from signals.apps.feedback.exceptions import Gone
 from signals.apps.feedback.models import Feedback, StandardAnswer
-from signals.apps.feedback.serializers import FeedbackSerializer, StandardAnswerSerializer
+from signals.apps.feedback.rest_framework.exceptions import Gone
+from signals.apps.feedback.rest_framework.serializers import (
+    FeedbackSerializer,
+    StandardAnswerSerializer
+)
 
 
 class StandardAnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
