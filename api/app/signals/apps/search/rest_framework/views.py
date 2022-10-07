@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
 from elasticsearch_dsl.query import MultiMatch
 
@@ -7,7 +7,7 @@ from signals.apps.api.generics.exceptions import GatewayTimeoutException
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import PrivateSignalSerializerDetail, PrivateSignalSerializerList
 from signals.apps.search.documents.signal import SignalDocument
-from signals.apps.search.pagination import ElasticHALPagination
+from signals.apps.search.rest_framework.pagination import ElasticHALPagination
 from signals.apps.signals.models import Signal
 from signals.auth.backend import JWTAuthBackend
 
