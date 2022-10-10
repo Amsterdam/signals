@@ -3,6 +3,7 @@
 import copy
 
 from django.conf import settings
+from django.db.models import Q
 from django.test import override_settings
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from rest_framework.test import APITestCase
@@ -22,18 +23,30 @@ class TestMySignalsListEndpoint(APITestCase):
         self.feature_flags_disabled = copy.deepcopy(self.feature_flags_enabled)
         self.feature_flags_disabled['MY_SIGNALS_ENABLED'] = False
 
-        SignalFactoryWithImage.create_batch(5)
-        SignalFactoryWithImage.create_batch(5, status__state=AFGEHANDELD)
+        signals_with_image_open_state = SignalFactoryWithImage.create_batch(5)
+        signals_with_image_closed_state = SignalFactoryWithImage.create_batch(5, status__state=AFGEHANDELD)
+
+        # Create a couple of children that should not be retrieved in the list
+        SignalFactoryWithImage.create_batch(2, parent=signals_with_image_open_state[0])
+        SignalFactoryWithImage.create_batch(2, parent=signals_with_image_closed_state[0])
 
     def test_my_signals(self):
+        # We should have 14 signals in the database
+        # 2 parent signals
+        self.assertEqual(2, Signal.objects.filter(children__isnull=False).distinct().count())
+        # 4 child signals
+        self.assertEqual(4, Signal.objects.filter(parent__isnull=False).count())
+        # 8 "normal: signals
+        self.assertEqual(8, Signal.objects.exclude(Q(children__isnull=False) | Q(parent__isnull=False)).count())
+
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
             response = self.client.get(self.endpoint)
             self.assertEqual(response.status_code, HTTP_200_OK)
 
-        data = response.json()
-        self.assertEqual(len(data['results']), Signal.objects.count())
+        signals_qs = Signal.objects.exclude(parent__isnull=False).order_by('-created_at')
 
-        signals_qs = Signal.objects.order_by('-created_at')
+        data = response.json()
+        self.assertEqual(len(data['results']), signals_qs.count())
 
         for signal, signal_response_data in zip(list(signals_qs), data['results']):
             self.assertEqual(signal.get_id_display(), signal_response_data['_display'])

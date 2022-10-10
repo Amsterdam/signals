@@ -25,6 +25,9 @@ class TestMySignalsDetailEndpoint(APITestCase):
         AttachmentFactory.create_batch(3, _signal=self.signal)
 
     def test_my_signal(self):
+        """
+        Normal signals can be retrieved
+        """
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
             response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
             self.assertEqual(response.status_code, HTTP_200_OK)
@@ -64,4 +67,45 @@ class TestMySignalsDetailEndpoint(APITestCase):
     def test_my_signals_feature_disabled(self):
         with override_settings(FEATURE_FLAGS=self.feature_flags_disabled):
             response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
+            self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
+
+    def test_my_signal_parent(self):
+        """
+        Parent signals can be retrieved
+        """
+        signal = SignalFactory.create()
+        SignalFactory.create(parent=signal)
+
+        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
+            response = self.client.get(f'{self.endpoint}/{signal.uuid}')
+            self.assertEqual(response.status_code, HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(signal.get_id_display(), response_data['_display'])
+        self.assertEqual(str(signal.uuid), response_data['uuid'])
+        self.assertEqual(signal.get_id_display(), response_data['id_display'])
+        self.assertEqual(signal.text, response_data['text'])
+        self.assertEqual('OPEN', response_data['status']['state'])
+        self.assertEqual('Open', response_data['status']['state_display'])
+        self.assertEqual(signal.location.address['postcode'], response_data['location']['address']['postcode'])
+        self.assertEqual(signal.location.address['huisnummer'], response_data['location']['address']['huisnummer'])
+        self.assertEqual(signal.location.address['woonplaats'],
+                         response_data['location']['address']['woonplaats'])
+        self.assertEqual(signal.location.address['openbare_ruimte'],
+                         response_data['location']['address']['openbare_ruimte'])
+        self.assertEqual(signal.location.address_text, response_data['location']['address_text'])
+        self.assertEqual('Point', response_data['location']['geometrie']['type'])
+        self.assertIn(signal.location.geometrie[0], response_data['location']['geometrie']['coordinates'])
+        self.assertIn(signal.location.geometrie[1], response_data['location']['geometrie']['coordinates'])
+        self.assertEqual({}, response_data['extra_properties'])
+
+    def test_my_signal_children(self):
+        """
+        Child signals cannot be retrieved
+        """
+        parent = SignalFactory.create()
+        signal = SignalFactory.create(parent=parent)
+
+        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
+            response = self.client.get(f'{self.endpoint}/{signal.uuid}')
             self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)

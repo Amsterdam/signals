@@ -57,7 +57,9 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
         one_year_ago = timezone.now() - relativedelta(years=1)
 
         return Signal.objects.filter(
-            created_at__gte=one_year_ago
+            created_at__gte=one_year_ago  # Only signals from the last 12 months
+        ).exclude(
+            parent__isnull=False  # Exclude all child signals
         )
 
     def _feature_enabled(self):
