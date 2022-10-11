@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Gemeente Amsterdam
 import csv
 import logging
 import os
@@ -11,6 +11,7 @@ from typing import TextIO
 from django.db import connection
 from django.db.models import Case, CharField, QuerySet, Value, When
 from django.utils import timezone
+from storages.backends.azure_storage import AzureStorage
 from swift.storage import SwiftStorage
 
 from signals.apps.reporting.utils import _get_storage_backend
@@ -57,14 +58,15 @@ def rotate_zip_files(using: str, max_csv_amount: int = 30) -> None:
                 os.remove(file_to_be_deleted)
 
 
-def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
+def save_csv_files(csv_files: list, using: str, path: str = None) -> list:
     """
     Writes the CSV files to the configured storage backend
-    This could either be the SwiftStorage or a local FileSystemStorage
+    This could either be the AzureStorage, SwiftStorage or FileSystemStorage
 
     :param csv_files:
     :param using:
-    :returns None:
+    :param path:
+    :returns list:
     """
     storage = _get_storage_backend(using=using)
     stored_csv = list()
@@ -72,7 +74,7 @@ def save_csv_files(csv_files: list, using: str, path: str = None) -> None:
         with open(csv_file_path, 'rb') as opened_csv_file:
             file_name = os.path.basename(opened_csv_file.name)
             file_path = None
-            if isinstance(storage, SwiftStorage):
+            if isinstance(storage, (AzureStorage, SwiftStorage, )):
                 file_path = f'{path}{file_name}' if path else file_name
                 storage.save(name=file_path, content=opened_csv_file)
             else:

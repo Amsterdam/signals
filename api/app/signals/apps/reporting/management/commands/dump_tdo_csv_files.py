@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
-import os
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from timeit import default_timer as timer
 
 from django.conf import settings
@@ -28,14 +27,17 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         start = timer()
 
-        swift_enabled = os.getenv('SWIFT_ENABLED', False) in [True, 1, '1', 'True', 'true']
-        self.stdout.write('Swift storage: '
-                          f'{"Enabled" if swift_enabled else "Disabled (Files will be stored in local file storage"}')
-        if swift_enabled:
-            swift_parameters = settings.SWIFT.get('tdo')
+        if settings.AZURE_STORAGE_ENABLED:
+            self.stdout.write('Azure storage: Enabled')
+            azure_parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
+            self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')
+        elif settings.SWIFT_STORAGE_ENABLED:
+            self.stdout.write('Swift storage: Enabled')
+            swift_parameters = settings.SWIFT.get('datawarehouse')
             self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
         else:
             now = timezone.now()
+            self.stdout.write('Local file storage: Enabled')
             self.stdout.write(f'* Local File storage directory: {now:%Y}/{now:%m}/{now:%d}/')
 
         reports = kwargs['report'].split(',') if kwargs['report'] else None
