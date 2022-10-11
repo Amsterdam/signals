@@ -120,6 +120,8 @@ services:
       - INITIALIZE_WITH_DUMMY_DATA=0
       - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
       - RABBITMQ_HOST=rabbit
+      - AZURE_APPLICATION_INSIGHTS_ENABLED=False
+      - AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING=
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

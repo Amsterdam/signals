@@ -37,6 +37,9 @@ Celery
 # Sentry
 raven
 
+#Azure insight
+opencensus-ext-azure
+
 # PDF
 weasyprint==52.5
 cairocffi

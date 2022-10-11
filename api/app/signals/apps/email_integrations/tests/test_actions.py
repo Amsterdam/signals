@@ -212,7 +212,7 @@ class ActionTestMixin:
     def test_send_mail_fails_encoded_chars_in_text(self):
         """
         The action should not send an email if the text contains encoded characters. A note should be added so that
-        it is clear why the email was not sent. This is also logged in Sentry.
+        it is clear why the email was not sent. This is also logged in Sentry and/or Application Insights.
         """
         self.assertEqual(len(mail.outbox), 0)
 
@@ -628,7 +628,7 @@ class TestSignalHandledNegativeAction(ActionTestMixin, TestCase):
     def test_send_mail_fails_encoded_chars_in_text(self):
         """
         The action should not send an email if the text contains encoded characters. A note should be added so that
-        it is clear why the email was not sent. This is also logged in Sentry.
+        it is clear why the email was not sent. This is also logged in Sentry and/or Application Insights.
         """
         self.assertEqual(len(mail.outbox), 0)
 
