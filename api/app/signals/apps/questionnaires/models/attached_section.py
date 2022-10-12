@@ -13,8 +13,8 @@ class AttachedSection(models.Model):
     """
     created_at = models.DateTimeField(editable=False, auto_now_add=True)
 
-    header = models.CharField(max_length=255)
-    text = models.TextField()
+    header = models.CharField(max_length=255, null=True, blank=True)
+    text = models.TextField(null=True, blank=True)
 
     illustrated_text = models.ForeignKey(IllustratedText, related_name='sections', on_delete=models.CASCADE)
 
