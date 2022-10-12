@@ -38,8 +38,10 @@ class Questionnaire(models.Model):
         'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
 
-    # Explanation comprises zero or more sections of text + (optional) images.
+    # Explanation comprises zero or more sections of text + (optional) images, same for thank you message.
     explanation = models.ForeignKey(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    thank_you_message = models.ForeignKey(
+        IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     objects = QuestionnaireManager()
 

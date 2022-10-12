@@ -21,6 +21,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
     _display = DisplayField()
     first_question = PublicQuestionSerializer()
     explanation = NestedPublicIllustratedTextSerializer()
+    thank_you_message = NestedPublicIllustratedTextSerializer()
 
     class Meta:
         model = Questionnaire
@@ -33,6 +34,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
             'is_active',
             'first_question',
             'explanation',
+            'thank_you_message',
         )
         read_only_fields = fields  # No create or update allowed
 

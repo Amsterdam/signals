@@ -14,7 +14,7 @@ from signals.apps.questionnaires.factories import (
     QuestionGraphFactory,
     QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import Questionnaire
+from signals.apps.questionnaires.models import AttachedSection, IllustratedText, Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
@@ -67,10 +67,10 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 200)
-
-        self.assertJsonSchema(self.list_schema, response.json())
-
         response_json = response.json()
+
+        self.assertJsonSchema(self.list_schema, response_json)
+
         self.assertIn('explanation', response_json['results'][0])
         self.assertEqual(len(response_json['results'][0]['explanation']['sections']), 2)
 
@@ -78,14 +78,13 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
         response_json = response.json()
-        self.assertEqual(len(response_json['explanation']['sections']), 2)
-        self.assertIn('title', response_json['explanation'])
 
         self.assertJsonSchema(self.detail_schema, response_json)
-
-        response_json = response.json()
         self.assertIn('explanation', response_json)
+        self.assertIn('title', response_json['explanation'])
         self.assertEqual(len(response_json['explanation']['sections']), 2)
+
+        self.assertEqual(response_json['thank_you_message'], None)
 
     def test_questionnaire_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})
@@ -140,3 +139,31 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
         self.assertIn('can_freeze', response_json)
         self.assertEqual(response_json['can_freeze'], False)
+
+    def test_thank_you_message(self):
+        message = IllustratedText.objects.create(title='Thank you')
+        section = AttachedSection.objects.create(header='HEADER', text='TEXT', illustrated_text=message)
+        self.questionnaire.thank_you_message = message
+        self.questionnaire.save()
+
+        response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertIn('thank_you_message', response_json)
+        self.assertEqual(response_json['thank_you_message']['sections'][0]['header'], section.header)
+        self.assertEqual(response_json['thank_you_message']['sections'][0]['text'], section.text)
+
+    def test_thank_you_message_no_section_title_or_text(self):
+        message = IllustratedText.objects.create(title='Thank you')
+        AttachedSection.objects.create(illustrated_text=message)
+        self.questionnaire.thank_you_message = message
+        self.questionnaire.save()
+
+        response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertIn('thank_you_message', response_json)
+        self.assertEqual(response_json['thank_you_message']['sections'][0]['header'], None)
+        self.assertEqual(response_json['thank_you_message']['sections'][0]['text'], None)

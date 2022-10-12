@@ -309,6 +309,50 @@
 									]
 								}
 							]
+						},
+						"thank_you_message": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"sections": {
+											"array": {
+												"items": {
+													"type": "object",
+													"properties": {
+														"files": {
+															"type": "array",
+															"items": {
+																"type": "object",
+																"properties": {
+																	"description": "string",
+																	"file": "string"
+																}
+															}
+														},
+														"header": {
+															"type": "string"
+														},
+														"text": {
+															"type": "string"
+														}
+													}
+												}
+											}
+										}
+									},
+									"required": [
+										"title",
+										"sections"
+									]
+								}
+							]
 						}
 					},
 					"required": [
@@ -319,7 +363,8 @@
 						"description",
 						"is_active",
 						"first_question",
-						"explanation"
+						"explanation",
+						"thank_you_message"
 					],
 					"additionalProperties": false
 				}
