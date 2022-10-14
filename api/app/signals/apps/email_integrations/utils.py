@@ -17,13 +17,13 @@ from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.feedback.models import Feedback
 from signals.apps.feedback.utils import get_feedback_urls as get_feedback_urls_no_questionnaires
-from signals.apps.questionnaires.services.forward_to_external import (
-    create_session_for_forward_to_external,
-    get_forward_to_external_url
-)
 from signals.apps.questionnaires.services.feedback_request import (
     create_session_for_feedback_request,
     get_feedback_urls
+)
+from signals.apps.questionnaires.services.forward_to_external import (
+    create_session_for_forward_to_external,
+    get_forward_to_external_url
 )
 from signals.apps.questionnaires.services.reaction_request import (
     create_session_for_reaction_request,
