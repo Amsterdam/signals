@@ -13,9 +13,10 @@ from signals.apps.email_integrations.rules.signal_reaction_request_received impo
 from signals.apps.email_integrations.rules.signal_reopened import SignalReopenedRule
 from signals.apps.email_integrations.rules.signal_scheduled import SignalScheduledRule
 
-from signals.apps.email_integrations.rules.signal_external_reaction_request import ExternalReactionRequestRule
+from signals.apps.email_integrations.rules.signal_forward_to_external import ForwardToExternalRule
 
 __all__ = [
+    'ForwardToExternalRule',
     'SignalCreatedRule',
     'SignalHandledRule',
     'SignalScheduledRule',
@@ -24,6 +25,5 @@ __all__ = [
     'SignalReactionRequestRule',
     'SignalReactionRequestReceivedRule',
     'SignalHandledNegativeRule',
-    'ExternalReactionRequestRule',
     'ExternalReactionRequestRule',
 ]

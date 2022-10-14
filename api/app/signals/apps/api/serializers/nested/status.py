@@ -63,9 +63,9 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             except DjangoValidationError as e:
                 raise ValidationError({'text': e.messages})
 
-        if attrs['state'] == workflow.VERZOEK_AAN_EXTERN:  # ps-261
+        if attrs['state'] == workflow.DOORZETTEN_NAAR_EXTERN:  # ps-261
             if not (signal.status.email_override and signal.status.send_mail and signal.status.text):
-                msg = 'email_override, send_mail, and text must all be set for VERZOEK_AAN_EXTERN flow'
+                msg = 'email_override, send_mail, and text must all be set for DOORZETTEN_NAAR_EXTERN flow'
                 raise ValidationError({'text': msg})
 
         return super().validate(attrs=attrs)

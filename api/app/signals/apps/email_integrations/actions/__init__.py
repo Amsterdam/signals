@@ -16,10 +16,11 @@ from signals.apps.email_integrations.actions.signal_reaction_request_received im
 from signals.apps.email_integrations.actions.signal_reopened import SignalReopenedAction
 from signals.apps.email_integrations.actions.signal_scheduled import SignalScheduledAction
 
-from signals.apps.email_integrations.actions.signal_external_reaction_request import SignalExternalReactionRequestAction
+from signals.apps.email_integrations.actions.signal_forward_to_external import SignalForwardToExternalAction
 
 __all__ = [
     'SignalCreatedAction',
+    'SignalForwardToExternalAction',
     'SignalHandledAction',
     'SignalHandledNegativeAction',
     'SignalScheduledAction',
@@ -28,5 +29,4 @@ __all__ = [
     'SignalReactionRequestAction',
     'SignalReactionRequestReceivedAction',
     'FeedbackReceivedAction',
-    'SignalExternalReactionRequestAction',
 ]

@@ -12,7 +12,7 @@ from signals.apps.email_integrations.actions import (
     SignalReactionRequestReceivedAction,
     SignalReopenedAction,
     SignalScheduledAction,
-    SignalExternalReactionRequestAction,
+    SignalForwardToExternalAction,
 )
 from signals.apps.signals.models import Signal
 
@@ -30,7 +30,7 @@ class MailService:
         SignalReactionRequestAction(),
         SignalReactionRequestReceivedAction(),
         SignalHandledNegativeAction(),
-        SignalExternalReactionRequestAction(),
+        SignalForwardToExternalAction(),  # PS-261
     )
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
