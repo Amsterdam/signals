@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
     FeedbackReceivedAction,
     SignalCreatedAction,
+    SignalForwardToExternalAction,
     SignalHandledAction,
     SignalHandledNegativeAction,
     SignalOptionalAction,
     SignalReactionRequestAction,
     SignalReactionRequestReceivedAction,
     SignalReopenedAction,
-    SignalScheduledAction,
-    SignalForwardToExternalAction,
+    SignalScheduledAction
 )
 from signals.apps.signals.models import Signal
 

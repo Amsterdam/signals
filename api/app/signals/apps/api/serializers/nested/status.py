@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import MaxLengthValidator
 from rest_framework import serializers
@@ -39,6 +39,22 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
         )
 
     def validate(self, attrs):
+        """
+        Validate data, specifically extra rules for `state` attribute.
+        """
+        self._validate_state_TE_VERZENDEN(attrs)
+        self._validate_state_REACTIE_GEVRAAGS(attrs)
+        self._validate_state_DOORZETTEN_NAR_EXTERN(attrs)
+
+        return super().validate(attrs=attrs)
+
+    def _validate_state_TE_VERZENDEN(self, attrs):
+        """
+        Validate all info for TE_VERZENDEN flow is present.
+
+        Note: This state is only used for communication with the CityControl
+        system (by the Sigmax company).
+        """
         if (attrs['state'] == workflow.TE_VERZENDEN
                 and attrs.get('target_api') == Status.TARGET_API_SIGMAX):
 
@@ -49,6 +65,10 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })
 
+    def _validate_state_REACTIE_GEVRAAGS(self, attrs):
+        """
+        Validate all info for REACTIE_GEVRAAGS flow is present.
+        """
         if attrs['state'] == workflow.REACTIE_GEVRAAGD:  # SIG-3887
             signal = self.context['view'].get_object()
             if not signal.reporter.email:
@@ -63,12 +83,15 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             except DjangoValidationError as e:
                 raise ValidationError({'text': e.messages})
 
+    def _validate_state_DOORZETTEN_NAR_EXTERN(self, attrs):
+        """
+        Validate all info for DOORZETTEN_NAAR_EXTERN flow is present.
+        """
         if attrs['state'] == workflow.DOORZETTEN_NAAR_EXTERN:  # ps-261
+            signal = self.context['view'].get_object()
             if not (signal.status.email_override and signal.status.send_mail and signal.status.text):
                 msg = 'email_override, send_mail, and text must all be set for DOORZETTEN_NAAR_EXTERN flow'
                 raise ValidationError({'text': msg})
-
-        return super().validate(attrs=attrs)
 
 
 class _NestedPublicStatusModelSerializer(serializers.ModelSerializer):
