@@ -88,4 +88,34 @@ class Migration(migrations.Migration):
                 to='questionnaires.illustratedtext'
             ),
         ),
+        migrations.AlterField(
+            model_name='questionnaire',
+            name='flow',
+            field=models.CharField(
+                choices=[
+                    ('EXTRA_PROPERTIES', 'Uitvraag'),
+                    ('REACTION_REQUEST', 'Reactie gevraagd'),
+                    ('FEEDBACK_REQUEST', 'Klanttevredenheidsonderzoek'),
+                    ('FORWARD_TO_EXTERNAL', 'Doorzetten naar externe')
+                ],
+                default='EXTRA_PROPERTIES',
+                max_length=255
+            ),
+        ),
+        migrations.AddField(
+            model_name='session',
+            name='status',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='+',
+                to='signals.status'
+            ),
+        ),
+        migrations.AddField(
+            model_name='session',
+            name='invalidated',
+            field=models.BooleanField(default=False),
+        ),
     ]

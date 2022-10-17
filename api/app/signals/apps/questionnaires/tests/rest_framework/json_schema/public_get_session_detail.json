@@ -61,8 +61,14 @@
 			]
 		},
 		"duration": {
-			"type": "string"
-		},
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]		},
 		"started_at": {
 			"anyOf": [
 				{

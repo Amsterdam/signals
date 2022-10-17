@@ -25,6 +25,8 @@ class Session(models.Model):
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True, null=True)
+    status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    invalidated = models.BooleanField(default=False)
 
     objects = SessionManager()
 

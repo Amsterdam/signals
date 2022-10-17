@@ -22,10 +22,12 @@ class Questionnaire(models.Model):
     EXTRA_PROPERTIES = 'EXTRA_PROPERTIES'
     REACTION_REQUEST = 'REACTION_REQUEST'
     FEEDBACK_REQUEST = 'FEEDBACK_REQUEST'
+    FORWARD_TO_EXTERNAL = 'FORWARD_TO_EXTERNAL'
     FLOW_CHOICES = (
         (EXTRA_PROPERTIES, 'Uitvraag'),
         (REACTION_REQUEST, 'Reactie gevraagd'),
         (FEEDBACK_REQUEST, 'Klanttevredenheidsonderzoek'),
+        (FORWARD_TO_EXTERNAL, 'Doorzetten naar externe'),
     )
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

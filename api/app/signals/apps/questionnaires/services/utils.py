@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
 from signals.apps.questionnaires.models import Session
 from signals.apps.questionnaires.models.questionnaire import Questionnaire
 from signals.apps.questionnaires.services import (
     FeedbackRequestSessionService,
+    ForwardToExternalSessionService,
     ReactionRequestSessionService,
     SessionService
 )
@@ -16,6 +17,7 @@ SESSION_SERVICE_FOR_FLOW = {
     Questionnaire.REACTION_REQUEST: ReactionRequestSessionService,
     Questionnaire.FEEDBACK_REQUEST: FeedbackRequestSessionService,
     Questionnaire.EXTRA_PROPERTIES: SessionService,
+    Questionnaire.FORWARD_TO_EXTERNAL: ForwardToExternalSessionService,
 }
 
 

@@ -30,3 +30,7 @@ class CannotFreeze(Exception):
 
 class CycleDetected(Exception):
     pass
+
+
+class MissingEmail(Exception):
+    pass

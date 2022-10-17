@@ -43,8 +43,8 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
         Validate data, specifically extra rules for `state` attribute.
         """
         self._validate_state_TE_VERZENDEN(attrs)
-        self._validate_state_REACTIE_GEVRAAGS(attrs)
-        self._validate_state_DOORZETTEN_NAR_EXTERN(attrs)
+        self._validate_state_REACTIE_GEVRAAGD(attrs)
+        self._validate_state_DOORZETTEN_NAAR_EXTERN(attrs)
 
         return super().validate(attrs=attrs)
 
@@ -65,7 +65,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
                     'state': "You don't have permissions to push to Sigmax/CityControl."
                 })
 
-    def _validate_state_REACTIE_GEVRAAGS(self, attrs):
+    def _validate_state_REACTIE_GEVRAAGD(self, attrs):
         """
         Validate all info for REACTIE_GEVRAAGS flow is present.
         """
@@ -83,7 +83,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             except DjangoValidationError as e:
                 raise ValidationError({'text': e.messages})
 
-    def _validate_state_DOORZETTEN_NAR_EXTERN(self, attrs):
+    def _validate_state_DOORZETTEN_NAAR_EXTERN(self, attrs):
         """
         Validate all info for DOORZETTEN_NAAR_EXTERN flow is present.
         """
