@@ -20,6 +20,23 @@ servers:
         default: '8000'
 
 paths:
+  /signals/v1/my/signals/request-auth-token:
+    post:
+      requestBody:
+        description: Request a mail with login link if the reporter has created any signal in the last 12 months
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: A login link will be sent to the email if there are any Signals created by this reporter in the last 12 months
+
   /signals/v1/my/signals:
     parameters:
       - name: status
@@ -44,12 +61,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MySignals'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
         '404':
           description: When the feature has been disabled a 404 will be returned
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404'
+      security:
+        - AuthToken: [ ]
 
   /signals/v1/my/signals/{uuid}:
     parameters:
@@ -69,12 +94,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MySignalDetailed'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
         '404':
           description: When a signal cannot be found OR the feature has been disabled a 404 will be returned
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/404'
+      security:
+        - AuthToken: [ ]
 
   /signals/v1/my/signals/{uuid}/history:
     parameters:
@@ -88,6 +121,12 @@ paths:
           example: '00000000-0000-0000-0000-000000000000'
     get:
       responses:
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
         '404':
           description: When the feature has been disabled a 404 will be returned
           content:
@@ -96,6 +135,8 @@ paths:
                 $ref: '#/components/schemas/404'
         '501':
           description: Not yet implemented
+      security:
+        - AuthToken: [ ]
 
 components:
   schemas:
@@ -311,9 +352,20 @@ components:
                 maxItems: 3
               example: [ 4.87170696258545, 52.36805320057393 ]
 
+    401:
+      type: object
+      properties:
+        detail:
+          type: string
     404:
       type: object
       properties:
         detail:
           type: string
           example: Niet gevonden.
+
+  securitySchemes:
+    AuthToken:
+      type: apiKey
+      in: header
+      name: Authorization

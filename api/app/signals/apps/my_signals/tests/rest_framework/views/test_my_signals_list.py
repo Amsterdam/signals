@@ -8,6 +8,7 @@ from django.test import override_settings
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from rest_framework.test import APITestCase
 
+from signals.apps.my_signals.models import Token
 from signals.apps.signals.factories import SignalFactoryWithImage
 from signals.apps.signals.models import Signal
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GESPLITST
@@ -23,12 +24,23 @@ class TestMySignalsListEndpoint(APITestCase):
         self.feature_flags_disabled = copy.deepcopy(self.feature_flags_enabled)
         self.feature_flags_disabled['MY_SIGNALS_ENABLED'] = False
 
-        signals_with_image_open_state = SignalFactoryWithImage.create_batch(5)
-        signals_with_image_closed_state = SignalFactoryWithImage.create_batch(5, status__state=AFGEHANDELD)
+        signals_with_image_open_state = SignalFactoryWithImage.create_batch(
+            5, reporter__email='my-signals-test-reporter@example.com'
+        )
+        signals_with_image_closed_state = SignalFactoryWithImage.create_batch(
+            5, status__state=AFGEHANDELD, reporter__email='my-signals-test-reporter@example.com'
+        )
 
         # Create a couple of children that should not be retrieved in the list
-        SignalFactoryWithImage.create_batch(2, parent=signals_with_image_open_state[0])
-        SignalFactoryWithImage.create_batch(2, parent=signals_with_image_closed_state[0])
+        SignalFactoryWithImage.create_batch(
+            2, parent=signals_with_image_open_state[0], reporter__email='my-signals-test-reporter@example.com'
+        )
+        SignalFactoryWithImage.create_batch(
+            2, parent=signals_with_image_closed_state[0], reporter__email='my-signals-test-reporter@example.com'
+        )
+
+        token = Token.objects.create(reporter_email='my-signals-test-reporter@example.com')
+        self.request_headers = {'HTTP_AUTHORIZATION': f'Token {token.key}'}
 
     def test_my_signals(self):
         # We should have 14 signals in the database
@@ -40,7 +52,7 @@ class TestMySignalsListEndpoint(APITestCase):
         self.assertEqual(8, Signal.objects.exclude(Q(children__isnull=False) | Q(parent__isnull=False)).count())
 
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(self.endpoint)
+            response = self.client.get(self.endpoint, **self.request_headers)
             self.assertEqual(response.status_code, HTTP_200_OK)
 
         signals_qs = Signal.objects.exclude(parent__isnull=False).order_by('-created_at')
@@ -62,5 +74,5 @@ class TestMySignalsListEndpoint(APITestCase):
 
     def test_my_signals_feature_disabled(self):
         with override_settings(FEATURE_FLAGS=self.feature_flags_disabled):
-            response = self.client.get(self.endpoint)
+            response = self.client.get(self.endpoint, **self.request_headers)
             self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)

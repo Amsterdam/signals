@@ -14,6 +14,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
+from signals.apps.my_signals.rest_framework.authentication import MySignalsTokenAuthentication
 from signals.apps.my_signals.rest_framework.filters.signals import MySignalFilterSet
 from signals.apps.my_signals.rest_framework.serializers.signals import (
     SignalDetailSerializer,
@@ -26,8 +27,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
 
-    # TODO: SIG-4757 add login/authentication flow
-    authentication_classes = ()
+    authentication_classes = (MySignalsTokenAuthentication, )
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
@@ -57,6 +57,7 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
         one_year_ago = timezone.now() - relativedelta(years=1)
 
         return Signal.objects.filter(
+            reporter__email__iexact=self.request.user.email,  # Only select Signals for the logged in reporter
             created_at__gte=one_year_ago  # Only signals from the last 12 months
         ).exclude(
             parent__isnull=False  # Exclude all child signals

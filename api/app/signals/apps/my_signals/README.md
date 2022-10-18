@@ -2,13 +2,20 @@
 
 _Currently, this app is in active development_  
 
-This app will return the signals created in the last 12 months by the logged in reporter.
+The "my signals" app provides a way for reporters to get an overview of the signals they created over the last 12 months.
+
+A reporter can request a login link that will be sent by email to the provided email address. This link is valid for X amount of time. The default is set to 2 hours and can be changed setting the `MY_SIGNALS_TOKEN_EXPIRES_SECONDS` env variable.
+
+To request access to "my signals" the following flow must be followed:
+* The reporter has received an email when he/she created a signal and left their email address
+  * This email will contain a link to the "request access" page
+* The reporter will "request access" with the email address they provided when creating a signal
+* If over the last 12 months one or more signals have been created with this email address as the `Reporter.email` an email will be sent
+  * This email will provide a token that can be set as a header to all other "My signals" calls, `Authorisation: Token { TOKEN }`
+  * This link can be configured by setting the `MY_SIGNALS_LOGIN_URL` env variable
 
 # TODO
-
-* [ ] Login/Authentication flow
 * [ ] Implement history
-* [ ] ... (add more here if needed)
 
 ## App structure
 
@@ -27,10 +34,25 @@ This app will return the signals created in the last 12 months by the logged in 
 
 ## Endpoints
 
+### /signals/v1/my/signals/request-auth-token
+
+Method: POST  
+Status code: 200  
+Request:   
+```json
+{
+  "email": "reporter@example.com"
+}
+```
+Response: 
+```json
+```
+
 ### /signals/v1/my/signals
 
 Method: GET  
 Status code: 200  
+Header: Authorization: Token {{ TOKEN }}  
 Response: 
 ```json
 {
@@ -92,6 +114,15 @@ Response:
 ```
 
 Method: GET  
+Status code: 401  
+Response: 
+```json
+{
+  "detail": "Invalid token."
+}
+```
+
+Method: GET  
 Status code: 404  
 Response: 
 ```json
@@ -104,6 +135,7 @@ Response:
 
 Method: GET  
 Status code: 200  
+Header: Authorization: Token {{ TOKEN }}  
 Response: 
 ```json
 {
@@ -161,6 +193,15 @@ Response:
 ```
 
 Method: GET  
+Status code: 401  
+Response: 
+```json
+{
+  "detail": "Invalid token."
+}
+```
+
+Method: GET  
 Status code: 404  
 Response: 
 ```json
@@ -173,8 +214,18 @@ Response:
 
 Method: GET  
 Status code: 501  
+Header: Authorization: Token {{ TOKEN }}  
 Response: 
 ```json
+```
+
+Method: GET  
+Status code: 401  
+Response: 
+```json
+{
+  "detail": "Invalid token."
+}
 ```
 
 Method: GET  
