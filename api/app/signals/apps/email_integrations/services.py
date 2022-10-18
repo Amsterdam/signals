@@ -6,6 +6,7 @@ from signals.apps.email_integrations.actions import (
     FeedbackReceivedAction,
     ForwardToExternalReactionReceivedAction,
     AssignedAction,
+    FeedbackReceivedAction,
     SignalCreatedAction,
     SignalForwardToExternalAction,
     SignalHandledAction,
