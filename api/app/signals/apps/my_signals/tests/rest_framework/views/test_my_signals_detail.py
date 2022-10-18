@@ -4,9 +4,10 @@ import copy
 
 from django.conf import settings
 from django.test import override_settings
-from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 from rest_framework.test import APITestCase
 
+from signals.apps.my_signals.models import Token
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory, StatusFactory
 from signals.apps.signals.workflow import AFGEHANDELD
 
@@ -21,15 +22,18 @@ class TestMySignalsDetailEndpoint(APITestCase):
         self.feature_flags_disabled = copy.deepcopy(self.feature_flags_enabled)
         self.feature_flags_disabled['MY_SIGNALS_ENABLED'] = False
 
-        self.signal = SignalFactory.create()
+        self.signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
         AttachmentFactory.create_batch(3, _signal=self.signal)
+
+        token = Token.objects.create(reporter_email='my-signals-test-reporter@example.com')
+        self.request_headers = {'HTTP_AUTHORIZATION': f'Token {token.key}'}
 
     def test_my_signal(self):
         """
         Normal signals can be retrieved
         """
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
+            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
             self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
@@ -57,7 +61,7 @@ class TestMySignalsDetailEndpoint(APITestCase):
         self.signal.save()
 
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
+            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
             self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
@@ -66,18 +70,18 @@ class TestMySignalsDetailEndpoint(APITestCase):
 
     def test_my_signals_feature_disabled(self):
         with override_settings(FEATURE_FLAGS=self.feature_flags_disabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
+            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
             self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
 
     def test_my_signal_parent(self):
         """
         Parent signals can be retrieved
         """
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
         SignalFactory.create(parent=signal)
 
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{signal.uuid}')
+            response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
             self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
@@ -103,9 +107,14 @@ class TestMySignalsDetailEndpoint(APITestCase):
         """
         Child signals cannot be retrieved
         """
-        parent = SignalFactory.create()
-        signal = SignalFactory.create(parent=parent)
+        parent = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
+        signal = SignalFactory.create(parent=parent, reporter__email='my-signals-test-reporter@example.com')
 
         with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{signal.uuid}')
+            response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
             self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
+
+    def test_my_signals_feature_401(self):
+        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
+            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', HTTP_AUTHORIZATION='INVALID-TOKEN')
+            self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
