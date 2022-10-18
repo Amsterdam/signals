@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
-from email.utils import formataddr
 import logging
+from email.utils import formataddr
 
 from django.conf import settings
 from django.core.mail import send_mail

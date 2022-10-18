@@ -3,8 +3,8 @@
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
-    FeedbackReceivedAction,
     AssignedAction,
+    FeedbackReceivedAction,
     SignalCreatedAction,
     SignalHandledAction,
     SignalHandledNegativeAction,
