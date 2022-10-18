@@ -305,7 +305,7 @@ components:
       properties:
         state:
           type: string
-          example: open
+          example: OPEN
         state_display:
           type: string
           example: Open
