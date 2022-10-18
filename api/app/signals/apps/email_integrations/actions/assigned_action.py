@@ -70,7 +70,7 @@ class AssignedAction(AbstractSystemAction):
 
     def get_additional_context(self, signal, dry_run=False, recipient=None):
         return {
-            'signal_url': f'{settings.FRONTEND_URL}/manage/{signal.id}',
+            'signal_url': f'{settings.FRONTEND_URL}/manage/incident/{signal.id}',
             'recipient_full_name': recipient.get_full_name()
         }
 
