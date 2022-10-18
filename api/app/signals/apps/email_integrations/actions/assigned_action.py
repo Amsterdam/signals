@@ -3,7 +3,6 @@
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
 from django.template import Context, Template, loader
 
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
@@ -14,9 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 class AssignedAction(AbstractSystemAction):
+    """
+    This e-mail action is triggered when a signal is assigned to a
+    user or the users' department
+    """
+
     key = EmailTemplate.SIGNAL_ASSIGNED
     subject = 'Melding aan jou toegewezen: {formatted_signal_id}'
-    note = 'Automatische e-mail.'
+    note = None
 
     def render_mail_data(self, context):
         """

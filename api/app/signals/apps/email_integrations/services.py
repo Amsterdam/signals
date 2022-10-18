@@ -53,7 +53,7 @@ class MailService:
         return False
 
     @classmethod
-    def system_mail(cls, signal: Union[str, Signal], action_name: str, dry_run=False, recipient_list=[], **kwargs) -> bool:
+    def system_mail(cls, signal: Union[str, Signal], action_name: str, dry_run=False, **kwargs) -> bool:
         """
         Send a specific mail trigger based on the trigger name
         """
@@ -67,4 +67,4 @@ class MailService:
         if dry_run:
             return True
 
-        return action(signal, dry_run, recipient_list, **kwargs)
+        return action(signal, dry_run, **kwargs)
