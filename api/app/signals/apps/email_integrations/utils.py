@@ -145,6 +145,12 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'source': signal.source,
     }
 
+    if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
+        # Add the "My Signals" login url to the context
+        # Emails can be configured to contain a "My Signals" login link
+        from signals.apps.my_signals.app_settings import MY_SIGNALS_LOGIN_URL
+        context.update({'my_signals_login_url': MY_SIGNALS_LOGIN_URL})
+
     if additional_context:
         # Make sure the additional_context do not override the default context values
         for key in set(context).intersection(set(additional_context)):

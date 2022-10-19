@@ -122,6 +122,7 @@ services:
       - RABBITMQ_HOST=rabbit
       - AZURE_APPLICATION_INSIGHTS_ENABLED=False
       - AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING=
+      - MY_SIGNALS_ENABLED=True
     volumes:
       - ./api/app:/app
       - ./api/deploy:/deploy

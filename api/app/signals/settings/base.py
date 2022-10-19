@@ -61,6 +61,7 @@ SIGNAL_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
+    'signals.apps.my_signals',
     'logs'
 ]
 
@@ -299,7 +300,8 @@ REST_FRAMEWORK = dict(
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     DEFAULT_THROTTLE_RATES={
-        'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour')
+        'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour'),
+        'anon-my_signals': os.getenv('MY_SIGNALS_ANON_REPORTER_THROTTLE_RATE', '5/quarter')  # noqa:  Quarter was added only for this throttling class
     },
 )
 

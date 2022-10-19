@@ -1,0 +1,371 @@
+openapi: 3.0.0
+
+info:
+  title: Endpoint that will show all signals created in the last 12 months by the logged in reporter
+  description: >-
+    Endpoint that will show all signals created in the last 12 months by the logged in reporter
+  contact:
+    email: 'datapunt@amsterdam.nl'
+  version: '0.1.0'
+
+servers:
+  - url: http://127.0.0.1:{port}
+    description: Used for local development
+    variables:
+      port:
+        enum:
+          - '8000'
+          - '8080'
+          - '80'
+        default: '8000'
+
+paths:
+  /signals/v1/my/signals/request-auth-token:
+    post:
+      requestBody:
+        description: Request a mail with login link if the reporter has created any signal in the last 12 months
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: A login link will be sent to the email if there are any Signals created by this reporter in the last 12 months
+
+  /signals/v1/my/signals:
+    parameters:
+      - name: status
+        in: query
+        description: The status that can be filtered, choices are "open" or "closed"
+        required: false
+        schema:
+          type: string
+          example: open
+      - name: ordering
+        in: query
+        description: The result can be ordered by created_at, options are "-created_at" or "created_at"
+        required: false
+        schema:
+          type: string
+          example: -created_at
+    get:
+      responses:
+        '200':
+          description: List of Signals created by the currently logged in reporter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MySignals'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '404':
+          description: When the feature has been disabled a 404 will be returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+      security:
+        - AuthToken: [ ]
+
+  /signals/v1/my/signals/{uuid}:
+    parameters:
+      - name: uuid
+        in: path
+        description: UUID of Signal that is requested
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    get:
+      responses:
+        '200':
+          description: The detail of a Signal created by the currently logged in reporter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MySignalDetailed'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '404':
+          description: When a signal cannot be found OR the feature has been disabled a 404 will be returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+      security:
+        - AuthToken: [ ]
+
+  /signals/v1/my/signals/{uuid}/history:
+    parameters:
+      - name: uuid
+        in: path
+        description: UUID of Signal that the history is requested for
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+    get:
+      responses:
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '404':
+          description: When the feature has been disabled a 404 will be returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+        '501':
+          description: Not yet implemented
+      security:
+        - AuthToken: [ ]
+
+components:
+  schemas:
+    HALPaginationLinks:
+      type: object
+      properties:
+        self:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of current page
+              format: uri
+        next:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of the next page
+              format: uri
+              nullable: true
+        previous:
+          type: object
+          properties:
+            href:
+              type: string
+              description: URI of the previous page
+              format: uri
+              nullable: true
+
+    MySignals:
+      description: JSON serialization of paginated list of Signals of the currently logged in user
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/HALPaginationLinks'
+        count:
+          type: integer
+          description: Total count of results for the request
+          example: 50
+        results:
+          type: array
+          description: The Signals
+          items:
+            $ref: '#/components/schemas/MySignal'
+
+    MySignal:
+      description: Information about a Signal
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            curies:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The compact URI (curie) named 'sia'
+                  example: 'sia'
+                href:
+                  type: string
+                  example: 'http://127.0.0.1:8000/signals/v1/relations'
+            self:
+              type: object
+              properties:
+                href:
+                  description: URI of the Signal
+                  type: string
+                  format: uri
+                  example: http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000
+        _display:
+          description: Display name of the Signal
+          type: string
+        uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        id_display:
+          type: string
+          example: SIG-1234567890
+        text:
+          type: string
+          example: Het cafe op de hoek maakt enorme herrie
+        status:
+          $ref: '#/components/schemas/_NestedStatus'
+        created_at:
+          type: string
+          format: date-time
+          example: '2022-10-03T12:00:00+00:00'
+
+    MySignalDetailed:
+      description: Information about a Signal
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            curies:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The compact URI (curie) named 'sia'
+                  example: 'sia'
+                href:
+                  type: string
+                  example: 'http://127.0.0.1:8000/signals/v1/relations'
+            self:
+              type: object
+              properties:
+                href:
+                  description: URI of the Signal
+                  type: string
+                  format: uri
+                  example: http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000
+            'sia:attachments':
+                type: array
+                items:
+                  $ref: '#/components/schemas/MySignalAttachment'
+        _display:
+          description: Display name of the Signal
+          type: string
+        uuid:
+          type: string
+          pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+          example: '00000000-0000-0000-0000-000000000000'
+        id_display:
+          type: string
+          example: SIG-1234567890
+        text:
+          type: string
+          example: Het cafe op de hoek maakt enorme herrie
+        status:
+          $ref: '#/components/schemas/_NestedStatus'
+        location:
+          $ref: '#/components/schemas/_NestedLocation'
+        extra_properties:
+          type: object
+          nullable: true
+          example: {}
+        created_at:
+          type: string
+          format: date-time
+          example: '2022-10-03T12:00:00+00:00'
+
+    MySignalAttachment:
+      type: object
+      properties:
+        href:
+          description: URI of the Signal
+          type: string
+          format: uri
+          example: 'http://127.0.0.1:8000/signals/media/attachments/2022/10/03/example.jpg'
+        created_by:
+          type: string
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2022-10-03T12:00:00+00:00'
+
+    _NestedStatus:
+      type: object
+      properties:
+        state:
+          type: string
+          example: OPEN
+        state_display:
+          type: string
+          example: Open
+
+    _NestedLocation:
+      type: object
+      properties:
+        address:
+          type: object
+          properties:
+            postcode:
+              type: string
+              example: "1053KP"
+            huisletter:
+              type: string
+              nullable: true
+              example: ""
+            huisnummer:
+              type: string
+              example: "157"
+            woonplaats:
+              type: string
+              example: "Amsterdam"
+            openbare_ruimte:
+              type: string
+              example: "Bilderdijkstraat"
+            huisnummer_toevoeging:
+              type: string
+              example: "3"
+        address_text:
+          type: string
+          example: "Bilderdijkstraat 157-3 1053KP Amsterdam"
+        geometrie:
+          type: object
+          properties:
+            'type':
+              type: string
+              example: "Point"
+            coordinates:
+              type: array
+              items:
+                type: number
+                minItems: 2
+                maxItems: 3
+              example: [ 4.87170696258545, 52.36805320057393 ]
+
+    401:
+      type: object
+      properties:
+        detail:
+          type: string
+    404:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Niet gevonden.
+
+  securitySchemes:
+    AuthToken:
+      type: apiKey
+      in: header
+      name: Authorization
