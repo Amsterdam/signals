@@ -133,9 +133,13 @@ urlpatterns = [
     path('v1/', include('signals.apps.reporting.urls')),
     # Questionnaires
     path('v1/', include('signals.apps.questionnaires.urls')),
-    # My Signals
-    path('v1/', include('signals.apps.my_signals.urls')),
 
     # Swagger
     path('swagger/openapi.yaml', SwaggerView.as_view()),
 ]
+
+if settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
+    urlpatterns += [
+        # My Signals
+        path('v1/', include('signals.apps.my_signals.urls')),
+    ]

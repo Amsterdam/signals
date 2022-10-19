@@ -1,27 +1,34 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Gemeente Amsterdam
-import copy
-
-from django.conf import settings
 from django.test import override_settings
+from django.urls import include, path
 from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 from rest_framework.test import APITestCase
 
+from signals.apps.api.views import NamespaceView
 from signals.apps.my_signals.models import Token
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory, StatusFactory
 from signals.apps.signals.workflow import AFGEHANDELD
 
+urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
+    path('', include('signals.apps.my_signals.urls')),
+]
 
+
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = urlpatterns
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestMySignalsDetailEndpoint(APITestCase):
-    endpoint = '/signals/v1/my/signals'
+    endpoint = '/my/signals'
 
     def setUp(self):
-        self.feature_flags_enabled = settings.FEATURE_FLAGS
-        self.feature_flags_enabled['MY_SIGNALS_ENABLED'] = True
-
-        self.feature_flags_disabled = copy.deepcopy(self.feature_flags_enabled)
-        self.feature_flags_disabled['MY_SIGNALS_ENABLED'] = False
-
         self.signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
         AttachmentFactory.create_batch(3, _signal=self.signal)
 
@@ -32,9 +39,8 @@ class TestMySignalsDetailEndpoint(APITestCase):
         """
         Normal signals can be retrieved
         """
-        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
-            self.assertEqual(response.status_code, HTTP_200_OK)
+        response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
+        self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
         self.assertEqual(self.signal.get_id_display(), response_data['_display'])
@@ -60,18 +66,12 @@ class TestMySignalsDetailEndpoint(APITestCase):
         self.signal.status = status
         self.signal.save()
 
-        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
-            self.assertEqual(response.status_code, HTTP_200_OK)
+        response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
+        self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
         self.assertEqual('CLOSED', response_data['status']['state'])
         self.assertEqual('Afgesloten', response_data['status']['state_display'])
-
-    def test_my_signals_feature_disabled(self):
-        with override_settings(FEATURE_FLAGS=self.feature_flags_disabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
-            self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
 
     def test_my_signal_parent(self):
         """
@@ -80,9 +80,8 @@ class TestMySignalsDetailEndpoint(APITestCase):
         signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
         SignalFactory.create(parent=signal)
 
-        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
-            self.assertEqual(response.status_code, HTTP_200_OK)
+        response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
+        self.assertEqual(response.status_code, HTTP_200_OK)
 
         response_data = response.json()
         self.assertEqual(signal.get_id_display(), response_data['_display'])
@@ -110,11 +109,27 @@ class TestMySignalsDetailEndpoint(APITestCase):
         parent = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
         signal = SignalFactory.create(parent=parent, reporter__email='my-signals-test-reporter@example.com')
 
-        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
-            self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
+        response = self.client.get(f'{self.endpoint}/{signal.uuid}', **self.request_headers)
+        self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
 
     def test_my_signals_feature_401(self):
-        with override_settings(FEATURE_FLAGS=self.feature_flags_enabled):
-            response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', HTTP_AUTHORIZATION='INVALID-TOKEN')
-            self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+        response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', HTTP_AUTHORIZATION='INVALID-TOKEN')
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+
+
+class TestMySignalsDetailEndpointDisabled(APITestCase):
+    endpoint = '/my/signals'
+
+    def setUp(self):
+        self.signal = SignalFactory.create(reporter__email='my-signals-test-reporter@example.com')
+        AttachmentFactory.create_batch(3, _signal=self.signal)
+
+        token = Token.objects.create(reporter_email='my-signals-test-reporter@example.com')
+        self.request_headers = {'HTTP_AUTHORIZATION': f'Token {token.key}'}
+
+    def test_my_signals_feature_disabled(self):
+        response = self.client.get(f'{self.endpoint}/{self.signal.uuid}', **self.request_headers)
+        self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
+
+        response = self.client.get(f'{self.endpoint}/{self.signal.uuid}')
+        self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)

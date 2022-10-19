@@ -4,20 +4,37 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.core import mail
+from django.test import override_settings
+from django.urls import include, path
 from django.utils.timezone import now
 from freezegun import freeze_time
 from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APITestCase
 
+from signals.apps.api.views import NamespaceView
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.my_signals.app_settings import MY_SIGNALS_LOGIN_URL
 from signals.apps.my_signals.models import Token
 from signals.apps.signals.factories import SignalFactory
 from signals.apps.signals.models import Signal
 
+urlpatterns = [
+    path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
+    path('', include('signals.apps.my_signals.urls')),
+]
 
+
+class NameSpace:
+    pass
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = urlpatterns
+
+
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestObtainMySignalsTokenEndpoint(APITestCase):
-    endpoint = '/signals/v1/my/signals/request-auth-token'
+    endpoint = '/my/signals/request-auth-token'
 
     def setUp(self):
         EmailTemplate.objects.create(key=EmailTemplate.MY_SIGNAL_TOKEN, title='Uw login token', body='{{ login_url }}')

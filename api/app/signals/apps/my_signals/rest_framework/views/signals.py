@@ -3,8 +3,6 @@
 from datapunt_api.pagination import HALPagination
 from datapunt_api.rest import DEFAULT_RENDERERS
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
-from django.http import Http404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -51,8 +49,6 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
     def get_queryset(self, *args, **kwargs):
         """
         Only return signals that are in a specific state and created in the last year
-
-        TODO: SIG-4757 add login/authentication flow
         """
         one_year_ago = timezone.now() - relativedelta(years=1)
 
@@ -63,25 +59,9 @@ class MySignalsViewSet(DetailSerializerMixin, ReadOnlyModelViewSet):
             parent__isnull=False  # Exclude all child signals
         )
 
-    def _feature_enabled(self):
-        """
-        When the feature is disabled return a 404 not found
-        """
-        if not settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
-            raise Http404
-
-    def list(self, request, *args, **kwargs):
-        self._feature_enabled()
-        return super().list(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        self._feature_enabled()
-        return super().retrieve(request, *args, **kwargs)
-
     @action(detail=True, url_path=r'history/?$')
     def history(self, *args, **kwargs):
         """
         Placeholder for the history view of a signal, this will be implemented when ticket SIG-4764 has been refined
         """
-        self._feature_enabled()
         return Response(status=HTTP_501_NOT_IMPLEMENTED)
