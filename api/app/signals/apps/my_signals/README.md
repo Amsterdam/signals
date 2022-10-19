@@ -12,7 +12,7 @@ To request access to "my signals" the following flow must be followed:
 * The reporter will "request access" with the email address they provided when creating a signal
 * If over the last 12 months one or more signals have been created with this email address as the `Reporter.email` an email will be sent
   * This email will provide a token that can be set as a header to all other "My signals" calls, `Authorisation: Token { TOKEN }`
-  * This link can be configured by setting the `MY_SIGNALS_LOGIN_URL` env variable
+  * This link can be configured by setting the `MY_SIGNALS_URL` env variable
 
 # TODO
 * [ ] Implement history

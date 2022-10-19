@@ -6,7 +6,7 @@ from django.template import Context, Template, loader
 from django.utils.timezone import now
 
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.my_signals.app_settings import MY_SIGNALS_LOGIN_URL
+from signals.apps.my_signals.app_settings import MY_SIGNALS_URL
 from signals.apps.my_signals.models import Token
 
 
@@ -18,7 +18,7 @@ def send_token_mail(token: Token) -> int:
         # Given token is expired, do not sent the mail
         return 0
 
-    context = {'login_url': f'{MY_SIGNALS_LOGIN_URL}/{token.key}', 'ORGANIZATION_NAME': settings.ORGANIZATION_NAME}
+    context = {'my_signals_url': f'{MY_SIGNALS_URL}/{token.key}', 'ORGANIZATION_NAME': settings.ORGANIZATION_NAME}
 
     try:
         email_template = EmailTemplate.objects.get(key=EmailTemplate.MY_SIGNAL_TOKEN)
