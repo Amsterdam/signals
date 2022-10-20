@@ -141,7 +141,7 @@ def clean_up_forward_to_external():
             Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': text}, session._signal)
         else:
             # Signal is no longer in state DOORZETTEN_NAAR_EXTERN or a new
-            # request was sent, we cannot just change the state. In stead we
+            # request was sent, we cannot just change the state. Instead we
             # add a note.
             Signal.actions.create_note({'text': text}, session._signal)
 
