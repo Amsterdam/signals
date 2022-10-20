@@ -25,7 +25,8 @@ def update_signal_departments_handler(sender, signal_obj, signal_departments, pr
 
     # TODO: make async
     for department in signal_departments.departments.all():
-        for profile in department.user_profiles.filter(notification_on_department_assignment=True):
+        select_related = department.user_profiles.select_related('user')
+        for profile in select_related.filter(notification_on_department_assignment=True, user__is_active=True):
             MailService.system_mail(signal=signal_obj,
                                     action_name='assigned',
                                     recipient=profile.user)
@@ -36,6 +37,9 @@ def update_user_assignment(sender, signal_obj, user_assignment, prev_user_assign
     if user_assignment and prev_user_assignment:
         if user_assignment.user == prev_user_assignment.user:
             return  # do not trigger when the user_assignment field is unchanged
+
+    if not user_assignment.user.is_active:
+        return
 
     if not user_assignment.user.profile.notification_on_user_assignment:
         return
