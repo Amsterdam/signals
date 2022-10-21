@@ -3,6 +3,7 @@
 from datapunt_api.rest import DatapuntViewSet
 from django.http import Http404
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Question
@@ -83,3 +84,6 @@ class PublicQuestionViewSet(DatapuntViewSet):
         data.update({'next_question': next_question_data})
 
         return Response(data, status=201)
+
+    def list(self, request, *args, **kwargs):
+        raise NotFound()

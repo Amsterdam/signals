@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Questionnaire, Session
@@ -38,3 +39,6 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
         context.update({'session_service': session_service})
         serializer = PublicSessionSerializer(session, context=context)
         return Response(serializer.data, status=201)
+
+    def list(self, request, *args, **kwargs):
+        raise NotFound()
