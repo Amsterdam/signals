@@ -4,7 +4,10 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from signals.apps.questionnaires.tasks import clean_up_forward_to_external_task, clean_up_reaction_request_task
+from signals.apps.questionnaires.tasks import (
+    clean_up_forward_to_external_task,
+    clean_up_reaction_request_task
+)
 
 
 class TestCleanUpReactionRequestedTask(TestCase):

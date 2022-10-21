@@ -8,7 +8,6 @@ import uuid
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from dateutil.relativedelta import relativedelta
 from django.test import override_settings
 from django.urls import include, path
 from freezegun import freeze_time
@@ -16,13 +15,14 @@ from rest_framework.test import APITestCase
 
 from signals.apps.api.views import NamespaceView
 from signals.apps.questionnaires.app_settings import FORWARD_TO_EXTERNAL_DAYS_OPEN
-from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.questionnaires.factories import AnswerFactory
 from signals.apps.questionnaires.models import Questionnaire, Session
-from signals.apps.questionnaires.services.forward_to_external import create_session_for_forward_to_external
+from signals.apps.questionnaires.services.forward_to_external import (
+    create_session_for_forward_to_external
+)
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
-
+from signals.apps.signals.factories import SignalFactory, StatusFactory
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -30,6 +30,7 @@ urlpatterns = [
     path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
 ]
+
 
 class NameSpace:
     pass
@@ -40,9 +41,11 @@ test_urlconf.urlpatterns = urlpatterns
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)
-class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
+class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/questions/'
     session_detail_endpoint = '/public/qa/sessions/{uuid}/'
+    session_answers_endpoint = session_detail_endpoint + 'answers'
+    session_submit_endpoint = session_detail_endpoint + 'submit'
     question_detail_endpoint = '/public/qa/questions/{ref}'
 
     def setUp(self):
@@ -60,8 +63,6 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         )
 
         self.t_creation = datetime(2021, 10, 1, 0, 0, 0)
-        # self.t_answer_in_time = self.t_creation + relativedelta(days=FORWARD_TO_EXTERNAL_DAYS_OPEN / 2)
-        # self.t_answer_too_late = self.t_creation + relativedelta(days=FORWARD_TO_EXTERNAL_DAYS_OPEN * 2)
         seconds_open = FORWARD_TO_EXTERNAL_DAYS_OPEN * 24 * 60 * 60
         self.t_answer_in_time = self.t_creation + timedelta(seconds=seconds_open / 2)
         self.t_answer_too_late = self.t_creation + timedelta(seconds=seconds_open * 2)
@@ -80,6 +81,8 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(self.session._signal.status.state, workflow.DOORZETTEN_NAAR_EXTERN)
 
         self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))  # fstring here
+        self.answers_url = self.session_answers_endpoint.format(uuid=str(self.session.uuid))
+        self.submit_url = self.session_submit_endpoint.format(uuid=str(self.session.uuid))
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
            autospec=True)
@@ -133,7 +136,7 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         patched_get_url.return_value = '/some/url/'
 
         old_session_url = self.session_url
-        with freeze_time(self.t_creation + timedelta(seconds = 60 * 60 * 24)):
+        with freeze_time(self.t_creation + timedelta(seconds=60 * 60 * 24)):
             new_status = StatusFactory.create(
                 state=workflow.DOORZETTEN_NAAR_EXTERN,
                 text='SOME SECOND QUESTION',
@@ -147,10 +150,12 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         with freeze_time(self.t_answer_in_time):
             response = self.client.get(old_session_url)
         self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
 
         with freeze_time(self.t_answer_in_time):
             response = self.client.get(new_session_url)
         self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
            autospec=True)
@@ -162,13 +167,15 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         """
         patched_get_url.return_value = '/some/url/'
 
-        with freeze_time(self.t_creation + timedelta(seconds = 60 * 60 * 24)):
+        with freeze_time(self.t_creation + timedelta(seconds=60 * 60 * 24)):
             new_status = StatusFactory.create(state=workflow.BEHANDELING, text='We are busy.')
             self.signal.status = new_status
             self.signal.save()
 
         with freeze_time(self.t_answer_in_time):
             response = self.client.get(self.session_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
 
     def test_retrieve_session_does_not_exist(self):
         """
@@ -184,3 +191,40 @@ class TestForwardToExternal(ValidateJsonSchemaMixin, APITestCase):
         with freeze_time(self.t_answer_in_time):
             response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+           autospec=True)
+    def test_retrieve_and_fill_out(self, patched_get_url):
+        """
+        Retrieve outstanding session and provide an answer.
+        """
+        patched_get_url.return_value = '/some/url/'
+
+        # retrieve session
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # access questions
+        answers_url = response_json['_links']['sia:post-answers']['href']
+        self.assertEqual(len(response_json['path_questions']), 2)
+        question1 = response_json['path_questions'][0]
+        self.assertEqual(question1['analysis_key'], 'reaction')
+        question2 = response_json['path_questions'][1]
+        self.assertEqual(question2['analysis_key'], 'photo_reaction')
+
+        # answer questions
+        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(answers_url, data=answer_payloads, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        # freeze session
+        self.assertEqual(response_json['can_freeze'], True)
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(self.submit_url)
+        self.assertEqual(response.status_code, 200)

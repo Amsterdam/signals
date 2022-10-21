@@ -13,4 +13,3 @@ NO_REACTION_RECEIVED_TEXT = """Geen reactie ontvangen."""
 
 # Forward to external flow settings
 FORWARD_TO_EXTERNAL_DAYS_OPEN = 14
-FORWARD_TO_EXTERNAL_NO_REACTION_RECEIVED_TEXT = 'Geen reactie ontvangen van externe.'  # TODO: check with business

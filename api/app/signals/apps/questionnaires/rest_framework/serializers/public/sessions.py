@@ -5,6 +5,9 @@ from rest_framework import serializers
 
 from signals.apps.questionnaires.models import Session
 from signals.apps.questionnaires.rest_framework.fields import SessionPublicHyperlinkedIdentityField
+from signals.apps.questionnaires.rest_framework.serializers.public.illustrated_text import (
+    NestedPublicIllustratedTextSerializer
+)
 from signals.apps.questionnaires.rest_framework.serializers.public.questions import (
     PublicQuestionSerializer
 )
@@ -15,6 +18,7 @@ class PublicSessionSerializer(HALSerializer):
 
     _display = DisplayField()
 
+    questionnaire_explanation = NestedPublicIllustratedTextSerializer(source='questionnaire.explanation')
     can_freeze = serializers.SerializerMethodField()
     path_questions = serializers.SerializerMethodField()
     path_answered_question_uuids = serializers.SerializerMethodField()
@@ -31,6 +35,7 @@ class PublicSessionSerializer(HALSerializer):
             'submit_before',
             'duration',
             'created_at',
+            'questionnaire_explanation',
             # generated using the SessionService in serializer context:
             'can_freeze',
             'path_questions',
@@ -42,6 +47,7 @@ class PublicSessionSerializer(HALSerializer):
             'id',
             'uuid',
             'created_at',
+            'questionnaire_explanation',
             # generated using the SessionService in serializer context:
             'can_freeze',
             'path_questions',

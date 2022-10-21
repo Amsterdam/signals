@@ -21,7 +21,7 @@ INGEPLAND = 'ingepland'
 VERZOEK_TOT_HEROPENEN = 'reopen requested'
 REACTIE_GEVRAAGD = 'reaction requested'
 REACTIE_ONTVANGEN = 'reaction received'
-DOORZETTEN_NAAR_EXTERN = 'foward to external'
+DOORZETTEN_NAAR_EXTERN = 'forward to external'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'

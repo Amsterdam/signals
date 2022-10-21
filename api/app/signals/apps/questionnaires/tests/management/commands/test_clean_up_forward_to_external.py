@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 from io import StringIO
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase
 
-from unittest.mock import patch
-
 # Note: also see tests for underlying service
+
 
 class TestCleanUpReactionRequested(TestCase):
     @patch(

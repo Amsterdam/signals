@@ -9,23 +9,18 @@ from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import CannotFreeze, MissingEmail, WrongFlow, WrongState
 from signals.apps.questionnaires.factories import AnswerFactory
+from signals.apps.questionnaires.models import Edge, Questionnaire, Session
 from signals.apps.questionnaires.services.forward_to_external import (
-    clean_up_forward_to_external,
-    create_session_for_forward_to_external,
     FORWARD_TO_EXTERNAL_DAYS_OPEN,
     ForwardToExternalSessionService,
+    clean_up_forward_to_external,
+    create_session_for_forward_to_external,
     get_forward_to_external_url
 )
-from signals.apps.questionnaires.models import Edge, Questionnaire, Session
 from signals.apps.questionnaires.services.utils import get_session_service
 from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation, StatusFactory
 from signals.apps.signals.models import Signal, Status
-from signals.apps.signals.workflow import (
-    BEHANDELING,
-    GEMELD,
-    DOORZETTEN_NAAR_EXTERN,
-    VERZOEK_TOT_AFHANDELING
-)
+from signals.apps.signals.workflow import DOORZETTEN_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
 
 # TODO:
 # - test answering the photo upload question
@@ -75,7 +70,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
         self.assertEqual(edges.count(), 1)
 
         first_question = graph.first_question
-        self.assertEqual(first_question.short_label,'Reactie na afhandeling')
+        self.assertEqual(first_question.short_label, 'Reactie na afhandeling')
 
         edge_to_second_question = Edge.objects.filter(graph=graph, question=first_question).first()
         second_question = edge_to_second_question.next_question
@@ -96,7 +91,10 @@ class TestForwardToExternalSessionService(TestCase):
         self.signal = SignalFactoryValidLocation.create()
         self.status_text = 'Kunt u de lantaarn vervangen?'
         new_status = Status.objects.create(
-            _signal_id=self.signal.id, state=DOORZETTEN_NAAR_EXTERN, text=self.status_text, email_override='a@example.com')
+            _signal_id=self.signal.id,
+            state=DOORZETTEN_NAAR_EXTERN,
+            text=self.status_text,
+            email_override='a@example.com')
         self.signal.status = new_status
         self.signal.save()
 

@@ -13,10 +13,9 @@ from signals.apps.questionnaires.exceptions import (
     MissingEmail,
     SessionInvalidated,
     WrongFlow,
-    WrongState,
+    WrongState
 )
 from signals.apps.questionnaires.models import (
-    Answer,
     AttachedSection,
     Edge,
     IllustratedText,
@@ -27,7 +26,7 @@ from signals.apps.questionnaires.models import (
 )
 from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Signal, Status
+from signals.apps.signals.models import Signal
 from signals.apps.signals.utils.location import AddressFormatter
 
 logger = logging.getLogger(__name__)
@@ -66,8 +65,9 @@ def create_session_for_forward_to_external(signal):
         ilt = IllustratedText.objects.create(title='Melding reactie')
         section1 = AttachedSection.objects.create(
             header='De melding',
-            text=(f'Nummer: {signal.get_id_display()}\n'
-                  f'Plaats: {_get_description_of_location(signal.location)}'
+            text=(
+                f'Nummer: {signal.get_id_display()}\n'
+                f'Plaats: {_get_description_of_location(signal.location)}'
             ),
             illustrated_text=ilt,
         )
@@ -132,7 +132,7 @@ def clean_up_forward_to_external():
     count = 0
     for session in open_session_qs:
         external_user = session.status.email_override
-        when = session.status.created_at.strftime('%d-%m-%Y %H:%M:%S') 
+        when = session.status.created_at.strftime('%d-%m-%Y %H:%M:%S')
         text = f'Geen antwoord ontvangen van externe behandelaar {external_user} op vraag van {when}.'
 
         if session._signal.status.id == session.status.id:
@@ -145,7 +145,10 @@ def clean_up_forward_to_external():
             # add a note.
             Signal.actions.create_note({'text': text}, session._signal)
 
-        # We use the invalidated 
+        # We use the invalidated property, and not frozen, because we want to
+        # handle each session once and need to mark them invalidated. We cannot
+        # re-use the frozen property, because that is set when a fully validated
+        # session is submitted.
         session.invalidated = True
         session.save()
         count += 1

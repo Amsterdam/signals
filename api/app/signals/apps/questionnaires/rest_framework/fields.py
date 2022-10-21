@@ -73,6 +73,8 @@ class SessionPublicHyperlinkedIdentityField(HyperlinkedRelatedFieldMixin, serial
                                                          kwargs={'uuid': value.uuid}))),
             ('sia:post-attachments', dict(href=self._reverse('public-session-attachments',
                                                              kwargs={'uuid': value.uuid}))),
+            ('sia:post-submit', dict(href=self._reverse('public-session-submit',
+                                                        kwargs={'uuid': value.uuid})))
         ])
 
         if value._signal:

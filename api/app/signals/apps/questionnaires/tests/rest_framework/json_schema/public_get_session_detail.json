@@ -47,6 +47,18 @@
 		"_display": {
 			"type": "string"
 		},
+		"can_freeze": {
+			"type": "boolean"
+		},
+		"created_at": {
+			"type": "string"
+		},
+		"path_answered_question_uuids": {
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
 		"uuid": {
 			"type": "string"
 		},
@@ -83,6 +95,7 @@
 	"required": [
 		"_links",
 		"_display",
+		"can_freeze",
 		"uuid",
 		"submit_before",
 		"duration",
