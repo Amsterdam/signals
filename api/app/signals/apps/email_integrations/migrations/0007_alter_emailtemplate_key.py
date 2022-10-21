@@ -15,6 +15,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='emailtemplate',
             name='key',
-            field=models.CharField(choices=[('signal_created', 'Send mail signal created'), ('signal_status_changed_afgehandeld', 'Send mail signal handled'), ('signal_status_changed_ingepland', 'Send mail signal scheduled'), ('signal_status_changed_heropend', 'Send mail signal reopened'), ('signal_status_changed_optional', 'Send mail optional'), ('signal_status_changed_reactie_gevraagd', 'Send mail signal reaction requested'), ('signal_status_changed_reactie_ontvangen', 'Send mail signal reaction requested received'), ('signal_status_changed_afgehandeld_kto_negative_contact', 'Send mail signal negative KTO contact'), ('signal_assigned', 'Send mail signal assigned'), ('signal_feedback_received', 'Send mail signal feedback received'), ('my_signal_token', 'Send mail when a My Signals token has been requested')], db_index=True, max_length=100),
+            field=models.CharField(choices=[
+                ('signal_created', 'Send mail signal created'),
+                ('signal_status_changed_afgehandeld', 'Send mail signal handled'),
+                ('signal_status_changed_ingepland', 'Send mail signal scheduled'),
+                ('signal_status_changed_heropend', 'Send mail signal reopened'),
+                ('signal_status_changed_optional', 'Send mail optional'),
+                ('signal_status_changed_reactie_gevraagd', 'Send mail signal reaction requested'),
+                ('signal_status_changed_reactie_ontvangen', 'Send mail signal reaction requested received'),
+                ('signal_status_changed_afgehandeld_kto_negative_contact', 'Send mail signal negative KTO contact'),
+                ('signal_assigned', 'Send mail signal assigned'),
+                ('signal_feedback_received', 'Send mail signal feedback received'),
+                ('my_signal_token', 'Send mail when a My Signals token has been requested')
+            ], db_index=True, max_length=100),
         ),
     ]
