@@ -23,6 +23,8 @@ def create_locations_csv(location: str) -> str:
         'created_at',
         'updated_at',
         '_signal_id',
+        'area_code',
+        'area_name',
         lat=ExpressionWrapper(Func('geometrie', function='st_x'), output_field=FloatField()),
         lng=ExpressionWrapper(Func('geometrie', function='st_y'), output_field=FloatField()),
         _stadsdeel=Coalesce(map_choices('stadsdeel', STADSDELEN), Cast('area_code', output_field=CharField())),
@@ -45,7 +47,7 @@ def create_locations_csv(location: str) -> str:
 
     ordered_field_names = ['id', 'lat', 'lng', 'stadsdeel', 'buurt_code', 'address', 'address_text', 'created_at',
                            'updated_at', 'extra_properties', '_signal_id', 'address_street', 'address_number',
-                           'address_postalcode', 'address_city']
+                           'address_postalcode', 'address_city', 'area_code', 'area_name']
     reorder_csv(csv_file.name, ordered_field_names, remove_leading_trailing_quotes=True)
 
     return csv_file.name
