@@ -1,0 +1,1 @@
+{{ signal.category_assignment.category.name }} - {{ signal.get_id_display }}
