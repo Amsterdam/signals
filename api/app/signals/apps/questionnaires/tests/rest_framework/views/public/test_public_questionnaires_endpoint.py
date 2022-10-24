@@ -60,7 +60,7 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
 
     def test_questionnaire_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 404)  # since there is no list endpoint, we cannot access it to create
 
     def test_questionnaire_update_not_allowed(self):
         response = self.client.patch(f'{self.base_endpoint}{self.questionnaire.uuid}', data={})

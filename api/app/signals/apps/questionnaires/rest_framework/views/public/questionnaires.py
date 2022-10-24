@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datapunt_api.rest import DatapuntViewSet
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from signals.apps.questionnaires.models import Questionnaire, Session
@@ -14,9 +12,10 @@ from signals.apps.questionnaires.rest_framework.serializers.public.sessions impo
     PublicSessionSerializer
 )
 from signals.apps.questionnaires.rest_framework.utils import get_session_service_or_404
+from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 
 
-class PublicQuestionnaireViewSet(DatapuntViewSet):
+class PublicQuestionnaireViewSet(HALViewSetRetrieve):
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
 
@@ -39,6 +38,3 @@ class PublicQuestionnaireViewSet(DatapuntViewSet):
         context.update({'session_service': session_service})
         serializer = PublicSessionSerializer(session, context=context)
         return Response(serializer.data, status=201)
-
-    def list(self, request, *args, **kwargs):
-        raise NotFound()
