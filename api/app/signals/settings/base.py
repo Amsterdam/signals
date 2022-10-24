@@ -59,6 +59,7 @@ SIGNAL_APPS = [
     'signals.apps.search',
     'signals.apps.dataset',
     'signals.apps.questionnaires',
+    'signals.apps.zgw',
     'logs'
 ]
 
@@ -299,6 +300,15 @@ SWAGGER_SETTINGS = {
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
+
+# ZGW settings
+ZGW_API_URL = os.getenv('ZGW_API_URL', '')
+ZGW_AUTH_TOKEN = os.getenv('ZGW_AUTH_TOKEN', '')
+ZGW_BRONORGANISATIE = os.getenv('ZGW_BRONORGANISATIE', '')
+ZGW_VERANTWOORDELIJKE_ORGANISATIE = os.getenv('ZGW_VERANTWOORDELIJKE_ORGANISATIE', '')
+ZGW_ZAAKTYPE = os.getenv('ZGW_ZAAKTYPE', '')
+ZGW_STATUS_RECEIVED = os.getenv('ZGW_STATUS_RECEIVED', '')
+ZGW_STATUS_DONE = os.getenv('ZGW_STATUS_DONE', '')
 
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
