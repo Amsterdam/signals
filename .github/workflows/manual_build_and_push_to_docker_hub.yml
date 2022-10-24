@@ -28,6 +28,5 @@ jobs:
           cd api/
           docker build -t signalen/backend:${{ github.event.inputs.tag }} .
 
-
       - name: Push the tagged image to Docker
         run: docker push signalen/backend:${{ github.event.inputs.tag }}

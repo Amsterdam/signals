@@ -1,4 +1,4 @@
-name: Build a Docker image and push to Docker when a new release is published
+name: Build Docker image and push to Docker Hub
 
 on:
   release:
