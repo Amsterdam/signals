@@ -63,6 +63,7 @@ SIGNAL_APPS = [
     'signals.apps.dataset',
     'signals.apps.questionnaires',
     'signals.apps.my_signals',
+    'signals.apps.zgw',
     'logs'
 ]
 
@@ -374,6 +375,16 @@ SIGMAX_CA_BUNDLE = os.getenv('SIGMAX_CA_BUNDLE', None)
 SIGMAX_CLIENT_CERT = os.getenv('SIGMAX_CLIENT_CERT', None)
 SIGMAX_CLIENT_KEY = os.getenv('SIGMAX_CLIENT_KEY', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
+
+# ZGW settings
+ZGW_API_URL = os.getenv('ZGW_API_URL', '')
+ZGW_AUTH_TOKEN = os.getenv('ZGW_AUTH_TOKEN', '')
+ZGW_BRONORGANISATIE = os.getenv('ZGW_BRONORGANISATIE', '')
+ZGW_VERANTWOORDELIJKE_ORGANISATIE = os.getenv('ZGW_VERANTWOORDELIJKE_ORGANISATIE', '')
+ZGW_ZAAKTYPE = os.getenv('ZGW_ZAAKTYPE', '')
+ZGW_STATUS_RECEIVED = os.getenv('ZGW_STATUS_RECEIVED', '')
+ZGW_STATUS_DONE = os.getenv('ZGW_STATUS_DONE', '')
+ZGW_TIMEOUT = os.getenv('ZGW_TIMEOUT', 10)
 
 # Child settings
 SIGNAL_MAX_NUMBER_OF_CHILDREN = 10
