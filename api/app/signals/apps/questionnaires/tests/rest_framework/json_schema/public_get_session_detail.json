@@ -56,7 +56,7 @@
 		"path_answered_question_uuids": {
 			"type": "array",
 			"items": {
-				"type": "object"
+				"type": "string"
 			}
 		},
 		"uuid": {

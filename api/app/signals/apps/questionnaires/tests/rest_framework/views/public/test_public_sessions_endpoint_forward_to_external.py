@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from freezegun import freeze_time
@@ -23,6 +24,7 @@ from signals.apps.questionnaires.services.forward_to_external import (
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.tests.attachment_helpers import small_gif
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -196,7 +198,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
            autospec=True)
     def test_retrieve_and_fill_out(self, patched_get_url):
         """
-        Retrieve outstanding session and provide an answer.
+        Retrieve outstanding session and provide an answer and upload a photo.
         """
         patched_get_url.return_value = '/some/url/'
 
@@ -215,16 +217,33 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(question1['analysis_key'], 'reaction')
         question2 = response_json['path_questions'][1]
         self.assertEqual(question2['analysis_key'], 'photo_reaction')
+        attachments_url = response_json['_links']['sia:post-attachments']['href']
 
-        # answer questions
-        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]
+        # answer text question
+        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]  # array of answers
         with freeze_time(self.t_answer_in_time):
             response = self.client.post(answers_url, data=answer_payloads, format='json')
         self.assertEqual(response.status_code, 200)
         response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # answer photo question
+        suf = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        answer_payload = {'question_uuid': question2['uuid'], 'file': suf}  # single uploaded file at a time
+
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(attachments_url, data=answer_payload)
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
 
         # freeze session
         self.assertEqual(response_json['can_freeze'], True)
         with freeze_time(self.t_answer_in_time):
             response = self.client.post(self.submit_url)
         self.assertEqual(response.status_code, 200)
+
+        response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # TODO: add support for thank-you message

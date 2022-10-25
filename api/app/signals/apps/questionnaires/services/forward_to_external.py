@@ -101,6 +101,7 @@ def create_session_for_forward_to_external(signal):
             graph=graph,
             flow=Questionnaire.FORWARD_TO_EXTERNAL,
             explanation=ilt,
+            is_active=True,
         )
         session = Session.objects.create(
             submit_before=now() + timedelta(days=FORWARD_TO_EXTERNAL_DAYS_OPEN),
