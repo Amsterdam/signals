@@ -4,7 +4,7 @@
 
 When starting with a fresh new checkout of the project it is possible to start-up the API using
 `docker-compose up -d api`. This will start the API using the 
-[scripts/initialize.sh](../../scripts/initialize.sh) script.
+[docker-compose/scripts/initialize.sh](../../docker-compose/scripts/initialize.sh) script.
 
 The script will check if the environment variable `INITIALIZE_WITH_DUMMY_DATA` is set to 1 
 (by default this functionality is turned of). If so the script will reset the database and setup 

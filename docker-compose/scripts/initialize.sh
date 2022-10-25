@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Wait for database to be up
-RETRIES=30
-until nc database 5432 || [ $RETRIES -eq 0 ]; do
-  echo "Waiting for postgres server, $((RETRIES--)) remaining attempts..."
-  sleep 2
-done
-
 # If there is already a log file there is no need to initialize the database
 # and load dummy data for now
 LOGFILE='/app/initialize.log'

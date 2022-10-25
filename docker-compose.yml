@@ -1,17 +1,83 @@
-version: '3'
+version: "3.9"
+
 services:
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    depends_on:
+      dex:
+        condition: service_started
+      mailhog:
+        condition: service_started
+      database:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      celery:
+        condition: service_started
+      celery_beat:
+        condition: service_started
+    env_file:
+      - docker-compose/environments/.api
+    volumes:
+      - ./api/app:/app
+      - ./api/deploy:/deploy
+      - ./dwh_media:/dwh_media
+      - ./docker-compose/scripts/initialize.sh:/initialize.sh
+    command:
+      - /initialize.sh
+
+  celery:
+    build: ./api
+    depends_on:
+      mailhog:
+        condition: service_started
+      database:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      rabbit:
+        condition: service_started
+    env_file:
+      - docker-compose/environments/.celery
+    volumes:
+      - ./api/app:/app
+      - ./api/deploy:/deploy
+    command: celery -A signals worker -l debug
+
+  celery_beat:
+    build: ./api
+    depends_on:
+      mailhog:
+        condition: service_started
+      database:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      rabbit:
+        condition: service_started
+      celery:
+        condition: service_started
+    env_file:
+      - docker-compose/environments/.celery_beat
+    volumes:
+      - ./api/app:/app
+      - ./api/deploy:/deploy
+    command: celery -A signals beat -l debug --pidfile /tmp/celerybeat.pid
+
   mailhog:
     image: mailhog/mailhog:v1.0.1
     ports:
-      - 1025:1025
-      - 8025:8025
+      - "1025:1025"
+      - "8025:8025"
 
   dex:
     image: quay.io/dexidp/dex:v2.23.0
     user: root
     command: serve /config.yml
     ports:
-      - 5556:5556
+      - "5556:5556"
     volumes:
       - ./dex.dev.yml:/config.yml
       - dex-data:/data
@@ -23,8 +89,6 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-    volumes:
-      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
   database:
     image: amsterdam/postgres11
@@ -36,8 +100,12 @@ services:
       POSTGRES_USER: signals
       POSTGRES_PASSWORD: insecure
     volumes:
-      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U signals -d signals'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbit:
     image: rabbitmq:3.8
@@ -48,88 +116,6 @@ services:
       - RABBITMQ_DEFAULT_USER=signals
       - RABBITMQ_DEFAULT_PASS=insecure
       - RABBITMQ_DEFAULT_VHOST=vhost
-
-  celery:
-    build: ./api
-    links:
-      - database
-      - rabbit
-      - elasticsearch
-      - mailhog
-    environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
-      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-      - EMAIL_HOST=mailhog
-      - EMAIL_PORT=1025
-      - EMAIL_USE_TLS=False
-      - EMAIL_USE_SSL=False
-      - DJANGO_SETTINGS_MODULE=signals.settings
-      - SWIFT_ENABLED=False
-      - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
-      - RABBITMQ_HOST=rabbit
-      - ELASTICSEARCH_HOST=elasticsearch:9200
-    volumes:
-      - ./api/app:/app
-      - ./api/deploy:/deploy
-    command: celery -A signals worker -l info
-
-  celery_beat:
-    build: ./api
-    links:
-      - celery
-      - database
-      - rabbit
-    environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
-      - EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
-      - DJANGO_SETTINGS_MODULE=signals.settings
-      - SWIFT_ENABLED=False
-      - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
-      - RABBITMQ_HOST=rabbit
-    volumes:
-      - ./api/app:/app
-      - ./api/deploy:/deploy
-    command: celery -A signals beat -l info --pidfile /tmp/celerybeat.pid
-
-  api:
-    build: ./api
-    ports:
-      - "8000:8000"
-    links:
-      - database
-      - elasticsearch
-      - dex
-      - celery
-    environment:
-      - DB_NAME=signals
-      - DB_PASSWORD=insecure
-      - DJANGO_SETTINGS_MODULE=signals.settings
-      - FRONTEND_URL=http://localhost:3001
-      - SWIFT_ENABLED=False
-      - AZURE_STORAGE_ENABLED=False
-      - AZURE_STORAGE_ACCOUNT_NAME=
-      - AZURE_STORAGE_ACCOUNT_KEY=
-      - AZURE_STORAGE_CONTAINER_NAME=
-      - DWH_AZURE_STORAGE_CONTAINER_NAME=
-      - SIGMAX_AUTH_TOKEN
-      - SIGMAX_SERVER
-      - DWH_MEDIA_ROOT=/dwh_media
-      - ELASTICSEARCH_HOST=elasticsearch:9200
-      - INITIALIZE_WITH_DUMMY_DATA=0
-      - AUTOMATICALLY_CREATE_CHILD_SIGNALS_PER_CONTAINER=True
-      - RABBITMQ_HOST=rabbit
-      - AZURE_APPLICATION_INSIGHTS_ENABLED=False
-      - AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING=
-      - MY_SIGNALS_ENABLED=True
-    volumes:
-      - ./api/app:/app
-      - ./api/deploy:/deploy
-      - ./dwh_media:/dwh_media
-      - ./scripts/initialize.sh:/initialize.sh
-    command:
-      - /initialize.sh
 
 volumes:
   dex-data:
