@@ -177,6 +177,12 @@ class ForwardToExternalSessionService(SessionService):
             logger.warning(msg, stack_info=True)
             raise SessionInvalidated(msg)
 
+    def _update_status_on_freeze(self):
+        pass
+
+    def _add_note_on_freeze(self):
+        pass
+
     def freeze(self, refresh=True):
         """
         Freeze self.session, FORWARD_TO_EXTERNAL business rules.
@@ -194,7 +200,7 @@ class ForwardToExternalSessionService(SessionService):
 
         super().freeze()
 
-        answer = self.answers_by_analysis_key['reaction']  # CHECK THAT THIS IS A STRING AND NOT AN Answer isntance
+        answer = self.answers_by_analysis_key['reaction']
         text = f'Toelichting door behandelaar ({self.session.status.email_override}): {answer.payload}'
 
         Signal.actions.update_status({'text': text, 'state': workflow.VERZOEK_TOT_AFHANDELING}, self.session._signal)

@@ -4,6 +4,7 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from signals.apps.questionnaires.app_settings import SESSION_DURATION
@@ -25,6 +26,7 @@ class Session(models.Model):
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True, null=True)
+    # TODO: rename to _signal_status
     status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
     invalidated = models.BooleanField(default=False)
 
@@ -55,3 +57,12 @@ class Session(models.Model):
     @property
     def too_late(self):
         return not self.frozen and self.is_expired
+
+    def clean(self):
+        if self._signal and self.status:
+            if self._signal.id != self.status._signal.id:
+                raise ValidationError('For a Session _signal.id must match status._signal.id')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)

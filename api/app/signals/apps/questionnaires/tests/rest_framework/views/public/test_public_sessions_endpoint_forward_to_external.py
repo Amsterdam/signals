@@ -140,13 +140,15 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         old_session_url = self.session_url
         with freeze_time(self.t_creation + timedelta(seconds=60 * 60 * 24)):
             new_status = StatusFactory.create(
+                _signal=self.signal,
                 state=workflow.DOORZETTEN_NAAR_EXTERN,
                 text='SOME SECOND QUESTION',
                 email_override='b@example.com',
             )
             self.signal.status = new_status
             self.signal.save()
-        new_session = create_session_for_forward_to_external(self.signal)
+            new_session = create_session_for_forward_to_external(self.signal)
+
         new_session_url = self.session_detail_endpoint.format(uuid=str(new_session.uuid))
 
         with freeze_time(self.t_answer_in_time):
