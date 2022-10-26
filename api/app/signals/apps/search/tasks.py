@@ -50,9 +50,11 @@ def delete_from_elastic(signal):
 
 
 @app.task
-def index_signals_updated_in_date_range(from_date, to_date):
+def index_signals_updated_in_date_range(from_date=None, to_date=None):
     """
     Index all Signals updated in the given date range (Copied from the elastic_index management command)
+
+    The from_date and to_date are optional. By default, this task will update all signals changed in the last 2 days.
     """
     if not SignalDocument.ping():
         raise Exception('Elastic cluster is unreachable')
