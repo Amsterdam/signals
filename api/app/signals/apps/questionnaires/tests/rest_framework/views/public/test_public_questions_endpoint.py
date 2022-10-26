@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone
@@ -66,9 +65,6 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.attached_file_2 = attached_file_2
         self.explanation = illustrated_text
         self.explanation = IllustratedText.objects.create(title='Questionnaire title')
-
-        self.question.explanation = self.explanation
-        self.question.save()
 
         self.question.explanation = self.explanation
         self.question.save()

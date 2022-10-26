@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import include, path
 from rest_framework.test import APITestCase
@@ -13,17 +12,9 @@ from signals.apps.questionnaires.factories import (
     EdgeFactory,
     QuestionFactory,
     QuestionGraphFactory,
-    QuestionnaireFactory,
-
-    QuestionnaireAttachedSectionFactory
+    QuestionnaireFactory
 )
-from signals.apps.questionnaires.models import (
-    AttachedFile,
-    AttachedSection,
-    Questionnaire,
-    StoredFile
-)
-from signals.apps.questionnaires.models.illustrated_text import IllustratedText
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
@@ -61,45 +52,22 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
         )
 
-        # TODO: move this to factories
-        self.explanation = IllustratedText.objects.create(title='Questionnaire title')
-
-        self.attached_section_1 = AttachedSection.objects.create(
-            header='HEADER 1',
-            text='TEXT 1',
-            illustrated_text=self.explanation
-        )
-        self.attached_section_2 = AttachedSection.objects.create(
-            header='HEADER 2',
-            text='TEXT 2',
-            illustrated_text=self.explanation
-        )
-
-        with open(GIF_FILE, 'rb') as f:
-            suf = SimpleUploadedFile('test.gif', f.read(), content_type='image/gif')
-            stored_file = StoredFile.objects.create(file=suf)
-
-        self.attached_file_1 = AttachedFile.objects.create(
-            stored_file=stored_file,
-            description='IMAGE 1',
-            section=self.attached_section_2
-        )
-        self.attached_file_2 = AttachedFile.objects.create(
-            stored_file=stored_file,
-            description='IMAGE 2',
-            section=self.attached_section_2
-        )
-
+        # set up explanatory text + images
+        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text = illustrated_text
+        self.section_1 = section_1
+        self.section_2 = section_2
+        self.attached_file_1 = attached_file_1
+        self.attached_file_2 = attached_file_2
+        self.explanation = illustrated_text
+        self.assertEqual(self.explanation.sections.count(), 2)
         self.questionnaire.explanation = self.explanation
         self.questionnaire.save()
+        self.assertEqual(self.questionnaire.explanation.sections.count(), 2)
 
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
-
-        response_json = response.json()
-        self.assertIn('explanation', response_json['results'][0])
-        self.assertEqual(len(response_json['results'][0]['explanation']['sections']), 2)
 
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')

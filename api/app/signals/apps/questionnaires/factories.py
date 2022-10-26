@@ -12,13 +12,8 @@ from signals.apps.questionnaires.models import (
     QuestionGraph,
     Questionnaire,
     Session,
-    Trigger,
-
-    AttachedSection
+    Trigger
 )
-
-from django.contrib.contenttypes.models import ContentType
-import factory
 
 fake = Faker()
 
