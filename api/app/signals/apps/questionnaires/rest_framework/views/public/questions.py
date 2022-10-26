@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
-from datapunt_api.rest import DatapuntViewSet
 from django.http import Http404
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,10 +12,11 @@ from signals.apps.questionnaires.rest_framework.serializers.public.questions imp
     PublicQuestionDetailedSerializer,
     PublicQuestionSerializer
 )
+from signals.apps.questionnaires.rest_framework.viewsets import HALViewSetRetrieve
 from signals.apps.questionnaires.services.utils import get_session_service
 
 
-class PublicQuestionViewSet(DatapuntViewSet):
+class PublicQuestionViewSet(HALViewSetRetrieve):
     lookup_field = 'retrieval_key'
     lookup_url_kwarg = 'retrieval_key'
 
