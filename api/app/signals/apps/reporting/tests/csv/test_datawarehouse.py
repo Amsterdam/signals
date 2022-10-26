@@ -242,7 +242,7 @@ class TestDatawarehouse(testcases.TestCase):
                 # self.assertEqual(row['type_created_at'], str(signal.type_assignment.created_at))
 
     def test_create_locations_csv(self):
-        signal = SignalFactory.create()
+        signal = SignalFactory.create(location__area_code='AREACODE', location__area_name='AREA_NAME')
         location = signal.location
 
         csv_file = datawarehouse.create_locations_csv(self.csv_tmp_dir)
@@ -276,6 +276,8 @@ class TestDatawarehouse(testcases.TestCase):
                 self.assertEqual(row['address_number'], str(location.address['huisnummer']))
                 self.assertEqual(row['address_postalcode'], location.address['postcode'])
                 self.assertEqual(row['address_city'], location.address['woonplaats'])
+                self.assertEqual(row['area_code'], location.area_code)
+                self.assertEqual(row['area_name'], location.area_name)
 
     def test_create_reporters_csv(self):
         signal = SignalFactory.create()
