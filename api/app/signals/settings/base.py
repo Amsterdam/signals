@@ -184,7 +184,7 @@ if AZURE_STORAGE_ENABLED:
         },
         'datawarehouse': {
             'azure_container': os.getenv('DWH_AZURE_STORAGE_CONTAINER_NAME', AZURE_CONTAINER),
-            'overwrite_files': os.getenv('DWH_AZURE_OVERWRITE_FILES', True)
+            'overwrite_files': os.getenv('DWH_AZURE_OVERWRITE_FILES', True) in TRUE_VALUES
         }
     }
 
