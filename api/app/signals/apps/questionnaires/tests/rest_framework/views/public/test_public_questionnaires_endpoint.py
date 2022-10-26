@@ -68,10 +68,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
 
-        response_json = response.json()
-        self.assertIn('explanation', response_json['results'][0])
-        self.assertEqual(len(response_json['results'][0]['explanation']['sections']), 2)
-
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
