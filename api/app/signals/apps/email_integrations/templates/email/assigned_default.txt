@@ -1,6 +1,6 @@
 Beste {{ recipient_full_name }},
 
-De volgende melding is aan jou toegewezen:
+De volgende melding is aan {% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %} toegewezen:
 
 - Nummer: {{ formatted_signal_id }}
 - Subcategorie: {{ sub_category_public_name }}

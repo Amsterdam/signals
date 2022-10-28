@@ -4,6 +4,7 @@ import logging
 from email.utils import formataddr
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template import Context, Template, loader
 
@@ -11,9 +12,11 @@ from signals.apps.email_integrations.actions.abstract import AbstractSystemActio
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.utils import make_email_context
-from signals.apps.signals.models import Signal
+from signals.apps.signals.models import Department, Signal
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 class AssignedAction(AbstractSystemAction):
@@ -23,15 +26,17 @@ class AssignedAction(AbstractSystemAction):
     """
 
     key = EmailTemplate.SIGNAL_ASSIGNED
-    subject = 'Melding aan jou toegewezen: {formatted_signal_id}'
+    subject = """Melding {{ formatted_signal_id }} is toegewezen aan
+              {% if assigned_to_user %} jou{% else %} {{ assigned_to_department }}{% endif %}"""
+
     note = None
 
-    def __call__(self, signal, dry_run=False, recipient=None):
+    def __call__(self, signal, dry_run=False, recipient=None, assigned_to=None):
         if self.rule(signal):
             if dry_run:
                 return True
 
-            if self.send_mail(signal, recipient=recipient):
+            if self.send_mail(signal, recipient=recipient, assigned_to=assigned_to):
                 self.add_note(signal)
                 return True
 
@@ -55,31 +60,38 @@ class AssignedAction(AbstractSystemAction):
         except EmailTemplate.DoesNotExist:
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
-            subject = self.subject.format(formatted_signal_id=context['formatted_signal_id'])
+            subject = Template(self.subject).render(Context(context, autoescape=False))
             message = loader.get_template('email/assigned_default.txt').render(context)
             html_message = loader.get_template('email/assigned_default.html').render(context)
 
         return subject, message, html_message
 
-    def get_context(self, signal, dry_run=False, recipient=None):
+    def get_context(self, signal, dry_run=False, recipient=None, assigned_to=None):
         """
         Email context
         """
-        context = make_email_context(signal, self.get_additional_context(signal, dry_run, recipient), dry_run)
+        context = make_email_context(
+            signal,
+            self.get_additional_context(signal, dry_run, recipient, assigned_to),
+            dry_run
+        )
+
         return context
 
-    def get_additional_context(self, signal, dry_run=False, recipient=None):
+    def get_additional_context(self, signal, dry_run=False, recipient=None, assigned_to=None):
         return {
             'signal_url': f'{settings.FRONTEND_URL}/manage/incident/{signal.id}',
-            'recipient_full_name': recipient.get_full_name()
+            'recipient_full_name': recipient.get_full_name(),
+            'assigned_to_user': assigned_to if isinstance(assigned_to, User) else None,
+            'assigned_to_department': assigned_to if isinstance(assigned_to, Department) else None
         }
 
-    def send_mail(self, signal, dry_run=False, recipient=None):
+    def send_mail(self, signal, dry_run=False, recipient=None, assigned_to=None):
         """
         Send the email to the reporter
         """
         try:
-            context = self.get_context(signal, dry_run, recipient)
+            context = self.get_context(signal, dry_run, recipient, assigned_to)
         except URLEncodedCharsFoundInText:
             # Log a warning and add a note  to the Signal that the email could not be sent
             logger.warning(f'URL encoded text found in Signal {signal.id}')
