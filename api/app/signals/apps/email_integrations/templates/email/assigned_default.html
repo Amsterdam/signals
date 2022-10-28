@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Melding aan jou toegewezen: {{ formatted_signal_id }}</title>
+    <title>Melding {{ formatted_signal_id }} is toegewezen aan {% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %}</title>
 </head>
 <body>
     <p>
@@ -10,7 +10,7 @@
     </p>
 
     <p>
-        De volgende melding is aan jou toegewezen:
+        De volgende melding is aan {% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %} toegewezen:
     </p>
 
     <p>

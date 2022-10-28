@@ -29,7 +29,8 @@ def update_signal_departments_handler(sender, signal_obj, signal_departments, pr
         for profile in select_related.filter(notification_on_department_assignment=True, user__is_active=True):
             MailService.system_mail(signal=signal_obj,
                                     action_name='assigned',
-                                    recipient=profile.user)
+                                    recipient=profile.user,
+                                    assigned_to=department)
 
 
 @receiver(update_user_assignment, dispatch_uid='core_email_integrations_update_user_assignment')
@@ -47,4 +48,5 @@ def update_user_assignment(sender, signal_obj, user_assignment, prev_user_assign
     # TODO: make async
     MailService.system_mail(signal=signal_obj,
                             action_name='assigned',
-                            recipient=user_assignment.user)
+                            recipient=user_assignment.user,
+                            assigned_to=user_assignment.user)
