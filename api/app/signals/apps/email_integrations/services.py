@@ -44,7 +44,7 @@ class MailService:
         Send a mail based on the update status from a signal
         """
         if not isinstance(signal, Signal):
-            signal = Signal.objects.get(pk=signal)
+            signal = Signal.objects.select_related('status').get(pk=signal)
 
         for action in cls._status_actions:
             if action(signal, dry_run=dry_run):

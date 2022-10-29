@@ -24,5 +24,4 @@ __all__ = [
     'SignalReactionRequestRule',
     'SignalReactionRequestReceivedRule',
     'SignalHandledNegativeRule',
-    'ExternalReactionRequestRule',
 ]

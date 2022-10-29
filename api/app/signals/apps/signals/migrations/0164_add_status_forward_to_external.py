@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 from django.db import migrations, models
 
 import signals.apps.signals.models.utils

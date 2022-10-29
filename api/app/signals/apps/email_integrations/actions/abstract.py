@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 from abc import ABC
 
@@ -41,6 +41,7 @@ class AbstractAction(ABC):
     note = None
 
     def __call__(self, signal, dry_run=False):
+        # import pdb; pdb.set_trace()
         if self.rule(signal):
             if dry_run:
                 return True
@@ -63,6 +64,12 @@ class AbstractAction(ABC):
         """
         context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
         return context
+
+    def get_email_address(self, signal):
+        """
+        Email address, override if we do not want to mail the reporter
+        """
+        return signal.reporter.email
 
     def render_mail_data(self, context):
         """
@@ -106,7 +113,7 @@ class AbstractAction(ABC):
 
         subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
-                         recipient_list=[signal.reporter.email, ], html_message=html_message)
+                         recipient_list=[self.get_email_address(signal), ], html_message=html_message)
 
     def add_note(self, signal):
         if self.note:

@@ -128,6 +128,18 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(response.status_code, 410)
         self.assertEqual(response_json['detail'], 'Already used!')
 
+    def test_retrieve_session_invalidated(self):
+        self.session.invalidated = True
+        self.session.save()
+        self.session.refresh_from_db()
+
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, 410)
+        self.assertEqual(response_json['detail'], 'Expired!')
+
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
            autospec=True)
     def test_retrieve_session_forward_to_external_several_open(self, patched_get_url):
@@ -247,5 +259,12 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         response_json = response.json()
         self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # re-requesting session endpoint will fail with HTTP 410 Gone error
+        with freeze_time(self.t_answer_in_time + timedelta(seconds=10)):
+            response = self.client.get(self.session_url)
+        self.assertEqual(response.status_code, 410)
+        response_json = response.json()
+        self.assertEqual(response_json['detail'], 'Already used!')
 
         # TODO: add support for thank-you message

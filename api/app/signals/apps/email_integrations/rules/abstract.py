@@ -38,7 +38,8 @@ class AbstractRule(ABC):
         """
         Validate that the reporter email is set
         """
-        return signal.reporter and signal.reporter.email
+        value = signal.reporter and signal.reporter.email
+        return value
 
     def _validate_historical_data(self, signal):
         """
@@ -68,8 +69,8 @@ class AbstractRule(ABC):
 
     def _validate_allows_contact(self, signal: Signal):
         """
-        Validate if the user want to be contacted and if allows_contact on feedback is False t
-        o never send ANY emails to the user
+        Validate if the user want to be contacted and if allows_contact on feedback is False to
+        never send ANY emails to the user
 
         If the feature flag is False we return True to still send emails to the user.
         """

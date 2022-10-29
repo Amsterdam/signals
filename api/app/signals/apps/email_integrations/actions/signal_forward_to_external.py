@@ -12,11 +12,17 @@ logger = logging.getLogger(__name__)
 
 class SignalForwardToExternalAction(AbstractAction):
     rule = ForwardToExternalRule()
-
-    key = EmailTemplate.SIGNAL_STATUS_CHANGED_OPTIONAL
+    key = EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL
     subject = 'Verzoek tot behandeling van Signalen melding {formatted_signal_id}'  # TODO: check phrasing PS-261
 
     note = 'Automatische e-mail bij doorzetten is verzonden aan externe partij.'
 
     def get_additional_context(self, signal, dry_run=False):
         return create_forward_to_external_and_mail_context(signal, dry_run)
+
+    def get_email_address(self, signal):
+        return signal.status.email_override
+
+    def add_note(self, signal):
+        # TODO: add a note containing the email override
+        super().add_note(signal)

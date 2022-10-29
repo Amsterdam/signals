@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 from datetime import timedelta
 from unittest import mock
@@ -14,6 +14,7 @@ from freezegun import freeze_time
 
 from signals.apps.email_integrations.actions import (
     SignalCreatedAction,
+    SignalForwardToExternalAction,
     SignalHandledAction,
     SignalHandledNegativeAction,
     SignalOptionalAction,
@@ -77,6 +78,12 @@ class ActionTestMixin:
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT}',
                                      body='{{ text }} {{ created_at }} {{ reaction_request_answer }} '
                                           '{{ ORGANIZATION_NAME }} {{ feedback_text }} {{ feedback_text_extra }} ')
+
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL,
+                                     title='Uw melding {{ formatted_signal_id }}'
+                                           f' {EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL}',
+                                     body='{{ text }} {{ forward_to_external_url }}'
+                                          '{{ ORGANIZATION_NAME }}')
 
     def test_send_email(self):
         self.assertEqual(len(mail.outbox), 0)
@@ -841,6 +848,122 @@ class TestSignalOptionalAction(TestCase):
             self.assertFalse(self.action(signal, dry_run=False))
 
 
+class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
+    state = workflow.DOORZETTEN_NAAR_EXTERN
+    action = SignalForwardToExternalAction()
+    send_email = True
+
+    def test_send_email(self):
+        self.assertEqual(EmailTemplate.objects.count(), 9)
+        self.assertTrue(bool(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL))
+        template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL)
+        self.assertIsInstance(template, EmailTemplate)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state,
+                                      status__text=status_text,
+                                      status__email_override='a@example.com',
+                                      status__send_email=self.send_email,
+                                      reporter__email='test@example.com')
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f'Uw melding {signal.get_id_display()} {self.action.key}')
+        self.assertEqual(mail.outbox[0].to, [signal.status.email_override, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_send_email_dry_run(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state,
+                                      status__text=status_text,
+                                      status__email_override='a@example.com',
+                                      status__send_email=self.send_email,
+                                      reporter__email='test@example.com')
+        self.assertTrue(self.action(signal, dry_run=True))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(Note.objects.count(), 0)
+        self.assertFalse(Note.objects.filter(text=self.action.note).exists())
+
+    def test_send_email_for_parent_signals(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = FuzzyText(length=400)
+        parent_signal = SignalFactory.create(status__state=self.state,
+                                             status__text=status_text,
+                                             status__send_email=self.send_email,
+                                             status__email_override='a@example.com',
+                                             reporter__email='test@example.com')
+        SignalFactory.create(status__state=self.state, status__text=status_text, reporter__email='test@example.com',
+                             parent=parent_signal)
+        self.assertTrue(self.action(parent_signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+    def test_allowed_contact_disable_flag(self):
+        """
+        Whether or not the reporter allows email is not relevant when emailing external collaborators.
+        """
+        template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_STATUS_CHANGED_AFGEHANDELD)
+        self.assertIsInstance(template, EmailTemplate)
+
+        template = EmailTemplate.objects.get(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL)
+        self.assertIsInstance(template, EmailTemplate)
+
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state,
+                                      status__text=status_text,
+                                      status__email_override='a@example.com',
+                                      status__send_email=self.send_email,
+                                      reporter__email='test@example.com')
+        feedback = FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=False,
+            submitted_at='2022-01-01 00:00:00+00:00'
+        )
+        feedback.save()
+        signal.save()
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        # TODO add check that external collaborator received an email
+
+    def test_send_mail_fails_encoded_chars_in_text(self):
+        """
+        The action should not send an email if the text contains encoded characters. A note should be added so that
+        it is clear why the email was not sent. This is also logged in Sentry and/or Application Insights.
+        """
+        self.assertEqual(len(mail.outbox), 0)
+
+        unquoted_url = 'https://user:password@test-domain.com/?query=param&extra=param'
+        quoted_url = unquoted_url
+        # Let's encode the URL 10 times
+        for _ in range(10):
+            quoted_url = quote(quoted_url)
+
+        signal_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut ' \
+                      f'labore et dolore magna aliqua. {quoted_url} Ut enim ad minim veniam, quis nostrud ' \
+                      'exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+
+        status_text = FuzzyText(length=200)
+
+        signal = SignalFactory.create(text=signal_text, text_extra=signal_text, status__state=self.state,
+                                      status__email_override='a@example.com',
+                                      status__text=status_text, status__send_email=True,
+                                      reporter__email='test@example.com')
+        self.assertFalse(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 0)
+
+        signal.refresh_from_db()
+        self.assertEqual(signal.notes.count(), 1)
+        self.assertEqual(signal.notes.first().text,
+                         'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
+
+
 class TestSignalCreatedActionNoTemplate(TestCase):
     """
     Test the SignalOptionalAction. No EmailTemplate(s) are present in the database, therefor the fallback template
@@ -853,7 +976,6 @@ class TestSignalCreatedActionNoTemplate(TestCase):
     action = SignalCreatedAction()
 
     def test_send_email(self):
-        self.assertEqual(EmailTemplate.objects.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
 
         signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')

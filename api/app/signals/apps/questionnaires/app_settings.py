@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 
 # App settings
 MAX_QUESTIONS = 50
