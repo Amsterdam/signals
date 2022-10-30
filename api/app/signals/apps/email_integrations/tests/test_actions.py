@@ -26,6 +26,7 @@ from signals.apps.email_integrations.actions import (
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.services import MailService
 from signals.apps.feedback.factories import FeedbackFactory
+from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
 from signals.apps.signals.models import Note
@@ -962,6 +963,18 @@ class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
         self.assertEqual(signal.notes.count(), 1)
         self.assertEqual(signal.notes.first().text,
                          'E-mail is niet verzonden omdat er verdachte tekens in de meldtekst staan.')
+
+    def test_get_additional_context(self):
+        self.assertEqual(Session.objects.count(), 0)
+        status_text = FuzzyText(length=400)
+
+        signal = SignalFactory.create(status__state=workflow.DOORZETTEN_NAAR_EXTERN, status__send_email=True,
+                                      status__email_override='a@example.com', status__text=status_text)
+        context = self.action.get_additional_context(signal)
+
+        session = Session.objects.first()
+        self.assertIn('reaction_url', context)
+        self.assertEqual(context['reaction_url'], f'{settings.FRONTEND_URL}/incident/extern/{session.uuid}')
 
 
 class TestSignalCreatedActionNoTemplate(TestCase):
