@@ -12,7 +12,17 @@ from signals.apps.signals.workflow import AFGEHANDELD, HEROPEND
 from .models import Case
 
 
-@app.task(autoretry_for=(requests.exceptions.Timeout, requests.exceptions.HTTPError), retry_backoff=True, max_retries=50)
+MAX_RETRIES = 100
+DEFAULT_RETRY_DELAY = 60*10
+
+AUTORETRY_FOR = (
+    requests.exceptions.Timeout,
+    requests.exceptions.ConnectionError,
+    requests.exceptions.HTTPError
+)
+
+
+@app.task(autoretry_for=AUTORETRY_FOR, max_retries=MAX_RETRIES, default_retry_delay=DEFAULT_RETRY_DELAY)
 def create_initial(signal_id):
     signal = Signal.objects.get(pk=signal_id)
 
@@ -60,7 +70,7 @@ def create_initial(signal_id):
     })
 
 
-@app.task(autoretry_for=(requests.exceptions.Timeout, requests.exceptions.HTTPError), retry_backoff=True, max_retries=50)
+@app.task(autoretry_for=AUTORETRY_FOR, max_retries=MAX_RETRIES, default_retry_delay=DEFAULT_RETRY_DELAY)
 def update_status(signal_id):
     signal = Signal.objects.get(pk=signal_id)
 
