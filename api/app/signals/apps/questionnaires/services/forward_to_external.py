@@ -217,14 +217,30 @@ class ForwardToExternalSessionService(SessionService):
         answer = self.answers_by_analysis_key['reaction']
         signal = self.session._signal
         email_override = self.session.status.email_override
-        assert email_override is not None
 
         MailService.system_mail(signal=signal, action_name='forward_to_external_reaction_received',
                                 reaction_text=answer.payload, email_override=email_override)
-        # TODO:
-        # - use system style mail to send a confirmation mail CHECK
-        # - add system mail action
-        # - add explanation to admin template (likely no new context entries needed)
+
+    def _copy_attachments_from_session_to_signal(self):
+        """
+        If external collaborator added attachments to a questionnaire these must
+        show up as normal attachments attributed to the external collaborator.
+        """
+        from django.core.files.storage import default_storage
+
+        from signals.apps.signals.models import Attachment
+
+        photo_answer = self.answers_by_analysis_key.get('photo_reaction', None)
+        if not photo_answer:
+            return
+        file_path = photo_answer.payload['file_path']
+        with default_storage.open(file_path) as f:
+            cf = ContentFile(f.read())
+            cf.name = os.path.basename(file_path)
+
+        signal = self.session._signal
+        email_override = self.session.status.email_override
+        Attachment.objects.create(_signal=signal, file=cf, created_by=email_override)
 
     def freeze(self, refresh=True):
         """
@@ -244,3 +260,4 @@ class ForwardToExternalSessionService(SessionService):
         super().freeze()
         self._add_history_entry_on_freeze()
         self._send_confirmation_mail()
+        self._copy_attachments_from_session_to_signal()

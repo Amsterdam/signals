@@ -24,6 +24,7 @@ from signals.apps.questionnaires.services.forward_to_external import (
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
+from signals.apps.signals.models import Attachment
 from signals.apps.signals.tests.attachment_helpers import small_gif
 
 THIS_DIR = os.path.dirname(__file__)
@@ -252,6 +253,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertJsonSchema(self.session_detail_schema, response.json())
 
         # freeze session
+        self.assertEqual(Attachment.objects.count(), 0)
         self.assertEqual(response_json['can_freeze'], True)
         with freeze_time(self.t_answer_in_time):
             response = self.client.post(self.submit_url)
@@ -259,6 +261,10 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         response_json = response.json()
         self.assertJsonSchema(self.session_detail_schema, response.json())
+        self.assertEqual(Attachment.objects.count(), 1)  # uploaded image was converted to Attachment
+        att = Attachment.objects.first()
+        self.assertEqual(att._signal, self.signal)  # image attached to correct Signal instance
+        self.assertEqual(att.created_by, self.session.status.email_override)  # image correctly attributed
 
         # re-requesting session endpoint will fail with HTTP 410 Gone error
         with freeze_time(self.t_answer_in_time + timedelta(seconds=10)):
