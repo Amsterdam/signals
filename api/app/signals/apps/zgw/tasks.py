@@ -64,11 +64,11 @@ def create_initial(signal_id):
 def update_status(signal_id):
     signal = Signal.objects.get(pk=signal_id)
 
-    if not signal.zgw_case:
-        return  # this Signal is not registered in an external case management system
-
     if signal.status.state != AFGEHANDELD and signal.status.state != HEROPEND:
-        return # We only update afgehandeld
+        return # We only update afgehandeld and heropend
+
+    if not hasattr(signal, 'zgw_case'):
+        return  # this Signal is not registered in an external case management system
 
     data = {
         'zaak': signal.zgw_case.external_id,
