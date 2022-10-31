@@ -41,7 +41,6 @@ class AbstractAction(ABC):
     note = None
 
     def __call__(self, signal, dry_run=False):
-        # import pdb; pdb.set_trace()
         if self.rule(signal):
             if dry_run:
                 return True
@@ -136,4 +135,5 @@ class AbstractSystemAction(AbstractAction):
             raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
 
         self.kwargs = kwargs
+
         return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

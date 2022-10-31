@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.core import mail
 from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
@@ -19,7 +20,7 @@ from signals.apps.questionnaires.services.forward_to_external import (
 )
 from signals.apps.questionnaires.services.utils import get_session_service
 from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation, StatusFactory
-from signals.apps.signals.models import Signal, Status
+from signals.apps.signals.models import Note, Signal, Status
 from signals.apps.signals.workflow import DOORZETTEN_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
 
 # TODO:
@@ -88,17 +89,22 @@ class TestGetForwardToExternalUrl(TestCase):
 
 class TestForwardToExternalSessionService(TestCase):
     def setUp(self):
-        self.signal = SignalFactoryValidLocation.create()
-        self.status_text = 'Kunt u de lantaarn vervangen?'
-        new_status = Status.objects.create(
-            _signal_id=self.signal.id,
-            state=DOORZETTEN_NAAR_EXTERN,
-            text=self.status_text,
-            email_override='a@example.com')
-        self.signal.status = new_status
-        self.signal.save()
+        self.t_session_started = now()
+        self.t_session_freeze = now() + timedelta(seconds=24 * 60 * 60)
 
-        self.session = create_session_for_forward_to_external(self.signal)  # see TestCreateSessionForForwardToExternal
+        with freeze_time(self.t_session_started):
+            self.signal = SignalFactoryValidLocation.create()
+            self.status_text = 'Kunt u de lantaarn vervangen?'
+            new_status = Status.objects.create(
+                _signal_id=self.signal.id,
+                state=DOORZETTEN_NAAR_EXTERN,
+                text=self.status_text,
+                email_override='a@example.com')
+            self.signal.status = new_status
+            self.signal.save()
+            self.session = create_session_for_forward_to_external(self.signal)
+
+        self.assertEqual(Note.objects.count(), 0)
         self.assertIsInstance(self.session, Session)
 
     def test_handle_frozen_session_FORWARD_TO_EXTERNAL_not_filled_out(self):
@@ -110,44 +116,99 @@ class TestForwardToExternalSessionService(TestCase):
 
         # Using knowledge that only the first question is mandatory in FORWARD_TO_EXTERNAL flow questionnaire:
         AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
-
         service.refresh_from_db()
+
         service.freeze()
         self.session.refresh_from_db()
+
         self.assertEqual(self.session.frozen, True)
 
     def test_handle_frozen_session_FORWARD_TO_EXTERNAL_wrong_flow(self):
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
 
-        # Using knowledge that only the first question is mandatory in FORWARD_TO_EXTERNAL flow questionnaire:
-        AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
+        with freeze_time(self.t_session_freeze):
+            # Using knowledge that only the first question is mandatory in FORWARD_TO_EXTERNAL flow questionnaire:
+            AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
 
-        # Change Questionnaire flow from Questionnaire.FORWARD_TO_EXTERNAL
-        self.session.questionnaire.flow = Questionnaire.EXTRA_PROPERTIES
-        self.session.questionnaire.save()
-        service.refresh_from_db()
+            # Change Questionnaire flow from Questionnaire.FORWARD_TO_EXTERNAL
+            self.session.questionnaire.flow = Questionnaire.EXTRA_PROPERTIES
+            self.session.questionnaire.save()
+            service.refresh_from_db()
 
-        self.assertEqual(service.session.questionnaire.flow, Questionnaire.EXTRA_PROPERTIES)
-        with self.assertRaises(WrongFlow):
-            service.freeze()
+            self.assertEqual(service.session.questionnaire.flow, Questionnaire.EXTRA_PROPERTIES)
+            with self.assertRaises(WrongFlow):
+                service.freeze()
 
-        # Using knowledge that only the first question is mandatory in FORWARD_TO_EXTERNAL flow questionnaire:
-        AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
-
-    def test_handle_frozen_session_FORWARD_TO_EXTERNAL(self):
+    def test_handle_frozen_session_DOORZETTEN_NAAR_EXTERN(self):
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
+        self.assertEqual(len(mail.outbox), 0)
 
-        # Using knowledge that only the first question is mandatory in FORWARD_TO_EXTERNAL flow:
-        answer = AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
+        with freeze_time(self.t_session_freeze):
+            # Using knowledge that only the first question is mandatory in forward to external flow:
+            answer = AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
+            service.refresh_from_db()
 
-        service.refresh_from_db()
-        service.freeze()
+            service.freeze()
+            self.signal.refresh_from_db()
 
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
-        self.assertEqual(self.signal.status.text, f'Toelichting door behandelaar (a@example.com): {answer.payload}')
+            # check that we got a status update to state VERZOEK_TOT_AFHANDELING with correct properties
+            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M:%S')
+            self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
+            self.assertEqual(
+                self.signal.status.text,
+                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp}: {answer.payload}'
+            )
+
+            # check that Signalen also sent an email acknowledging the reception of an answer
+            self.assertEqual(Note.objects.count(), 1)
+            note = Note.objects.first()
+            self.assertEqual(
+                note.text, 'Automatische e-mail bij ontvangen van feedback is verzonden aan externe behandelaar')
+
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
+            self.assertEqual(mail.outbox[0].to, [self.session.status.email_override, ])
+
+    def test_handle_frozen_session_DOORZETTEN_NAAR_EXTERN_with_status_update(self):
+        # update status after the original DOORZETTEN_NAAR_EXTERN
+        delta_t = timedelta((self.t_session_freeze - self.t_session_started).seconds / 2)
+        with freeze_time(self.t_session_started + delta_t):
+            Signal.actions.update_status({'state': GEMELD, 'text': 'test'}, self.signal)
+
+        # answer questionnaire / freeze session / check that note is set and no extra status update happens
+        service = get_session_service(self.session.uuid)
+        self.assertIsInstance(service, ForwardToExternalSessionService)
+        self.assertEqual(len(mail.outbox), 0)
+
+        with freeze_time(self.t_session_freeze):
+            # Using knowledge that only the first question is mandatory in forward to external flow:
+            answer = AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
+            service.refresh_from_db()
+
+            service.freeze()
+            self.signal.refresh_from_db()
+
+            # Check that we get a Note saying we received a reaction from external collaborator
+            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M:%S')
+            self.assertEqual(self.signal.status.state, GEMELD)
+            self.assertEqual(Note.objects.count(), 2)
+            note_reaction_received = Note.objects.first()
+
+            self.assertEqual(
+                note_reaction_received.text,
+                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp}: {answer.payload}')
+
+            # check that Signalen also sent an email acknowledging the reception of an answer
+            note_email_sent = Note.objects.last()
+            self.assertEqual(
+                note_email_sent.text,
+                'Automatische e-mail bij ontvangen van feedback is verzonden aan externe behandelaar')
+
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
+            self.assertEqual(mail.outbox[0].to, [self.session.status.email_override, ])
 
 
 class TestCleanUpForwardToExternal(TestCase):

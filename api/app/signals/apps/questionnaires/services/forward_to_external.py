@@ -177,11 +177,43 @@ class ForwardToExternalSessionService(SessionService):
             logger.warning(msg, stack_info=True)
             raise SessionInvalidated(msg)
 
-    def _update_status_on_freeze(self):
-        pass
+    def _add_history_entry_on_freeze(self):
+        """
+        Create a history entry on reception of answer to forwarded question.
+        """
+        # Note our history entry can come in one of two forms. If the signal
+        # status was not update we create a status update to VERZOEK_TOT_AFHANDELING
+        # else we add a note to the signal.
+        answer = self.answers_by_analysis_key['reaction']
+        signal = self.session._signal
 
-    def _add_note_on_freeze(self):
-        pass
+        external_user = self.session.status.email_override
+        when = self.session.status.created_at.strftime('%d-%m-%Y %H:%M:%S')
+        msg = f'Toelichting door behandelaar {external_user} op vraag van {when}: {answer.payload}'
+
+        if self.session.status == signal.status:
+            # no status updates since session was created (question was forwarded to external party)
+            Signal.actions.update_status({'text': msg, 'state': workflow.VERZOEK_TOT_AFHANDELING}, signal)
+        else:
+            Signal.actions.create_note({'text': msg}, signal)
+
+    def _send_confirmation_mail(self):
+        """
+        Confirm through email the reception of answer to forwarded question.
+        """
+        from signals.apps.email_integrations.services import MailService
+
+        answer = self.answers_by_analysis_key['reaction']
+        signal = self.session._signal
+        email_override = self.session.status.email_override
+        assert email_override is not None
+
+        MailService.system_mail(signal=signal, action_name='forward_to_external_reaction_received',
+                                reaction_text=answer.payload, email_override=email_override)
+        # TODO:
+        # - use system style mail to send a confirmation mail CHECK
+        # - add system mail action
+        # - add explanation to admin template (likely no new context entries needed)
 
     def freeze(self, refresh=True):
         """
@@ -199,8 +231,5 @@ class ForwardToExternalSessionService(SessionService):
             raise WrongFlow(msg)
 
         super().freeze()
-
-        answer = self.answers_by_analysis_key['reaction']
-        text = f'Toelichting door behandelaar ({self.session.status.email_override}): {answer.payload}'
-
-        Signal.actions.update_status({'text': text, 'state': workflow.VERZOEK_TOT_AFHANDELING}, self.session._signal)
+        self._add_history_entry_on_freeze()
+        self._send_confirmation_mail()

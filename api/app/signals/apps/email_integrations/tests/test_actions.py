@@ -29,7 +29,7 @@ from signals.apps.feedback.factories import FeedbackFactory
 from signals.apps.questionnaires.models import Session
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, StatusFactory
-from signals.apps.signals.models import Note
+from signals.apps.signals.models import Note, Signal
 
 
 class ActionTestMixin:
@@ -1025,6 +1025,9 @@ class TestSignalSystemActions(TestCase):
                                      title='Uw feedback is ontvangen',
                                      body='{{ feedback_text }} {{ feedback_text_extra }} '
                                           '{{ feedback_allows_contact }} {{ feedback_is_satisfied }}')
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED,
+                                     title='Uw reactie is ontvangen',
+                                     body='{{ reaction_text }} {{ signal_id }} {{ created_at }} {{ address }}')
 
     def test_system_action_rule(self):
         """
@@ -1105,3 +1108,38 @@ class TestSignalSystemActions(TestCase):
         result = action(signal=signal, dry_run=False, feedback=feedback)
         self.assertFalse(result)
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_forward_to_external_reaction_received_send_mail(self):
+        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+
+        signal = SignalFactory.create(
+            status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+            reporter__email='reporter@example.com',
+            status__send_email=True,
+            status__email_override='external@example.com')
+        Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': 'please fix'}, signal)
+
+        result = action(signal=signal, dry_run=False, reaction_text='fixed!', email_override='external@example.com')
+        self.assertTrue(result)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['external@example.com', ])
+
+    def test_forward_to_external_reaction_received_context(self):
+        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+
+        signal = SignalFactory.create(
+            status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+            reporter__email='reporter@example.com',
+            status__send_email=True,
+            status__email_override='external@example.com')
+        Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': 'please fix'}, signal)
+
+        result = action(signal=signal, reaction_text='reaction text', email_override='external@example.com')
+        self.assertTrue(result)
+        context = action.get_additional_context(signal)
+        self.assertIn('reaction_text', context)
+
+        full_context = action.get_context(signal)
+        self.assertIn('created_at', full_context)
+        self.assertIn('address', full_context)
+        self.assertIn('signal_id', full_context)

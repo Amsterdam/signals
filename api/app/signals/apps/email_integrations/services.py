@@ -4,6 +4,7 @@ from typing import Union
 
 from signals.apps.email_integrations.actions import (
     FeedbackReceivedAction,
+    ForwardToExternalReactionReceivedAction,
     SignalCreatedAction,
     SignalForwardToExternalAction,
     SignalHandledAction,
@@ -35,7 +36,8 @@ class MailService:
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions = {
-        'feedback_received': FeedbackReceivedAction
+        'feedback_received': FeedbackReceivedAction,
+        'forward_to_external_reaction_received': ForwardToExternalReactionReceivedAction,
     }
 
     @classmethod
