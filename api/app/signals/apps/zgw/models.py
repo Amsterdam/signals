@@ -3,6 +3,7 @@
 from django.db import models
 from signals.apps.signals.models import Signal
 
+
 class Case(models.Model):
     """Relate a Signal to a case in an external system"""
     _signal = models.OneToOneField(
@@ -12,3 +13,6 @@ class Case(models.Model):
     )
 
     external_id = models.CharField(max_length=100, db_index=True)
+
+    def __str__(self):
+        return str(self._signal.id)

@@ -6,7 +6,7 @@ from django.apps import AppConfig
 
 class ZgwConfig(AppConfig):
     name = 'signals.apps.zgw'
-    verbose_name = 'Replicate Signals to a case management system using the ZGW API standard'
+    verbose_name = 'Replication to case management system'
     default_auto_field = 'django.db.models.BigAutoField'
 
     def ready(self):
