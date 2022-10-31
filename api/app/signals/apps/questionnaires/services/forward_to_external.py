@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 import logging
+import os
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.timezone import now
 
@@ -16,13 +18,15 @@ from signals.apps.questionnaires.exceptions import (
     WrongState
 )
 from signals.apps.questionnaires.models import (
+    AttachedFile,
     AttachedSection,
     Edge,
     IllustratedText,
     Question,
     QuestionGraph,
     Questionnaire,
-    Session
+    Session,
+    StoredFile
 )
 from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.signals import workflow
@@ -46,7 +50,14 @@ def _copy_attachments_to_attached_files(signal, attached_section):
     Attach copied Signal attachments to AttachedSection.
     """
     for attachment in signal.attachments.all():
-        pass  # copy attachment file to AttachedFile / StoredFile models
+        # copy attachment file to AttachedFile / StoredFile models
+        filename = os.path.basename(attachment.file.name)
+        cf = ContentFile(attachment.file.read())
+        cf.name = filename
+
+        stored_file = StoredFile.objects.create(file=cf)
+        description = os.path.basename(stored_file.file.name)
+        AttachedFile.objects.create(description=description, stored_file=stored_file, section=attached_section)
 
 
 def create_session_for_forward_to_external(signal):

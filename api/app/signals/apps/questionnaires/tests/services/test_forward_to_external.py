@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
+import os
 from datetime import timedelta
 
 from django.conf import settings
@@ -10,17 +11,31 @@ from freezegun import freeze_time
 
 from signals.apps.questionnaires.exceptions import CannotFreeze, MissingEmail, WrongFlow, WrongState
 from signals.apps.questionnaires.factories import AnswerFactory
-from signals.apps.questionnaires.models import Edge, Questionnaire, Session
+from signals.apps.questionnaires.models import (
+    AttachedFile,
+    AttachedSection,
+    Edge,
+    IllustratedText,
+    Questionnaire,
+    Session,
+    StoredFile
+)
 from signals.apps.questionnaires.services.forward_to_external import (
     FORWARD_TO_EXTERNAL_DAYS_OPEN,
     ForwardToExternalSessionService,
+    _copy_attachments_to_attached_files,
     clean_up_forward_to_external,
     create_session_for_forward_to_external,
     get_forward_to_external_url
 )
 from signals.apps.questionnaires.services.utils import get_session_service
-from signals.apps.signals.factories import SignalFactory, SignalFactoryValidLocation, StatusFactory
-from signals.apps.signals.models import Note, Signal, Status
+from signals.apps.signals.factories import (
+    SignalFactory,
+    SignalFactoryValidLocation,
+    SignalFactoryWithImage,
+    StatusFactory
+)
+from signals.apps.signals.models import Attachment, Note, Signal, Status
 from signals.apps.signals.workflow import DOORZETTEN_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
 
 # TODO:
@@ -269,3 +284,47 @@ class TestCleanUpForwardToExternal(TestCase):
 
         self.assertEqual(Session.objects.count(), 2)
         self.assertEqual(Session.objects.filter(invalidated=True).count(), 1)
+
+
+class TestCopyAttachmentsToAttachedFiles(TestCase):
+    def setUp(self):
+        self.signal = SignalFactoryWithImage.create(
+            status__state=DOORZETTEN_NAAR_EXTERN,
+            status__send_email=True,
+            status__email_override='external@example.com')
+        self.illustrated_text = IllustratedText.objects.create(title='Title')
+        self.attached_section = AttachedSection.objects.create(
+            illustrated_text=self.illustrated_text,
+            text='Section text',
+            header='Section header')
+
+    def test_copy_attachments_to_attached_file(self):
+        self.assertEqual(Attachment.objects.count(), 1)
+        self.assertEqual(StoredFile.objects.count(), 0)
+        self.assertEqual(AttachedFile.objects.count(), 0)
+        self.assertEqual(self.attached_section.files.count(), 0)
+        _copy_attachments_to_attached_files(self.signal, self.attached_section)
+
+        self.assertEqual(self.attached_section.files.count(), 1)
+        self.assertEqual(StoredFile.objects.count(), 1)
+
+        at = Attachment.objects.first()
+        af = AttachedFile.objects.first()
+        self.assertEqual(os.path.basename(at.file.name), af.description)
+
+    def test_copy_attachments_to_attached_file_twice(self):
+        self.assertEqual(Attachment.objects.count(), 1)
+        self.assertEqual(StoredFile.objects.count(), 0)
+        self.assertEqual(AttachedFile.objects.count(), 0)
+        self.assertEqual(self.attached_section.files.count(), 0)
+        _copy_attachments_to_attached_files(self.signal, self.attached_section)
+        _copy_attachments_to_attached_files(self.signal, self.attached_section)
+
+        self.assertEqual(StoredFile.objects.count(), 2)  # for now no deduplication
+        self.assertEqual(AttachedFile.objects.count(), 2)
+        self.assertEqual(self.attached_section.files.count(), 2)
+
+        attached_files = list(AttachedFile.objects.all())
+        fn1 = os.path.basename(attached_files[0].stored_file.file.name)
+        fn2 = os.path.basename(attached_files[1].stored_file.file.name)
+        self.assertNotEqual(fn1, fn2)
