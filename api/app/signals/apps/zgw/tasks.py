@@ -2,13 +2,14 @@
 # Copyright (C) 2018 - 2021 Delta10 B.V.
 from urllib.parse import urljoin
 
+import celery
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.timezone import localtime
 import requests
-from signals.apps.signals.models.signal import Signal
+from signals.apps.signals.models import Signal, Status
 from signals.celery import app
-from signals.apps.signals.workflow import AFGEHANDELD, HEROPEND
+from signals.apps.signals.workflow import GEMELD, HEROPEND, AFGEHANDELD, GEANNULEERD
 from .models import Case
 
 
@@ -55,35 +56,33 @@ def create_initial(signal_id):
 
     case = response.json()
 
-    data = {
-        'zaak': case['uuid'],
-        'statustype': settings.ZGW_STATUS_RECEIVED,
-        'datumStatusGezet': localtime(signal.created_at).strftime('%Y-%m-%d')
-    }
-
-    url = urljoin(settings.ZGW_API_URL, '/zgw/statussen')
-    response = requests.post(url, json=data, timeout=10)
-    response.raise_for_status()
-
     Case.objects.update_or_create(external_id=case['uuid'], defaults={
         '_signal': signal
     })
 
+    # Trigger async job to set current status of Signal
+    app.send_task('signals.apps.zgw.tasks.update_status', args=[signal.status.pk])
+
 
 @app.task(autoretry_for=AUTORETRY_FOR, max_retries=MAX_RETRIES, default_retry_delay=DEFAULT_RETRY_DELAY)
-def update_status(signal_id):
-    signal = Signal.objects.get(pk=signal_id)
-
-    if signal.status.state != AFGEHANDELD and signal.status.state != HEROPEND:
-        return # We only update afgehandeld and heropend
+def update_status(status_id):
+    status = Status.objects.get(pk=status_id)
+    signal = status._signal
 
     if not hasattr(signal, 'zgw_case'):
         return  # this Signal is not registered in an external case management system
 
+    zgw_states = {
+        GEMELD: settings.ZGW_STATUS_RECEIVED,
+        HEROPEND: settings.ZGW_STATUS_RECEIVED,
+        AFGEHANDELD: settings.ZGW_STATUS_DONE,
+        GEANNULEERD: settings.ZGW_STATUS_DONE
+    }
+
     data = {
         'zaak': signal.zgw_case.external_id,
-        'statustype': settings.ZGW_STATUS_DONE if signal.status.state == AFGEHANDELD else settings.ZGW_STATUS_RECEIVED,
-        'datumStatusGezet': localtime(signal.updated_at).strftime('%Y-%m-%d')
+        'statustype': zgw_states[status.state],
+        'datumStatusGezet': localtime(status.created_at).strftime('%Y-%m-%d')
     }
 
     url = urljoin(settings.ZGW_API_URL, '/zgw/statussen')
