@@ -30,13 +30,13 @@ class SignalAttachmentSerializerMixin:
 
         # save our attachment
         attachment = Signal.actions.add_attachment(validated_data['file'], signal)
-        if user:
+        if user.is_authenticated:
             attachment.created_by = user.email
             attachment.save()
 
         # add a note that an attachment (currently only images allowed) was uploaded
         filename = os.path.basename(attachment.file.name)
-        if user:
+        if user.is_authenticated:
             Signal.actions.create_note({'text': f'Bijlage toegevoegd: {filename}', 'created_by': user}, signal)
         else:
             Signal.actions.create_note({'text': f'Bijlage toegevoegd door melder: {filename}'}, signal)
