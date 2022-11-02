@@ -32,6 +32,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             'extra_properties',
             'send_email',
             'created_at',
+            'email_override',
         )
         read_only_fields = (
             'created_at',
@@ -88,9 +89,8 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
         Validate all info for DOORZETTEN_NAAR_EXTERN flow is present.
         """
         if attrs['state'] == workflow.DOORZETTEN_NAAR_EXTERN:  # ps-261
-            signal = self.context['view'].get_object()
-            if not (signal.status.email_override and signal.status.send_mail and signal.status.text):
-                msg = 'email_override, send_mail, and text must all be set for DOORZETTEN_NAAR_EXTERN flow'
+            if not (attrs['email_override'] and attrs['send_email'] and attrs['text']):
+                msg = 'email_override, send_email, and text must all be set for DOORZETTEN_NAAR_EXTERN flow'
                 raise ValidationError({'text': msg})
 
 

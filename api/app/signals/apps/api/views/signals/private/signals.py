@@ -258,8 +258,9 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         status = post_serializer.validated_data.pop('status', None)
         text = post_serializer.validated_data.pop('text', None)
+        email_override = post_serializer.validated_data.pop('email_override', None)
 
-        status_data = {'state': status, 'text': text, 'send_email': True}
+        status_data = {'state': status, 'text': text, 'send_email': True, 'email_override': email_override}
         subject, _, html_message = trigger_mail_action_for_email_preview(signal, status_data)
 
         context = self.get_serializer_context()

@@ -27,3 +27,4 @@ class EmailPreviewSerializer(serializers.Serializer):
 class EmailPreviewPostSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=STATUS_CHOICES, required=True)
     text = serializers.CharField(max_length=3000, required=False)
+    email_override = serializers.EmailField(required=False, default=None)
