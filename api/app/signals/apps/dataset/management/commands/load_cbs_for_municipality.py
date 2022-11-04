@@ -21,9 +21,9 @@ from signals.apps.signals.models import Area, AreaType
 
 REQUIRED_DATASETS = {
     # Dataset names must match those defined in signals.apps.dataset.sources.cbs
-    'CBS_MUNICIPAL_BORDERS_DATASET': 'cbs-gemeente-2021',
-    'CBS_WIJK_DATASET': 'cbs-wijk-2021',
-    'CBS_BUURT_DATASET': 'cbs-buurt-2021',
+    'CBS_MUNICIPAL_BORDERS_DATASET': 'cbs-gemeente-2022',
+    'CBS_WIJK_DATASET': 'cbs-wijk-2022',
+    'CBS_BUURT_DATASET': 'cbs-buurt-2022',
 }
 
 
