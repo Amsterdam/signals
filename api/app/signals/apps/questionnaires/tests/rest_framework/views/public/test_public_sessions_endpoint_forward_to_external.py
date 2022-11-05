@@ -216,6 +216,8 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         Retrieve outstanding session and provide an answer and upload a photo.
         """
         patched_get_url.return_value = '/some/url/'
+        n_attachments = self.signal.attachments.count()
+        self.assertEqual(n_attachments, 0)
 
         # retrieve session
         with freeze_time(self.t_answer_in_time):
@@ -242,11 +244,12 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         response_json = response.json()
         self.assertJsonSchema(self.session_detail_schema, response.json())
 
-        # answer photo question
+        # answer photo question with single uploaded file
         suf = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
-        answer_payload = {'question_uuid': question2['uuid'], 'file': suf}  # single uploaded file at a time
+        answer_payload = {'question_uuid': question2['uuid'], 'file': suf}
 
         with freeze_time(self.t_answer_in_time):
+            # Session attachments endpoint accepts only multipart encoded requests.
             response = self.client.post(attachments_url, data=answer_payload)
         self.assertEqual(response.status_code, 201)
         response_json = response.json()
@@ -261,7 +264,87 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         response_json = response.json()
         self.assertJsonSchema(self.session_detail_schema, response.json())
-        self.assertEqual(Attachment.objects.count(), 1)  # uploaded image was converted to Attachment
+
+        # Check that attachments were uploaded and correctly processed
+        self.signal.refresh_from_db()
+        self.assertEqual(Attachment.objects.count(), n_attachments + 1)  # uploaded image was converted to Attachment
+        self.assertEqual(self.signal.attachments.count(), 1)  # uploaded image was attached to correct signals
+
+        att = Attachment.objects.first()
+        self.assertEqual(att._signal, self.signal)  # image attached to correct Signal instance
+        self.assertEqual(att.created_by, self.session.status.email_override)  # image correctly attributed
+
+        # re-requesting session endpoint will fail with HTTP 410 Gone error
+        with freeze_time(self.t_answer_in_time + timedelta(seconds=10)):
+            response = self.client.get(self.session_url)
+        self.assertEqual(response.status_code, 410)
+        response_json = response.json()
+        self.assertEqual(response_json['detail'], 'Already used!')
+
+        # TODO: add support for thank-you message
+
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+           autospec=True)
+    def test_retrieve_and_fill_out_multiple_uploaded_files(self, patched_get_url):
+        """
+        Retrieve outstanding session and provide an answer and upload a photo.
+        """
+        patched_get_url.return_value = '/some/url/'
+        n_attachments = self.signal.attachments.count()
+        self.assertEqual(self.signal.attachments.count(), 0)
+
+        # retrieve session
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # access questions
+        answers_url = response_json['_links']['sia:post-answers']['href']
+        self.assertEqual(len(response_json['path_questions']), 2)
+        question1 = response_json['path_questions'][0]
+        self.assertEqual(question1['analysis_key'], 'reaction')
+        question2 = response_json['path_questions'][1]
+        self.assertEqual(question2['analysis_key'], 'photo_reaction')
+        attachments_url = response_json['_links']['sia:post-attachments']['href']
+
+        # answer text question
+        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(answers_url, data=answer_payloads, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # answer photo question
+        suf = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        suf2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        suf2.name = 'test.gif'
+        answer_payload = {'question_uuid': question2['uuid'], 'file': [suf, suf2]}
+
+        with freeze_time(self.t_answer_in_time):
+            # Session attachments endpoint accepts only multipart encoded requests.
+            response = self.client.post(attachments_url, data=answer_payload)
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # freeze session
+        self.assertEqual(Attachment.objects.count(), 0)
+        self.assertEqual(response_json['can_freeze'], True)
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(self.submit_url)
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # Check that attachments were uploaded and correctly processed
+        self.signal.refresh_from_db()
+        self.assertEqual(Attachment.objects.count(), n_attachments + 2)  # uploaded images were converted to Attachment
+        self.assertEqual(self.signal.attachments.count(), 2)  # uploaded images were attached to correct signals
+
         att = Attachment.objects.first()
         self.assertEqual(att._signal, self.signal)  # image attached to correct Signal instance
         self.assertEqual(att.created_by, self.session.status.email_override)  # image correctly attributed

@@ -103,6 +103,7 @@ def create_session_for_forward_to_external(signal):
             short_label="Foto's toevoegen",
             label='Voeg een foto toe om de situatie te verduidelijken.',
             analysis_key='photo_reaction',
+            multiple_answers_allowed=True,
         )
 
         graph = QuestionGraph.objects.create(first_question=first_question)
@@ -233,14 +234,18 @@ class ForwardToExternalSessionService(SessionService):
         photo_answer = self.answers_by_analysis_key.get('photo_reaction', None)
         if not photo_answer:
             return
-        file_path = photo_answer.payload['file_path']
-        with default_storage.open(file_path) as f:
-            cf = ContentFile(f.read())
-            cf.name = os.path.basename(file_path)
 
-        signal = self.session._signal
-        email_override = self.session.status.email_override
-        Attachment.objects.create(_signal=signal, file=cf, created_by=email_override)
+        assert isinstance(photo_answer.payload, list)
+
+        for attachment_payload in photo_answer.payload:
+            file_path = attachment_payload['file_path']
+            with default_storage.open(file_path) as f:
+                cf = ContentFile(f.read())
+                cf.name = os.path.basename(file_path)
+
+            signal = self.session._signal
+            email_override = self.session.status.email_override
+            Attachment.objects.create(_signal=signal, file=cf, created_by=email_override)
 
     def freeze(self, refresh=True):
         """

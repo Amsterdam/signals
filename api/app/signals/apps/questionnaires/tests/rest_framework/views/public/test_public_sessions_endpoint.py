@@ -304,7 +304,7 @@ class TestPublicSessionEndpointAnswerAttachmentFlow(ValidateJsonSchemaMixin, API
         #    q2 <- second question (Image)
         self.q1 = QuestionFactory.create(analysis_key='q1', label='q1', short_label='q1', required=True)
         self.q2 = QuestionFactory.create(analysis_key='q2', label='q2', short_label='q2', field_type='image',
-                                         required=True)
+                                         required=True, multiple_answers_allowed=False)
         graph = QuestionGraphFactory.create(name='testgraph', first_question=self.q1)
         EdgeFactory.create(graph=graph, question=self.q1, next_question=self.q2)
 
@@ -379,6 +379,35 @@ class TestPublicSessionEndpointAnswerAttachmentFlow(ValidateJsonSchemaMixin, API
         """
         image = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
         answer_data = {'question_uuid': str(self.q2.uuid), 'file': image}
+        response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/attachments', data=answer_data)
+        self.assertEqual(response.status_code, 201)
+        response_json = response.json()
+
+        self.assertIn('path_questions', response_json)
+        self.assertEqual(len(response_json['path_questions']), 2)
+        self.assertIn('path_answered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_answered_question_uuids']), 1)
+        self.assertIn(str(self.q2.uuid), response_json['path_answered_question_uuids'])
+        self.assertIn('path_unanswered_question_uuids', response_json)
+        self.assertEqual(len(response_json['path_unanswered_question_uuids']), 1)
+        self.assertIn('path_validation_errors_by_uuid', response_json)
+        self.assertEqual(len(response_json['path_validation_errors_by_uuid']), 0)
+        self.assertIn('can_freeze', response_json)
+        self.assertEqual(response_json['can_freeze'], False)
+
+    def test_answer_question_q2_multiple_images_correctly(self):
+        """
+        q2 is an Image question which we modify to have multiple_answers_allowed=True
+        """
+        # modify image question to allow multiple uploads
+        self.q2.multiple_answers_allowed = True
+        self.q2.save()
+
+        # upload multiple images
+        image_1 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+        image_2 = SimpleUploadedFile('image.gif', small_gif, content_type='image/gif')
+
+        answer_data = {'question_uuid': str(self.q2.uuid), 'file': [image_1, image_2]}
         response = self.client.post(f'{self.base_endpoint}{self.session.uuid}/attachments', data=answer_data)
         self.assertEqual(response.status_code, 201)
         response_json = response.json()
