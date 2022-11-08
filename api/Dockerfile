@@ -24,7 +24,6 @@ ENV DJANGO_SETTINGS_MODULE=signals.settings
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 
 COPY app /app/
-COPY deploy /deploy/
 
 RUN chgrp datapunt /app && chmod g+w /app
 
