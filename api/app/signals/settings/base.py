@@ -231,6 +231,11 @@ elif SWIFT_STORAGE_ENABLED:
         }
     }
 
+# Save files using system's standard umask. This is required for network mounts like
+# Azure Files as they do not implement a full-fledged permission system.
+# See https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FILE_UPLOAD_PERMISSIONS
+FILE_UPLOAD_PERMISSIONS = None
+
 # Object store - Datawarehouse (DWH)
 DWH_MEDIA_ROOT = os.getenv('DWH_MEDIA_ROOT')
 
