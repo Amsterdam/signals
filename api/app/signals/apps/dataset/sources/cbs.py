@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Gemeente Amsterdam
 from signals.apps.dataset.sources.shape import ShapeBoundariesLoader
 from signals.apps.signals.models import AreaType
 
@@ -8,23 +8,23 @@ class CBSBoundariesLoader(ShapeBoundariesLoader):
     """
     Load municipal (and neigbhorhood) boundaries as SIA Area instances.
     """
-    DATASET_URL = 'https://www.cbs.nl/-/media/cbs/dossiers/nederland-regionaal/wijk-en-buurtstatistieken/wijkbuurtkaart_2021_v1.zip'  # noqa
+    DATASET_URL = 'https://www.cbs.nl/-/media/cbs/dossiers/nederland-regionaal/wijk-en-buurtstatistieken/wijkbuurtkaart_2022_v1.zip'  # noqa
     # Unfortunately, these filenames are not uniformly named over the years,
     # so a hard-coded mapping is provided for the most recent data file (as of
     # this writing early 2022).
     DATASET_INFO = {
-        'cbs-gemeente-2021': {
-            'shp_file': 'WijkBuurtkaart_2021_v1/gemeente_2021_v1.shp',
+        'cbs-gemeente-2022': {
+            'shp_file': 'WijkBuurtkaart_2022_v1/gemeente_2022_v1.shp',
             'code_field': 'GM_CODE',
             'name_field': 'GM_NAAM',
         },
-        'cbs-wijk-2021': {
-            'shp_file': 'WijkBuurtkaart_2021_v1/wijk_2021_v1.shp',
+        'cbs-wijk-2022': {
+            'shp_file': 'WijkBuurtkaart_2022_v1/wijk_2022_v1.shp',
             'code_field': 'WK_CODE',
             'name_field': 'WK_NAAM',
         },
-        'cbs-buurt-2021': {
-            'shp_file': 'WijkBuurtkaart_2021_v1/buurt_2021_v1.shp',
+        'cbs-buurt-2022': {
+            'shp_file': 'WijkBuurtkaart_2022_v1/buurt_2022_v1.shp',
             'code_field': 'BU_CODE',
             'name_field': 'BU_NAAM',
         }
