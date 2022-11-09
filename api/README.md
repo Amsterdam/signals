@@ -36,15 +36,15 @@ override this, if needed, in the other specific settings files (e.g. `testing`, 
 Current available settings:
 
 - `base`      -> Used for Acceptance/Production instances
-- `testing`   -> Used for Jenkins test pipeline and testing with `tox`
+- `testing`   -> Used for the Github Actions test pipeline and testing with `tox`
 - `local`     -> Used for Local Docker instances.
                  Override settings in `local` for local usage (not tracked in Git)
 
 Tox usage
 =========
 
-You can use tox to run all QA tests with one command. This is also used by Jenkins to run the 
-`Test` pipeline. Tox is directly available in the Docker container. 
+You can use tox to run all QA tests with one command. This is also used by the Github actions 
+to run the `Test` pipeline. Tox is directly available in the Docker container. 
 
 Tox runs:
 - unit tests (with `pytest`)
