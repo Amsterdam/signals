@@ -23,8 +23,6 @@ class SIABasePermission(BasePermission):
         return self.perms_map[method]
 
     def has_permission(self, request, *args, **kwargs):
-        if not request.user:
-            return False
         permissions = self.get_required_permissions(method=request.method)
         return SignalPermissionService.has_permissions(request.user, permissions)
 

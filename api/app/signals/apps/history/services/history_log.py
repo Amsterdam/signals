@@ -14,7 +14,7 @@ class HistoryLogService:
 
         changed_data = instance.changed_data()
         if changed_data:
-            if user:
+            if user.is_authenticated:
                 created_by = user.username
             else:
                 created_by = None
