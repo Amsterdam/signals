@@ -22,7 +22,6 @@ services:
       - docker-compose/environments/.api
     volumes:
       - ./api/app:/app
-      - ./api/deploy:/deploy
       - ./dwh_media:/dwh_media
       - ./docker-compose/scripts/initialize.sh:/initialize.sh
     command:
@@ -43,7 +42,6 @@ services:
       - docker-compose/environments/.celery
     volumes:
       - ./api/app:/app
-      - ./api/deploy:/deploy
     command: celery -A signals worker -l debug
 
   celery_beat:
@@ -63,7 +61,6 @@ services:
       - docker-compose/environments/.celery_beat
     volumes:
       - ./api/app:/app
-      - ./api/deploy:/deploy
     command: celery -A signals beat -l debug --pidfile /tmp/celerybeat.pid
 
   mailhog:
