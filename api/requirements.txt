@@ -20,7 +20,7 @@ click-repl==0.2.0
 coreapi==2.3.3
 coreschema==0.0.4
 coverage==6.4.2
-cryptography==37.0.4
+cryptography==38.0.3
 cssselect2==0.6.0
 cycler==0.11.0
 datapunt-authorization-django==1.3.2
