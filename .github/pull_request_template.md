@@ -8,8 +8,8 @@ Add a meaningful description explaining the change/fix that is provided in this 
 - [ ] The commit messages are meaningful and descriptive
 - [ ] The change/fix is well documented, particularly in hard-to-understand areas of the code / unit tests
 - [ ] Are there any breaking changes in the code, if so are they discussed and did the team agreed to these changes
-- [ ] Check that the branch is based on `master` and is up to date with `master`
-- [ ] Check that the PR targets `master`
+- [ ] Check that the branch is based on `main` and is up to date with `main`
+- [ ] Check that the PR targets `main`
 - [ ] There are no merge conflicts and no conflicting Django migrations
 - [ ] PR was created with the "[Allow edits and access to secrets by maintainers](https://docs.github.com/en/enterprise-server@3.2/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork)" checkbox checked
 
