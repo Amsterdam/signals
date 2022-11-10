@@ -2,10 +2,10 @@ name: Build Docker image and optionally push to GitHub container registry
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
     tags: [ '*.*.*' ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 env:
   # Use docker.io for Docker Hub if empty
