@@ -6,7 +6,6 @@ from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.fieldtypes import field_type_choices, get_field_type_class
 from signals.apps.questionnaires.managers import QuestionManager
-from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 
 
 class Question(models.Model):
@@ -65,10 +64,6 @@ class Question(models.Model):
     # Extra properties needed for the question
     # For example the field_type selected_object has a property that stores the source URL of the objects
     extra_properties = models.JSONField(blank=True, null=True)
-
-    # Explanation comprises zero or more sections of text + (optional) images.
-    # This allows extra information to be shown to users.
-    explanation = models.ForeignKey(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     objects = QuestionManager()
 

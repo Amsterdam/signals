@@ -492,15 +492,8 @@ class TestQuestion(TestCase):
 
 class TestQuestionModel(TestCase):
     def setUp(self):
-        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
-        self.illustrated_text = illustrated_text
-        self.section_1 = section_1
-        self.section_2 = section_2
-        self.attached_file_1 = attached_file_1
-        self.attached_file_2 = attached_file_2
-
         # We set this to the default because it is normally overwritten by QuestionFactory:
-        self.question = QuestionFactory.create(analysis_key='PLACEHOLDER', explanation=illustrated_text)
+        self.question = QuestionFactory.create(analysis_key='PLACEHOLDER')
 
     def test_analysis_key_default(self):
         # We cannot test this using the QuestionFactory because it overwrites
@@ -511,29 +504,6 @@ class TestQuestionModel(TestCase):
             field_type='plain_text'
         )
         self.assertEqual(q.analysis_key, f'PLACEHOLDER-{str(q.uuid)}')
-
-    def test_question_explanation(self):
-        self.assertEqual(self.question.explanation, self.illustrated_text)
-        self.assertEqual(list(self.question.explanation.sections.all()), [self.section_1, self.section_2])
-        self.assertEqual(
-            list(self.question.explanation.sections.first().files.all()), [self.attached_file_1])
-        self.assertEqual(
-            list(self.question.explanation.sections.last().files.all()), [self.attached_file_2])
-
-        self.assertEqual(StoredFile.objects.count(), 1)
-        stored_file = StoredFile.objects.first()
-        self.assertEqual(set(stored_file.attached_files.all()), set([self.attached_file_1, self.attached_file_2]))
-        self.assertEqual(self.question.explanation.sections.first().files.first().stored_file, stored_file)
-        self.assertEqual(self.question.explanation.sections.last().files.first().stored_file, stored_file)
-
-    def test_question_explanation_section_order(self):
-        # sections of text in an explanation can be reordered
-        order = self.question.explanation.get_attachedsection_order()
-        self.assertEqual(list(order), [self.section_1.id, self.section_2.id])
-
-        self.question.explanation.set_attachedsection_order([self.section_2.id, self.section_1.id])
-        order = self.question.explanation.get_attachedsection_order()
-        self.assertEqual(list(order), [self.section_2.id, self.section_1.id])
 
 
 class TestQuestionnaireModel(TestCase):

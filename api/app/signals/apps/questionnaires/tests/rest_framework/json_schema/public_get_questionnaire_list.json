@@ -233,16 +233,6 @@
 										},
 										"required": {
 											"type": "boolean"
-										},
-										"explanation": {
-											"anyOf": [
-												{
-													"type": "null"
-												},
-												{
-													"type": "object"
-												}
-											]
 										}
 									},
 									"required": [
@@ -256,8 +246,7 @@
 										"short_label",
 										"field_type",
 										"next_rules",
-										"required",
-										"explanation"
+										"required"
 									],
 									"additionalProperties": false
 								},

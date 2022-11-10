@@ -461,37 +461,6 @@ components:
         required:
           type: boolean
           example: false
-        explanation:
-          description: Explanatory text and images to be shown for a question.
-          type: object
-          properties:
-            title:
-              description: Title for the explanatory text.
-              type: string
-            sections:
-              description: Section of text with header and optional images.
-              type: array
-              items:
-                type: object
-                properties:
-                  header:
-                    description: Section header.
-                    type: string
-                  text:
-                    description: Body text for section.
-                    type: string
-                  files:
-                    description: Optional files (images).
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        description:
-                          description: File (image) description.
-                          type: string
-                        file:
-                          description: File (image) location.
-                          type: string
 
     PublicAnswerQuestion:
       type: object

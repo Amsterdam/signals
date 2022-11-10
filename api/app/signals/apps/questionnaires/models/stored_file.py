@@ -12,7 +12,7 @@ class StoredFile(models.Model):
     # This model exists to allow deduplication of images that are used in
     # potentially a large number of questionnaires.
     file = models.FileField(
-        upload_to='questionnaires/%Y/%m/%d/',
+        upload_to='attachments/questionnaires/stored_files/%Y/%m/%d/',
         null=False,
         blank=False,
         max_length=255

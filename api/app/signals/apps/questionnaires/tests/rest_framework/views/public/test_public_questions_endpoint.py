@@ -18,9 +18,7 @@ from signals.apps.questionnaires.factories import (
     SessionFactory
 )
 from signals.apps.questionnaires.models import Answer, Session
-from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
-from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -61,19 +59,6 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
             os.path.join(THIS_DIR, '../../json_schema/public_post_question_answer_response.json')
         )
 
-        # set up explanatory text + images
-        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
-        self.illustrated_text = illustrated_text
-        self.section_1 = section_1
-        self.section_2 = section_2
-        self.attached_file_1 = attached_file_1
-        self.attached_file_2 = attached_file_2
-        self.explanation = illustrated_text
-        self.explanation = IllustratedText.objects.create(title='Questionnaire title')
-
-        self.question.explanation = self.explanation
-        self.question.save()
-
     def test_question_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
@@ -83,8 +68,6 @@ class TestPublicQuestionEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertJsonSchema(self.detail_schema, response.json())
-        response_json = response.json()
-        self.assertIn('explanation', response_json)
 
     def test_question_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})

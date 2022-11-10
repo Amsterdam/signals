@@ -24,7 +24,13 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('file', models.FileField(max_length=255, upload_to='questionnaires/%Y/%m/%d/')),
+                (
+                    'file',
+                    models.FileField(
+                        max_length=255,
+                        upload_to='attachments/questionnaires/stored_files/%Y/%m/%d/'
+                    )
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -70,17 +76,6 @@ class Migration(migrations.Migration):
                     )
                 ),
             ],
-        ),
-        migrations.AddField(
-            model_name='question',
-            name='explanation',
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name='+',
-                to='questionnaires.illustratedtext'
-            ),
         ),
         migrations.AddField(
             model_name='questionnaire',
