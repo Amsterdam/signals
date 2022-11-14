@@ -83,11 +83,13 @@ def create_session_for_forward_to_external(signal):
             illustrated_text=ilt,
         )
         section2 = AttachedSection.objects.create(header='Omschrijving', text=signal.status.text, illustrated_text=ilt)
-        ilt.set_attachedsection_order([section1.id, section2.id])
 
         if signal.attachments.exists():
-            photo_section = AttachedSection.object.create(header="Foto's", illustrated_text=ilt, order=3)
+            photo_section = AttachedSection.objects.create(header="Foto's", illustrated_text=ilt)
             _copy_attachments_to_attached_files(signal, photo_section)
+            ilt.set_attachedsection_order([section1.id, section2.id, photo_section.id])
+        else:
+            ilt.set_attachedsection_order([section1.id, section2.id])
 
         first_question = Question.objects.create(
             required=True,

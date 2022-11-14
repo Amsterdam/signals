@@ -83,7 +83,7 @@ class ActionTestMixin:
         EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL,
                                      title='Uw melding {{ formatted_signal_id }}'
                                            f' {EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL}',
-                                     body='{{ text }} {{ forward_to_external_url }}'
+                                     body='{{ text }} {{ reaction_url }}'
                                           '{{ ORGANIZATION_NAME }}')
 
     def test_send_email(self):
