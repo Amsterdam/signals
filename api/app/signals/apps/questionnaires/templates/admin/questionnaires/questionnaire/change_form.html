@@ -10,5 +10,28 @@
 {% block extrahead %}{{ block.super }}
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
-    <script>mermaid.initialize({startOnLoad:true});</script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script>
+        mermaid.initialize({startOnLoad:true});
+        $(function(){
+            var edgesCount = $("[class^='inline-related']").length
+
+            for(var i = 0; i < edgesCount; i++) {
+
+            $("select#id_questionnaires-edge-" + i + "-question").change(function(){
+                // todo: create endpoint that retrieves choices for the selected question
+              $.getJSON("/endpoint/",{id: $(this).val(), view: 'json'}, function(j) {
+                var options = '<option value="">--------&nbsp;</option>';
+                for (var i = 0; i < j.length; i++) {
+                  options += '<option value="' + j[i].optionValue + '">' + j[i].optionDisplay + '</option>';
+                }
+                $("#id_questionnaires-edge-"+i+"-choice").html(options);
+                $("#id_questionnaires-edge-"+i+"-choice option:first").attr('selected', 'selected');
+              })
+              $("#id_category").attr('selected', 'selected');
+            })
+
+          }
+        })
+    </script>
 {% endblock %}
