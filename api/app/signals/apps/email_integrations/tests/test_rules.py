@@ -346,7 +346,7 @@ class TestSignalOptionalRule(TestCase):
             workflow.VERZONDEN,
             workflow.VERZENDEN_MISLUKT,
             workflow.AFGEHANDELD_EXTERN,
-            workflow.DOORZETTEN_NAAR_EXTERN,
+            workflow.DOORGEZET_NAAR_EXTERN,
         ]
 
         for state in statuses:
@@ -359,7 +359,7 @@ class TestSignalOptionalRule(TestCase):
 
 class TestForwardToExternalRule(TestCase):
     rule = ForwardToExternalRule()
-    state = workflow.DOORZETTEN_NAAR_EXTERN
+    state = workflow.DOORGEZET_NAAR_EXTERN
     email_override = 'a@example.com'
     send_email = True
 
@@ -394,7 +394,7 @@ class TestForwardToExternalRule(TestCase):
         self.assertTrue(self.rule(signal))
 
     def test_apply_for_parent_signals(self):
-        # we do not restrict the DOORZETTEN_NAAR_EXTERN flow to parent or child signals, we check parent signals here
+        # we do not restrict the DOORGEZET_NAAR_EXTERN flow to parent or child signals, we check parent signals here
         parent_signal = SignalFactory.create(status__state=self.state,
                                              status__text='STATUS_TEXT',
                                              status__send_email=self.send_email,
@@ -408,7 +408,7 @@ class TestForwardToExternalRule(TestCase):
         self.assertTrue(self.rule(parent_signal))
 
     def test_apply_for_child_signals(self):
-        # we do not restrict the DOORZETTEN_NAAR_EXTERN flow to parent or child signals, we check child signals here
+        # we do not restrict the DOORGEZET_NAAR_EXTERN flow to parent or child signals, we check child signals here
         parent_signal = SignalFactory.create(status__state=self.state,
                                              status__text='STATUS_TEXT',
                                              status__send_email=self.send_email,

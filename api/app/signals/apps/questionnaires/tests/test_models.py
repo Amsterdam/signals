@@ -562,7 +562,7 @@ class TestSession(TestCase):
     def setUp(self):
         self.signal = SignalFactory.create(
             status__text='STATUS TEXT',
-            status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+            status__state=workflow.DOORGEZET_NAAR_EXTERN,
             status__email_override='a@example.com',
         )
 
@@ -575,7 +575,7 @@ class TestSession(TestCase):
 
         wrong_status = StatusFactory.create(
             text='STATUS TEXT',
-            state=workflow.DOORZETTEN_NAAR_EXTERN,
+            state=workflow.DOORGEZET_NAAR_EXTERN,
             email_override='a@example.com',
         )
 

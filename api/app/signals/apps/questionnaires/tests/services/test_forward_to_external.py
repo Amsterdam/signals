@@ -36,7 +36,7 @@ from signals.apps.signals.factories import (
     StatusFactory
 )
 from signals.apps.signals.models import Attachment, Note, Signal, Status
-from signals.apps.signals.workflow import DOORZETTEN_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
+from signals.apps.signals.workflow import DOORGEZET_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
 
 # TODO:
 # - test answering the photo upload question
@@ -48,7 +48,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
         self.signal = SignalFactoryValidLocation.create()
         status_text = 'Kunt u de lantaarn vervangen?'
         new_status = Status.objects.create(
-            _signal_id=self.signal.id, state=DOORZETTEN_NAAR_EXTERN, text=status_text, email_override='a@example.com')
+            _signal_id=self.signal.id, state=DOORGEZET_NAAR_EXTERN, text=status_text, email_override='a@example.com')
         self.signal.status = new_status
         self.signal.save()
 
@@ -58,7 +58,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
             create_session_for_forward_to_external(signal)
 
     def test_create_session_for_forward_to_external_email_override_none(self):
-        signal = SignalFactory.create(status__state=DOORZETTEN_NAAR_EXTERN, status__email_override=None)
+        signal = SignalFactory.create(status__state=DOORGEZET_NAAR_EXTERN, status__email_override=None)
         with self.assertRaises(MissingEmail):
             create_session_for_forward_to_external(signal)
 
@@ -95,7 +95,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
 
 class TestGetForwardToExternalUrl(TestCase):
     def test_get_forward_to_external_url(self):
-        signal = SignalFactory.create(status__state=DOORZETTEN_NAAR_EXTERN, status__email_override='a@example.com')
+        signal = SignalFactory.create(status__state=DOORGEZET_NAAR_EXTERN, status__email_override='a@example.com')
         session = create_session_for_forward_to_external(signal)
 
         url = f'{settings.FRONTEND_URL}/incident/extern/{session.uuid}'
@@ -112,7 +112,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.status_text = 'Kunt u de lantaarn vervangen?'
             new_status = Status.objects.create(
                 _signal_id=self.signal.id,
-                state=DOORZETTEN_NAAR_EXTERN,
+                state=DOORGEZET_NAAR_EXTERN,
                 text=self.status_text,
                 email_override='a@example.com')
             self.signal.status = new_status
@@ -155,13 +155,13 @@ class TestForwardToExternalSessionService(TestCase):
             with self.assertRaises(WrongFlow):
                 service.freeze()
 
-    def test_handle_frozen_session_DOORZETTEN_NAAR_EXTERN(self):
+    def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN(self):
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
         self.assertEqual(len(mail.outbox), 0)
 
         with freeze_time(self.t_session_freeze):
-            # Using knowledge that only the first question is mandatory in forward to external flow:
+            # Using knowledge that only the first question is mandatory in forwarded to external flow:
             answer = AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
             service.refresh_from_db()
 
@@ -186,8 +186,8 @@ class TestForwardToExternalSessionService(TestCase):
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
             self.assertEqual(mail.outbox[0].to, [self.session.status.email_override, ])
 
-    def test_handle_frozen_session_DOORZETTEN_NAAR_EXTERN_with_status_update(self):
-        # update status after the original DOORZETTEN_NAAR_EXTERN
+    def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN_with_status_update(self):
+        # update status after the original DOORGEZET_NAAR_EXTERN
         delta_t = timedelta((self.t_session_freeze - self.t_session_started).seconds / 2)
         with freeze_time(self.t_session_started + delta_t):
             Signal.actions.update_status({'state': GEMELD, 'text': 'test'}, self.signal)
@@ -198,7 +198,7 @@ class TestForwardToExternalSessionService(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
         with freeze_time(self.t_session_freeze):
-            # Using knowledge that only the first question is mandatory in forward to external flow:
+            # Using knowledge that only the first question is mandatory in forwarded to external flow:
             answer = AnswerFactory(session=self.session, payload='Lantaarn is gefixt!')
             service.refresh_from_db()
 
@@ -227,20 +227,20 @@ class TestForwardToExternalSessionService(TestCase):
 
 
 class TestCleanUpForwardToExternal(TestCase):
-    def test_clean_up_forward_to_external_from_DOORZETTEN_NAAR_EXTERN(self):
+    def test_clean_up_forward_to_external_from_DOORGEZET_NAAR_EXTERN(self):
         with freeze_time(now() - timedelta(days=2 * FORWARD_TO_EXTERNAL_DAYS_OPEN)):
-            # Five signals that were in state DOORZETTEN_NAAR_EXTERN and too old to
+            # Five signals that were in state DOORGEZET_NAAR_EXTERN and too old to
             # still receive an update.
             signals = SignalFactory.create_batch(
-                5, status__state=DOORZETTEN_NAAR_EXTERN, status__email_override='a@example.com')
+                5, status__state=DOORGEZET_NAAR_EXTERN, status__email_override='a@example.com')
             for signal in signals:
                 create_session_for_forward_to_external(signal)
 
         with freeze_time(now() - timedelta(days=FORWARD_TO_EXTERNAL_DAYS_OPEN // 2)):
-            # Five signals that were in state DOORZETTEN_NAAR_EXTERN and may still
+            # Five signals that were in state DOORGEZET_NAAR_EXTERN and may still
             # get an update.
             SignalFactory.create_batch(
-                5, status__state=DOORZETTEN_NAAR_EXTERN, status__email_override='a@example.com')
+                5, status__state=DOORGEZET_NAAR_EXTERN, status__email_override='a@example.com')
             for signal in signals:
                 create_session_for_forward_to_external(signal)
 
@@ -248,7 +248,7 @@ class TestCleanUpForwardToExternal(TestCase):
         n_updated = clean_up_forward_to_external()
 
         self.assertEqual(n_updated, 5)
-        closed = Signal.objects.filter(status__state=DOORZETTEN_NAAR_EXTERN)
+        closed = Signal.objects.filter(status__state=DOORGEZET_NAAR_EXTERN)
         still_open = Signal.objects.filter(status__state=VERZOEK_TOT_AFHANDELING)
 
         self.assertEqual(closed.count(), 5)
@@ -257,20 +257,20 @@ class TestCleanUpForwardToExternal(TestCase):
         self.assertEqual(Session.objects.count(), 10)
         self.assertEqual(Session.objects.filter(invalidated=True).count(), 5)
 
-    def test_clean_up_forward_to_external_not_from_DOORZETTEN_NAAR_EXTERN(self):
+    def test_clean_up_forward_to_external_not_from_DOORGEZET_NAAR_EXTERN(self):
         with freeze_time(now() - timedelta(days=2 * FORWARD_TO_EXTERNAL_DAYS_OPEN)):
-            # Five signals that were in state DOORZETTEN_NAAR_EXTERN and too old to
+            # Five signals that were in state DOORGEZET_NAAR_EXTERN and too old to
             # still receive an update.
-            signal = SignalFactory.create(status__state=DOORZETTEN_NAAR_EXTERN, status__email_override='a@example.com')
+            signal = SignalFactory.create(status__state=DOORGEZET_NAAR_EXTERN, status__email_override='a@example.com')
             create_session_for_forward_to_external(signal)
             new_status = StatusFactory.create(_signal=signal)
             signal.status = new_status
             signal.save()
 
         with freeze_time(now() - timedelta(days=FORWARD_TO_EXTERNAL_DAYS_OPEN // 2)):
-            # Five signals that were in state DOORZETTEN_NAAR_EXTERN and may still
+            # Five signals that were in state DOORGEZET_NAAR_EXTERN and may still
             # get an update.
-            signal = SignalFactory.create(status__state=DOORZETTEN_NAAR_EXTERN, status__email_override='a@example.com')
+            signal = SignalFactory.create(status__state=DOORGEZET_NAAR_EXTERN, status__email_override='a@example.com')
             create_session_for_forward_to_external(signal)
             new_status = StatusFactory.create(_signal=signal)
             signal.status = new_status
@@ -289,7 +289,7 @@ class TestCleanUpForwardToExternal(TestCase):
 class TestCopyAttachmentsToAttachedFiles(TestCase):
     def setUp(self):
         self.signal = SignalFactoryWithImage.create(
-            status__state=DOORZETTEN_NAAR_EXTERN,
+            status__state=DOORGEZET_NAAR_EXTERN,
             status__send_email=True,
             status__email_override='external@example.com')
         self.illustrated_text = IllustratedText.objects.create(title='Title')

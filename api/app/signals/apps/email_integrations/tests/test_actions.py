@@ -850,7 +850,7 @@ class TestSignalOptionalAction(TestCase):
 
 
 class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
-    state = workflow.DOORZETTEN_NAAR_EXTERN
+    state = workflow.DOORGEZET_NAAR_EXTERN
     action = SignalForwardToExternalAction()
     send_email = True
 
@@ -968,7 +968,7 @@ class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
         self.assertEqual(Session.objects.count(), 0)
         status_text = FuzzyText(length=400)
 
-        signal = SignalFactory.create(status__state=workflow.DOORZETTEN_NAAR_EXTERN, status__send_email=True,
+        signal = SignalFactory.create(status__state=workflow.DOORGEZET_NAAR_EXTERN, status__send_email=True,
                                       status__email_override='a@example.com', status__text=status_text)
         context = self.action.get_additional_context(signal)
 
@@ -1113,7 +1113,7 @@ class TestSignalSystemActions(TestCase):
         action = MailService._system_actions.get('forward_to_external_reaction_received')()
 
         signal = SignalFactory.create(
-            status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+            status__state=workflow.DOORGEZET_NAAR_EXTERN,
             reporter__email='reporter@example.com',
             status__send_email=True,
             status__email_override='external@example.com')
@@ -1128,7 +1128,7 @@ class TestSignalSystemActions(TestCase):
         action = MailService._system_actions.get('forward_to_external_reaction_received')()
 
         signal = SignalFactory.create(
-            status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+            status__state=workflow.DOORGEZET_NAAR_EXTERN,
             reporter__email='reporter@example.com',
             status__send_email=True,
             status__email_override='external@example.com')

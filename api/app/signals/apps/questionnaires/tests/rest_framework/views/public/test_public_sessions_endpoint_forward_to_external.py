@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 """
-Test the forward to external flow at REST API level.
+Test the forwarded to external flow at REST API level.
 """
 import os
 import uuid
@@ -79,7 +79,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         with freeze_time(self.t_creation):
             self.signal = SignalFactory.create(
                 created_at=self.t_creation,
-                status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+                status__state=workflow.DOORGEZET_NAAR_EXTERN,
                 status__text='SOME QUESTION',
                 status__email_override='a@example.com'
             )
@@ -87,7 +87,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         self.assertIsInstance(self.session, Session)
         self.assertEqual(self.session.questionnaire.flow, Questionnaire.FORWARD_TO_EXTERNAL)
-        self.assertEqual(self.session._signal.status.state, workflow.DOORZETTEN_NAAR_EXTERN)
+        self.assertEqual(self.session._signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
 
         self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))  # fstring here
         self.answers_url = self.session_answers_endpoint.format(uuid=str(self.session.uuid))
@@ -157,7 +157,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
            autospec=True)
     def test_retrieve_session_forward_to_external_several_open(self, patched_get_url):
         """
-        Forward to external flow can have several sessions open at once, all of
+        Forwarded to external flow can have several sessions open at once, all of
         which can be retrieved.
         """
         patched_get_url.return_value = '/some/url/'
@@ -166,7 +166,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         with freeze_time(self.t_creation + timedelta(seconds=60 * 60 * 24)):
             new_status = StatusFactory.create(
                 _signal=self.signal,
-                state=workflow.DOORZETTEN_NAAR_EXTERN,
+                state=workflow.DOORGEZET_NAAR_EXTERN,
                 text='SOME SECOND QUESTION',
                 email_override='b@example.com',
             )
@@ -188,11 +188,11 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
            autospec=True)
-    def test_retrieve_session_signal_state_not_DOORZETTEN_NAAR_EXTERN(self, patched_get_url):
+    def test_retrieve_session_signal_state_not_DOORGEZET_NAAR_EXTERN(self, patched_get_url):
         """
-        Forward to external flow will not "close" open sessions when the status
+        Forwarded to external flow will not "close" open sessions when the status
         of the associated Signal changes to something other than
-        DOORZETTEN_NAAR_EXTERN.
+        DOORGEZET_NAAR_EXTERN.
         """
         patched_get_url.return_value = '/some/url/'
 
@@ -438,7 +438,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
             'email_override': 'external@example.com',
             'send_email': True,
             'text': QUESTION_FOR_EXTERNAL_PARTY,
-            'state': workflow.DOORZETTEN_NAAR_EXTERN
+            'state': workflow.DOORGEZET_NAAR_EXTERN
         }
     }
     SIGNAL_DETAIL_ENDPONT = '/signals/v1/private/signals/{signal_id}'
@@ -452,14 +452,14 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
                                      body='{{ text }} {{ reaction_url }}'
                                           '{{ ORGANIZATION_NAME }}')
 
-    def test_change_status_to_DOORZETTEN_NAAR_EXTERN_no_image(self):
+    def test_change_status_to_DOORGEZET_NAAR_EXTERNN_no_image(self):
         """
-        Trigger the DOORZETTEN_NAAR_EXTERN flow via API
+        Trigger the DOORGEZET_NAAR_EXTERN flow via API
         """
         n_sessions = Session.objects.count()
         n_questionnaires = Questionnaire.objects.count()
 
-        # Trigger DOORZETTEN_NAAR_EXTERN flow via a status update:
+        # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
         self.client.force_authenticate(user=self.superuser)
         url = self.SIGNAL_DETAIL_ENDPONT.format(signal_id=self.signal.id)
 
@@ -467,7 +467,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
             response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
         self.assertEqual(response.status_code, 200)
         self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.state, workflow.DOORZETTEN_NAAR_EXTERN)
+        self.assertEqual(self.signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
 
         # Check that we have a Questionnaire and Session
         self.assertEqual(Session.objects.count(), n_sessions + 1)
@@ -481,16 +481,16 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
         self.assertIn(reaction_url, mail.outbox[0].body)
 
-    def test_change_status_to_DOORZETTEN_NAAR_EXTERN_with_image(self):
+    def test_change_status_to_DOORGEZET_NAAR_EXTERN_with_image(self):
         """
-        Trigger the DOORZETTEN_NAAR_EXTERN flow via API for signal with attachments
+        Trigger the DOORGEZET_NAAR_EXTERN flow via API for signal with attachments
         """
         n_sessions = Session.objects.count()
         n_questionnaires = Questionnaire.objects.count()
         self.assertEqual(StoredFile.objects.count(), 0)
         attachment = self.signal_with_image.attachments.first()
 
-        # Trigger DOORZETTEN_NAAR_EXTERN flow via a status update:
+        # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
         self.client.force_authenticate(user=self.superuser)
         url = self.SIGNAL_DETAIL_ENDPONT.format(signal_id=self.signal_with_image.id)
 
@@ -498,7 +498,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
             response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
         self.assertEqual(response.status_code, 200)
         self.signal_with_image.refresh_from_db()
-        self.assertEqual(self.signal_with_image.status.state, workflow.DOORZETTEN_NAAR_EXTERN)
+        self.assertEqual(self.signal_with_image.status.state, workflow.DOORGEZET_NAAR_EXTERN)
 
         # Check that we have a Questionnaire and Session
         self.assertEqual(Session.objects.count(), n_sessions + 1)

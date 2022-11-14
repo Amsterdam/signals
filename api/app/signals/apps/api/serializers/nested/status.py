@@ -45,7 +45,7 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
         """
         self._validate_state_TE_VERZENDEN(attrs)
         self._validate_state_REACTIE_GEVRAAGD(attrs)
-        self._validate_state_DOORZETTEN_NAAR_EXTERN(attrs)
+        self._validate_state_DOORGEZET_NAAR_EXTERN(attrs)
 
         return super().validate(attrs=attrs)
 
@@ -84,13 +84,13 @@ class _NestedStatusModelSerializer(SIAModelSerializer):
             except DjangoValidationError as e:
                 raise ValidationError({'text': e.messages})
 
-    def _validate_state_DOORZETTEN_NAAR_EXTERN(self, attrs):
+    def _validate_state_DOORGEZET_NAAR_EXTERN(self, attrs):
         """
-        Validate all info for DOORZETTEN_NAAR_EXTERN flow is present.
+        Validate all info for DOORGEZET_NAAR_EXTERN flow is present.
         """
-        if attrs['state'] == workflow.DOORZETTEN_NAAR_EXTERN:  # ps-261
+        if attrs['state'] == workflow.DOORGEZET_NAAR_EXTERN:  # ps-261
             if not (attrs['email_override'] and attrs['send_email'] and attrs['text']):
-                msg = 'email_override, send_email, and text must all be set for DOORZETTEN_NAAR_EXTERN flow'
+                msg = 'email_override, send_email, and text must all be set for DOORGEZET_NAAR_EXTERN flow'
                 raise ValidationError({'text': msg})
 
 

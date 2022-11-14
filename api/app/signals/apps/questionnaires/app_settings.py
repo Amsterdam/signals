@@ -11,5 +11,5 @@ REACTION_REQUEST_DAYS_OPEN = 5
 FEEDBACK_REQUEST_DAYS_OPEN = 14
 NO_REACTION_RECEIVED_TEXT = """Geen reactie ontvangen."""
 
-# Forward to external flow settings
+# Forwarded to external flow settings
 FORWARD_TO_EXTERNAL_DAYS_OPEN = 14

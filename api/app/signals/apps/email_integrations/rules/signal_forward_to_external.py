@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
 from signals.apps.email_integrations.rules.abstract import AbstractRule
-from signals.apps.signals.workflow import DOORZETTEN_NAAR_EXTERN
+from signals.apps.signals.workflow import DOORGEZET_NAAR_EXTERN
 
 
 class ForwardToExternalRule(AbstractRule):
@@ -12,7 +12,7 @@ class ForwardToExternalRule(AbstractRule):
         """
         Run all validation
 
-        - The status state must be DOORZETTEN_NAAR_EXTERN
+        - The status state must be DOORGEZET_NAAR_EXTERN
         - The status email override must be set
 
         Note: we are not using the baseclass validate method because it hardcodes a number of checks for mails to
@@ -22,13 +22,13 @@ class ForwardToExternalRule(AbstractRule):
 
     def _validate_status(self, status):
         """
-        Validate that the status is DOORZETTEN_NAAR_EXTERN
+        Validate that the status is DOORGEZET_NAAR_EXTERN
         """
-        return status.state == DOORZETTEN_NAAR_EXTERN
+        return status.state == DOORGEZET_NAAR_EXTERN
 
     def _validate_status_email_override(self, status):
         """
-        Forward to external flow needs an email_override to be set and valid
+        Forwarded to external flow needs an email_override to be set and valid
         """
         try:
             validate_email(status.email_override)

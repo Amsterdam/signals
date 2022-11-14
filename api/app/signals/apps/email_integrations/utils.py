@@ -76,7 +76,7 @@ def create_reaction_request_and_mail_context(signal: Signal, dry_run: bool = Fal
 
 def create_forward_to_external_and_mail_context(signal: Signal, dry_run: bool = False) -> dict:
     """
-    Create question, questionnaire and prepared session for forward to external mails.
+    Create question, questionnaire and prepared session for forwarded to external mails.
     """
     if dry_run:
         return {'reaction_url': f'{settings.FRONTEND_URL}/incident/external/00000000-0000-0000-0000-000000000000'}

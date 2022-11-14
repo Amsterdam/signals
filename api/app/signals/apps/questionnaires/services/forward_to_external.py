@@ -62,14 +62,14 @@ def _copy_attachments_to_attached_files(signal, attached_section):
 
 def create_session_for_forward_to_external(signal):
     """
-    Create Question, Questionnaire, and Session for "forward to external" flow.
+    Create Question, Questionnaire, and Session for "forwarded to external" flow.
     """
-    if signal.status.state != workflow.DOORZETTEN_NAAR_EXTERN:
-        msg = f'Signal {signal.id} is not in state DOORZETTEN_NAAR_EXTERN'
+    if signal.status.state != workflow.DOORGEZET_NAAR_EXTERN:
+        msg = f'Signal {signal.id} is not in state DOORGEZET_NAAR_EXTERN'
         raise WrongState(msg)
 
     if not signal.status.email_override:
-        msg = f'Signal {signal.id} last status DOORZETTEN_NAAR_EXTERN must have non-null email_override.'
+        msg = f'Signal {signal.id} last status DOORGEZET_NAAR_EXTERN must have non-null email_override.'
         raise MissingEmail(msg)
 
     with transaction.atomic():
@@ -141,7 +141,7 @@ def clean_up_forward_to_external():
         frozen=False,
         invalidated=False,
         submit_before__lt=now(),
-        status__state=workflow.DOORZETTEN_NAAR_EXTERN,
+        status__state=workflow.DOORGEZET_NAAR_EXTERN,
     )
 
     count = 0
@@ -151,11 +151,11 @@ def clean_up_forward_to_external():
         text = f'Geen antwoord ontvangen van externe behandelaar {external_user} op vraag van {when}.'
 
         if session._signal.status.id == session.status.id:
-            # Signal is still in state DOORZETTEN_NAAR_EXTERN, we change its
+            # Signal is still in state DOORGEZET_NAAR_EXTERN, we change its
             # state with an appropriate message.
             Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': text}, session._signal)
         else:
-            # Signal is no longer in state DOORZETTEN_NAAR_EXTERN or a new
+            # Signal is no longer in state DOORGEZET_NAAR_EXTERN or a new
             # request was sent, we cannot just change the state. Instead we
             # add a note.
             Signal.actions.create_note({'text': text}, session._signal)
@@ -176,7 +176,7 @@ class ForwardToExternalSessionService(SessionService):
         # Check general access rules.
         super().is_publicly_accessible()
 
-        # Check forward to external flow specific rules
+        # Check forwarded to external flow specific rules
         signal = self.session._signal
         status = self.session.status
 

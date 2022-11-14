@@ -23,8 +23,9 @@ class Migration(migrations.Migration):
                     ('signal_status_changed_reactie_gevraagd', 'Send mail signal reaction requested'),
                     ('signal_status_changed_reactie_ontvangen', 'Send mail signal reaction requested received'),
                     ('signal_status_changed_afgehandeld_kto_negative_contact', 'Send mail signal negative KTO contact'),
-                    ('signal_forward_to_external', 'Send mail signal forward to external'),
+                    ('signal_forward_to_external', 'Send mail signal forwarded to external'),
                     ('signal_feedback_received', 'Send mail signal feedback received'),
+                    ('signal_forward_to_external_reaction_received', 'Send mail forwarded to external reaction received'),  # noqa
                     ('my_signal_token', 'Send mail when a My Signals token has been requested')
                 ],
                 db_index=True,

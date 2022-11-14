@@ -37,7 +37,7 @@ class SessionService:
             raise SessionFrozen('Already used!')
 
         # Reaction was not provided in time and therefore this session expired:
-        # Note: invalidated is set by clean-up tasks (for now only for the forward to external flow).
+        # Note: invalidated is set by clean-up tasks (for now only for the forwarded to external flow).
         if self.session.is_expired or self.session.invalidated:
             raise SessionExpired('Expired!')
 
