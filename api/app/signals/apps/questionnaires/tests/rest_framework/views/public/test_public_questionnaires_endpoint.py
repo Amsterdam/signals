@@ -48,9 +48,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_detail.json')
         )
-        self.list_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
-        )
 
         # set up explanatory text + images
         illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()

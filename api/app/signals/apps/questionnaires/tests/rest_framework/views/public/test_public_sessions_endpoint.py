@@ -62,7 +62,6 @@ class TestPublicSessionEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_session_detail(self):
         response = self.client.get(f'{self.base_endpoint}{self.session.uuid}')
         self.assertEqual(response.status_code, 200)
-
         self.assertJsonSchema(self.detail_schema, response.json())
 
     def test_session_detail_gone(self):

@@ -2,8 +2,6 @@
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 from django.db import migrations, models
 
-import signals.apps.signals.models.utils
-
 
 class Migration(migrations.Migration):
 
@@ -16,17 +14,6 @@ class Migration(migrations.Migration):
             model_name='status',
             name='email_override',
             field=models.EmailField(blank=True, default=None, max_length=254, null=True),
-        ),
-        migrations.AlterField(
-            model_name='category',
-            name='icon',
-            field=models.FileField(
-                blank=True,
-                max_length=255,
-                null=True,
-                upload_to=signals.apps.signals.models.utils.upload_category_icon_to,
-                validators=[signals.apps.signals.models.utils.validate_category_icon]
-            ),
         ),
         migrations.AlterField(
             model_name='deletedsignal',

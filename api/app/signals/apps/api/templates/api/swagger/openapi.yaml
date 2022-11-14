@@ -2199,7 +2199,12 @@ components:
         - a
         - s
         - reopened
+        - closure requested
         - ingepland
+        - reopen requested
+        - reaction requested
+        - reaction received
+        - forward to external
         - ready to send
         - sent
         - send failed
@@ -2342,6 +2347,14 @@ components:
           enum:
             - sigmax
             - null
+        email_override:
+          type: string
+          description: >-
+            Override reporter email address, only relevant for "forwarded to external" (Dutch "Doorgezet naar extern")
+            flow. This email address is used to send an email with request to an external party.
+        send_email:
+          type: boolean
+          description: Send email to reporter if true else not; subject to business rules.
         extra_properties:
           type: string
 

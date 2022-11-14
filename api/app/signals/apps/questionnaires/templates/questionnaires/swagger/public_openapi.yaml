@@ -541,6 +541,32 @@ components:
                       description: URI of the signal if available
                       type: string
                       format: uri
+                sia:post-answer:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of endpoint to use to answer questions for this session
+                      type: string
+                      format: uri
+                sia:post-attachments:
+                  type: object
+                  properties:
+                    href:
+                      description: >-
+                        URI of endpoint to post attachments to for this session. Note this endpoint only accepts
+                        multipart encoded POSTs.
+                      type: string
+                      format: uri
+                sia:post-submit:
+                  type: object
+                  properties:
+                    href:
+                      description: >-
+                        URI of endpoint that is used to freeze a session. After freezing the session is processed and
+                        further updates are no longer possible.
+                      type: string
+                      format: uri
+
         _display:
           description: Display name of the Session
           type: string
@@ -595,6 +621,40 @@ components:
                 items:
                   type: string
           minItems: 0
+        questionnaire_explanation:
+          type: object
+          nullable: true
+          properties:
+            title:
+              type: string
+              description: Title for explanatory text
+              nullable: true
+            sections:
+              type: array
+              items:
+                type: object
+                properties:
+                  header:
+                    type: string
+                    nullable: true
+                    description: Section header
+                  text:
+                    type: string
+                    nullable: true
+                    description: Section text
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        description:
+                          type: string
+                          description: Image description
+                          nullable: true
+                        file:
+                          type: string
+                          description: URI of image location
+                          nullable: false
 
     PublicSessionAnswerQuestion:
       type: object
