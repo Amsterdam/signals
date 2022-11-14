@@ -11,6 +11,9 @@ class Choice(models.Model):
     payload = models.JSONField(blank=True, null=True)
     display = models.TextField(blank=True, null=True)
 
+    def __str__(self):
+        return self.display
+
     class Meta:
         order_with_respect_to = 'question'
 
