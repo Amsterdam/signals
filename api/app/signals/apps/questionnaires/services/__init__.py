@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 
 from signals.apps.questionnaires.services.answer import AnswerService
 from signals.apps.questionnaires.services.feedback_request import FeedbackRequestSessionService
