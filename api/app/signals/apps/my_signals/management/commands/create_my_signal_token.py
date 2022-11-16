@@ -15,7 +15,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('email', type=str, help='E-mail address of the reporter to create a token for')
         parser.add_argument('--refresh', action='store_true', dest='_refresh', help='Refresh the token')
-        parser.add_argument('--dry-run', action='store_true', dest='_dry_run', help='Dry-run mode')
 
     def _pre_handle(self, **options):
         """
@@ -28,12 +27,11 @@ class Command(BaseCommand):
             return False
 
         if not Reporter.objects.filter(email__iexact=options['email']).exists():
-            self.stderr.write('Reporter niet gevonden')
+            self.stderr.write('Reporter not found')
             return False
 
         self._email = options['email']
         self._refresh = options['_refresh']
-        self._dry_run = options['_dry_run']
         return True
 
     def handle(self, *args, **options):
