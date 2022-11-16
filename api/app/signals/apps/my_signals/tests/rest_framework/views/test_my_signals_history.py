@@ -245,14 +245,32 @@ class TestMySignalsHistoryEndpoint(APITestCase):
         self.assertEqual(len(response_json), 9)
 
         self.assert_what_in_data('UPDATE_STATUS', response_json, 0)
+        self.assert_action_in_data('Status gewijzigd naar: Open', response_json, 0)
+
         self.assert_what_in_data('UPDATE_SLA', response_json, 1)
+        self.assert_action_in_data('Servicebelofte:', response_json, 1)
+        self.assert_description_in_data('Test handling message (child category)', response_json, 1)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 2)
+        self.assert_action_in_data('Status gewijzigd naar: Open', response_json, 2)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 3)
+        self.assert_action_in_data('Status gewijzigd naar: Vraag aan u verstuurd', response_json, 3)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 4)
+        self.assert_action_in_data('Status gewijzigd naar: Antwoord van u ontvangen', response_json, 4)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 5)
+        self.assert_action_in_data('Status gewijzigd naar: Afgesloten', response_json, 5)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 6)
+        self.assert_action_in_data('Status gewijzigd naar: Heropend', response_json, 6)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 7)
+        self.assert_action_in_data('Status gewijzigd naar: Vraag aan u verstuurd', response_json, 7)
+
         self.assert_what_in_data('UPDATE_STATUS', response_json, 8)
+        self.assert_action_in_data('Status gewijzigd naar: Afgesloten', response_json, 8)
 
     def test_history_not_my_signal(self):
         not_my_signal = SignalFactoryWithImage.create(reporter__email='not-me@example.com')
