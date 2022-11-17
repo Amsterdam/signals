@@ -569,7 +569,7 @@ class TestSession(TestCase):
     def test_model_clean(self):
         # should work:
         session = SessionFactory.create(
-            status=self.signal.status,
+            _signal_status=self.signal.status,
             _signal=self.signal
         )
 
@@ -580,5 +580,5 @@ class TestSession(TestCase):
         )
 
         with self.assertRaises(ValidationError):
-            session.status = wrong_status
+            session._signal_status = wrong_status
             session.save()

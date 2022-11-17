@@ -122,7 +122,7 @@ def create_session_for_forward_to_external(signal):
             duration=None,
             questionnaire=questionnaire,
             _signal=signal,
-            status=signal.status,
+            _signal_status=signal.status,
         )
 
     return session
@@ -141,16 +141,16 @@ def clean_up_forward_to_external():
         frozen=False,
         invalidated=False,
         submit_before__lt=now(),
-        status__state=workflow.DOORGEZET_NAAR_EXTERN,
+        _signal_status__state=workflow.DOORGEZET_NAAR_EXTERN,
     )
 
     count = 0
     for session in open_session_qs:
-        external_user = session.status.email_override
-        when = session.status.created_at.strftime('%d-%m-%Y %H:%M:%S')
+        external_user = session._signal_status.email_override
+        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M:%S')
         text = f'Geen antwoord ontvangen van externe behandelaar {external_user} op vraag van {when}.'
 
-        if session._signal.status.id == session.status.id:
+        if session._signal.status.id == session._signal_status.id:
             # Signal is still in state DOORGEZET_NAAR_EXTERN, we change its
             # state with an appropriate message.
             Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': text}, session._signal)
@@ -178,7 +178,7 @@ class ForwardToExternalSessionService(SessionService):
 
         # Check forwarded to external flow specific rules
         signal = self.session._signal
-        status = self.session.status
+        status = self.session._signal_status
 
         # We need a reference to a Signal and a status update to FORWARD_TO_EXTERNAL
         if signal is None:
@@ -201,11 +201,11 @@ class ForwardToExternalSessionService(SessionService):
         answer = self.answers_by_analysis_key['reaction']
         signal = self.session._signal
 
-        external_user = self.session.status.email_override
-        when = self.session.status.created_at.strftime('%d-%m-%Y %H:%M:%S')
+        external_user = self.session._signal_status.email_override
+        when = self.session._signal_status.created_at.strftime('%d-%m-%Y %H:%M:%S')
         msg = f'Toelichting door behandelaar {external_user} op vraag van {when}: {answer.payload}'
 
-        if self.session.status == signal.status:
+        if self.session._signal_status == signal.status:
             # no status updates since session was created (question was forwarded to external party)
             Signal.actions.update_status({'text': msg, 'state': workflow.VERZOEK_TOT_AFHANDELING}, signal)
         else:
@@ -219,7 +219,7 @@ class ForwardToExternalSessionService(SessionService):
 
         answer = self.answers_by_analysis_key['reaction']
         signal = self.session._signal
-        email_override = self.session.status.email_override
+        email_override = self.session._signal_status.email_override
 
         MailService.system_mail(signal=signal, action_name='forward_to_external_reaction_received',
                                 reaction_text=answer.payload, email_override=email_override)
@@ -246,7 +246,7 @@ class ForwardToExternalSessionService(SessionService):
                 cf.name = os.path.basename(file_path)
 
             signal = self.session._signal
-            email_override = self.session.status.email_override
+            email_override = self.session._signal_status.email_override
             Attachment.objects.create(_signal=signal, file=cf, created_by=email_override)
 
     def freeze(self, refresh=True):

@@ -287,7 +287,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         att = Attachment.objects.first()
         self.assertEqual(att._signal, self.signal)  # image attached to correct Signal instance
-        self.assertEqual(att.created_by, self.session.status.email_override)  # image correctly attributed
+        self.assertEqual(att.created_by, self.session._signal_status.email_override)  # image correctly attributed
 
         # re-requesting session endpoint will fail with HTTP 410 Gone error
         with freeze_time(self.t_answer_in_time + timedelta(seconds=10)):
@@ -368,7 +368,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
 
         att = Attachment.objects.first()
         self.assertEqual(att._signal, self.signal)  # image attached to correct Signal instance
-        self.assertEqual(att.created_by, self.session.status.email_override)  # image correctly attributed
+        self.assertEqual(att.created_by, self.session._signal_status.email_override)  # image correctly attributed
 
         # re-requesting session endpoint will fail with HTTP 410 Gone error
         with freeze_time(self.t_answer_in_time + timedelta(seconds=10)):

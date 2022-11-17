@@ -67,7 +67,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
         session = create_session_for_forward_to_external(self.signal)
         self.assertIsInstance(session, Session)
         self.assertEqual(session.questionnaire.flow, Questionnaire.FORWARD_TO_EXTERNAL)
-        self.assertEqual(session.status.email_override, 'a@example.com')
+        self.assertEqual(session._signal_status.email_override, 'a@example.com')
 
         # Check explanatory text based new Signal status
         explanation = session.questionnaire.explanation
@@ -184,7 +184,7 @@ class TestForwardToExternalSessionService(TestCase):
 
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
-            self.assertEqual(mail.outbox[0].to, [self.session.status.email_override, ])
+            self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override, ])
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN_with_status_update(self):
         # update status after the original DOORGEZET_NAAR_EXTERN
@@ -223,7 +223,7 @@ class TestForwardToExternalSessionService(TestCase):
 
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
-            self.assertEqual(mail.outbox[0].to, [self.session.status.email_override, ])
+            self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override, ])
 
 
 class TestCleanUpForwardToExternal(TestCase):

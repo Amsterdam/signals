@@ -26,8 +26,7 @@ class Session(models.Model):
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True, null=True)
-    # TODO: rename to _signal_status
-    status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    _signal_status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+') # noqa
     invalidated = models.BooleanField(default=False)
 
     objects = SessionManager()
@@ -59,9 +58,9 @@ class Session(models.Model):
         return not self.frozen and self.is_expired
 
     def clean(self):
-        if self._signal and self.status:
-            if self._signal.id != self.status._signal.id:
-                raise ValidationError('For a Session _signal.id must match status._signal.id')
+        if self._signal and self._signal_status:
+            if self._signal.id != self._signal_status._signal.id:
+                raise ValidationError('For a Session _signal.id must match _signal_status._signal.id')
 
     def save(self, *args, **kwargs):
         self.full_clean()
