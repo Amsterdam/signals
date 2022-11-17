@@ -5,6 +5,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
 
+from signals.admin.oidc import views as admin_oidc_views
 from signals.apps.api.generics.routers import BaseSignalsAPIRootView
 
 urlpatterns = [
@@ -28,3 +29,9 @@ if settings.DEBUG:
 
     media_root = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += media_root
+
+if settings.OIDC_RP_CLIENT_ID:
+    urlpatterns += [
+        path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
+        path('signals/oidc/', include('mozilla_django_oidc.urls')),
+    ]
