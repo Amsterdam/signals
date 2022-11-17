@@ -426,6 +426,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED, mail.outbox[0].subject)
         self.assertIn(answer_text, mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override])
 
 
 class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
