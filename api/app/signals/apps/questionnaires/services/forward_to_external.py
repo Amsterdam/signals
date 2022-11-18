@@ -202,7 +202,7 @@ class ForwardToExternalSessionService(SessionService):
         signal = self.session._signal
 
         external_user = self.session._signal_status.email_override
-        when = self.session._signal_status.created_at.strftime('%d-%m-%Y %H:%M:%S')
+        when = self.session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
         msg = f'Toelichting door behandelaar {external_user} op vraag van {when}: {answer.payload}'
 
         if self.session._signal_status == signal.status:

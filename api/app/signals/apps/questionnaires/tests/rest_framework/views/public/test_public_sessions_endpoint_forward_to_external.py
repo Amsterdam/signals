@@ -3,12 +3,14 @@
 """
 Test the forwarded to external flow at REST API level.
 """
+import copy
 import os
 import uuid
 from datetime import datetime, timedelta
 from unittest.mock import patch
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
@@ -28,7 +30,7 @@ from signals.apps.questionnaires.services.forward_to_external import (
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage, StatusFactory
-from signals.apps.signals.models import Attachment
+from signals.apps.signals.models import Attachment, Note, Signal, Status
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.test.utils import SuperUserMixin
 
@@ -47,8 +49,11 @@ class NameSpace:
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
 
+feature_flags = copy.deepcopy(settings.FEATURE_FLAGS)
+feature_flags['SIGNAL_HISTORY_LOG_ENABLED'] = True
 
-@override_settings(ROOT_URLCONF=test_urlconf)
+
+@override_settings(ROOT_URLCONF=test_urlconf, FEATURE_FLAGS=feature_flags)
 class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/questions/'
     session_detail_endpoint = '/public/qa/sessions/{uuid}/'
@@ -227,6 +232,8 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         patched_get_url.return_value = '/some/url/'
         n_attachments = self.signal.attachments.count()
         self.assertEqual(n_attachments, 0)
+        n_notes = Note.objects.count()
+        n_statusses = Status.objects.count()
 
         # retrieve session
         with freeze_time(self.t_answer_in_time):
@@ -252,7 +259,8 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(urlparse(answers_url).path, self.answers_url)
 
         # answer text question
-        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]  # array of answers
+        answer_text = 'SOME ANSWER'
+        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': answer_text}]  # array of answers
         with freeze_time(self.t_answer_in_time):
             response = self.client.post(answers_url, data=answer_payloads, format='json')
         self.assertEqual(response.status_code, 200)
@@ -296,6 +304,12 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         response_json = response.json()
         self.assertEqual(response_json['detail'], 'Already used!')
 
+        # Check that we get an entry in the signal history containing the provided answer.
+        self.assertEqual(Note.objects.count(), n_notes)
+        self.assertEqual(Status.objects.count(), n_statusses + 1)
+        status = Status.objects.last()
+        self.assertIn(answer_text, status.text)
+
         # TODO: add support for thank-you message
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
@@ -307,6 +321,8 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         patched_get_url.return_value = '/some/url/'
         n_attachments = self.signal.attachments.count()
         self.assertEqual(self.signal.attachments.count(), 0)
+        n_notes = Note.objects.count()
+        n_statusses = Status.objects.count()
 
         # retrieve session
         with freeze_time(self.t_answer_in_time):
@@ -332,7 +348,8 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(urlparse(answers_url).path, self.answers_url)
 
         # answer text question
-        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': 'SOME ANSWER'}]
+        answer_text = 'SOME ANSWER'
+        answer_payloads = [{'question_uuid': question1['uuid'], 'payload': answer_text}]
         with freeze_time(self.t_answer_in_time):
             response = self.client.post(answers_url, data=answer_payloads, format='json')
         self.assertEqual(response.status_code, 200)
@@ -377,6 +394,12 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         response_json = response.json()
         self.assertEqual(response_json['detail'], 'Already used!')
 
+        # Check that we get an entry in the signal history containing the provided answer.
+        self.assertEqual(Note.objects.count(), n_notes)
+        self.assertEqual(Status.objects.count(), n_statusses + 1)
+        status = Status.objects.last()
+        self.assertIn(answer_text, status.text)
+
         # TODO: add support for thank-you message
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
@@ -385,6 +408,9 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         """
         Retrieve outstanding session and provide an answer check triggered email.
         """
+        n_notes = Note.objects.count()
+        n_statusses = Status.objects.count()
+
         patched_get_url.return_value = '/some/url/'
 
         # retrieve session
@@ -428,7 +454,76 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertIn(answer_text, mail.outbox[0].body)
         self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override])
 
+        # Check that we get an entry in the signal history containing the provided answer.
+        self.assertEqual(Note.objects.count(), n_notes)
+        self.assertEqual(Status.objects.count(), n_statusses + 1)
+        status = Status.objects.last()
+        self.assertIn(answer_text, status.text)
 
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+           autospec=True)
+    def test_retrieve_and_fill_out_after_status_update_and_triggered_mail(self, patched_get_url):
+        """
+        Retrieve outstanding session and provide an answer check triggered email.
+        """
+        Signal.actions.update_status({'text': 'STATUS GEMELD', 'state': workflow.GEMELD}, self.signal)
+        n_notes = Note.objects.count()
+        n_statusses = Status.objects.count()
+
+        patched_get_url.return_value = '/some/url/'
+
+        # retrieve session
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response.json())
+
+        # access questions
+        self.assertEqual(len(response_json['path_questions']), 2)
+        text_question = response_json['path_questions'][0]
+        self.assertEqual(text_question['analysis_key'], 'reaction')
+
+        # retrieve urls used in answering the questionnaire
+        submit_url = response_json['_links']['sia:post-submit']['href']
+        self.assertEqual(urlparse(submit_url).path, self.submit_url)
+        answers_url = response_json['_links']['sia:post-answers']['href']
+        self.assertEqual(urlparse(answers_url).path, self.answers_url)
+
+        # answer text question
+        answer_text = 'SOME ANSWER'
+        answer_payloads = [{'question_uuid': text_question['uuid'], 'payload': answer_text}]  # array of answers
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.post(answers_url, data=answer_payloads, format='json')
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        # freeze session
+        self.assertEqual(Attachment.objects.count(), 0)
+        self.assertEqual(response_json['can_freeze'], True)
+        with freeze_time(self.t_answer_in_time):
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(self.submit_url)
+        self.assertEqual(response.status_code, 200)
+
+        # check that mail was triggered
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED, mail.outbox[0].subject)
+        self.assertIn(answer_text, mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override])
+
+        # Check that we get an entry in the signal history containing the provided answer
+        # (Because our signal was no longer in workflow.DOORGEZET_NAAR_EXTERN, there will
+        # be no status transition to workflow.VERZOEK_TOT_AFHANDELING. Instead a note is
+        # placed in the history marking the reception of an answer.)
+        self.assertEqual(Status.objects.count(), n_statusses)
+        self.assertEqual(Note.objects.count(), n_notes + 1)
+        note = Note.objects.last()
+        self.assertIn(answer_text, note.text)
+
+
+@override_settings(FEATURE_FLAGS=feature_flags)
 class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
     QUESTION_FOR_EXTERNAL_PARTY = 'QUESTION FOR EXTERNAL PARTY'
     STATUS_UPDATE = {
@@ -456,6 +551,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         """
         n_sessions = Session.objects.count()
         n_questionnaires = Questionnaire.objects.count()
+        self.assertEqual(Note.objects.count(), 0)
 
         # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
         self.client.force_authenticate(user=self.superuser)
@@ -463,6 +559,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
 
         with self.captureOnCommitCallbacks(execute=True):  # make sure Django signals are sent and emails triggered
             response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
+
         self.assertEqual(response.status_code, 200)
         self.signal.refresh_from_db()
         self.assertEqual(self.signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
@@ -479,6 +576,11 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
         self.assertIn(reaction_url, mail.outbox[0].body)
 
+        # Check that a note was added to the signal's history
+        self.assertEqual(Note.objects.count(), 1)
+        note = Note.objects.last()
+        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
+
     def test_change_status_to_DOORGEZET_NAAR_EXTERN_with_image(self):
         """
         Trigger the DOORGEZET_NAAR_EXTERN flow via API for signal with attachments
@@ -486,6 +588,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         n_sessions = Session.objects.count()
         n_questionnaires = Questionnaire.objects.count()
         self.assertEqual(StoredFile.objects.count(), 0)
+        self.assertEqual(Note.objects.count(), 0)
         attachment = self.signal_with_image.attachments.first()
 
         # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
@@ -509,6 +612,11 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
         self.assertIn(reaction_url, mail.outbox[0].body)
+
+        # Check that a note was added to the signal's history
+        self.assertEqual(Note.objects.count(), 1)
+        note = Note.objects.last()
+        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
 
         # Check that the attachment was copied to the questionnaire's explanations
         questionnaire = Questionnaire.objects.last()

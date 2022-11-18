@@ -14,7 +14,6 @@ class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
 
     key = EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED
     subject = 'Meldingen {formatted_signal_id}: reactie ontvangen'
-    note = 'Automatische e-mail bij ontvangen van feedback is verzonden aan externe behandelaar'
 
     def get_email_address(self, signal):
         return self.kwargs['email_override']

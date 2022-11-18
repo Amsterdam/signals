@@ -169,7 +169,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.signal.refresh_from_db()
 
             # check that we got a status update to state VERZOEK_TOT_AFHANDELING with correct properties
-            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M:%S')
+            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
             self.assertEqual(
                 self.signal.status.text,
@@ -177,10 +177,7 @@ class TestForwardToExternalSessionService(TestCase):
             )
 
             # check that Signalen also sent an email acknowledging the reception of an answer
-            self.assertEqual(Note.objects.count(), 1)
-            note = Note.objects.first()
-            self.assertEqual(
-                note.text, 'Automatische e-mail bij ontvangen van feedback is verzonden aan externe behandelaar')
+            self.assertEqual(Note.objects.count(), 0)
 
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
@@ -206,20 +203,14 @@ class TestForwardToExternalSessionService(TestCase):
             self.signal.refresh_from_db()
 
             # Check that we get a Note saying we received a reaction from external collaborator
-            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M:%S')
+            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, GEMELD)
-            self.assertEqual(Note.objects.count(), 2)
+            self.assertEqual(Note.objects.count(), 1)
             note_reaction_received = Note.objects.first()
 
             self.assertEqual(
                 note_reaction_received.text,
                 f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp}: {answer.payload}')
-
-            # check that Signalen also sent an email acknowledging the reception of an answer
-            note_email_sent = Note.objects.last()
-            self.assertEqual(
-                note_email_sent.text,
-                'Automatische e-mail bij ontvangen van feedback is verzonden aan externe behandelaar')
 
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
