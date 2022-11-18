@@ -44,8 +44,25 @@ Request:
   "email": "reporter@example.com"
 }
 ```
+
+## /signals/v1/my/signals/me
+
+Method: GET  
+Status code: 200  
+Request:   
+```json
+{
+  "email": "reporter@example.com"
+}
+```
+
+Method: GET  
+Status code: 401  
 Response: 
 ```json
+{
+  "detail": "Invalid token."
+}
 ```
 
 ### /signals/v1/my/signals

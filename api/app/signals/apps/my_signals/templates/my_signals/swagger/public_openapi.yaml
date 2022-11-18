@@ -37,6 +37,30 @@ paths:
         '200':
           description: A login link will be sent to the email if there are any Signals created by this reporter in the last 12 months
 
+  /signals/v1/my/signals/me:
+    get:
+      responses:
+        '200':
+          description: A couple of details of the logged in reporter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoggedInReporter'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+        '404':
+          description: When the feature has been disabled a 404 will be returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+      security:
+        - AuthToken: [ ]
+
   /signals/v1/my/signals:
     parameters:
       - name: status
@@ -351,6 +375,14 @@ components:
                 minItems: 2
                 maxItems: 3
               example: [ 4.87170696258545, 52.36805320057393 ]
+
+    LoggedInReporter:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: reporter@example.com
 
     401:
       type: object
