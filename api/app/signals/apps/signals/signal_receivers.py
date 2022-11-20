@@ -3,7 +3,12 @@
 from django.dispatch import receiver
 
 from signals.apps.signals import tasks
-from signals.apps.signals.managers import create_initial, update_category_assignment, update_location, update_status
+from signals.apps.signals.managers import (
+    create_initial,
+    update_category_assignment,
+    update_location,
+    update_status
+)
 
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
