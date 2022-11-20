@@ -1,0 +1,89 @@
+name: Deploy review environment
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  AZURE_CONTAINER_REGISTRY: "siaweuacrt4eij7yb42xum25r62"
+  CONTAINER_NAME: "backend"
+  RESOURCE_GROUP: "sia-t-rg"
+  CLUSTER_NAME: "sia-weu-aks-t"
+  CHART_PATH: "chart"
+
+jobs:
+  buildImage:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'review') }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1.4.6
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image to ACR
+        run: |
+          cd api/
+          az acr build --image ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} --registry ${{ env.AZURE_CONTAINER_REGISTRY }} -g ${{ env.RESOURCE_GROUP }} .
+
+  deploy:
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'review') }}
+    needs: [ buildImage ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1.4.6
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          admin: 'true'
+
+      - name: Helm add repository
+        run: |
+          helm repo add signalen https://signalen.github.io/helm-charts/ && helm repo update
+
+      - name: Helm upgrade (or install)
+        run: |
+          helm upgrade signalen-backend signalen/backend \
+            --install \
+            --version 4.4.2 \
+            --namespace backend-${{ github.event.pull_request.number }} \
+            --create-namespace \
+            --values .github/review/values.yml \
+            --set ingress.hosts[0].host=backend-${{ github.event.pull_request.number }}.test.meldingen.amsterdam.delta10.cloud \
+            --set ingress.hosts[0].paths[0].path=/ \
+            --set ingress.hosts[0].paths[0].pathType=ImplementationSpecific \
+            --set image.repository=${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_NAME }} \
+            --set image.tag=${{ github.sha }}
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'review') }}
+    needs: [ deploy ]
+    environment:
+      name: review-${{ github.event.pull_request.number }}
+      url: https://backend-${{ github.event.pull_request.number }}.test.meldingen.amsterdam.delta10.cloud/signals
+    steps:
+      - name: Echo review URL
+        run: |
+          echo "Review environment available on https://backend-${{ github.event.pull_request.number }}.test.meldingen.amsterdam.delta10.cloud/signals"
