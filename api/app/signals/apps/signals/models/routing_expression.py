@@ -22,6 +22,10 @@ class RoutingExpression(models.Model):
     order = models.PositiveIntegerField(default=0, db_index=True)
     is_active = models.BooleanField(default=False)
 
+
+    class Meta:
+        ordering = ['order']
+
     def clean(self):
         super(RoutingExpression, self).clean()
 
