@@ -121,6 +121,12 @@ paths:
           example: '00000000-0000-0000-0000-000000000000'
     get:
       responses:
+        '200':
+          description: The history of a Signal created by the currently logged in reporter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MySignalHistory'
         '401':
           description: Unauthorized
           content:
@@ -207,7 +213,7 @@ components:
                   description: URI of the Signal
                   type: string
                   format: uri
-                  example: http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000
+                  example: 'http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000'
         _display:
           description: Display name of the Signal
           type: string
@@ -217,10 +223,10 @@ components:
           example: '00000000-0000-0000-0000-000000000000'
         id_display:
           type: string
-          example: SIG-1234567890
+          example: 'SIG-1234567890'
         text:
           type: string
-          example: Het cafe op de hoek maakt enorme herrie
+          example: 'Het cafe op de hoek maakt enorme herrie'
         status:
           $ref: '#/components/schemas/_NestedStatus'
         created_at:
@@ -252,7 +258,14 @@ components:
                   description: URI of the Signal
                   type: string
                   format: uri
-                  example: http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000
+                  example: 'http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000'
+            archives:
+              type: object
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  example: 'http://127.0.0.1:8000/signals/v1/my/signals/00000000-0000-0000-0000-000000000000/history'
             'sia:attachments':
                 type: array
                 items:
@@ -300,15 +313,39 @@ components:
           format: date-time
           example: '2022-10-03T12:00:00+00:00'
 
+    MySignalHistory:
+      description: History for a Signal
+      type: array
+      items:
+        type: object
+        properties:
+          when:
+            type: string
+            format: date-time
+            example: '2022-11-16T12:00:00+00:00'
+          what:
+            type: string
+            example: 'UPDATE_LOCATION'
+          action:
+            type: string
+            example: 'Locatie gewijzigd naar:'
+          description:
+            type: string
+            example: 'Locatie is gepinned op kaart'
+          _signal:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
+            example: '00000000-0000-0000-0000-000000000000'
+
     _NestedStatus:
       type: object
       properties:
         state:
           type: string
-          example: OPEN
+          example: 'OPEN'
         state_display:
           type: string
-          example: Open
+          example: 'Open'
 
     _NestedLocation:
       type: object
@@ -318,32 +355,32 @@ components:
           properties:
             postcode:
               type: string
-              example: "1053KP"
+              example: '1053KP'
             huisletter:
               type: string
               nullable: true
-              example: ""
+              example: ''
             huisnummer:
               type: string
-              example: "157"
+              example: '157'
             woonplaats:
               type: string
-              example: "Amsterdam"
+              example: 'Amsterdam'
             openbare_ruimte:
               type: string
-              example: "Bilderdijkstraat"
+              example: 'Bilderdijkstraat'
             huisnummer_toevoeging:
               type: string
               example: "3"
         address_text:
           type: string
-          example: "Bilderdijkstraat 157-3 1053KP Amsterdam"
+          example: 'Bilderdijkstraat 157-3 1053KP Amsterdam'
         geometrie:
           type: object
           properties:
             'type':
               type: string
-              example: "Point"
+              example: 'Point'
             coordinates:
               type: array
               items:
@@ -362,7 +399,7 @@ components:
       properties:
         detail:
           type: string
-          example: Niet gevonden.
+          example: 'Niet gevonden.'
 
   securitySchemes:
     AuthToken:

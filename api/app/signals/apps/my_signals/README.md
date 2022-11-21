@@ -14,9 +14,6 @@ To request access to "my signals" the following flow must be followed:
   * This email will provide a token that can be set as a header to all other "My signals" calls, `Authorisation: Token { TOKEN }`
   * This link can be configured by setting the `MY_SIGNALS_URL` env variable
 
-# TODO
-* [ ] Implement history
-
 ## App structure
 
 ```
@@ -213,10 +210,20 @@ Response:
 ### /signals/v1/my/signals/{uuid}/history
 
 Method: GET  
-Status code: 501  
+Status code: 200  
 Header: Authorization: Token {{ TOKEN }}  
 Response: 
 ```json
+[
+  {
+    "when": "2022-11-18T12:00:00+00:00",
+    "what": "UPDATE_LOCATION",
+    "action": "Locatie gewijzigd naar:",
+    "description": "Locatie is gepinned op kaart",
+    "_signal": "00000000-0000-0000-0000-000000000000"
+  },
+  ...
+]
 ```
 
 Method: GET  
