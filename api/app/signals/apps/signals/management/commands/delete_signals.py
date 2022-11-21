@@ -2,14 +2,12 @@
 # Copyright (C) 2022 Gemeente Amsterdam
 import uuid
 
-from django.conf import settings
-from django.core.files.storage import default_storage
 from django.core.management import BaseCommand
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.utils import timezone
 
-from signals.apps.search.tasks import delete_from_elastic
-from signals.apps.signals.models import DeletedSignal, Signal
+from signals.apps.services.domain.delete_signals import SignalDeletionService
+from signals.apps.signals.models import DeletedSignal
 from signals.apps.signals.workflow import AFGEHANDELD, GEANNULEERD, GESPLITST
 
 
@@ -32,20 +30,10 @@ class Command(BaseCommand):
         """
         Check if all given options are valid
         """
-        if not settings.FEATURE_FLAGS.get('DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED', False):
-            raise ValueError('Feature flag "DELETE_SIGNALS_IN_STATE_X_AFTER_PERIOD_Y_ENABLED" is not enabled')
-
-        if options['state'] not in self.STATE_CHOICES:
-            raise ValueError(f'Invalid state(s) provided must be one of "{", ".join(self.STATE_CHOICES)}"')
         self.state = options['state']
-
-        if options['days'] < 365:
-            raise ValueError('Invalid days provided must be at least 365')
         self.days = options['days']
-
-        if options['signal_id'] and not Signal.objects.filter(id=options['signal_id'], parent_id__isnull=True).exists():
-            raise ValueError(f'Invalid signal_id provided, no (parent) Signal with id "{options["signal_id"]}" exists')
         self.signal_id = options['signal_id'] or None
+        SignalDeletionService().check_preconditions(self.state, self.days, self.signal_id)
 
         self._dry_run = options['_dry_run']
         self.batch_uuid = uuid.uuid4()
@@ -60,74 +48,24 @@ class Command(BaseCommand):
 
         self.write_start_msg()
 
-        signal_qs = self._select_signals()
+        signal_qs = SignalDeletionService().get_queryset_for_deletion(self.state, self.days, self.signal_id)
         if signal_qs.exists():
-            with transaction.atomic():
-                self._loop_through_signals(signal_qs=signal_qs)
+            try:
+                with transaction.atomic():
+                    deleted_signals = SignalDeletionService().delete_queryset(signal_qs, self.batch_uuid, self._dry_run)
+            except DatabaseError:
+                pass
+            else:
+                # Transaction was not rolled back
+                self.list_deleted_signals(deleted_signals)
         else:
             self.stdout.write('No signal(s) found that matches criteria')
 
         self.write_end_msg()
 
-    def _select_signals(self):
-        # Select Signals that are in the given states and the state has been set more than X days ago
-        # Only select normal signals or parent signals
-        queryset = Signal.objects.filter(parent_id__isnull=True, status__state=self.state,
-                                         status__created_at__lt=timezone.now() - timezone.timedelta(days=self.days))
-
-        if self.signal_id:
-            # A specific Signal ID was given, only select that Signal
-            queryset = queryset.filter(id=self.signal_id)
-
-        return queryset
-
-    def _loop_through_signals(self, signal_qs):
-        for signal in signal_qs:
-            if signal.is_parent:
-                # First delete all child Signals
-                self._loop_through_signals(signal_qs=signal.children.all())
-
-            # Delete the Signal
-            self._delete_signal(signal=signal)
-
-    def _delete_signal(self, signal):
-        """
-        Deletes the given signal and all related objects. Will also remove the Signal from the elasticsearch index.
-        """
-        signal_id = signal.id
-        if not self._dry_run:
-            # Meta data needed for reporting
-            DeletedSignal.objects.create_from_signal(
-                signal=signal,
-                action='automatic',
-                note=self.get_log_note(signal),
-                batch_uuid=self.batch_uuid
-            )
-
-            attachment_files = [attachment.file.path for attachment in signal.attachments.all()]
-            signal.attachments.all().delete()
-
-            try:
-                delete_from_elastic(signal=signal)
-            except Exception:
-                pass
-
-            signal.delete()
-
-            for attachment_file in attachment_files:
-                if default_storage.exists(attachment_file):
-                    default_storage.delete(attachment_file)
-
-        self.stdout.write(f'Deleted Signal: #{signal_id}{" (dry-run)" if self._dry_run else ""}')
-
-    # Helper functions
-
-    def get_log_note(self, signal):
-        diff = timezone.now() - signal.status.created_at
-        if signal.is_child:
-            diff = timezone.now() - signal.parent.status.created_at
-            return f'Parent signal was in state "{signal.parent.status.get_state_display()}" for {diff.days} days'
-        return f'signal was in state "{signal.status.get_state_display()}" for {diff.days} days'
+    def list_deleted_signals(self, deleted_signals):
+        for signal_id in deleted_signals:
+            self.stdout.write(f'Deleted Signal: #{signal_id}{" (dry-run)" if self._dry_run else ""}')
 
     def write_start_msg(self):
         if self._dry_run:

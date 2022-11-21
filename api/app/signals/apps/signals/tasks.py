@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from signals.apps.services.domain.auto_create_children.service import AutoCreateChildrenService
+from signals.apps.services.domain.delete_signals import SignalDeletionService
 from signals.apps.services.domain.dsl import SignalDslService
 from signals.apps.signals.models import Reporter
 from signals.apps.signals.models.signal import Signal
@@ -101,3 +102,13 @@ def apply_auto_create_children(signal_id):
     :param signal_id:
     """
     AutoCreateChildrenService.run(signal_id=signal_id)
+
+
+@app.task
+def delete_closed_signals(days=365):
+    """
+    Delete Signals in one of the Signalen system's closed states
+    """
+    SignalDeletionService.delete_signals(AFGEHANDELD, days, dry_run=False)
+    SignalDeletionService().delete_signals(GEANNULEERD, days, dry_run=False)
+    SignalDeletionService().delete_signals(GESPLITST, days, dry_run=False)
