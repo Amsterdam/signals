@@ -26,8 +26,10 @@ class AssignedAction(AbstractSystemAction):
     """
 
     key = EmailTemplate.SIGNAL_ASSIGNED
-    subject = """Melding {{ formatted_signal_id }} is toegewezen aan
-              {% if assigned_to_user %} jou{% else %} {{ assigned_to_department }}{% endif %}"""
+    subject = (
+        "Melding {{ formatted_signal_id }} is toegewezen aan "
+        "{% if assigned_to_user %} jou{% else %} {{ assigned_to_department }}{% endif %}"
+    )
 
     note = None
 

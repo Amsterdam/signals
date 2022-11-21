@@ -3,7 +3,6 @@
 from django.dispatch import receiver
 
 from signals.apps.email_integrations import tasks
-from signals.apps.email_integrations.services import MailService
 from signals.apps.signals.managers import (
     create_initial,
     update_signal_departments,
@@ -23,14 +22,12 @@ def update_signal_departments_handler(sender, signal_obj, signal_departments, pr
         if set(signal_departments.departments.all()) == set(prev_signal_departments.departments.all()):
             return  # do not trigger when the departments field is unchanged
 
-    # TODO: make async
-    for department in signal_departments.departments.all():
-        select_related = department.user_profiles.select_related('user')
-        for profile in select_related.filter(notification_on_department_assignment=True, user__is_active=True):
-            MailService.system_mail(signal=signal_obj,
-                                    action_name='assigned',
-                                    recipient=profile.user,
-                                    assigned_to=department)
+    departments_pk = [department.pk for department in signal_departments.departments.all()]
+
+    tasks.send_mail_assigned_signal_departments.delay(
+        signal_pk=signal_obj.pk,
+        departments_pk=departments_pk
+    )
 
 
 @receiver(update_user_assignment, dispatch_uid='core_email_integrations_update_user_assignment')
@@ -39,14 +36,7 @@ def update_user_assignment(sender, signal_obj, user_assignment, prev_user_assign
         if user_assignment.user == prev_user_assignment.user:
             return  # do not trigger when the user_assignment field is unchanged
 
-    if not user_assignment.user.is_active:
-        return
-
-    if not user_assignment.user.profile.notification_on_user_assignment:
-        return
-
-    # TODO: make async
-    MailService.system_mail(signal=signal_obj,
-                            action_name='assigned',
-                            recipient=user_assignment.user,
-                            assigned_to=user_assignment.user)
+    tasks.send_mail_assigned_signal_user(
+        signal_pk=signal_obj.pk,
+        user_pk=user_assignment.user.pk
+    )
