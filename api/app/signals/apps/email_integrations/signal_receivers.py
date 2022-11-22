@@ -31,12 +31,12 @@ def update_signal_departments_handler(sender, signal_obj, signal_departments, pr
 
 
 @receiver(update_user_assignment, dispatch_uid='core_email_integrations_update_user_assignment')
-def update_user_assignment(sender, signal_obj, user_assignment, prev_user_assignment, *args, **kwargs):
+def update_user_assignment_handler(sender, signal_obj, user_assignment, prev_user_assignment, *args, **kwargs):
     if user_assignment and prev_user_assignment:
         if user_assignment.user == prev_user_assignment.user:
             return  # do not trigger when the user_assignment field is unchanged
 
-    tasks.send_mail_assigned_signal_user(
+    tasks.send_mail_assigned_signal_user.delay(
         signal_pk=signal_obj.pk,
         user_pk=user_assignment.user.pk
     )

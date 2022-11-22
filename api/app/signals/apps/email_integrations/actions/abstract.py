@@ -115,7 +115,6 @@ class AbstractAction(ABC):
             return 0  # No mail sent, return 0. Same behaviour as send_mail()
 
         subject, message, html_message = self.render_mail_data(context)
-
         return send_mail(subject=subject, message=message, from_email=self.from_email,
                          recipient_list=[signal.reporter.email, ], html_message=html_message)
 
@@ -140,5 +139,4 @@ class AbstractSystemAction(AbstractAction):
             raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
 
         self.kwargs = kwargs
-
         return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

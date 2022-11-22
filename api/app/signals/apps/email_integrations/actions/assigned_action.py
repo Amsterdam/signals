@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2022 Delta10 B.V.
 import logging
 from email.utils import formataddr
 
@@ -28,7 +28,7 @@ class AssignedAction(AbstractSystemAction):
     key = EmailTemplate.SIGNAL_ASSIGNED
     subject = (
         "Melding {{ formatted_signal_id }} is toegewezen aan "
-        "{% if assigned_to_user %} jou{% else %} {{ assigned_to_department }}{% endif %}"
+        "{% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %}"
     )
 
     note = None
