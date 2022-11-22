@@ -108,6 +108,51 @@
 				}
 			]
 		},
+		"location":{
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"geometrie": {
+							"type": "object",
+							"properties": {
+								"coordinates": {
+									"type": "array",
+									"items": {
+										"type": "number"
+									}
+								},
+								"type": {
+									"type": "string"
+								}
+							}
+						},
+						"address": {
+							"anoOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "object"
+								}
+							]
+						},
+						"address_text": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"geometrie",
+						"address",
+						"address_text"
+					],
+					"additionalProperties": false
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
 		"path_answered_question_uuids": {
 			"type": "array",
 			"items": {
@@ -199,7 +244,7 @@
 				"format": "uuid"
 			}
 		},
-		"path_validation_errors_by_uuids": {
+		"path_validation_errors_by_uuid": {
 			"type": "object"
 		},
 		"questionnaire_explanation": {
@@ -284,10 +329,6 @@
 					"type": "null"
 				}
 			]
-
-
-
-
 		},
 		"started_at": {
 			"anyOf": [
@@ -317,9 +358,17 @@
 		"_links",
 		"_display",
 		"can_freeze",
-		"uuid",
-		"submit_before",
+		"created_at",
 		"duration",
-		"started_at"
-	]
+		"location",
+		"path_answered_question_uuids",
+		"path_questions",
+		"path_unanswered_question_uuids",
+		"path_validation_errors_by_uuid",
+		"questionnaire_explanation",
+		"started_at",
+		"submit_before",
+		"uuid"
+	],
+	"additionalProperties": false
 }

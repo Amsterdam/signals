@@ -597,6 +597,7 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
 
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
+
         self.assertEqual(response.status_code, 200)
         self.signal_with_image.refresh_from_db()
         self.assertEqual(self.signal_with_image.status.state, workflow.DOORGEZET_NAAR_EXTERN)

@@ -123,6 +123,7 @@ def create_session_for_forward_to_external(signal):
             questionnaire=questionnaire,
             _signal=signal,
             _signal_status=signal.status,
+            _signal_location=signal.location,
         )
 
     return session

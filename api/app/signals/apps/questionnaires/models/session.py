@@ -26,7 +26,8 @@ class Session(models.Model):
     questionnaire = models.ForeignKey('Questionnaire', on_delete=models.CASCADE, related_name='+')
     frozen = models.BooleanField(default=False)
     _signal = models.ForeignKey('signals.Signal', on_delete=models.CASCADE, blank=True, null=True)
-    _signal_status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+') # noqa
+    _signal_status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')  # noqa
+    _signal_location = models.ForeignKey('signals.Location', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')  # noqa
     invalidated = models.BooleanField(default=False)
 
     objects = SessionManager()
@@ -61,6 +62,10 @@ class Session(models.Model):
         if self._signal and self._signal_status:
             if self._signal.id != self._signal_status._signal.id:
                 raise ValidationError('For a Session _signal.id must match _signal_status._signal.id')
+
+        if self._signal and self._signal_location:
+            if self._signal.id != self._signal_location._signal.id:
+                raise ValidationError('For a Session _signal.id must match _signal_location._signal.id')
 
     def save(self, *args, **kwargs):
         self.full_clean()
