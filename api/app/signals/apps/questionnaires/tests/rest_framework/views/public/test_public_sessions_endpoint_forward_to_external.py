@@ -7,7 +7,7 @@ import copy
 import os
 import uuid
 from datetime import datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -20,9 +20,10 @@ from rest_framework.test import APITestCase
 
 from signals.apps.api.views import NamespaceView
 from signals.apps.email_integrations.models import EmailTemplate
+from signals.apps.email_integrations.tasks import send_mail_reporter
 from signals.apps.questionnaires.app_settings import FORWARD_TO_EXTERNAL_DAYS_OPEN
 from signals.apps.questionnaires.factories import AnswerFactory
-from signals.apps.questionnaires.models import Questionnaire, Session, StoredFile
+from signals.apps.questionnaires.models import Questionnaire, Session
 from signals.apps.questionnaires.services.forward_to_external import (
     create_session_for_forward_to_external,
     get_forward_to_external_url
@@ -30,6 +31,7 @@ from signals.apps.questionnaires.services.forward_to_external import (
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage, StatusFactory
+from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Attachment, Note, Signal, Status
 from signals.apps.signals.tests.attachment_helpers import small_gif
 from signals.test.utils import SuperUserMixin
@@ -46,15 +48,140 @@ class NameSpace:
     pass
 
 
-test_urlconf = NameSpace()
-test_urlconf.urlpatterns = urlpatterns
-
 feature_flags = copy.deepcopy(settings.FEATURE_FLAGS)
 feature_flags['SIGNAL_HISTORY_LOG_ENABLED'] = True
 
 
+@override_settings(FEATURE_FLAGS=feature_flags)
+class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
+    QUESTION_FOR_EXTERNAL_PARTY = 'QUESTION FOR EXTERNAL PARTY'
+    STATUS_UPDATE = {
+        'status': {
+            'email_override': 'external@example.com',
+            'send_email': True,
+            'text': QUESTION_FOR_EXTERNAL_PARTY,
+            'state': workflow.DOORGEZET_NAAR_EXTERN
+        }
+    }
+    SIGNAL_DETAIL_ENDPOINT = '/signals/v1/private/signals/{signal_id}'
+
+    def setUp(self):
+        self.signal = SignalFactory.create(status__state=workflow.GEMELD)
+        self.signal_with_image = SignalFactoryWithImage.create(status__state=workflow.GEMELD)
+        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL,
+                                     title='Uw melding {{ formatted_signal_id }}'
+                                           f' {EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL}',
+                                     body='{{ text }} {{ reaction_url }}'
+                                          '{{ ORGANIZATION_NAME }}')
+
+    @patch('signals.apps.signals.managers.update_status', autospec=True)
+    def test_change_status_to_DOORGEZET_NAAR_EXTERN_django_signal_sent_correctly(self, patched_django_signal):
+        """
+        Trigger the DOORGEZET_NAAR_EXTERN flow via API
+        """
+        patched_django_signal.send_robust = MagicMock()
+
+        # Simulate triggering DOORGEZET_NAAR_EXTERN flow via a status update:
+        self.client.force_authenticate(user=self.superuser)
+        url = self.SIGNAL_DETAIL_ENDPOINT.format(signal_id=self.signal.id)
+
+        with self.captureOnCommitCallbacks(execute=True):  # make sure Django signals are sent
+            response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
+
+        # Check that we get a updated status with all the correct properties
+        self.assertEqual(response.status_code, 200)
+        self.signal.refresh_from_db()
+
+        self.assertEqual(self.signal.status.text, self.STATUS_UPDATE['status']['text'])
+        self.assertEqual(self.signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
+        self.assertEqual(self.signal.status.email_override, self.STATUS_UPDATE['status']['email_override'])
+        self.assertEqual(self.signal.status.send_email, True)
+
+        # Check that the status_update Django signal is sent with correct arguments
+        new_status = self.signal.status
+        old_status = self.signal.statuses.first()
+        patched_django_signal.send_robust.called_once_with(
+            sender=SignalManager,
+            signal_obj=self.signal,
+            status=new_status,
+            prev_status=old_status
+        )
+
+    def test_change_status_to_DOORGEZET_NAAR_EXTERN_no_image(self):
+        n_sessions = Session.objects.count()
+        n_questionnaires = Questionnaire.objects.count()
+        self.assertEqual(Note.objects.count(), 0)
+
+        # In production Django signal receivers will pick up the status changes
+        # and call into the email system. Below we prepare a status update,
+        # forego calling the Django signals (problematic in tests) and call into
+        # the email system directly.
+        Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal)
+        send_mail_reporter(pk=self.signal.id)
+
+        # Check that we have a Questionnaire and Session
+        self.assertEqual(Session.objects.count(), n_sessions + 1)
+        self.assertEqual(Questionnaire.objects.count(), n_questionnaires + 1)
+
+        # Check that an email was sent and that its content is correct
+        session = Session.objects.last()
+        reaction_url = get_forward_to_external_url(session)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
+        self.assertIn(reaction_url, mail.outbox[0].body)
+
+        # Check that a note was added to the signal's history
+        self.assertEqual(Note.objects.count(), 1)
+        note = Note.objects.last()
+        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
+
+    def test_change_status_to_DOORGEZET_NAAR_EXTERN_with_image(self):
+        n_sessions = Session.objects.count()
+        n_questionnaires = Questionnaire.objects.count()
+        attachment = self.signal_with_image.attachments.first()
+
+        # In production Django signal receivers will pick up the status changes
+        # and call into the email system. Below we prepare a status update,
+        # forego calling the Django signals (problematic in tests) and call into
+        # the email system directly.
+        Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal_with_image)
+        send_mail_reporter(pk=self.signal_with_image.id)
+
+        # Check that we have a Questionnaire and Session
+        self.assertEqual(Session.objects.count(), n_sessions + 1)
+        self.assertEqual(Questionnaire.objects.count(), n_questionnaires + 1)
+
+        # Check that an email was sent and that its content is correct
+        session = Session.objects.last()
+        reaction_url = get_forward_to_external_url(session)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
+        self.assertIn(reaction_url, mail.outbox[0].body)
+
+        # Check that a note was added to the signal's history
+        self.assertEqual(Note.objects.count(), 1)
+        note = Note.objects.last()
+        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
+
+        # Check that the attachment was copied to the questionnaire's explanations
+        questionnaire = Questionnaire.objects.last()
+        image_section = questionnaire.explanation.sections.last()
+
+        ext = os.path.splitext(attachment.file.path)[1]
+        self.assertEqual(image_section.files.count(), 1)
+        attached_file = image_section.files.last()
+        self.assertIn(ext, attached_file.description)
+        self.assertIn(ext, attached_file.stored_file.file.path)
+
+
+test_urlconf = NameSpace()
+test_urlconf.urlpatterns = urlpatterns
+
+
 @override_settings(ROOT_URLCONF=test_urlconf, FEATURE_FLAGS=feature_flags)
-class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase):
+class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/questions/'
     session_detail_endpoint = '/public/qa/sessions/{uuid}/'
     session_answers_endpoint = session_detail_endpoint + 'answers'
@@ -444,8 +571,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(Attachment.objects.count(), 0)
         self.assertEqual(response_json['can_freeze'], True)
         with freeze_time(self.t_answer_in_time):
-            with self.captureOnCommitCallbacks(execute=True):
-                response = self.client.post(self.submit_url)
+            response = self.client.post(self.submit_url)
         self.assertEqual(response.status_code, 200)
 
         # check that mail was triggered
@@ -503,8 +629,7 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(Attachment.objects.count(), 0)
         self.assertEqual(response_json['can_freeze'], True)
         with freeze_time(self.t_answer_in_time):
-            with self.captureOnCommitCallbacks(execute=True):
-                response = self.client.post(self.submit_url)
+            response = self.client.post(self.submit_url)
         self.assertEqual(response.status_code, 200)
 
         # check that mail was triggered
@@ -521,110 +646,3 @@ class TestForwardToExternalRetrieveSession(ValidateJsonSchemaMixin, APITestCase)
         self.assertEqual(Note.objects.count(), n_notes + 1)
         note = Note.objects.last()
         self.assertIn(answer_text, note.text)
-
-
-@override_settings(FEATURE_FLAGS=feature_flags)
-class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
-    QUESTION_FOR_EXTERNAL_PARTY = 'QUESTION FOR EXTERNAL PARTY'
-    STATUS_UPDATE = {
-        'status': {
-            'email_override': 'external@example.com',
-            'send_email': True,
-            'text': QUESTION_FOR_EXTERNAL_PARTY,
-            'state': workflow.DOORGEZET_NAAR_EXTERN
-        }
-    }
-    SIGNAL_DETAIL_ENDPONT = '/signals/v1/private/signals/{signal_id}'
-
-    def setUp(self):
-        self.signal = SignalFactory.create(status__state=workflow.GEMELD)
-        self.signal_with_image = SignalFactoryWithImage.create(status__state=workflow.GEMELD)
-        EmailTemplate.objects.create(key=EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL,
-                                     title='Uw melding {{ formatted_signal_id }}'
-                                           f' {EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL}',
-                                     body='{{ text }} {{ reaction_url }}'
-                                          '{{ ORGANIZATION_NAME }}')
-
-    def test_change_status_to_DOORGEZET_NAAR_EXTERNN_no_image(self):
-        """
-        Trigger the DOORGEZET_NAAR_EXTERN flow via API
-        """
-        n_sessions = Session.objects.count()
-        n_questionnaires = Questionnaire.objects.count()
-        self.assertEqual(Note.objects.count(), 0)
-
-        # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
-        self.client.force_authenticate(user=self.superuser)
-        url = self.SIGNAL_DETAIL_ENDPONT.format(signal_id=self.signal.id)
-
-        with self.captureOnCommitCallbacks(execute=True):  # make sure Django signals are sent and emails triggered
-            response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
-
-        self.assertEqual(response.status_code, 200)
-        self.signal.refresh_from_db()
-        self.assertEqual(self.signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
-
-        # Check that we have a Questionnaire and Session
-        self.assertEqual(Session.objects.count(), n_sessions + 1)
-        self.assertEqual(Questionnaire.objects.count(), n_questionnaires + 1)
-
-        # Check that an email was sent and that its content is correct
-        session = Session.objects.last()
-        reaction_url = get_forward_to_external_url(session)
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
-        self.assertIn(reaction_url, mail.outbox[0].body)
-
-        # Check that a note was added to the signal's history
-        self.assertEqual(Note.objects.count(), 1)
-        note = Note.objects.last()
-        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
-
-    def test_change_status_to_DOORGEZET_NAAR_EXTERN_with_image(self):
-        """
-        Trigger the DOORGEZET_NAAR_EXTERN flow via API for signal with attachments
-        """
-        n_sessions = Session.objects.count()
-        n_questionnaires = Questionnaire.objects.count()
-        self.assertEqual(StoredFile.objects.count(), 0)
-        self.assertEqual(Note.objects.count(), 0)
-        attachment = self.signal_with_image.attachments.first()
-
-        # Trigger DOORGEZET_NAAR_EXTERN flow via a status update:
-        self.client.force_authenticate(user=self.superuser)
-        url = self.SIGNAL_DETAIL_ENDPONT.format(signal_id=self.signal_with_image.id)
-
-        with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.patch(url, data=self.STATUS_UPDATE, format='json')
-
-        self.assertEqual(response.status_code, 200)
-        self.signal_with_image.refresh_from_db()
-        self.assertEqual(self.signal_with_image.status.state, workflow.DOORGEZET_NAAR_EXTERN)
-
-        # Check that we have a Questionnaire and Session
-        self.assertEqual(Session.objects.count(), n_sessions + 1)
-        self.assertEqual(Questionnaire.objects.count(), n_questionnaires + 1)
-
-        # Check that an email was sent and that its content is correct
-        session = Session.objects.last()
-        reaction_url = get_forward_to_external_url(session)
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn(EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, mail.outbox[0].subject)
-        self.assertIn(reaction_url, mail.outbox[0].body)
-
-        # Check that a note was added to the signal's history
-        self.assertEqual(Note.objects.count(), 1)
-        note = Note.objects.last()
-        self.assertEqual(note.text, 'Automatische e-mail bij doorzetten is verzonden aan externe partij.')
-
-        # Check that the attachment was copied to the questionnaire's explanations
-        questionnaire = Questionnaire.objects.last()
-        image_section = questionnaire.explanation.sections.last()
-
-        ext = os.path.splitext(attachment.file.path)[1]
-        self.assertEqual(image_section.files.count(), 1)
-        attached_file = image_section.files.last()
-        self.assertIn(ext, attached_file.description)
-        self.assertIn(ext, attached_file.stored_file.file.path)

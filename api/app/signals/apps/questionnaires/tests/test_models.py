@@ -592,11 +592,6 @@ class TestSession(TestCase):
         )
 
         # should not work:
-        wrong_status = StatusFactory.create(
-            text='STATUS TEXT',
-            state=workflow.DOORGEZET_NAAR_EXTERN,
-            email_override='a@example.com',
-        )
         wrong_location = LocationFactory.create()
 
         with self.assertRaises(ValidationError):

@@ -655,6 +655,35 @@ components:
                           type: string
                           description: URI of image location
                           nullable: false
+        location:
+          type: object
+          nullable: false
+          required:
+            - geometrie
+                - address
+                - address_text
+          properties:
+            address:
+              type: object
+              description: Object with address properties
+              nullable: true
+            address_text:
+              type: string
+              description: human readable address
+              nullable: true
+            geometrie:
+              type: object
+              required:
+                - coordinates
+                - type
+              properties:
+                coordinates:
+                  type: array
+                  items:
+                    type: number
+                  description: Two element array with orignal complaint (Signal) coordinates.
+                type:
+                  type: string
 
     PublicSessionAnswerQuestion:
       type: object
