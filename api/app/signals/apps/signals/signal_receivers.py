@@ -13,18 +13,18 @@ from signals.apps.signals.managers import (
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
 def signals_create_initial_handler(sender, signal_obj, **kwargs):
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing(signal_obj.id, 'CREATE_INITIAL')
     tasks.apply_auto_create_children.apply_async(kwargs={'signal_id': signal_obj.id}, countdown=30)
 
 
 @receiver(update_location, dispatch_uid='signals_update_location')
 def signals_update_location_handler(sender, signal_obj, **kwargs):
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing(signal_obj.id, 'UPDATE_LOCATION')
 
 
 @receiver(update_category_assignment, dispatch_uid='signals_update_category_assignment')
 def signals_update_category_assignment_handler(sender, signal_obj, **kwargs):
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing(signal_obj.id, 'UPDATE_CATEGORY_ASSIGNMENT')
 
 
 @receiver(update_status, dispatch_uid='signals_update_status')

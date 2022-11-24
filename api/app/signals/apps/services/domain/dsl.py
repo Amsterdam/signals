@@ -48,7 +48,7 @@ class SignalContext:
             self._areas = self._init_areas()
         return self._areas
 
-    def __call__(self, signal: Signal):
+    def __call__(self, signal: Signal, trigger: str):
 
         t = timezone.make_naive(signal.incident_date_start).strftime("%H:%M:%S")
 
@@ -59,7 +59,8 @@ class SignalContext:
             'stadsdeel': signal.location.stadsdeel,
             'time': time.strptime(t, "%H:%M:%S"),
             'day': signal.incident_date_start.strftime("%A"),
-            'areas': self.areas
+            'areas': self.areas,
+            'trigger': trigger,
         }
 
         # add additonal question answers id to context
@@ -85,8 +86,8 @@ class SignalDslService(DslService):
     context_func = SignalContext()
     signal_manager = SignalManager()
 
-    def process_routing_rules(self, signal):  # noqa C901
-        ctx = self.context_func(signal)
+    def process_routing_rules(self, signal, trigger):  # noqa C901
+        ctx = self.context_func(signal, trigger)
         rules = RoutingExpression.objects.select_related('_expression', '_department')
         for rule in rules.filter(is_active=True, _expression___type__name='routing').order_by('order'):
             if rule._user and not rule._user.is_active:

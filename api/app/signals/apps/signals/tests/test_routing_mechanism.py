@@ -49,7 +49,7 @@ class TestRoutingMechanism(TestCase):
         signal_outside.refresh_from_db()
         self.assertIsNone(signal_outside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_outside)
+        self.dsl_service.process_routing_rules(signal_outside, 'TEST_PLACEHOLDER')
         signal_outside.refresh_from_db()
         self.assertIsNone(signal_outside.routing_assignment)
 
@@ -60,7 +60,7 @@ class TestRoutingMechanism(TestCase):
         signal_inside.refresh_from_db()
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside, 'TEST_PLACEHOLDER')
         signal_inside.refresh_from_db()
         self.assertIsNotNone(signal_inside.routing_assignment)
         self.assertEqual(len(signal_inside.routing_assignment.departments.all()), 1)
@@ -87,7 +87,7 @@ class TestRoutingMechanism(TestCase):
         )
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside, 'TEST_PLACEHOLDER')
         signal_inside.refresh_from_db()
 
         # routing rule will be de-activated due to syntax/compilation errors
@@ -120,7 +120,7 @@ class TestRoutingMechanism(TestCase):
         )
         self.assertIsNone(signal_inside.routing_assignment)
         # simulate apply routing rules
-        self.dsl_service.process_routing_rules(signal_inside)
+        self.dsl_service.process_routing_rules(signal_inside, 'TEST_PLACEHOLDER')
         signal_inside.refresh_from_db()
 
         # runtime errors should not effect is_active status
@@ -173,7 +173,7 @@ class TestRoutingMechanism(TestCase):
         ]
 
         ctx_func = SignalContext()
-        ctx = ctx_func(signal)
+        ctx = ctx_func(signal, 'TEST_PLACEHOLDER')
         self.assertEqual(ctx['key1'], "value 1")
         self.assertEqual(ctx['key2'], "value 2")
         self.assertEqual(type(ctx['key3_list']), set)

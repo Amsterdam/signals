@@ -37,7 +37,7 @@ class TestRoutingMechanism(TestCase):
         # simulate applying routing rules
         dsl_service = SignalDslService()
 
-        dsl_service.process_routing_rules(signal)
+        dsl_service.process_routing_rules(signal, 'TEST_PLACEHOLDER')
 
         signal.refresh_from_db()
         self.assertEqual(signal.user_assignment.user.id, user.id)
@@ -67,7 +67,7 @@ class TestRoutingMechanism(TestCase):
         # simulate applying routing rules
         dsl_service = SignalDslService()
 
-        dsl_service.process_routing_rules(signal)
+        dsl_service.process_routing_rules(signal, 'TEST_PLACEHOLDER')
 
         signal.refresh_from_db()
         self.assertIsNone(signal.user_assignment)
@@ -101,7 +101,7 @@ class TestRoutingMechanism(TestCase):
         # simulate applying routing rules
         dsl_service = SignalDslService()
 
-        dsl_service.process_routing_rules(signal)
+        dsl_service.process_routing_rules(signal, 'TEST_PLACEHOLDER')
 
         signal.refresh_from_db()
         self.assertIsNone(signal.user_assignment)

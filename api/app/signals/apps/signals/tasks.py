@@ -22,9 +22,9 @@ dsl_service = SignalDslService()
 
 
 @app.task
-def apply_routing(signal_id):
+def apply_routing(signal_id, trigger):
     signal = Signal.objects.get(pk=signal_id)
-    dsl_service.process_routing_rules(signal)
+    dsl_service.process_routing_rules(signal, trigger)
 
 
 @app.task
