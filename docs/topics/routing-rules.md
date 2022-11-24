@@ -1,5 +1,5 @@
 # Routing rules
-The backoffice part of the Signalen application allows users to set up rules
+The backend part of the Signalen application allows users to set up rules
 that will take nuisance complaints and assign to them a department
 and/or user. These rules are called "routing expressions" in Signalen and they
 can be edited in the Django admin. These expressions allow reasoning based on
@@ -40,8 +40,15 @@ one-by-one and in the same order as before, stopping at the first match.
 
 Caveat: because all rules are evaluated in order, it may be that, for instance,
 a location update triggers a rule re-evaluation but the matching rule may not
-use the location at all. The order in which the rules are evaluated is fixed but
-can be controlled by setting the `order` property of the routing rules.
+use the location at all (see example in the next section). This, quite possibly,
+surprising behavior is not apparent on creation of a nuisance complaint because
+at that time all of the complaint's properties are set at once.
+
+The only way that the order of evaluation can be changed is by adding or
+removing rules, or by setting their `order` property. Routing expressions can
+only be managed through the Django Admin pages. On those pages it is possible
+for application administrators to create, delete, or edit routing expressions
+including changing the `order` property.
 
 
 ## Example of possible surprising behavior
@@ -62,12 +69,13 @@ Given a complaint in sub category "Zwerf Afval" where a location update puts it
 in borough (stadsdeel) Centrum, the location rule will not match because it is
 still superseded by sub category rule. The nuisance complaint will still be
 assigned to "Stadsdeelwerken" based on its sub category. That the trigger to
-re-evaluate was a location update changes nothing to that fact.
+re-evaluate was a location update, changes nothing to that fact.
 
 
 ## Glossary
 
-| English            | Dutch   | In code  |
-| ------------------ | ------- | -------- |
-| nuisance complaint | melding | signal   |
-| reporter           | melder  | reporter |
+| English                   | Dutch                 | In code  |
+| ------------------------- | --------------------- | -------- |
+| nuisance complaint        | melding               | signal   |
+| reporter                  | melder                | reporter |
+| application administrator | functioneel beheerder |          |
