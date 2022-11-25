@@ -1,7 +1,7 @@
 # Authorization and permissions
 
-Date: 2020-10-05
-Authors: Thijs Coenen & David van Buiten
+Date: 2020-10-05  
+Authors: Thijs Coenen & David van Buiten  
 
 ## About this document
 This document gives a high-level overview of the SIA authorization system and
@@ -56,7 +56,7 @@ can be associated multiple categories.
     key to a main category. A Signal is always assigned a subcategory.
 
 Related:
-* [Django authorization](https://docs.djangoproject.com/en/2.2/topics/auth/)
+* [Django authorization](https://docs.djangoproject.com/en/3.2/topics/auth/)
 
 ### A note on API structure
 By design citizens can leave complaints about public space anonymously. Since

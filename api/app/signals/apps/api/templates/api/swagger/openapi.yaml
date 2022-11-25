@@ -1059,7 +1059,7 @@ paths:
                 description: JSON data describing the public category response
                 type: object
                 properties:
-                  {name_of_query_param}:
+                  "{name_of_query_param}":
                     type: array
                     items:
                       type: string
