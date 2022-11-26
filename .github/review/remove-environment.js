@@ -8,13 +8,17 @@ removeEnvironment(environmentName);
 async function removeEnvironment(environmentName) {
     const octokit = new Octokit();
 
-    const { data } = await octokit.request(
-        "DELETE /repos/{owner}/{repo}/environments/{environmentName}", {
-            owner,
-            repo,
-            environmentName,
-        }
-    )
+    try {
+        const { data } = await octokit.request(
+            "DELETE /repos/{owner}/{repo}/environments/{environmentName}", {
+                owner,
+                repo,
+                environmentName,
+            }
+        )
 
-    console.log("Removed environment", data);
+        console.log("Removed environment", data);
+    } catch (error) {
+        console.error('Error while deleting', error);
+    }
 }
