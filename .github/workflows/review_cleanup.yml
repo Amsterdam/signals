@@ -44,16 +44,3 @@ jobs:
       - name: Delete namespace
         run: |
           kubectl delete namespace backend-${{ github.event.pull_request.number }} || true
-
-      - name: Install Node 12
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-
-      - name: Install @octokit/action
-        run: npm install @octokit/action
-
-      - run: node .github/review/remove-environment.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ENVIRONMENT_NAME: review-${{ github.event.pull_request.number }}
