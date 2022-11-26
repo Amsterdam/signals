@@ -5,6 +5,10 @@ on:
     types: [ "closed" ]
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  repository-projects: write
+
 env:
   AZURE_CONTAINER_REGISTRY: "siaweuacrt4eij7yb42xum25r62"
   CONTAINER_NAME: "backend"
