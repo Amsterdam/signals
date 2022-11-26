@@ -29,8 +29,9 @@ Running the routing expressions only at the creation may lead to a assigned user
 or department being inappropriate after updates to the complaint. It is possible
 to run the routing expressions again after certain updates to the nuisance
 complaint. The Signalen installation must be configured with the feature flag
-... set to True. With that feature flag activated Signalen will re-evaluate the
-routing expressions and possibly re-assign the nuisance complaint.
+`DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES` set to True. With that feature flag
+activated Signalen will re-evaluate the routing expressions and possibly
+re-assign the nuisance complaint on updates.
 
 Because routing expressions act on only a subset of nuisance complaint
 properties, only updates to those properties will cause a re-evaluation of the
@@ -56,7 +57,7 @@ Take the situation where we have two routing expressions. On that
 assigns a complaint to department "Stadsdeelwerken" with the expression
 ```
 sub == "Zwerf Aval"
-``
+```
 and one that assign a complaint to "j.janssen@example.com" of
 "CEN (Stadsdeel Centrum)" with the expression:
 ```
