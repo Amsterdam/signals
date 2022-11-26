@@ -39,6 +39,8 @@ jobs:
       actions: read
       contents: read
       id-token: write
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     if: ${{ contains( github.event.pull_request.labels.*.name, 'review') }}
     needs: [ buildImage ]
