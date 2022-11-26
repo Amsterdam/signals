@@ -2,6 +2,7 @@ name: Deploy review environment
 
 on:
   pull_request:
+    types: [ "opened", "synchronize", "labeled" ]
     branches: [ "main" ]
 
 env:

@@ -3,6 +3,7 @@ name: Cleanup review environment
 on:
   pull_request:
     types: [ "closed", "unlabeled" ]
+    branches: [ "main" ]
 
 env:
   AZURE_CONTAINER_REGISTRY: "siaweuacrt4eij7yb42xum25r62"
