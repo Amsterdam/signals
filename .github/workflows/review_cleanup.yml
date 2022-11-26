@@ -2,7 +2,7 @@ name: Cleanup review environment
 
 on:
   pull_request:
-    types: [ "closed", "unlabeled" ]
+    types: [ "closed" ]
     branches: [ "main" ]
 
 env:
