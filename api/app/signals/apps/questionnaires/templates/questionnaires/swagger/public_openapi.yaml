@@ -684,6 +684,14 @@ components:
                   description: Two element array with orignal complaint (Signal) coordinates.
                 type:
                   type: string
+            stadsdeel:
+              type: string
+              description: city borough (used in Signalen Amsterdam only)
+              nullable: false
+            area_name:
+              type: string
+              description: city district
+              nullable: false
 
     PublicSessionAnswerQuestion:
       type: object

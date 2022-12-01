@@ -139,12 +139,34 @@
 						},
 						"address_text": {
 							"type": "string"
+						},
+						"stadsdeel": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "string"
+								}
+							]
+						},
+						"area_name": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "string"
+								}
+							]
 						}
 					},
 					"required": [
 						"geometrie",
 						"address",
-						"address_text"
+						"address_text",
+						"stadsdeel",
+						"area_name"
 					],
 					"additionalProperties": false
 				},

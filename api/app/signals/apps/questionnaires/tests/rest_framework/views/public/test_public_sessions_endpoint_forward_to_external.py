@@ -30,7 +30,12 @@ from signals.apps.questionnaires.services.forward_to_external import (
 )
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 from signals.apps.signals import workflow
-from signals.apps.signals.factories import SignalFactory, SignalFactoryWithImage, StatusFactory
+from signals.apps.signals.factories import (
+    SignalFactory,
+    SignalFactoryValidLocation,
+    SignalFactoryWithImage,
+    StatusFactory
+)
 from signals.apps.signals.managers import SignalManager
 from signals.apps.signals.models import Attachment, Note, Signal, Status
 from signals.apps.signals.tests.attachment_helpers import small_gif
@@ -206,7 +211,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.t_answer_too_late = self.t_creation + timedelta(seconds=seconds_open * 2)
 
         with freeze_time(self.t_creation):
-            self.signal = SignalFactory.create(
+            self.signal = SignalFactoryValidLocation.create(
                 created_at=self.t_creation,
                 status__state=workflow.DOORGEZET_NAAR_EXTERN,
                 status__text='SOME QUESTION',

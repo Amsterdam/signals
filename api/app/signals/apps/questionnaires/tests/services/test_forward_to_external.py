@@ -45,7 +45,7 @@ from signals.apps.signals.workflow import DOORGEZET_NAAR_EXTERN, GEMELD, VERZOEK
 
 class TestCreateSessionForForwardToExternal(TestCase):
     def setUp(self):
-        self.signal = SignalFactoryValidLocation.create()
+        self.signal = SignalFactoryWithImage.create()
         status_text = 'Kunt u de lantaarn vervangen?'
         new_status = Status.objects.create(
             _signal_id=self.signal.id, state=DOORGEZET_NAAR_EXTERN, text=status_text, email_override='a@example.com')
@@ -71,7 +71,7 @@ class TestCreateSessionForForwardToExternal(TestCase):
 
         # Check explanatory text based new Signal status
         explanation = session.questionnaire.explanation
-        self.assertEqual(explanation.sections.count(), 2)  # change when copying attachments is implemented
+        self.assertEqual(explanation.sections.count(), 3)
 
         sections = explanation.sections.all()
         self.assertEqual(sections[0].header, 'De melding')
@@ -79,6 +79,9 @@ class TestCreateSessionForForwardToExternal(TestCase):
 
         self.assertEqual(sections[1].header, 'Omschrijving')
         self.assertEqual(sections[1].text, self.signal.status.text)
+
+        self.assertEqual(sections[2].header, "Foto's")
+        self.assertEqual(sections[2].files.count(), 1)
 
         # Check question graph structure
         graph = session.questionnaire.graph
@@ -91,6 +94,23 @@ class TestCreateSessionForForwardToExternal(TestCase):
         edge_to_second_question = Edge.objects.filter(graph=graph, question=first_question).first()
         second_question = edge_to_second_question.next_question
         self.assertEqual(second_question.short_label, "Foto's toevoegen")
+
+    def test_create_session_for_forward_to_external_no_attachments(self):
+        self.signal.attachments.all().delete()
+
+        # Check basic characteristics of created Questions, QuestionGraph, Questionnaire, and Session
+        session = create_session_for_forward_to_external(self.signal)
+        self.assertIsInstance(session, Session)
+        self.assertEqual(session.questionnaire.flow, Questionnaire.FORWARD_TO_EXTERNAL)
+        self.assertEqual(session._signal_status.email_override, 'a@example.com')
+
+        explanation = session.questionnaire.explanation
+
+        # Check that no "Foto's" section is present:
+        self.assertEqual(explanation.sections.count(), 2)
+        sections = explanation.sections.all()
+        self.assertEqual(sections[0].header, 'De melding')
+        self.assertEqual(sections[1].header, 'Omschrijving')
 
 
 class TestGetForwardToExternalUrl(TestCase):
@@ -173,7 +193,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
             self.assertEqual(
                 self.signal.status.text,
-                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp}: {answer.payload}'
+                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
             )
 
             # check that Signalen also sent an email acknowledging the reception of an answer
@@ -210,7 +230,7 @@ class TestForwardToExternalSessionService(TestCase):
 
             self.assertEqual(
                 note_reaction_received.text,
-                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp}: {answer.payload}')
+                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}')
 
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')

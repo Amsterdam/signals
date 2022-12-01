@@ -31,18 +31,8 @@ from signals.apps.questionnaires.models import (
 from signals.apps.questionnaires.services.session import SessionService
 from signals.apps.signals import workflow
 from signals.apps.signals.models import Signal
-from signals.apps.signals.utils.location import AddressFormatter
 
 logger = logging.getLogger(__name__)
-
-
-def _get_description_of_location(location):
-    if location.address and isinstance(location.address, dict):
-        # openbare_ruimte huisnummerhuisletter-huisummer_toevoeging, postcode woonplaats
-        address_formatter = AddressFormatter(address=location.address)
-        return f'{address_formatter.format("O hlT")}, {address_formatter.format("P W")}'
-
-    return f'Locatie is gepind op de kaart\n{location.geometrie[0]}, {location.geometrie[1]}'
 
 
 def _copy_attachments_to_attached_files(signal, attached_section):
@@ -76,10 +66,7 @@ def create_session_for_forward_to_external(signal):
         ilt = IllustratedText.objects.create(title='Melding reactie')
         section1 = AttachedSection.objects.create(
             header='De melding',
-            text=(
-                f'Nummer: {signal.get_id_display()}\n'
-                f'Plaats: {_get_description_of_location(signal.location)}'
-            ),
+            text=f'Nummer: {signal.get_id_display()}\n',
             illustrated_text=ilt,
         )
         section2 = AttachedSection.objects.create(header='Omschrijving', text=signal.status.text, illustrated_text=ilt)
@@ -204,7 +191,7 @@ class ForwardToExternalSessionService(SessionService):
 
         external_user = self.session._signal_status.email_override
         when = self.session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
-        msg = f'Toelichting door behandelaar {external_user} op vraag van {when}: {answer.payload}'
+        msg = f'Toelichting door behandelaar {external_user} op vraag van {when} {answer.payload}'
 
         if self.session._signal_status == signal.status:
             # no status updates since session was created (question was forwarded to external party)
