@@ -248,6 +248,39 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(response.status_code, 200)
         self.assertJsonSchema(self.session_detail_schema, response_json)
 
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+           autospec=True)
+    def test_retrieve_session_check_location_serialization(self, patched_get_url):
+        """
+        Happy flow retrieving a non-invalidated session in time.
+        """
+        patched_get_url.return_value = '/some/url/'
+        self.session._signal_location.stadsdeel = 'A'
+        self.session._signal_location.area_name = None
+        self.session._signal_location.save()
+
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response_json)
+        self.assertEqual(response_json['location']['stadsdeel'], 'Centrum')
+        self.assertEqual(response_json['location']['area_name'], None)
+
+        self.session._signal_location.stadsdeel = None
+        self.session._signal_location.area_name = 'AREA NAME'
+        self.session._signal_location.save()
+
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(self.session_url)
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response_json)
+        self.assertEqual(response_json['location']['stadsdeel'], None)
+        self.assertEqual(response_json['location']['area_name'], 'AREA NAME')
+
     def test_retrieve_session_too_late(self):
         with freeze_time(self.t_answer_too_late):
             response = self.client.get(self.session_url)

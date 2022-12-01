@@ -38,10 +38,6 @@ from signals.apps.signals.factories import (
 from signals.apps.signals.models import Attachment, Note, Signal, Status
 from signals.apps.signals.workflow import DOORGEZET_NAAR_EXTERN, GEMELD, VERZOEK_TOT_AFHANDELING
 
-# TODO:
-# - test answering the photo upload question
-# - test that the various deadlines are correctly set on created session
-
 
 class TestCreateSessionForForwardToExternal(TestCase):
     def setUp(self):
