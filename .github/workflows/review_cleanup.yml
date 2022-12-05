@@ -1,0 +1,46 @@
+name: Cleanup review environment
+
+on:
+  pull_request:
+    types: [ "closed" ]
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  repository-projects: write
+
+env:
+  AZURE_CONTAINER_REGISTRY: "siaweuacrt4eij7yb42xum25r62"
+  CONTAINER_NAME: "backend"
+  RESOURCE_GROUP: "sia-t-rg"
+  CLUSTER_NAME: "sia-weu-aks-t"
+  CHART_PATH: "chart"
+
+jobs:
+  uninstall:
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'review') }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1.4.6
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get K8s context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+          admin: 'true'
+
+      - name: Delete namespace
+        run: |
+          kubectl delete namespace backend-${{ github.event.pull_request.number }} || true

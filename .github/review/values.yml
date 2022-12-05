@@ -1,0 +1,24 @@
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/appgw-ssl-certificate: test-meldingen-amsterdam-delta10-cloud
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  tls: []
+
+persistence:
+  media:
+    enabled: false
+
+postgresql:
+  primary:
+    persistence:
+      enabled: false
+
+rabbitmq:
+  persistence:
+    enabled: false
+
+elasticsearch:
+  persistence:
+    enabled: false
