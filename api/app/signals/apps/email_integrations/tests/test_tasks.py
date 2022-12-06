@@ -31,9 +31,11 @@ class TestTasks(TestCase):
         user_with_notification.profile.departments.add(department)
 
         user_without_notification = UserFactory.create()
+        user_with_notification.profile.notification_on_department_assignment = False
+        user_with_notification.profile.save()
         user_without_notification.profile.departments.add(department)
 
-        tasks.send_mail_assigned_signal_departments(signal_pk=signal.pk, departments_pk=[department.pk])
+        tasks.send_mail_assigned_signal_departments(signal_pk=signal.pk, department_pks=[department.pk])
 
         mocked_mail.assert_called_once_with(
                 signal=signal,

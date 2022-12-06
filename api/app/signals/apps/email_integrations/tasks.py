@@ -18,14 +18,14 @@ def send_mail_reporter(pk):
 
 
 @app.task
-def send_mail_assigned_signal_departments(signal_pk, departments_pk):
+def send_mail_assigned_signal_departments(signal_pk, department_pks):
     try:
         signal = Signal.objects.get(pk=signal_pk)
     except Signal.DoesNotExist:
         logger.exception()
         return
 
-    for department_pk in departments_pk:
+    for department_pk in department_pks:
         try:
             department = Department.objects.get(pk=department_pk)
         except Department.DoesNotExist:

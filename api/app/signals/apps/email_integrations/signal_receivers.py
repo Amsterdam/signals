@@ -22,11 +22,11 @@ def update_signal_departments_handler(sender, signal_obj, signal_departments, pr
         if set(signal_departments.departments.all()) == set(prev_signal_departments.departments.all()):
             return  # do not trigger when the departments field is unchanged
 
-    departments_pk = [department.pk for department in signal_departments.departments.all()]
+    department_pks = [department.pk for department in signal_departments.departments.all()]
 
     tasks.send_mail_assigned_signal_departments.delay(
         signal_pk=signal_obj.pk,
-        departments_pk=departments_pk
+        department_pks=department_pks
     )
 
 

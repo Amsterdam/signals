@@ -35,7 +35,7 @@ class TestDepartmentSignalReceivers(TestCase):
 
         mocked_tasks.send_mail_assigned_signal_departments.delay.assert_called_once_with(
             signal_pk=self.signal.id,
-            departments_pk=[self.department.pk]
+            department_pks=[self.department.pk]
         )
 
     @mock.patch('signals.apps.email_integrations.signal_receivers.tasks', autospec=True)
