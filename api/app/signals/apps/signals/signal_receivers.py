@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
+from django.conf import settings
 from django.dispatch import receiver
 
 from signals.apps.signals import tasks
@@ -19,11 +20,17 @@ def signals_create_initial_handler(sender, signal_obj, **kwargs):
 
 @receiver(update_location, dispatch_uid='signals_update_location')
 def signals_update_location_handler(sender, signal_obj, **kwargs):
+    if not settings.FEATURE_FLAGS['DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES']:
+        return
+
     tasks.apply_routing(signal_obj.id)
 
 
 @receiver(update_category_assignment, dispatch_uid='signals_update_category_assignment')
 def signals_update_category_assignment_handler(sender, signal_obj, **kwargs):
+    if not settings.FEATURE_FLAGS['DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES']:
+        return
+
     tasks.apply_routing(signal_obj.id)
 
 

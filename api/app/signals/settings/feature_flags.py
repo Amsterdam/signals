@@ -37,4 +37,7 @@ FEATURE_FLAGS = {
 
     # Enable/Disable the "my signals" endpoint/flows (Disabled by default)
     'MY_SIGNALS_ENABLED': os.getenv('MY_SIGNALS_ENABLED', False) in TRUE_VALUES,
+
+    # Run routing expressions again when updating signal subcategory or location
+    'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
 }
