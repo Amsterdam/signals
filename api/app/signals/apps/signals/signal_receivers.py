@@ -14,7 +14,7 @@ from signals.apps.signals.managers import (
 
 @receiver(create_initial, dispatch_uid='signals_create_initial')
 def signals_create_initial_handler(sender, signal_obj, **kwargs):
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing.delay(signal_obj.id)
     tasks.apply_auto_create_children.apply_async(kwargs={'signal_id': signal_obj.id}, countdown=30)
 
 
@@ -23,7 +23,7 @@ def signals_update_location_handler(sender, signal_obj, **kwargs):
     if not settings.FEATURE_FLAGS['DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES']:
         return
 
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing.delay(signal_obj.id)
 
 
 @receiver(update_category_assignment, dispatch_uid='signals_update_category_assignment')
@@ -31,7 +31,7 @@ def signals_update_category_assignment_handler(sender, signal_obj, **kwargs):
     if not settings.FEATURE_FLAGS['DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES']:
         return
 
-    tasks.apply_routing(signal_obj.id)
+    tasks.apply_routing.delay(signal_obj.id)
 
 
 @receiver(update_status, dispatch_uid='signals_update_status')
