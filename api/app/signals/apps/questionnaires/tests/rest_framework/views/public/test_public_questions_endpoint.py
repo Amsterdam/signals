@@ -20,9 +20,6 @@ from signals.apps.questionnaires.factories import (
 from signals.apps.questionnaires.models import Answer, Session
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
-THIS_DIR = os.path.dirname(__file__)
-
-
 urlpatterns = [
     path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
