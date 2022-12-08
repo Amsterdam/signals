@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from datapunt_api.rest import DisplayField, HALSerializer
 
 from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.rest_framework.fields import (
     QuestionnairePublicHyperlinkedIdentityField
+)
+from signals.apps.questionnaires.rest_framework.serializers.public.illustrated_text import (
+    NestedPublicIllustratedTextSerializer
 )
 from signals.apps.questionnaires.rest_framework.serializers.public.questions import (
     PublicQuestionDetailedSerializer,
@@ -17,6 +20,7 @@ class PublicQuestionnaireSerializer(HALSerializer):
 
     _display = DisplayField()
     first_question = PublicQuestionSerializer()
+    explanation = NestedPublicIllustratedTextSerializer()
 
     class Meta:
         model = Questionnaire
@@ -27,7 +31,8 @@ class PublicQuestionnaireSerializer(HALSerializer):
             'name',
             'description',
             'is_active',
-            'first_question'
+            'first_question',
+            'explanation',
         )
         read_only_fields = fields  # No create or update allowed
 

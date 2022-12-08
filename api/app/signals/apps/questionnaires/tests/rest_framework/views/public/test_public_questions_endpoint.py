@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
 from django.test import override_settings
@@ -20,9 +20,6 @@ from signals.apps.questionnaires.factories import (
 from signals.apps.questionnaires.models import Answer, Session
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
 
-THIS_DIR = os.path.dirname(__file__)
-
-
 urlpatterns = [
     path('v1/relations/', NamespaceView.as_view(), name='signal-namespace'),
     path('', include('signals.apps.questionnaires.urls')),
@@ -35,6 +32,9 @@ class NameSpace:
 
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
+
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
 
 
 @override_settings(ROOT_URLCONF=test_urlconf)

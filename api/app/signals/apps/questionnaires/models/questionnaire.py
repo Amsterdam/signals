@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 
 from django.contrib.gis.db import models
 
 from signals.apps.questionnaires.managers import QuestionnaireManager
+from signals.apps.questionnaires.models.illustrated_text import IllustratedText
 
 
 class Questionnaire(models.Model):
@@ -36,6 +37,9 @@ class Questionnaire(models.Model):
     graph = models.ForeignKey(
         'QuestionGraph', on_delete=models.SET_NULL, related_name='questionnaire', null=True, blank=True)
     flow = models.CharField(max_length=255, choices=FLOW_CHOICES, default=EXTRA_PROPERTIES)
+
+    # Explanation comprises zero or more sections of text + (optional) images.
+    explanation = models.ForeignKey(IllustratedText, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     objects = QuestionnaireManager()
 

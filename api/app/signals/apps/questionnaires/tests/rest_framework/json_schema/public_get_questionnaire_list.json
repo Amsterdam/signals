@@ -254,6 +254,50 @@
 									"type": "null"
 								}
 							]
+						},
+						"explanation": {
+							"anyOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"sections": {
+											"array": {
+												"items": {
+													"type": "object",
+													"properties": {
+														"files": {
+															"type": "array",
+															"items": {
+																"type": "object",
+																"properties": {
+																	"description": "string",
+																	"file": "string"
+																}
+															}
+														},
+														"header": {
+															"type": "string"
+														},
+														"text": {
+															"type": "string"
+														}
+													}
+												}
+											}
+										}
+									},
+									"required": [
+										"title",
+										"sections"
+									]
+								}
+							]
 						}
 					},
 					"required": [
@@ -263,8 +307,10 @@
 						"name",
 						"description",
 						"is_active",
-						"first_question"
-					]
+						"first_question",
+						"explanation"
+					],
+					"additionalProperties": false
 				}
 			]
 		}

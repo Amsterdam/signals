@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import os
 
 from django.test import override_settings
@@ -16,6 +16,7 @@ from signals.apps.questionnaires.factories import (
 )
 from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.questionnaires.tests.mixin import ValidateJsonSchemaMixin
+from signals.apps.questionnaires.tests.test_models import create_illustrated_text
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -33,6 +34,9 @@ class NameSpace:
 test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
 
+THIS_DIR = os.path.dirname(__file__)
+GIF_FILE = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
+
 
 @override_settings(ROOT_URLCONF=test_urlconf)
 class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
@@ -48,6 +52,18 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
         )
 
+        # set up explanatory text + images
+        illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
+        self.illustrated_text = illustrated_text
+        self.section_1 = section_1
+        self.section_2 = section_2
+        self.attached_file_1 = attached_file_1
+        self.attached_file_2 = attached_file_2
+        self.explanation = illustrated_text
+
+        self.questionnaire.explanation = self.explanation
+        self.questionnaire.save()
+
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')
         self.assertEqual(response.status_code, 404)
@@ -55,8 +71,15 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
     def test_questionnaire_detail_by_uuid(self):
         response = self.client.get(f'{self.base_endpoint}{self.questionnaire.uuid}')
         self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertEqual(len(response_json['explanation']['sections']), 2)
+        self.assertIn('title', response_json['explanation'])
 
-        self.assertJsonSchema(self.detail_schema, response.json())
+        self.assertJsonSchema(self.detail_schema, response_json)
+
+        response_json = response.json()
+        self.assertIn('explanation', response_json)
+        self.assertEqual(len(response_json['explanation']['sections']), 2)
 
     def test_questionnaire_create_not_allowed(self):
         response = self.client.post(f'{self.base_endpoint}', data={})
