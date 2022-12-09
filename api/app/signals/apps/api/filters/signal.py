@@ -334,12 +334,12 @@ class PublicSignalGeographyFilter(FilterSet):
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
         queryset=_get_parent_category_queryset(), to_field_name='slug',
-        field_name='category_assignment__category__parent__slug',
+        field_name='parent_category_slug',
     )  # Only parent categories are allowed
 
     category_slug = filters.ModelMultipleChoiceFilter(
         queryset=_get_child_category_queryset().filter(is_public_accessible=True),
-        to_field_name='slug', field_name='category_assignment__category__slug'
+        to_field_name='slug', field_name='child_category_slug'
     )  # Only child categories that are public accessible are allowed
 
     def is_valid(self):
@@ -368,16 +368,16 @@ class PublicSignalGeographyFilter(FilterSet):
         lat = self.form.cleaned_data.pop('lat', None)
         lon = self.form.cleaned_data.pop('lon', None)
 
-        geometrie_filter = Q(location__geometrie__within=Polygon.from_bbox(bbox)) if bbox \
-            else Q(location__geometrie=Point(float(lon), float(lat), srid=4326))
+        geometrie_filter = Q(geometry__within=Polygon.from_bbox(bbox)) if bbox \
+            else Q(geometry=Point(float(lon), float(lat), srid=4326))
 
         category_filter = Q()
 
         if main_categories:
-            category_filter &= Q(category_assignment__category__parent_id__in=[c.pk for c in main_categories])
+            category_filter &= Q(parent_category_id__in=[c.pk for c in main_categories])
 
         if sub_categories:
-            category_filter &= Q(category_assignment__category_id__in=[c.pk for c in sub_categories])
+            category_filter &= Q(child_category_id__in=[c.pk for c in sub_categories])
 
         return super().filter_queryset(queryset=queryset.filter(
             category_filter &
