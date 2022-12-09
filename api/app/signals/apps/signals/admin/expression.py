@@ -7,7 +7,9 @@ from signals.apps.dsl.ExpressionEvaluator import ExpressionEvaluator
 
 class RoutingExpressionAdmin(admin.ModelAdmin):
     list_filter = ['_expression___type__name', '_department__code']
-    list_display = ['_expression', '_department', 'is_active']
+    list_display = ['order', '_expression', '_department', 'is_active']
+    list_editable = ['order']
+    list_display_links = ['_expression']
 
     def save_model(self, request, obj, form, change):
         # if is_active is true, try to compile code, deactivate when invalid
