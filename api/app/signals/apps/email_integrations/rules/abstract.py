@@ -38,8 +38,7 @@ class AbstractRule(ABC):
         """
         Validate that the reporter email is set
         """
-        value = signal.reporter and signal.reporter.email
-        return value
+        return signal.reporter and signal.reporter.email
 
     def _validate_historical_data(self, signal):
         """

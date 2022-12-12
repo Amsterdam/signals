@@ -20,9 +20,8 @@ class SignalForwardToExternalAction(AbstractAction):
     def get_additional_context(self, signal, dry_run=False):
         return create_forward_to_external_and_mail_context(signal, dry_run)
 
-    def get_email_address(self, signal):
-        return signal.status.email_override
+    def get_recipient_list(self, signal):
+        return [signal.status.email_override]
 
     def add_note(self, signal):
-        # TODO: add a note containing the email override
         super().add_note(signal)

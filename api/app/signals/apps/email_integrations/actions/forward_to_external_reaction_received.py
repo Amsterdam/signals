@@ -15,8 +15,8 @@ class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
     key = EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED
     subject = 'Meldingen {formatted_signal_id}: reactie ontvangen'
 
-    def get_email_address(self, signal):
-        return self.kwargs['email_override']
+    def get_recipient_list(self, signal):
+        return [self.kwargs['email_override']]
 
     def get_additional_context(self, signal, dry_run=False):
         return {'reaction_text': self.kwargs['reaction_text']}

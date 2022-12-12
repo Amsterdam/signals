@@ -20,7 +20,7 @@ from rest_framework.test import APITestCase
 
 from signals.apps.api.views import NamespaceView
 from signals.apps.email_integrations.models import EmailTemplate
-from signals.apps.email_integrations.tasks import send_mail_reporter
+from signals.apps.email_integrations.services import MailService
 from signals.apps.questionnaires.app_settings import FORWARD_TO_EXTERNAL_DAYS_OPEN
 from signals.apps.questionnaires.factories import AnswerFactory
 from signals.apps.questionnaires.models import Questionnaire, Session
@@ -122,7 +122,10 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         # forego calling the Django signals (problematic in tests) and call into
         # the email system directly.
         Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal)
-        send_mail_reporter(pk=self.signal.id)
+        self.signal.refresh_from_db()
+
+        self.assertEqual(len(MailService._status_actions), 9)
+        MailService.status_mail(signal=self.signal.id)
 
         # Check that we have a Questionnaire and Session
         self.assertEqual(Session.objects.count(), n_sessions + 1)
@@ -151,7 +154,10 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         # forego calling the Django signals (problematic in tests) and call into
         # the email system directly.
         Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal_with_image)
-        send_mail_reporter(pk=self.signal_with_image.id)
+        self.signal_with_image.refresh_from_db()
+
+        self.assertEqual(len(MailService._status_actions), 9)
+        MailService.status_mail(signal=self.signal_with_image.id)
 
         # Check that we have a Questionnaire and Session
         self.assertEqual(Session.objects.count(), n_sessions + 1)
