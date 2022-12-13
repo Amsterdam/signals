@@ -333,13 +333,11 @@ class PublicSignalGeographyFilter(FilterSet):
     lon = filters.NumberFilter()
 
     maincategory_slug = filters.ModelMultipleChoiceFilter(
-        queryset=_get_parent_category_queryset(), to_field_name='slug',
-        field_name='parent_category_slug',
+        queryset=_get_parent_category_queryset(), to_field_name='slug'
     )  # Only parent categories are allowed
 
     category_slug = filters.ModelMultipleChoiceFilter(
-        queryset=_get_child_category_queryset().filter(is_public_accessible=True),
-        to_field_name='slug', field_name='child_category_slug'
+        queryset=_get_child_category_queryset().filter(is_public_accessible=True), to_field_name='slug'
     )  # Only child categories that are public accessible are allowed
 
     def is_valid(self):

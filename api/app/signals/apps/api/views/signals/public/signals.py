@@ -21,6 +21,7 @@ from signals.apps.signals.workflow import (
     AFGEHANDELD,
     AFGEHANDELD_EXTERN,
     GEANNULEERD,
+    GESPLITST,
     VERZOEK_TOT_HEROPENEN
 )
 from signals.throttling import PostOnlyNoUserRateThrottle
@@ -36,7 +37,7 @@ class PublicSignalViewSet(GenericViewSet):
     # geography endpoint
     geography_queryset = PublicSignalGeographyFeature.objects.exclude(
         # Only signals that are in an "Open" state
-        Q(state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, VERZOEK_TOT_HEROPENEN])
+        Q(state__in=[AFGEHANDELD, AFGEHANDELD_EXTERN, GEANNULEERD, GESPLITST, VERZOEK_TOT_HEROPENEN])
     )
 
     filter_backends = (DjangoFilterBackend, OrderingFilter)

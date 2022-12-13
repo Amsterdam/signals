@@ -12,10 +12,8 @@ CREATE MATERIALIZED VIEW "public_signals_geography_feature_collection" AS
     "signals_location"."geometrie" AS geometry,
     "signals_status"."state" AS state,
     scp."id" as parent_category_id,
-    scp."slug" as parent_category_slug,
     "signals_category"."id" as child_category_id,
     "signals_category"."is_public_accessible" as child_category_is_public_accessible,
-    "signals_category"."slug" as child_category_slug,
     "signals_signal"."created_at",
     JSONB_BUILD_OBJECT(
       'type', 'Feature',
@@ -42,8 +40,6 @@ CREATE MATERIALIZED VIEW "public_signals_geography_feature_collection" AS
 
   CREATE UNIQUE INDEX psgfc_id_uniq ON "public_signals_geography_feature_collection" ("id");
   CREATE INDEX psgfc_geometry_id ON "public_signals_geography_feature_collection" USING GIST ("geometry");
-  CREATE INDEX psgfc_child_category_slug_key ON "public_signals_geography_feature_collection" ("child_category_slug");
-  CREATE INDEX psgfc_parent_category_slug_key ON "public_signals_geography_feature_collection" ("parent_category_slug");
   CREATE INDEX psgfc_state_key ON "public_signals_geography_feature_collection" ("state");
 '''  # noqa
 
