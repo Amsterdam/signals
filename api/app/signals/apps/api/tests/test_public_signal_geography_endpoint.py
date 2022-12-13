@@ -12,6 +12,9 @@ from signals.apps.signals.factories import (
     SignalFactory,
     SignalFactoryValidLocation
 )
+from signals.apps.signals.tasks import (
+    refresh_materialized_view_public_signals_geography_feature_collection
+)
 from signals.apps.signals.tests.valid_locations import ARENA, STADHUIS
 from signals.apps.signals.workflow import (
     AFGEHANDELD,
@@ -38,6 +41,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         for x in range(5):
             with (freeze_time(now-timedelta(days=x))):
                 SignalFactoryValidLocation.create(category_assignment__category=child_category)
+
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
@@ -70,6 +75,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
                 SignalFactory.create(location__geometrie=Point(ARENA['lon'], ARENA['lat']),
                                      location__buurt_code=ARENA['buurt_code'],
                                      category_assignment__category=child_category)
+
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.875759,52.360656,4.921221,52.37942')
@@ -107,6 +114,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
                                                 is_public_accessible=True)
 
         SignalFactoryValidLocation.create_batch(5)
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
@@ -165,6 +173,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
                                      location__buurt_code=STADHUIS['buurt_code'],
                                      category_assignment__category=child_category)
 
+        refresh_materialized_view_public_signals_geography_feature_collection()
+
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.875759,52.360656,4.921221,52.37942'
                                    '&group_by=category')
@@ -187,6 +197,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
                                                 is_public_accessible=True)
 
         signal = SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        refresh_materialized_view_public_signals_geography_feature_collection()
         lon = signal.location.geometrie.x
         lat = signal.location.geometrie.y
 
@@ -257,6 +268,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         parent_category = ParentCategoryFactory.create(public_name='parent-test')
         child_category = CategoryFactory.create(parent=parent_category, public_name='test', is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
@@ -278,6 +290,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         parent_category = ParentCategoryFactory.create(public_name=None)
         child_category = CategoryFactory.create(parent=parent_category, public_name=None, is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
@@ -298,6 +311,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         parent_category = ParentCategoryFactory.create(public_name='')
         child_category = CategoryFactory.create(parent=parent_category, public_name='', is_public_accessible=True)
         SignalFactoryValidLocation.create(category_assignment__category=child_category)
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?maincategory_slug={parent_category.slug}'
                                    f'&category_slug={child_category.slug}&bbox=4.700000,52.200000,5.000000,52.500000')
@@ -324,6 +338,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         SignalFactoryValidLocation.create(category_assignment__category=compost)
 
+        refresh_materialized_view_public_signals_geography_feature_collection()
+
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000')
 
         data = response.json()
@@ -342,6 +358,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         SignalFactoryValidLocation.create(category_assignment__category=plastic)
 
         SignalFactoryValidLocation.create(category_assignment__category=compost)
+
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'category_slug={plastic.slug}')
@@ -367,6 +385,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         SignalFactoryValidLocation.create(category_assignment__category=child_animal)
         SignalFactoryValidLocation.create(category_assignment__category=child_animal)
 
+        refresh_materialized_view_public_signals_geography_feature_collection()
+
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'maincategory_slug={parent_cat.slug}')
 
@@ -388,6 +408,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         SignalFactoryValidLocation.create(category_assignment__category=child_cat, status__state=VERZOEK_TOT_HEROPENEN)
         SignalFactoryValidLocation.create(category_assignment__category=child_cat, status__state=GEMELD)
 
+        refresh_materialized_view_public_signals_geography_feature_collection()
+
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'maincategory_slug={parent_cat.slug}')
 
@@ -407,6 +429,8 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
 
         SignalFactoryValidLocation.create(category_assignment__category=non_accessible_cat, status__state=GEMELD)
         SignalFactoryValidLocation.create(category_assignment__category=accessible_cat, status__state=GEMELD)
+
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'maincategory_slug={parent_cat.slug}')
@@ -428,6 +452,7 @@ class TestPublicSignalViewSet(SignalsBaseApiTestCase):
         non_accessible_cat = CategoryFactory.create(parent=parent_cat, is_public_accessible=False)
 
         SignalFactoryValidLocation.create(category_assignment__category=non_accessible_cat, status__state=AFGEHANDELD)
+        refresh_materialized_view_public_signals_geography_feature_collection()
 
         response = self.client.get(f'{self.geography_endpoint}/?bbox=4.700000,52.200000,5.000000,52.500000&'
                                    f'maincategory_slug={parent_cat.slug}')
