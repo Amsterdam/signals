@@ -67,6 +67,9 @@ class Session(models.Model):
             if self._signal.id != self._signal_location._signal.id:
                 raise ValidationError('For a Session _signal.id must match _signal_location._signal.id')
 
+        if not self._signal and (self._signal_location or self._signal_status):
+            raise ValidationError('If Session._signal is None neither _signal_location nor _signal_status can be set')
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0163_category_icon'),
+        ('signals', '0164_materialized_view_public_signals_geography_feature_collection'),
     ]
 
     operations = [

@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
     _required_call_kwargs = ('reaction_text', 'email_override')
-    rule = lambda self, signal: True  # noqa: E731
 
     key = EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED
     subject = 'Meldingen {formatted_signal_id}: reactie ontvangen'

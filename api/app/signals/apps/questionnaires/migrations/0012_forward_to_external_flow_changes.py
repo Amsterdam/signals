@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0164_add_status_forward_to_external'),
+        ('signals', '0165_add_status_forward_to_external'),
         ('questionnaires', '0011_question_multiple_answer'),
     ]
 

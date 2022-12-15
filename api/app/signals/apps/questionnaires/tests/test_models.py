@@ -597,3 +597,24 @@ class TestSession(TestCase):
         with self.assertRaises(ValidationError):
             session._signal_location = wrong_location
             session.save()
+
+    def test_no_signal_then_no_signal_properties_allowed(self):
+        with self.assertRaises(ValidationError):
+            session = SessionFactory.create(
+                _signal=None,
+                _signal_status=self.signal.status
+            )
+
+        with self.assertRaises(ValidationError):
+            session = SessionFactory.create(
+                _signal=None,
+                _signal_status=self.signal.status,
+                _signal_location=self.signal.location
+            )
+
+        with self.assertRaises(ValidationError):
+            session = SessionFactory.create(
+                _signal=None,
+                _signal_status = self.signal.status,
+                _signal_location = self.signal.location
+            )
