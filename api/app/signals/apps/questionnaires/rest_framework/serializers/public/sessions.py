@@ -22,7 +22,7 @@ class PublicSessionSerializer(HALSerializer):
     _display = DisplayField()
 
     questionnaire_explanation = NestedPublicIllustratedTextSerializer(source='questionnaire.explanation')
-    location = LocationModelSerializer(source='_signal_location')
+    signal_snapshot = serializers.SerializerMethodField()
     can_freeze = serializers.SerializerMethodField()
     path_questions = serializers.SerializerMethodField()
     path_answered_question_uuids = serializers.SerializerMethodField()
@@ -40,7 +40,7 @@ class PublicSessionSerializer(HALSerializer):
             'duration',
             'created_at',
             'questionnaire_explanation',
-            'location',
+            'signal_snapshot',
             # generated using the SessionService in serializer context:
             'can_freeze',
             'path_questions',
@@ -53,7 +53,7 @@ class PublicSessionSerializer(HALSerializer):
             'uuid',
             'created_at',
             'questionnaire_explanation',
-            'location',
+            'signal_snapshot',
             # generated using the SessionService in serializer context:
             'can_freeze',
             'path_questions',
@@ -83,6 +83,18 @@ class PublicSessionSerializer(HALSerializer):
         session_service = self.context.get('session_service')
         # Possibly turn all UUIDs into str(UUID)s in SessionService.
         return {str(k): v for k, v in session_service.path_validation_errors_by_uuid.items()}
+
+    def get_signal_snapshot(self, obj):
+        if not obj._signal:
+            return None
+
+        serialized_location = LocationModelSerializer(obj._signal_location).data
+        serialized_location = serialized_location or None  # We want null in stead of {}
+        return {
+            'signal_id': obj._signal.uuid,
+            'id': obj._signal.id,
+            'location': serialized_location
+        }
 
     def create(self, validated_data):
         """

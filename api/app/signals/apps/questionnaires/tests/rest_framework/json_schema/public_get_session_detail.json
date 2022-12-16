@@ -108,65 +108,88 @@
 				}
 			]
 		},
-		"location":{
+		"signal_snapshot": {
 			"anyOf": [
 				{
-					"type": "object",
 					"properties": {
-						"geometrie": {
-							"type": "object",
-							"properties": {
-								"coordinates": {
-									"type": "array",
-									"items": {
-										"type": "number"
-									}
-								},
-								"type": {
-									"type": "string"
-								}
-							}
+						"id": {
+							"type": "number"
 						},
-						"address": {
-							"anoOf": [
-								{
-									"type": "null"
-								},
-								{
-									"type": "object"
-								}
-							]
+						"signal_id": {
+							"type": "string",
+							"format": "uuid"
 						},
-						"address_text": {
-							"type": "string"
-						},
-						"stadsdeel": {
+						"location": {
 							"anyOf": [
 								{
-									"type": "null"
+									"type": "object",
+									"properties": {
+										"geometrie": {
+											"type": "object",
+											"properties": {
+												"coordinates": {
+													"type": "array",
+													"items": {
+														"type": "number"
+													}
+												},
+												"type": {
+													"type": "string"
+												}
+											}
+										},
+										"address": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "object"
+												}
+											]
+										},
+										"address_text": {
+											"type": "string"
+										},
+										"stadsdeel": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										},
+										"area_name": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										}
+									},
+									"required": [
+										"geometrie",
+										"address",
+										"address_text",
+										"stadsdeel",
+										"area_name"
+									],
+									"additionalProperties": false
 								},
 								{
-									"type": "string"
-								}
-							]
-						},
-						"area_name": {
-							"anyOf": [
-								{
 									"type": "null"
-								},
-								{
-									"type": "string"
 								}
 							]
 						}
 					},
 					"required": [
-						"geometrie",
-						"address",
-						"address_text",
-						"stadsdeel",
-						"area_name"
+						"id",
+						"signal_id"
 					],
 					"additionalProperties": false
 				},
@@ -382,7 +405,6 @@
 		"can_freeze",
 		"created_at",
 		"duration",
-		"location",
 		"path_answered_question_uuids",
 		"path_questions",
 		"path_unanswered_question_uuids",

@@ -88,6 +88,9 @@ class TestRetrieveReactionRequest(ValidateJsonSchemaMixin, APITestCase):
         response_json = response.json()
 
         self.assertEqual(response.status_code, 200)
+        import logging
+        logger = logging.getLogger(name=__name__)
+        logger.warning(response_json)
         self.assertJsonSchema(self.session_detail_schema, response_json)
 
     def test_retrieve_session_too_late(self):

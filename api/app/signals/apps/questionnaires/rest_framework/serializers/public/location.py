@@ -12,7 +12,7 @@ class LocationModelSerializer(ModelSerializer):
         model = Location
         geo_field = 'geometrie'
         fields = (
-            'geometrie',
+            'geometrie',  # Dutch spelling consistent with serialization in general API (for frontend compatibility)
             'address',
             'address_text',
             'stadsdeel',

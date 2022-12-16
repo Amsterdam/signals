@@ -229,7 +229,7 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(self.session.questionnaire.flow, Questionnaire.FORWARD_TO_EXTERNAL)
         self.assertEqual(self.session._signal.status.state, workflow.DOORGEZET_NAAR_EXTERN)
 
-        self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))  # fstring here
+        self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))
         self.answers_url = self.session_answers_endpoint.format(uuid=str(self.session.uuid))
         self.submit_url = self.session_submit_endpoint.format(uuid=str(self.session.uuid))
         self.attachments_url = self.session_attachments_endpoint.format(uuid=str(self.session.uuid))
@@ -271,8 +271,8 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
 
         self.assertEqual(response.status_code, 200)
         self.assertJsonSchema(self.session_detail_schema, response_json)
-        self.assertEqual(response_json['location']['stadsdeel'], 'Centrum')
-        self.assertEqual(response_json['location']['area_name'], None)
+        self.assertEqual(response_json['signal_snapshot']['location']['stadsdeel'], 'Centrum')
+        self.assertEqual(response_json['signal_snapshot']['location']['area_name'], None)
 
         self.session._signal_location.stadsdeel = None
         self.session._signal_location.area_name = 'AREA NAME'
@@ -284,8 +284,28 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
 
         self.assertEqual(response.status_code, 200)
         self.assertJsonSchema(self.session_detail_schema, response_json)
-        self.assertEqual(response_json['location']['stadsdeel'], None)
-        self.assertEqual(response_json['location']['area_name'], 'AREA NAME')
+        self.assertEqual(response_json['signal_snapshot']['location']['stadsdeel'], None)
+        self.assertEqual(response_json['signal_snapshot']['location']['area_name'], 'AREA NAME')
+
+    @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
+           autospec=True)
+    def test_retrieve_session_no_signal_means_no_signal_snapshot(self, patched_get_url):
+        """
+        Test to check that signal_snapshot is serialized as None when _signal is None
+        """
+        from signals.apps.questionnaires.factories import SessionFactory
+
+        with freeze_time(self.t_creation):
+            session = SessionFactory.create()
+        session_url = self.session_detail_endpoint.format(uuid=str(session.uuid))
+
+        with freeze_time(self.t_answer_in_time):
+            response = self.client.get(session_url)
+        response_json = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJsonSchema(self.session_detail_schema, response_json)
+        self.assertEqual(response_json['signal_snapshot'], None)
 
     def test_retrieve_session_too_late(self):
         with freeze_time(self.t_answer_too_late):

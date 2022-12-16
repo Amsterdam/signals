@@ -600,21 +600,21 @@ class TestSession(TestCase):
 
     def test_no_signal_then_no_signal_properties_allowed(self):
         with self.assertRaises(ValidationError):
-            session = SessionFactory.create(
+            SessionFactory.create(
                 _signal=None,
                 _signal_status=self.signal.status
             )
 
         with self.assertRaises(ValidationError):
-            session = SessionFactory.create(
+            SessionFactory.create(
                 _signal=None,
                 _signal_status=self.signal.status,
                 _signal_location=self.signal.location
             )
 
         with self.assertRaises(ValidationError):
-            session = SessionFactory.create(
+            SessionFactory.create(
                 _signal=None,
-                _signal_status = self.signal.status,
-                _signal_location = self.signal.location
+                _signal_status=self.signal.status,
+                _signal_location=self.signal.location
             )
