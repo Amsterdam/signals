@@ -143,3 +143,8 @@ if settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
         # My Signals
         path('v1/', include('signals.apps.my_signals.urls')),
     ]
+
+if settings.FEATURE_FLAGS['GISIB_ENABLED']:
+    urlpatterns += [
+        path('v1/', include('signals.apps.gisib.urls')),
+    ]

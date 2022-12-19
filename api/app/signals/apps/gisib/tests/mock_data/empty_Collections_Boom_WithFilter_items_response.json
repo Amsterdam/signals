@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::28992"
+    }
+  },
+  "links": [
+    {
+      "rel": "next",
+      "type": "application/geo+json",
+      "title": "Next page",
+      "href": null
+    },
+    {
+      "rel": "prev",
+      "type": "application/geo+json",
+      "title": "Previous page",
+      "href": null
+    },
+    {
+      "rel": "first",
+      "type": "application/geo+json",
+      "title": "First page",
+      "href": "https://amsterdam-test.gisib.nl/api/api/OGCCollections/Boom/items?crs=28992&limit=10&offset=0"
+    }
+  ],
+  "features": [
+  ]
+}

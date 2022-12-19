@@ -40,4 +40,7 @@ FEATURE_FLAGS = {
 
     # Run routing expressions again when updating signal subcategory or location
     'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
+
+    # Enable/Disbale the GISIB app
+    'GISIB_ENABLED': os.getenv('GISIB_ENABLED', False) in TRUE_VALUES,
 }

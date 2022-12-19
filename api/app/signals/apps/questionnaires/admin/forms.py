@@ -5,8 +5,8 @@
 from django.forms import JSONField, modelformset_factory
 from django.forms.models import BaseModelFormSet, ModelForm
 
+from signals.apps.api.forms.widgets import PrettyJSONWidget
 from signals.apps.api.validators.json_schema import JSONSchemaValidator
-from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
 
 
 class NonRelatedInlineFormSet(BaseModelFormSet):

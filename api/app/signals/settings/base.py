@@ -62,6 +62,7 @@ SIGNAL_APPS = [
     'signals.apps.dataset',
     'signals.apps.questionnaires',
     'signals.apps.my_signals',
+    'signals.apps.gisib',
     'logs'
 ]
 
@@ -425,3 +426,9 @@ STATUS_MESSAGE_TEMPLATE_MAX_INSTANCES = os.getenv('STATUS_MESSAGE_TEMPLATE_MAX_I
 
 MARKDOWNX_MARKDOWNIFY_FUNCTION = 'signals.apps.email_integrations.utils.markdownx_md'  # noqa Renders markdown as HTML using Mistune
 MARKDOWNX_URLS_PATH = '/signals/markdownx/markdownify/'  # The url path that Signals has for markdownx
+
+# GISIB Settings
+GISIB_ENDPOINT = os.getenv('GISIB_ENDPOINT')
+GISIB_USERNAME = os.getenv('GISIB_USERNAME')
+GISIB_PASSWORD = os.getenv('GISIB_PASSWORD')
+GISIB_APIKEY = os.getenv('GISIB_APIKEY')

@@ -1,0 +1,3466 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::28992"
+    }
+  },
+  "links": [
+    {
+      "rel": "next",
+      "type": "application/geo+json",
+      "title": "Next page",
+      "href": "https://amsterdam-test.gisib.nl/api/api/OGCCollections/Boom/items?crs=28992&limit=10&offset=10"
+    },
+    {
+      "rel": "prev",
+      "type": "application/geo+json",
+      "title": "Previous page",
+      "href": "https://amsterdam-test.gisib.nl/api/api/OGCCollections/Boom/items?crs=28992&limit=10&offset=0"
+    },
+    {
+      "rel": "first",
+      "type": "application/geo+json",
+      "title": "First page",
+      "href": "https://amsterdam-test.gisib.nl/api/api/OGCCollections/Boom/items?crs=28992&limit=10&offset=0"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120154.43,
+          483804.66
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "999F7E69-8F79-4B59-BE18-C665E5411CD4",
+        "Identificatie": null,
+        "Jaar van aanleg": 1985,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24280,
+          "GUID": "{4707A3A3-7578-4F8D-BDCE-4BE9E3DA7513}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24280",
+          "Description": "Strawinskypad"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1370,
+          "GUID": "{5FE30ABF-44D5-4C9F-A527-34DD4D00485D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1370",
+          "Description": "Begeleidingssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36418,
+          "GUID": "{EC32D5B8-0B0F-4458-930D-C49A6D04695C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36418",
+          "Description": "Quercus robur"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20322,
+          "GUID": "{B2EB43FF-685C-4329-ADFD-F8F2B7C00645}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20322",
+          "Description": "Zuidas"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589668",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589668",
+        "X Coordinaat": 120154.43,
+        "Y Coordinaat": 483804.66,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919406,
+          "GUID": "{1D69F7DB-C396-43A8-975D-8FA945FEFA1F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919406",
+          "Description": "Nog niet bereikt"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20703,
+          "GUID": "{8861682F-D71A-4B4C-9170-A18095CF1FB8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20703",
+          "Description": "Zuidas-Noord"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 885,
+          "GUID": "{7BF84426-ABCB-4125-8487-23C768E39A50}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/885",
+          "Description": "6 tot 9 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589668",
+        "BoomID Gisib": "589668",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2023-04-22T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": {
+          "Id": 1846124,
+          "GUID": "{B4DA3E47-6C9A-4ABC-8CEA-80F9F72D245A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Selectie 2/items/1846124",
+          "Description": "Selectie snoei BVO 2020"
+        },
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846028,
+          "GUID": "{76B01CC3-9193-46E2-8CD8-08558F4799B2}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846028",
+          "Description": "Begeleidingssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33932,
+          "GUID": "{1813F42C-5FCE-4A54-B9D5-5E9CF186511E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33932",
+          "Description": "Zomereik"
+        },
+        "Boomconditie": {
+          "Id": 1846312,
+          "GUID": "{9494D0EA-96FE-4215-B98C-69B0894BB5FF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846312",
+          "Description": "Onvoldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.341056,
+        "Longitude": 4.875886,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.341056,4.875886",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.341056,4.875886&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Beethovenstraat 200",
+        "Dichtstbijzijnde BAG Postcode": "1077JZ",
+        "Afstand tot dichtstbijzijnde BAG Adres": 35.42,
+        "Code": null,
+        "GUID": "{8B61D77E-3DE5-488F-BF58-B530FA5C504A}",
+        "Id": 919937,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:01.047268",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120126.24,
+          483804.78
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 74,
+          "GUID": "{0C6579CD-7835-4820-9AC0-647EF93307B8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/74",
+          "Description": "Aanvaard boombeeld"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "3C7EDBB2-06A4-437B-907A-6D579C2B2CF3",
+        "Identificatie": null,
+        "Jaar van aanleg": 1974,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24280,
+          "GUID": "{4707A3A3-7578-4F8D-BDCE-4BE9E3DA7513}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24280",
+          "Description": "Strawinskypad"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36418,
+          "GUID": "{EC32D5B8-0B0F-4458-930D-C49A6D04695C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36418",
+          "Description": "Quercus robur"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20322,
+          "GUID": "{B2EB43FF-685C-4329-ADFD-F8F2B7C00645}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20322",
+          "Description": "Zuidas"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589665",
+        "Controlefrequentie": {
+          "Id": 36863,
+          "GUID": "{FA24B879-13A0-44AC-B7D3-C83211292EC5}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36863",
+          "Description": "1 x per jaar"
+        },
+        "ConversieID": "589665",
+        "X Coordinaat": 120126.24,
+        "Y Coordinaat": 483804.78,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919408,
+          "GUID": "{BB01EB04-CF52-4DFC-875D-ED34C5D272C0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919408",
+          "Description": "Onbereikbaar, snoei-ingreep ongewenst"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20703,
+          "GUID": "{8861682F-D71A-4B4C-9170-A18095CF1FB8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20703",
+          "Description": "Zuidas-Noord"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 887,
+          "GUID": "{397E508B-8668-425D-871C-C53EF23A1865}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/887",
+          "Description": "12 tot 15 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589665",
+        "BoomID Gisib": "589665",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2021-04-22T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846029,
+          "GUID": "{77AEDE16-E5AD-4133-80E9-B442C36689F6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846029",
+          "Description": "Onderhoudssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33932,
+          "GUID": "{1813F42C-5FCE-4A54-B9D5-5E9CF186511E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33932",
+          "Description": "Zomereik"
+        },
+        "Boomconditie": {
+          "Id": 1846311,
+          "GUID": "{905ABEB2-823C-4C78-8067-19DBBDBC537E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846311",
+          "Description": "Voldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.341055,
+        "Longitude": 4.875473,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.341055,4.875473",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.341055,4.875473&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Strawinskylaan 6",
+        "Dichtstbijzijnde BAG Postcode": "",
+        "Afstand tot dichtstbijzijnde BAG Adres": 45.21,
+        "Code": null,
+        "GUID": "{73DBD323-0B8A-4197-8296-6742D04B3483}",
+        "Id": 919938,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:01.015395",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120499.69,
+          482896.18
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 74,
+          "GUID": "{0C6579CD-7835-4820-9AC0-647EF93307B8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/74",
+          "Description": "Aanvaard boombeeld"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1875,
+          "GUID": "{5A4DF2E9-813A-4750-BAA0-6906C07D12E6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1875",
+          "Description": "C"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "8B1924B9-A227-43F0-954C-01A1D6B554FB",
+        "Identificatie": null,
+        "Jaar van aanleg": 2002,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1910,
+          "GUID": "{EDF450AA-5293-45A6-84BA-7C51BAF7237B}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1910",
+          "Description": "Gemiddeld"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 25396,
+          "GUID": "{AECCBF06-1253-4B51-BD85-CF25E2CAB8A7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/25396",
+          "Description": "Holy"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36079,
+          "GUID": "{152B6B80-B854-45EA-915E-99F99F96EEC4}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36079",
+          "Description": "Quercus turneri 'Pseudoturneri'"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20329,
+          "GUID": "{C49B5228-C440-4DF5-AABE-6381FDF30D44}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20329",
+          "Description": "Buitenveldert-Oost"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589663",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589663",
+        "X Coordinaat": 120499.69,
+        "Y Coordinaat": 482896.18,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919408,
+          "GUID": "{BB01EB04-CF52-4DFC-875D-ED34C5D272C0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919408",
+          "Description": "Onbereikbaar, snoei-ingreep ongewenst"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20619,
+          "GUID": "{0E9F0337-21BE-4B87-8D75-A536B153CE52}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20619",
+          "Description": "Buitenveldert-Oost-Midden"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 884,
+          "GUID": "{DB29108B-9135-45FB-B76A-C9D41F025284}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/884",
+          "Description": "tot 6 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589663",
+        "BoomID Gisib": "589663",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2022-01-27T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846029,
+          "GUID": "{77AEDE16-E5AD-4133-80E9-B442C36689F6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846029",
+          "Description": "Onderhoudssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33418,
+          "GUID": "{7E6DF2DF-9876-454A-A5E2-D01D5D018620}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33418",
+          "Description": "Eik (cultuurvariëteit)"
+        },
+        "Boomconditie": {
+          "Id": 1846311,
+          "GUID": "{905ABEB2-823C-4C78-8067-19DBBDBC537E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846311",
+          "Description": "Voldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.332913,
+        "Longitude": 4.881046,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.332913,4.881046",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.332913,4.881046&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Holy 46",
+        "Dichtstbijzijnde BAG Postcode": "1083JL",
+        "Afstand tot dichtstbijzijnde BAG Adres": 19.46,
+        "Code": null,
+        "GUID": "{FC98BD6B-B7F9-40E8-B8AA-C193825FF324}",
+        "Id": 919940,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T16:42:39.338419",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120863.96,
+          482265.43
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1875,
+          "GUID": "{5A4DF2E9-813A-4750-BAA0-6906C07D12E6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1875",
+          "Description": "C"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "40029ED2-99C1-4F06-BF36-3AFA66F73B8B",
+        "Identificatie": null,
+        "Jaar van aanleg": 2002,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1910,
+          "GUID": "{EDF450AA-5293-45A6-84BA-7C51BAF7237B}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1910",
+          "Description": "Gemiddeld"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 23065,
+          "GUID": "{4EA585FC-19CD-4234-9729-D4A63ED33E22}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/23065",
+          "Description": "Wamberg"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1370,
+          "GUID": "{5FE30ABF-44D5-4C9F-A527-34DD4D00485D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1370",
+          "Description": "Begeleidingssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 35937,
+          "GUID": "{308C8B8E-CEAB-4B32-AA7E-188EC3C38F84}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/35937",
+          "Description": "Quercus castaneifolia 'Green Spire'"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": {
+          "Id": 168,
+          "GUID": "{D08FB558-E80B-49DC-AB1F-11FFEC6F85E8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats/items/168",
+          "Description": "Elementenverharding"
+        },
+        "Standplaats gedetailleerd": {
+          "Id": 862,
+          "GUID": "{063153CC-F6A1-4A89-8C4D-EC8E62DBDD4E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats gedetailleerd/items/862",
+          "Description": "Tegels"
+        },
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20329,
+          "GUID": "{C49B5228-C440-4DF5-AABE-6381FDF30D44}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20329",
+          "Description": "Buitenveldert-Oost"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589661",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589661",
+        "X Coordinaat": 120863.96,
+        "Y Coordinaat": 482265.43,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919406,
+          "GUID": "{1D69F7DB-C396-43A8-975D-8FA945FEFA1F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919406",
+          "Description": "Nog niet bereikt"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284592,
+          "GUID": "{CC2AFE46-B2AA-463E-8799-006A51DB1FB0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284592",
+          "Description": "Boom - BOOM IN VERHARDING"
+        },
+        "Buurt": {
+          "Id": 20620,
+          "GUID": "{E0DB134B-2B37-4537-90A8-287744A8D3DC}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20620",
+          "Description": "Buitenveldert-Zuidoost"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 887,
+          "GUID": "{397E508B-8668-425D-871C-C53EF23A1865}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/887",
+          "Description": "12 tot 15 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589661",
+        "BoomID Gisib": "589661",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2022-02-05T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846028,
+          "GUID": "{76B01CC3-9193-46E2-8CD8-08558F4799B2}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846028",
+          "Description": "Begeleidingssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33589,
+          "GUID": "{8859B211-95A4-4710-9327-CA3189636AD0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33589",
+          "Description": "Kastanjebladige eik (cultuurvariëteit)"
+        },
+        "Boomconditie": {
+          "Id": 1846311,
+          "GUID": "{905ABEB2-823C-4C78-8067-19DBBDBC537E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846311",
+          "Description": "Voldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.327267,
+        "Longitude": 4.886454,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.327267,4.886454",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.327267,4.886454&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Noordbrabantstraat 152",
+        "Dichtstbijzijnde BAG Postcode": "1083BG",
+        "Afstand tot dichtstbijzijnde BAG Adres": 25.9,
+        "Code": null,
+        "GUID": "{D0FDADF4-C1A8-4ABA-AEBD-C95DD9186378}",
+        "Id": 919942,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T16:42:39.260323",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120183.1,
+          483807.09
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "604727C7-2A33-4056-99DD-AE97D195FBBE",
+        "Identificatie": null,
+        "Jaar van aanleg": 1974,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24280,
+          "GUID": "{4707A3A3-7578-4F8D-BDCE-4BE9E3DA7513}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24280",
+          "Description": "Strawinskypad"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36418,
+          "GUID": "{EC32D5B8-0B0F-4458-930D-C49A6D04695C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36418",
+          "Description": "Quercus robur"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": {
+          "Id": 159,
+          "GUID": "{FA6EA25B-72B9-45B5-A634-DE2A7A79A48D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats/items/159",
+          "Description": "Bosplantsoen"
+        },
+        "Standplaats gedetailleerd": {
+          "Id": 870,
+          "GUID": "{C99F344B-D3C6-42AE-805F-5C9BA948D2BD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats gedetailleerd/items/870",
+          "Description": "Struikvormers"
+        },
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20322,
+          "GUID": "{B2EB43FF-685C-4329-ADFD-F8F2B7C00645}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20322",
+          "Description": "Zuidas"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589650",
+        "Controlefrequentie": {
+          "Id": 36863,
+          "GUID": "{FA24B879-13A0-44AC-B7D3-C83211292EC5}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36863",
+          "Description": "1 x per jaar"
+        },
+        "ConversieID": "589650",
+        "X Coordinaat": 120183.1,
+        "Y Coordinaat": 483807.09,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919408,
+          "GUID": "{BB01EB04-CF52-4DFC-875D-ED34C5D272C0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919408",
+          "Description": "Onbereikbaar, snoei-ingreep ongewenst"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20703,
+          "GUID": "{8861682F-D71A-4B4C-9170-A18095CF1FB8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20703",
+          "Description": "Zuidas-Noord"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 887,
+          "GUID": "{397E508B-8668-425D-871C-C53EF23A1865}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/887",
+          "Description": "12 tot 15 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589650",
+        "BoomID Gisib": "589650",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2021-04-22T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": {
+          "Id": 1846124,
+          "GUID": "{B4DA3E47-6C9A-4ABC-8CEA-80F9F72D245A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Selectie 2/items/1846124",
+          "Description": "Selectie snoei BVO 2020"
+        },
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846029,
+          "GUID": "{77AEDE16-E5AD-4133-80E9-B442C36689F6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846029",
+          "Description": "Onderhoudssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33932,
+          "GUID": "{1813F42C-5FCE-4A54-B9D5-5E9CF186511E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33932",
+          "Description": "Zomereik"
+        },
+        "Boomconditie": {
+          "Id": 1846311,
+          "GUID": "{905ABEB2-823C-4C78-8067-19DBBDBC537E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846311",
+          "Description": "Voldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.341079,
+        "Longitude": 4.876307,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.341079,4.876307",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.341079,4.876307&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Beethovenstraat 200",
+        "Dichtstbijzijnde BAG Postcode": "1077JZ",
+        "Afstand tot dichtstbijzijnde BAG Adres": 42.35,
+        "Code": null,
+        "GUID": "{087422A8-2052-40FB-81BB-318BBA4D6556}",
+        "Id": 919952,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:00.937274",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120187.45,
+          483808.09
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1174,
+          "GUID": "{7EC12D42-A591-45C4-B7AE-998E29768B8C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1174",
+          "Description": "Risicoboom"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "57EBB341-09EF-4F30-9D02-A765E348451B",
+        "Identificatie": null,
+        "Jaar van aanleg": 1974,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24280,
+          "GUID": "{4707A3A3-7578-4F8D-BDCE-4BE9E3DA7513}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24280",
+          "Description": "Strawinskypad"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36418,
+          "GUID": "{EC32D5B8-0B0F-4458-930D-C49A6D04695C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36418",
+          "Description": "Quercus robur"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20322,
+          "GUID": "{B2EB43FF-685C-4329-ADFD-F8F2B7C00645}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20322",
+          "Description": "Zuidas"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589649",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589649",
+        "X Coordinaat": 120187.45,
+        "Y Coordinaat": 483808.09,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919408,
+          "GUID": "{BB01EB04-CF52-4DFC-875D-ED34C5D272C0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919408",
+          "Description": "Onbereikbaar, snoei-ingreep ongewenst"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20703,
+          "GUID": "{8861682F-D71A-4B4C-9170-A18095CF1FB8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20703",
+          "Description": "Zuidas-Noord"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 885,
+          "GUID": "{7BF84426-ABCB-4125-8487-23C768E39A50}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/885",
+          "Description": "6 tot 9 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589649",
+        "BoomID Gisib": "589649",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2023-04-22T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": {
+          "Id": 1846124,
+          "GUID": "{B4DA3E47-6C9A-4ABC-8CEA-80F9F72D245A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Selectie 2/items/1846124",
+          "Description": "Selectie snoei BVO 2020"
+        },
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846029,
+          "GUID": "{77AEDE16-E5AD-4133-80E9-B442C36689F6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846029",
+          "Description": "Onderhoudssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33932,
+          "GUID": "{1813F42C-5FCE-4A54-B9D5-5E9CF186511E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33932",
+          "Description": "Zomereik"
+        },
+        "Boomconditie": {
+          "Id": 1846312,
+          "GUID": "{9494D0EA-96FE-4215-B98C-69B0894BB5FF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846312",
+          "Description": "Onvoldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.341089,
+        "Longitude": 4.876371,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.341089,4.876371",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.341089,4.876371&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Beethovenstraat 200",
+        "Dichtstbijzijnde BAG Postcode": "1077JZ",
+        "Afstand tot dichtstbijzijnde BAG Adres": 44.49,
+        "Code": null,
+        "GUID": "{C769CEA2-5EF6-438A-9E3C-DDD52CFF2405}",
+        "Id": 919953,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:00.905998",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120181.31,
+          483806.94
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26966,
+          "GUID": "{BB120E70-2749-47B1-A239-CCC65E35C2DF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26966",
+          "Description": "Buitenveldert, Zuidas"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "D9401E89-FFF8-4024-85E8-58049A3629C6",
+        "Identificatie": null,
+        "Jaar van aanleg": 1983,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24280,
+          "GUID": "{4707A3A3-7578-4F8D-BDCE-4BE9E3DA7513}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24280",
+          "Description": "Strawinskypad"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36418,
+          "GUID": "{EC32D5B8-0B0F-4458-930D-C49A6D04695C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36418",
+          "Description": "Quercus robur"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": {
+          "Id": 159,
+          "GUID": "{FA6EA25B-72B9-45B5-A634-DE2A7A79A48D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats/items/159",
+          "Description": "Bosplantsoen"
+        },
+        "Standplaats gedetailleerd": {
+          "Id": 870,
+          "GUID": "{C99F344B-D3C6-42AE-805F-5C9BA948D2BD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats gedetailleerd/items/870",
+          "Description": "Struikvormers"
+        },
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1169,
+          "GUID": "{66D55CCE-644D-4CDD-92B1-01959700F782}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1169",
+          "Description": "0 m."
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1169,
+          "GUID": "{66D55CCE-644D-4CDD-92B1-01959700F782}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1169",
+          "Description": "0 m."
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20322,
+          "GUID": "{B2EB43FF-685C-4329-ADFD-F8F2B7C00645}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20322",
+          "Description": "Zuidas"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589639",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589639",
+        "X Coordinaat": 120181.31,
+        "Y Coordinaat": 483806.94,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919406,
+          "GUID": "{1D69F7DB-C396-43A8-975D-8FA945FEFA1F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919406",
+          "Description": "Nog niet bereikt"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20703,
+          "GUID": "{8861682F-D71A-4B4C-9170-A18095CF1FB8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20703",
+          "Description": "Zuidas-Noord"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 885,
+          "GUID": "{7BF84426-ABCB-4125-8487-23C768E39A50}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/885",
+          "Description": "6 tot 9 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589639",
+        "BoomID Gisib": "589639",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2023-04-22T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": {
+          "Id": 1846124,
+          "GUID": "{B4DA3E47-6C9A-4ABC-8CEA-80F9F72D245A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Selectie 2/items/1846124",
+          "Description": "Selectie snoei BVO 2020"
+        },
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846028,
+          "GUID": "{76B01CC3-9193-46E2-8CD8-08558F4799B2}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846028",
+          "Description": "Begeleidingssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33932,
+          "GUID": "{1813F42C-5FCE-4A54-B9D5-5E9CF186511E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33932",
+          "Description": "Zomereik"
+        },
+        "Boomconditie": {
+          "Id": 1846312,
+          "GUID": "{9494D0EA-96FE-4215-B98C-69B0894BB5FF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846312",
+          "Description": "Onvoldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.341078,
+        "Longitude": 4.876281,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.341078,4.876281",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.341078,4.876281&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Beethovenstraat 200",
+        "Dichtstbijzijnde BAG Postcode": "1077JZ",
+        "Afstand tot dichtstbijzijnde BAG Adres": 41.37,
+        "Code": null,
+        "GUID": "{E1382A5A-5334-4B4E-9EEE-D7AC1E88AFA6}",
+        "Id": 919963,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:00.734163",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          120137.046622495,
+          486013.985095666
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20123,
+          "GUID": "{B4FC23E9-3661-4785-AFDD-8DF799F6C6FC}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20123",
+          "Description": "Stadsdeel West"
+        },
+        "Beheergebied": {
+          "Id": 26979,
+          "GUID": "{7B43E109-A38D-4D83-B317-24C926E69BC3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26979",
+          "Description": "Oud-West, De Baarsjes"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1172,
+          "GUID": "{24C86F42-B344-4D87-A822-57CE10A8C8EF}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1172",
+          "Description": "Boom zonder (noemenswaardige) gebreken"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1874,
+          "GUID": "{FD0AFA11-F99B-4B7D-8BD6-83CFA0054E54}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1874",
+          "Description": "B"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "75188CD0-83FA-4667-8365-FED7FC415A0B",
+        "Identificatie": null,
+        "Jaar van aanleg": 2014,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1910,
+          "GUID": "{EDF450AA-5293-45A6-84BA-7C51BAF7237B}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1910",
+          "Description": "Gemiddeld"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": null,
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1370,
+          "GUID": "{5FE30ABF-44D5-4C9F-A527-34DD4D00485D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1370",
+          "Description": "Begeleidingssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36335,
+          "GUID": "{4BBB3FB3-17E0-438F-9AA6-23DA0C88AD85}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36335",
+          "Description": "Quercus palustris"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": {
+          "Id": 1293,
+          "GUID": "{091EEBAF-496F-45C9-A15B-146545ED2CC6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stamdiameterklasse/items/1293",
+          "Description": "tot 0,2 m."
+        },
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20292,
+          "GUID": "{E1203455-C8B7-4BA4-A1E5-D46CDED9AA3B}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20292",
+          "Description": "Vondelparkbuurt"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589633",
+        "Controlefrequentie": {
+          "Id": 36866,
+          "GUID": "{208EC863-3856-4898-B9E6-B66E1DE8FE5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36866",
+          "Description": "1 x per 3 jaar"
+        },
+        "ConversieID": "589633",
+        "X Coordinaat": 120137.046622495,
+        "Y Coordinaat": 486013.985095666,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919396,
+          "GUID": "{115E83B5-4E40-4F30-8BCA-F85DF68FC422}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919396",
+          "Description": "3"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919406,
+          "GUID": "{1D69F7DB-C396-43A8-975D-8FA945FEFA1F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919406",
+          "Description": "Nog niet bereikt"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20263,
+          "GUID": "{5D616FF5-9090-4A1A-9C57-3DBBD1D324B8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20263",
+          "Description": "West"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20477,
+          "GUID": "{0C1D0E45-D199-4DE4-AC07-8FD2A4E6C1D1}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20477",
+          "Description": "Vondelparkbuurt-Oost"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 886,
+          "GUID": "{4ACF6AC7-95C3-4E82-967D-0C75C4EAC6CB}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/886",
+          "Description": "9 tot 12 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589633",
+        "BoomID Gisib": "589633",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2024-02-26T00:00:00",
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846028,
+          "GUID": "{76B01CC3-9193-46E2-8CD8-08558F4799B2}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846028",
+          "Description": "Begeleidingssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": {
+          "Id": 1846022,
+          "GUID": "{E02A8811-5238-4AA9-A8B7-9FB73C8022DA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Toekomstverwachting/items/1846022",
+          "Description": "> 15 jaar"
+        },
+        "Soortnaam Nederlands": {
+          "Id": 33657,
+          "GUID": "{0F873361-D5A7-4CA1-A8A6-33B48D4F9C7D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33657",
+          "Description": "Moeraseik"
+        },
+        "Boomconditie": {
+          "Id": 1846311,
+          "GUID": "{905ABEB2-823C-4C78-8067-19DBBDBC537E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846311",
+          "Description": "Voldoende"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.360911,
+        "Longitude": 4.875403,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.360911,4.875403",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.360911,4.875403&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Roemer Visscherstraat 50 1",
+        "Dichtstbijzijnde BAG Postcode": "1054EZ",
+        "Afstand tot dichtstbijzijnde BAG Adres": 26.88,
+        "Code": null,
+        "GUID": "{787BC09E-AC12-4641-AAEC-8A730A097861}",
+        "Id": 919969,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T15:46:55.368565",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          119413.93,
+          484264.97
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26969,
+          "GUID": "{0B5E4D96-CBA2-4AF1-AC4A-B6158B436A2D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26969",
+          "Description": "Oud-Zuid"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 79,
+          "GUID": "{20EB0FF2-2532-4A47-91CA-8EC72B2DEE91}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/79",
+          "Description": "Niet van toepassing"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": null,
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1874,
+          "GUID": "{FD0AFA11-F99B-4B7D-8BD6-83CFA0054E54}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1874",
+          "Description": "B"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "9936AEEF-DAFE-41B5-8271-3D3339E53A49",
+        "Identificatie": null,
+        "Jaar van aanleg": 2006,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": "Boom niet aanwezig",
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1911,
+          "GUID": "{3DED9455-E00B-4050-92AD-C2E59F83AD36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1911",
+          "Description": "Hoog"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 25628,
+          "GUID": "{9AEF55E6-2A36-4890-8FF9-FE64E193A3A0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/25628",
+          "Description": "Van Tuyll van Serooskerkenplein"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1373,
+          "GUID": "{4688939E-88B6-4AC2-93BB-EE10D442AE15}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1373",
+          "Description": "Niet van toepassing"
+        },
+        "Soortnaam": {
+          "Id": 36423,
+          "GUID": "{36710262-8549-4F32-A8BA-81A82350979C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36423",
+          "Description": "Quercus robur 'Irtha'"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": {
+          "Id": 1293,
+          "GUID": "{091EEBAF-496F-45C9-A15B-146545ED2CC6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stamdiameterklasse/items/1293",
+          "Description": "tot 0,2 m."
+        },
+        "Standplaats": null,
+        "Standplaats gedetailleerd": null,
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": null,
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20326,
+          "GUID": "{CC2360B1-614A-4DCE-925E-8C53781E7826}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20326",
+          "Description": "Stadionbuurt"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589612",
+        "Controlefrequentie": {
+          "Id": 36863,
+          "GUID": "{FA24B879-13A0-44AC-B7D3-C83211292EC5}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36863",
+          "Description": "1 x per jaar"
+        },
+        "ConversieID": "589612",
+        "X Coordinaat": 119413.93,
+        "Y Coordinaat": 484264.97,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919399,
+          "GUID": "{FBD577D7-4E1B-4EC2-8D60-0773EDE083DD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919399",
+          "Description": "6"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919405,
+          "GUID": "{5786110B-B66C-4110-B7C6-0592213B3BD0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919405",
+          "Description": "Niet van toepassing (te vellen boom)"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284590,
+          "GUID": "{1F914D85-B95B-4308-8755-25044FDAA6AD}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284590",
+          "Description": "Boom - BOOM IN BEPLANTING"
+        },
+        "Buurt": {
+          "Id": 20755,
+          "GUID": "{9944DD9D-3523-4D49-AB36-5F1297644D5C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20755",
+          "Description": "Van Tuyllbuurt"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": null,
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589612",
+        "BoomID Gisib": "589612",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": null,
+        "Boomaantasting": null,
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": {
+          "Id": 1846153,
+          "GUID": "{5C0C276A-C971-4F7C-BBC3-489FB290EFEC}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Selectie uitvoering/items/1846153",
+          "Description": "KAP_Kaplijst 2017-2018"
+        },
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846027,
+          "GUID": "{88EEB6F4-3178-4B0E-AAB5-D7529CB38C5E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846027",
+          "Description": "Niet van toepassing"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846305,
+          "GUID": "{741EA039-BB44-471F-89FF-A22997B46852}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846305",
+          "Description": "Geen"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33933,
+          "GUID": "{08E53950-7D6E-43C0-861C-B46D25971094}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33933",
+          "Description": "Zomereik (cultuurvariëteit)"
+        },
+        "Boomconditie": null,
+        "Matching": "Match op guid",
+        "Controle positie boompunt": {
+          "Id": 1883450,
+          "GUID": "{23F197B9-AE83-482F-8150-AC1D13A5F1CA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controle positie boompunt/items/1883450",
+          "Description": "Boom niet aanwezig"
+        },
+        "Latitude": 52.345145,
+        "Longitude": 4.864972,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.345145,4.864972",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.345145,4.864972&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Van Tuyll van Serooskerkenplein 50 1",
+        "Dichtstbijzijnde BAG Postcode": "1076NC",
+        "Afstand tot dichtstbijzijnde BAG Adres": 17.03,
+        "Code": null,
+        "GUID": "{8632C5BE-C0DB-4217-8DA6-DA45DE585894}",
+        "Id": 919990,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T19:01:00.687241",
+        "Revisie": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:28992"
+          }
+        },
+        "coordinates": [
+          122278.04,
+          483999.41
+        ]
+      },
+      "properties": {
+        "Actueel kwaliteitsniveau": null,
+        "Afvoeren": null,
+        "Beheerder": {
+          "Id": 798,
+          "GUID": "{7035C783-3270-4953-ABA3-BB3195CCAA36}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder/items/798",
+          "Description": "Gemeente"
+        },
+        "Beheerder gedetailleerd": {
+          "Id": 20124,
+          "GUID": "{EA5410DD-6FC0-4AC2-998C-1404BEFD1CF6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerder gedetailleerd/items/20124",
+          "Description": "Stadsdeel Zuid"
+        },
+        "Beheergebied": {
+          "Id": 26985,
+          "GUID": "{30053B16-6410-435F-8073-6D9F027C5708}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheergebied/items/26985",
+          "Description": "De Pijp, Rivierenbuurt"
+        },
+        "Beleidsstatus": null,
+        "Beoogde omlooptijd": null,
+        "Bereikbaarheid": null,
+        "Beschermde flora en fauna": null,
+        "Beschermingsstatus": null,
+        "Beschermingsstatus gedetailleerd": null,
+        "BGT Bronhouder": null,
+        "BGT Eindregistratie": null,
+        "BGT In onderzoek": null,
+        "BGT Objecttype": {
+          "Id": 17958,
+          "GUID": "{C87B3CD3-97E1-4DE4-952D-21D6C0A5A183}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Objecttype/items/17958",
+          "Description": "Vegetatieobject"
+        },
+        "BGT Opmerking": null,
+        "BGT Status": null,
+        "Boombeeld": {
+          "Id": 77,
+          "GUID": "{40236853-C36D-4B72-BD92-E01F9796C49F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boombeeld/items/77",
+          "Description": "Boombeeld regulier (HB)"
+        },
+        "Boomgroep": null,
+        "Boomhoogte actueel": null,
+        "Boomhoogteklasse eindbeeld": null,
+        "Boomveiligheidsklasse": {
+          "Id": 1174,
+          "GUID": "{7EC12D42-A591-45C4-B7AE-998E29768B8C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomveiligheidsklasse/items/1174",
+          "Description": "Risicoboom"
+        },
+        "Eigenaar": {
+          "Id": 1374,
+          "GUID": "{C6062476-5FF6-43DB-951F-3F94D450CB6F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar/items/1374",
+          "Description": "Gemeente"
+        },
+        "Eigenaar gedetailleerd": {
+          "Id": 20142,
+          "GUID": "{64B2F3AA-7D6E-477B-9984-880CB1A8A01C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Eigenaar gedetailleerd/items/20142",
+          "Description": "Gemeente Amsterdam"
+        },
+        "Gebiedstype": null,
+        "Gebruiksfunctie": null,
+        "Gemeente": {
+          "Id": 20247,
+          "GUID": "{31C33111-C0B4-489E-8539-1B7D74DF2E5A}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gemeente/items/20247",
+          "Description": "Amsterdam"
+        },
+        "Gewenst kwaliteitsniveau": {
+          "Id": 1873,
+          "GUID": "{B1C1B668-DC6B-4143-835A-F8B2CC543BCA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Gewenst kwaliteitsniveau/items/1873",
+          "Description": "A"
+        },
+        "Groeifase": null,
+        "Grondsoort": null,
+        "Grondsoort gedetailleerd": null,
+        "Herplantplicht": null,
+        "ID uit oude beheerindeling": "D219CAE4-6954-439C-B7E2-7F5C525B99C4",
+        "Identificatie": null,
+        "Jaar van aanleg": 1966,
+        "Kiemjaar": null,
+        "Kroondiameterklasse actueel": null,
+        "Kroondiameterklasse eindbeeld": null,
+        "Kroonvolume": null,
+        "Kweker": null,
+        "Leeftijd": null,
+        "Leverancier": null,
+        "Ligging": null,
+        "LV publicatiedatum": null,
+        "Meerstammig": null,
+        "Memo": null,
+        "Monetaire boomwaarde": null,
+        "MSLINK": null,
+        "Objecttype": {
+          "Id": 14109,
+          "GUID": "{635136A6-334C-4C9A-B0AD-F69C0CDB52B7}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Objecttype/items/14109",
+          "Description": "Boom"
+        },
+        "Omgevingsrisicoklasse": {
+          "Id": 1910,
+          "GUID": "{EDF450AA-5293-45A6-84BA-7C51BAF7237B}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Omgevingsrisicoklasse/items/1910",
+          "Description": "Gemiddeld"
+        },
+        "Onderhoudsplichtige": null,
+        "Openbare ruimte": {
+          "Id": 24006,
+          "GUID": "{1FDEFD18-2712-434D-B1C4-144E93924B00}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Openbare ruimte/items/24006",
+          "Description": "Uiterwaardenstraat"
+        },
+        "Opleverdatum": null,
+        "Relatieve hoogteligging": null,
+        "Snoeifase": {
+          "Id": 1371,
+          "GUID": "{77FB020C-EDFF-44CC-8CBC-0EA0D044B35E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeifase/items/1371",
+          "Description": "Onderhoudssnoeifase"
+        },
+        "Soortnaam": {
+          "Id": 36506,
+          "GUID": "{66CDD2C5-B135-4798-9788-9367219E20B2}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam/items/36506",
+          "Description": "Quercus coccinea"
+        },
+        "Stamdiameter": null,
+        "Stamdiameterklasse": null,
+        "Standplaats": {
+          "Id": 168,
+          "GUID": "{D08FB558-E80B-49DC-AB1F-11FFEC6F85E8}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats/items/168",
+          "Description": "Elementenverharding"
+        },
+        "Standplaats gedetailleerd": {
+          "Id": 862,
+          "GUID": "{063153CC-F6A1-4A89-8C4D-EC8E62DBDD4E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Standplaats gedetailleerd/items/862",
+          "Description": "Tegels"
+        },
+        "Takvrije ruimte tot gebouw (eindbeeld)": null,
+        "Takvrije stam eindbeeld": null,
+        "Takvrije zone primair eindbeeld": null,
+        "Takvrije zone secundair eindbeeld": null,
+        "Theoretisch eindjaar": null,
+        "Tijdstip registratie": null,
+        "Transponder": null,
+        "Type": {
+          "Id": 14617,
+          "GUID": "{F1BE01CB-ACE2-4432-AE30-3993AFB7AAB3}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Type/items/14617",
+          "Description": "Boom niet vrij uitgroeiend"
+        },
+        "Type gedetailleerd": null,
+        "Vermeerderingsvorm": null,
+        "Verplant": null,
+        "Verplantbaar": null,
+        "Verwijderdatum": null,
+        "Vrije doorrijhoogte": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte primair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije doorrijhoogte secundair": {
+          "Id": 1167,
+          "GUID": "{78E5C2A3-8613-4DAB-A827-7502D0A77D87}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Vrije doorrijhoogte/items/1167",
+          "Description": "4,5 m. en groter"
+        },
+        "Vrije takval": null,
+        "Waterschap": null,
+        "Wijk": {
+          "Id": 20301,
+          "GUID": "{F1B5B661-860A-423D-B529-E15BAED6F4D6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Wijk/items/20301",
+          "Description": "Rijnbuurt"
+        },
+        "Wijze van inwinning": null,
+        "Woonplaats": {
+          "Id": 20249,
+          "GUID": "{02CC5815-955D-4B4B-BB76-3E0E3B45280C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Woonplaats/items/20249",
+          "Description": "Amsterdam"
+        },
+        "Objectnummer": "589731",
+        "Controlefrequentie": {
+          "Id": 36863,
+          "GUID": "{FA24B879-13A0-44AC-B7D3-C83211292EC5}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie/items/36863",
+          "Description": "1 x per jaar"
+        },
+        "ConversieID": "589731",
+        "X Coordinaat": 122278.04,
+        "Y Coordinaat": 483999.41,
+        "Straatnaam oude beheergegevens": null,
+        "BGT Type": {
+          "Id": 18181,
+          "GUID": "{6EE20D02-4065-44D1-90BF-2CB3102E685F}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/BGT Type/items/18181",
+          "Description": "Niet-bgt (Vegetatieobject)"
+        },
+        "IMGeo Plustype": {
+          "Id": 18335,
+          "GUID": "{38AE3D47-E125-4EA2-BE8D-665FA25C1587}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/IMGeo Plustype/items/18335",
+          "Description": "boom"
+        },
+        "Conditiescore": {
+          "Id": 919397,
+          "GUID": "{66B7332B-1BDC-45F7-B477-AF951CE0C60D}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Conditiescore/items/919397",
+          "Description": "4"
+        },
+        "Actuele opkroonhoogte": {
+          "Id": 919408,
+          "GUID": "{BB01EB04-CF52-4DFC-875D-ED34C5D272C0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Actuele opkroonhoogte/items/919408",
+          "Description": "Onbereikbaar, snoei-ingreep ongewenst"
+        },
+        "Beoogde opkroonhoogte": null,
+        "IMGeo Plusstatus": null,
+        "Postcode": null,
+        "Stadsdeel of kern": {
+          "Id": 20265,
+          "GUID": "{67B1DB14-1C6A-4154-8460-00322EA18559}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Stadsdeel of kern/items/20265",
+          "Description": "Zuid"
+        },
+        "Datum inwinning": null,
+        "Knipoppervlakte": null,
+        "Groeiplaatsinrichting": null,
+        "Boombeschermer": null,
+        "BOR Type": null,
+        "Objectnaam": null,
+        "Snoeifrequentie": null,
+        "Knipfrequentie": null,
+        "Beheerafspraak": {
+          "Id": 1284592,
+          "GUID": "{CC2AFE46-B2AA-463E-8799-006A51DB1FB0}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Beheerafspraak/items/1284592",
+          "Description": "Boom - BOOM IN VERHARDING"
+        },
+        "Buurt": {
+          "Id": 20610,
+          "GUID": "{7706A49D-7AEF-48DF-B30E-F79C4DB579EA}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Buurt/items/20610",
+          "Description": "Kromme Mijdrechtbuurt"
+        },
+        "Aangemaakt door": null,
+        "Boomhoogteklasse actueel": {
+          "Id": 886,
+          "GUID": "{4ACF6AC7-95C3-4E82-967D-0C75C4EAC6CB}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomhoogteklasse/items/886",
+          "Description": "9 tot 12 m."
+        },
+        "Aantal": 1,
+        "Deelsportcomplex": null,
+        "Inwinningsbedrijf": null,
+        "Sportterrein": null,
+        "Sportveld": null,
+        "BoomID Geovisia": "589731",
+        "BoomID Gisib": "589731",
+        "Foto": null,
+        "Beleid opmerkingen": null,
+        "Datum laatste snoei": null,
+        "Datum volgende inspectie": "2023-04-21T00:00:00",
+        "Boomaantasting": {
+          "Id": 1846059,
+          "GUID": "{8B946283-452A-4CAC-86FE-A756F40D671C}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomaantasting/items/1846059",
+          "Description": "NTO"
+        },
+        "Selectie 1": null,
+        "Selectie 2": null,
+        "Selectie uitvoering": null,
+        "Selectie kap en aanplanting": null,
+        "Snoeiwijze": {
+          "Id": 1846029,
+          "GUID": "{77AEDE16-E5AD-4133-80E9-B442C36689F6}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Snoeiwijze/items/1846029",
+          "Description": "Onderhoudssnoei"
+        },
+        "Boombeheerbaarheid": null,
+        "Controlefrequentie BVC": {
+          "Id": 1846307,
+          "GUID": "{ED1CBE0E-7A79-4EA4-8BF0-F33899ACB49E}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Controlefrequentie BVC/items/1846307",
+          "Description": "Eens in 3 jaar"
+        },
+        "Boomgrootte": null,
+        "Toekomstverwachting": null,
+        "Soortnaam Nederlands": {
+          "Id": 33753,
+          "GUID": "{58EEA401-57E3-457F-ACC7-45CE4B56A794}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Soortnaam Nederlands/items/33753",
+          "Description": "Scharlaken eik"
+        },
+        "Boomconditie": {
+          "Id": 1846313,
+          "GUID": "{3EF5B5D2-4523-4E60-8B85-63B577E51BB1}",
+          "Url": "https://amsterdam-test.gisib.nl/api/api/Collections/Boomconditie/items/1846313",
+          "Description": "Slecht"
+        },
+        "Matching": "Match op guid",
+        "Controle positie boompunt": null,
+        "Latitude": 52.342937,
+        "Longitude": 4.907028,
+        "URL Google Maps": "https://www.google.com/maps/search/?api=1&query=52.342937,4.907028",
+        "URL Google Maps 2": "https://www.google.com/maps/dir/?api=1&destination=52.342937,4.907028&travelmode=",
+        "Ecologisch beheren": null,
+        "Restrictie beschermde soort EPR": null,
+        "Dichtstbijzijnde BAG Adres": "Uiterwaardenstraat 110 4",
+        "Dichtstbijzijnde BAG Postcode": "1079CG",
+        "Afstand tot dichtstbijzijnde BAG Adres": 10.31,
+        "Code": null,
+        "GUID": "{F32AC497-1363-42C8-BD38-27CCC938D852}",
+        "Id": 920063,
+        "Description": null,
+        "IMGeoId": null,
+        "Valid_Till": null,
+        "LastUpdate": "2022-01-06T18:29:25.248542",
+        "Revisie": 3
+      }
+    }
+  ]
+}

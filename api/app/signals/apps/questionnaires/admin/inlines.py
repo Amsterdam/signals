@@ -3,8 +3,8 @@
 from django.contrib.admin.options import StackedInline
 from django.contrib.gis.db.models import JSONField
 
+from signals.apps.api.forms.widgets import PrettyJSONWidget
 from signals.apps.questionnaires.admin.options import NonRelatedStackedInline
-from signals.apps.questionnaires.forms.widgets import PrettyJSONWidget
 from signals.apps.questionnaires.models import Choice, Edge, QuestionGraph, Questionnaire
 
 
