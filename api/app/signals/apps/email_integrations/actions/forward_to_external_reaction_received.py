@@ -12,7 +12,10 @@ class ForwardToExternalReactionReceivedAction(AbstractSystemAction):
     _required_call_kwargs = ('reaction_text', 'email_override')
 
     key = EmailTemplate.SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED
-    subject = 'Meldingen {formatted_signal_id}: reactie ontvangen'
+    subject = 'Melding {formatted_signal_id}: reactie ontvangen'
+
+    fallback_txt_template = 'email/forward_to_external_reaction_received.txt'
+    fallback_html_template = 'email/forward_to_external_reaction_received.html'
 
     def get_recipient_list(self, signal):
         return [self.kwargs['email_override']]

@@ -977,6 +977,37 @@ class TestSignalForwardToExternalAction(ActionTestMixin, TestCase):
         self.assertEqual(context['reaction_url'], f'{settings.FRONTEND_URL}/incident/extern/{session.uuid}')
 
 
+class TestSignalForwardToExternalActionFallbackTemplate(TestCase):
+    state = workflow.DOORGEZET_NAAR_EXTERN
+    action = SignalForwardToExternalAction()
+    send_email = True
+
+    def test_send_email(self):
+        self.assertEqual(EmailTemplate.objects.count(), 0)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        status_text = FuzzyText(length=400)
+        signal = SignalFactory.create(status__state=self.state,
+                                      status__text=status_text,
+                                      status__email_override='a@example.com',
+                                      status__send_email=self.send_email,
+                                      reporter__email='test@example.com')
+        self.assertTrue(self.action(signal, dry_run=False))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            mail.outbox[0].subject, f'Verzoek tot behandeling van Signalen melding {signal.get_id_display()}')
+        self.assertEqual(mail.outbox[0].to, [signal.status.email_override, ])
+        self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
+        self.assertIn(
+            """Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken""", mail.outbox[0].body)
+        self.assertIn(
+            """Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken""",
+            mail.outbox[0].alternatives[0][0])
+        self.assertEqual(Note.objects.count(), 1)
+        self.assertTrue(Note.objects.filter(text=self.action.note).exists())
+
+
 class TestSignalCreatedActionNoTemplate(TestCase):
     """
     Test the SignalOptionalAction. No EmailTemplate(s) are present in the database, therefor the fallback template
@@ -993,6 +1024,7 @@ class TestSignalCreatedActionNoTemplate(TestCase):
 
         signal = SignalFactory.create(status__state=self.state, reporter__email='test@example.com')
         self.assertTrue(self.action(signal, dry_run=False))
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Bedankt voor uw melding {signal.get_id_display()}')
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
@@ -1123,6 +1155,7 @@ class TestSignalSystemActions(TestCase):
         self.assertTrue(result)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['external@example.com', ])
+        self.assertIn('fixed!', mail.outbox[0].body)
 
     def test_forward_to_external_reaction_received_context(self):
         action = MailService._system_actions.get('forward_to_external_reaction_received')()
@@ -1143,3 +1176,27 @@ class TestSignalSystemActions(TestCase):
         self.assertIn('created_at', full_context)
         self.assertIn('address', full_context)
         self.assertIn('signal_id', full_context)
+
+
+class TestSignalForwardToExternalReactionReceivedActionFallbackTemplate(TestCase):
+    def test_forward_to_external_reaction_received_send_mail(self):
+        action = MailService._system_actions.get('forward_to_external_reaction_received')()
+
+        signal = SignalFactory.create(
+            status__state=workflow.DOORGEZET_NAAR_EXTERN,
+            reporter__email='reporter@example.com',
+            status__send_email=True,
+            status__email_override='external@example.com')
+        Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': 'please fix'}, signal)
+
+        result = action(signal=signal, dry_run=False, reaction_text='fixed!', email_override='external@example.com')
+        self.assertTrue(result)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['external@example.com', ])
+
+        self.assertEqual(f'Melding {signal.get_id_display()}: reactie ontvangen', mail.outbox[0].subject)
+        self.assertIn("""Bedankt voor het invullen van het actieformulier. Uw informatie helpt""", mail.outbox[0].body)
+        self.assertIn(
+            """Bedankt voor het invullen van het actieformulier. Uw informatie helpt""",
+            mail.outbox[0].alternatives[0][0])
+        self.assertIn('fixed!', mail.outbox[0].body)

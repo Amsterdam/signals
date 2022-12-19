@@ -15,6 +15,9 @@ class SignalForwardToExternalAction(AbstractAction):
     key = EmailTemplate.SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL
     subject = 'Verzoek tot behandeling van Signalen melding {formatted_signal_id}'  # TODO: check phrasing PS-261
 
+    fallback_txt_template = 'email/signal_forward_to_external.txt'
+    fallback_html_template = 'email/signal_forward_to_external.html'
+
     note = 'Automatische e-mail bij doorzetten is verzonden aan externe partij.'
 
     def get_additional_context(self, signal, dry_run=False):

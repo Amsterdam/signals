@@ -37,6 +37,10 @@ class AbstractAction(ABC):
     subject = None
     from_email = settings.DEFAULT_FROM_EMAIL
 
+    # Body of email
+    fallback_txt_template = 'email/signal_default.txt'
+    fallback_html_template = 'email/signal_default.html'
+
     # Will be used to create a note on the Signal after the email has been sent
     note = None
 
@@ -89,8 +93,8 @@ class AbstractAction(ABC):
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
             subject = self.subject.format(formatted_signal_id=context['formatted_signal_id'])
-            message = loader.get_template('email/signal_default.txt').render(context)
-            html_message = loader.get_template('email/signal_default.html').render(context)
+            message = loader.get_template(self.fallback_txt_template).render(context)
+            html_message = loader.get_template(self.fallback_html_template).render(context)
 
         return subject, message, html_message
 

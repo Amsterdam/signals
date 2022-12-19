@@ -1,0 +1,52 @@
+Geachte behandelaar,
+
+Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
+
+U liet ons het volgende weten
+{{ reaction }}
+
+Gegevens van de melding
+- Nummer: {{ formatted_signal_id }}
+- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
+- Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
+
+
+Met vriendelijke groet,
+
+{{ ORGANIZATION_NAME }}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uw melding {{ formatted_signal_id }}</title>
+</head>
+<body>
+    <p>
+        <h1>Geachte behandelaar,</h1>
+    </p>
+
+    <p>
+        Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
+    </p>
+
+    <p>
+        <strong>U liet ons het volgende weten</strong>
+        {{ reaction_text }}
+    </p>
+
+    <p>
+        <strong>Gegevens van de melding</strong><br>
+        Nummer: {{ formatted_signal_id }}<br>
+        Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}<br>
+        Locatie: {% if address %}{{ address|format_address:"O hlT, P W" }}{% endif %}<br>
+    </p>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        {{ ORGANIZATION_NAME }}
+    </p>
+</body>
+</html>

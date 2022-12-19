@@ -203,7 +203,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.assertEqual(Note.objects.count(), 0)
 
             self.assertEqual(len(mail.outbox), 1)
-            self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
+            self.assertEqual(mail.outbox[0].subject, f'Melding {self.signal.get_id_display()}: reactie ontvangen')
             self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override, ])
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN_with_status_update(self):
@@ -241,7 +241,7 @@ class TestForwardToExternalSessionService(TestCase):
             # note to the history stating an email was sent).
             self.assertEqual(Note.objects.count(), 0)
             self.assertEqual(len(mail.outbox), 1)
-            self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
+            self.assertEqual(mail.outbox[0].subject, f'Melding {self.signal.get_id_display()}: reactie ontvangen')
             self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override, ])
 
 
