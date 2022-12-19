@@ -126,6 +126,9 @@ def clean_up_forward_to_external():
     Outstanding sessions must be invalidated after FORWARD_TO_EXTERNAL_DAYS_OPEN
     days with appropriate entry in history.
     """
+    # from signals.apps.history.models import Log
+    # n_logs = Log.objects.count()
+
     open_session_qs = Session.objects.filter(
         frozen=False,
         invalidated=False,
@@ -154,6 +157,7 @@ def clean_up_forward_to_external():
         session.save()
         count += 1
 
+    # assert Log.objects.count() == n_logs + count
     return count
 
 

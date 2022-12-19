@@ -243,8 +243,8 @@ class SignalLogService:
         if session.questionnaire.flow != Questionnaire.FORWARD_TO_EXTERNAL:
             return
 
-        if session.frozen or not session.invalidated:
-            return  # log nothing
+        # if session.frozen or not session.invalidated:
+        #     return  # log nothing
 
         external_user = session._signal_status.email_override
         when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')

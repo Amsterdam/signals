@@ -247,6 +247,8 @@ class TestForwardToExternalSessionService(TestCase):
 
 class TestCleanUpForwardToExternal(TestCase):
     def test_clean_up_forward_to_external_from_DOORGEZET_NAAR_EXTERN(self):
+        n_log_entries = Log.objects.count()
+
         with freeze_time(now() - timedelta(days=2 * FORWARD_TO_EXTERNAL_DAYS_OPEN)):
             # Five signals that were in state DOORGEZET_NAAR_EXTERN and too old to
             # still receive an update.
@@ -276,7 +278,13 @@ class TestCleanUpForwardToExternal(TestCase):
         self.assertEqual(Session.objects.count(), 10)
         self.assertEqual(Session.objects.filter(invalidated=True).count(), 5)
 
+        self.assertEqual(Log.objects.count(), n_log_entries + 5)
+        log = Log.objects.first()
+        self.assertIn('Geen toelichting ontvangen van behandelaar', log.description)
+
     def test_clean_up_forward_to_external_not_from_DOORGEZET_NAAR_EXTERN(self):
+        n_log_entries = Log.objects.count()
+
         with freeze_time(now() - timedelta(days=2 * FORWARD_TO_EXTERNAL_DAYS_OPEN)):
             # Five signals that were in state DOORGEZET_NAAR_EXTERN and too old to
             # still receive an update.
@@ -303,6 +311,10 @@ class TestCleanUpForwardToExternal(TestCase):
 
         self.assertEqual(Session.objects.count(), 2)
         self.assertEqual(Session.objects.filter(invalidated=True).count(), 1)
+
+        self.assertEqual(Log.objects.count(), n_log_entries + 1)
+        log = Log.objects.first()
+        self.assertIn('Geen toelichting ontvangen van behandelaar', log.description)
 
 
 class TestCopyAttachmentsToAttachedFiles(TestCase):

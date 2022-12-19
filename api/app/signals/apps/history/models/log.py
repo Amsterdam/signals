@@ -35,7 +35,7 @@ class Log(models.Model):
     object_pk = models.CharField(max_length=128, db_index=True)
     object = GenericForeignKey('content_type', 'object_pk')
 
-    action = models.CharField(editable=False, max_length=16, choices=ACTION_CHOICES, default=ACTION_UNKNOWN)
+    action = models.CharField(editable=False, max_length=20, choices=ACTION_CHOICES, default=ACTION_UNKNOWN)
     description = models.TextField(max_length=3000, null=True, blank=True)
     extra = models.TextField(max_length=255, null=True, blank=True)
     data = models.JSONField(null=True)
