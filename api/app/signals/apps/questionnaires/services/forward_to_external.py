@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.timezone import now
 
+from signals.apps.history.services.signal_log import SignalLogService
 from signals.apps.questionnaires.app_settings import FORWARD_TO_EXTERNAL_DAYS_OPEN
 from signals.apps.questionnaires.exceptions import (
     CannotFreeze,
@@ -134,19 +135,16 @@ def clean_up_forward_to_external():
 
     count = 0
     for session in open_session_qs:
-        external_user = session._signal_status.email_override
-        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M:%S')
-        text = f'Geen antwoord ontvangen van externe behandelaar {external_user} op vraag van {when}.'
+        # When invalidating a session we add a log entry stating we received no
+        # reaction from the external party. On top of that we transition the
+        # to signal state to VERZOEK_TOT_AFHANDELING if not status updates were
+        # performed since forwarding to an external party.
 
+        SignalLogService.log_external_reaction_not_received(session)
         if session._signal.status.id == session._signal_status.id:
             # Signal is still in state DOORGEZET_NAAR_EXTERN, we change its
             # state with an appropriate message.
-            Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING, 'text': text}, session._signal)
-        else:
-            # Signal is no longer in state DOORGEZET_NAAR_EXTERN or a new
-            # request was sent, we cannot just change the state. Instead we
-            # add a note.
-            Signal.actions.create_note({'text': text}, session._signal)
+            Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING}, session._signal)
 
         # We use the invalidated property, and not frozen, because we want to
         # handle each session once and need to mark them invalidated. We cannot
@@ -183,21 +181,17 @@ class ForwardToExternalSessionService(SessionService):
         """
         Create a history entry on reception of answer to forwarded question.
         """
-        # Note our history entry can come in one of two forms. If the signal
-        # status was not update we create a status update to VERZOEK_TOT_AFHANDELING
-        # else we add a note to the signal.
         answer = self.answers_by_analysis_key['reaction']
         signal = self.session._signal
 
-        external_user = self.session._signal_status.email_override
-        when = self.session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
-        msg = f'Toelichting door behandelaar {external_user} op vraag van {when} {answer.payload}'
-
+        # Note our history entry can come in one of two forms. In both cases we
+        # use the history app to add a log entry with the message (reaction) we
+        # received from the external party. And on top of that if the signal
+        # status was not updated after we forwarded it we create a further
+        # status update to VERZOEK_TOT_AFHANDELING (without a message).
+        SignalLogService.log_external_reaction_received(self.session, answer.payload)
         if self.session._signal_status == signal.status:
-            # no status updates since session was created (question was forwarded to external party)
-            Signal.actions.update_status({'text': msg, 'state': workflow.VERZOEK_TOT_AFHANDELING}, signal)
-        else:
-            Signal.actions.create_note({'text': msg}, signal)
+            Signal.actions.update_status({'state': workflow.VERZOEK_TOT_AFHANDELING}, signal)
 
     def _send_confirmation_mail(self):
         """

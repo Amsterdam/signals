@@ -21,6 +21,7 @@ from rest_framework.test import APITestCase
 from signals.apps.api.views import NamespaceView
 from signals.apps.email_integrations.models import EmailTemplate
 from signals.apps.email_integrations.services import MailService
+from signals.apps.history.models import Log
 from signals.apps.questionnaires.app_settings import FORWARD_TO_EXTERNAL_DAYS_OPEN
 from signals.apps.questionnaires.factories import AnswerFactory
 from signals.apps.questionnaires.models import Questionnaire, Session
@@ -423,8 +424,8 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         patched_get_url.return_value = '/some/url/'
         n_attachments = self.signal.attachments.count()
         self.assertEqual(n_attachments, 0)
-        n_notes = Note.objects.count()
         n_statusses = Status.objects.count()
+        n_log_entries = Log.objects.count()
 
         # retrieve session
         with freeze_time(self.t_answer_in_time):
@@ -495,11 +496,16 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         response_json = response.json()
         self.assertEqual(response_json['detail'], 'Already used!')
 
-        # Check that we get an entry in the signal history containing the provided answer.
-        self.assertEqual(Note.objects.count(), n_notes)
         self.assertEqual(Status.objects.count(), n_statusses + 1)
         status = Status.objects.last()
-        self.assertIn(answer_text, status.text)
+        self.assertEqual(status.state, workflow.VERZOEK_TOT_AFHANDELING)
+        self.assertEqual(status.text, None)
+
+        # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
+        # not active in this test. So we only get one extra log entry containing the external reaction.
+        self.assertEqual(Log.objects.count(), n_log_entries + 1)
+        log_entry = Log.objects.first()
+        self.assertIn(answer_text, log_entry.description)
 
         # TODO: add support for thank-you message
 
@@ -512,8 +518,8 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         patched_get_url.return_value = '/some/url/'
         n_attachments = self.signal.attachments.count()
         self.assertEqual(self.signal.attachments.count(), 0)
-        n_notes = Note.objects.count()
         n_statusses = Status.objects.count()
+        n_log_entries = Log.objects.count()
 
         # retrieve session
         with freeze_time(self.t_answer_in_time):
@@ -585,11 +591,16 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         response_json = response.json()
         self.assertEqual(response_json['detail'], 'Already used!')
 
-        # Check that we get an entry in the signal history containing the provided answer.
-        self.assertEqual(Note.objects.count(), n_notes)
         self.assertEqual(Status.objects.count(), n_statusses + 1)
         status = Status.objects.last()
-        self.assertIn(answer_text, status.text)
+        self.assertEqual(status.state, workflow.VERZOEK_TOT_AFHANDELING)
+        self.assertEqual(status.text, None)
+
+        # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
+        # not active in this test. So we only get one extra log entry containing the external reaction.
+        self.assertEqual(Log.objects.count(), n_log_entries + 1)
+        log_entry = Log.objects.first()
+        self.assertIn(answer_text, log_entry.description)
 
         # TODO: add support for thank-you message
 
@@ -599,8 +610,8 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         """
         Retrieve outstanding session and provide an answer check triggered email.
         """
-        n_notes = Note.objects.count()
         n_statusses = Status.objects.count()
+        n_log_entries = Log.objects.count()
 
         patched_get_url.return_value = '/some/url/'
 
@@ -644,11 +655,18 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertIn(answer_text, mail.outbox[0].body)
         self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override])
 
-        # Check that we get an entry in the signal history containing the provided answer.
-        self.assertEqual(Note.objects.count(), n_notes)
         self.assertEqual(Status.objects.count(), n_statusses + 1)
         status = Status.objects.last()
-        self.assertIn(answer_text, status.text)
+        self.assertEqual(status.state, workflow.VERZOEK_TOT_AFHANDELING)
+        self.assertEqual(status.text, None)
+
+        self.assertEqual(Status.objects.count(), n_statusses + 1)
+
+        # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
+        # not active in this test. So we only get one extra log entry containing the external reaction.
+        self.assertEqual(Log.objects.count(), n_log_entries + 1)
+        log_entry = Log.objects.first()
+        self.assertIn(answer_text, log_entry.description)
 
     @patch('signals.apps.questionnaires.rest_framework.fields.SessionPublicHyperlinkedIdentityField.get_url',
            autospec=True)
@@ -657,8 +675,8 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         Retrieve outstanding session and provide an answer check triggered email.
         """
         Signal.actions.update_status({'text': 'STATUS GEMELD', 'state': workflow.GEMELD}, self.signal)
-        n_notes = Note.objects.count()
         n_statusses = Status.objects.count()
+        n_log_entries = Log.objects.count()
 
         patched_get_url.return_value = '/some/url/'
 
@@ -704,9 +722,11 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
 
         # Check that we get an entry in the signal history containing the provided answer
         # (Because our signal was no longer in workflow.DOORGEZET_NAAR_EXTERN, there will
-        # be no status transition to workflow.VERZOEK_TOT_AFHANDELING. Instead a note is
-        # placed in the history marking the reception of an answer.)
+        # be no status transition to workflow.VERZOEK_TOT_AFHANDELING.)
         self.assertEqual(Status.objects.count(), n_statusses)
-        self.assertEqual(Note.objects.count(), n_notes + 1)
-        note = Note.objects.last()
-        self.assertIn(answer_text, note.text)
+
+        # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
+        # not active in this test. So we only get one extra log entry containing the external reaction.
+        self.assertEqual(Log.objects.count(), n_log_entries + 1)
+        log_entry = Log.objects.first()
+        self.assertIn(answer_text, log_entry.description)

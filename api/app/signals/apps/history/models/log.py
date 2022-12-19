@@ -20,6 +20,7 @@ class Log(models.Model):
     ACTION_UPDATE = 'UPDATE'
     ACTION_DELETE = 'DELETE'
     ACTION_RECEIVE = 'RECEIVE'
+    ACTION_NOT_RECEIVED = 'ACTION_NOT_RECEIVED'
 
     ACTION_CHOICES = (
         (ACTION_UNKNOWN, 'Unknown'),
@@ -27,6 +28,7 @@ class Log(models.Model):
         (ACTION_UPDATE, 'Updated'),
         (ACTION_DELETE, 'Deleted'),
         (ACTION_RECEIVE, 'Received'),
+        (ACTION_NOT_RECEIVED, 'Not received'),
     )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING, related_name='+')

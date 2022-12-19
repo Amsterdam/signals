@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
 from django.conf import settings
+from django.utils import timezone
 
 from signals.apps.feedback.models import Feedback, _get_description_of_receive_feedback
 from signals.apps.history.models import Log
+from signals.apps.questionnaires.models import Questionnaire, Session
 from signals.apps.signals.models import (
     CategoryAssignment,
     Location,
@@ -202,4 +204,56 @@ class SignalLogService:
             created_by=None,
             created_at=feedback.submitted_at,
             _signal=feedback._signal,
+        )
+
+    @staticmethod
+    def log_external_reaction_received(session: Session, reaction: str) -> None:
+        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(session, Session):
+            return
+
+        if session.questionnaire.flow != Questionnaire.FORWARD_TO_EXTERNAL:
+            return
+
+        if not session.frozen:
+            return  # log nothing
+
+        external_user = session._signal_status.email_override
+        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
+        description = f'Toelichting door behandelaar {external_user} op vraag van {when} {reaction}'
+
+        session.history_log.create(
+            action=Log.ACTION_RECEIVE,
+            description=description,
+            created_by=None,
+            created_at=timezone.now(),
+            _signal=session._signal,
+        )
+
+    @staticmethod
+    def log_external_reaction_not_received(session: Session) -> None:
+        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
+            return
+
+        if not isinstance(session, Session):
+            return
+
+        if session.questionnaire.flow != Questionnaire.FORWARD_TO_EXTERNAL:
+            return
+
+        if session.frozen or not session.invalidated:
+            return  # log nothing
+
+        external_user = session._signal_status.email_override
+        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
+        description = f'Geen toelichting ontvangen van behandelaar {external_user} op vraag van {when}'
+
+        session.history_log.create(
+            action=Log.ACTION_NOT_RECEIVED,
+            description=description,
+            created_by=None,
+            created_at=timezone.now(),
+            _signal=session._signal,
         )

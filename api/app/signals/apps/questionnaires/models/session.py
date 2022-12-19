@@ -3,6 +3,7 @@
 import uuid
 from datetime import timedelta
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -29,6 +30,8 @@ class Session(models.Model):
     _signal_status = models.ForeignKey('signals.Status', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')  # noqa
     _signal_location = models.ForeignKey('signals.Location', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')  # noqa
     invalidated = models.BooleanField(default=False)
+
+    history_log = GenericRelation('history.Log', object_id_field='object_pk')
 
     objects = SessionManager()
 

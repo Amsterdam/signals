@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 from freezegun import freeze_time
 
+from signals.apps.history.models import Log
 from signals.apps.questionnaires.exceptions import CannotFreeze, MissingEmail, WrongFlow, WrongState
 from signals.apps.questionnaires.factories import AnswerFactory
 from signals.apps.questionnaires.models import (
@@ -175,6 +176,7 @@ class TestForwardToExternalSessionService(TestCase):
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
         self.assertEqual(len(mail.outbox), 0)
+        n_log = Log.objects.count()
 
         with freeze_time(self.t_session_freeze):
             # Using knowledge that only the first question is mandatory in forwarded to external flow:
@@ -187,12 +189,17 @@ class TestForwardToExternalSessionService(TestCase):
             # check that we got a status update to state VERZOEK_TOT_AFHANDELING with correct properties
             question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
-            self.assertEqual(
-                self.signal.status.text,
-                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
-            )
+            self.assertEqual(self.signal.status.text, None)  # see log entry for reaction text (tested below)
 
-            # check that Signalen also sent an email acknowledging the reception of an answer
+            # Status update causes no log entry because they use Django Signals fired in on_commit callback that is
+            # not active in this test. So we only get one extra log entry containing the external reaction.
+            self.assertEqual(Log.objects.count(), n_log + 1)
+            msg = f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
+            log_entry = Log.objects.first()
+            self.assertEqual(log_entry.description, msg)
+
+            # Check that Signalen also sent an email acknowledging the reception of an answer (without adding a
+            # note to the history stating an email was sent).
             self.assertEqual(Note.objects.count(), 0)
 
             self.assertEqual(len(mail.outbox), 1)
@@ -209,6 +216,7 @@ class TestForwardToExternalSessionService(TestCase):
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
         self.assertEqual(len(mail.outbox), 0)
+        n_log = Log.objects.count()
 
         with freeze_time(self.t_session_freeze):
             # Using knowledge that only the first question is mandatory in forwarded to external flow:
@@ -221,13 +229,17 @@ class TestForwardToExternalSessionService(TestCase):
             # Check that we get a Note saying we received a reaction from external collaborator
             question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, GEMELD)
-            self.assertEqual(Note.objects.count(), 1)
-            note_reaction_received = Note.objects.first()
 
-            self.assertEqual(
-                note_reaction_received.text,
-                f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}')
+            # In the case of a status change after forwarding a signal we get no status change but we do get a log
+            # entry containing the external reaction.
+            self.assertEqual(Log.objects.count(), n_log + 1)
+            msg = f'Toelichting door behandelaar a@example.com op vraag van {question_timestamp} {answer.payload}'
+            log_entry = Log.objects.first()
+            self.assertEqual(log_entry.description, msg)
 
+            # Check that Signalen also sent an email acknowledging the reception of an answer (without adding a
+            # note to the history stating an email was sent).
+            self.assertEqual(Note.objects.count(), 0)
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, f'Meldingen {self.signal.get_id_display()}: reactie ontvangen')
             self.assertEqual(mail.outbox[0].to, [self.session._signal_status.email_override, ])
