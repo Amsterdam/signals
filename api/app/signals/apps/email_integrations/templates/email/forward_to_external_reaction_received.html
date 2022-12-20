@@ -1,21 +1,3 @@
-Geachte behandelaar,
-
-Bedankt voor het invullen van het actieformulier. Uw informatie helpt ons bij het verwerken van de melding.
-
-U liet ons het volgende weten
-{{ reaction }}
-
-Gegevens van de melding
-- Nummer: {{ formatted_signal_id }}
-- Gemeld op: {{ created_at|date:"DATETIME_FORMAT" }}
-- Plaats: {% if location %}{{ location|format_address:"O hlT, P W" }}{% endif %}
-
-
-Met vriendelijke groet,
-
-{{ ORGANIZATION_NAME }}
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

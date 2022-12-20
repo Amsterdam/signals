@@ -25,6 +25,3 @@ class SignalForwardToExternalAction(AbstractAction):
 
     def get_recipient_list(self, signal):
         return [signal.status.email_override]
-
-    def add_note(self, signal):
-        super().add_note(signal)

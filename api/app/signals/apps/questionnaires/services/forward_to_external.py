@@ -142,7 +142,6 @@ def clean_up_forward_to_external():
         # reaction from the external party. On top of that we transition the
         # to signal state to VERZOEK_TOT_AFHANDELING if not status updates were
         # performed since forwarding to an external party.
-
         SignalLogService.log_external_reaction_not_received(session)
         if session._signal.status.id == session._signal_status.id:
             # Signal is still in state DOORGEZET_NAAR_EXTERN, we change its
@@ -157,7 +156,6 @@ def clean_up_forward_to_external():
         session.save()
         count += 1
 
-    # assert Log.objects.count() == n_logs + count
     return count
 
 

@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.signal_departments import SignalDepartments
@@ -173,6 +174,10 @@ class Log(models.Model):
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
+        elif what == 'RECEIVE_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+            action = 'Toelichting ontvangen'
+        elif what == 'NOT_RECEIVED_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+            action = 'Geen toelichting ontvangen'
         else:
             action = 'Actie onbekend.'
         return action

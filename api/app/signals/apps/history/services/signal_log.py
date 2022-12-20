@@ -218,7 +218,7 @@ class SignalLogService:
             return
 
         if not session.frozen:
-            return  # log nothing
+            return
 
         external_user = session._signal_status.email_override
         when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
@@ -243,8 +243,9 @@ class SignalLogService:
         if session.questionnaire.flow != Questionnaire.FORWARD_TO_EXTERNAL:
             return
 
-        # if session.frozen or not session.invalidated:
-        #     return  # log nothing
+        # Log is created just before invalidating the session, hence check that it is not yet invalidated.
+        if session.frozen or session.invalidated:
+            return
 
         external_user = session._signal_status.email_override
         when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
