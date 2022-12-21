@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
     FeedbackReceivedAction,
+    ForwardToExternalReactionReceivedAction,
     SignalCreatedAction,
+    SignalForwardToExternalAction,
     SignalHandledAction,
     SignalHandledNegativeAction,
     SignalOptionalAction,
@@ -28,12 +30,14 @@ class MailService:
         SignalOptionalAction(),
         SignalReactionRequestAction(),
         SignalReactionRequestReceivedAction(),
-        SignalHandledNegativeAction()
+        SignalHandledNegativeAction(),
+        SignalForwardToExternalAction(),  # PS-261
     )
     # System actions are use to send specific emails
     # they do not have a rule and wil always trigger and should NOT be added to the status_actions
     _system_actions = {
-        'feedback_received': FeedbackReceivedAction
+        'feedback_received': FeedbackReceivedAction,
+        'forward_to_external_reaction_received': ForwardToExternalReactionReceivedAction,
     }
 
     @classmethod
@@ -42,7 +46,7 @@ class MailService:
         Send a mail based on the update status from a signal
         """
         if not isinstance(signal, Signal):
-            signal = Signal.objects.get(pk=signal)
+            signal = Signal.objects.select_related('status').get(pk=signal)
 
         for action in cls._status_actions:
             if action(signal, dry_run=dry_run):

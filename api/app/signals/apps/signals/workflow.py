@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2021 Gemeente Amsterdam
+# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 """
 Model the workflow of responding to a Signal (melding) as state machine.
 """
@@ -21,7 +21,7 @@ INGEPLAND = 'ingepland'
 VERZOEK_TOT_HEROPENEN = 'reopen requested'
 REACTIE_GEVRAAGD = 'reaction requested'
 REACTIE_ONTVANGEN = 'reaction received'
-
+DOORGEZET_NAAR_EXTERN = 'forward to external'
 
 # Statusses to track progress in external systems
 TE_VERZENDEN = 'ready to send'
@@ -45,6 +45,7 @@ STATUS_CHOICES_API = (
     (VERZOEK_TOT_AFHANDELING, 'Extern: verzoek tot afhandeling'),
     (REACTIE_GEVRAAGD, 'Reactie gevraagd'),
     (REACTIE_ONTVANGEN, 'Reactie ontvangen'),
+    (DOORGEZET_NAAR_EXTERN, 'Doorzetten naar extern'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
@@ -72,6 +73,7 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,  # Op verzoek via mail van Arvid Smits
         INGEPLAND,  # SIG-1327
         REACTIE_GEVRAAGD,  # SIG-3651
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     AFWACHTING: [
         GEMELD,  # SIG-1264
@@ -83,6 +85,7 @@ ALLOWED_STATUS_CHANGES = {
         BEHANDELING,  # SIG-1295
         GEANNULEERD,  # SIG-2987
         REACTIE_GEVRAAGD,  # SIG-3651
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     BEHANDELING: [
         GEMELD,  # SIG-1264
@@ -93,6 +96,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
         VERZOEK_TOT_AFHANDELING,  # SIG-1374
         REACTIE_GEVRAAGD,  # SIG-3651
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     INGEPLAND: [
         GEMELD,  # SIG-1264
@@ -102,6 +106,7 @@ ALLOWED_STATUS_CHANGES = {
         GEANNULEERD,
         VERZOEK_TOT_AFHANDELING,  # SIG-1293
         REACTIE_GEVRAAGD,  # SIG-3651
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     ON_HOLD: [
         INGEPLAND,
@@ -143,6 +148,7 @@ ALLOWED_STATUS_CHANGES = {
         TE_VERZENDEN,
         GEMELD,  # SIG-1374
         REACTIE_GEVRAAGD,  # SIG-3948
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     GESPLITST: [],
     VERZOEK_TOT_AFHANDELING: [
@@ -152,6 +158,7 @@ ALLOWED_STATUS_CHANGES = {
         AFGEHANDELD,
         GEANNULEERD,
         BEHANDELING,  # SIG-1374
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     VERZOEK_TOT_HEROPENEN: [
         AFGEHANDELD,
@@ -168,6 +175,7 @@ ALLOWED_STATUS_CHANGES = {
         REACTIE_GEVRAAGD,
         REACTIE_ONTVANGEN,
         TE_VERZENDEN,
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
     REACTIE_ONTVANGEN: [  # SIG-3651
         GEMELD,
@@ -178,5 +186,19 @@ ALLOWED_STATUS_CHANGES = {
         INGEPLAND,
         REACTIE_GEVRAAGD,
         TE_VERZENDEN,
+        DOORGEZET_NAAR_EXTERN,  # PS-261
     ],
+    DOORGEZET_NAAR_EXTERN: [
+        VERZOEK_TOT_AFHANDELING,
+        GEMELD,
+        AFWACHTING,
+        BEHANDELING,
+        DOORGEZET_NAAR_EXTERN,
+        INGEPLAND,
+        AFGEHANDELD,
+        GEANNULEERD,
+        REACTIE_GEVRAAGD,
+        REACTIE_ONTVANGEN,
+        TE_VERZENDEN,
+    ]
 }

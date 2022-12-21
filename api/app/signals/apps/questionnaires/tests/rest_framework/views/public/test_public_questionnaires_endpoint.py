@@ -48,9 +48,6 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.detail_schema = self.load_json_schema(
             os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_detail.json')
         )
-        self.list_schema = self.load_json_schema(
-            os.path.join(THIS_DIR, '../../json_schema/public_get_questionnaire_list.json')
-        )
 
         # set up explanatory text + images
         illustrated_text, section_1, section_2, attached_file_1, attached_file_2 = create_illustrated_text()
@@ -60,9 +57,10 @@ class TestPublicQuestionnaireEndpoint(ValidateJsonSchemaMixin, APITestCase):
         self.attached_file_1 = attached_file_1
         self.attached_file_2 = attached_file_2
         self.explanation = illustrated_text
-
+        self.assertEqual(self.explanation.sections.count(), 2)
         self.questionnaire.explanation = self.explanation
         self.questionnaire.save()
+        self.assertEqual(self.questionnaire.explanation.sections.count(), 2)
 
     def test_questionnaire_list(self):
         response = self.client.get(f'{self.base_endpoint}')

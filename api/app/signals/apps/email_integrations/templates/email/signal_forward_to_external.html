@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verzoek tot behandeling van Signalen melding {{ formatted_signal_id }}</title>
+</head>
+<body>
+    <p>
+        Geachte behandelaar,
+    </p>
+
+    <p>
+        Er is een melding binnengekomen bij de Gemeente. Kunnen jullie hier naar kijken en ons laten weten of jullie deze kunnen afhandelen.
+    </p>
+
+    <p>
+        <strong>Wat kunt u doen?</strong><br>
+        U kunt de melding gelijk inzien en oppakken. Als de melding verwerkt, ontvangen wij graag een bericht.<br>
+        <a href="{{ reaction_url }}">Bekijk de actie</a>
+    </p>
+
+    <p>
+        Nummer: {{ formatted_signal_id }}
+    </p>
+
+    <p>
+        Met vriendelijke groet,<br>
+        {{ ORGANIZATION_NAME }}
+    </p>
+</body>
+</html>

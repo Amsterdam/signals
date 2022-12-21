@@ -24,6 +24,9 @@ __all__ = [
     'QuestionGraph',
     'Questionnaire',
     'Session',
-    'StoredFile',
     'Trigger',
+
+    'AttachedSection',
+    'AttachedFile',
+    'StoredFile',
 ]

@@ -405,6 +405,7 @@ class SignalManager(models.Manager):
         :returns: Updated Signal object
         """
         from signals.apps.signals.models import Signal
+        from signals.apps.signals.models.signal_departments import SignalDepartments
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
@@ -480,8 +481,10 @@ class SignalManager(models.Manager):
                 }))
 
             if 'directing_departments_assignment' in data:
-                signal_departments = self._update_directing_departments_no_transaction(
-                    data['directing_departments_assignment'], locked_signal
+                signal_departments = self._update_signal_departments_no_transaction(
+                    data['directing_departments_assignment'],
+                    locked_signal,
+                    SignalDepartments.REL_DIRECTING
                 )
                 to_send.append((update_signal_departments, {
                     'sender': sender,
@@ -491,8 +494,10 @@ class SignalManager(models.Manager):
 
             if 'routing_assignment' in data:
                 update_detail_data = data['routing_assignment']
-                signal_departments = self._update_routing_departments_no_transaction(
-                    update_detail_data, locked_signal
+                signal_departments = self._update_signal_departments_no_transaction(
+                    update_detail_data,
+                    locked_signal,
+                    SignalDepartments.REL_ROUTING
                 )
                 to_send.append((update_signal_departments, {
                     'sender': sender,
@@ -569,6 +574,10 @@ class SignalManager(models.Manager):
         return signal.user_assignment
 
     def _update_signal_departments_no_transaction(self, data, signal, relation_type):
+        """Update (create new) SignalDepartments relation.
+
+        Note: This is used for Directing Departments and Routing Departments.
+        """
         from signals.apps.signals.models.signal_departments import SignalDepartments
 
         relation = SignalDepartments.objects.create(
@@ -577,7 +586,8 @@ class SignalManager(models.Manager):
             created_by=data['created_by'] if 'created_by' in data else None
         )
 
-        # check if different dep id is set, reset assigned user
+        # Check if different Routing department(s) is/(are) already set, reset
+        # assigned user as well.
         if signal.user_assignment and relation_type == SignalDepartments.REL_ROUTING:
             if signal.routing_assignment and signal.routing_assignment.departments.exclude(
                 id__in=[dept.id for dept in relation.departments.all()]
@@ -597,14 +607,6 @@ class SignalManager(models.Manager):
 
         return relation
 
-    def _update_directing_departments_no_transaction(self, data, signal):
-        from signals.apps.signals.models.signal_departments import SignalDepartments
-        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_DIRECTING)
-
-    def _update_routing_departments_no_transaction(self, data, signal):
-        from signals.apps.signals.models.signal_departments import SignalDepartments
-        return self._update_signal_departments_no_transaction(data, signal, SignalDepartments.REL_ROUTING)
-
     def _clear_routing_and_assigned_user_no_transaction(self, signal):
         if signal.user_assignment:
             signal.user_assignment = None
@@ -615,14 +617,15 @@ class SignalManager(models.Manager):
 
     def update_routing_departments(self, data, signal):
         from signals.apps.signals.models import Signal
+        from signals.apps.signals.models.signal_departments import SignalDepartments
 
         with transaction.atomic():
             locked_signal = Signal.objects.select_for_update(nowait=True).get(pk=signal.pk)  # Lock the Signal
-            departments = self._update_routing_departments_no_transaction(
+            departments = self._update_signal_departments_no_transaction(
                 data=data,
-                signal=locked_signal
+                signal=locked_signal,
+                relation_type=SignalDepartments.REL_ROUTING
             )
-
             transaction.on_commit(lambda: update_signal_departments.send_robust(sender=self.__class__,
                                                                                 signal_obj=signal,
                                                                                 signal_departments=departments))

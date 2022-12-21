@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 
 from django.contrib.contenttypes.fields import GenericRelation
@@ -37,6 +37,11 @@ class Status(CreatedUpdatedModel):
 
     # SIG-2620 Flag to determine if a status can send an email
     send_email = models.BooleanField(default=False)
+    # product-steering/261 Override for email address in case this represents a
+    # a question not for reporter but for someone who handles the nuisance
+    # complaint that is not a user of Signalen proper. No email should go out to
+    # the reporter instead to whomever is mentioned in `email_override`.
+    email_override = models.EmailField(null=True, blank=True, default=None)
 
     history_log = GenericRelation('history.Log', object_id_field='object_pk')
 

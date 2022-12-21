@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from abc import ABC, abstractmethod
 
 from django.db.models import Q
@@ -68,8 +68,8 @@ class AbstractRule(ABC):
 
     def _validate_allows_contact(self, signal: Signal):
         """
-        Validate if the user want to be contacted and if allows_contact on feedback is False t
-        o never send ANY emails to the user
+        Validate if the user want to be contacted and if allows_contact on feedback is False to
+        never send ANY emails to the user
 
         If the feature flag is False we return True to still send emails to the user.
         """

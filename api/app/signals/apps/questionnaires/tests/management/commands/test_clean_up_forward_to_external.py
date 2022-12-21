@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 from io import StringIO
 from unittest.mock import patch
 
@@ -11,14 +11,14 @@ from django.test import TestCase
 
 class TestCleanUpReactionRequested(TestCase):
     @patch(
-        'signals.apps.questionnaires.management.commands.clean_up_reaction_requested.clean_up_reaction_request',
+        'signals.apps.questionnaires.management.commands.clean_up_forward_to_external.clean_up_forward_to_external',
         autospec=True
     )
     def test_command(self, patched_function):
         patched_function.return_value = 5
         buffer = StringIO()
-        call_command('clean_up_reaction_requested', stdout=buffer)
+        call_command('clean_up_forward_to_external', stdout=buffer)
         patched_function.assert_called_once_with()
 
         output = buffer.getvalue()
-        self.assertIn('Updated 5 signals.', output)
+        self.assertIn('Cleaned-up 5 outstanding sessions.', output)

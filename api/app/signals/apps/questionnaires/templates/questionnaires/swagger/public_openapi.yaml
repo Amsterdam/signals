@@ -541,6 +541,32 @@ components:
                       description: URI of the signal if available
                       type: string
                       format: uri
+                sia:post-answer:
+                  type: object
+                  properties:
+                    href:
+                      description: URI of endpoint to use to answer questions for this session
+                      type: string
+                      format: uri
+                sia:post-attachments:
+                  type: object
+                  properties:
+                    href:
+                      description: >-
+                        URI of endpoint to post attachments to for this session. Note this endpoint only accepts
+                        multipart encoded POSTs.
+                      type: string
+                      format: uri
+                sia:post-submit:
+                  type: object
+                  properties:
+                    href:
+                      description: >-
+                        URI of endpoint that is used to freeze a session. After freezing the session is processed and
+                        further updates are no longer possible.
+                      type: string
+                      format: uri
+
         _display:
           description: Display name of the Session
           type: string
@@ -595,6 +621,94 @@ components:
                 items:
                   type: string
           minItems: 0
+        questionnaire_explanation:
+          type: object
+          nullable: true
+          properties:
+            title:
+              type: string
+              description: Title for explanatory text
+              nullable: true
+            sections:
+              type: array
+              items:
+                type: object
+                properties:
+                  header:
+                    type: string
+                    nullable: true
+                    description: Section header
+                  text:
+                    type: string
+                    nullable: true
+                    description: Section text
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        description:
+                          type: string
+                          description: Image description
+                          nullable: true
+                        file:
+                          type: string
+                          description: URI of image location
+                          nullable: false
+        signal_snapshot:
+          type: object
+          description: Snapshot of signal associated with session at time of session creation
+          nullable: true
+          required:
+            - signal_id
+            - id
+          properties:
+            id:
+              oneOf:
+                - type: integer
+                - type: string
+              nullable: true
+              example: 1234
+            signal_id:
+              type: string
+              description: public UUID identifier of signal associated with session
+            location:
+              type: object
+              nullable: true
+              required:
+                - geometrie
+                    - address
+                    - address_text
+              properties:
+                address:
+                  type: object
+                  description: Object with address properties
+                  nullable: true
+                address_text:
+                  type: string
+                  description: human readable address
+                  nullable: true
+                geometrie:
+                  type: object
+                  required:
+                    - coordinates
+                    - type
+                  properties:
+                    coordinates:
+                      type: array
+                      items:
+                        type: number
+                      description: Two element array with orignal complaint (Signal) coordinates.
+                    type:
+                      type: string
+                stadsdeel:
+                  type: string
+                  description: city borough (used in Signalen Amsterdam only)
+                  nullable: false
+                area_name:
+                  type: string
+                  description: city district
+                  nullable: false
 
     PublicSessionAnswerQuestion:
       type: object

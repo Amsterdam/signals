@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
+from signals.apps.questionnaires.models import Questionnaire
 from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.signal_departments import SignalDepartments
@@ -20,6 +21,7 @@ class Log(models.Model):
     ACTION_UPDATE = 'UPDATE'
     ACTION_DELETE = 'DELETE'
     ACTION_RECEIVE = 'RECEIVE'
+    ACTION_NOT_RECEIVED = 'NOT_RECEIVED'
 
     ACTION_CHOICES = (
         (ACTION_UNKNOWN, 'Unknown'),
@@ -27,13 +29,14 @@ class Log(models.Model):
         (ACTION_UPDATE, 'Updated'),
         (ACTION_DELETE, 'Deleted'),
         (ACTION_RECEIVE, 'Received'),
+        (ACTION_NOT_RECEIVED, 'Not received'),
     )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING, related_name='+')
     object_pk = models.CharField(max_length=128, db_index=True)
     object = GenericForeignKey('content_type', 'object_pk')
 
-    action = models.CharField(editable=False, max_length=16, choices=ACTION_CHOICES, default=ACTION_UNKNOWN)
+    action = models.CharField(editable=False, max_length=20, choices=ACTION_CHOICES, default=ACTION_UNKNOWN)
     description = models.TextField(max_length=3000, null=True, blank=True)
     extra = models.TextField(max_length=255, null=True, blank=True)
     data = models.JSONField(null=True)
@@ -171,6 +174,10 @@ class Log(models.Model):
             action = 'Deelmelding toegevoegd'
         elif what == 'UPDATE_SLA':
             action = 'Servicebelofte:'
+        elif what == 'RECEIVE_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+            action = 'Toelichting ontvangen'
+        elif what == 'NOT_RECEIVED_SESSION' and self.object.questionnaire.flow == Questionnaire.FORWARD_TO_EXTERNAL:
+            action = 'Geen toelichting ontvangen'
         else:
             action = 'Actie onbekend.'
         return action

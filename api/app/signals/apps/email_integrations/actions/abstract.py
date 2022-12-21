@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 from abc import ABC
 
@@ -37,6 +37,10 @@ class AbstractAction(ABC):
     subject = None
     from_email = settings.DEFAULT_FROM_EMAIL
 
+    # Body of email
+    fallback_txt_template = 'email/signal_default.txt'
+    fallback_html_template = 'email/signal_default.html'
+
     # Will be used to create a note on the Signal after the email has been sent
     note = None
 
@@ -64,6 +68,12 @@ class AbstractAction(ABC):
         context = make_email_context(signal, self.get_additional_context(signal, dry_run), dry_run)
         return context
 
+    def get_recipient_list(self, signal):
+        """
+        Email address, override if we do not want to mail the reporter
+        """
+        return [signal.reporter.email]
+
     def render_mail_data(self, context):
         """
         Renders the subject, text message body and html message body
@@ -83,8 +93,8 @@ class AbstractAction(ABC):
             logger.warning(f'EmailTemplate {self.key} does not exists')
 
             subject = self.subject.format(formatted_signal_id=context['formatted_signal_id'])
-            message = loader.get_template('email/signal_default.txt').render(context)
-            html_message = loader.get_template('email/signal_default.html').render(context)
+            message = loader.get_template(self.fallback_txt_template).render(context)
+            html_message = loader.get_template(self.fallback_html_template).render(context)
 
         return subject, message, html_message
 
@@ -106,7 +116,7 @@ class AbstractAction(ABC):
 
         subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
-                         recipient_list=[signal.reporter.email, ], html_message=html_message)
+                         recipient_list=self.get_recipient_list(signal), html_message=html_message)
 
     def add_note(self, signal):
         if self.note:
@@ -129,4 +139,5 @@ class AbstractSystemAction(AbstractAction):
             raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
 
         self.kwargs = kwargs
+
         return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import re
 from typing import Optional
 from urllib.parse import unquote
@@ -20,6 +20,10 @@ from signals.apps.feedback.utils import get_feedback_urls as get_feedback_urls_n
 from signals.apps.questionnaires.services.feedback_request import (
     create_session_for_feedback_request,
     get_feedback_urls
+)
+from signals.apps.questionnaires.services.forward_to_external import (
+    create_session_for_forward_to_external,
+    get_forward_to_external_url
 )
 from signals.apps.questionnaires.services.reaction_request import (
     create_session_for_reaction_request,
@@ -66,6 +70,19 @@ def create_reaction_request_and_mail_context(signal: Signal, dry_run: bool = Fal
 
     session = create_session_for_reaction_request(signal)
     reaction_url = get_reaction_url(session)
+
+    return {'reaction_url': reaction_url}
+
+
+def create_forward_to_external_and_mail_context(signal: Signal, dry_run: bool = False) -> dict:
+    """
+    Create question, questionnaire and prepared session for forwarded to external mails.
+    """
+    if dry_run:
+        return {'reaction_url': f'{settings.FRONTEND_URL}/incident/external/00000000-0000-0000-0000-000000000000'}
+
+    session = create_session_for_forward_to_external(signal)
+    reaction_url = get_forward_to_external_url(session)
 
     return {'reaction_url': reaction_url}
 

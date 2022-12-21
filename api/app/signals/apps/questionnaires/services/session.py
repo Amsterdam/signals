@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import logging
 from collections import OrderedDict
 
@@ -37,7 +37,8 @@ class SessionService:
             raise SessionFrozen('Already used!')
 
         # Reaction was not provided in time and therefore this session expired:
-        if self.session.is_expired:
+        # Note: invalidated is set by clean-up tasks (for now only for the forwarded to external flow).
+        if self.session.is_expired or self.session.invalidated:
             raise SessionExpired('Expired!')
 
     def load_session_data(self):
@@ -213,7 +214,7 @@ class SessionService:
             self.session.started_at = timezone.now()
             self.session.save()
 
-        if self.session.is_expired:
+        if self.session.is_expired or self.session.invalidated:
             raise SessionExpired(f'Session {self.session.uuid} expired.')
 
         if self.session.frozen:

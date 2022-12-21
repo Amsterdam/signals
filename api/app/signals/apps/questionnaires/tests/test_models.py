@@ -7,6 +7,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils.timezone import make_aware
@@ -30,6 +31,8 @@ from signals.apps.questionnaires.models import (
     QuestionGraph,
     StoredFile
 )
+from signals.apps.signals import workflow
+from signals.apps.signals.factories import LocationFactory, SignalFactory, StatusFactory
 
 THIS_DIR = os.path.dirname(__file__)
 GIF_FILE = os.path.join(THIS_DIR, 'test-data', 'test.gif')
@@ -553,3 +556,65 @@ class TestStoredFile(TestCase):
         self.assertEqual(self.stored_file.get_reference_count(), 2)
         self.attached_file_1.delete()
         self.assertEqual(self.stored_file.get_reference_count(), 1)
+
+
+class TestSession(TestCase):
+    def setUp(self):
+        self.signal = SignalFactory.create(
+            status__text='STATUS TEXT',
+            status__state=workflow.DOORGEZET_NAAR_EXTERN,
+            status__email_override='a@example.com',
+        )
+
+    def test_model_clean_status(self):
+        # should work:
+        session = SessionFactory.create(
+            _signal_status=self.signal.status,
+            _signal=self.signal
+        )
+
+        # should not work:
+        wrong_status = StatusFactory.create(
+            text='STATUS TEXT',
+            state=workflow.DOORGEZET_NAAR_EXTERN,
+            email_override='a@example.com',
+        )
+
+        with self.assertRaises(ValidationError):
+            session._signal_status = wrong_status
+            session.save()
+
+    def test_model_clean_location(self):
+        # should work:
+        session = SessionFactory.create(
+            _signal_location=self.signal.location,
+            _signal=self.signal
+        )
+
+        # should not work:
+        wrong_location = LocationFactory.create()
+
+        with self.assertRaises(ValidationError):
+            session._signal_location = wrong_location
+            session.save()
+
+    def test_no_signal_then_no_signal_properties_allowed(self):
+        with self.assertRaises(ValidationError):
+            SessionFactory.create(
+                _signal=None,
+                _signal_status=self.signal.status
+            )
+
+        with self.assertRaises(ValidationError):
+            SessionFactory.create(
+                _signal=None,
+                _signal_status=self.signal.status,
+                _signal_location=self.signal.location
+            )
+
+        with self.assertRaises(ValidationError):
+            SessionFactory.create(
+                _signal=None,
+                _signal_status=self.signal.status,
+                _signal_location=self.signal.location
+            )

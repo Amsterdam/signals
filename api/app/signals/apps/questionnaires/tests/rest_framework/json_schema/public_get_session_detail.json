@@ -5,6 +5,17 @@
 		"_links": {
 			"type": "object",
 			"properties": {
+				"curies": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						}
+					}
+				},
 				"self": {
 					"type": "object",
 					"properties": {
@@ -16,18 +27,49 @@
 						"href"
 					]
 				},
-				"sia:questionnaire": {
+				"sia:post-answers": {
 					"type": "object",
 					"properties": {
 						"href": {
 							"type": "string"
 						}
-					},
-					"required": [
-						"href"
-					]
+					}
+				},
+				"sia:post-attachments": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					}
+				},
+				"sia:post-submit": {
+					"type": "object",
+					"properties": {
+						"href": {
+							"type": "string"
+						}
+					}
 				},
 				"sia:public-signal": {
+					"anyOf": [
+						{
+							"type": "object",
+							"properties": {
+								"href": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"href"
+							]
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"sia:questionnaire": {
 					"type": "object",
 					"properties": {
 						"href": {
@@ -41,14 +83,307 @@
 			},
 			"required": [
 				"self",
+				"sia:post-answers",
+				"sia:post-attachments",
+				"sia:post-submit",
 				"sia:questionnaire"
 			]
 		},
 		"_display": {
 			"type": "string"
 		},
-		"uuid": {
+		"can_freeze": {
+			"type": "boolean"
+		},
+		"created_at": {
 			"type": "string"
+		},
+		"duration": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"signal_snapshot": {
+			"anyOf": [
+				{
+					"properties": {
+						"id": {
+							"type": "number"
+						},
+						"signal_id": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"location": {
+							"anyOf": [
+								{
+									"type": "object",
+									"properties": {
+										"geometrie": {
+											"type": "object",
+											"properties": {
+												"coordinates": {
+													"type": "array",
+													"items": {
+														"type": "number"
+													}
+												},
+												"type": {
+													"type": "string"
+												}
+											}
+										},
+										"address": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "object"
+												}
+											]
+										},
+										"address_text": {
+											"type": "string"
+										},
+										"stadsdeel": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										},
+										"area_name": {
+											"anyOf": [
+												{
+													"type": "null"
+												},
+												{
+													"type": "string"
+												}
+											]
+										}
+									},
+									"required": [
+										"geometrie",
+										"address",
+										"address_text",
+										"stadsdeel",
+										"area_name"
+									],
+									"additionalProperties": false
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"id",
+						"signal_id"
+					],
+					"additionalProperties": false
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"path_answered_question_uuids": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"path_questions": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"_display": {
+						"type": "string"
+					},
+					"_links": {
+						"type": "object",
+						"properties": {
+							"curies": {
+								"type": "object",
+								"properties": {
+									"href": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"analysis_key": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"field_type": {
+						"type": "string"
+					},
+					"key": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"label": {
+						"type": "string"
+					},
+					"required": {
+						"type": "boolean"
+					},
+					"retrieval_key": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"short_label": {
+						"type": "string"
+					},
+					"uuid": {
+						"type": "string",
+						"format": "uuid"
+					}
+				},
+				"required": [
+					"_display",
+					"_links",
+					"analysis_key"
+				]
+			}
+		},
+		"path_unanswered_question_uuids": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"format": "uuid"
+			}
+		},
+		"path_validation_errors_by_uuid": {
+			"type": "object"
+		},
+		"questionnaire_explanation": {
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"sections": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"files": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"description": {
+													"anyOf": [
+														{
+															"type": "string"
+														},
+														{
+															"type": "null"
+														}
+													]
+												},
+												"file": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"file"
+											]
+										}
+									},
+									"header": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"text": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									}
+								},
+								"required": [
+									"files",
+									"header",
+									"text"
+								]
+							}
+						},
+						"title": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					},
+					"required": [
+						"sections",
+						"title"
+					]
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"started_at": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
 		},
 		"submit_before": {
 			"anyOf": [
@@ -60,26 +395,24 @@
 				}
 			]
 		},
-		"duration": {
+		"uuid": {
 			"type": "string"
-		},
-		"started_at": {
-			"anyOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "null"
-				}
-			]
 		}
 	},
 	"required": [
 		"_links",
 		"_display",
-		"uuid",
-		"submit_before",
+		"can_freeze",
+		"created_at",
 		"duration",
-		"started_at"
-	]
+		"path_answered_question_uuids",
+		"path_questions",
+		"path_unanswered_question_uuids",
+		"path_validation_errors_by_uuid",
+		"questionnaire_explanation",
+		"started_at",
+		"submit_before",
+		"uuid"
+	],
+	"additionalProperties": false
 }

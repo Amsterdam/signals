@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from datetime import timedelta
 
 from django.test import TestCase
@@ -8,6 +8,7 @@ from factory.fuzzy import FuzzyText
 from freezegun import freeze_time
 
 from signals.apps.email_integrations.rules import (
+    ForwardToExternalRule,
     SignalCreatedRule,
     SignalHandledNegativeRule,
     SignalHandledRule,
@@ -344,7 +345,8 @@ class TestSignalOptionalRule(TestCase):
             workflow.TE_VERZENDEN,
             workflow.VERZONDEN,
             workflow.VERZENDEN_MISLUKT,
-            workflow.AFGEHANDELD_EXTERN
+            workflow.AFGEHANDELD_EXTERN,
+            workflow.DOORGEZET_NAAR_EXTERN,
         ]
 
         for state in statuses:
@@ -353,3 +355,68 @@ class TestSignalOptionalRule(TestCase):
             signal.save()
 
             self.assertFalse(self.rule(signal))
+
+
+class TestForwardToExternalRule(TestCase):
+    rule = ForwardToExternalRule()
+    state = workflow.DOORGEZET_NAAR_EXTERN
+    email_override = 'a@example.com'
+    send_email = True
+
+    def test_happy_flow(self):
+        # we need email override to be set
+        signal = SignalFactory.create(status__state=self.state, status__text='STATUS_TEXT',
+                                      status__send_email=self.send_email,
+                                      status__email_override='override@example.com',
+                                      reporter__email='test@example.com')
+        self.assertTrue(self.rule(signal))
+
+    def test_email_override_none(self):
+        # no email override set, mail should not be sent
+        signal = SignalFactory.create(status__state=self.state, status__text='STATUS_TEXT',
+                                      status__send_email=self.send_email, status__email_override=None,
+                                      reporter__email='test@example.com')
+        self.assertFalse(self.rule(signal))
+
+    def test_email_override_invalid(self):
+        # invalid email override set, mail should not be sent
+        signal = SignalFactory.create(status__state=self.state, status__text='STATUS_TEXT',
+                                      status__send_email=self.send_email,
+                                      status__email_override='NOT_AN_EMAIL_ADDRESS',
+                                      reporter__email='test@example.com')
+        self.assertFalse(self.rule(signal))
+
+    def test_anonymous_reporter(self):
+        # we do not need reporter email
+        signal = SignalFactory.create(status__state=self.state, status__text='STATUS_TEXT',
+                                      status__email_override='override@example.com',
+                                      reporter__email='')
+        self.assertTrue(self.rule(signal))
+
+    def test_apply_for_parent_signals(self):
+        # we do not restrict the DOORGEZET_NAAR_EXTERN flow to parent or child signals, we check parent signals here
+        parent_signal = SignalFactory.create(status__state=self.state,
+                                             status__text='STATUS_TEXT',
+                                             status__send_email=self.send_email,
+                                             status__email_override='override@example.com',
+                                             reporter__email='')
+        SignalFactory.create(status__state=self.state,
+                             status__text='STATUS_TEXT',
+                             reporter__email='',
+                             status__email_override='',
+                             parent=parent_signal)
+        self.assertTrue(self.rule(parent_signal))
+
+    def test_apply_for_child_signals(self):
+        # we do not restrict the DOORGEZET_NAAR_EXTERN flow to parent or child signals, we check child signals here
+        parent_signal = SignalFactory.create(status__state=self.state,
+                                             status__text='STATUS_TEXT',
+                                             status__send_email=self.send_email,
+                                             status__email_override='',
+                                             reporter__email='')
+        child_signal = SignalFactory.create(status__state=self.state,
+                                            status__text='STATUS_TEXT',
+                                            status__email_override='override@example.com',
+                                            reporter__email='',
+                                            parent=parent_signal)
+        self.assertTrue(self.rule(child_signal))
