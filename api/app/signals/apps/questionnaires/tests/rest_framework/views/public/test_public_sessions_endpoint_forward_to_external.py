@@ -730,3 +730,68 @@ class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, AP
         self.assertEqual(Log.objects.count(), n_log_entries + 1)
         log_entry = Log.objects.first()
         self.assertIn(answer_text, log_entry.description)
+
+
+class TestAttachedFileOrder(ValidateJsonSchemaMixin, APITestCase, SuperUserMixin):
+    """
+    Testcase to check order of attachments in explanation for questionnaire
+    in the session endpoint. This test creates two attachments and checks that
+    they are serialized in the same order in the private signal attachments
+    endpoint and the session endpoint (via the questionnaire explanation).
+
+    Note this test uses knowledge about the explanation property of a
+    questionnaire associated with the forward to external flow.
+    """
+    session_detail_endpoint = '/signals/v1/public/qa/sessions/{uuid}/'
+    signal_attachments_endpoint = '/signals/v1/private/signals/{pk}/attachments/'
+
+    gif_file = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
+
+    def setUp(self):
+        self.t_report = datetime(2022, 12, 5, 16, 0, 0)
+        self.t_attach = datetime(2022, 12, 5, 16, 30, 0)
+        self.t_session = datetime(2022, 12, 5, 17, 0, 0)
+        self.t_retrieve = datetime(2022, 12, 5, 17, 30, 0)
+
+        with freeze_time(self.t_report):
+            self.signal = SignalFactory.create(
+                status__state=workflow.DOORGEZET_NAAR_EXTERN,
+                status__text='SOME QUESTION',
+                status__email_override='a@example.com'
+            )
+            with open(self.gif_file, 'rb') as gif:
+                suf1 = SimpleUploadedFile('one.gif', gif.read(), content_type='image/gif')
+                Attachment.objects.create(_signal=self.signal, file=suf1)
+
+        with freeze_time(self.t_attach):
+            with open(self.gif_file, 'rb') as gif:
+                suf2 = SimpleUploadedFile('two.gif', gif.read(), content_type='image/gif')
+                Attachment.objects.create(_signal=self.signal, file=suf2)
+
+        with freeze_time(self.t_session):
+            self.session = create_session_for_forward_to_external(self.signal)
+
+        self.attachments_url = self.signal_attachments_endpoint.format(pk=self.signal.pk)
+        self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))
+
+        self.client.force_authenticate(self.superuser)
+
+    def test_attached_file_order(self):
+        """
+        Files attached to a questionnaire's explanation should be serialized in
+        the same order as a signal's attachments.
+        """
+        a_response = self.client.get(self.attachments_url)
+        a_urls = [entry['location'] for entry in a_response.json()['results']]
+        a_order = [os.path.split(urlparse(url).path)[1] for url in a_urls]
+
+        with freeze_time(self.t_retrieve):
+            s_response = self.client.get(self.session_url)
+
+        # We know the explanation for the questionnaire of the forward to
+        # external flow has three sections and that the third section contains
+        # the images (i.e. the copied attachments).
+        file_urls = [entry['file'] for entry in s_response.json()['questionnaire_explanation']['sections'][2]['files']]
+        f_order = [os.path.split(urlparse(url).path)[1] for url in file_urls]
+
+        assert a_order == f_order

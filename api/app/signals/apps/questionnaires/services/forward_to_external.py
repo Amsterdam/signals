@@ -40,7 +40,7 @@ def _copy_attachments_to_attached_files(signal, attached_section):
     """
     Attach copied Signal attachments to AttachedSection.
     """
-    for attachment in signal.attachments.all():
+    for attachment in signal.attachments.order_by('created_at').all():
         # copy attachment file to AttachedFile / StoredFile models
         filename = os.path.basename(attachment.file.name)
         cf = ContentFile(attachment.file.read())
