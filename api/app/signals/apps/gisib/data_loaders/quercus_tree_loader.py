@@ -33,11 +33,6 @@ class QuercusTreeLoader:
     def load(self, time_delta: timedelta = None, purge_table=False) -> None:
         logger.info('Load Oaktrees (Quercus) from GISIB')
 
-        print(settings.FEATURE_FLAGS['GISIB_ENABLED'])
-        print('GISIB_ENABLED' in settings.FEATURE_FLAGS)
-        print(hasattr(settings.FEATURE_FLAGS, 'GISIB_ENABLED'))
-        print(getattr(settings.FEATURE_FLAGS, 'GISIB_ENABLED', False))
-
         if 'GISIB_ENABLED' in settings.FEATURE_FLAGS and not settings.FEATURE_FLAGS['GISIB_ENABLED']:
             logger.warning('GISIB disabled!')
             return
@@ -87,7 +82,6 @@ class QuercusTreeLoader:
         limit = app_settings.GISIB_LIMIT
 
         data = request(object_kind_name='Boom', filters=request_filters, offset=offset, limit=limit)
-        print(data)
         while data:
             features_in_data_count = len(data['features'])
             logger.debug(f'Got {features_in_data_count} features')
