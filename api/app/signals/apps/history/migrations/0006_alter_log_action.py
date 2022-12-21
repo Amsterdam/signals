@@ -20,10 +20,11 @@ class Migration(migrations.Migration):
                     ('UPDATE', 'Updated'),
                     ('DELETE', 'Deleted'),
                     ('RECEIVE', 'Received'),
-                    ('ACTION_NOT_RECEIVED', 'Not received')
+                    ('NOT_RECEIVED', 'Not received')
                 ],
                 default='UNKNOWN',
-                editable=False, max_length=20
+                editable=False,
+                max_length=20
             ),
         ),
     ]

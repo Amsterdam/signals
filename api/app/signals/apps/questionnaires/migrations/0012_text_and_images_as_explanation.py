@@ -7,7 +7,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('signals', '0165_add_status_forward_to_external'),
         ('questionnaires', '0011_question_multiple_answer'),
     ]
 
@@ -27,39 +26,12 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 (
                     'file',
-                    models.FileField(max_length=255, upload_to='attachments/questionnaires/stored_files/%Y/%m/%d/')
+                    models.FileField(
+                        max_length=255,
+                        upload_to='attachments/questionnaires/stored_files/%Y/%m/%d/'
+                    )
                 ),
             ],
-        ),
-        migrations.AddField(
-            model_name='session',
-            name='_signal_status',
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name='+',
-                to='signals.status'
-            ),
-        ),
-        migrations.AddField(
-            model_name='session',
-            name='invalidated',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AlterField(
-            model_name='questionnaire',
-            name='flow',
-            field=models.CharField(
-                choices=[
-                    ('EXTRA_PROPERTIES', 'Uitvraag'),
-                    ('REACTION_REQUEST', 'Reactie gevraagd'),
-                    ('FEEDBACK_REQUEST', 'Klanttevredenheidsonderzoek'),
-                    ('FORWARD_TO_EXTERNAL', 'Doorzetten naar externe')
-                ],
-                default='EXTRA_PROPERTIES',
-                max_length=255
-            ),
         ),
         migrations.CreateModel(
             name='AttachedSection',
