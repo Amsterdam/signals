@@ -2,6 +2,7 @@
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 import os
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core import mail
@@ -173,6 +174,7 @@ class TestForwardToExternalSessionService(TestCase):
                 service.freeze()
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN(self):
+        tz = ZoneInfo(settings.TIME_ZONE)
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
         self.assertEqual(len(mail.outbox), 0)
@@ -187,7 +189,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.signal.refresh_from_db()
 
             # check that we got a status update to state VERZOEK_TOT_AFHANDELING with correct properties
-            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
+            question_timestamp = self.t_session_started.astimezone(tz).strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, VERZOEK_TOT_AFHANDELING)
             self.assertEqual(self.signal.status.text, None)  # see log entry for reaction text (tested below)
 
@@ -208,6 +210,7 @@ class TestForwardToExternalSessionService(TestCase):
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN_with_status_update(self):
         # update status after the original DOORGEZET_NAAR_EXTERN
+        tz = ZoneInfo(settings.TIME_ZONE)
         delta_t = timedelta((self.t_session_freeze - self.t_session_started).seconds / 2)
         with freeze_time(self.t_session_started + delta_t):
             Signal.actions.update_status({'state': GEMELD, 'text': 'test'}, self.signal)
@@ -227,7 +230,7 @@ class TestForwardToExternalSessionService(TestCase):
             self.signal.refresh_from_db()
 
             # Check that we get a Note saying we received a reaction from external collaborator
-            question_timestamp = self.t_session_started.strftime('%d-%m-%Y %H:%M')
+            question_timestamp = self.t_session_started.astimezone(tz).strftime('%d-%m-%Y %H:%M')
             self.assertEqual(self.signal.status.state, GEMELD)
 
             # In the case of a status change after forwarding a signal we get no status change but we do get a log

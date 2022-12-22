@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 - 2022 Gemeente Amsterdam
+from zoneinfo import ZoneInfo
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -220,8 +222,10 @@ class SignalLogService:
         if not session.frozen:
             return
 
+        tz = ZoneInfo(settings.TIME_ZONE)
+
         external_user = session._signal_status.email_override
-        when = session._signal_status.created_at.strftime('%d-%m-%Y %H:%M')
+        when = session._signal_status.created_at.astimezone(tz).strftime('%d-%m-%Y %H:%M')
         description = f'Toelichting door behandelaar {external_user} op vraag van {when} {reaction}'
 
         session.history_log.create(
