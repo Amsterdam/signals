@@ -2,8 +2,8 @@
 # Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
 import os
 from datetime import timedelta
-from zoneinfo import ZoneInfo
 
+import pytz
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
@@ -174,7 +174,7 @@ class TestForwardToExternalSessionService(TestCase):
                 service.freeze()
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN(self):
-        tz = ZoneInfo(settings.TIME_ZONE)
+        tz = pytz.timezone(settings.TIME_ZONE)
         service = get_session_service(self.session.uuid)
         self.assertIsInstance(service, ForwardToExternalSessionService)
         self.assertEqual(len(mail.outbox), 0)
@@ -210,7 +210,7 @@ class TestForwardToExternalSessionService(TestCase):
 
     def test_handle_frozen_session_DOORGEZET_NAAR_EXTERN_with_status_update(self):
         # update status after the original DOORGEZET_NAAR_EXTERN
-        tz = ZoneInfo(settings.TIME_ZONE)
+        tz = pytz.timezone(settings.TIME_ZONE)
         delta_t = timedelta((self.t_session_freeze - self.t_session_started).seconds / 2)
         with freeze_time(self.t_session_started + delta_t):
             Signal.actions.update_status({'state': GEMELD, 'text': 'test'}, self.signal)

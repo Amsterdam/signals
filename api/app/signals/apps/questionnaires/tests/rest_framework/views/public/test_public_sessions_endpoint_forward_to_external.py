@@ -10,8 +10,8 @@ import uuid
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
-from zoneinfo import ZoneInfo
 
+import pytz
 from dateutil import parser
 from django.conf import settings
 from django.core import mail
@@ -810,7 +810,7 @@ class TestDateTimeSerializationInLogs(ValidateJsonSchemaMixin, APITestCase, Supe
     signal_history_endpoint = '/signals/v1/private/signals/{pk}/history/'
 
     gif_file = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
-    tz = ZoneInfo(settings.TIME_ZONE)
+    tz = pytz.timezone(settings.TIME_ZONE)
 
     def setUp(self):
         self.t_test = datetime(2022, 12, 5, 16, 0, 0, tzinfo=self.tz)
