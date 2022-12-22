@@ -21,4 +21,4 @@ class NestedPublicAttachedSectionSerializer(ModelSerializer):
 
     def get_files(self, obj):
         qs = obj.files.all().order_by('stored_file__id')
-        return NestedPublicAttachedFileSerializer(qs, many=True).data
+        return NestedPublicAttachedFileSerializer(qs, many=True, context=self.context).data
