@@ -45,7 +45,7 @@ STATUS_CHOICES_API = (
     (VERZOEK_TOT_AFHANDELING, 'Extern: verzoek tot afhandeling'),
     (REACTIE_GEVRAAGD, 'Reactie gevraagd'),
     (REACTIE_ONTVANGEN, 'Reactie ontvangen'),
-    (DOORGEZET_NAAR_EXTERN, 'Doorzetten naar extern'),
+    (DOORGEZET_NAAR_EXTERN, 'Doorgezet naar extern'),
 )
 
 # Choices used by the application. These choices can be set from within the application, not via the
