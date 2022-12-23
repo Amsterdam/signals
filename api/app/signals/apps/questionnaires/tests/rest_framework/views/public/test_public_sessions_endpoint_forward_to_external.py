@@ -5,11 +5,14 @@ Test the forwarded to external flow at REST API level.
 """
 import copy
 import os
+import re
 import uuid
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
+import pytz
+from dateutil import parser
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -794,4 +797,76 @@ class TestAttachedFileOrder(ValidateJsonSchemaMixin, APITestCase, SuperUserMixin
         file_urls = [entry['file'] for entry in s_response.json()['questionnaire_explanation']['sections'][2]['files']]
         f_order = [os.path.split(urlparse(url).path)[1] for url in file_urls]
 
-        assert a_order == f_order
+        self.assertEqual(a_order, f_order)
+
+
+class TestDateTimeSerializationInLogs(ValidateJsonSchemaMixin, APITestCase, SuperUserMixin):
+    """
+    Make sure created_at serialization in history matches created_at
+    serialization in message that acknowledges reception of a external reaction.
+    """
+    session_detail_endpoint = '/signals/v1/public/qa/sessions/{uuid}/'
+    signal_attachments_endpoint = '/signals/v1/private/signals/{pk}/attachments/'
+    signal_history_endpoint = '/signals/v1/private/signals/{pk}/history/'
+
+    gif_file = os.path.join(THIS_DIR, '..', '..', '..', 'test-data', 'test.gif')
+    tz = pytz.timezone(settings.TIME_ZONE)
+
+    def setUp(self):
+        self.t_test = datetime(2022, 12, 5, 16, 0, 0, tzinfo=self.tz)
+
+        with freeze_time(self.t_test):
+            self.signal = SignalFactory.create(
+                status__state=workflow.DOORGEZET_NAAR_EXTERN,
+                status__text='SOME QUESTION',
+                status__email_override='a@example.com'
+            )
+            self.session = create_session_for_forward_to_external(self.signal)
+
+        self.client.force_authenticate(self.superuser)
+        self.session_url = self.session_detail_endpoint.format(uuid=str(self.session.uuid))
+        self.history_url = self.signal_history_endpoint.format(pk=self.signal.pk)
+
+    def test_answer_session(self):
+        with freeze_time(self.t_test):
+            response = self.client.get(self.session_url)
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+
+        self.assertEqual(len(response_json['path_questions']), 2)
+        text_question = response_json['path_questions'][0]
+        self.assertEqual(text_question['analysis_key'], 'reaction')
+
+        answers_url = response_json['_links']['sia:post-answers']['href']
+        submit_url = response_json['_links']['sia:post-submit']['href']
+
+        # Fill out the questionnaire (we use the same time as before to make
+        # timestamp comparisons easy).
+        answer_text = 'REACTION'
+        answer_payload = [{'question_uuid': text_question['uuid'], 'payload': answer_text}]
+        with freeze_time(self.t_test):
+            response = self.client.post(answers_url, data=answer_payload, format='json')
+            self.assertEqual(response.status_code, 200)
+            response = self.client.post(submit_url)
+            self.assertEqual(response.status_code, 200)
+
+            history_response = self.client.get(self.history_url)
+
+        # Select the history entry we are interested in and check that the
+        # timestamp serialized by DRF matches "manual" serialization:
+        entry = history_response.json()[0]
+        self.assertEqual(history_response.status_code, 200)
+        drf_timestamp = parser.parse(entry['when'])
+
+        pattern = re.compile(r'(?P<day>\d{2})-'
+                             r'(?P<month>\d{2})-'
+                             r'(?P<year>\d{4})\W'
+                             r'(?P<hour>\d{2})\:'
+                             r'(?P<minute>\d{2})')  # match e.g. 2022-12-05 12:00
+        matched = re.search(pattern, (entry['description']))
+
+        self.assertEqual(int(matched['year']), drf_timestamp.year)
+        self.assertEqual(int(matched['month']), drf_timestamp.month)
+        self.assertEqual(int(matched['day']), drf_timestamp.day)
+        self.assertEqual(int(matched['hour']), drf_timestamp.hour)
+        self.assertEqual(int(matched['minute']), drf_timestamp.minute)
