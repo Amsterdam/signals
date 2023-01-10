@@ -26,7 +26,7 @@ INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
 
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'null').split(',')]
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', True) in TRUE_VALUES
-CORS_ALLOW_HEADERS = list(default_headers) + [
+CORS_EXPOSE_HEADERS = list(default_headers) + [
     'Link',  # Added for the geography endpoints
     'X-API-Version',  # General API version
     'X-Total-Count',  # Added for the geography endpoints
