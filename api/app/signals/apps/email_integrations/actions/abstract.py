@@ -128,7 +128,7 @@ class AbstractSystemAction(AbstractAction):
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    rule = lambda self, signal: True # noqa: E731
+    rule = lambda self, signal: True  # noqa: E731
 
     def __call__(self, signal, dry_run=False, **kwargs):
         """
@@ -139,4 +139,5 @@ class AbstractSystemAction(AbstractAction):
             raise TypeError(f'{self.__class__.__name__} requires {self._required_call_kwargs}')
 
         self.kwargs = kwargs
+
         return super(AbstractSystemAction, self).__call__(signal=signal, dry_run=dry_run)

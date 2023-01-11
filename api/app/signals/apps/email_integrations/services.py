@@ -3,9 +3,9 @@
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
+    AssignedAction,
     FeedbackReceivedAction,
     ForwardToExternalReactionReceivedAction,
-    AssignedAction,
     SignalCreatedAction,
     SignalForwardToExternalAction,
     SignalHandledAction,
