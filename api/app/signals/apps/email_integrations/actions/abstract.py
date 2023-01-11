@@ -116,7 +116,7 @@ class AbstractAction(ABC):
 
         subject, message, html_message = self.render_mail_data(context)
         return send_mail(subject=subject, message=message, from_email=self.from_email,
-                         recipient_list=[signal.reporter.email, ], html_message=html_message)
+                         recipient_list=self.get_recipient_list(signal), html_message=html_message)
 
     def add_note(self, signal):
         if self.note:
@@ -128,7 +128,7 @@ class AbstractSystemAction(AbstractAction):
     kwargs = None
 
     # No rules are used by system actions so return True by default
-    def rule(self, signal): return True  # noqa: E731
+    rule = lambda self, signal: True # noqa: E731
 
     def __call__(self, signal, dry_run=False, **kwargs):
         """

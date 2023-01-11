@@ -46,6 +46,9 @@ class AssignedAction(AbstractSystemAction):
         }
 
     def get_recipient_list(self, signal):
+        """
+        Get the recipient from keyword arguments
+        """
         return [
             formataddr((self.kwargs['recipient'].get_full_name(), self.kwargs['recipient'].email))
         ]
