@@ -82,24 +82,3 @@ class TestMailActions(TestCase):
         self.assertEqual(mail.outbox[0].to, [signal.reporter.email, ])
         self.assertEqual(mail.outbox[0].from_email, settings.DEFAULT_FROM_EMAIL)
         self.assertEqual(Note.objects.count(), 1)
-
-
-class TestMailActionsSpecialCasesActions(TestCase):
-    def test_send_email_no_actions(self):
-        MailService._status_actions = ()
-
-        self.assertEqual(len(mail.outbox), 0)
-
-        signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
-        self.assertFalse(MailService.status_mail(signal.pk))
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_send_email_lambda_actions(self):
-        MailService._status_actions = (lambda x, dry_run: False, lambda x, dry_run: False, lambda x, dry_run: False,
-                                       lambda x, dry_run: False)
-
-        self.assertEqual(len(mail.outbox), 0)
-
-        signal = SignalFactory.create(status__state=workflow.GEMELD, reporter__email='test@example.com')
-        self.assertFalse(MailService.status_mail(signal.pk))
-        self.assertEqual(len(mail.outbox), 0)

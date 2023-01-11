@@ -128,7 +128,6 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal)
         self.signal.refresh_from_db()
 
-        self.assertEqual(len(MailService._status_actions), 9)
         MailService.status_mail(signal=self.signal.id)
 
         # Check that we have a Questionnaire and Session
@@ -160,7 +159,6 @@ class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
         Signal.actions.update_status(self.STATUS_UPDATE['status'], signal=self.signal_with_image)
         self.signal_with_image.refresh_from_db()
 
-        self.assertEqual(len(MailService._status_actions), 9)
         MailService.status_mail(signal=self.signal_with_image.id)
 
         # Check that we have a Questionnaire and Session
