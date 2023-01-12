@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Delta10 B.V.
 from django.dispatch import receiver
 
 from signals.apps.email_integrations import tasks

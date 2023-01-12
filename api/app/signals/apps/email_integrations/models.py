@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam, Delta10 B.V.
 from django.contrib.gis.db import models
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
