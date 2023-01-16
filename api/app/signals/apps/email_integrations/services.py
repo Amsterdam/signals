@@ -3,6 +3,7 @@
 from typing import Union
 
 from signals.apps.email_integrations.actions import (
+    AssignedAction,
     FeedbackReceivedAction,
     ForwardToExternalReactionReceivedAction,
     SignalCreatedAction,
@@ -38,6 +39,7 @@ class MailService:
     _system_actions = {
         'feedback_received': FeedbackReceivedAction,
         'forward_to_external_reaction_received': ForwardToExternalReactionReceivedAction,
+        'assigned': AssignedAction,
     }
 
     @classmethod

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam, Delta10 B.V.
 from django.contrib.gis.db import models
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -18,6 +18,7 @@ class EmailTemplate(CreatedUpdatedModel):
     SIGNAL_FEEDBACK_RECEIVED = 'signal_feedback_received'
     SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED = 'signal_forward_to_external_reaction_received'
     MY_SIGNAL_TOKEN = 'my_signal_token'
+    SIGNAL_ASSIGNED = 'signal_assigned'
 
     KEYS_CHOICES = [
         (SIGNAL_CREATED, 'Send mail signal created'),
@@ -29,6 +30,7 @@ class EmailTemplate(CreatedUpdatedModel):
         (SIGNAL_STATUS_CHANGED_REACTIE_ONTVANGEN, 'Send mail signal reaction requested received'),
         (SIGNAL_STATUS_CHANGED_AFGEHANDELD_KTO_NEGATIVE_CONTACT, 'Send mail signal negative KTO contact'),
         (SIGNAL_STATUS_CHANGED_FORWARD_TO_EXTERNAL, 'Send mail signal forwarded to external'),
+        (SIGNAL_ASSIGNED, 'Send mail signal assigned'),
         (SIGNAL_FEEDBACK_RECEIVED, 'Send mail signal feedback received'),
         (SIGNAL_FORWARD_TO_EXTERNAL_REACTION_RECEIVED, 'Send mail forwarded to external reaction received'),
         (MY_SIGNAL_TOKEN, 'Send mail when a My Signals token has been requested'),

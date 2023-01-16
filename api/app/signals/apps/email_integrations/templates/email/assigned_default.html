@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Melding {{ formatted_signal_id }} is toegewezen aan {% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %}</title>
+</head>
+<body>
+    <p>
+        Beste {{ recipient_full_name }},
+    </p>
+
+    <p>
+        De volgende melding is aan {% if assigned_to_user %}jou{% else %}{{ assigned_to_department }}{% endif %} toegewezen:
+    </p>
+
+    <p>
+        Nummer: <i>{{ formatted_signal_id }}</i><br />
+        Subcategorie: <i>{{ sub_category_public_name }}</i><br/>
+        Gemeld op: <i>{{ created_at|date:"DATETIME_FORMAT" }}</i><br/>
+    </p>
+
+    <a href="{{ signal_url }}">{{ signal_url }}</a>
+
+    <p>
+        Met vriendelijke groet,
+        <br/>
+        {{ ORGANIZATION_NAME }}
+    </p>
+</body>
+</html>
