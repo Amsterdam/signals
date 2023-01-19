@@ -168,7 +168,7 @@ CACHES = {
 }
 
 # Django security settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
