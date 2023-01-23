@@ -51,8 +51,7 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
         response = requests.post(
             url=settings.SIGMAX_SERVER,
             headers=headers,
-            data=encoded,
-            verify=False
+            data=encoded
         )
         response.raise_for_status()
     except requests.RequestException as e:
