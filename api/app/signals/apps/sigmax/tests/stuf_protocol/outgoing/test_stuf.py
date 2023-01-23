@@ -14,7 +14,13 @@ from signals.apps.sigmax.stuf_protocol.exceptions import SigmaxException
 
 logger = logging.getLogger(__name__)
 
-REQUIRED_ENV = {'SIGMAX_AUTH_TOKEN': 'TEST', 'SIGMAX_SERVER': 'https://example.com'}
+REQUIRED_ENV = {
+    'SIGMAX_AUTH_TOKEN': 'TEST',
+    'SIGMAX_SERVER': 'https://example.com',
+    'SIGMAX_CLIENT_CERT': 'test.crt',
+    'SIGMAX_CLIENT_KEY': 'test.key'
+}
+
 DATA_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'data'
@@ -72,6 +78,29 @@ class TestSendStufMessage(TestCase):
             b'%d' % len(message),
             kwargs['headers']['Content-Length']
         )
+
+    @override_settings(
+        SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
+        SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
+        SIGMAX_CLIENT_CERT=REQUIRED_ENV['SIGMAX_CLIENT_CERT'],
+        SIGMAX_CLIENT_KEY=REQUIRED_ENV['SIGMAX_CLIENT_KEY']
+    )
+    @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.stuf._stuf_response_ok', autospec=True)
+    @mock.patch('requests.post', autospec=True)
+    def test_send_message_with_cert(self, mocked_request_post, mocked_stuf_response_ok):
+        mocked_request_post.return_value.status_code = 200
+        mocked_request_post.return_value.text = 'Message from Sigmax'
+        mocked_stuf_response_ok.return_value = True
+
+        message = 'TEST BERICHT'
+        action = 'http://www.egem.nl/StUF/sector/zkn/0310/CreeerZaak_Lk01'
+        outgoing.stuf._send_stuf_message(message, action)
+
+        # Check that headers are set correctly when sending an STUF message.
+        _, kwargs = mocked_request_post.call_args
+
+        self.assertEqual(mocked_request_post.called, 1)
+        self.assertEqual(kwargs['cert'], (REQUIRED_ENV['SIGMAX_CLIENT_CERT'], REQUIRED_ENV['SIGMAX_CLIENT_KEY']))
 
 
 class TestStufResponseOk(TestCase):
