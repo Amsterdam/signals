@@ -5,6 +5,7 @@ import csv
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.postgres.aggregates import StringAgg
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -36,11 +37,29 @@ class SignalsUserAdmin(UserAdmin):
     departments.short_description = 'Afdeling(en)'
     departments.allow_tags = True
 
+    @admin.action(description='Download CSV')
     def download_csv(self, request, queryset):
         """Download CSV of user accounts."""
+        # If we don't specify the fields, a new query will be executed to retrieve
+        # the groups for each result when iterating below
+        queryset = queryset.values(
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+        )
+        queryset = queryset.annotate(
+            group_names=StringAgg('groups__name', ', ', distinct=True),
+            department_codes=StringAgg('profile__departments__code', ', ', distinct=True)
+        )
+
         column_headers = [
             'Gebruikersnaam',
-            'Emailadres',
+            'E-mailadres',
             'Voornaam',
             'Achternaam',
             'Groep',
@@ -64,19 +83,15 @@ class SignalsUserAdmin(UserAdmin):
 
         for user in queryset:
             writer.writerow([
-                user.username,
-                user.email,
-                user.first_name,
-                user.last_name,
-                ', '.join(
-                    user.groups.values_list('name', flat=True)
-                ),
-                ja_nee(user.is_staff),
-                ja_nee(user.is_superuser),
-                ja_nee(user.is_active),
-                ', '.join(
-                    user.profile.departments.values_list('code', flat=True).order_by('code')
-                ) if user.profile and user.profile.departments.exists() else '',
+                user['username'],
+                user['email'],
+                user['first_name'],
+                user['last_name'],
+                user['group_names'],
+                ja_nee(user['is_staff']),
+                ja_nee(user['is_superuser']),
+                ja_nee(user['is_active']),
+                user['department_codes'],
             ])
 
         self.message_user(request, 'Created summary CSV file: {}'.format(filename))
