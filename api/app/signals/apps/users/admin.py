@@ -102,7 +102,7 @@ class SignalsUserAdmin(UserAdmin):
 
     def save_model(self, request, obj, form, change):
         """
-        On the save from the model also add an history log in the admin panel
+        On the save from the model also add a history log in the admin panel
         """
         # TODO:: This currently only saves the changes on the user object.
         # it does not log the users rights/group and related Profile changes
