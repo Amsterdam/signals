@@ -8,6 +8,9 @@ from django.urls import include, path
 from signals.admin.oidc import views as admin_oidc_views
 from signals.apps.api.generics.routers import BaseSignalsAPIRootView
 
+# Remove "view website" button in the Django admin
+admin.site.site_url = None
+
 urlpatterns = [
     # Used to determine API health when deploying
     path('status/', include('signals.apps.health.urls')),
