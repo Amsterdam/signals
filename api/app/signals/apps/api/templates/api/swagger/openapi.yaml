@@ -157,7 +157,7 @@ paths:
             ASC:
               value: 'ASC'
               summary: Will select all (parent) Signals where ASC is set explicitly as the directing department
-            null:
+            'null':
               value: 'null'
               summary: Will select all (parent) Signals without a directing department assignment
           required: false
@@ -1957,7 +1957,7 @@ paths:
           in: query
           description: >-
             Filter returns only areas with a certain code. Can be used to filter on multiple type
-            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018"
+            codes. For example the code for stadsdeel centrum van amsterdam "03630000000018".
           schema:
             type: string
             format: string
