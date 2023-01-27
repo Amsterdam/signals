@@ -45,14 +45,18 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
         'Content-Length': b'%d' % len(encoded)
     }
 
+    cert = None
+    if settings.SIGMAX_CLIENT_CERT and settings.SIGMAX_CLIENT_KEY:
+        cert = (settings.SIGMAX_CLIENT_CERT, settings.SIGMAX_CLIENT_KEY)
+
     # Send our message to Sigmax. Network problems, and HTTP status codes
     # are all raised as errors.
     try:
         response = requests.post(
             url=settings.SIGMAX_SERVER,
+            cert=cert,
             headers=headers,
-            data=encoded,
-            verify=False
+            data=encoded
         )
         response.raise_for_status()
     except requests.RequestException as e:

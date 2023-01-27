@@ -360,6 +360,8 @@ SWAGGER_SETTINGS = {
 # Sigmax settings
 SIGMAX_AUTH_TOKEN = os.getenv('SIGMAX_AUTH_TOKEN', None)
 SIGMAX_SERVER = os.getenv('SIGMAX_SERVER', None)
+SIGMAX_CLIENT_CERT = os.getenv('SIGMAX_CLIENT_CERT', None)
+SIGMAX_CLIENT_KEY = os.getenv('SIGMAX_CLIENT_KEY', None)
 SIGMAX_SEND_FAIL_TIMEOUT_MINUTES = os.getenv('SIGMAX_SEND_FAIL_TIMEOUT_MINUTES', 60*24)  # noqa Default is 24hrs.
 
 # Child settings
