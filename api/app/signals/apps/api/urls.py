@@ -28,6 +28,7 @@ from signals.apps.api.views import (
     StatusMessageTemplatesViewSet,
     StoredSignalFilterViewSet
 )
+from signals.apps.api.views.signals.private.stats import StatsViewSet
 from signals.apps.feedback.rest_framework.views import FeedbackViewSet, StandardAnswerViewSet
 from signals.apps.search.rest_framework.views import SearchView
 from signals.apps.users.rest_framework.views import (
@@ -127,6 +128,9 @@ urlpatterns = [
                 name='private-signal-context-reporter'),
         re_path(r'signals/(?P<pk>\d+)/context/near/geography/?$', SignalContextViewSet.as_view({'get': 'near'}),
                 name='private-signal-context-near-geography'),
+
+        # Stats
+        path('stats', StatsViewSet.as_view({'get': 'total'})),
     ])),
 
     # Reporting
