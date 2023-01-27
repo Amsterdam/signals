@@ -108,7 +108,12 @@ class Status(CreatedUpdatedModel):
             errors['target_api'] = ValidationError(error_msg, code='invalid')
 
         # Validating text field required.
-        if new_state in [workflow.AFGEHANDELD, workflow.HEROPEND] and not self.text:
+        if new_state == workflow.AFGEHANDELD and current_state != workflow.VERZOEK_TOT_HEROPENEN and not self.text:
+            error_msg = 'This field is required when changing `state` to `{new_state}`.'.format(
+                new_state=new_state_display)
+            errors['text'] = ValidationError(error_msg, code='required')
+
+        if new_state == workflow.HEROPEND and not self.text:
             error_msg = 'This field is required when changing `state` to `{new_state}`.'.format(
                 new_state=new_state_display)
             errors['text'] = ValidationError(error_msg, code='required')
