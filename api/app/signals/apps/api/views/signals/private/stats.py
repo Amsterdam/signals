@@ -12,6 +12,12 @@ class StatsViewSet(ViewSet):
         if state is None:
             return Response('No status parameter provided in querystring.', status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = TotalSerializer({'total': Signal.objects.filter(status__state=state).count()})
+        queryset = Signal.objects.filter(status__state=state)
+
+        category = request.query_params.get('category')
+        if category is not None:
+            queryset = queryset.filter(category_assignment__category__parent_id=category)
+
+        serializer = TotalSerializer({'total': queryset.count()})
 
         return Response(serializer.data)
