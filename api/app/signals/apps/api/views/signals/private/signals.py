@@ -32,6 +32,7 @@ from signals.apps.api.serializers.email_preview import (
     EmailPreviewSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
+from signals.apps.api.serializers.stats import TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
@@ -279,6 +280,15 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         return HttpResponse(pdf, content_type='application/pdf', headers={
             'Content-Disposition': f'attachment;filename="{pdf_filename}"'
         })
+
+    @action(detail=False)
+    def total(self, request) -> Response:
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+
+        serializer = TotalSerializer({'total': queryset.count()})
+
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):
