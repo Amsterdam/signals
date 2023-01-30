@@ -13,6 +13,7 @@ class TotalSerializer(Serializer):
     def create(self, validated_data):
         pass
 
+
 class HighPriorityCompletionSerializer(Serializer):
     date = DateField()
     amount = IntegerField()
