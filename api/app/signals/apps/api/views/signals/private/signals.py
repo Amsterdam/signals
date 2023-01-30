@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+import datetime
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
@@ -32,11 +33,12 @@ from signals.apps.api.serializers.email_preview import (
     EmailPreviewSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
-from signals.apps.api.serializers.stats import TotalSerializer
+from signals.apps.api.serializers.stats import TotalSerializer, HighUrgencyCompletionSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
-from signals.apps.signals.models import Signal
+from signals.apps.signals import workflow
+from signals.apps.signals.models import Signal, Priority
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
@@ -287,6 +289,30 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         queryset = self.filter_queryset(queryset)
 
         serializer = TotalSerializer({'total': queryset.count()})
+
+        return Response(serializer.data)
+
+    @action(detail=False, url_path='stats/high_urgency_completion_last_week')
+    def high_urgency_completion_last_week(self, request) -> Response:
+        start = datetime.datetime.today() - datetime.timedelta(days=6)
+        date_list = [start + datetime.timedelta(days=x) for x in range(7)]
+
+        data = []
+        for date_time in date_list:
+            date = date_time.date()
+            queryset = Signal.objects.all()
+            queryset = queryset.filter(
+                status__state=workflow.AFGEHANDELD,
+                status__created_at__date=date,
+                priority__priority=Priority.PRIORITY_HIGH
+            )
+
+            data.append({
+                'date': date,
+                'amount': queryset.count()
+            })
+
+        serializer = HighUrgencyCompletionSerializer(data, many=True)
 
         return Response(serializer.data)
 
