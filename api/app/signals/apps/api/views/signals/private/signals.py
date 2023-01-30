@@ -283,7 +283,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             'Content-Disposition': f'attachment;filename="{pdf_filename}"'
         })
 
-    @action(detail=False)
+    @action(detail=False, url_path='stats/total')
     def total(self, request) -> Response:
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
