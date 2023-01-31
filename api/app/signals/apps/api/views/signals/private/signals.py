@@ -291,7 +291,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         serializer = TotalSerializer({'total': queryset.count()})
 
         return Response(serializer.data)
-c
+
     @action(detail=False, url_path='stats/completion_last_week', queryset=Signal.objects.all())
     def completion_last_week(self, request):
         start = datetime.datetime.today() - datetime.timedelta(days=6)
@@ -301,11 +301,8 @@ c
 
         def get_amount_for_date(date):
             queryset = self.get_queryset()
-            queryset = queryset.filter(
-                status__state=workflow.AFGEHANDELD,
-                status__created_at__date=date,
-                priority__priority=Priority.PRIORITY_HIGH
-            )
+            queryset = self.filter_queryset(queryset)
+            queryset = queryset.filter(status__created_at__date=date)
 
             return queryset.count()
 
