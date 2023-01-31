@@ -284,16 +284,16 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         })
 
     @action(detail=False, url_path='stats/total')
-    def total(self, request) -> Response:
+    def total(self, request):
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
 
         serializer = TotalSerializer({'total': queryset.count()})
 
         return Response(serializer.data)
-
+c
     @action(detail=False, url_path='stats/completion_last_week', queryset=Signal.objects.all())
-    def completion_last_week(self, request) -> Response:
+    def completion_last_week(self, request):
         start = datetime.datetime.today() - datetime.timedelta(days=6)
         date_list = [start + datetime.timedelta(days=x) for x in range(7)]
 
