@@ -37,8 +37,7 @@ from signals.apps.api.serializers.stats import CompletionSerializer, TotalSerial
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
-from signals.apps.signals import workflow
-from signals.apps.signals.models import Priority, Signal
+from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
