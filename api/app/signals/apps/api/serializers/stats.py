@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
-from rest_framework.fields import DateField, IntegerField, BooleanField, FloatField
+from rest_framework.fields import BooleanField, DateField, FloatField, IntegerField
 from rest_framework.serializers import Serializer
 
 
@@ -14,7 +14,7 @@ class TotalSerializer(Serializer):
         pass
 
 
-class HighPriorityCompletionSerializer(Serializer):
+class CompletionSerializer(Serializer):
     date = DateField()
     amount = IntegerField()
     delta = FloatField()

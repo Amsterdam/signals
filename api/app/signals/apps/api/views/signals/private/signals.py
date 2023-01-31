@@ -33,12 +33,12 @@ from signals.apps.api.serializers.email_preview import (
     EmailPreviewSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
-from signals.apps.api.serializers.stats import TotalSerializer, HighPriorityCompletionSerializer
+from signals.apps.api.serializers.stats import CompletionSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
 from signals.apps.signals import workflow
-from signals.apps.signals.models import Signal, Priority
+from signals.apps.signals.models import Priority, Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON
 from signals.auth.backend import JWTAuthBackend
@@ -292,8 +292,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         return Response(serializer.data)
 
-    @action(detail=False, url_path='stats/high_urgency_completion_last_week', queryset=Signal.objects.all())
-    def high_priority_completion_last_week(self, request) -> Response:
+    @action(detail=False, url_path='stats/completion_last_week', queryset=Signal.objects.all())
+    def completion_last_week(self, request) -> Response:
         start = datetime.datetime.today() - datetime.timedelta(days=6)
         date_list = [start + datetime.timedelta(days=x) for x in range(7)]
 
@@ -317,12 +317,12 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             amount_week_earlier = get_amount_for_date(week_earlier.date())
 
             delta = 100
-            if amount is not 0 and amount_week_earlier is not 0:
+            if amount != 0 and amount_week_earlier != 0:
                 if amount > amount_week_earlier:
                     delta = (amount - amount_week_earlier) / amount_week_earlier * 100
                 else:
                     delta = (amount_week_earlier - amount) / amount_week_earlier * 100
-            elif amount is 0 and amount_week_earlier is 0:
+            elif amount == 0 and amount_week_earlier == 0:
                 delta = 0
 
             data.append({
@@ -332,7 +332,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                 'delta_increase': amount >= amount_week_earlier
             })
 
-        serializer = HighPriorityCompletionSerializer(data, many=True)
+        serializer = CompletionSerializer(data, many=True)
 
         return Response(serializer.data)
 
