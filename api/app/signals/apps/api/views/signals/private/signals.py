@@ -292,24 +292,44 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         return Response(serializer.data)
 
-    @action(detail=False, url_path='stats/high_urgency_completion_last_week')
+    @action(detail=False, url_path='stats/high_urgency_completion_last_week', queryset=Signal.objects.all())
     def high_priority_completion_last_week(self, request) -> Response:
         start = datetime.datetime.today() - datetime.timedelta(days=6)
         date_list = [start + datetime.timedelta(days=x) for x in range(7)]
 
         data = []
-        for date_time in date_list:
-            date = date_time.date()
-            queryset = Signal.objects.all()
+
+        def get_amount_for_date(date):
+            queryset = self.get_queryset()
             queryset = queryset.filter(
                 status__state=workflow.AFGEHANDELD,
                 status__created_at__date=date,
                 priority__priority=Priority.PRIORITY_HIGH
             )
 
+            return queryset.count()
+
+        for date_time in date_list:
+            current_date = date_time.date()
+            week_earlier = date_time - datetime.timedelta(7)
+
+            amount = get_amount_for_date(current_date)
+            amount_week_earlier = get_amount_for_date(week_earlier.date())
+
+            delta = 100
+            if amount is not 0 and amount_week_earlier is not 0:
+                if amount > amount_week_earlier:
+                    delta = (amount - amount_week_earlier) / amount_week_earlier * 100
+                else:
+                    delta = (amount_week_earlier - amount) / amount_week_earlier * 100
+            elif amount is 0 and amount_week_earlier is 0:
+                delta = 0
+
             data.append({
-                'date': date,
-                'amount': queryset.count()
+                'date': current_date,
+                'amount': amount,
+                'delta': delta,
+                'delta_increase': amount >= amount_week_earlier
             })
 
         serializer = HighPriorityCompletionSerializer(data, many=True)
