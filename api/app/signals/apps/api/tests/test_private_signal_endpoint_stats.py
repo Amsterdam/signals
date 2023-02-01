@@ -1,8 +1,10 @@
 import datetime
 
 from django.contrib.auth.models import Permission
+from django.utils import timezone
+from freezegun import freeze_time
 
-from signals.apps.signals.factories import CategoryFactory, SignalFactory, CategoryAssignmentFactory
+from signals.apps.signals.factories import CategoryFactory, SignalFactory, ServiceLevelObjectiveFactory
 from signals.test.utils import SignalsBaseApiTestCase, SIAReadUserMixin
 
 
@@ -40,3 +42,23 @@ class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCa
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(100, response.json()['total'])
+
+    def test_total_filtered_by_punctuality(self):
+
+        category = CategoryFactory.create()
+        ServiceLevelObjectiveFactory.create(n_days=1, use_calendar_days=False, category=category)
+
+        created_at = datetime.datetime(2023, 2, 1, 12, 0, 0, tzinfo=timezone.get_default_timezone())
+        with freeze_time(created_at):
+            SignalFactory.create_batch(100, category_assignment__category=category)
+
+        def assert_punc(punc, **kwargs):
+            with freeze_time(created_at + datetime.timedelta(**kwargs)):
+                response = self.client.get(f'/signals/v1/private/signals/stats/total?punctuality={punc}')
+
+                self.assertEqual(200, response.status_code)
+                self.assertEqual(100, response.json()['total'])
+
+        assert_punc('on_time', seconds=60)
+        assert_punc('late', days=2)
+        assert_punc('late_factor_3', days=7)
