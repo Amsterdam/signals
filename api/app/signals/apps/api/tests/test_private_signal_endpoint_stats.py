@@ -6,8 +6,12 @@ from django.contrib.auth.models import Permission
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.factories import CategoryFactory, ServiceLevelObjectiveFactory, SignalFactory
-from signals.test.utils import SignalsBaseApiTestCase, SIAReadUserMixin
+from signals.apps.signals.factories import (
+    CategoryFactory,
+    ServiceLevelObjectiveFactory,
+    SignalFactory
+)
+from signals.test.utils import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
 class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCase):
