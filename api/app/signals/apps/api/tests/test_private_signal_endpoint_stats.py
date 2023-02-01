@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission
 from django.utils import timezone
 from freezegun import freeze_time
 
-from signals.apps.signals.factories import CategoryFactory, SignalFactory, ServiceLevelObjectiveFactory
+from signals.apps.signals.factories import CategoryFactory, ServiceLevelObjectiveFactory, SignalFactory
 from signals.test.utils import SignalsBaseApiTestCase, SIAReadUserMixin
 
 
@@ -63,3 +63,12 @@ class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCa
         assert_punc('on_time', seconds=60)
         assert_punc('late', days=2)
         assert_punc('late_factor_3', days=7)
+
+    def test_total_filtered_by_area(self):
+        SignalFactory.create_batch(100, location__stadsdeel='A')
+        SignalFactory.create_batch(150, location__stadsdeel='E')
+
+        response = self.client.get(self.BASE_URI + '?stadsdeel=A')
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(100, response.json()['total'])
