@@ -287,7 +287,11 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
 
-        serializer = TotalSerializer({'total': queryset.count()})
+        # We need the empty results in order for DRF to make the filter form available
+        # in the browsable API docs (they're only available when the result is a list
+        # or can be paginated, this tricks the BrowsableAPIRenderer into assuming our
+        # result can be paginated)
+        serializer = TotalSerializer({'total': queryset.count(), 'results': []})
 
         return Response(serializer.data)
 
