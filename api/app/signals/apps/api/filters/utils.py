@@ -106,4 +106,6 @@ def _get_parent_category_queryset():
 
 
 def category_choices():
-    return [(category.id, f'{category.name}') for category in Category.objects.all()]
+    # Only select id and name to prevent retrieving the related models as we don't need them here
+    choices = [(category['id'], f'{category["name"]}') for category in Category.objects.values('id', 'name').all()]
+    return choices
