@@ -1,5 +1,5 @@
 # LTS Django 3.2.x
-Django==3.2.16
+Django==3.2.17
 
 # Django packages
 django-celery-beat
