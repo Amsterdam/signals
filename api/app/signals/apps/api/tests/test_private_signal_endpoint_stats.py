@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.utils import timezone
 from freezegun import freeze_time
 
+from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     CategoryFactory,
     ServiceLevelObjectiveFactory,
@@ -78,3 +79,72 @@ class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCa
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(100, response.json()['total'])
+
+
+class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, SignalsBaseApiTestCase):
+    BASE_URI = '/signals/v1/private/signals/stats/completion_last_week'
+
+    def setUp(self):
+        self.sia_read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
+        self.client.force_authenticate(user=self.sia_read_user)
+
+    def test_completion_last_week_filtered_by_status(self):
+        def create_signals(created_at, amount, state):
+            with freeze_time(created_at):
+                SignalFactory.create_batch(amount, status__state=state)
+
+        today = datetime.datetime.today()
+
+        data = (
+            (today, 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(7), 11, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(1), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(8), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(3), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(10), 0, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(4), 0, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(11), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(5), 11, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(12), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(6), 10, workflow.AFGEHANDELD),
+            (today - datetime.timedelta(13), 20, workflow.AFGEHANDELD),
+            (today, 2, workflow.HEROPEND),
+            (today - datetime.timedelta(7), 15, workflow.HEROPEND),
+            (today - datetime.timedelta(1), 3, workflow.BEHANDELING),
+            (today - datetime.timedelta(8), 11, workflow.GEMELD),
+            (today - datetime.timedelta(2), 7, workflow.AFWACHTING),
+            (today - datetime.timedelta(9), 5, workflow.DOORGEZET_NAAR_EXTERN),
+            (today - datetime.timedelta(3), 9, workflow.INGEPLAND),
+            (today - datetime.timedelta(10), 2, workflow.REACTIE_GEVRAAGD),
+            (today - datetime.timedelta(4), 1, workflow.VERZOEK_TOT_HEROPENEN),
+            (today - datetime.timedelta(11), 8, workflow.REACTIE_ONTVANGEN),
+            (today - datetime.timedelta(5), 3, workflow.AFGEHANDELD_EXTERN),
+            (today - datetime.timedelta(12), 6, workflow.GEANNULEERD),
+            (today - datetime.timedelta(6), 2, workflow.GESPLITST),
+            (today - datetime.timedelta(13), 4, workflow.ON_HOLD),
+        )
+
+        expectations = (
+            {'date': (today - datetime.timedelta(6)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': False},
+            {'date': (today - datetime.timedelta(5)).date(), 'amount': 11, 'delta': 10.0, 'delta_increase': True},
+            {'date': (today - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0, 'delta_increase': False},
+            {'date': (today - datetime.timedelta(3)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': True},
+            {'date': (today - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0, 'delta_increase': True},
+            {'date': (today - datetime.timedelta(1)).date(), 'amount': 10, 'delta': 0.0, 'delta_increase': True},
+            {'date': today.date(), 'amount': 10, 'delta': 10.0, 'delta_increase': False},
+        )
+
+        for signal_data in data:
+            create_signals(signal_data[0], signal_data[1], signal_data[2])
+
+        response = self.client.get(self.BASE_URI + '?status=o')
+        self.assertEqual(200, response.status_code)
+
+        stats = response.json()
+        self.assertEqual(len(expectations), len(stats))
+
+        for i in range(len(stats)):
+            self.assertEqual(expectations[i]['date'].isoformat(), stats[i]['date'])
+            self.assertEqual(expectations[i]['amount'], stats[i]['amount'])
+            self.assertEqual(expectations[i]['delta'], stats[i]['delta'])
+            self.assertEqual(expectations[i]['delta_increase'], stats[i]['delta_increase'])
