@@ -321,7 +321,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                 if amount > amount_week_earlier:
                     delta = (amount - amount_week_earlier) / amount_week_earlier * 100
                 else:
-                    delta = (amount_week_earlier - amount) / amount_week_earlier * 100
+                    delta = (amount_week_earlier - amount) / amount * 100
             elif amount == 0 and amount_week_earlier == 0:
                 delta = 0
 
