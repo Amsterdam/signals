@@ -72,7 +72,7 @@ class SignalFilterSet(FilterSet):
     routing_department_code = filters.MultipleChoiceFilter(
         field_name='routing_assignment__departments__code', choices=department_choices
     )
-    punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices)
+    punctuality = filters.ChoiceFilter(method='punctuality_filter', choices=punctuality_choices, label='Punctuality')
 
     def _cleanup_form_data(self):
         """
@@ -277,6 +277,18 @@ class SignalFilterSet(FilterSet):
             return queryset.filter(category_assignment__deadline__lt=local_now)
         elif value == 'late_factor_3':
             return queryset.filter(category_assignment__deadline_factor_3__lt=local_now)
+
+
+class SignalPastWeekStatsFilterSet(SignalFilterSet):
+    def punctuality_filter(self, queryset, name, value):
+        date = queryset.query.where.children[0].rhs
+
+        if value == 'on_time':
+            return queryset.filter(category_assignment__deadline__gt=date)
+        elif value == 'late':
+            return queryset.filter(category_assignment__deadline__lt=date)
+        elif value == 'late_factor_3':
+            return queryset.filter(category_assignment__deadline_factor_3__lt=date)
 
 
 class SignalCategoryRemovedAfterFilterSet(FilterSet):
