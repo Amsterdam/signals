@@ -84,18 +84,6 @@ class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCa
 class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTestCase):
     BASE_URI = '/signals/v1/private/signals/stats/past_week'
 
-    def _assert_response(self, response):
-        self.assertEqual(200, response.status_code)
-
-        stats = response.json()
-        self.assertEqual(len(self.expectations), len(stats))
-
-        for i in range(len(stats)):
-            self.assertEqual(self.expectations[i]['date'].isoformat(), stats[i]['date'])
-            self.assertEqual(self.expectations[i]['amount'], stats[i]['amount'])
-            self.assertEqual(self.expectations[i]['delta'], stats[i]['delta'])
-            self.assertEqual(self.expectations[i]['delta_increase'], stats[i]['delta_increase'])
-
     def setUp(self):
         self.sia_read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_user)
@@ -273,3 +261,15 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
 
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&stadsdeel=A')
         self._assert_response(response)
+
+    def _assert_response(self, response):
+        self.assertEqual(200, response.status_code)
+
+        stats = response.json()
+        self.assertEqual(len(self.expectations), len(stats))
+
+        for i in range(len(stats)):
+            self.assertEqual(self.expectations[i]['date'].isoformat(), stats[i]['date'])
+            self.assertEqual(self.expectations[i]['amount'], stats[i]['amount'])
+            self.assertEqual(self.expectations[i]['delta'], stats[i]['delta'])
+            self.assertEqual(self.expectations[i]['delta_increase'], stats[i]['delta_increase'])
