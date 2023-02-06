@@ -88,7 +88,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
         self.sia_read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_user)
 
-    def test_completion_last_week_filtered_by_status(self):
+    def test_completion_last_week_filtered_by_afgehandeld_status(self):
         def create_signals(created_at, amount, state):
             with freeze_time(created_at):
                 SignalFactory.create_batch(amount, status__state=state)
@@ -137,7 +137,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
         for signal_data in data:
             create_signals(signal_data[0], signal_data[1], signal_data[2])
 
-        response = self.client.get(self.BASE_URI + '?status=o')
+        response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}')
         self.assertEqual(200, response.status_code)
 
         stats = response.json()
