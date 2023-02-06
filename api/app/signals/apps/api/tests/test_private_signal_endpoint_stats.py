@@ -233,3 +233,43 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
 
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&priority=high')
         self._assert_response(response)
+
+    def test_completion_last_week_filtered_by_afgehandeld_status_and_area(self):
+        def create_signals(created_at, amount, state, stadsdeel):
+            with freeze_time(created_at):
+                SignalFactory.create_batch(amount, status__state=state, location__stadsdeel=stadsdeel)
+
+        data = (
+            (self.today, 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(7), 11, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(1), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(8), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(3), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(10), 0, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(4), 0, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(11), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(5), 11, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(12), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(6), 10, workflow.AFGEHANDELD, 'A'),
+            (self.today - datetime.timedelta(13), 20, workflow.AFGEHANDELD, 'A'),
+            (self.today, 2, workflow.HEROPEND, 'E'),
+            (self.today - datetime.timedelta(7), 15, workflow.HEROPEND, 'E'),
+            (self.today - datetime.timedelta(1), 3, workflow.BEHANDELING, 'E'),
+            (self.today - datetime.timedelta(8), 11, workflow.GEMELD, 'E'),
+            (self.today - datetime.timedelta(2), 7, workflow.AFWACHTING, 'E'),
+            (self.today - datetime.timedelta(9), 5, workflow.DOORGEZET_NAAR_EXTERN, 'E'),
+            (self.today - datetime.timedelta(3), 9, workflow.INGEPLAND, 'E'),
+            (self.today - datetime.timedelta(10), 2, workflow.REACTIE_GEVRAAGD, 'E'),
+            (self.today - datetime.timedelta(4), 1, workflow.VERZOEK_TOT_HEROPENEN, 'E'),
+            (self.today - datetime.timedelta(11), 8, workflow.REACTIE_ONTVANGEN, 'E'),
+            (self.today - datetime.timedelta(5), 3, workflow.AFGEHANDELD_EXTERN, 'E'),
+            (self.today - datetime.timedelta(12), 6, workflow.GEANNULEERD, 'E'),
+            (self.today - datetime.timedelta(6), 2, workflow.GESPLITST, 'E'),
+            (self.today - datetime.timedelta(13), 4, workflow.ON_HOLD, 'E'),
+        )
+
+        for signal_data in data:
+            create_signals(signal_data[0], signal_data[1], signal_data[2], signal_data[3])
+
+        response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&stadsdeel=A')
+        self._assert_response(response)
