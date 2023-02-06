@@ -81,8 +81,8 @@ class TestPrivateSignalEndpointStatsTotal(SIAReadUserMixin, SignalsBaseApiTestCa
         self.assertEqual(100, response.json()['total'])
 
 
-class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, SignalsBaseApiTestCase):
-    BASE_URI = '/signals/v1/private/signals/stats/completion_last_week'
+class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTestCase):
+    BASE_URI = '/signals/v1/private/signals/stats/past_week'
 
     def _assert_response(self, response):
         self.assertEqual(200, response.status_code)
@@ -111,7 +111,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
             {'date': today.date(), 'amount': 10, 'delta': 10.0, 'delta_increase': False},
         )
 
-    def test_completion_last_week_filtered_by_afgehandeld_status(self):
+    def test_past_week_filtered_by_afgehandeld_status(self):
         def create_signals(created_at, amount, state):
             with freeze_time(created_at):
                 SignalFactory.create_batch(amount, status__state=state)
@@ -151,7 +151,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}')
         self._assert_response(response)
 
-    def test_completion_last_week_filtered_by_afgehandeld_status_and_category(self):
+    def test_past_week_filtered_by_afgehandeld_status_and_category(self):
         def create_signals(created_at, amount, state, category):
             with freeze_time(created_at):
                 SignalFactory.create_batch(amount, status__state=state, category_assignment__category=category)
@@ -194,7 +194,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&category_id={category1.pk}')
         self._assert_response(response)
 
-    def test_completion_last_week_filtered_by_afgehandeld_status_and_priority(self):
+    def test_past_week_filtered_by_afgehandeld_status_and_priority(self):
         def create_signals(created_at, amount, state, priority):
             with freeze_time(created_at):
                 SignalFactory.create_batch(amount, status__state=state, priority__priority=priority)
@@ -234,7 +234,7 @@ class TestPrivateSignalEndPointStatsCompletionLastWeek(SIAReadUserMixin, Signals
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&priority=high')
         self._assert_response(response)
 
-    def test_completion_last_week_filtered_by_afgehandeld_status_and_area(self):
+    def test_past_week_filtered_by_afgehandeld_status_and_area(self):
         def create_signals(created_at, amount, state, stadsdeel):
             with freeze_time(created_at):
                 SignalFactory.create_batch(amount, status__state=state, location__stadsdeel=stadsdeel)

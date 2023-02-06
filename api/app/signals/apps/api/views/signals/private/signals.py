@@ -33,7 +33,7 @@ from signals.apps.api.serializers.email_preview import (
     EmailPreviewSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
-from signals.apps.api.serializers.stats import CompletionSerializer, TotalSerializer
+from signals.apps.api.serializers.stats import PastWeekSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
@@ -295,8 +295,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
 
         return Response(serializer.data)
 
-    @action(detail=False, url_path='stats/completion_last_week', queryset=Signal.objects.all())
-    def completion_last_week(self, request):
+    @action(detail=False, url_path='stats/past_week', queryset=Signal.objects.all())
+    def past_week(self, request):
         start = datetime.datetime.today() - datetime.timedelta(days=6)
         date_list = [start + datetime.timedelta(days=x) for x in range(7)]
 
@@ -332,7 +332,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
                 'delta_increase': amount >= amount_week_earlier
             })
 
-        serializer = CompletionSerializer(data, many=True)
+        serializer = PastWeekSerializer(data, many=True)
 
         return Response(serializer.data)
 

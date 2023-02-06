@@ -15,7 +15,7 @@ class TotalSerializer(Serializer):
         pass
 
 
-class CompletionSerializer(Serializer):
+class PastWeekSerializer(Serializer):
     date = DateField()
     amount = IntegerField()
     delta = FloatField()
