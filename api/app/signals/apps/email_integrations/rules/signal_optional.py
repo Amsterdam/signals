@@ -9,14 +9,21 @@ class SignalOptionalRule(AbstractRule):
         """
         Run status validations for the Rule
 
-        - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+        - The status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING, GEANNULEERD or INGEPLAND
         - send_mail must be True
         """
         return self._validate_status_state(status) and self._validate_status_send_mail(status)
 
     def _validate_status_state(self, status):
         """
-        Validate that the status is GEMELD, AFWACHTING, BEHANDELING, ON_HOLD, VERZOEK_TOT_AFHANDELING or GEANNULEERD
+        Validate that the status is one of:
+         - GEMELD
+         - AFWACHTING
+         - BEHANDELING
+         - ON_HOLD
+         - VERZOEK_TOT_AFHANDELING
+         - GEANNULEERD
+         - INGEPLAND
         """
         return status.state in [
             workflow.GEMELD,
@@ -25,6 +32,7 @@ class SignalOptionalRule(AbstractRule):
             workflow.ON_HOLD,
             workflow.VERZOEK_TOT_AFHANDELING,
             workflow.GEANNULEERD,
+            workflow.INGEPLAND,
         ]
 
     def _validate_status_send_mail(self, status):

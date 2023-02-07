@@ -304,6 +304,7 @@ class TestSignalOptionalRule(TestCase):
             workflow.ON_HOLD,
             workflow.VERZOEK_TOT_AFHANDELING,
             workflow.GEANNULEERD,
+            workflow.INGEPLAND,
         ]
 
         for state in statuses:
@@ -323,6 +324,7 @@ class TestSignalOptionalRule(TestCase):
             workflow.ON_HOLD,
             workflow.VERZOEK_TOT_AFHANDELING,
             workflow.GEANNULEERD,
+            workflow.INGEPLAND,
         ]
 
         for state in statuses:
@@ -340,7 +342,6 @@ class TestSignalOptionalRule(TestCase):
             workflow.AFGEHANDELD,
             workflow.GESPLITST,
             workflow.HEROPEND,
-            workflow.INGEPLAND,
             workflow.VERZOEK_TOT_HEROPENEN,
             workflow.TE_VERZENDEN,
             workflow.VERZONDEN,
