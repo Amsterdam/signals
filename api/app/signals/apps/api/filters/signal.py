@@ -281,6 +281,9 @@ class SignalFilterSet(FilterSet):
 
 class SignalPastWeekStatsFilterSet(SignalFilterSet):
     def punctuality_filter(self, queryset, name, value):
+        # This retrieves the date from the filter that is used for the status created_at value,
+        # in order for this work, that filter always has to be added to the queryset first,
+        # as is done in PrivateSignalViewSet::past_week.
         date = queryset.query.where.children[0].rhs
 
         if value == 'on_time':
