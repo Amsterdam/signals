@@ -88,16 +88,8 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
         self.sia_read_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_user)
 
-        self.today = today = datetime.datetime.today()
-        self.expectations = (
-            {'date': (today - datetime.timedelta(6)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': False},
-            {'date': (today - datetime.timedelta(5)).date(), 'amount': 11, 'delta': 10.0, 'delta_increase': True},
-            {'date': (today - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0, 'delta_increase': False},
-            {'date': (today - datetime.timedelta(3)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': True},
-            {'date': (today - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0, 'delta_increase': True},
-            {'date': (today - datetime.timedelta(1)).date(), 'amount': 10, 'delta': 0.0, 'delta_increase': True},
-            {'date': today.date(), 'amount': 10, 'delta': 10.0, 'delta_increase': False},
-        )
+        self.today = datetime.datetime.today()
+        self._setup_expectations(self.today)
 
     def test_past_week_filtered_by_afgehandeld_status(self):
         def create_signals(created_at, amount, state):
@@ -261,6 +253,117 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
 
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&stadsdeel=A')
         self._assert_response(response)
+
+    def test_past_week_filtered_by_afgehandeld_status_and_punctuality(self):
+        def create_signals(created_at, amount, state, category, delta, delta_3):
+            with freeze_time(created_at):
+                signals = SignalFactory.create_batch(
+                    amount,
+                    status__state=state,
+                    category_assignment__category=category
+                )
+
+            for signal in signals:
+                if delta is not None:
+                    signal.category_assignment.deadline = signal.category_assignment.deadline - delta
+                if delta_3 is not None:
+                    signal.category_assignment.deadline_factor_3 = \
+                        signal.category_assignment.deadline_factor_3 - delta_3
+                signal.category_assignment.save(calculate_deadlines=False)
+
+        slo_category = CategoryFactory.create()
+        ServiceLevelObjectiveFactory.create(n_days=1, use_calendar_days=True, category=slo_category)
+
+        today = datetime.datetime(2023, 2, 1, 12, 0, 0, tzinfo=timezone.get_default_timezone())
+
+        data = (
+            (today, 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(7), 11, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(1), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(8), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(3), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(10), 0, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(4), 0, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(11), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(5), 11, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(12), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(6), 10, workflow.AFGEHANDELD, slo_category),
+            (today - datetime.timedelta(13), 20, workflow.AFGEHANDELD, slo_category),
+            (today, 2, workflow.HEROPEND, slo_category),
+            (today - datetime.timedelta(7), 15, workflow.HEROPEND, slo_category),
+            (today - datetime.timedelta(1), 3, workflow.BEHANDELING, slo_category),
+            (today - datetime.timedelta(8), 11, workflow.GEMELD, slo_category),
+            (today - datetime.timedelta(2), 7, workflow.AFWACHTING, slo_category),
+            (today - datetime.timedelta(9), 5, workflow.DOORGEZET_NAAR_EXTERN, slo_category),
+            (today - datetime.timedelta(3), 9, workflow.INGEPLAND, slo_category),
+            (today - datetime.timedelta(10), 2, workflow.REACTIE_GEVRAAGD, slo_category),
+            (today - datetime.timedelta(4), 1, workflow.VERZOEK_TOT_HEROPENEN, slo_category),
+            (today - datetime.timedelta(11), 8, workflow.REACTIE_ONTVANGEN, slo_category),
+            (today - datetime.timedelta(5), 3, workflow.AFGEHANDELD_EXTERN, slo_category),
+            (today - datetime.timedelta(12), 6, workflow.GEANNULEERD, slo_category),
+            (today - datetime.timedelta(6), 2, workflow.GESPLITST, slo_category),
+            (today - datetime.timedelta(13), 4, workflow.ON_HOLD, slo_category),
+        )
+
+        time_deltas = (
+            (datetime.timedelta(seconds=60), None),
+            (datetime.timedelta(days=2), None),
+            (datetime.timedelta(days=2), datetime.timedelta(days=21)),
+        )
+        for time_delta in time_deltas:
+            for signal_data in data:
+                create_signals(
+                    signal_data[0],
+                    signal_data[1],
+                    signal_data[2],
+                    signal_data[3],
+                    time_delta[0],
+                    time_delta[1],
+                )
+
+        punctuality_values = (
+            'on_time',
+            'late',
+            'late_factor_3',
+        )
+
+        with freeze_time(today):
+            i = 0
+            for punctuality in punctuality_values:
+                response = self.client.get(
+                    self.BASE_URI + f'?status={workflow.AFGEHANDELD}&punctuality={punctuality}'
+                )
+                if i == 1:
+                    self.expectations = (
+                        {'date': (today - datetime.timedelta(6)).date(), 'amount': 20, 'delta': 100.0,
+                         'delta_increase': False},
+                        {'date': (today - datetime.timedelta(5)).date(), 'amount': 22, 'delta': 10.0,
+                         'delta_increase': True},
+                        {'date': (today - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0,
+                         'delta_increase': False},
+                        {'date': (today - datetime.timedelta(3)).date(), 'amount': 20, 'delta': 100.0,
+                         'delta_increase': True},
+                        {'date': (today - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0,
+                         'delta_increase': True},
+                        {'date': (today - datetime.timedelta(1)).date(), 'amount': 20, 'delta': 0.0,
+                         'delta_increase': True},
+                        {'date': today.date(), 'amount': 20, 'delta': 10.0, 'delta_increase': False},
+                    )
+                else:
+                    self._setup_expectations(today)
+                self._assert_response(response)
+                i = i + 1
+
+    def _setup_expectations(self, date):
+        self.expectations = (
+            {'date': (date - datetime.timedelta(6)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': False},
+            {'date': (date - datetime.timedelta(5)).date(), 'amount': 11, 'delta': 10.0, 'delta_increase': True},
+            {'date': (date - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0, 'delta_increase': False},
+            {'date': (date - datetime.timedelta(3)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': True},
+            {'date': (date - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0, 'delta_increase': True},
+            {'date': (date - datetime.timedelta(1)).date(), 'amount': 10, 'delta': 0.0, 'delta_increase': True},
+            {'date': date.date(), 'amount': 10, 'delta': 10.0, 'delta_increase': False},
+        )
 
     def _assert_response(self, response):
         self.assertEqual(200, response.status_code)
