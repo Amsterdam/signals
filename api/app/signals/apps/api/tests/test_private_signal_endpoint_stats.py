@@ -254,7 +254,7 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
         response = self.client.get(self.BASE_URI + f'?status={workflow.AFGEHANDELD}&stadsdeel=A')
         self._assert_response(response)
 
-    def test_past_week_filtered_by_afgehandeld_status_and_punctuality(self):
+    def test_past_week_filtered_by_afgehandeld_status_and_punctuality(self):  # noqa: C901
         def create_signals(created_at, amount, state, category, delta, delta_3):
             with freeze_time(created_at):
                 signals = SignalFactory.create_batch(
