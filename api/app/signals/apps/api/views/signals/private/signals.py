@@ -324,20 +324,10 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             amount = get_amount_for_date(current_date)
             amount_week_earlier = get_amount_for_date(week_earlier.date())
 
-            delta = 100
-            if amount != 0 and amount_week_earlier != 0:
-                if amount > amount_week_earlier:
-                    delta = (amount - amount_week_earlier) / amount_week_earlier * 100
-                else:
-                    delta = (amount_week_earlier - amount) / amount * 100
-            elif amount == 0 and amount_week_earlier == 0:
-                delta = 0
-
             data.append({
                 'date': current_date,
                 'amount': amount,
-                'delta': delta,
-                'delta_increase': amount >= amount_week_earlier
+                'amount_week_earlier': amount_week_earlier,
             })
 
         serializer = PastWeekSerializer(data, many=True)

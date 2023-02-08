@@ -335,19 +335,13 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
                 )
                 if i == 1:
                     self.expectations = (
-                        {'date': (today - datetime.timedelta(6)).date(), 'amount': 20, 'delta': 100.0,
-                         'delta_increase': False},
-                        {'date': (today - datetime.timedelta(5)).date(), 'amount': 22, 'delta': 10.0,
-                         'delta_increase': True},
-                        {'date': (today - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0,
-                         'delta_increase': False},
-                        {'date': (today - datetime.timedelta(3)).date(), 'amount': 20, 'delta': 100.0,
-                         'delta_increase': True},
-                        {'date': (today - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0,
-                         'delta_increase': True},
-                        {'date': (today - datetime.timedelta(1)).date(), 'amount': 20, 'delta': 0.0,
-                         'delta_increase': True},
-                        {'date': today.date(), 'amount': 20, 'delta': 10.0, 'delta_increase': False},
+                        {'date': (today - datetime.timedelta(6)).date(), 'amount': 20, 'amount_week_earlier': 40},
+                        {'date': (today - datetime.timedelta(5)).date(), 'amount': 22, 'amount_week_earlier': 20},
+                        {'date': (today - datetime.timedelta(4)).date(), 'amount': 0, 'amount_week_earlier': 20},
+                        {'date': (today - datetime.timedelta(3)).date(), 'amount': 20, 'amount_week_earlier': 0},
+                        {'date': (today - datetime.timedelta(2)).date(), 'amount': 0, 'amount_week_earlier': 0},
+                        {'date': (today - datetime.timedelta(1)).date(), 'amount': 20, 'amount_week_earlier': 20},
+                        {'date': today.date(), 'amount': 20, 'amount_week_earlier': 22},
                     )
                 else:
                     self._setup_expectations(today)
@@ -356,13 +350,13 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
 
     def _setup_expectations(self, date):
         self.expectations = (
-            {'date': (date - datetime.timedelta(6)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': False},
-            {'date': (date - datetime.timedelta(5)).date(), 'amount': 11, 'delta': 10.0, 'delta_increase': True},
-            {'date': (date - datetime.timedelta(4)).date(), 'amount': 0, 'delta': 100.0, 'delta_increase': False},
-            {'date': (date - datetime.timedelta(3)).date(), 'amount': 10, 'delta': 100.0, 'delta_increase': True},
-            {'date': (date - datetime.timedelta(2)).date(), 'amount': 0, 'delta': 0.0, 'delta_increase': True},
-            {'date': (date - datetime.timedelta(1)).date(), 'amount': 10, 'delta': 0.0, 'delta_increase': True},
-            {'date': date.date(), 'amount': 10, 'delta': 10.0, 'delta_increase': False},
+            {'date': (date - datetime.timedelta(6)).date(), 'amount': 10, 'amount_week_earlier': 20},
+            {'date': (date - datetime.timedelta(5)).date(), 'amount': 11, 'amount_week_earlier': 10},
+            {'date': (date - datetime.timedelta(4)).date(), 'amount': 0, 'amount_week_earlier': 10},
+            {'date': (date - datetime.timedelta(3)).date(), 'amount': 10, 'amount_week_earlier': 0},
+            {'date': (date - datetime.timedelta(2)).date(), 'amount': 0, 'amount_week_earlier': 0},
+            {'date': (date - datetime.timedelta(1)).date(), 'amount': 10, 'amount_week_earlier': 10},
+            {'date': date.date(), 'amount': 10, 'amount_week_earlier': 11},
         )
 
     def _assert_response(self, response):
@@ -374,5 +368,4 @@ class TestPrivateSignalEndPointStatsPastWeek(SIAReadUserMixin, SignalsBaseApiTes
         for i in range(len(stats)):
             self.assertEqual(self.expectations[i]['date'].isoformat(), stats[i]['date'])
             self.assertEqual(self.expectations[i]['amount'], stats[i]['amount'])
-            self.assertEqual(self.expectations[i]['delta'], stats[i]['delta'])
-            self.assertEqual(self.expectations[i]['delta_increase'], stats[i]['delta_increase'])
+            self.assertEqual(self.expectations[i]['amount_week_earlier'], stats[i]['amount_week_earlier'])
