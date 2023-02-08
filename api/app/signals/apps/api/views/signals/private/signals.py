@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+import datetime
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
@@ -14,6 +15,7 @@ from rest_framework.response import Response
 
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet
+from signals.apps.api.filters.signal import SignalPastWeekStatsFilterSet
 from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
@@ -32,6 +34,7 @@ from signals.apps.api.serializers.email_preview import (
     EmailPreviewSerializer
 )
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
+from signals.apps.api.serializers.stats import PastWeekSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf_summary import PDFSummaryService
@@ -279,6 +282,57 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         return HttpResponse(pdf, content_type='application/pdf', headers={
             'Content-Disposition': f'attachment;filename="{pdf_filename}"'
         })
+
+    @action(detail=False, url_path='stats/total')
+    def total(self, request):
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+
+        # We need the empty results in order for DRF to make the filter form available
+        # in the browsable API docs (they're only available when the result is a list
+        # or can be paginated, this tricks the BrowsableAPIRenderer into assuming our
+        # result can be paginated)
+        serializer = TotalSerializer({'total': queryset.count(), 'results': []})
+
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        url_path='stats/past_week',
+        queryset=Signal.objects.all(),
+        filterset_class=SignalPastWeekStatsFilterSet,
+    )
+    def past_week(self, request):
+        start = datetime.datetime.today() - datetime.timedelta(days=6)
+        date_list = [start + datetime.timedelta(days=x) for x in range(7)]
+
+        data = []
+
+        def get_amount_for_date(date):
+            queryset = self.get_queryset()
+            # In order for the punctuality filter to be able to use the correct date
+            # we should always add this filter first
+            queryset = queryset.filter(status__created_at__date=date)
+            queryset = self.filter_queryset(queryset)
+
+            return queryset.count()
+
+        for date_time in date_list:
+            current_date = date_time.date()
+            week_earlier = date_time - datetime.timedelta(7)
+
+            amount = get_amount_for_date(current_date)
+            amount_week_earlier = get_amount_for_date(week_earlier.date())
+
+            data.append({
+                'date': current_date,
+                'amount': amount,
+                'amount_week_earlier': amount_week_earlier,
+            })
+
+        serializer = PastWeekSerializer(data, many=True)
+
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         if isinstance(request.data, (list, )):
