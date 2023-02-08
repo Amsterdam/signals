@@ -763,7 +763,6 @@ class TestSignalReopenedAction(ActionTestMixin, TestCase):
         self.assertEqual(text_list, context['feedback_text_list'])
 
     def test_get_additional_context_no_feedback(self):
-
         signal = SignalFactory.create(status__state=self.state)
 
         context = self.action.get_additional_context(signal)
