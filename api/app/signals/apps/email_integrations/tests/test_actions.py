@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.utils import timezone
+from django.utils.timezone import now
 from factory.fuzzy import FuzzyText
 from freezegun import freeze_time
 
@@ -724,8 +725,63 @@ class TestSignalReopenedAction(ActionTestMixin, TestCase):
 
     - The status is HEROPEND
     """
-    state = workflow.HEROPEND
     action = SignalReopenedAction()
+    state = workflow.HEROPEND
+
+    def test_get_additional_context(self):
+        signal = SignalFactory.create(status__state=self.state)
+
+        text = "I'm not pleased with how this went."
+        text_extra = 'My problem is not resolved at all.'
+        text_list = ['a', 'b', 'abc']
+
+        FeedbackFactory.create(
+            _signal=signal,
+            allows_contact=True,
+            is_satisfied=False,
+            text=text,
+            text_extra=text_extra,
+            text_list=text_list,
+            submitted_at=now()
+        )
+
+        context = self.action.get_additional_context(signal)
+
+        self.assertIn('feedback_received', context)
+        self.assertTrue(context['feedback_received'])
+
+        self.assertIn('feedback_is_satisfied', context)
+        self.assertFalse(context['feedback_is_satisfied'])
+
+        self.assertIn('feedback_text', context)
+        self.assertEqual(text, context['feedback_text'])
+
+        self.assertIn('feedback_text_extra', context)
+        self.assertEqual(text_extra, context['feedback_text_extra'])
+
+        self.assertIn('feedback_text_list', context)
+        self.assertEqual(text_list, context['feedback_text_list'])
+
+    def test_get_additional_context_no_feedback(self):
+
+        signal = SignalFactory.create(status__state=self.state)
+
+        context = self.action.get_additional_context(signal)
+
+        self.assertIn('feedback_received', context)
+        self.assertFalse(context['feedback_received'])
+
+        self.assertIn('feedback_is_satisfied', context)
+        self.assertIsNone(context['feedback_is_satisfied'])
+
+        self.assertIn('feedback_text', context)
+        self.assertIsNone(context['feedback_text'])
+
+        self.assertIn('feedback_text_extra', context)
+        self.assertIsNone(context['feedback_text_extra'])
+
+        self.assertIn('feedback_text_list', context)
+        self.assertIsNone(context['feedback_text_list'])
 
 
 class TestSignalReactionRequestAction(ActionTestMixin, TestCase):
