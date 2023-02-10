@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import csv
 import json
 import os
@@ -142,42 +142,6 @@ class TestDatawarehouse(testcases.TestCase):
         self.assertTrue(list_of_files[0].endswith('20200910_150000UTC.zip'))
 
     @override_settings(
-        AZURE_STORAGE_ENABLED=False,
-        SWIFT_STORAGE_ENABLED=True,
-        SWIFT={
-            'datawarehouse': {
-                'api_auth_url': 'dwh_auth_url',
-                'api_username': 'dwh_username',
-                'api_key': 'dwh_password',
-                'tenant_name': 'dwh_tenant_name',
-                'tenant_id': 'dwh_tenant_id',
-                'region_name': 'dwh_region_name',
-                'container_name': 'dwh_container_name',
-                'auto_overwrite': True
-            }
-        }
-    )
-    @mock.patch('signals.apps.reporting.utils.SwiftStorage', autospec=True)
-    def test_get_swift_storage_backend(self, mocked_swift_storage):
-        mocked_swift_storage_instance = mock.Mock()
-        mocked_swift_storage.return_value = mocked_swift_storage_instance
-
-        result = _get_storage_backend(using='datawarehouse')
-
-        self.assertEqual(result, mocked_swift_storage_instance)
-        mocked_swift_storage.assert_called_once_with(
-            api_auth_url='dwh_auth_url',
-            api_username='dwh_username',
-            api_key='dwh_password',
-            tenant_name='dwh_tenant_name',
-            tenant_id='dwh_tenant_id',
-            region_name='dwh_region_name',
-            container_name='dwh_container_name',
-            auto_overwrite=True
-        )
-
-    @override_settings(
-        SWIFT_STORAGE_ENABLED=False,
         AZURE_STORAGE_ENABLED=True,
         AZURE_CONTAINERS={
             'datawarehouse': {

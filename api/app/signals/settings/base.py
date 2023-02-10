@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
-
-from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -189,11 +187,6 @@ MEDIA_URL = '/signals/media/'
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 AZURE_STORAGE_ENABLED = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
-SWIFT_STORAGE_ENABLED = os.getenv('SWIFT_ENABLED', False) in TRUE_VALUES
-
-if AZURE_STORAGE_ENABLED and SWIFT_STORAGE_ENABLED:
-    raise ImproperlyConfigured('Enable AzureStorage OR SwiftStorage, not both')
-
 if AZURE_STORAGE_ENABLED:
     # Azure Settings
     DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
@@ -210,49 +203,6 @@ if AZURE_STORAGE_ENABLED:
         'datawarehouse': {
             'azure_container': os.getenv('DWH_AZURE_STORAGE_CONTAINER_NAME', AZURE_CONTAINER),
             'overwrite_files': os.getenv('DWH_AZURE_OVERWRITE_FILES', True) in TRUE_VALUES
-        }
-    }
-
-elif SWIFT_STORAGE_ENABLED:
-    # The default settings when using SwiftStorage to the general SIA ObjectStore
-    DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
-
-    SWIFT_USERNAME = os.getenv('SWIFT_USERNAME')
-    SWIFT_PASSWORD = os.getenv('SWIFT_PASSWORD')
-    SWIFT_AUTH_URL = os.getenv('SWIFT_AUTH_URL')
-    SWIFT_TENANT_ID = os.getenv('SWIFT_TENANT_ID')
-    SWIFT_TENANT_NAME = os.getenv('SWIFT_TENANT_NAME')
-    SWIFT_REGION_NAME = os.getenv('SWIFT_REGION_NAME')
-    SWIFT_CONTAINER_NAME = os.getenv('SWIFT_CONTAINER_NAME')
-    SWIFT_TEMP_URL_KEY = os.getenv('SWIFT_TEMP_URL_KEY')
-    SWIFT_USE_TEMP_URLS = True
-
-    SWIFT = {
-        # These settings are used to create override the default Swift storage settings.
-        # Useful when writing to different ObjectStores
-        'datawarehouse': {
-            'api_username': os.getenv('DWH_SWIFT_USERNAME'),
-            'api_key': os.getenv('DWH_SWIFT_PASSWORD'),
-            'tenant_name': os.getenv('DWH_SWIFT_TENANT_NAME'),
-            'tenant_id': os.getenv('DWH_SWIFT_TENANT_ID'),
-            'container_name': os.getenv('DWH_SWIFT_CONTAINER_NAME'),
-            'auto_overwrite': os.getenv('DWH_SWIFT_AUTO_OVERWRITE', True)
-        },
-        'horeca': {
-            'api_username': os.getenv('HORECA_SWIFT_USERNAME'),
-            'api_key': os.getenv('HORECA_SWIFT_PASSWORD'),
-            'tenant_name': os.getenv('HORECA_SWIFT_TENANT_NAME'),
-            'tenant_id': os.getenv('HORECA_SWIFT_TENANT_ID'),
-            'container_name': os.getenv('HORECA_SWIFT_CONTAINER_NAME'),
-            'auto_overwrite': os.getenv('HORECA_SWIFT_AUTO_OVERWRITE', True)
-        },
-        'tdo': {
-            'api_username': os.getenv('TDO_SWIFT_USERNAME'),
-            'api_key': os.getenv('TDO_SWIFT_PASSWORD'),
-            'tenant_name': os.getenv('TDO_SWIFT_TENANT_NAME'),
-            'tenant_id': os.getenv('TDO_SWIFT_TENANT_ID'),
-            'container_name': os.getenv('TDO_SWIFT_CONTAINER_NAME'),
-            'auto_overwrite': os.getenv('TDO_SWIFT_AUTO_OVERWRITE', True)
         }
     }
 
