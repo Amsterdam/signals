@@ -1,4 +1,9 @@
-FROM python:3.9.6-slim-buster
+ARG PYTHON_VERSION=3.10
+
+##################################################
+#                   Python                       #
+##################################################
+FROM python:${PYTHON_VERSION}-slim-buster AS signals_python
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
@@ -51,6 +56,7 @@ COPY api/ /app
 RUN set -eux; \
     chgrp signals /app; \
     chmod g+w /app; \
+    mkdir -p /app/static /app/media; \
     chown signals /app/static; \
     chown signals /app/media
 
