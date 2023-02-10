@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   api:
-    build: ./api
+    build:
+      context: .
     ports:
       - "8000:8000"
     depends_on:
@@ -21,14 +22,15 @@ services:
     env_file:
       - docker-compose/environments/.api
     volumes:
-      - ./api/app:/app
+      - ./api:/app
       - ./dwh_media:/dwh_media
       - ./docker-compose/scripts/initialize.sh:/initialize.sh
     command:
       - /initialize.sh
 
   celery:
-    build: ./api
+    build:
+      context: .
     depends_on:
       mailhog:
         condition: service_started
@@ -41,11 +43,12 @@ services:
     env_file:
       - docker-compose/environments/.celery
     volumes:
-      - ./api/app:/app
+      - ./api:/app
     command: celery -A signals worker -l debug
 
   celery_beat:
-    build: ./api
+    build:
+      context: .
     depends_on:
       mailhog:
         condition: service_started
@@ -60,7 +63,7 @@ services:
     env_file:
       - docker-compose/environments/.celery_beat
     volumes:
-      - ./api/app:/app
+      - ./api:/app
     command: celery -A signals beat -l debug --pidfile /tmp/celerybeat.pid
 
   mailhog:
