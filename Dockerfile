@@ -19,15 +19,8 @@ COPY api/requirements.txt /app/requirements.txt
 RUN set -eux;  \
     apt-get update; \
     apt-get install -y \
-        unzip \
-        wget \
-        dnsutils \
-        vim-tiny \
-        net-tools \
-        netcat \
         libgeos-3.7 \
         gdal-bin \
-        postgresql-client-11 \
         libgdal20 \
         libspatialite7 \
         libfreexl1 \
