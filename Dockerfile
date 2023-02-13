@@ -12,7 +12,7 @@ ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 
 WORKDIR /app/app
 
-RUN useradd --no-create-home --home-dir /app signals
+RUN useradd --no-create-home signals
 
 COPY api/requirements.txt /app/requirements.txt
 
