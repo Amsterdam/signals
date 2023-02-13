@@ -4,7 +4,7 @@ ARG PYTHON_VERSION=3.10
 ##################################################
 #                   Python                       #
 ##################################################
-FROM python:${PYTHON_VERSION}-slim-buster AS signals_python
+FROM python:${PYTHON_VERSION}-slim-buster
 
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
