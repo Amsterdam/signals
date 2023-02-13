@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import csv
 import os
 from timeit import default_timer as timer
@@ -27,21 +27,8 @@ class Command(BaseCommand):
         start = timer()
         self.stdout.write('Store a test CSV file')
 
-        very_verbose = kwargs['verbosity'] >= 2
-
         if settings.AZURE_STORAGE_ENABLED:
             self.stdout.write('* AzureStorage enabled, file will be sent to the azure blob storage')
-        elif settings.SWIFT_STORAGE_ENABLED:
-            self.stdout.write('* SwiftStorage enabled, file will be sent to the ObjectStore')
-            if very_verbose:
-                swift_parameters = settings.SWIFT.get('datawarehouse')
-                self.stdout.write('* DWH SwiftStorage parameters:')
-
-                for key, value in swift_parameters.items():
-                    if key.lower() in ['api_key', ]:
-                        continue
-
-                    self.stdout.write(f'** {key}: {value}')
         else:
             self.stdout.write('* FileSystemStorage enabled, file will be sent to the local storage')
 

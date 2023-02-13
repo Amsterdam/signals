@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from timeit import default_timer as timer
 
 from django.conf import settings
@@ -58,10 +58,6 @@ class Command(BaseCommand):
             self.stdout.write('Azure storage: Enabled')
             azure_parameters = settings.AZURE_CONTAINERS.get('datawarehouse')
             self.stdout.write(f'* Azure storage container name: {azure_parameters["azure_container"]}')
-        elif settings.SWIFT_STORAGE_ENABLED:
-            self.stdout.write('Swift storage: Enabled')
-            swift_parameters = settings.SWIFT.get('datawarehouse')
-            self.stdout.write(f'* Swift storage container name: {swift_parameters["container_name"]}')
         else:
             now = timezone.now()
             self.stdout.write('Local file storage: Enabled')

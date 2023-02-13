@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
-from unittest import mock
-
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from django.core.exceptions import ValidationError
 from django.test import testcases
 
@@ -15,8 +13,7 @@ from signals.apps.reporting.csv.horeca import (
     create_csv_files,
     create_csv_per_sub_category
 )
-from signals.apps.signals.factories import SignalFactory
-from signals.apps.signals.models import Category, Signal
+from signals.apps.signals.models import Category
 
 
 class TestHoreca(testcases.TestCase):
@@ -167,24 +164,3 @@ class TestHoreca(testcases.TestCase):
         csv_files = create_csv_files(isoweek=1, isoyear=2019)
 
         self.assertGreater(len(csv_files), 0)
-
-    @mock.patch.dict('os.environ', {'SWIFT_ENABLED': 'true'}, clear=True)
-    @mock.patch('signals.apps.reporting.csv.horeca.HorecaCSVExport', autospec=True)
-    def test_create_csv_files_save(self, patched_model):
-        # Usage of Django storage means the difference between local and remote
-        # storage is abstracted away, so the previously 2 tests were merged.
-        patched_model.uploaded_file = mock.MagicMock()
-        patched_model.uploaded_file.save = mock.MagicMock()
-
-        # create a Signal with a horeca sub-category
-        main_category = _get_horeca_main_category()
-        category = Category.objects.filter(
-            parent_id__isnull=False, parent_id=main_category.pk).first()
-
-        SignalFactory.create(category_assignment__category=category)
-        self.assertEqual(Signal.objects.count(), 1)
-
-        # Check that the storage backend is called, and that shutil.copy is not.
-        csv_files = create_csv_files(isoweek=1, isoyear=2019)
-
-        self.assertEqual(len(csv_files), 7)

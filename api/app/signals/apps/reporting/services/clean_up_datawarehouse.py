@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2022 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 import pathlib
 from datetime import date, timedelta
@@ -15,8 +15,7 @@ class DataWarehouseDiskCleaner:
     """
     Clean-up disk storage used by datawarehouse CSV dumps.
 
-    Note: this uses can only be used for local disks not for remote file storage
-    like SWIFT storage.
+    Note: this uses can only be used for local disks not for remote file storage like Azure storage.
     """
     GLOB_PATTERNS = [
         '[0-9]' * 6 + '*.csv',

@@ -9,7 +9,6 @@ django-cors-headers
 django-extensions
 django-filter
 django-rest-swagger
-django-storage-swift
 django-storages
 
 # Database
