@@ -10,11 +10,11 @@ ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=signals.settings
 ARG DJANGO_SECRET_KEY=insecure_docker_build_key
 
-WORKDIR /app/app
+WORKDIR /app
 
 RUN useradd --no-create-home signals
 
-COPY api/requirements.txt /app/requirements.txt
+COPY api/requirements.txt /requirements.txt
 
 RUN set -eux;  \
     apt-get update; \
@@ -41,18 +41,18 @@ RUN set -eux;  \
         gcc \
         graphviz \
     ; \
-    pip install --no-cache -r /app/requirements.txt; \
+    pip install --no-cache -r /requirements.txt; \
     apt-get purge -y gcc; \
     rm -rf /var/lib/apt/lists/*
 
-COPY api/ /app
+COPY /api/app /app
 
 RUN set -eux; \
     chgrp signals /app; \
     chmod g+w /app; \
-    mkdir -p /app/static /app/media; \
-    chown signals /app/static; \
-    chown signals /app/media
+    mkdir -p /static /media; \
+    chown signals /static; \
+    chown signals /media
 
 USER signals
 

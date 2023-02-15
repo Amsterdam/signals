@@ -41,8 +41,8 @@ uwsgi --master \
   --callable=application \
   --module=signals.wsgi:application \
   --static-index=index.html \
-  --static-map=/signals/static=/app/static \
-  --static-map=/signals/media=/app/media \
+  --static-map=/signals/static=/static \
+  --static-map=/signals/media=/media \
   --buffer-size=8192 \
   --harakiri=15 \
   --py-auto-reload=1 \
