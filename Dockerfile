@@ -45,7 +45,7 @@ RUN set -eux;  \
     apt-get purge -y gcc; \
     rm -rf /var/lib/apt/lists/*
 
-COPY /api/app /app
+COPY api/app /app
 
 RUN set -eux; \
     chgrp signals /app; \
