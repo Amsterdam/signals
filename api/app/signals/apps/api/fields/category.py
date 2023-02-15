@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from collections import OrderedDict
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework_extensions.settings import extensions_api_settings
 
-from signals.apps.api.fields.decorators import enforce_request_version_v1
 from signals.apps.signals.models import Category
 
 
@@ -60,7 +59,6 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
         category = obj if isinstance(obj, Category) else self.get_queryset().get(pk=obj.pk)
         return category_public_url(category, request=request, format=format)
 
-    @enforce_request_version_v1
     def to_internal_value(self, data):
         return super().to_internal_value(data=data)
 
