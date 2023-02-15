@@ -182,9 +182,9 @@ DATETIME_FORMAT = 'l d-m-Y, H:i'  # e.g. "Donderdag 06-09-2018, 13:56"
 
 # Static files (CSS, JavaScript, Images) and media files
 STATIC_URL = '/signals/static/'
-STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_URL = '/signals/media/'
-MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
 AZURE_STORAGE_ENABLED = os.getenv('AZURE_STORAGE_ENABLED', False) in TRUE_VALUES
 if AZURE_STORAGE_ENABLED:

@@ -14,7 +14,7 @@ WORKDIR /app
 
 RUN useradd --no-create-home signals
 
-COPY api/requirements.txt /requirements.txt
+COPY app/requirements.txt /app/requirements.txt
 
 RUN set -eux;  \
     apt-get update; \
@@ -41,18 +41,18 @@ RUN set -eux;  \
         gcc \
         graphviz \
     ; \
-    pip install --no-cache -r /requirements.txt; \
+    pip install --no-cache -r /app/requirements.txt; \
     apt-get purge -y gcc; \
     rm -rf /var/lib/apt/lists/*
 
-COPY api/app /app
+COPY app /app
 
 RUN set -eux; \
     chgrp signals /app; \
     chmod g+w /app; \
-    mkdir -p /static /media; \
-    chown signals /static; \
-    chown signals /media
+    mkdir -p /app/static /app/media; \
+    chown signals /app/static; \
+    chown signals /app/media
 
 USER signals
 

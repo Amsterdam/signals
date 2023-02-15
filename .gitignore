@@ -46,9 +46,9 @@ docker-compose.override.yml
 
 # Django stuff:
 *.log
-api/app/signals/settings/local.py
-api/media
-api/static
+app/signals/settings/local.py
+media/
+static/
 
 # Sphinx documentation
 docs/_build/
