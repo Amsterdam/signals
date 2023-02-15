@@ -14,24 +14,18 @@ from django.db.models.sql import datastructures  # noqa
 from django.core.exceptions import EmptyResultSet  # noqa
 
 datastructures.EmptyResultSet = EmptyResultSet
-# ---
-
 
 # Versioning
 # ==========
-# SIA / Signalen follows the semantic versioning standard. Previously we had
-# separate version numbers for the V0 (now defunct) and V1 versions of the API.
-# We now no longer separately version these, as their releases were always
-# tied to the backend. For backwards compatibility, and to not break external
-# systems that rely on SIA / Signalen we still expose all the separate version
-# numbers, but they are now all the same.
-
+# SIA / Signalen follows the semantic versioning standard. For backwards
+# compatibility, and to not break external systems that rely on
+# SIA / Signalen we still expose all the separate version numbers, but
+# they are now all the same.
 
 # Application version (Major, minor, patch)
 VERSION = (2, 15, '0')
 
 API_VERSIONS = {
-    'v0': VERSION,
     'v1': VERSION,
 }
 
