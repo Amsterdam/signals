@@ -23,8 +23,6 @@ services:
       - docker-compose/environments/.api
     volumes:
       - ./app:/app
-      - ./media:/app/media
-      - ./static:/app/static
       - ./dwh_media:/dwh_media
       - ./docker-compose/scripts/initialize.sh:/initialize.sh
     command:
