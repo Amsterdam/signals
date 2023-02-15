@@ -43,7 +43,7 @@ jobs:
         env:
           DATABASE_HOST: localhost
         run: |
-          cd api/app
+          cd app/
           tox
 
       - name: Upload coverage report
