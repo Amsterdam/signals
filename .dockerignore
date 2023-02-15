@@ -1,1 +1,4 @@
 .env
+/api/static/
+/api/media/
+/api/app/signals/settings/local.py
