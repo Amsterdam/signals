@@ -20,32 +20,32 @@ class TestUploadScannerService(SignalsBaseApiTestCase):
     GIF_FILE = os.path.join(os.path.dirname(__file__), '../test-data/test.gif')
     SVG_FILE = os.path.join(os.path.dirname(__file__), '../test-data/test.svg')
 
-    IMAGE_FILES = [
+    ALLOWED_FILES = [
         (GIF_FILE, 'image/gif'),
         (JPG_FILE, 'image/jpeg'),
         (PNG_FILE, 'image/png'),
-        (SVG_FILE, 'image/svg+xml')
+        (SVG_FILE, 'image/svg+xml'),
     ]
 
-    def test_scan_images(self):
-        for image_file_path, content_type in self.IMAGE_FILES:
-            with open(image_file_path, 'rb') as image_file:
-                uploaded_file = SimpleUploadedFile(image_file_path, image_file.read(), content_type=content_type)
+    def test_scan_files(self):
+        for file_path, content_type in self.ALLOWED_FILES:
+            with open(file_path, 'rb') as file:
+                uploaded_file = SimpleUploadedFile(file_path, file.read(), content_type=content_type)
             UploadScannerService.scan_file(uploaded_file)
 
-    def test_scan_images_FileTypeExtensionMismatch(self):
-        for image_file_path, content_type in self.IMAGE_FILES:
-            image_file_path_incorrect_extension = f'{image_file_path[:image_file_path.find(".")]}.incorrect'
-            with open(image_file_path, 'rb') as image_file:
-                uploaded_file = SimpleUploadedFile(image_file_path_incorrect_extension, image_file.read(),
+    def test_scan_files_FileTypeExtensionMismatch(self):
+        for file_path, content_type in self.ALLOWED_FILES:
+            file_path_incorrect_extension = f'{file_path[:file_path.find(".")]}.incorrect'
+            with open(file_path, 'rb') as file:
+                uploaded_file = SimpleUploadedFile(file_path_incorrect_extension, file.read(),
                                                    content_type=content_type)
 
             with self.assertRaises(FileTypeExtensionMismatch):
                 UploadScannerService.scan_file(uploaded_file)
 
-    def test_scan_images_FileTypeNotSupported(self):
-        with open(self.DOC_FILE, 'rb') as image_file:
-            uploaded_file = SimpleUploadedFile(self.DOC_FILE, image_file.read(), content_type='application/msword')
+    def test_scan_files_FileTypeNotSupported(self):
+        with open(self.DOC_FILE, 'rb') as file:
+            uploaded_file = SimpleUploadedFile(self.DOC_FILE, file.read(), content_type='application/msword')
 
         with self.assertRaises(FileTypeNotSupported):
             UploadScannerService.scan_file(uploaded_file)
