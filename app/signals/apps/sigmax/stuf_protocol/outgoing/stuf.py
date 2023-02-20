@@ -49,12 +49,17 @@ def _send_stuf_message(stuf_msg: str, soap_action: str):
     if settings.SIGMAX_CLIENT_CERT and settings.SIGMAX_CLIENT_KEY:
         cert = (settings.SIGMAX_CLIENT_CERT, settings.SIGMAX_CLIENT_KEY)
 
+    verify = True
+    if settings.SIGMAX_CA_BUNDLE:
+        verify = settings.SIGMAX_CA_BUNDLE
+
     # Send our message to Sigmax. Network problems, and HTTP status codes
     # are all raised as errors.
     try:
         response = requests.post(
             url=settings.SIGMAX_SERVER,
             cert=cert,
+            verify=verify,
             headers=headers,
             data=encoded
         )
