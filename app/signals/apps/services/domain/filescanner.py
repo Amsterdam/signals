@@ -12,7 +12,8 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 ALLOWED_SVG_MIME_TYPES = ['image/svg+xml', 'image/svg', ]
-ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', ] + ALLOWED_SVG_MIME_TYPES
+ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', ] + ALLOWED_SVG_MIME_TYPES
+ALLOWED_MIME_TYPES = [*ALLOWED_IMAGE_MIME_TYPES, 'application/pdf', ]
 
 
 class FileRejectedError(Exception):
@@ -61,7 +62,7 @@ class UploadScannerService:
             # If seen is {"image/svg+xml"} this is a subset set of {"image/svg+xml", "image/svg"}
             # If seen is {"image/svg+xml", "image/svg"} this is also a subset set of {"image/svg+xml", "image/svg"}
             return uploaded_file
-        elif len(seen) == 1 and list(seen)[0] in ALLOWED_MIME_TYPES:
+        elif len(seen) == 1 and list(seen)[0] in ALLOWED_IMAGE_MIME_TYPES:
             # Let's see if PIL raises the DecompressionBombError
             Image.open(uploaded_file.file)
 
@@ -79,3 +80,5 @@ class UploadScannerService:
             logger.warning(f'File {uploaded_file.name} could not be recognized.')
             msg = 'File type could not be determined. Upload rejected!'
             raise FileTypeNotRecognized(msg)
+
+        return uploaded_file
