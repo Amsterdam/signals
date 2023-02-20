@@ -19,12 +19,14 @@ class TestUploadScannerService(SignalsBaseApiTestCase):
     PNG_FILE = os.path.join(os.path.dirname(__file__), '../test-data/test.png')
     GIF_FILE = os.path.join(os.path.dirname(__file__), '../test-data/test.gif')
     SVG_FILE = os.path.join(os.path.dirname(__file__), '../test-data/test.svg')
+    PDF_FILE = os.path.join(os.path.dirname(__file__), '../test-data/sia-ontwerp-testfile.pdf')
 
     ALLOWED_FILES = [
         (GIF_FILE, 'image/gif'),
         (JPG_FILE, 'image/jpeg'),
         (PNG_FILE, 'image/png'),
         (SVG_FILE, 'image/svg+xml'),
+        (PDF_FILE, 'application/pdf'),
     ]
 
     def test_scan_files(self):
