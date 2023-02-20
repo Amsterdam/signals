@@ -29,10 +29,6 @@ CORS_EXPOSE_HEADERS = [
     'X-Total-Count',  # Added for the geography endpoints
 ]
 
-SITE_ID = 1
-SITE_NAME = 'Signalen API'
-SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'api.data.amsterdam.nl')
-
 ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
 
 # The prefix of the display value of the signal ID. Defaults to 'SIG-'. This wil generate an id like SIG-123456 when
@@ -74,7 +70,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.gis',
@@ -102,7 +97,6 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
