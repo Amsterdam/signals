@@ -18,7 +18,7 @@ from freezegun import freeze_time
 from PIL import Image
 
 from signals.apps.history.services import SignalLogService
-from signals.apps.services.domain.pdf_summary import PDFSummaryService
+from signals.apps.services.domain.pdf import PDFSummaryService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     CategoryFactory,
