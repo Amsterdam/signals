@@ -3,6 +3,7 @@
 import os
 
 import pytest
+from django.core.files import File
 
 from signals.apps.services.domain.mimetypes import MimeTypeFromFilenameResolver, MimeTypeFromContentResolver, \
     MimeTypeResolvingError
@@ -40,4 +41,24 @@ class TestMimeTypeFromFilenameResolver:
     def test_resolving_without_extension(self):
         with pytest.raises(MimeTypeResolvingError):
             resolver = MimeTypeFromFilenameResolver('test')
+            resolver()
+
+
+class TestMimeTypeFromContentResolver:
+    @pytest.mark.parametrize('filepath,expected', [
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.jpg'), 'image/jpeg'),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.png'), 'image/png'),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.gif'), 'image/gif'),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.svg'), 'image/svg+xml'),
+        (os.path.join(os.path.dirname(__file__), '../test-data/sia-ontwerp-testfile.pdf'), 'application/pdf'),
+    ])
+    def test_resolving(self, filepath, expected):
+        file = File(open(filepath, 'rb'))
+        resolver = MimeTypeFromContentResolver(file)
+        assert expected == resolver()
+
+    def test_resolving_empty_file(self):
+        file = File(open(os.path.join(os.path.dirname(__file__), '../test-data/empty.txt'), 'rb'))
+        resolver = MimeTypeFromContentResolver(file)
+        with pytest.raises(MimeTypeResolvingError):
             resolver()
