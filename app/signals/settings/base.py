@@ -255,6 +255,11 @@ EMAIL_REST_ENDPOINT_CLIENT_KEY = os.getenv('EMAIL_REST_ENDPOINT_CLIENT_KEY', Non
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Meldingen gemeente Amsterdam <noreply@meldingen.amsterdam.nl>')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+CELERY_EMAIL_CHUNK_SIZE = 1
+CELERY_EMAIL_TASK_CONFIG = {
+    'ignore_result': False,
+}
+
 # Sentry logging
 RAVEN_CONFIG = {
     'dsn': os.getenv('SENTRY_RAVEN_DSN'),
