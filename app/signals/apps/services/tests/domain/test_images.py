@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2021 Gemeente Amsterdam
+import os
 from io import BytesIO
 from unittest.mock import MagicMock
 
+import pytest
 from PIL import Image
 
-from signals.apps.services.domain.images import DataUriImageEncodeService
+from signals.apps.services.domain.images import DataUriImageEncodeService, IsImageChecker
 from signals.apps.signals.factories import AttachmentFactory, SignalFactory
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -76,3 +78,27 @@ class TestImagesService(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(len(att_created_ats), 1)
         self.assertEqual(jpg_data_uris[0][:22], 'data:image/jpg;base64,')
         self.assertGreater(len(jpg_data_uris[0]), 22)
+
+
+class TestIsImageChecker:
+    @pytest.mark.parametrize('path,expected', [
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.jpg'), True),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.gif'), True),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.png'), True),
+        (os.path.join(os.path.dirname(__file__), '../test-data/test.svg'), False),
+        (os.path.join(os.path.dirname(__file__), '../test-data/empty.txt'), False),
+        (os.path.join(os.path.dirname(__file__), '../test-data/sia-ontwerp-testfile.doc'), False),
+        (os.path.join(os.path.dirname(__file__), '../test-data/sia-ontwerp-testfile.pdf'), False),
+    ])
+    def test_checking(self, path: str, expected: bool):
+        checker = IsImageChecker(path)
+        assert expected == checker()
+
+    def test_checking_file_that_does_not_exist(self):
+        checker = IsImageChecker('/tmp/this-file-should-not-exist')
+        with pytest.raises(FileNotFoundError):
+            checker()
+
+    def test_checking_with_file_instead_of_path(self):
+        checker = IsImageChecker(open(os.path.join(os.path.dirname(__file__), '../test-data/test.jpg'), 'rb'))
+        assert checker() is True

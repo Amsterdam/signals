@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 Gemeente Amsterdam
+# Copyright (C) 2023 Gemeente Amsterdam
 import base64
 import io
 import logging
@@ -7,6 +7,7 @@ import os
 
 from django.core.files.storage import default_storage
 from PIL import Image, UnidentifiedImageError
+from PIL.Image import DecompressionBombError
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +75,17 @@ class DataUriImageEncodeService:
             att_created_ats.append(att.created_at)
 
         return jpg_data_uris, att_filenames, user_emails, att_created_ats
+
+
+class IsImageChecker:
+    # file is File object (as in the type that `open()` returns or a path
+    def __init__(self, file):
+        self.file = file
+
+    def __call__(self) -> bool:
+        try:
+            Image.open(self.file)
+
+            return True
+        except UnidentifiedImageError:
+            return False
