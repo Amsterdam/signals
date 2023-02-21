@@ -13,8 +13,9 @@ from signals.apps.services.domain.mimetypes import (
 )
 from signals.apps.services.validator.file import (
     ContentIntegrityValidator,
+    FileSizeValidator,
     MimeTypeAllowedValidator,
-    MimeTypeIntegrityValidator, FileSizeValidator
+    MimeTypeIntegrityValidator
 )
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
