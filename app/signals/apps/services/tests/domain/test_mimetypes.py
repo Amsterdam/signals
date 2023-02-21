@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+import os
+
 import pytest
 
-from signals.apps.services.domain.mimetypes import MimeTypeFromFilenameResolver
+from signals.apps.services.domain.mimetypes import MimeTypeFromFilenameResolver, MimeTypeFromContentResolver, \
+    MimeTypeResolvingError
 
 
 class TestMimeTypeFromFilenameResolver:
@@ -33,3 +36,8 @@ class TestMimeTypeFromFilenameResolver:
     def test_resolving(self, filename, expected):
         resolver = MimeTypeFromFilenameResolver(filename)
         assert expected == resolver()
+
+    def test_resolving_without_extension(self):
+        with pytest.raises(MimeTypeResolvingError):
+            resolver = MimeTypeFromFilenameResolver('test')
+            resolver()
