@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
-from django.conf import settings
-
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from signals.apps.signals import workflow
 
 SIGNALS_API_MAX_UPLOAD_SIZE = 20*1024*1024  # 20MB = 20*1024*1024
-SIGNALS_API_ATLAS_SEARCH_URL = settings.DATAPUNT_API_URL + 'atlas/search'
 SIGNALS_API_PDOK_API_URL = 'https://geodata.nationaalgeoregister.nl'
 
 SIGNALS_API_CLOSED_STATES = frozenset([

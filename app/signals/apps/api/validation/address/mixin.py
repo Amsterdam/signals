@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import logging
 
 from django.conf import settings
@@ -67,7 +67,7 @@ class AddressValidationMixin:
                 # location. Added log a warning.
                 logger.warning('Address validation unavailable', stack_info=True)
             except NoResultsException:
-                # For now we only log a warning and store the address unvalidated in the database
+                # For now, we only log a warning and store the address unvalidated in the database
                 logger.warning('Address not found', stack_info=True)
                 if not settings.ALLOW_INVALID_ADDRESS_AS_UNVERIFIED:
                     raise ValidationError({"location": "Niet-bestaand adres."})
