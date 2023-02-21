@@ -22,6 +22,11 @@ class MimeTypeFromFilenameResolver:
         return mimetype_info[0]
 
 
+class MimeTypeFromFilenameResolverFactory:
+    def __call__(self, filename: str) -> MimeTypeFromFilenameResolver:
+        return MimeTypeFromFilenameResolver(filename)
+
+
 class MimeTypeFromContentResolver:
     def __init__(self, file: File):
         self.file = file
@@ -35,3 +40,8 @@ class MimeTypeFromContentResolver:
             return mimetype
 
         raise MimeTypeResolvingError('Failed to resolve mime type from content!')
+
+
+class MimeTypeFromContentResolverFactory:
+    def __call__(self, file: File) -> MimeTypeFromContentResolver:
+        return MimeTypeFromContentResolver(file)
