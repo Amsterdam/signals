@@ -46,6 +46,26 @@ services:
       - ./app:/app
     command: celery -A signals worker -l debug
 
+  flower:
+    build:
+      context: .
+    ports:
+      - "5566:5566"
+    depends_on:
+      mailhog:
+        condition: service_started
+      database:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      rabbit:
+        condition: service_started
+    env_file:
+      - docker-compose/environments/.celery
+    volumes:
+      - ./app:/app
+    command: celery -A signals flower --port=5566
+
   celery_beat:
     build:
       context: .
