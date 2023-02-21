@@ -2,10 +2,20 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from PIL import ImageFile
 
 from signals.apps.services.domain.images import IsImageChecker
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolverFactory,
+    MimeTypeFromFilenameResolverFactory
+)
+from signals.apps.services.validator.file import (
+    ContentIntegrityValidator,
+    MimeTypeAllowedValidator,
+    MimeTypeIntegrityValidator, FileSizeValidator
+)
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
@@ -26,7 +36,25 @@ class Attachment(CreatedUpdatedModel):
         upload_to='attachments/%Y/%m/%d/',
         null=False,
         blank=False,
-        max_length=255
+        max_length=255,
+        validators=[
+            MimeTypeAllowedValidator(
+                MimeTypeFromContentResolverFactory(),
+                (
+                    'image/jpeg',
+                    'image/png',
+                    'image/gif',
+                    'image/svg+xml',
+                    'application/pdf',
+                )
+            ),
+            MimeTypeIntegrityValidator(
+                MimeTypeFromContentResolverFactory(),
+                MimeTypeFromFilenameResolverFactory()
+            ),
+            ContentIntegrityValidator(MimeTypeFromContentResolverFactory()),
+            FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
+        ],
     )
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
