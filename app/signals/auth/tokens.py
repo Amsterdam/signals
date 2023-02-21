@@ -19,18 +19,18 @@ class JWTAccessToken:
         try:
             jwt = JWT(jwt=token, key=get_keyset(), algs=settings['ALLOWED_SIGNING_ALGORITHMS'])
         except JWTExpired:
-            raise AuthenticationFailed('API auth problem: token expired {}'.format(token))
-        except InvalidJWSSignature as e:
-            raise AuthenticationFailed('API auth problem: invalid signature. {}'.format(e))
-        except ValueError as e:
-            raise AuthenticationFailed('API auth problem: {}'.format(e))
+            raise AuthenticationFailed(f'API auth problem: token expired {token}')
+        except InvalidJWSSignature:
+            raise AuthenticationFailed('API auth problem: invalid signature.')
+        except ValueError:
+            raise AuthenticationFailed('API auth problem: value error')
         except JWTMissingKey:
             if missing_key:
                 raise AuthenticationFailed('token key not present')
             check_update_keyset()
             return JWTAccessToken.decode_token(token=token, missing_key=True)
-        except InvalidJWSObject as e:
-            raise AuthenticationFailed(f'{e}')
+        except InvalidJWSObject:
+            raise AuthenticationFailed('Invalid JWS Object')
         return jwt
 
     @staticmethod  # noqa: C901
