@@ -18,7 +18,8 @@ REQUIRED_ENV = {
     'SIGMAX_AUTH_TOKEN': 'TEST',
     'SIGMAX_SERVER': 'https://example.com',
     'SIGMAX_CLIENT_CERT': 'test.crt',
-    'SIGMAX_CLIENT_KEY': 'test.key'
+    'SIGMAX_CLIENT_KEY': 'test.key',
+    'SIGMAX_CA_BUNDLE': 'ca.crt'
 }
 
 DATA_DIR = os.path.join(
@@ -83,7 +84,8 @@ class TestSendStufMessage(TestCase):
         SIGMAX_AUTH_TOKEN=REQUIRED_ENV['SIGMAX_AUTH_TOKEN'],
         SIGMAX_SERVER=REQUIRED_ENV['SIGMAX_SERVER'],
         SIGMAX_CLIENT_CERT=REQUIRED_ENV['SIGMAX_CLIENT_CERT'],
-        SIGMAX_CLIENT_KEY=REQUIRED_ENV['SIGMAX_CLIENT_KEY']
+        SIGMAX_CLIENT_KEY=REQUIRED_ENV['SIGMAX_CLIENT_KEY'],
+        SIGMAX_CA_BUNDLE=REQUIRED_ENV['SIGMAX_CA_BUNDLE']
     )
     @mock.patch('signals.apps.sigmax.stuf_protocol.outgoing.stuf._stuf_response_ok', autospec=True)
     @mock.patch('requests.post', autospec=True)
@@ -101,6 +103,7 @@ class TestSendStufMessage(TestCase):
 
         self.assertEqual(mocked_request_post.called, 1)
         self.assertEqual(kwargs['cert'], (REQUIRED_ENV['SIGMAX_CLIENT_CERT'], REQUIRED_ENV['SIGMAX_CLIENT_KEY']))
+        self.assertEqual(kwargs['verify'], REQUIRED_ENV['SIGMAX_CA_BUNDLE'])
 
 
 class TestStufResponseOk(TestCase):
