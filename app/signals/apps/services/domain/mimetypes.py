@@ -28,6 +28,10 @@ class MimeTypeFromContentResolver:
 
     def __call__(self) -> str:
         for chunk in self.file.chunks(chunk_size=2048):
-            return magic.from_buffer(chunk, mime=True)
+            mimetype = magic.from_buffer(chunk, mime=True)
+            if mimetype == 'image/svg':
+                mimetype = 'image/svg+xml'
+
+            return mimetype
 
         raise MimeTypeResolvingError('Failed to resolve mime type from content!')
