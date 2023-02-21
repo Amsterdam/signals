@@ -37,7 +37,7 @@ class TestMimeTypeFromFilenameResolver:
         ('TEST.pDF', 'application/pdf'),
         ('test.Pdf', 'application/pdf'),
     ])
-    def test_resolving(self, filename, expected):
+    def test_resolving(self, filename: str, expected: str):
         resolver = MimeTypeFromFilenameResolver(filename)
         assert expected == resolver()
 
@@ -55,7 +55,7 @@ class TestMimeTypeFromContentResolver:
         (os.path.join(os.path.dirname(__file__), '../test-data/test.svg'), 'image/svg+xml'),
         (os.path.join(os.path.dirname(__file__), '../test-data/sia-ontwerp-testfile.pdf'), 'application/pdf'),
     ])
-    def test_resolving(self, filepath, expected):
+    def test_resolving(self, filepath: str, expected: str):
         file = File(open(filepath, 'rb'))
         resolver = MimeTypeFromContentResolver(file)
         assert expected == resolver()
