@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 from django.conf import settings
 from django.urls import include, path, re_path
+from django.views.generic.base import TemplateView
 
 from signals.apps.api.generics.routers import SignalsRouter
-from signals.apps.api.generics.views import SwaggerView
 from signals.apps.api.views import (
     LegacyMlPredictCategoryView,
     NamespaceView,
@@ -135,7 +135,8 @@ urlpatterns = [
     path('v1/', include('signals.apps.questionnaires.urls')),
 
     # Swagger
-    path('swagger/openapi.yaml', SwaggerView.as_view()),
+    path('swagger/openapi.yaml', TemplateView.as_view(template_name='api/swagger/openapi.yaml',
+                                                      extra_context={'schema_url': 'openapi-schema'})),
 ]
 
 if settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
