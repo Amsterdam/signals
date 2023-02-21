@@ -7,7 +7,6 @@ import os
 
 from django.core.files.storage import default_storage
 from PIL import Image, UnidentifiedImageError
-from PIL.Image import DecompressionBombError
 
 logger = logging.getLogger(__name__)
 
