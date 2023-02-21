@@ -78,7 +78,7 @@ class TestPDFSummaryService(TestCase):
             self.assertIn(status.text, html)
             self.assertIn(status.user, html)
 
-    @mock.patch('signals.apps.services.domain.pdf_summary.PDFSummaryService._get_context_data', autospec=True)
+    @mock.patch('signals.apps.services.domain.pdf.PDFSummaryService._get_context_data', autospec=True)
     def test_get_pdf(self, patched):
         patched.return_value = {}
         pdf = PDFSummaryService.get_pdf(self.signal, self.user, False)
@@ -214,7 +214,7 @@ class TestPDFSummaryService(TestCase):
         self.assertEqual(round(ymax - (486743.44 + 125), 1), 0)
 
     @override_settings(DEFAULT_MAP_TILE_SERVER='TESTSERVER')
-    @mock.patch('signals.apps.services.domain.pdf_summary.WMTSMapGenerator.make_map')
+    @mock.patch('signals.apps.services.domain.pdf.WMTSMapGenerator.make_map')
     def test_get_map_data_wmts(self, patched):
         map_img = Image.new("RGBA", (100, 100), 0)
         patched.return_value = map_img
@@ -244,25 +244,25 @@ class TestPDFSummaryService(TestCase):
         self.assertEqual(PDFSummaryService._get_logo_data('ftp://example.com/dit/is/een.png'), '')
 
     @mock.patch(
-        'signals.apps.services.domain.pdf_summary.PDFSummaryService._get_logo_data_from_static_file', autospec=True)
+        'signals.apps.services.domain.pdf.PDFSummaryService._get_logo_data_from_static_file', autospec=True)
     def test_get_logo_data_calls_get_logo_data_from_static_file(self, patched):
         PDFSummaryService._get_logo_data('/dit/is/een.png')
         patched.assert_called_once_with('/dit/is/een.png')
 
     @mock.patch(
-        'signals.apps.services.domain.pdf_summary.PDFSummaryService._get_logo_data_from_remote_url', autospec=True)
+        'signals.apps.services.domain.pdf.PDFSummaryService._get_logo_data_from_remote_url', autospec=True)
     def test_get_logo_data_calls_get_logo_data_from_remote_url(self, patched):
         PDFSummaryService._get_logo_data('https://example.com/dit/is/een.png')
         patched.assert_called_once_with('https://example.com/dit/is/een.png')
 
     @mock.patch(
-         'signals.apps.services.domain.pdf_summary.PDFSummaryService._get_logo_data_from_static_file', autospec=True)
+         'signals.apps.services.domain.pdf.PDFSummaryService._get_logo_data_from_static_file', autospec=True)
     def test_get_logo_data_using_a_static_url(self, patched):
         patched.return_value = 'PNG'
         self.assertEqual(PDFSummaryService._get_logo_data('/dit/is/een.png'), 'data:image/png;base64,PNG')
 
     @mock.patch(
-         'signals.apps.services.domain.pdf_summary.PDFSummaryService._get_logo_data_from_remote_url', autospec=True)
+         'signals.apps.services.domain.pdf.PDFSummaryService._get_logo_data_from_remote_url', autospec=True)
     def test_get_logo_data_using_a_remote_url(self, patched):
         patched.return_value = 'PNG'
         self.assertEqual(
