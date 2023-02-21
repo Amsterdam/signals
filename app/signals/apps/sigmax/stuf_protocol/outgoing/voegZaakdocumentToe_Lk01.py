@@ -11,7 +11,7 @@ import uuid
 
 from django.template.loader import render_to_string
 
-from signals.apps.services.domain.pdf_summary import PDFSummaryService
+from signals.apps.services.domain.pdf import PDFSummaryService
 from signals.apps.sigmax.stuf_protocol.outgoing.creeerZaak_Lk01 import _send_stuf_message
 
 logger = logging.getLogger(__name__)
