@@ -3,8 +3,9 @@
 import logging
 
 from django.contrib.gis.db import models
-from PIL import Image, ImageFile, UnidentifiedImageError
+from PIL import ImageFile
 
+from signals.apps.services.domain.images import IsImageChecker
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
@@ -45,19 +46,11 @@ class Attachment(CreatedUpdatedModel):
             ('sia_delete_attachment_of_anonymous_user', 'Kan bijlage toegevoegd door melder verwijderen.')
         ]
 
-    def _check_if_file_is_image(self):
-        try:
-            # Open the file with Pillow
-            Image.open(self.file)
-        except UnidentifiedImageError:
-            # Raised when Pillow does not recognize an image
-            return False
-        return True
-
     def save(self, *args, **kwargs):
         if self.pk is None:
             # Check if file is image
-            self.is_image = self._check_if_file_is_image()
+            is_image = IsImageChecker(self.file)
+            self.is_image = is_image()
 
             if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type
