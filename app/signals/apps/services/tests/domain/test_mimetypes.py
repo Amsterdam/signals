@@ -5,8 +5,11 @@ import os
 import pytest
 from django.core.files import File
 
-from signals.apps.services.domain.mimetypes import MimeTypeFromFilenameResolver, MimeTypeFromContentResolver, \
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolver,
+    MimeTypeFromFilenameResolver,
     MimeTypeResolvingError
+)
 
 
 class TestMimeTypeFromFilenameResolver:
