@@ -6,7 +6,8 @@ from django.core.files import File
 from signals.apps.services.domain.images import IsImageChecker
 from signals.apps.services.domain.mimetypes import (
     MimeTypeFromContentResolverFactory,
-    MimeTypeFromFilenameResolverFactory
+    MimeTypeFromFilenameResolverFactory,
+    MimeTypeResolvingError
 )
 from signals.apps.services.domain.pdf import IsPdfChecker
 
@@ -17,10 +18,13 @@ class MimeTypeAllowedValidator:
         self.allowed_mimetypes = allowed_mimetypes
 
     def __call__(self, value: File):
-        resolve_mimetype = self.mimetype_resolver_factory(value)
-        mimetype = resolve_mimetype()
-        if mimetype not in self.allowed_mimetypes:
-            raise ValidationError(f"Files of type '{mimetype}' are not allowed!")
+        try:
+            resolve_mimetype = self.mimetype_resolver_factory(value)
+            mimetype = resolve_mimetype()
+            if mimetype not in self.allowed_mimetypes:
+                raise ValidationError(f"Files of type '{mimetype}' are not allowed!")
+        except MimeTypeResolvingError:
+            raise ValidationError('MimeType resolving failed!')
 
 
 class MimeTypeIntegrityValidator:
