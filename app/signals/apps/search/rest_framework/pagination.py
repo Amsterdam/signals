@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
 from datapunt_api.pagination import HALPagination
-from django.core.paginator import Page, Paginator
+from django.core.paginator import InvalidPage, Page, Paginator
 from rest_framework.exceptions import NotFound
 
 
@@ -51,9 +51,8 @@ class ElasticHALPagination(HALPagination):
 
         try:
             self.page = paginator.page(page_number)
-        except Exception as exc:
-            msg = self.invalid_page_message.format(page_number=page_number, message=exc)
-            raise NotFound(msg)
+        except InvalidPage:
+            raise NotFound(self.invalid_page_message)
 
         if paginator.num_pages > 1 and self.template is not None:
             self.display_page_controls = True
