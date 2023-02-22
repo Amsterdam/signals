@@ -79,7 +79,7 @@ services:
     ports:
       - "5556:5556"
     volumes:
-      - ./dex.dev.yml:/config.yml
+      - ./docker-compose/dex/dex.dev.yml:/config.yml
       - dex-data:/data
 
   elasticsearch:
