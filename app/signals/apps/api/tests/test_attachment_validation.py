@@ -28,7 +28,6 @@ ALLOWED = [
 DISALLOWED = [(DOC_FILE, 'application/msword')]
 
 
-# TODO: Rename
 class TestAttachmentValidation(SignalsBaseApiTestCase):
     """
     Test file scanner functionality.
