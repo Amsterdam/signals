@@ -6,7 +6,10 @@ import pytest
 from django.core.exceptions import ValidationError
 
 from signals.apps.services.domain.mimetypes import MimeTypeResolvingError
-from signals.apps.services.validator.file import MimeTypeAllowedValidator
+from signals.apps.services.validator.file import (
+    MimeTypeAllowedValidator,
+    MimeTypeIntegrityValidator
+)
 
 
 @patch('django.core.files.File')
@@ -33,3 +36,55 @@ class TestMimeTypeAllowedValidator:
         validator = MimeTypeAllowedValidator(factory, ('image/png', 'image/jpeg'))
         with pytest.raises(ValidationError):
             validator(file)
+
+
+@patch('django.core.files.File')
+class TestMimeTypeIntegrityValidator:
+    def test_validation_passes_when_mimetypes_match(self, file):
+        mimetype_from_content_resolver = Mock(return_value='image/jpeg')
+        mimetype_from_content_factory = Mock(return_value=mimetype_from_content_resolver)
+
+        mimetype_from_filename_resolver = Mock(return_value='image/jpeg')
+        mimetype_from_filename_factory = Mock(return_value=mimetype_from_filename_resolver)
+
+        validator = MimeTypeIntegrityValidator(mimetype_from_content_factory, mimetype_from_filename_factory)
+        validator(file)
+
+    def test_validation_fails_when_mimetypes_do_not_match(self, file):
+        mimetype_from_content_resolver = Mock(return_value='image/jpeg')
+        mimetype_from_content_factory = Mock(return_value=mimetype_from_content_resolver)
+
+        mimetype_from_filename_resolver = Mock(return_value='image/png')
+        mimetype_from_filename_factory = Mock(return_value=mimetype_from_filename_resolver)
+
+        validator = MimeTypeIntegrityValidator(mimetype_from_content_factory, mimetype_from_filename_factory)
+        with pytest.raises(ValidationError) as e_info:
+            validator(file)
+
+        assert e_info.value.message == "'image/jpeg' does not match filename extension!"
+
+    def test_validation_fails_when_mimetype_cannot_be_resolved_from_file_content(self, file):
+        mimetype_from_content_resolver = Mock(side_effect=MimeTypeResolvingError)
+        mimetype_from_content_factory = Mock(return_value=mimetype_from_content_resolver)
+
+        mimetype_from_filename_resolver = Mock(return_value='image/png')
+        mimetype_from_filename_factory = Mock(return_value=mimetype_from_filename_resolver)
+
+        validator = MimeTypeIntegrityValidator(mimetype_from_content_factory, mimetype_from_filename_factory)
+        with pytest.raises(ValidationError) as e_info:
+            validator(file)
+
+        assert e_info.value.message == "Failed to resolve mime type from file content!"
+
+    def test_validation_fails_when_mimetype_cannot_be_resolved_from_filename(self, file):
+        mimetype_from_content_resolver = Mock(return_value='image/jpeg')
+        mimetype_from_content_factory = Mock(return_value=mimetype_from_content_resolver)
+
+        mimetype_from_filename_resolver = Mock(side_effect=MimeTypeResolvingError)
+        mimetype_from_filename_factory = Mock(return_value=mimetype_from_filename_resolver)
+
+        validator = MimeTypeIntegrityValidator(mimetype_from_content_factory, mimetype_from_filename_factory)
+        with pytest.raises(ValidationError) as e_info:
+            validator(file)
+
+        assert e_info.value.message == "Failed to resolve mime type from filename!"
