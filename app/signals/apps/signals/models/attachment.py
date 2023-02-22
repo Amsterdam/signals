@@ -45,7 +45,6 @@ class Attachment(CreatedUpdatedModel):
                     'image/jpeg',
                     'image/png',
                     'image/gif',
-                    'image/svg+xml',
                     'application/pdf',
                 )
             ),
