@@ -24,7 +24,7 @@ class MimeTypeAllowedValidator:
             if mimetype not in self.allowed_mimetypes:
                 raise ValidationError(f"Files of type '{mimetype}' are not allowed!")
         except MimeTypeResolvingError:
-            raise ValidationError('MimeType resolving failed!')
+            raise ValidationError('Mime type resolving failed!')
 
 
 class MimeTypeIntegrityValidator:
@@ -37,11 +37,17 @@ class MimeTypeIntegrityValidator:
         self.mimetype_from_filename_resolver_factory = mimetype_from_filename_resolver_factory
 
     def __call__(self, value: File):
-        resolve_mime_from_content = self.mimetype_from_content_resolver_factory(value)
-        mime_from_content = resolve_mime_from_content()
+        try:
+            resolve_mime_from_content = self.mimetype_from_content_resolver_factory(value)
+            mime_from_content = resolve_mime_from_content()
+        except MimeTypeResolvingError:
+            raise ValidationError('Failed to resolve mime type from file content!')
 
-        resolve_mime_from_filename = self.mimetype_from_filename_resolver_factory(value.name)
-        mime_from_filename = resolve_mime_from_filename()
+        try:
+            resolve_mime_from_filename = self.mimetype_from_filename_resolver_factory(value.name)
+            mime_from_filename = resolve_mime_from_filename()
+        except MimeTypeResolvingError:
+            raise ValidationError('Failed to resolve mime type from filename!')
 
         if mime_from_content != mime_from_filename:
             raise ValidationError(f"'{mime_from_content}' does not match filename extension!")
