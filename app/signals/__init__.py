@@ -15,7 +15,7 @@ __all__ = ['celery_app', 'VERSION', 'API_VERSIONS', ]
 # they are now all the same.
 
 # Application version (Major, minor, patch)
-VERSION = (2, 15, 4)
+VERSION = (2, 15, 5)
 
 API_VERSIONS = {
     'v1': VERSION,
