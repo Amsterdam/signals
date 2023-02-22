@@ -28,7 +28,8 @@ ALLOWED = [
 DISALLOWED = [(DOC_FILE, 'application/msword')]
 
 
-class TestUploadedFileScannerViaAPI(SignalsBaseApiTestCase):
+# TODO: Rename
+class TestAttachmentValidation(SignalsBaseApiTestCase):
     """
     Test file scanner functionality.
     """
@@ -117,7 +118,7 @@ class TestUploadedFileScannerViaAPI(SignalsBaseApiTestCase):
     @patch('PIL.Image.MAX_IMAGE_PIXELS', 1)
     def test_upload_disallowed_pil_DecompressionBombError(self):
         """
-        When an image exceeds a the MAX_IMAGE_PIXELS PIL will protect against potential DOS attacks caused by
+        When an image exceeds the MAX_IMAGE_PIXELS PIL will protect against potential DOS attacks caused by
         “decompression bombs”. When the MAX_IMAGE_PIXELS been exceeded PIL will log a DecompressionBombWarning, if the
         image pixels exceed twice the MAX_IMAGE_PIXELS PIL will raise a DecompressionBombError.
 
