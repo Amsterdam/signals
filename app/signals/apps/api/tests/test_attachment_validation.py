@@ -130,8 +130,3 @@ class TestAttachmentValidation(SignalsBaseApiTestCase):
                 suf = SimpleUploadedFile(filename, file.read(), content_type=content_type)
                 response = self.client.post(self.private_upload_url, data={'file': suf})
             self.assertEqual(response.status_code, 400)
-
-            response_json = response.json()
-            self.assertIn('file', response_json)
-            self.assertEqual(1, len(response_json['file']))
-            self.assertIn('decompression bomb DOS attack', response_json['file'][0])

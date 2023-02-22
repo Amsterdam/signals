@@ -77,7 +77,7 @@ class DataUriImageEncodeService:
 
 
 class IsImageChecker:
-    # file is File object (as in the type that `open()` returns or a path
+    # file is File object (as in the type that `open()` returns) or a path
     def __init__(self, file):
         self.file = file
 
@@ -86,5 +86,5 @@ class IsImageChecker:
             Image.open(self.file)
 
             return True
-        except UnidentifiedImageError:
+        except (UnidentifiedImageError, Image.DecompressionBombError):
             return False

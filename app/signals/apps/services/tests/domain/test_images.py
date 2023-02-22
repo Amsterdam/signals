@@ -2,7 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 import os
 from io import BytesIO
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from PIL import Image
@@ -102,3 +102,8 @@ class TestIsImageChecker:
     def test_checking_with_file_instead_of_path(self):
         checker = IsImageChecker(open(os.path.join(os.path.dirname(__file__), '../test-data/test.jpg'), 'rb'))
         assert checker() is True
+
+    @patch('PIL.Image.MAX_IMAGE_PIXELS', 1)
+    def test_checking_with_potential_decompression_bomb(self):
+        checker = IsImageChecker(open(os.path.join(os.path.dirname(__file__), '../test-data/test.jpg'), 'rb'))
+        assert checker() is False
