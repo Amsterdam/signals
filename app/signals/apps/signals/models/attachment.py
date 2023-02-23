@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from PIL import ImageFile
 
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.images import IsImageChecker
 from signals.apps.services.domain.mimetypes import (
     MimeTypeFromContentResolverFactory,
@@ -52,7 +53,7 @@ class Attachment(CreatedUpdatedModel):
                 MimeTypeFromContentResolverFactory(),
                 MimeTypeFromFilenameResolverFactory()
             ),
-            ContentIntegrityValidator(MimeTypeFromContentResolverFactory()),
+            ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory()),
             FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
         ],
     )

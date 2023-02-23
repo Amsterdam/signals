@@ -12,6 +12,7 @@ from django_extensions.db.fields import AutoSlugField
 from rest_framework_extensions.settings import extensions_api_settings
 
 from signals.apps.history.models.mixins import TrackFields
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.mimetypes import (
     MimeTypeFromContentResolverFactory,
     MimeTypeFromFilenameResolverFactory
@@ -138,7 +139,7 @@ class Category(TrackFields, models.Model):
                 MimeTypeFromContentResolverFactory(),
                 MimeTypeFromFilenameResolverFactory()
             ),
-            ContentIntegrityValidator(MimeTypeFromContentResolverFactory()),
+            ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory()),
             FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
         ]
     )

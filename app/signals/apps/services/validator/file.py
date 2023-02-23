@@ -3,13 +3,12 @@
 from django.core.exceptions import ValidationError
 from django.core.files import File
 
-from signals.apps.services.domain.images import IsImageChecker
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.mimetypes import (
     MimeTypeFromContentResolverFactory,
     MimeTypeFromFilenameResolverFactory,
     MimeTypeResolvingError
 )
-from signals.apps.services.domain.pdf import IsPdfChecker
 
 
 class MimeTypeAllowedValidator:
@@ -54,26 +53,21 @@ class MimeTypeIntegrityValidator:
 
 
 class ContentIntegrityValidator:
-    def __init__(self, mimetype_resolver_factory: MimeTypeFromContentResolverFactory):
+    def __init__(
+            self,
+            mimetype_resolver_factory: MimeTypeFromContentResolverFactory,
+            content_checker_factory: ContentCheckerFactory
+    ):
         self.mimetype_resolver_factory = mimetype_resolver_factory
+        self.content_checker_factory = content_checker_factory
 
     def __call__(self, value: File):
         resolve_mimetype = self.mimetype_resolver_factory(value)
         mimetype = resolve_mimetype()
 
-        create_content_checker = self.ContentCheckerFactory()
-        is_valid = create_content_checker(mimetype, value)
+        is_valid = self.content_checker_factory(mimetype, value)
         if is_valid is not None and is_valid() is False:
             raise ValidationError("File is not a valid image or pdf document!")
-
-    class ContentCheckerFactory:
-        def __call__(self, mimetype: str, file):
-            if mimetype in ('image/jpeg', 'image/png', 'image/gif'):
-                return IsImageChecker(file)
-            elif mimetype == 'application/pdf':
-                return IsPdfChecker(file)
-
-            return None
 
 
 class FileSizeValidator:

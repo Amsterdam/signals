@@ -5,6 +5,7 @@ from abc import ABC
 from django.conf import settings
 
 from signals.apps.questionnaires.fieldtypes.base import FieldType
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.mimetypes import (
     MimeTypeFromContentResolverFactory,
     MimeTypeFromFilenameResolverFactory
@@ -67,5 +68,5 @@ class Image(Attachment):
         is_not_too_big = FileSizeValidator(settings.API_MAX_UPLOAD_SIZE)
         is_not_too_big(file)
 
-        is_image = ContentIntegrityValidator(MimeTypeFromContentResolverFactory())
+        is_image = ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory())
         is_image(file)
