@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 from signals.apps.services.domain.mimetypes import MimeTypeResolvingError
 from signals.apps.services.validator.file import (
+    FileSizeValidator,
     MimeTypeAllowedValidator,
     MimeTypeIntegrityValidator
 )
@@ -88,3 +89,15 @@ class TestMimeTypeIntegrityValidator:
             validator(file)
 
         assert e_info.value.message == "Failed to resolve mime type from filename!"
+
+
+@patch('django.core.files.File', size=100)
+class TestFileSizeValidator:
+    def test_validation_passes_when_file_is_not_too_big(self, file):
+        validator = FileSizeValidator(250)
+        validator(file)
+
+    def test_validation_fails_when_file_is_too_big(self, file):
+        validator = FileSizeValidator(50)
+        with pytest.raises(ValidationError):
+            validator(file)
