@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 from signals.apps.services.domain.mimetypes import MimeTypeResolvingError
 from signals.apps.services.validator.file import (
+    ContentIntegrityValidator,
     FileSizeValidator,
     MimeTypeAllowedValidator,
     MimeTypeIntegrityValidator
@@ -89,6 +90,45 @@ class TestMimeTypeIntegrityValidator:
             validator(file)
 
         assert e_info.value.message == "Failed to resolve mime type from filename!"
+
+
+@patch('django.core.files.File')
+class TestContentIntegrityValidator:
+    def test_validation_passes_when_file_checks_out(self, file):
+        resolver = Mock(return_value='image/jpeg')
+        resolver_factory = Mock(return_value=resolver)
+
+        checker = Mock(return_value=True)
+        checker_factory = Mock(return_value=checker)
+
+        validator = ContentIntegrityValidator(resolver_factory, checker_factory)
+        validator(file)
+
+    def test_validation_fails_when_file_does_not_check_out(self, file):
+        resolver = Mock(return_value='image/jpeg')
+        resolver_factory = Mock(return_value=resolver)
+
+        checker = Mock(return_value=False)
+        checker_factory = Mock(return_value=checker)
+
+        validator = ContentIntegrityValidator(resolver_factory, checker_factory)
+        with pytest.raises(ValidationError) as e_info:
+            validator(file)
+
+        assert e_info.value.message == "File is not valid!"
+
+    def test_validation_fails_when_mimetype_cannot_be_resolved(self, file):
+        resolver = Mock(side_effect=MimeTypeResolvingError)
+        resolver_factory = Mock(return_value=resolver)
+
+        checker = Mock(return_value=True)
+        checker_factory = Mock(return_value=checker)
+
+        validator = ContentIntegrityValidator(resolver_factory, checker_factory)
+        with pytest.raises(ValidationError) as e_info:
+            validator(file)
+
+        assert e_info.value.message == "Failed to resolve mime type!"
 
 
 @patch('django.core.files.File', size=100)
