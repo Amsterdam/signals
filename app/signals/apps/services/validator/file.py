@@ -63,11 +63,14 @@ class ContentIntegrityValidator:
 
     def __call__(self, value: File):
         resolve_mimetype = self.mimetype_resolver_factory(value)
-        mimetype = resolve_mimetype()
+        try:
+            mimetype = resolve_mimetype()
+        except MimeTypeResolvingError:
+            raise ValidationError("Failed to resolve mime type!")
 
         is_valid = self.content_checker_factory(mimetype, value)
         if is_valid is not None and is_valid() is False:
-            raise ValidationError("File is not a valid image or pdf document!")
+            raise ValidationError("File is not valid!")
 
 
 class FileSizeValidator:
