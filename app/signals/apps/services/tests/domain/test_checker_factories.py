@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.images import IsImageChecker
