@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
@@ -11,7 +12,18 @@ from django_extensions.db.fields import AutoSlugField
 from rest_framework_extensions.settings import extensions_api_settings
 
 from signals.apps.history.models.mixins import TrackFields
-from signals.apps.signals.models.utils import upload_category_icon_to, validate_category_icon
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolverFactory,
+    MimeTypeFromFilenameResolverFactory
+)
+from signals.apps.services.validator.file import (
+    ContentIntegrityValidator,
+    FileSizeValidator,
+    MimeTypeAllowedValidator,
+    MimeTypeIntegrityValidator
+)
+from signals.apps.signals.models.utils import upload_category_icon_to
 
 
 class CategoryManager(models.Manager):
@@ -108,8 +120,29 @@ class Category(TrackFields, models.Model):
 
     questionnaire = models.ForeignKey(to='questionnaires.Questionnaire', blank=True, null=True, on_delete=DO_NOTHING)
 
-    icon = models.FileField(upload_to=upload_category_icon_to, null=True, blank=True, max_length=255,
-                            validators=[validate_category_icon])
+    icon = models.FileField(
+        upload_to=upload_category_icon_to,
+        null=True,
+        blank=True,
+        max_length=255,
+        validators=[
+            MimeTypeAllowedValidator(
+                MimeTypeFromContentResolverFactory(),
+                (
+                    'image/jpeg',
+                    'image/png',
+                    'image/gif',
+                    'image/svg+xml',
+                )
+            ),
+            MimeTypeIntegrityValidator(
+                MimeTypeFromContentResolverFactory(),
+                MimeTypeFromFilenameResolverFactory()
+            ),
+            ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory()),
+            FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
+        ]
+    )
 
     # History log
     track_fields = ('name', 'description', 'is_active', 'slo', 'handling_message', 'public_name',

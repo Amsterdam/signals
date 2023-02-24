@@ -4,9 +4,7 @@ import os
 from datetime import timedelta
 
 from datapunt_api.rest import DisplayField, HALSerializer
-from django.conf import settings
 from django.utils import timezone
-from PIL.Image import DecompressionBombError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -16,7 +14,6 @@ from signals.apps.api.fields import (
 )
 from signals.apps.feedback.app_settings import FEEDBACK_EXPECTED_WITHIN_N_DAYS
 from signals.apps.feedback.models import Feedback
-from signals.apps.services.domain.filescanner import FileRejectedError, UploadScannerService
 from signals.apps.signals.models import Attachment, Signal
 from signals.apps.signals.workflow import AFGEHANDELD, GEMELD, REACTIE_GEVRAAGD
 
@@ -42,18 +39,6 @@ class SignalAttachmentSerializerMixin:
             Signal.actions.create_note({'text': f'Bijlage toegevoegd door melder: {filename}'}, signal)
 
         return attachment
-
-    def validate_file(self, file):
-        if file.size > settings.API_MAX_UPLOAD_SIZE:
-            msg = f'Bestand mag maximaal {settings.API_MAX_UPLOAD_SIZE} bytes groot zijn.'
-            raise ValidationError(msg)
-
-        try:
-            UploadScannerService.scan_file(file)
-        except (FileRejectedError, DecompressionBombError) as e:
-            raise ValidationError(str(e))
-
-        return file
 
 
 class PublicSignalAttachmentSerializer(SignalAttachmentSerializerMixin, HALSerializer):

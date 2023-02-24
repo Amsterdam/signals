@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import base64
 import io
 import logging
@@ -14,6 +14,8 @@ from django.contrib.staticfiles import finders
 from django.core.exceptions import SuspiciousFileOperation
 from django.template.loader import render_to_string
 from django.utils import timezone
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 from signals.apps.services.domain.images import DataUriImageEncodeService
 from signals.apps.services.domain.wmts_map_generator import WMTSMapGenerator
@@ -178,3 +180,16 @@ class PDFSummaryService:
         """
         html = PDFSummaryService._get_html(signal, user, include_contact_details)
         return weasyprint.HTML(string=html).write_pdf()
+
+
+class IsPdfChecker:
+    def __init__(self, file):
+        self.file = file
+
+    def __call__(self) -> bool:
+        try:
+            PdfReader(self.file)
+
+            return True
+        except PdfReadError:
+            return False

@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import uuid
 
 from django.core.files.storage import default_storage
-from PIL.Image import DecompressionBombError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from signals.apps.questionnaires.fieldtypes.attachment import Attachment
 from signals.apps.questionnaires.models import Question
-from signals.apps.services.domain.filescanner import FileRejectedError
 
 
 class PublicAttachmentSerializer(serializers.Serializer):
@@ -52,10 +50,7 @@ class PublicAttachmentSerializer(serializers.Serializer):
         # Create files on disk after they are validated
         answer_payload = []
         for file in files:
-            try:
-                question.get_field_type().validate_file(file)
-            except (FileRejectedError, DecompressionBombError) as e:
-                raise ValidationError({'file': [str(e)]})
+            question.get_field_type().validate_file(file)
 
             # Store the file in the default storage
             session_uuid = session_service.session.uuid

@@ -37,7 +37,7 @@ from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.serializers.stats import PastWeekSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
 from signals.apps.history.models import Log
-from signals.apps.services.domain.pdf_summary import PDFSummaryService
+from signals.apps.services.domain.pdf import PDFSummaryService
 from signals.apps.signals.models import Signal
 from signals.apps.signals.models.aggregates.json_agg import JSONAgg
 from signals.apps.signals.models.functions.asgeojson import AsGeoJSON

@@ -2,9 +2,22 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 import logging
 
+from django.conf import settings
 from django.contrib.gis.db import models
-from PIL import Image, ImageFile, UnidentifiedImageError
+from PIL import ImageFile
 
+from signals.apps.services.domain.checker_factories import ContentCheckerFactory
+from signals.apps.services.domain.images import IsImageChecker
+from signals.apps.services.domain.mimetypes import (
+    MimeTypeFromContentResolverFactory,
+    MimeTypeFromFilenameResolverFactory
+)
+from signals.apps.services.validator.file import (
+    ContentIntegrityValidator,
+    FileSizeValidator,
+    MimeTypeAllowedValidator,
+    MimeTypeIntegrityValidator
+)
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
 
 logger = logging.getLogger(__name__)
@@ -25,7 +38,24 @@ class Attachment(CreatedUpdatedModel):
         upload_to='attachments/%Y/%m/%d/',
         null=False,
         blank=False,
-        max_length=255
+        max_length=255,
+        validators=[
+            MimeTypeAllowedValidator(
+                MimeTypeFromContentResolverFactory(),
+                (
+                    'image/jpeg',
+                    'image/png',
+                    'image/gif',
+                    'application/pdf',
+                )
+            ),
+            MimeTypeIntegrityValidator(
+                MimeTypeFromContentResolverFactory(),
+                MimeTypeFromFilenameResolverFactory()
+            ),
+            ContentIntegrityValidator(MimeTypeFromContentResolverFactory(), ContentCheckerFactory()),
+            FileSizeValidator(settings.API_MAX_UPLOAD_SIZE),
+        ],
     )
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_image = models.BooleanField(default=False)
@@ -45,19 +75,11 @@ class Attachment(CreatedUpdatedModel):
             ('sia_delete_attachment_of_anonymous_user', 'Kan bijlage toegevoegd door melder verwijderen.')
         ]
 
-    def _check_if_file_is_image(self):
-        try:
-            # Open the file with Pillow
-            Image.open(self.file)
-        except UnidentifiedImageError:
-            # Raised when Pillow does not recognize an image
-            return False
-        return True
-
     def save(self, *args, **kwargs):
         if self.pk is None:
             # Check if file is image
-            self.is_image = self._check_if_file_is_image()
+            is_image = IsImageChecker(self.file)
+            self.is_image = is_image()
 
             if not self.mimetype and hasattr(self.file.file, 'content_type'):
                 self.mimetype = self.file.file.content_type

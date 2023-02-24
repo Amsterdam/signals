@@ -40,6 +40,7 @@ raven
 opencensus-ext-azure
 
 # PDF
+pypdf
 weasyprint==52.5
 cairocffi
 CairoSVG
