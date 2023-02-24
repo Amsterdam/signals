@@ -47,7 +47,7 @@ jobs:
           tox
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-report
           path: /tmp/test/htmlcov/
