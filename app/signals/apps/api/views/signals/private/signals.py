@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
 import datetime
 import logging
 
@@ -25,7 +25,6 @@ from signals.apps.api.generics.permissions import (
 )
 from signals.apps.api.serializers import (
     AbridgedChildSignalSerializer,
-    HistoryHalSerializer,
     PrivateSignalSerializerDetail,
     PrivateSignalSerializerList
 )
@@ -146,30 +145,13 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             action = Log.translate_what_to_action(what)
             content_type = Log.translate_what_to_content_type(what)
 
+            # TODO: Fix this properly
+            if action == 'RECEIVE' and content_type == 'feedback':
+                action = 'CREATE'
+
             history_log_qs = history_log_qs.filter(action__iexact=action, content_type__model__iexact=content_type)
 
-        if history_log_qs.exists():
-            serializer = HistoryLogHalSerializer(history_log_qs, many=True)
-            return Response(serializer.data)
-        else:
-            # Try the view as a fallback
-            # TODO remove when the transition to the new history app is completed.
-            return self.history_view(*args, **kwargs)
-
-    @action(detail=True, url_path=r'history-view/?$')
-    def history_view(self, *args, **kwargs):
-        """
-        Deprecated History endpoint filterable by action.
-        This endpoint is only available when transitioning to the new history implementation as a fallback.
-        Will be removed when the transition is completed.
-        """
-        signal = self.get_object()
-        history_entries = signal.history.all()
-        what = self.request.query_params.get('what', None)
-        if what:
-            history_entries = history_entries.filter(what=what)
-
-        serializer = HistoryHalSerializer(history_entries, many=True)
+        serializer = HistoryLogHalSerializer(history_log_qs, many=True)
         return Response(serializer.data)
 
     @action(detail=False, url_path=r'geography/?$', filterset_class=SignalFilterSet)

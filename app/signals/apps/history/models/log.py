@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import uuid
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -8,7 +8,6 @@ from django.db import models
 
 from signals.apps.feedback.models import _get_description_of_receive_feedback
 from signals.apps.questionnaires.models import Questionnaire
-from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from signals.apps.signals.models.location import _get_description_of_update_location
 from signals.apps.signals.models.signal_departments import SignalDepartments
 from signals.apps.signals.models.type import _history_translated_action
@@ -195,7 +194,7 @@ class Log(models.Model):
         elif what == 'CHILD_SIGNAL_CREATED':
             description = f'Melding {self.extra}'
         elif what == 'UPDATE_SLA' and self.description is None:
-            description = EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
+            description = 'Servicebelofte onbekend'
         else:
             description = self.description
         return description

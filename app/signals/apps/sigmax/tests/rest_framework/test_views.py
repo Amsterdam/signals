@@ -17,7 +17,7 @@ from signals.apps.sigmax.stuf_protocol.incoming.actualiseerZaakstatus_Lk01 impor
 )
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import SignalFactoryValidLocation
-from signals.apps.signals.models import History, Signal
+from signals.apps.signals.models import Signal
 from signals.apps.users.factories import UserFactory
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
@@ -187,11 +187,6 @@ class TestSoapEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn(str(signal.sia_id), response.content.decode('utf-8', 'strict'))
         self.assertIn('Fo03', response.content.decode('utf-8', 'strict'))
-
-        last_update = History.objects.filter(_signal__id=signal.pk).order_by('-when').first()
-        self.assertEqual(last_update.what, 'CREATE_NOTE')
-        self.assertTrue(last_update.description.startswith(
-            'Zaak status update ontvangen van CityControl terwijl SIA melding niet in verzonden staat was.'))  # noqa
 
     def test_with_signal_for_message_correct_state(self):
         signal = SignalFactoryValidLocation.create()

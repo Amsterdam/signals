@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2022 - 2023 Vereniging van Nederlandse Gemeenten
 """
 Test the forwarded to external flow at REST API level.
 """
-import copy
 import os
 import re
 import uuid
@@ -57,11 +56,6 @@ class NameSpace:
     pass
 
 
-feature_flags = copy.deepcopy(settings.FEATURE_FLAGS)
-feature_flags['SIGNAL_HISTORY_LOG_ENABLED'] = True
-
-
-@override_settings(FEATURE_FLAGS=feature_flags)
 class TriggerForwardToExternalFlowViaAPI(APITestCase, SuperUserMixin):
     QUESTION_FOR_EXTERNAL_PARTY = 'QUESTION FOR EXTERNAL PARTY'
     STATUS_UPDATE = {
@@ -193,7 +187,7 @@ test_urlconf = NameSpace()
 test_urlconf.urlpatterns = urlpatterns
 
 
-@override_settings(ROOT_URLCONF=test_urlconf, FEATURE_FLAGS=feature_flags)
+@override_settings(ROOT_URLCONF=test_urlconf)
 class TestForwardToExternalRetrieveSessionAndFillOut(ValidateJsonSchemaMixin, APITestCase):
     base_endpoint = '/public/qa/questions/'
     session_detail_endpoint = '/public/qa/sessions/{uuid}/'

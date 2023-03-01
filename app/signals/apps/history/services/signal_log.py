@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2021 - 2022 Gemeente Amsterdam
+# Copyright (C) 2021 - 2023 Gemeente Amsterdam
 import pytz
 from django.conf import settings
 from django.utils import timezone
@@ -23,9 +23,6 @@ from signals.apps.signals.models import Type as _Type
 class SignalLogService:
     @staticmethod
     def log_create_initial(signal: Signal) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if signal.is_child:
             # We cannot create a GenericRelation on the Signal model because the naming will clash with the ForeignKey
             # `_signal` defined on the Log model. So for now Log rules for a specific Signal are created as seen here:
@@ -46,9 +43,6 @@ class SignalLogService:
 
     @staticmethod
     def log_create_note(note: Note) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(note, Note):
             return
 
@@ -63,9 +57,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_category_assignment(category_assignment: CategoryAssignment) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(category_assignment, CategoryAssignment):
             return
 
@@ -88,9 +79,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_location(location: Location) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(location, Location):
             return
 
@@ -104,9 +92,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_priority(priority: Priority) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(priority, Priority):
             return
 
@@ -120,9 +105,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_status(status: Status) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(status, Status):
             return
 
@@ -137,9 +119,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_type(_type: _Type) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(_type, _Type):
             return
 
@@ -153,9 +132,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_user_assignment(user_assignment: SignalUser) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(user_assignment, SignalUser):
             return
 
@@ -170,9 +146,6 @@ class SignalLogService:
 
     @staticmethod
     def log_update_signal_departments(signal_departments: SignalDepartments) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(signal_departments, SignalDepartments):
             return
 
@@ -188,9 +161,6 @@ class SignalLogService:
 
     @staticmethod
     def log_receive_feedback(feedback: Feedback) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(feedback, Feedback):
             return
 
@@ -209,9 +179,6 @@ class SignalLogService:
 
     @staticmethod
     def log_external_reaction_received(session: Session, reaction: str) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(session, Session):
             return
 
@@ -237,9 +204,6 @@ class SignalLogService:
 
     @staticmethod
     def log_external_reaction_not_received(session: Session) -> None:
-        if not settings.FEATURE_FLAGS.get('SIGNAL_HISTORY_LOG_ENABLED', False):
-            return
-
         if not isinstance(session, Session):
             return
 

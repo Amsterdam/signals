@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import copy
 import json
 import os
@@ -219,86 +219,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # JSONSchema validation
         data = response.json()
         self.assertJsonSchema(self.retrieve_signal_schema, data)
-
-    def test_history_action(self):
-        response = self.client.get(self.history_endpoint.format(pk=self.signal_no_image.id))
-        self.assertEqual(response.status_code, 200)
-
-        # SIA currently does 4 updates before Signal is fully in the system
-        self.assertEqual(len(response.json()), 6)
-
-        # JSONSchema validation
-        data = response.json()
-        self.assertJsonSchema(self.list_history_schema, data)
-
-    def test_history_action_filters(self):
-        base_url = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # TODO: elaborate filter testing in tests with interactions with API
-        for filter_value, n_results in [
-            ('UPDATE_STATUS', 1),
-            ('UPDATE_LOCATION', 1),
-            ('UPDATE_CATEGORY_ASSIGNMENT', 1),
-            ('UPDATE_PRIORITY', 1),
-        ]:
-            querystring = urlencode({'what': filter_value})
-            result = self.client.get(base_url + '?' + querystring)
-            self.assertEqual(len(result.json()), n_results)
-
-        # Filter by non-existing value, should get zero results
-        querystring = urlencode({'what': 'DOES_NOT_EXIST'})
-        result = self.client.get(base_url + '?' + querystring)
-        self.assertEqual(len(result.json()), 0)
-
-        # JSONSchema validation
-        data = result.json()
-        self.assertJsonSchema(self.list_history_schema, data)
-
-    def test_history_deelmeldingen(self):
-        parent = SignalFactory.create()
-        child_1 = SignalFactory.create(parent=parent)
-        child_2 = SignalFactory.create(parent=parent)
-
-        base_url = self.history_endpoint.format(pk=parent.id)
-        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
-        response = self.client.get(base_url + '?' + querystring)
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # SIA should show 2 entries for child signals created
-        self.assertEqual(len(data), 2)
-
-        self.assertEqual(data[0]['identifier'], f'CHILD_SIGNAL_CREATED_{child_2.id}')
-        self.assertEqual(data[0]['what'], 'CHILD_SIGNAL_CREATED')
-        self.assertEqual(data[0]['action'], 'Deelmelding toegevoegd')
-        self.assertEqual(data[0]['description'], f'Melding {child_2.id}')
-
-        self.assertEqual(data[1]['identifier'], f'CHILD_SIGNAL_CREATED_{child_1.id}')
-        self.assertEqual(data[1]['what'], 'CHILD_SIGNAL_CREATED')
-        self.assertEqual(data[1]['action'], 'Deelmelding toegevoegd')
-        self.assertEqual(data[1]['description'], f'Melding {child_1.id}')
-
-        # JSONSchema validation
-        self.assertJsonSchema(self.list_history_schema, data)
-
-    def test_history_splitmeldingen(self):
-        # While the split functionality is removed from SIA/Signalen there can
-        # stil be `signal.Signal` instances that were split, and still have to
-        # be handled or be shown in historical data.
-
-        parent = SignalFactory.create(status__state='s')
-        SignalFactory.create_batch(2, parent=parent)
-
-        base_url = self.history_endpoint.format(pk=parent.id)
-        querystring = urlencode({'what': 'CHILD_SIGNAL_CREATED'})
-        response = self.client.get(base_url + '?' + querystring)
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # SIA should not show 2 entries because the Signal was split instead of "opgedeeld"
-        self.assertEqual(len(data), 0)
 
     def test_history_no_permissions(self):
         """
@@ -703,12 +623,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_update_location(self, validate_address):
         # Partial update to update the location, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Location is in the history
-        querystring = urlencode({'what': 'UPDATE_LOCATION'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
@@ -721,20 +635,12 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
-        # check that there are two Locations is in the history
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
-
         self.signal_no_image.refresh_from_db()
         # Check that the correct user performed the action.
         self.assertEqual(
             self.signal_no_image.location.created_by,
             self.sia_read_write_user.email,
         )
-
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
 
     @override_settings(DEFAULT_SIGNAL_AREA_TYPE='district')
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address",
@@ -751,12 +657,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         # Partial update to update the location, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Location is in the history
-        querystring = urlencode({'what': 'UPDATE_LOCATION'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
@@ -770,10 +670,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # update location
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
-
-        # check that there are two Locations is in the history
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
 
         # Check that the area_name, area_code, and area_type_code fields are set correctly.
         response = self.client.get(detail_endpoint)
@@ -790,12 +686,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # SIA must also allow location updates without known address but with
         # known coordinates.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Location is in the history
-        querystring = urlencode({'what': 'UPDATE_LOCATION'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
@@ -808,10 +698,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertEqual(response.status_code, 200)
         validate_address.assert_not_called()
 
-        # check that there are two Locations is in the history
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
-
         self.signal_no_image.refresh_from_db()
         # Check that the correct user performed the action.
         self.assertEqual(
@@ -819,22 +705,12 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             self.sia_read_write_user.email,
         )
 
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
-
     @patch("signals.apps.api.validation.address.base.BaseAddressValidation.validate_address")
     def test_update_location_no_coordinates(self, validate_address):
         # Partial update to update the location, all interaction via API.
         # SIA must also allow location updates without known address but with
         # known coordinates.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Location is in the history
-        querystring = urlencode({'what': 'UPDATE_LOCATION'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
@@ -850,12 +726,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_update_status(self):
         # Partial update to update the status, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Status is in the history
-        querystring = urlencode({'what': 'UPDATE_STATUS'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_status.json')
@@ -865,11 +735,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
-        # check that there are two Statusses is in the history
-        self.signal_no_image.refresh_from_db()
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
-
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
@@ -877,43 +742,21 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             self.sia_read_write_user.email,
         )
 
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
-
     def test_update_status_signal_has_no_status(self):
         # A signal that has no status
         signal_no_status = SignalFactoryValidLocation.create(status=None)
 
         # Partial update to update the status, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
-        history_endpoint = '?'.join([
-            self.history_endpoint.format(pk=signal_no_status.id),
-            urlencode({'what': 'UPDATE_STATUS'})
-        ])
-
-        # check that there is no Status is in the history
-        response = self.client.get(history_endpoint)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
 
         # The only status that is allowed is "GEMELD" so let's set it
         data = {'status': {'text': 'Test status update', 'state': 'm'}}
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
-        # check that the Status is there
-        response = self.client.get(history_endpoint)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
-
         # check that the correct user is logged
         signal_no_status.refresh_from_db()
         self.assertEqual(signal_no_status.status.user, self.sia_read_write_user.email)
-
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_update_status_signal_has_no_status_invalid_new_state(self):
         # A signal that has no status
@@ -921,29 +764,11 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         # Partial update to update the status, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=signal_no_status.id)
-        history_endpoint = '?'.join([
-            self.history_endpoint.format(pk=signal_no_status.id),
-            urlencode({'what': 'UPDATE_STATUS'})
-        ])
-
-        # check that there is no Status is in the history
-        response = self.client.get(history_endpoint)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
 
         # The only status that is allowed is "GEMELD" so check with a diferrent state
         data = {'status': {'text': 'Test status update', 'state': 'b'}}
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(400, response.status_code)
-
-        # check that the Status is there
-        response = self.client.get(history_endpoint)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
-
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_update_status_target_api_SIG1140(self):
         self.client.force_authenticate(user=self.superuser)
@@ -994,12 +819,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_update_category_assignment(self):
         # Partial update to update the location, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one category assignment is in the history
-        querystring = urlencode({'what': 'UPDATE_CATEGORY_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_category_assignment.json')
@@ -1015,22 +834,12 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         # check that there are two category assignments in the history
         self.signal_no_image.refresh_from_db()
 
-        response = self.client.get(history_endpoint + '?' + querystring)
-        response_json = response.json()
-
-        self.assertEqual(len(response_json), 2)
-        self.assertEqual(response_json[0]['description'], data['category']['text'])
-
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
             self.signal_no_image.category_assignment.created_by,
             self.sia_read_write_user.email,
         )
-
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_update_category_assignment_same_category(self):
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
@@ -1058,12 +867,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_update_priority(self):
         # Partial update to update the priority, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Priority is in the history
-        querystring = urlencode({'what': 'UPDATE_PRIORITY'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_priority.json')
@@ -1075,8 +878,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         # check that there are two priorities is in the history
         self.signal_no_image.refresh_from_db()
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
 
         # check that the correct user is logged
         self.signal_no_image.refresh_from_db()
@@ -1084,10 +885,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             self.signal_no_image.priority.created_by,
             self.sia_read_write_user.email,
         )
-
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
 
     def test_create_note(self):
         # Partial update to update the status, all interaction via API.
@@ -1126,12 +923,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
     def test_update_type(self):
         # Partial update to update the type, all interaction via API.
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Type is in the history
-        querystring = urlencode({'what': 'UPDATE_TYPE_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_type.json')
@@ -1141,11 +932,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         response = self.client.patch(detail_endpoint, data, format='json')
         self.assertEqual(response.status_code, 200)
 
-        # check that there are two type assignments is in the history
-        self.signal_no_image.refresh_from_db()
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 2)
-
         # check that the correct type
         self.signal_no_image.refresh_from_db()
         self.assertEqual(
@@ -1153,19 +939,9 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
             'SIG'
         )
 
-        # JSONSchema validation
-        response_json = response.json()
-        self.assertJsonSchema(self.list_history_schema, response_json)
-
     def test_update_type_bad_data_400(self):
         # Partial update to update the type, bad input data
         detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-
-        # check that only one Type is in the history
-        querystring = urlencode({'what': 'UPDATE_TYPE_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 1)
 
         # retrieve relevant fixture
         fixture_file = os.path.join(THIS_DIR, 'request_data', 'update_type.json')
@@ -1371,67 +1147,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
 
         data = response.json()
         self.assertEqual(data['count'], 0)
-
-    def test_update_location_renders_correctly_in_history(self):
-        """Test that location updates have correct description field in history.
-
-        Valid addresses in SIA have:
-        - coordinates and address
-        - only cooordinates
-
-        Furthermore locations without stadsdeel property should render as well.
-        """
-        detail_endpoint = self.detail_endpoint.format(pk=self.signal_no_image.id)
-
-        # Prepare the data for the 3 types of Location updates
-        update_location_json = os.path.join(THIS_DIR, 'request_data', 'update_location.json')
-        with open(update_location_json, 'r') as f:
-            data_with_address = json.load(f)
-        data_no_address = copy.deepcopy(data_with_address)
-        data_no_address['location']['address'] = {}
-        data_no_address_no_stadsdeel = copy.deepcopy(data_no_address)
-        data_no_address_no_stadsdeel['location']['stadsdeel'] = None
-
-        history_endpoint = self.history_endpoint.format(pk=self.signal_no_image.id)
-        # Test full location (address and coordinates) case:
-        response = self.client.patch(detail_endpoint, data=data_with_address, format='json')
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
-        response_data = response.json()
-        self.assertEqual(len(response_data), 2)
-        self.assertEqual(
-            'Stadsdeel: Centrum\nDe Ruijterkade 36A\nAmsterdam',
-            response_data[0]['description']
-        )
-
-        # Test no address case:
-        response = self.client.patch(detail_endpoint, data=data_no_address, format='json')
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
-        response_data = response.json()
-        self.assertEqual(len(response_data), 3)
-        self.assertIn(
-            'Stadsdeel: Centrum',
-            response_data[0]['description']
-        )
-        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
-
-        # Test no address and no address
-        response = self.client.patch(
-            detail_endpoint, data=data_no_address_no_stadsdeel, format='json')
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_LOCATION')
-        response_data = response.json()
-        self.assertEqual(len(response_data), 4)
-        self.assertNotIn(
-            'Stadsdeel:',
-            response_data[0]['description']
-        )
-        self.assertIn('52', response_data[0]['description'])  # no string compares on floats
-        self.assertIn('Locatie is gepind op de kaart', response_data[0]['description'])
 
     @patch("signals.apps.api.serializers.PrivateSignalSerializerList.create")
     def test_post_django_validation_error_to_drf_validation_error(self, mock):
@@ -1791,11 +1506,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         data = {'directing_departments': [{'id': department.pk}, ]}
 
         detail_endpoint = self.detail_endpoint.format(pk=parent_signal.id)
-        history_endpoint = self.history_endpoint.format(pk=parent_signal.id)
-
-        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-        self.assertEqual(len(response.json()), 0)
 
         # update location
         response = self.client.patch(detail_endpoint, data, format='json')
@@ -1816,11 +1526,6 @@ class TestPrivateSignalViewSet(SIAReadUserMixin, SIAReadWriteUserMixin, SignalsB
         self.assertIsNotNone(parent_signal.directing_departments_assignment)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.count(), 1)
         self.assertEqual(parent_signal.directing_departments_assignment.departments.first().id, department.pk)
-
-        querystring = urlencode({'what': 'UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT'})
-        response = self.client.get(history_endpoint + '?' + querystring)
-
-        self.assertEqual(len(response.json()), 1)
 
     def test_deadlines_available_via_api_detail_endpoint(self):
         # self.signal has a category that has no ServiceLevelObjective associated
@@ -2871,8 +2576,7 @@ class TestSignalUserAssignmentHistory(SIAReadWriteUserMixin, SIAReadUserMixin, S
         self.department = DepartmentFactory.create()
         self.category = CategoryFactory.create()
 
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
-    def test_history_of_user_assignment_new_history_implementation(self):
+    def test_history_of_user_assignment_history_implementation(self):
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         history_endpoint = self.history_endpoint.format(pk=self.signal.id)
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -2939,66 +2643,6 @@ class TestSignalUserAssignmentHistory(SIAReadWriteUserMixin, SIAReadUserMixin, S
 
         self.assertEqual(SignalUser.objects.count(), signal_user_count + 3)
 
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
-    def test_history_of_user_assignment_old_history_implementation(self):
-        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal.id)
-        self.client.force_authenticate(user=self.sia_read_write_user)
-
-        signal_user_count = SignalUser.objects.count()
-
-        # set assigned user to a user
-        data = {'assigned_user_email': self.sia_read_write_user.email}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(response_json['assigned_user_email'], self.sia_read_write_user.email)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-
-        self.assertEqual(len(response_json), 1)  # one user assignment in history
-        self.assertEqual(
-            response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-
-        self.assertEqual(SignalUser.objects.count(), signal_user_count + 1)
-
-        # remove assigned user by setting it to None
-        data = {'assigned_user_email': None}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(response_json['assigned_user_email'], None)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(len(response_json), 2)  # two user assignments in history
-        self.assertEqual(response_json[0]['action'], 'Melding niet meer toegewezen aan behandelaar.')
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-
-        self.assertEqual(SignalUser.objects.count(), signal_user_count + 2)
-
-        # again set assigned user to a user
-        data = {'assigned_user_email': self.sia_read_write_user.email}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(response_json['assigned_user_email'], self.sia_read_write_user.email)
-
-        response = self.client.get(history_endpoint + '?what=UPDATE_USER_ASSIGNMENT')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(len(response_json), 3)  # three user assignments in history
-        self.assertEqual(
-            response_json[0]['action'], f'Melding toewijzing gewijzigd naar: {self.sia_read_write_user.email}')
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-
-        self.assertEqual(SignalUser.objects.count(), signal_user_count + 3)
-
 
 class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
@@ -3013,67 +2657,7 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
 
         self.client.force_authenticate(user=self.sia_read_write_user)
 
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
-    def test_history_of_routing_assignment_old_history_implementation(self):
-        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal.id)
-
-        # Check initial conditions
-        self.assertEqual(Log.objects.count(), 0)
-        self.assertEqual(self.signal.routing_assignment, None)
-        self.assertEqual(self.client.get(detail_endpoint).json()['routing_departments'], None)
-
-        # Set routing departments via REST API
-        data = {'routing_departments': [{'id': self.department.id}]}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check that routing department was set
-        self.signal.refresh_from_db()
-        self.assertEqual(set(self.signal.routing_assignment.departments.all()), set([self.department]))
-        response_json = response.json()
-        self.assertEqual(len(response_json['routing_departments']), 1)
-        self.assertEqual(response_json['routing_departments'][0]['id'], self.department.pk)
-
-        # Check that setting routing deparment is visible in history
-        self.assertEqual(Log.objects.count(), 0)
-        response = self.client.get(history_endpoint + '?what=UPDATE_ROUTING_ASSIGNMENT')
-        response_json = response.json()
-
-        # Check log entry contents
-        self.assertEqual(len(response_json), 1)
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(
-            response_json[0]['action'],
-            f'Routering: afdeling/afdelingen gewijzigd naar: {self.department.code}'
-        )
-        self.assertEqual(None, response_json[0]['description'])
-
-        # Reset routing departments to empty
-        data = {'routing_departments': []}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check that we have no routing department
-        self.signal.refresh_from_db()
-        self.assertEqual(set(self.signal.routing_assignment.departments.all()), set())
-        response_json = response.json()
-        self.assertEqual(response_json['routing_departments'], [])  # also accepts None
-
-        # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
-        self.assertEqual(Log.objects.count(), 0)
-        response = self.client.get(history_endpoint + '?what=UPDATE_ROUTING_ASSIGNMENT')
-        response_json = response.json()
-        self.assertEqual(len(response_json), 2)
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(
-            response_json[0]['action'],
-            'Routering: afdeling/afdelingen gewijzigd naar: Verantwoordelijke afdeling (routering)'
-        )
-        self.assertEqual(response_json[0]['description'], None)
-
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
-    def test_history_of_routing_assignment_new_history_implementation(self):
+    def test_history_of_routing_assignment_history_implementation(self):
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         history_endpoint = self.history_endpoint.format(pk=self.signal.id)
 
@@ -3133,70 +2717,7 @@ class TestDepartmentAssignment(SIAReadWriteUserMixin, SIAReadUserMixin, SignalsB
         )
         self.assertEqual(response_json[0]['description'], None)
 
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False})
-    def test_history_of_directing_departments_assignment_old_history_implementation(self):
-        detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
-        history_endpoint = self.history_endpoint.format(pk=self.signal.id)
-
-        # Directing departments can only be set for parent signals, hence
-        child_signal = SignalFactoryValidLocation.create()
-        child_signal.parent = self.signal
-        child_signal.save()
-
-        # Check initial conditions
-        self.assertEqual(Log.objects.count(), 0)  # Factories don't keep history in new set-up
-        self.assertEqual(self.signal.directing_departments_assignment, None)
-
-        self.assertEqual(Signal.objects.count(), 2)
-        response_json = self.client.get(detail_endpoint).json()
-        self.assertNotIn('directing_departments', response_json)
-
-        # Set routing departments via REST API
-        data = {'directing_departments': [{'id': self.department.pk}, ]}
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-
-        # Check that directing department was set
-        self.signal.refresh_from_db()
-        self.assertEqual(set(self.signal.directing_departments_assignment.departments.all()), set([self.department]))
-        response_json = response.json()
-        self.assertEqual(len(response_json['directing_departments']), 1)
-        self.assertEqual(response_json['directing_departments'][0]['id'], self.department.pk)
-
-        # Check that setting directing deparment is visible in history
-        self.assertEqual(Log.objects.count(), 0)
-        response = self.client.get(history_endpoint + '?what=UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT')
-        response_json = response.json()
-
-        # Check log entry contents
-        self.assertEqual(len(response_json), 1)
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-
-        self.assertEqual(f'Regie gewijzigd naar: {self.department.code}', response_json[0]['action'])
-        self.assertEqual(None, response_json[0]['description'])
-
-        # Reset directing departments to empty
-        data = {'directing_departments': []}  # does not accept None
-        response = self.client.patch(detail_endpoint, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check that we have no routing department
-        self.signal.refresh_from_db()
-        self.assertEqual(set(self.signal.directing_departments_assignment.departments.all()), set())
-        response_json = response.json()
-        self.assertEqual(response_json['directing_departments'], [])
-
-        # Demonstrate we get history entries when routing department is reset (UI does not allow this, but API does)
-        self.assertEqual(Log.objects.count(), 0)
-        response = self.client.get(history_endpoint + '?what=UPDATE_DIRECTING_DEPARTMENTS_ASSIGNMENT')
-        response_json = response.json()
-
-        self.assertEqual(len(response_json), 2)
-        self.assertEqual(response_json[0]['who'], self.sia_read_write_user.email)
-        self.assertEqual(response_json[0]['action'], 'Regie gewijzigd naar: Verantwoordelijke afdeling')
-        self.assertEqual(response_json[0]['description'], None)
-
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
-    def test_history_of_directing_departments_assignment_new_history_implementation(self):
+    def test_history_of_directing_departments_assignment_history_implementation(self):
         detail_endpoint = self.detail_endpoint.format(pk=self.signal.id)
         history_endpoint = self.history_endpoint.format(pk=self.signal.id)
 

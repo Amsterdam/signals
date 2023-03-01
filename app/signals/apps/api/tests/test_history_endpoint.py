@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam
 import os
 from datetime import timedelta
 
@@ -8,16 +8,16 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from signals.apps.feedback.factories import FeedbackFactory
-from signals.apps.feedback.models import Feedback
+from signals.apps.history.services import SignalLogService
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
     CategoryFactory,
+    ServiceLevelObjectiveFactory,
     SignalFactory,
     SignalFactoryValidLocation
 )
-from signals.apps.signals.models import Category, History, Signal
+from signals.apps.signals.models import Category, Signal
 from signals.apps.signals.models.category_assignment import CategoryAssignment
-from signals.apps.signals.models.history import EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE
 from signals.test.utils import SIAReadUserMixin, SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 THIS_DIR = os.path.dirname(__file__)
@@ -26,7 +26,9 @@ SIGNALS_TEST_DIR = os.path.join(os.path.split(THIS_DIR)[0], '..', 'signals')
 
 class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
-        self.signal = SignalFactory.create(user_assignment=None)
+        slo = ServiceLevelObjectiveFactory.create()
+        self.signal = SignalFactory.create(user_assignment=None, category_assignment__category=slo.category)
+        SignalLogService.log_create_initial(self.signal)
 
         self.list_history_schema = self.load_json_schema(
             os.path.join(
@@ -47,20 +49,6 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
         # JSONSchema validation
         data = response.json()
-        self.assertJsonSchema(self.list_history_schema, data)
-
-    def test_history_endpoint_rendering(self):
-        history_entries = History.objects.filter(_signal__id=self.signal.pk)
-
-        self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
-        self.client.force_authenticate(user=self.sia_read_write_user)
-        response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
-        self.assertEqual(len(data), history_entries.count())
-
-        # JSONSchema validation
         self.assertJsonSchema(self.list_history_schema, data)
 
     def test_history_entry_contents(self):
@@ -96,6 +84,7 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
             },
             self.signal
         )
+        SignalLogService.log_update_status(status)
 
         # ... check that the new status shows up as most recent entry in history.
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
@@ -154,10 +143,11 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         # Let's assign categories to the signal with an interval of 1 hour
         for category in categories:
             with freeze_time(now + timedelta(hours=hours)):
-                Signal.actions.update_category_assignment(
+                category_assignment = Signal.actions.update_category_assignment(
                     {'category': category, 'text': 'DIT IS EEN TEST'}, self.signal
                 )
                 hours += 1
+                SignalLogService.log_update_category_assignment(category_assignment)
         self.signal.refresh_from_db()
 
         # Get a baseline for the Signal history
@@ -193,8 +183,12 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         message_2 = 'MESSAGE 2'
 
         cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
+        ServiceLevelObjectiveFactory.create(category=cat1)
         cat2 = CategoryFactory.create(name='cat2')
+        ServiceLevelObjectiveFactory.create(category=cat2)
+
         signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+        SignalLogService.log_create_initial(signal)
 
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -235,7 +229,10 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         message_1 = None
 
         cat1 = CategoryFactory.create(name='cat1', handling_message=message_1)
+        ServiceLevelObjectiveFactory.create(category=cat1)
+
         signal = SignalFactoryValidLocation(category_assignment__category=cat1)
+        SignalLogService.log_create_initial(signal)
 
         self.sia_read_write_user.user_permissions.add(Permission.objects.get(codename='sia_can_view_all_categories'))
         self.client.force_authenticate(user=self.sia_read_write_user)
@@ -243,12 +240,12 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.get(f'/signals/v1/private/signals/{signal.id}/history' + '?what=UPDATE_SLA')
         self.assertEqual(response.status_code, 200)
         response_json = response.json()
-        self.assertEqual(response_json[0]['description'], EMPTY_HANDLING_MESSAGE_PLACEHOLDER_MESSAGE)
+        self.assertEqual(response_json[0]['description'], 'Servicebelofte onbekend')
 
     def test_history_no_permissions(self):
         """
         The sia_read_user does not have a link with any department and also is not configured with the permission
-        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        "sia_can_view_all_categories". Therefore, it should not be able to see a Signal, and it's history.
         """
         self.client.force_authenticate(user=self.sia_read_write_user)
         response = self.client.get(f'/signals/v1/private/signals/{self.signal.id}/history')
@@ -257,22 +254,12 @@ class TestHistoryAction(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
 class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def setUp(self):
-        self.signal = SignalFactoryValidLocation(user_assignment=None)
-        self.feedback = FeedbackFactory(
-            _signal=self.signal,
-            is_satisfied=None,
-        )
+        slo = ServiceLevelObjectiveFactory.create()
+        self.signal = SignalFactoryValidLocation(user_assignment=None, category_assignment__category=slo.category)
+        SignalLogService.log_create_initial(self.signal)
 
         self.feedback_endpoint = '/signals/v1/public/feedback/forms/{token}'
         self.history_endpoint = '/signals/v1/private/signals/{id}/history'
-
-    def test_setup(self):
-        self.assertEqual(Signal.objects.count(), 1)
-        self.assertEqual(Feedback.objects.count(), 1)
-
-        self.assertEqual(Feedback.objects.count(), 1)
-        self.assertEqual(self.feedback.is_satisfied, None)
-        self.assertEqual(self.feedback.submitted_at, None)
 
     def test_submit_feedback_check_history(self):
         # get a user privileged to read from API
@@ -288,9 +275,11 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         response_data = response.json()
         self.assertEqual(len(response_data), 6)
 
+        feedback = FeedbackFactory(_signal=self.signal, is_satisfied=None)
+
         # Note the unhappy flow regarding feedback is tested in the feedback
         # app. Here we only check that it shows up in the history.
-        url = self.feedback_endpoint.format(token=self.feedback.token)
+        url = self.feedback_endpoint.format(token=feedback.token)
         payload = {
             'is_satisfied': True,
             'allows_contact': False,
@@ -302,9 +291,9 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         self.assertEqual(response.status_code, 200)
 
         # check that feedback object in db is updated
-        self.feedback.refresh_from_db()
-        self.assertEqual(self.feedback.is_satisfied, True)
-        self.assertNotEqual(self.feedback.submitted_at, None)
+        feedback.refresh_from_db()
+        self.assertEqual(feedback.is_satisfied, True)
+        self.assertNotEqual(feedback.submitted_at, None)
 
         # check that filtering by RECEIVE_FEEDBACK works
         response = self.client.get(history_url + '?what=RECEIVE_FEEDBACK')
@@ -318,13 +307,16 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
         text = 'TEXT'
         text_extra = 'TEXT_EXTRA'
 
-        self.feedback.is_satisfied = True
-        self.feedback.allows_contact = False
-        self.feedback.text = text
-        self.feedback.text_list = None
-        self.feedback.text_extra = text_extra
-        self.feedback.submitted_at = self.feedback.created_at + timedelta(days=1)
-        self.feedback.save()
+        feedback = FeedbackFactory(
+            _signal=self.signal,
+            is_satisfied=True,
+            allows_contact=False,
+            text=text,
+            text_extra=text_extra,
+            text_list=None,
+            submitted_at=timezone.now() + timedelta(days=1)
+        )
+        SignalLogService.log_receive_feedback(feedback)
 
         # check the rendering
         read_user = self.sia_read_user
@@ -347,7 +339,7 @@ class TestHistoryForFeedback(SignalsBaseApiTestCase, SIAReadUserMixin):
     def test_history_no_permissions(self):
         """
         The sia_read_user does not have a link with any department and also is not configured with the permission
-        "sia_can_view_all_categories". Therefore it should not be able to see a Signal and it's history.
+        "sia_can_view_all_categories". Therefore, it should not be able to see a Signal, and it's history.
         """
         self.client.force_authenticate(user=self.sia_read_user)
         response = self.client.get(self.history_endpoint.format(id=self.signal.id) + '?what=RECEIVE_FEEDBACK')

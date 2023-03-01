@@ -1,10 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
-import copy
-from io import StringIO
-
-from django.conf import settings
-from django.core.management import call_command
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.test import override_settings
 from django.urls import include, path
 from django.utils import timezone
@@ -13,6 +8,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_404_N
 from rest_framework.test import APITestCase
 
 from signals.apps.api.views import NamespaceView
+from signals.apps.history.services import SignalLogService
 from signals.apps.my_signals.models import Token
 from signals.apps.signals import workflow
 from signals.apps.signals.factories import (
@@ -21,6 +17,7 @@ from signals.apps.signals.factories import (
     NoteFactory,
     PriorityFactory,
     ReporterFactory,
+    ServiceLevelObjectiveFactory,
     SignalFactoryWithImage,
     StatusFactory,
     TypeFactory
@@ -46,9 +43,6 @@ class TestMySignalsHistoryEndpoint(APITestCase):
     endpoint = '/my/signals'
 
     def setUp(self):
-        self.feature_flags = copy.deepcopy(settings.FEATURE_FLAGS)
-        self.feature_flags.update({'SIGNAL_HISTORY_LOG_ENABLED': True})
-
         token = Token.objects.create(reporter_email='my-signals-test-reporter@example.com')
         self.request_headers = {'HTTP_AUTHORIZATION': f'Token {token.key}'}
 
@@ -64,7 +58,8 @@ class TestMySignalsHistoryEndpoint(APITestCase):
             location = LocationFactory.create(_signal=signal)
 
         with freeze_time(now - timezone.timedelta(minutes=4)):
-            category_assignment = CategoryAssignmentFactory.create(_signal=signal)
+            slo = ServiceLevelObjectiveFactory.create()
+            category_assignment = CategoryAssignmentFactory.create(_signal=signal, category=slo.category)
 
         with freeze_time(now - timezone.timedelta(minutes=3)):
             reporter = ReporterFactory.create(email='my-signals-test-reporter@example.com')
@@ -84,8 +79,7 @@ class TestMySignalsHistoryEndpoint(APITestCase):
 
         signal.save()
 
-        # A bit hacky but this makes sure the history is present
-        call_command('migrate_signals_history', stdout=StringIO())
+        SignalLogService.log_create_initial(signal)
 
         return signal
 
@@ -101,15 +95,21 @@ class TestMySignalsHistoryEndpoint(APITestCase):
             signal.status = status
             signal.save()
 
+            SignalLogService.log_update_status(status)
+
         with freeze_time(now - timezone.timedelta(minutes=105)):
             status = StatusFactory(state=workflow.REACTIE_GEVRAAGD, text='Weet u meer?', _signal=signal)
             signal.status = status
             signal.save()
 
+            SignalLogService.log_update_status(status)
+
         with freeze_time(now - timezone.timedelta(minutes=60)):
             status = StatusFactory(state=workflow.REACTIE_ONTVANGEN, text='Ik heb alles gemeld', _signal=signal)
             signal.status = status
             signal.save()
+
+            SignalLogService.log_update_status(status)
 
         with freeze_time(now - timezone.timedelta(minutes=50)):
             category_assignment = CategoryAssignmentFactory(_signal=signal)
@@ -121,26 +121,37 @@ class TestMySignalsHistoryEndpoint(APITestCase):
             signal.status = status
             signal.save()
 
+            SignalLogService.log_update_priority(priority)
+            SignalLogService.log_update_status(status)
+
         with freeze_time(now - timezone.timedelta(minutes=45)):
             priority = PriorityFactory(priority='normal', _signal=signal)
             NoteFactory(text='Prio weer naar normaal', _signal=signal)
             signal.priority = priority
             signal.save()
 
+            SignalLogService.log_update_priority(priority)
+
         with freeze_time(now - timezone.timedelta(minutes=30)):
             status = StatusFactory(state=workflow.AFGEHANDELD, text=None, _signal=signal)
             signal.status = status
             signal.save()
+
+            SignalLogService.log_update_status(status)
 
         with freeze_time(now - timezone.timedelta(minutes=20)):
             status = StatusFactory(state=workflow.HEROPEND, text='Melding nog niet AFGEHANDELD', _signal=signal)
             signal.status = status
             signal.save()
 
+            SignalLogService.log_update_status(status)
+
         with freeze_time(now - timezone.timedelta(minutes=15)):
             status = StatusFactory(state=workflow.REACTIE_GEVRAAGD, text='Toch nog 1 vraag, ok?', _signal=signal)
             signal.status = status
             signal.save()
+
+            SignalLogService.log_update_status(status)
 
         with freeze_time(now - timezone.timedelta(minutes=5)):
             status = StatusFactory(state=workflow.AFGEHANDELD, text='Melder heeft gebeld, medling AFGEHANDELD',
@@ -148,8 +159,7 @@ class TestMySignalsHistoryEndpoint(APITestCase):
             signal.status = status
             signal.save()
 
-        # A bit hacky but this makes sure the history is present
-        call_command('migrate_signals_history', stdout=StringIO())
+            SignalLogService.log_update_status(status)
 
         return signal
 

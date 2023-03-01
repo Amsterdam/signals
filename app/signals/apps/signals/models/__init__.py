@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2022 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from signals.apps.signals.models.area import Area, AreaType
 from signals.apps.signals.models.attachment import Attachment
 from signals.apps.signals.models.buurt import Buurt
@@ -10,7 +10,6 @@ from signals.apps.signals.models.category_question import CategoryQuestion
 from signals.apps.signals.models.deleted_signal import DeletedSignal
 from signals.apps.signals.models.department import Department
 from signals.apps.signals.models.expression import Expression, ExpressionContext, ExpressionType
-from signals.apps.signals.models.history import History
 from signals.apps.signals.models.location import (
     STADSDEEL_AMSTERDAMSE_BOS,
     STADSDEEL_CENTRUM,
@@ -57,7 +56,6 @@ __all__ = [
     'Expression',
     'SignalDepartments',
     'SignalUser',
-    'History',
     'STADSDEEL_AMSTERDAMSE_BOS',
     'STADSDEEL_CENTRUM',
     'STADSDEEL_NIEUWWEST',

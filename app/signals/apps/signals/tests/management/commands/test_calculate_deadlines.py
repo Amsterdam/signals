@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2021 Gemeente Amsterdam
+# Copyright (C) 2020 - 2023 Gemeente Amsterdam
 import datetime
 from io import StringIO
 
@@ -13,14 +13,13 @@ from signals.apps.signals.factories import (
     ServiceLevelObjectiveFactory,
     SignalFactory
 )
-from signals.apps.signals.management.commands.calculate_deadlines import HISTORY_MESSAGE, Command
+from signals.apps.signals.management.commands.calculate_deadlines import Command
 from signals.apps.signals.models import Signal
 from signals.test.utils import SuperUserMixin
 
 
 class TestCalculateDeadlines(APITestCase, SuperUserMixin):
     NOW = datetime.datetime(2021, 3, 22, 12, 0, 0)  # A monday
-    history_endpoint = '/signals/v1/private/signals/{pk}/history'
 
     def setUp(self):
         # We use a category without no deadlines to create signals/complaints that
@@ -83,33 +82,3 @@ class TestCalculateDeadlines(APITestCase, SuperUserMixin):
         self.assertEqual(no_deadlines.count(), 1)
         self.assertEqual(no_deadlines[0].id, self.signal_late_closed.id)
         self.assertEqual(no_deadlines[0].status.state, workflow.AFGEHANDELD)
-
-    def test__history_message(self):
-        """
-        Test that the history of the updated complaint contains the correct message.
-        """
-        self.assertEqual(Signal.objects.count(), 4)
-        no_deadlines = Signal.objects.filter(category_assignment__deadline__isnull=True)
-        self.assertEqual(no_deadlines.count(), 2)
-
-        # find the signal/complaint ID that should be updated
-        signal_id = self.signal_late_open.id
-
-        buffer = StringIO()
-        call_command('calculate_deadlines', stdout=buffer)
-
-        # all open complaints should now have a deadline, the closed one should not
-        no_deadlines = Signal.objects.filter(category_assignment__deadline__isnull=True)
-        self.assertEqual(no_deadlines.count(), 1)
-
-        # check that the updated signal/complaint has to category assignments in
-        # its history and that the most recent one contains the correct message
-        self.client.force_authenticate(user=self.superuser)
-        url = self.history_endpoint.format(pk=signal_id)
-        data = {'what': 'UPDATE_CATEGORY_ASSIGNMENT'}
-
-        response = self.client.get(url, data=data)
-        self.assertEqual(response.status_code, 200)
-        response_json = response.json()
-        self.assertEqual(len(response_json), 2)
-        self.assertEqual(response_json[0]['description'], HISTORY_MESSAGE)
