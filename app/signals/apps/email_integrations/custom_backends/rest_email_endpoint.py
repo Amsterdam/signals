@@ -5,6 +5,7 @@ import threading
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
+
 from djcelery_email.utils import email_to_dict
 from requests import RequestException, Session
 
@@ -15,9 +16,14 @@ class RestEmailBackend(BaseEmailBackend):
         self.init_kwargs = kwargs
         self.session = None
         self._lock = threading.RLock()
+
         self.cert = None
-        if hasattr(settings, 'EMAIL_REST_ENDPOINT_CLIENT_CERT') and hasattr(settings, 'EMAIL_REST_ENDPOINT_CLIENT_KEY'): # noqa
+        if settings.EMAIL_REST_ENDPOINT_CLIENT_CERT and settings.EMAIL_REST_ENDPOINT_CLIENT_KEY:
             self.cert = (settings.EMAIL_REST_ENDPOINT_CLIENT_CERT, settings.EMAIL_REST_ENDPOINT_CLIENT_KEY)
+
+        self.verify = True
+        if settings.EMAIL_REST_ENDPOINT_CA_BUNDLE:
+            self.verify = settings.EMAIL_REST_ENDPOINT_CA_BUNDLE
 
     def _send_email_rest_api(self, message_attributes):
         try:
@@ -25,8 +31,7 @@ class RestEmailBackend(BaseEmailBackend):
                 url=settings.EMAIL_REST_ENDPOINT,
                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'},
                 data=json.dumps(message_attributes),
-                timeout=settings.EMAIL_REST_ENDPOINT_TIMEOUT,
-                verify=False
+                timeout=settings.EMAIL_REST_ENDPOINT_TIMEOUT
             )
             response.raise_for_status()
         except RequestException as e:
@@ -42,6 +47,7 @@ class RestEmailBackend(BaseEmailBackend):
 
         self.session = Session()
         self.session.cert = self.cert
+        self.session.verify = self.verify
         return True
 
     def close(self):
