@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2018 - 2021 Gemeente Amsterdam
+import cProfile
+from typing import Callable
+
+from django.http import HttpRequest, HttpResponse
+
 from signals import VERSION
 from signals.utils.version import get_version
 
@@ -21,4 +26,23 @@ class APIVersionHeaderMiddleware:
 
         response = self.get_response(request)
         response['X-API-Version'] = get_version(VERSION)
+        return response
+
+
+class ProfilerMiddleware:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]):
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        profiler = None
+        if '__prof__' in request.GET:
+            profiler = cProfile.Profile()
+            profiler.enable()
+
+        response = self.get_response(request)
+
+        if profiler is not None:
+            profiler.disable()
+            profiler.dump_stats('/tmp/profile.pstat')
+
         return response

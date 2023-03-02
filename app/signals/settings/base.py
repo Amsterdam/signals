@@ -100,6 +100,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
+if os.getenv('PROFILER_ENABLED') in TRUE_VALUES:
+    MIDDLEWARE.append('signals.apps.api.middleware.ProfilerMiddleware')
 
 OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
 OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
