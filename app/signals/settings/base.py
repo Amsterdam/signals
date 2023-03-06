@@ -103,12 +103,23 @@ MIDDLEWARE = [
 if os.getenv('PROFILER_ENABLED') in TRUE_VALUES:
     MIDDLEWARE.append('signals.apps.api.middleware.ProfilerMiddleware')
 
+
+# Setup django-silk
+def is_super_user(user):
+    return user.is_superuser
+
+
 SILK_ENABLED = os.getenv('SILK_ENABLED') in TRUE_VALUES
 if SILK_ENABLED:
     INSTALLED_APPS.append('silk')
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
     if os.getenv('SILK_PROFILING_ENABLED') in TRUE_VALUES:
         SILKY_PYTHON_PROFILER = True
+    # If SILK_AUTHENTICATION_ENABLED is enabled you need to log in to Django admin first as a superuser
+    if os.getenv('SILK_AUTHENTICATION_ENABLED') in TRUE_VALUES:
+        SILKY_AUTHENTICATION = True
+        SILKY_AUTHORISATION = True
+        SILKY_PERMISSIONS = is_super_user
 
 OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
 OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
