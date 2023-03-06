@@ -52,7 +52,6 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'location',
         'status',
         'category_assignment',
-        'category_assignment__category__parent',
         'reporter',
         'priority',
         'parent',
