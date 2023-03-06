@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.11
 
 ##################################################
 #                   Python                       #
@@ -38,6 +38,7 @@ RUN set -eux;  \
         libmagic1 \
         libcairo2 \
         libpango1.0-0 \
+        libpq-dev \
         gcc \
         graphviz \
     ; \
