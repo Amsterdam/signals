@@ -107,6 +107,8 @@ SILK_ENABLED = os.getenv('SILK_ENABLED') in TRUE_VALUES
 if SILK_ENABLED:
     INSTALLED_APPS.append('silk')
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
+    if os.getenv('SILK_PROFILING_ENABLED') in TRUE_VALUES:
+        SILKY_PYTHON_PROFILER = True
 
 OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
 OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
