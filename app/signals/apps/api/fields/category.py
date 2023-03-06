@@ -45,7 +45,7 @@ class CategoryHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 
 class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     view_name = 'public-subcategory-detail'
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().select_related('parent')
     parent_lookup_prefix = extensions_api_settings.DEFAULT_PARENT_LOOKUP_KWARG_NAME_PREFIX
 
     def get_object(self, view_name, view_args, view_kwargs):
@@ -57,6 +57,7 @@ class CategoryHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
     def get_url(self, obj, view_name, request, format):
         # We want a Category instance, DRF can also return a PKOnlyObject when use_pk_only_optimization is enabled
         category = obj if isinstance(obj, Category) else self.get_queryset().get(pk=obj.pk)
+
         return category_public_url(category, request=request, format=format)
 
     def to_internal_value(self, data):
