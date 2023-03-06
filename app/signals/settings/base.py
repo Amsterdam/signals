@@ -113,8 +113,10 @@ SILK_ENABLED = os.getenv('SILK_ENABLED') in TRUE_VALUES
 if SILK_ENABLED:
     INSTALLED_APPS.append('silk')
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
+    SILKY_META = True
     if os.getenv('SILK_PROFILING_ENABLED') in TRUE_VALUES:
         SILKY_PYTHON_PROFILER = True
+        SILKY_PYTHON_PROFILER_BINARY = True
     # If SILK_AUTHENTICATION_ENABLED is enabled you need to log in to Django admin first as a superuser
     if os.getenv('SILK_AUTHENTICATION_ENABLED') in TRUE_VALUES:
         SILKY_AUTHENTICATION = True
