@@ -103,6 +103,10 @@ MIDDLEWARE = [
 if os.getenv('PROFILER_ENABLED') in TRUE_VALUES:
     MIDDLEWARE.append('signals.apps.api.middleware.ProfilerMiddleware')
 
+if os.getenv('SILK_ENABLED') in TRUE_VALUES:
+    INSTALLED_APPS.append('silk')
+    MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
+
 OIDC_RP_CLIENT_ID = os.getenv('OIDC_RP_CLIENT_ID')
 OIDC_RP_CLIENT_SECRET = os.getenv('OIDC_RP_CLIENT_SECRET')
 OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv('OIDC_OP_AUTHORIZATION_ENDPOINT')
