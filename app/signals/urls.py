@@ -38,3 +38,6 @@ if settings.OIDC_RP_CLIENT_ID:
         path('signals/oidc/login_failure/', admin_oidc_views.login_failure),
         path('signals/oidc/', include('mozilla_django_oidc.urls')),
     ]
+
+if settings.SILK_ENABLED:
+    urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]

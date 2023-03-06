@@ -103,7 +103,8 @@ MIDDLEWARE = [
 if os.getenv('PROFILER_ENABLED') in TRUE_VALUES:
     MIDDLEWARE.append('signals.apps.api.middleware.ProfilerMiddleware')
 
-if os.getenv('SILK_ENABLED') in TRUE_VALUES:
+SILK_ENABLED = os.getenv('SILK_ENABLED') in TRUE_VALUES
+if SILK_ENABLED:
     INSTALLED_APPS.append('silk')
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
 
