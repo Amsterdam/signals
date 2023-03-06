@@ -10,6 +10,7 @@ django-extensions
 django-filter
 django-rest-swagger
 django-storages
+django-silk
 
 # Database
 psycopg2-binary
