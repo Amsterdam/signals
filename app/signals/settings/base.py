@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'rest_framework_gis',
     'storages',
     'mozilla_django_oidc',
+    'silk',
 ] + SIGNAL_APPS
 
 MIDDLEWARE = [
@@ -109,7 +110,6 @@ def is_super_user(user):
 
 SILK_ENABLED = os.getenv('SILK_ENABLED') in TRUE_VALUES
 if SILK_ENABLED:
-    INSTALLED_APPS.append('silk')
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
     SILKY_META = True
     if os.getenv('SILK_PROFILING_ENABLED') in TRUE_VALUES:
