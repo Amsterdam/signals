@@ -27,8 +27,8 @@ from signals.apps.api.serializers.nested import (
     _NestedNoteModelSerializer,
     _NestedPriorityModelSerializer,
     _NestedPublicStatusModelSerializer,
-    _NestedReporterModelSerializer,
     _NestedReporterModelListSerializer,
+    _NestedReporterModelSerializer,
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer
 )

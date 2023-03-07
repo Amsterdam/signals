@@ -14,8 +14,8 @@ from signals.apps.api.serializers.nested.location import _NestedLocationModelSer
 from signals.apps.api.serializers.nested.note import _NestedNoteModelSerializer
 from signals.apps.api.serializers.nested.priority import _NestedPriorityModelSerializer
 from signals.apps.api.serializers.nested.reporter import (
-    _NestedReporterModelSerializer,
-    _NestedReporterModelListSerializer
+    _NestedReporterModelListSerializer,
+    _NestedReporterModelSerializer
 )
 from signals.apps.api.serializers.nested.status import (
     _NestedPublicStatusModelSerializer,
