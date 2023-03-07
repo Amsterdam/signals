@@ -6,7 +6,6 @@ from unittest import mock
 
 import pytest
 import pytz
-from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.contrib.gis.geos import Point
 from django.test import TestCase, override_settings
@@ -45,11 +44,17 @@ class TestPDFSummaryService(TestCase):
             reporter__email='foo@bar.com',
             reporter__phone='0612345678',
             location__geometrie=Point(4.9000607, 52.3675707))  # location of city hall / Stopera
-        StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, text='waiting')
-        StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, text='please hold')
-        status = StatusFactory.create(_signal=self.signal,
-                                      state=workflow.AFGEHANDELD,
-                                      text='Consider it done')
+        SignalLogService.log_create_initial(self.signal)
+
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFWACHTING, text='waiting')
+        SignalLogService.log_update_status(status)
+
+        status = StatusFactory.create(_signal=self.signal, state=workflow.ON_HOLD, text='please hold')
+        SignalLogService.log_update_status(status)
+
+        status = StatusFactory.create(_signal=self.signal, state=workflow.AFGEHANDELD, text='Consider it done')
+        SignalLogService.log_update_status(status)
+
         self.signal.status = status
         self.signal.save()
 
@@ -62,9 +67,9 @@ class TestPDFSummaryService(TestCase):
         current_tz = timezone.get_current_timezone()
         self.assertIn(self.signal.get_id_display(), html)
         self.assertIn(self.signal.created_at.astimezone(current_tz).strftime('%d-%m-%Y'), html)
-        self.assertIn(self.signal.created_at.astimezone(current_tz).strftime('%H:%M:%S'), html)
+        self.assertIn(self.signal.created_at.astimezone(current_tz).strftime('%H:%M'), html)
         self.assertIn(self.signal.incident_date_start.astimezone(current_tz).strftime('%d-%m-%Y'), html)
-        self.assertIn(self.signal.incident_date_start.astimezone(current_tz).strftime('%H:%M:%S'), html)
+        self.assertIn(self.signal.incident_date_start.astimezone(current_tz).strftime('%H:%M'), html)
         self.assertIn(self.signal.get_id_display(), html)
         self.assertIn(self.signal.category_assignment.category.parent.name, html)
         self.assertIn(self.signal.category_assignment.category.name, html)
@@ -285,7 +290,7 @@ class TestPDFSummaryService(TestCase):
         data = PDFSummaryService._get_logo_data_from_static_file('this/file/does/not/exist/anywhere')
         self.assertEqual(data, '')
 
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True}, TIME_ZONE='UTC')
+    @override_settings(TIME_ZONE='UTC')
     def test_pdf_has_history_i(self):
         test_time = datetime.datetime(2022, 1, 1, 12, 0, 0, 0, tzinfo=pytz.UTC)
         with freeze_time(test_time):
@@ -295,41 +300,6 @@ class TestPDFSummaryService(TestCase):
             self.signal.save()
             SignalLogService.log_update_status(new_status)
 
-        self.signal.refresh_from_db()
-        date_string = test_time.strftime('%d-%m-%Y')
-        time_string = test_time.strftime('%H:%M:%S')
-
-        html = PDFSummaryService._get_html(self.signal, None, False)
-        self.assertIn('SHOULD BE IN HISTORY', html)
-        self.assertIn(date_string, html)
-        self.assertIn(time_string, html)
-
-        html = PDFSummaryService._get_html(self.signal, None, True)
-        self.assertIn('SHOULD BE IN HISTORY', html)
-        self.assertIn(date_string, html)
-        self.assertIn(time_string, html)
-
-        html = PDFSummaryService._get_html(self.signal, self.user, False)
-        self.assertIn('SHOULD BE IN HISTORY', html)
-        self.assertIn(date_string, html)
-        self.assertIn(time_string, html)
-
-        html = PDFSummaryService._get_html(self.signal, self.user, True)
-        self.assertIn('SHOULD BE IN HISTORY', html)
-        self.assertIn(date_string, html)
-        self.assertIn(time_string, html)
-
-    @override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': False}, TIME_ZONE='UTC')
-    def test_pdf_has_history_ii(self):
-        self.assertEqual(settings.FEATURE_FLAGS['SIGNAL_HISTORY_LOG_ENABLED'], False)
-        self.assertEqual(settings.TIME_ZONE, 'UTC')
-
-        test_time = datetime.datetime(2022, 1, 1, 12, 0, 0, 0, tzinfo=pytz.UTC)
-        with freeze_time(test_time):
-            new_status = StatusFactory.create(
-                _signal=self.signal, state=workflow.AFWACHTING, text='SHOULD BE IN HISTORY')
-            self.signal.status = new_status
-            self.signal.save()
         self.signal.refresh_from_db()
         date_string = test_time.strftime('%d-%m-%Y')
         time_string = test_time.strftime('%H:%M:%S')

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2022 Gemeente Amsterdam
+# Copyright (C) 2022 - 2023 Gemeente Amsterdam
 from django.db.models.signals import post_save
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from factory.django import mute_signals
 
 from signals.apps.history.models import Log
@@ -19,7 +19,6 @@ from signals.apps.signals.managers import (
 )
 
 
-@override_settings(FEATURE_FLAGS={'SIGNAL_HISTORY_LOG_ENABLED': True})
 class TestBugSIG4789(TestCase):
     """
     When creating a child signal the parent signal has a log item that states that a signal with id was created for

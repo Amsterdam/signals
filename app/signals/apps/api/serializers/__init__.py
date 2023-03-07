@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2019 - 2021 Gemeente Amsterdam
+# Copyright (C) 2019 - 2023 Gemeente Amsterdam
 from signals.apps.api.serializers.attachment import (
     PrivateSignalAttachmentSerializer,
     PublicSignalAttachmentSerializer
@@ -28,7 +28,6 @@ from signals.apps.api.serializers.signal_context import (
     SignalContextReporterSerializer,
     SignalContextSerializer
 )
-from signals.apps.api.serializers.signal_history import HistoryHalSerializer
 from signals.apps.api.serializers.status_message_template import (
     StateStatusMessageTemplateListSerializer,
     StateStatusMessageTemplateSerializer
@@ -39,7 +38,6 @@ __all__ = [
     'AbridgedChildSignalSerializer',
     'CategoryHALSerializer',
     'ExpressionContextSerializer',
-    'HistoryHalSerializer',
     'ParentCategoryHALSerializer',
     'PrivateCategorySerializer',
     'PrivateDepartmentSerializerDetail',
