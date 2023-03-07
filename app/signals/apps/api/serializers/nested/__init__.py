@@ -13,7 +13,10 @@ from signals.apps.api.serializers.nested.department import (
 from signals.apps.api.serializers.nested.location import _NestedLocationModelSerializer
 from signals.apps.api.serializers.nested.note import _NestedNoteModelSerializer
 from signals.apps.api.serializers.nested.priority import _NestedPriorityModelSerializer
-from signals.apps.api.serializers.nested.reporter import _NestedReporterModelSerializer
+from signals.apps.api.serializers.nested.reporter import (
+    _NestedReporterModelSerializer,
+    _NestedReporterModelListSerializer
+)
 from signals.apps.api.serializers.nested.status import (
     _NestedPublicStatusModelSerializer,
     _NestedStatusModelSerializer
@@ -26,6 +29,7 @@ __all__ = (
     '_NestedPublicStatusModelSerializer',
     '_NestedCategoryModelSerializer',
     '_NestedReporterModelSerializer',
+    '_NestedReporterModelListSerializer',
     '_NestedPriorityModelSerializer',
     '_NestedNoteModelSerializer',
     '_NestedAttachmentModelSerializer',
