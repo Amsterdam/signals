@@ -5,7 +5,7 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import CharField, Q, Value
+from django.db.models import CharField, Q, Value, OuterRef, Subquery
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -36,6 +36,7 @@ from signals.apps.api.serializers.email_preview import (
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.serializers.stats import PastWeekSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
+from signals.apps.feedback.models import Feedback
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf import PDFSummaryService
 from signals.apps.signals.models import Signal
@@ -48,6 +49,11 @@ logger = logging.getLogger(__name__)
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
     """Viewset for `Signal` objects in private API"""
+    feedback = Feedback.objects.filter(
+        _signal=OuterRef('pk'),
+        submitted_at__isnull=False
+    ).order_by('-submitted_at')
+
     queryset = Signal.objects.select_related(
         'location',
         'status',
@@ -68,7 +74,8 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             'category_assignment__category__departments__code',
             delimiter=', ',
             filter=Q(category_assignment__category__categorydepartment__is_responsible=True)
-        )
+        ),
+        reporter__allows_contact=Subquery(feedback.values('allows_contact')[:1])
     )
 
     # Geography queryset to reduce the complexity of the query
