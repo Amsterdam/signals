@@ -6,7 +6,8 @@
 
 ### Want to add a new feature?
 
-* See [signalen.org](https://signalen.org/en/using-signalen) for how to help with development or propose new features.
+* See our [local development guide](./development/local.md)
+* See [signalen.org](https://signalen.org/) for how to help with development or propose new features.
 
 #### **Did you find a bug?**
 
