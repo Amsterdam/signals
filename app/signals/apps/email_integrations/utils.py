@@ -160,6 +160,7 @@ def make_email_context(signal: Signal, additional_context: Optional[dict] = None
         'main_category_public_name': parent_public_name,
         'sub_category_public_name': category.public_name if category.public_name else category.name,
         'source': signal.source,
+        'incident_date_start': signal.incident_date_start,
     }
 
     if 'MY_SIGNALS_ENABLED' in settings.FEATURE_FLAGS and settings.FEATURE_FLAGS['MY_SIGNALS_ENABLED']:
