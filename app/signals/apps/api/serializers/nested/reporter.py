@@ -8,7 +8,7 @@ from signals.apps.signals.models import Reporter
 
 class _NestedReporterModelSerializer(SIAModelSerializer):
 
-    allows_contact = serializers.BooleanField(source='_signal.allows_contact', read_only=True)
+    allows_contact = serializers.BooleanField(source='signal.allows_contact', read_only=True)
 
     class Meta:
         model = Reporter
