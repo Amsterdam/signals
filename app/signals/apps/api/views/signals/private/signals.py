@@ -4,10 +4,9 @@ import datetime
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
-
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import CharField, OuterRef, Subquery, Value, Q
+from django.db.models import CharField, OuterRef, Q, Subquery, Value
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
