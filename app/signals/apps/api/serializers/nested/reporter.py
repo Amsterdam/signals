@@ -6,7 +6,9 @@ from signals.apps.api.generics.serializers import SIAModelSerializer
 from signals.apps.signals.models import Reporter
 
 
-class BaseNestedReporterModelSerializer(SIAModelSerializer):
+class _NestedReporterModelSerializer(SIAModelSerializer):
+    allows_contact = serializers.SerializerMethodField()
+
     class Meta:
         model = Reporter
         fields = (
@@ -43,10 +45,11 @@ class BaseNestedReporterModelSerializer(SIAModelSerializer):
 
         return super().to_internal_value(data)
 
+    def get_allows_contact(self, obj: Reporter) -> bool:
+        if hasattr(obj.signal, 'reporter__allows_contact'):
+            if obj.signal.reporter__allows_contact is None:
+                return True
 
-class _NestedReporterModelSerializer(BaseNestedReporterModelSerializer):
-    allows_contact = serializers.BooleanField(source='_signal.allows_contact', read_only=True)
+            return obj.signal.reporter__allows_contact
 
-
-class _NestedReporterModelListSerializer(BaseNestedReporterModelSerializer):
-    allows_contact = serializers.BooleanField(read_only=True)
+        return obj.signal.allows_contact

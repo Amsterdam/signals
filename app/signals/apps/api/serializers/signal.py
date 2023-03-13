@@ -27,7 +27,6 @@ from signals.apps.api.serializers.nested import (
     _NestedNoteModelSerializer,
     _NestedPriorityModelSerializer,
     _NestedPublicStatusModelSerializer,
-    _NestedReporterModelListSerializer,
     _NestedReporterModelSerializer,
     _NestedStatusModelSerializer,
     _NestedTypeModelSerializer
@@ -283,7 +282,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
         permission_classes=(SignalCreateInitialPermission,)
     )
 
-    reporter = _NestedReporterModelListSerializer(
+    reporter = _NestedReporterModelSerializer(
         permission_classes=(SIAPermissions,)
     )
 
@@ -352,8 +351,6 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
     id_display = serializers.CharField(source='get_id_display', read_only=True)
 
-    reporter__allows_contact = serializers.BooleanField()
-
     class Meta:
         model = Signal
         list_serializer_class = _SignalListSerializer
@@ -388,7 +385,6 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'has_children',
             'assigned_user_email',
             'session',
-            'reporter__allows_contact',
         )
         read_only_fields = (
             'created_at',
@@ -531,14 +527,6 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
 
         signal.refresh_from_db()
         return signal
-
-    def to_representation(self, instance):
-        serialized = super().to_representation(instance)
-
-        allows_contact = serialized.pop('reporter__allows_contact')
-        serialized['reporter']['allows_contact'] = allows_contact if allows_contact else False
-
-        return serialized
 
 
 class PublicSignalSerializerDetail(HALSerializer):
