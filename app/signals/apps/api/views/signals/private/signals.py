@@ -5,6 +5,7 @@ import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 
+from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import CharField, OuterRef, Subquery, Value, Q
 from django.db.models.functions import JSONObject
@@ -50,11 +51,6 @@ logger = logging.getLogger(__name__)
 
 class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, DatapuntViewSet):
     """Viewset for `Signal` objects in private API"""
-    feedback = Feedback.objects.filter(
-        _signal=OuterRef('pk'),
-        submitted_at__isnull=False
-    ).order_by('-submitted_at')
-
     queryset = Signal.objects.select_related(
         'location',
         'status',
@@ -75,8 +71,7 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
             'category_assignment__category__departments__code',
             delimiter=', ',
             filter=Q(category_assignment__category__categorydepartment__is_responsible=True)
-        ),
-        reporter__allows_contact=Subquery(feedback.values('allows_contact')[:1])
+        )
     )
 
     # Geography queryset to reduce the complexity of the query
@@ -131,6 +126,18 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        if settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
+            feedback = Feedback.objects.filter(
+                _signal=OuterRef('pk'),
+                submitted_at__isnull=False
+            ).order_by('-submitted_at')
+            self.queryset = self.queryset.annotate(
+                reporter__allows_contact=Subquery(feedback.values('allows_contact')[:1])
+            )
 
     def get_queryset(self, *args, **kwargs):
         if self._is_request_to_detail_endpoint():
