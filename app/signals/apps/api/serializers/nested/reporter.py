@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2022 Gemeente Amsterdam
+from django.conf import settings
 from rest_framework import serializers
 
 from signals.apps.api.generics.serializers import SIAModelSerializer
@@ -46,6 +47,9 @@ class _NestedReporterModelSerializer(SIAModelSerializer):
         return super().to_internal_value(data)
 
     def get_allows_contact(self, obj: Reporter) -> bool:
+        if not settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
+            return True
+
         if hasattr(obj.signal, 'reporter__allows_contact'):
             if obj.signal.reporter__allows_contact is None:
                 return True
