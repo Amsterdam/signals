@@ -384,7 +384,7 @@ class PrivateSignalSerializerList(SignalValidationMixin, HALSerializer):
             'has_parent',
             'has_children',
             'assigned_user_email',
-            'session'
+            'session',
         )
         read_only_fields = (
             'created_at',
