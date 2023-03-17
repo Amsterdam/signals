@@ -4,9 +4,8 @@ import datetime
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
-from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import CharField, OuterRef, Q, Subquery, Value
+from django.db.models import CharField, Q, Value
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -37,7 +36,6 @@ from signals.apps.api.serializers.email_preview import (
 from signals.apps.api.serializers.signal_history import HistoryLogHalSerializer
 from signals.apps.api.serializers.stats import PastWeekSerializer, TotalSerializer
 from signals.apps.email_integrations.utils import trigger_mail_action_for_email_preview
-from signals.apps.feedback.models import Feedback
 from signals.apps.history.models import Log
 from signals.apps.services.domain.pdf import PDFSummaryService
 from signals.apps.signals.models import Signal
@@ -125,18 +123,6 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
     }
 
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'trace']
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        if settings.FEATURE_FLAGS.get('REPORTER_MAIL_CONTACT_FEEDBACK_ALLOWS_CONTACT_ENABLED', True):
-            feedback = Feedback.objects.filter(
-                _signal=OuterRef('pk'),
-                submitted_at__isnull=False
-            ).order_by('-submitted_at')
-            self.queryset = self.queryset.annotate(
-                reporter__allows_contact=Subquery(feedback.values('allows_contact')[:1])
-            )
 
     def get_queryset(self, *args, **kwargs):
         if self._is_request_to_detail_endpoint():
