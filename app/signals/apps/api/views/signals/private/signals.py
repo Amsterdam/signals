@@ -4,8 +4,7 @@ import datetime
 import logging
 
 from datapunt_api.rest import DatapuntViewSet, HALPagination
-from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import CharField, Q, Value
+from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -63,12 +62,6 @@ class PrivateSignalViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, Dat
         'notes',
         'signal_departments',
         'user_assignment',
-    ).annotate(
-        category_assignment__category__department_codes=StringAgg(
-            'category_assignment__category__departments__code',
-            delimiter=', ',
-            filter=Q(category_assignment__category__categorydepartment__is_responsible=True)
-        )
     )
 
     # Geography queryset to reduce the complexity of the query

@@ -63,12 +63,6 @@ class _NestedCategoryModelSerializer(SIAModelSerializer):
         return super().validate(attrs=attrs)
 
     def get_departments(self, obj):
-        """
-        Get the annotated field from the signal that is related to this category_assignment
-        """
-        if hasattr(obj.signal, 'category_assignment__category__department_codes'):
-            return obj.signal.category_assignment__category__department_codes
-        else:
-            return ', '.join(
-                obj.category.departments.filter(categorydepartment__is_responsible=True).values_list('code', flat=True)
-            )
+        return ', '.join(
+            obj.category.departments.filter(categorydepartment__is_responsible=True).values_list('code', flat=True)
+        )
