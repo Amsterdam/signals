@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.core.exceptions import ValidationError
 from django.core.files import File
+from django.utils.deconstruct import deconstructible
 
 from signals.apps.services.domain.checker_factories import ContentCheckerFactory
 from signals.apps.services.domain.mimetypes import (
@@ -11,6 +12,7 @@ from signals.apps.services.domain.mimetypes import (
 )
 
 
+@deconstructible
 class MimeTypeAllowedValidator:
     def __init__(self, mimetype_resolver_factory: MimeTypeFromContentResolverFactory, allowed_mimetypes):
         self.mimetype_resolver_factory = mimetype_resolver_factory
@@ -26,6 +28,7 @@ class MimeTypeAllowedValidator:
             raise ValidationError('Mime type resolving failed!')
 
 
+@deconstructible
 class MimeTypeIntegrityValidator:
     def __init__(
             self,
@@ -52,6 +55,7 @@ class MimeTypeIntegrityValidator:
             raise ValidationError(f"'{mime_from_content}' does not match filename extension!")
 
 
+@deconstructible
 class ContentIntegrityValidator:
     def __init__(
             self,
@@ -73,6 +77,7 @@ class ContentIntegrityValidator:
             raise ValidationError("File is not valid!")
 
 
+@deconstructible
 class FileSizeValidator:
     def __init__(self, max_size: int):
         self.max_size = max_size
