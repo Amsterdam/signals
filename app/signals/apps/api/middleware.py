@@ -40,7 +40,6 @@ class SessionLoginMiddleware:
 
         if request.user and not isinstance(request.user, AnonymousUser):
             if request.path.startswith('/signals/v1/private'):
-                if not request.path.startswith('/signals/v1/private/attachments'):
-                    login(request, request.user, settings.AUTHENTICATION_BACKENDS[0])
+                login(request, request.user, settings.AUTHENTICATION_BACKENDS[0])
 
         return response
