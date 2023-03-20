@@ -100,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
+    'signals.apps.api.middleware.SessionLoginMiddleware',
 ]
 
 
@@ -182,6 +183,7 @@ CACHES = {
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
