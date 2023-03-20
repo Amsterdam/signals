@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam, Vereniging van Nederlandse Gemeenten
+from unittest import mock
 from unittest.mock import call, patch
 
 from django.test import TestCase, TransactionTestCase
@@ -7,7 +8,11 @@ from django.test import TestCase, TransactionTestCase
 from signals.apps.signals import factories
 from signals.apps.signals.models import Status
 from signals.apps.signals.models.signal import Signal
-from signals.apps.signals.tasks import delete_closed_signals, update_status_children_based_on_parent
+from signals.apps.signals.tasks import (
+    clearsessions,
+    delete_closed_signals,
+    update_status_children_based_on_parent
+)
 from signals.apps.signals.workflow import AFGEHANDELD, AFWACHTING, GEANNULEERD, GESPLITST
 
 
@@ -203,3 +208,11 @@ class TestDeleteClosedSignals(TestCase):
             call(GEANNULEERD, 365, dry_run=False),
             call(GESPLITST, 365, dry_run=False),
         ])
+
+
+class TestClearSessionsTask(TestCase):
+    @mock.patch('signals.apps.signals.tasks.call_command', autospec=True)
+    def test_clearsessions_is_called(self, mocked_call_command):
+        clearsessions()
+
+        mocked_call_command.assert_called_once_with('clearsessions')
