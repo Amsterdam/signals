@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import logging
 
+from django.core.management import call_command
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
@@ -129,3 +130,11 @@ def refresh_materialized_view_public_signals_geography_feature_collection():
         log.error(f'Failed to execute the query: {refresh_query}', exc_info=e)
     finally:
         cursor.close()
+
+
+@app.task
+def clearsessions():
+    """
+    This task makes it possible to configure the "clearsession" management command through Celery
+    """
+    call_command('clearsessions')
