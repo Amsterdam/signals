@@ -4,12 +4,14 @@ import mimetypes
 
 import magic
 from django.core.files import File
+from django.utils.deconstruct import deconstructible
 
 
 class MimeTypeResolvingError(Exception):
     pass
 
 
+@deconstructible
 class MimeTypeFromFilenameResolver:
     def __init__(self, filename: str):
         self.filename = filename
@@ -22,11 +24,13 @@ class MimeTypeFromFilenameResolver:
         return mimetype_info[0]
 
 
+@deconstructible
 class MimeTypeFromFilenameResolverFactory:
     def __call__(self, filename: str) -> MimeTypeFromFilenameResolver:
         return MimeTypeFromFilenameResolver(filename)
 
 
+@deconstructible
 class MimeTypeFromContentResolver:
     def __init__(self, file: File):
         self.file = file
@@ -42,6 +46,7 @@ class MimeTypeFromContentResolver:
         raise MimeTypeResolvingError('Failed to resolve mime type from content!')
 
 
+@deconstructible
 class MimeTypeFromContentResolverFactory:
     def __call__(self, file: File) -> MimeTypeFromContentResolver:
         return MimeTypeFromContentResolver(file)
