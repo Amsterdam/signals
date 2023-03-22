@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 from unittest import mock
 
@@ -632,26 +632,25 @@ class TestCategory(TestCase):
         parent_category = factories.ParentCategoryFactory(name='Parent category')
         child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        invalid_child_configurations = [
-            {'show_in_filter': 'True'},
-            {'show_in_filter': 'False'},
-            {'show_in_filter': ''},
-            {'show_in_filter': 123456},
-            {'show_in_filter': [True, ]},
-            {'show_in_filter': []},
-            {'show_in_filter': {'allowed': True}},
-            {'show_in_filter': {}},
-        ]
+        configurations = [{'show_in_filter': 'True'},
+                          {'show_in_filter': 'False'},
+                          {'show_in_filter': ''},
+                          {'show_in_filter': 123456},
+                          {'show_in_filter': [True, ]},
+                          {'show_in_filter': []},
+                          {'show_in_filter': {'allowed': True}},
+                          {'show_in_filter': {}}]
 
-        for invalid_child_configuration in invalid_child_configurations:
-            child_category.configuration = invalid_child_configuration
-            with self.assertRaises(ValidationError) as e:
-                child_category.save()
+        for configuration in configurations:
+            with self.subTest(configuration=configuration):
+                child_category.configuration = configuration
+                with self.assertRaises(ValidationError) as e:
+                    child_category.save()
 
-            validation_error = e.exception
-            self.assertEquals(len(validation_error.error_dict['configuration']), 1)
-            self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                              'Value of "show_in_filter" is not a valid boolean')
+                validation_error = e.exception
+                self.assertEquals(len(validation_error.error_dict['configuration']), 1)
+                self.assertEquals(validation_error.error_dict['configuration'][0].message,
+                                  'Value of "show_in_filter" is not a valid boolean')
 
     def test_only_show_in_filter_child_category_configuration(self):
         """
@@ -688,27 +687,26 @@ class TestCategory(TestCase):
         parent_category = factories.ParentCategoryFactory(name='Parent category')
         child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        invalid_child_configurations = [
-            {'show_in_filter': 'True', 'not': 'allowed'},
-            {'show_in_filter': 'False', 'not': 'allowed'},
-            {'show_in_filter': '', 'not': 'allowed'},
-            {'show_in_filter': 123456, 'not': 'allowed'},
-            {'show_in_filter': [True, ], 'not': 'allowed'},
-            {'show_in_filter': [], 'not': 'allowed'},
-            {'show_in_filter': {'allowed': True}, 'not': 'allowed'},
-            {'show_in_filter': {}, 'not': 'allowed'},
-        ]
+        configurations = [{'show_in_filter': 'True', 'not': 'allowed'},
+                          {'show_in_filter': 'False', 'not': 'allowed'},
+                          {'show_in_filter': '', 'not': 'allowed'},
+                          {'show_in_filter': 123456, 'not': 'allowed'},
+                          {'show_in_filter': [True, ], 'not': 'allowed'},
+                          {'show_in_filter': [], 'not': 'allowed'},
+                          {'show_in_filter': {'allowed': True}, 'not': 'allowed'},
+                          {'show_in_filter': {}, 'not': 'allowed'}]
 
-        for invalid_child_configuration in invalid_child_configurations:
-            child_category.configuration = invalid_child_configuration
-            with self.assertRaises(ValidationError) as e:
-                child_category.save()
+        for configuration in configurations:
+            with self.subTest(configuration=configuration):
+                child_category.configuration = configuration
+                with self.assertRaises(ValidationError) as e:
+                    child_category.save()
 
-            validation_error = e.exception
-            self.assertEquals(len(validation_error.error_dict['configuration']), 2)
-            messages = [ve.message for ve in validation_error.error_dict['configuration']]
-            self.assertIn('Value of "show_in_filter" is not a valid boolean', messages)
-            self.assertIn('Only "show_in_filter" is allowed', messages)
+                validation_error = e.exception
+                self.assertEquals(len(validation_error.error_dict['configuration']), 2)
+                messages = [ve.message for ve in validation_error.error_dict['configuration']]
+                self.assertIn('Value of "show_in_filter" is not a valid boolean', messages)
+                self.assertIn('Only "show_in_filter" is allowed', messages)
 
 
 class TestCategoryDeclarations(TestCase):
