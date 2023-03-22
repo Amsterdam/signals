@@ -100,6 +100,9 @@ class Category(TrackFields, models.Model):
     public_name = models.CharField(max_length=255, null=True, blank=True)
     is_public_accessible = models.BooleanField(default=False)
 
+    # Additional configuration
+    configuration = models.JSONField(null=True, blank=True)
+
     # SIG-2397 Handling is replaced by a handling_message
     # Notice: The handling_message will be used in communication (e-mail) to the citizen
     handling = models.CharField(max_length=20, choices=HANDLING_CHOICES, default=HANDLING_REST)
@@ -188,6 +191,41 @@ class Category(TrackFields, models.Model):
 
         if self.is_parent() and self.is_child() or self.is_child() and self.parent.is_child():
             raise ValidationError('Category hierarchy can only go one level deep')
+
+        if self.configuration:
+            self._clean_configuration()
+
+    def _clean_configuration(self):
+        """
+        Check if the Category is a parent or a child and execute the correct "clean" method
+        """
+        if self.is_parent():
+            self._clean_parent_configuration()
+        else:
+            self._clean_child_configuration()
+
+    def _clean_parent_configuration(self):
+        """
+        Check if the given configuration is valid for a parent Category
+        """
+        if self.configuration:
+            raise ValidationError({'configuration': ['No additional configuration allowed for parent categories']})
+
+    def _clean_child_configuration(self):
+        """
+        Check if the given configuration is valid for a child Category
+        """
+        errors = []
+        if len(self.configuration) > 0 and 'show_in_filter' not in self.configuration:
+            errors.append('The "show_in_filter" is required for child categories')
+        elif len(self.configuration) > 0 and not isinstance(self.configuration['show_in_filter'], bool):
+            errors.append('Value of "show_in_filter" is not a valid boolean')
+
+        if len(self.configuration) > 1:
+            errors.append('Only "show_in_filter" is allowed')
+
+        if errors:
+            raise ValidationError({'configuration': errors})
 
     def save(self, *args, **kwargs):
         self.full_clean()

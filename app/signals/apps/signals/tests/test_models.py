@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2018 - 2022 Gemeente Amsterdam
+# Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 from unittest import mock
 
@@ -595,6 +595,118 @@ class TestCategory(TestCase):
 
         with self.assertRaises(ValidationError):
             category.save(slug='no-saving-me-please')
+
+    def test_parent_category_configuration(self):
+        """
+        On a parent category no additional configuration is allowed
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        parent_category.configuration = None
+        parent_category.save()  # should not raise a validation error
+
+        parent_category.configuration = {'no_configuration_allowed': True}
+        with self.assertRaises(ValidationError):
+            parent_category.save()
+
+    def test_valid_show_in_filter_child_category_configuration(self):
+        """
+        On a child category only the "show_in_filter" additional configuration is allowed.
+        The "show_in_filter" should be a valid boolean value.
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        child_category.configuration = {'show_in_filter': True}
+        child_category.save()
+
+        child_category.configuration = {'show_in_filter': False}
+        child_category.save()
+
+    def test_invalid_show_in_filter_child_category_configuration(self):
+        """
+        On a child category only the "show_in_filter" additional configuration is allowed.
+        The "show_in_filter" should be a valid boolean value.
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        configurations = [{'show_in_filter': 'True'},
+                          {'show_in_filter': 'False'},
+                          {'show_in_filter': ''},
+                          {'show_in_filter': 123456},
+                          {'show_in_filter': [True, ]},
+                          {'show_in_filter': []},
+                          {'show_in_filter': {'allowed': True}},
+                          {'show_in_filter': {}}]
+
+        for configuration in configurations:
+            with self.subTest(configuration=configuration):
+                child_category.configuration = configuration
+                with self.assertRaises(ValidationError) as e:
+                    child_category.save()
+
+                validation_error = e.exception
+                self.assertEquals(len(validation_error.error_dict['configuration']), 1)
+                self.assertEquals(validation_error.error_dict['configuration'][0].message,
+                                  'Value of "show_in_filter" is not a valid boolean')
+
+    def test_only_show_in_filter_child_category_configuration(self):
+        """
+        On a child category only the "show_in_filter" additional configuration is allowed.
+        The "show_in_filter" should be a valid boolean value and no additional configuration is allowed.
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        child_category.configuration = {'not': 'allowed'}
+
+        with self.assertRaises(ValidationError) as e:
+            child_category.save()
+
+        validation_error = e.exception
+        self.assertEquals(validation_error.error_dict['configuration'][0].message,
+                          'The "show_in_filter" is required for child categories')
+
+        child_category.configuration = {'show_in_filter': True, 'not': 'allowed'}
+
+        with self.assertRaises(ValidationError) as e:
+            child_category.save()
+
+        validation_error = e.exception
+        self.assertEquals(len(validation_error.error_dict['configuration']), 1)
+        self.assertEquals(validation_error.error_dict['configuration'][0].message,
+                          'Only "show_in_filter" is allowed')
+
+    def test_invalid_show_in_filter_and_additional_config_child_category_configuration(self):
+        """
+        On a child category only the "show_in_filter" additional configuration is allowed.
+        The "show_in_filter" should be a valid boolean value and no additional configuration is allowed.
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        configurations = [{'show_in_filter': 'True', 'not': 'allowed'},
+                          {'show_in_filter': 'False', 'not': 'allowed'},
+                          {'show_in_filter': '', 'not': 'allowed'},
+                          {'show_in_filter': 123456, 'not': 'allowed'},
+                          {'show_in_filter': [True, ], 'not': 'allowed'},
+                          {'show_in_filter': [], 'not': 'allowed'},
+                          {'show_in_filter': {'allowed': True}, 'not': 'allowed'},
+                          {'show_in_filter': {}, 'not': 'allowed'}]
+
+        for configuration in configurations:
+            with self.subTest(configuration=configuration):
+                child_category.configuration = configuration
+                with self.assertRaises(ValidationError) as e:
+                    child_category.save()
+
+                validation_error = e.exception
+                self.assertEquals(len(validation_error.error_dict['configuration']), 2)
+                messages = [ve.message for ve in validation_error.error_dict['configuration']]
+                self.assertIn('Value of "show_in_filter" is not a valid boolean', messages)
+                self.assertIn('Only "show_in_filter" is allowed', messages)
 
 
 class TestCategoryDeclarations(TestCase):
