@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (C) 2020 - 2022 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam, Delta10 B.V.
+# Copyright (C) 2020 - 2023 Vereniging van Nederlandse Gemeenten, Gemeente Amsterdam, Delta10 B.V.
 from django.contrib.gis.db import models
 
 from signals.apps.signals.models.mixins import CreatedUpdatedModel
@@ -36,7 +36,7 @@ class EmailTemplate(CreatedUpdatedModel):
         (MY_SIGNAL_TOKEN, 'Send mail when a My Signals token has been requested'),
     ]
 
-    key = models.CharField(max_length=100, choices=KEYS_CHOICES, db_index=True)
+    key = models.CharField(max_length=100, choices=KEYS_CHOICES, db_index=True, unique=True)
     title = models.CharField(max_length=255)
     body = models.TextField(help_text='Het is mogelijk om Markdown en template variabelen te gebruiken')
     created_by = models.EmailField(null=True, blank=True)
