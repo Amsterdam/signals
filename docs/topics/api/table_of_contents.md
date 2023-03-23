@@ -15,7 +15,7 @@ To connect to the API a token must be retrieved more information on how to retri
 
 ## Swagger documentation
 
-* [The API swagger file in the project](../../../api/app/signals/apps/api/templates/api/swagger/openapi.yaml)
+* [The API swagger file in the project](../../../app/signals/apps/api/templates/api/swagger/openapi.yaml)
 
 ## Postman collection
 
