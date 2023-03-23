@@ -47,7 +47,7 @@ def create_session_for_reaction_request(signal):
         question = Question.objects.create(
             required=True,
             field_type='plain_text',
-            short_label='Reactie melder',
+            short_label='Onze vraag aan u',
             label=signal.status.text,  # <-- this should not be empty, max 400 characters
             analysis_key='reaction',
         )
