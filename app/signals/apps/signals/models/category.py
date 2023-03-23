@@ -208,24 +208,24 @@ class Category(TrackFields, models.Model):
         """
         Check if the given configuration is valid for a parent Category
         """
-        if self.configuration:
-            raise ValidationError({'configuration': ['No additional configuration allowed for parent categories']})
+        errors = []
+        if len(self.configuration) > 0 and 'show_children_in_filter' not in self.configuration:
+            errors.append('The "show_children_in_filter" is required for parent categories')
+        elif len(self.configuration) > 0 and not isinstance(self.configuration['show_children_in_filter'], bool):
+            errors.append('Value of "show_children_in_filter" is not a valid boolean')
+
+        if len(self.configuration) > 1:
+            errors.append('Only "show_children_in_filter" is allowed')
+
+        if errors:
+            raise ValidationError({'configuration': errors})
 
     def _clean_child_configuration(self):
         """
         Check if the given configuration is valid for a child Category
         """
-        errors = []
-        if len(self.configuration) > 0 and 'show_in_filter' not in self.configuration:
-            errors.append('The "show_in_filter" is required for child categories')
-        elif len(self.configuration) > 0 and not isinstance(self.configuration['show_in_filter'], bool):
-            errors.append('Value of "show_in_filter" is not a valid boolean')
-
-        if len(self.configuration) > 1:
-            errors.append('Only "show_in_filter" is allowed')
-
-        if errors:
-            raise ValidationError({'configuration': errors})
+        if self.configuration:
+            raise ValidationError({'configuration': ['No additional configuration allowed for child categories']})
 
     def save(self, *args, **kwargs):
         self.full_clean()

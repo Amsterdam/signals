@@ -596,117 +596,117 @@ class TestCategory(TestCase):
         with self.assertRaises(ValidationError):
             category.save(slug='no-saving-me-please')
 
-    def test_parent_category_configuration(self):
+    def test_child_category_configuration(self):
         """
-        On a parent category no additional configuration is allowed
+        On a child category no additional configuration is allowed
+        """
+        parent_category = factories.ParentCategoryFactory(name='Parent category')
+        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+
+        child_category.configuration = None
+        child_category.save()  # should not raise a validation error
+
+        child_category.configuration = {'no_configuration_allowed': True}
+        with self.assertRaises(ValidationError):
+            child_category.save()
+
+    def test_valid_show_in_filter_parent_category_configuration(self):
+        """
+        On a parent category only the "show_children_in_filter" additional configuration is allowed.
+        The "show_children_in_filter" should be a valid boolean value.
         """
         parent_category = factories.ParentCategoryFactory(name='Parent category')
         factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        parent_category.configuration = None
-        parent_category.save()  # should not raise a validation error
+        parent_category.configuration = {'show_children_in_filter': True}
+        parent_category.save()
 
-        parent_category.configuration = {'no_configuration_allowed': True}
-        with self.assertRaises(ValidationError):
-            parent_category.save()
+        parent_category.configuration = {'show_children_in_filter': False}
+        parent_category.save()
 
-    def test_valid_show_in_filter_child_category_configuration(self):
+    def test_invalid_show_in_filter_parent_category_configuration(self):
         """
-        On a child category only the "show_in_filter" additional configuration is allowed.
-        The "show_in_filter" should be a valid boolean value.
-        """
-        parent_category = factories.ParentCategoryFactory(name='Parent category')
-        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
-
-        child_category.configuration = {'show_in_filter': True}
-        child_category.save()
-
-        child_category.configuration = {'show_in_filter': False}
-        child_category.save()
-
-    def test_invalid_show_in_filter_child_category_configuration(self):
-        """
-        On a child category only the "show_in_filter" additional configuration is allowed.
-        The "show_in_filter" should be a valid boolean value.
+        On a parent category only the "show_children_in_filter" additional configuration is allowed.
+        The "show_children_in_filter" should be a valid boolean value.
         """
         parent_category = factories.ParentCategoryFactory(name='Parent category')
-        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+        factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        configurations = [{'show_in_filter': 'True'},
-                          {'show_in_filter': 'False'},
-                          {'show_in_filter': ''},
-                          {'show_in_filter': 123456},
-                          {'show_in_filter': [True, ]},
-                          {'show_in_filter': []},
-                          {'show_in_filter': {'allowed': True}},
-                          {'show_in_filter': {}}]
+        configurations = [{'show_children_in_filter': 'True'},
+                          {'show_children_in_filter': 'False'},
+                          {'show_children_in_filter': ''},
+                          {'show_children_in_filter': 123456},
+                          {'show_children_in_filter': [True, ]},
+                          {'show_children_in_filter': []},
+                          {'show_children_in_filter': {'allowed': True}},
+                          {'show_children_in_filter': {}}]
 
         for configuration in configurations:
             with self.subTest(configuration=configuration):
-                child_category.configuration = configuration
+                parent_category.configuration = configuration
                 with self.assertRaises(ValidationError) as e:
-                    child_category.save()
+                    parent_category.save()
 
                 validation_error = e.exception
                 self.assertEquals(len(validation_error.error_dict['configuration']), 1)
                 self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                                  'Value of "show_in_filter" is not a valid boolean')
+                                  'Value of "show_children_in_filter" is not a valid boolean')
 
-    def test_only_show_in_filter_child_category_configuration(self):
+    def test_only_show_in_filter_parent_category_configuration(self):
         """
-        On a child category only the "show_in_filter" additional configuration is allowed.
+        On a parent category only the "show_in_filter" additional configuration is allowed.
         The "show_in_filter" should be a valid boolean value and no additional configuration is allowed.
         """
         parent_category = factories.ParentCategoryFactory(name='Parent category')
-        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+        factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        child_category.configuration = {'not': 'allowed'}
+        parent_category.configuration = {'not': 'allowed'}
 
         with self.assertRaises(ValidationError) as e:
-            child_category.save()
+            parent_category.save()
 
         validation_error = e.exception
         self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                          'The "show_in_filter" is required for child categories')
+                          'The "show_children_in_filter" is required for parent categories')
 
-        child_category.configuration = {'show_in_filter': True, 'not': 'allowed'}
+        parent_category.configuration = {'show_children_in_filter': True, 'not': 'allowed'}
 
         with self.assertRaises(ValidationError) as e:
-            child_category.save()
+            parent_category.save()
 
         validation_error = e.exception
         self.assertEquals(len(validation_error.error_dict['configuration']), 1)
         self.assertEquals(validation_error.error_dict['configuration'][0].message,
-                          'Only "show_in_filter" is allowed')
+                          'Only "show_children_in_filter" is allowed')
 
-    def test_invalid_show_in_filter_and_additional_config_child_category_configuration(self):
+    def test_invalid_show_in_filter_and_additional_config_parent_category_configuration(self):
         """
-        On a child category only the "show_in_filter" additional configuration is allowed.
-        The "show_in_filter" should be a valid boolean value and no additional configuration is allowed.
+        On a parent category only the "show_children_in_filter" additional configuration is allowed.
+        The "show_children_in_filter" should be a valid boolean value and no additional configuration is allowed.
         """
         parent_category = factories.ParentCategoryFactory(name='Parent category')
-        child_category = factories.CategoryFactory(name='Child category', parent=parent_category)
+        factories.CategoryFactory(name='Child category', parent=parent_category)
 
-        configurations = [{'show_in_filter': 'True', 'not': 'allowed'},
-                          {'show_in_filter': 'False', 'not': 'allowed'},
-                          {'show_in_filter': '', 'not': 'allowed'},
-                          {'show_in_filter': 123456, 'not': 'allowed'},
-                          {'show_in_filter': [True, ], 'not': 'allowed'},
-                          {'show_in_filter': [], 'not': 'allowed'},
-                          {'show_in_filter': {'allowed': True}, 'not': 'allowed'},
-                          {'show_in_filter': {}, 'not': 'allowed'}]
+        configurations = [{'show_children_in_filter': 'True', 'not': 'allowed'},
+                          {'show_children_in_filter': 'False', 'not': 'allowed'},
+                          {'show_children_in_filter': '', 'not': 'allowed'},
+                          {'show_children_in_filter': 123456, 'not': 'allowed'},
+                          {'show_children_in_filter': [True, ], 'not': 'allowed'},
+                          {'show_children_in_filter': [], 'not': 'allowed'},
+                          {'show_children_in_filter': {'allowed': True}, 'not': 'allowed'},
+                          {'show_children_in_filter': {}, 'not': 'allowed'}]
 
         for configuration in configurations:
             with self.subTest(configuration=configuration):
-                child_category.configuration = configuration
+                parent_category.configuration = configuration
                 with self.assertRaises(ValidationError) as e:
-                    child_category.save()
+                    parent_category.save()
 
                 validation_error = e.exception
                 self.assertEquals(len(validation_error.error_dict['configuration']), 2)
                 messages = [ve.message for ve in validation_error.error_dict['configuration']]
-                self.assertIn('Value of "show_in_filter" is not a valid boolean', messages)
-                self.assertIn('Only "show_in_filter" is allowed', messages)
+                self.assertIn('Value of "show_children_in_filter" is not a valid boolean', messages)
+                self.assertIn('Only "show_children_in_filter" is allowed', messages)
 
 
 class TestCategoryDeclarations(TestCase):
