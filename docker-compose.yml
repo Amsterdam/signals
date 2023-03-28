@@ -109,6 +109,8 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
 
   database:
     image: amsterdam/postgres11
@@ -139,4 +141,5 @@ services:
 
 volumes:
   dex-data:
+  es-data:
   postgres-data:
