@@ -28,6 +28,7 @@ CORS_EXPOSE_HEADERS = [
     'X-API-Version',  # General API version
     'X-Total-Count',  # Added for the geography endpoints
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
 
