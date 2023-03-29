@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
+from django.test import modify_settings
+
 from signals.test.utils import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
+@modify_settings(MIDDLEWARE={'append': 'signals.apps.api.middleware.SessionLoginMiddleware'})
 class TestSessionLoginMiddleware(SIAReadUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
         self.client.force_authenticate(user=self.sia_read_user)

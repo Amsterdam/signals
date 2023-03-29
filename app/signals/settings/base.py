@@ -28,7 +28,6 @@ CORS_EXPOSE_HEADERS = [
     'X-API-Version',  # General API version
     'X-Total-Count',  # Added for the geography endpoints
 ]
-CORS_ALLOW_CREDENTIALS = True
 
 ORGANIZATION_NAME = os.getenv('ORGANIZATION_NAME', 'Gemeente Amsterdam')
 
@@ -101,8 +100,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
-    'signals.apps.api.middleware.SessionLoginMiddleware',
 ]
+
+# Enable session cookies when authenticating using the bearer token
+if os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES:
+    MIDDLEWARE.append('signals.apps.api.middleware.SessionLoginMiddleware')
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    CORS_ALLOW_CREDENTIALS = True
 
 
 # Setup django-silk
@@ -184,8 +189,6 @@ CACHES = {
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', True) in TRUE_VALUES
 SECURE_REDIRECT_EXEMPT = [r'^status/', ]  # Allow health checks on localhost.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
