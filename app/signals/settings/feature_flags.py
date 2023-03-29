@@ -38,7 +38,4 @@ FEATURE_FLAGS = {
 
     # Run routing expressions again when updating signal subcategory or location
     'DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES': os.getenv('DSL_RUN_ROUTING_EXPRESSIONS_ON_UPDATES', False) in TRUE_VALUES,
-
-    # Enable session cookies when authenticating using the bearer token
-    'SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION': os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES, # noqa
 }

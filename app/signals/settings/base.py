@@ -2,8 +2,6 @@
 # Copyright (C) 2018 - 2023 Gemeente Amsterdam
 import os
 
-from signals.settings import FEATURE_FLAGS
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 TRUE_VALUES = [True, 'True', 'true', '1']
@@ -104,7 +102,8 @@ MIDDLEWARE = [
     'signals.apps.api.middleware.APIVersionHeaderMiddleware',
 ]
 
-if FEATURE_FLAGS['SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION']:
+# Enable session cookies when authenticating using the bearer token
+if os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES:
     MIDDLEWARE.append('signals.apps.api.middleware.SessionLoginMiddleware')
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
     SESSION_COOKIE_SAMESITE = 'None'
