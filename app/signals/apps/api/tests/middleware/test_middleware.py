@@ -1,22 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from django.test import override_settings
+from django.test import modify_settings
 
 from signals.test.utils import SIAReadUserMixin, SignalsBaseApiTestCase
 
 
-@override_settings(MIDDLEWARE=[
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'signals.apps.api.middleware.APIVersionHeaderMiddleware',
-    'signals.apps.api.middleware.SessionLoginMiddleware',
-])
+@modify_settings(MIDDLEWARE={'append': 'signals.apps.api.middleware.SessionLoginMiddleware'})
 class TestSessionLoginMiddleware(SIAReadUserMixin, SignalsBaseApiTestCase):
     def setUp(self):
         self.client.force_authenticate(user=self.sia_read_user)
