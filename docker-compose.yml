@@ -103,12 +103,14 @@ services:
       - dex-data:/data
 
   elasticsearch:
-    image: amsterdam/elasticsearch6
+    image: elasticsearch:7.17.9
     shm_size: '512m'
     command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
 
   database:
     image: amsterdam/postgres11
@@ -139,4 +141,5 @@ services:
 
 volumes:
   dex-data:
+  es-data:
   postgres-data:
