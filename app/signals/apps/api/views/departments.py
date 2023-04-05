@@ -16,9 +16,7 @@ from signals.apps.signals.models import Department
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateDepartmentViewSet(mixins.ListModelMixin,
-                               mixins.RetrieveModelMixin,
-                               mixins.CreateModelMixin,
+class PrivateDepartmentViewSet(mixins.CreateModelMixin,
                                mixins.UpdateModelMixin,
                                DatapuntViewSet):
     queryset = Department.objects.all()
