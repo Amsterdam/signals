@@ -19,38 +19,6 @@ def convert_validation_error(error: DjangoValidationError) -> DRFValidationError
         return DRFValidationError('Validation error on underlying data.')
 
 
-class CreateModelMixin(mixins.CreateModelMixin):
-    def perform_create(self, serializer):
-        try:
-            return super().perform_create(serializer=serializer)
-        except DjangoValidationError as e:
-            raise convert_validation_error(e)
-
-
-class ListModelMixin(mixins.ListModelMixin):
-    pass
-
-
-class RetrieveModelMixin(mixins.RetrieveModelMixin):
-    pass
-
-
-class DestroyModelMixin(mixins.DestroyModelMixin):
-    def perform_destroy(self, instance):
-        try:
-            instance.delete()
-        except DjangoValidationError as e:
-            raise convert_validation_error(e)
-
-
-class UpdateModelMixin(mixins.UpdateModelMixin):
-    def perform_update(self, serializer):
-        try:
-            return super().perform_update(serializer=serializer)
-        except DjangoValidationError as e:
-            raise convert_validation_error(e)
-
-
 class WriteOnceMixin:
     """
     Serializer mixin to make fields only writeable at creation. When updating the field is set to

@@ -5,10 +5,10 @@ ViewSet that returns `signals.Signal` instance dropped out of a category.
 """
 from datapunt_api.rest import HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins
 from rest_framework import viewsets
 
 from signals.apps.api.filters import SignalCategoryRemovedAfterFilterSet
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import SignalIdListSerializer
 from signals.apps.signals.models import Signal
