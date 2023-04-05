@@ -5,14 +5,12 @@ from typing import Optional
 from urllib.parse import unquote
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.template import Context, Template
 from django.utils.timezone import now
 from mistune import create_markdown
 from rest_framework.exceptions import NotFound
 
-from signals.apps.api.generics.mixins import convert_validation_error
 from signals.apps.email_integrations.admin import EmailTemplate
 from signals.apps.email_integrations.exceptions import URLEncodedCharsFoundInText
 from signals.apps.feedback.models import Feedback
@@ -229,12 +227,9 @@ def trigger_mail_action_for_email_preview(signal, status_data):
     from signals.apps.email_integrations.services import MailService
 
     # Create the "new" status we want to use to trigger the mail
-    try:
-        status = Status(_signal=signal, **status_data)
-        status.full_clean()
-        status.id = 0  # Fake id so that we still can trigger the action rule
-    except ValidationError as e:
-        raise convert_validation_error(e)
+    status = Status(_signal=signal, **status_data)
+    status.full_clean()
+    status.id = 0  # Fake id so that we still can trigger the action rule
 
     subject = message = html_message = None
     for action in MailService._status_actions:
