@@ -2,8 +2,7 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.response import Response
 
 from signals.apps.api.filters import DepartmentFilterSet

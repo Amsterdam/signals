@@ -6,8 +6,7 @@ Views dealing with 'signals.Attachment' model directly.
 import os
 
 from datapunt_api.rest import DatapuntViewSet
-from rest_framework import mixins
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response

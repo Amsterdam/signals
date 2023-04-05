@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.pagination import HALPagination
-from rest_framework import mixins
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
 from signals.apps.api.serializers import StoredSignalFilterSerializer
 from signals.apps.signals.models import StoredSignalFilter
