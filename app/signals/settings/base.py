@@ -311,6 +311,7 @@ REST_FRAMEWORK = dict(
         'nouser': os.getenv('PUBLIC_THROTTLE_RATE', '60/hour'),
         'anon-my_signals': os.getenv('MY_SIGNALS_ANON_REPORTER_THROTTLE_RATE', '5/quarter')  # noqa:  Quarter was added only for this throttling class
     },
+    EXCEPTION_HANDLER='signals.apps.api.views.api_exception_handler',
 )
 
 # Swagger settings

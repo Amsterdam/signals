@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet
+from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from signals.apps.api.generics.mixins import UpdateModelMixin
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.serializers import (
     CategoryHALSerializer,
@@ -37,7 +37,7 @@ class PublicCategoryViewSet(NestedViewSetMixin, DatapuntViewSet):
         return serializer_class(*args, **kwargs)
 
 
-class PrivateCategoryViewSet(UpdateModelMixin, DatapuntViewSet):
+class PrivateCategoryViewSet(mixins.UpdateModelMixin, DatapuntViewSet):
     serializer_class = PrivateCategorySerializer
     serializer_detail_class = PrivateCategorySerializer
 

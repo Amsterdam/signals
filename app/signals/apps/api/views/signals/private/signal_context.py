@@ -6,12 +6,12 @@ from datapunt_api.rest import HALPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Q
 from django.utils import timezone
+from rest_framework import mixins
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from signals.apps.api import app_settings
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.pagination import LinkHeaderPagination
 from signals.apps.api.generics.permissions import SIAPermissions
 from signals.apps.api.serializers import (

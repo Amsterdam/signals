@@ -9,6 +9,7 @@ from signals.apps.api.views.category import PrivateCategoryViewSet, PublicCatego
 from signals.apps.api.views.category_removed import SignalCategoryRemovedAfterViewSet
 from signals.apps.api.views.csv import PrivateCsvViewSet
 from signals.apps.api.views.departments import PrivateDepartmentViewSet
+from signals.apps.api.views.exception_handler import api_exception_handler
 from signals.apps.api.views.expression import PrivateExpressionViewSet
 from signals.apps.api.views.ml_tool_proxy import LegacyMlPredictCategoryView
 from signals.apps.api.views.namespace import NamespaceView
@@ -46,4 +47,5 @@ __all__ = (
     'PrivateSourcesViewSet',
     'PublicCategoryViewSet',
     'SignalContextViewSet',
+    'api_exception_handler',
 )

@@ -8,7 +8,7 @@ from django.db.models import CharField, Value
 from django.db.models.functions import JSONObject
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from signals.apps.api.app_settings import SIGNALS_API_GEO_PAGINATE_BY
 from signals.apps.api.filters import SignalFilterSet
 from signals.apps.api.filters.signal import SignalPastWeekStatsFilterSet
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.filters import FieldMappingOrderingFilter
 from signals.apps.api.generics.pagination import LinkHeaderPaginationForQuerysets
 from signals.apps.api.generics.permissions import (

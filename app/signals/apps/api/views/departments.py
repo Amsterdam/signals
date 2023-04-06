@@ -2,11 +2,10 @@
 # Copyright (C) 2019 - 2021 Gemeente Amsterdam
 from datapunt_api.rest import DatapuntViewSet, HALPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.response import Response
 
 from signals.apps.api.filters import DepartmentFilterSet
-from signals.apps.api.generics import mixins
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.serializers import (
     PrivateDepartmentSerializerDetail,
@@ -16,9 +15,7 @@ from signals.apps.signals.models import Department
 from signals.auth.backend import JWTAuthBackend
 
 
-class PrivateDepartmentViewSet(mixins.ListModelMixin,
-                               mixins.RetrieveModelMixin,
-                               mixins.CreateModelMixin,
+class PrivateDepartmentViewSet(mixins.CreateModelMixin,
                                mixins.UpdateModelMixin,
                                DatapuntViewSet):
     queryset = Department.objects.all()
