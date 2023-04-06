@@ -42,6 +42,10 @@ raven
 
 #Azure insight
 opencensus-ext-azure
+opencensus-ext-django
+opencensus-ext-logging
+opencensus-ext-postgresql
+opencensus-ext-requests
 
 # PDF
 pypdf

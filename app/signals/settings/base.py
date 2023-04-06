@@ -118,11 +118,12 @@ if os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES:
         'TRACE': {
             'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
             'EXPORTER': f'''opencensus.ext.azure.trace_exporter.AzureExporter(
-                connection_string="InstrumentationKey={os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING')}"
+                connection_string="{os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING')}"
             )''',
             'EXCLUDELIST_PATHS': [],
         }
     }
+
 
 # Setup django-silk
 def is_super_user(user):
