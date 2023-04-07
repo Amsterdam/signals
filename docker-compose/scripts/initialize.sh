@@ -46,4 +46,5 @@ uwsgi --master \
   --buffer-size=8192 \
   --harakiri=15 \
   --py-auto-reload=1 \
+  --lazy-apps \
   --die-on-term

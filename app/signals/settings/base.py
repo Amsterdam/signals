@@ -109,6 +109,21 @@ if os.getenv('SESSION_SUPPORT_ON_TOKEN_AUTHENTICATION', False) in TRUE_VALUES:
     SESSION_COOKIE_SAMESITE = 'None'
     CORS_ALLOW_CREDENTIALS = True
 
+if os.getenv('AZURE_APPLICATION_INSIGHTS_ENABLED', False) in TRUE_VALUES:
+    MIDDLEWARE += [
+        'opencensus.ext.django.middleware.OpencensusMiddleware',
+    ]
+
+    OPENCENSUS = {
+        'TRACE': {
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': f'''opencensus.ext.azure.trace_exporter.AzureExporter(
+                connection_string="{os.getenv('AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING')}"
+            )''',
+            'EXCLUDELIST_PATHS': [],
+        }
+    }
+
 
 # Setup django-silk
 def is_super_user(user):
