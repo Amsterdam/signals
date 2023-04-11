@@ -394,3 +394,86 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         self.assertIsNone(change_log_data['description'])
         self.assertEqual(change_log_data['who'], self.sia_read_write_user.username)
         self.assertIn('Openbaar tonen gewijzigd naar:\n Uit', change_log_data['action'])
+
+    def test_patch_configuration_parent_category(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        configuration = {'show_children_in_filter': True}
+
+        response = self.client.patch(
+            url,
+            data={'configuration': configuration},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertDictEqual(body['configuration'], configuration)
+
+    def test_patch_configuration_parent_category_show_children_in_filter_missing(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        configuration = {'bla': 'diebla'}
+
+        response = self.client.patch(
+            url,
+            data={'configuration': configuration},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertIn('The "show_children_in_filter" is required for parent categories', body['configuration'])
+
+    def test_patch_configuration_parent_category_show_children_in_filter_incorrect_value_type(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        configuration = {'show_children_in_filter': 'string'}
+
+        response = self.client.patch(
+            url,
+            data={'configuration': configuration},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertIn('Value of "show_children_in_filter" is not a valid boolean', body['configuration'])
+
+    def test_patch_configuration_parent_category_extra_configuration_value(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        configuration = {
+            'show_children_in_filter': False,
+            'bla': 'diebla'
+        }
+
+        response = self.client.patch(
+            url,
+            data={'configuration': configuration},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertIn('Only "show_children_in_filter" is allowed', body['configuration'])
+
+    def test_patch_configuration_child_category(self):
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.children.first().pk}'
+        configuration = {'show_children_in_filter': False}
+
+        response = self.client.patch(
+            url,
+            data={'configuration': configuration},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertIn('No additional configuration allowed for child categories', body['configuration'])
