@@ -477,3 +477,40 @@ class TestPrivateCategoryEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase)
         body = response.json()
         self.assertIn('configuration', body)
         self.assertIn('No additional configuration allowed for child categories', body['configuration'])
+
+    def test_get_detail_configuration_present(self):
+        configuration = {'show_children_in_filter': False}
+        self.parent_category.configuration = configuration
+        self.parent_category.save()
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = f'/signals/v1/private/categories/{self.parent_category.pk}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        body = response.json()
+        self.assertIn('configuration', body)
+        self.assertDictEqual(body['configuration'], configuration)
+
+    def test_get_list_configuration_present(self):
+        configuration = {'show_children_in_filter': False}
+        self.parent_category.configuration = configuration
+        self.parent_category.save()
+
+        self.client.force_authenticate(user=self.sia_read_write_user)
+        url = '/signals/v1/private/categories/?page_size=1000'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        body = response.json()
+        print(body)
+        self.assertIn('results', body)
+        parent = None
+        for category in body['results']:
+            print(category['id'], self.parent_category.pk)
+            if category['id'] == self.parent_category.pk:
+                parent = category
+
+        self.assertIsNotNone(parent)
+        self.assertIn('configuration', parent)
+        self.assertDictEqual(parent['configuration'], configuration)
