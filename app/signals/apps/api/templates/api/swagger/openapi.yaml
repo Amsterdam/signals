@@ -1283,6 +1283,7 @@ paths:
           * slo (A new slo will be added to the sla list)
           * public_name
           * is_public_accessible
+          * configuration
       responses:
         '200':
           description: Changes are made, returns the current state of the category
@@ -3539,10 +3540,20 @@ components:
           nullable: false
           default: false
           description: >-
-            This will toggle if the category (and it's signals) can be accessed 
-            through the public endpoin(s). Will be used for the public map
-            showing the reporter open siganls in the area for the categroy 
+            This will toggle if the category (and it's signals) can be accessed
+            through the public endpoint(s). Will be used for the public map
+            showing the reporter open signals in the area for the category
             he/she is making a complaint.
+        configuration:
+          type: object
+          nullable: true
+          properties:
+            show_children_in_filter:
+              type: boolean
+              description: >-
+                This is available for parent categories and should control whether or not
+                the child categories of this category should be displayed in the category filter.
+                For child categories this value is not available for obvious reasons.
 
     privateCategoryListResponse:
       description: JSON data describing the category response
@@ -3612,10 +3623,19 @@ components:
           type: boolean
           nullable: false
           description: >-
-            This will toggle if the category (and it's signals) can be accessed 
-            through the public endpoin(s). Will be used for the public map
-            showing the reporter open siganls in the area for the categroy 
+            This will toggle if the category (and it's signals) can be accessed
+            through the public endpoint(s). Will be used for the public map
+            showing the reporter open signals in the area for the category
             he/she is making a complaint.
+        configuration:
+          type: object
+          properties:
+            show_children_in_filter:
+              type: boolean
+              description: >-
+                This is available for parent categories and should control whether or not
+                the child categories of this category should be displayed in the category filter.
+                For child categories this value is not available for obvious reasons.
 
     privateCategoryStatusMessageTemplatesRequest:
       description: JSON data describing the status message templates for a category and state (Request)
