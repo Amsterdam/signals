@@ -44,13 +44,12 @@ class CategoryAssignment(CreatedUpdatedModel):
         """String representation."""
         return '{sub} - {signal}'.format(sub=self.category, signal=self._signal)
 
-    def save(self, calculate_deadlines=True, *args, **kwargs):
+    def save(self, *args, **kwargs):
         # Each time a category is changed the ServiceLevelObjective associated
         # with the new category may be different, de deadlines are recalculated
         # and saved for use in punctuality filter.
         # Note: this may be moved to the API layer of SIA/Signalen.
-        if calculate_deadlines:
-            self.deadline, self.deadline_factor_3 = DeadlineCalculationService.from_signal_and_category(
-                self._signal, self.category)
+        self.deadline, self.deadline_factor_3 = DeadlineCalculationService.from_signal_and_category(
+            self._signal, self.category)
         self.stored_handling_message = self.category.handling_message  # SIG-3555
         super().save(*args, **kwargs)
