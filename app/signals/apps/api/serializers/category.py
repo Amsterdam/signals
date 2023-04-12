@@ -106,6 +106,7 @@ class PrivateCategorySerializer(HALSerializer):
     new_sla = PrivateCategorySLASerializer(write_only=True)
 
     departments = _NestedPrivateCategoryDepartmentSerializer(source='categorydepartment_set', many=True, read_only=True)
+    configuration = serializers.JSONField(required=False)
 
     class Meta:
         model = Category
@@ -124,6 +125,7 @@ class PrivateCategorySerializer(HALSerializer):
             'note',
             'public_name',
             'is_public_accessible',
+            'configuration',
         )
         read_only_fields = (
             'slug',
