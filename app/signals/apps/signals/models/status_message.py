@@ -30,4 +30,4 @@ class StatusMessage(CreatedUpdatedModel):
     title: str = models.CharField(max_length=255)
     text: str = models.TextField()
     active: bool = models.BooleanField(default=False)
-    state = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
+    state: str = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
