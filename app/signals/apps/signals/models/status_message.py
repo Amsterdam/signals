@@ -11,6 +11,8 @@ class StatusMessage(CreatedUpdatedModel):
     This model supersedes the StatusMessageTemplate model.
     It allows for storing default texts that can be used to inform the reporter on a
     status change of a signal.
+    A status message belongs to a signal state and can be assigned to multiple
+    categories.
 
     Attributes
     ----------
