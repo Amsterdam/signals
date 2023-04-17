@@ -37,6 +37,13 @@ class StatusMessage(CreatedUpdatedModel):
     state: str = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
     categories: List[Category] = models.ManyToManyField(Category, through='StatusMessageCategory')
 
+    class Meta:
+        permissions = (
+            ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),
+        )
+        verbose_name = 'Standaardtekst'
+        verbose_name_plural = 'Standaardteksten'
+
 
 class StatusMessageCategory(models.Model):
     """
@@ -65,3 +72,6 @@ class StatusMessageCategory(models.Model):
                 name='%(app_label)s_%(class)s_unique_constraint'
             )
         ]
+        permissions = (
+            ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),
+        )
