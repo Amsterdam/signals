@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.db import models
 
+from signals.apps.signals import workflow
 from signals.apps.signals.models import CreatedUpdatedModel
 
 
@@ -20,7 +21,11 @@ class StatusMessage(CreatedUpdatedModel):
     active : bool
         The "active" state of the status message. This determines if it should be used
         to inform reporters.
+    state : str
+        When transitioning a signal to this state, this status message should be
+        available to inform the reporter.
     """
     title: str = models.CharField(max_length=255)
     text: str = models.TextField()
     active: bool = models.BooleanField(default=False)
+    state = models.CharField(max_length=50, choices=workflow.STATUS_CHOICES)
