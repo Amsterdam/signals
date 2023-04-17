@@ -39,7 +39,7 @@ class StatusMessage(CreatedUpdatedModel):
 
     class Meta:
         permissions = (
-            ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),
+            ('sia_statusmessage_write', 'Wijzingen van standaardteksten'),
         )
         verbose_name = 'Standaardtekst'
         verbose_name_plural = 'Standaardteksten'
