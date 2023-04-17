@@ -77,13 +77,13 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name='statusmessage',
             options={
-                'permissions': (('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),),
+                'permissions': (('sia_statusmessage_write', 'Wijzingen van standaardteksten'),),
                 'verbose_name': 'Standaardtekst',
                 'verbose_name_plural': 'Standaardteksten'
             },
         ),
         migrations.AlterModelOptions(
             name='statusmessagecategory',
-            options={'permissions': (('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),)},
+            options={'permissions': (('sia_statusmessage_write', 'Wijzingen van standaardteksten'),)},
         ),
     ]

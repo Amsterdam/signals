@@ -73,5 +73,5 @@ class StatusMessageCategory(models.Model):
             )
         ]
         permissions = (
-            ('sia_statusmessagetemplate_write', 'Wijzingen van standaardteksten'),
+            ('sia_statusmessage_write', 'Wijzingen van standaardteksten'),
         )
