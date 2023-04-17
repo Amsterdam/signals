@@ -36,7 +36,7 @@ from signals.apps.signals.models.signal_user import SignalUser
 from signals.apps.signals.models.slo import ServiceLevelObjective
 from signals.apps.signals.models.source import Source
 from signals.apps.signals.models.status import Status
-from signals.apps.signals.models.status_message import StatusMessage
+from signals.apps.signals.models.status_message import StatusMessage, StatusMessageCategory
 from signals.apps.signals.models.status_message_template import StatusMessageTemplate
 from signals.apps.signals.models.stored_signal_filter import StoredSignalFilter
 from signals.apps.signals.models.type import Type
@@ -84,4 +84,5 @@ __all__ = [
     'RoutingExpression',
     'DeletedSignal',
     'StatusMessage',
+    'StatusMessageCategory',
 ]
