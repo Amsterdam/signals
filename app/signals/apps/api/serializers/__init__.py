@@ -28,6 +28,7 @@ from signals.apps.api.serializers.signal_context import (
     SignalContextReporterSerializer,
     SignalContextSerializer
 )
+from signals.apps.api.serializers.status_message import StatusMessageSerializer
 from signals.apps.api.serializers.status_message_template import (
     StateStatusMessageTemplateListSerializer,
     StateStatusMessageTemplateSerializer
@@ -56,4 +57,5 @@ __all__ = [
     'StateStatusMessageTemplateListSerializer',
     'StateStatusMessageTemplateSerializer',
     'StoredSignalFilterSerializer',
+    'StatusMessageSerializer',
 ]
