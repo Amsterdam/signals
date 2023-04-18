@@ -44,6 +44,17 @@ class StatusMessage(CreatedUpdatedModel):
         verbose_name = 'Standaardtekst'
         verbose_name_plural = 'Standaardteksten'
 
+    def __str__(self) -> str:
+        """
+        Overridden method so that the title is used to display the status message in admin lists.
+
+        Returns
+        -------
+        str
+            The title of the status message
+        """
+        return self.title
+
 
 class StatusMessageCategory(models.Model):
     """
