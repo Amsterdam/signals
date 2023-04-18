@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (C) 2023 Gemeente Amsterdam
-from rest_framework import viewsets, mixins
+from rest_framework import mixins, viewsets
 
 from signals.apps.api.serializers.status_message import StatusMessageSerializer
 from signals.apps.signals.models import StatusMessage
