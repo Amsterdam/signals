@@ -40,6 +40,9 @@ flower
 # Sentry
 raven
 
+# Office365 email backend
+django-o365mail
+
 #Azure insight
 opencensus-ext-azure
 opencensus-ext-django
