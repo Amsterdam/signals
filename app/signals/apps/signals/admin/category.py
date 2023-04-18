@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from signals.apps.history.services import HistoryLogService
-from signals.apps.signals.models import Category, ServiceLevelObjective
+from signals.apps.signals.models import Category, ServiceLevelObjective, StatusMessageCategory
 
 
 class ParentCategoryFilter(admin.SimpleListFilter):
@@ -62,13 +62,18 @@ class ServiceLevelObjectiveInline(admin.TabularInline):
         return False
 
 
+class StatusMessageCategoryInline(admin.TabularInline):
+    model = StatusMessageCategory
+    extra = 1
+
+
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'public_name', 'parent', 'is_active', 'is_public_accessible',)
     list_per_page = 20
     list_filter = ('is_active', 'is_public_accessible', ParentCategoryFilter,)
     sortable_by = ('name', 'parent', 'is_active',)
 
-    inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline,)
+    inlines = (ServiceLevelObjectiveInline, CategoryDepartmentInline, StatusMessageCategoryInline)
     fields = ('name', 'slug', 'parent', 'is_active', 'description', 'handling_message', 'public_name',
               'is_public_accessible', 'icon',)
     readonly_fields = ('slug',)
@@ -175,3 +180,7 @@ class StatusMessageTemplatesAdmin(admin.ModelAdmin):
 
         self.message_user(request, 'Created Status message template CSV file: {}'.format(filename))
         return response
+
+
+class StatusMessageAdmin(admin.ModelAdmin):
+    inlines = (StatusMessageCategoryInline, )
