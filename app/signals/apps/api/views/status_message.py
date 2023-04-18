@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from rest_framework import mixins, viewsets
 
+from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.serializers.status_message import StatusMessageSerializer
 from signals.apps.signals.models import StatusMessage
 
@@ -24,3 +25,4 @@ class StatusMessageViewSet(mixins.CreateModelMixin,
     """
     queryset = StatusMessage.objects.all()
     serializer_class = StatusMessageSerializer
+    permission_classes = (SIAPermissions & ModelWritePermissions, )
