@@ -84,7 +84,7 @@ class StatusMessageCategory(models.Model):
             )
         ]
         permissions = (
-            ('sia_statusmessage_write', 'Wijzingen van standaardteksten'),
+            ('sia_statusmessagecategory_write', 'Toewijzen van standaardteksten aan categorieën'),
         )
         verbose_name = 'Standaardtekst categorietoewijzing'
         verbose_name_plural = 'Standaardtekst categorietoewijzingen'
