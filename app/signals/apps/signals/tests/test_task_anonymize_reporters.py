@@ -17,7 +17,7 @@ from signals.apps.signals.workflow import (
 )
 
 
-class TestTaskTranslateCategory(TransactionTestCase):
+class TestAnonymizeTasks(TransactionTestCase):
     def test_anonymize_reporter(self):
         signal = SignalFactory.create(status__state=AFGEHANDELD)
         reporter = signal.reporter
