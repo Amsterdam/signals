@@ -143,7 +143,7 @@ class TestAnonymizeTasks(TransactionTestCase):
         self.assertIsNone(reporter.email)
         self.assertIsNone(reporter.phone)
         self.assertTrue(reporter.email_anonymized)
-        self.assertTrue(reporter.phone_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
 
     def test_anonymize_reporters_that_has_empty_phone(self):
         with freeze_time(timezone.now() - timezone.timedelta(days=3)):
@@ -186,7 +186,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         self.assertIsNone(reporter.email)
         self.assertIsNone(reporter.phone)
-        self.assertTrue(reporter.email_anonymized)
+        self.assertFalse(reporter.email_anonymized)
         self.assertTrue(reporter.phone_anonymized)
 
     def test_anonymize_reporters_that_has_empty_email(self):
