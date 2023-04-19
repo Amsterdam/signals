@@ -163,9 +163,9 @@ class TestAnonymizeTasks(TransactionTestCase):
         reporter.refresh_from_db()
 
         self.assertIsNone(reporter.email)
-        self.assertIsNone(reporter.phone)
+        self.assertEqual('', reporter.phone)
         self.assertTrue(reporter.email_anonymized)
-        self.assertTrue(reporter.phone_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
 
     def test_anonymize_reporters_that_has_null_email(self):
         with freeze_time(timezone.now() - timezone.timedelta(days=3)):
@@ -206,7 +206,7 @@ class TestAnonymizeTasks(TransactionTestCase):
 
         reporter.refresh_from_db()
 
-        self.assertIsNone(reporter.email)
+        self.assertEqual('', reporter.email)
         self.assertIsNone(reporter.phone)
-        self.assertTrue(reporter.email_anonymized)
+        self.assertFalse(reporter.email_anonymized)
         self.assertTrue(reporter.phone_anonymized)
