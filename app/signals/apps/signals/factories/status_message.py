@@ -3,7 +3,7 @@
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText
 
-from signals.apps.signals.models import StatusMessage
+from signals.apps.signals.models import StatusMessage, StatusMessageCategory
 from signals.apps.signals.workflow import STATUS_CHOICES_API
 
 
@@ -15,3 +15,8 @@ class StatusMessageFactory(DjangoModelFactory):
 
     class Meta:
         model = StatusMessage
+
+
+class StatusMessageCategoryFactory(DjangoModelFactory):
+    class Meta:
+        model = StatusMessageCategory
