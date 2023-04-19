@@ -2,7 +2,12 @@
 # Copyright (C) 2023 Gemeente Amsterdam
 from django.contrib.auth.models import Permission
 
-from signals.apps.signals.factories.status_message import StatusMessageFactory
+from signals.apps.signals.factories import CategoryFactory
+from signals.apps.signals.factories.status_message import (
+    StatusMessageCategoryFactory,
+    StatusMessageFactory
+)
+from signals.apps.signals.models import StatusMessageCategory
 from signals.test.utils import SIAReadWriteUserMixin, SignalsBaseApiTestCase
 
 
@@ -236,3 +241,12 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         response = self.client.delete(self.PATH + str(self.status_message.pk))
 
         self.assertEqual(204, response.status_code)
+
+    def test_can_delete_when_attached_to_categories(self):
+        category = CategoryFactory.create()
+        StatusMessageCategoryFactory.create(status_message=self.status_message, category=category, position=1)
+
+        response = self.client.delete(self.PATH + str(self.status_message.pk))
+
+        self.assertEqual(204, response.status_code)
+        self.assertEqual(0, StatusMessageCategory.objects.count())
