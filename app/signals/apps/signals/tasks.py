@@ -36,8 +36,7 @@ def anonymize_reporters(days=365):
     allowed_signal_states = [AFGEHANDELD, GEANNULEERD, GESPLITST, VERZOEK_TOT_AFHANDELING]
 
     reporter_ids = Reporter.objects.filter(
-        Q(email__isnull=False) & ~Q(email__exact=''),
-        Q(phone__isnull=False) & ~Q(phone__exact=''),
+        (Q(email__isnull=False) & ~Q(email__exact='')) | (Q(phone__isnull=False) & ~Q(phone__exact='')),
         email_anonymized=False,
         phone_anonymized=False,
         created_at__lt=created_before,
@@ -47,7 +46,6 @@ def anonymize_reporters(days=365):
     )
 
     reporter_count = reporter_ids.count()
-
     for reporter_id in reporter_ids:
         anonymize_reporter.delay(reporter_id=reporter_id)
 
