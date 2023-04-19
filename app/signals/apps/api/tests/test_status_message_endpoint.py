@@ -618,3 +618,121 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
         self.assertIsNotNone(body['created_at'])
+
+    def test_cannot_patch_with_blank_title(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'title': ''},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('title', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['title'])
+
+    def test_cannot_patch_with_null_title(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'title': None},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('title', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['title'])
+
+    def test_cannot_patch_with_blank_text(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'text': ''},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('text', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['text'])
+
+    def test_cannot_patch_with_null_text(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'text': None},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('text', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['text'])
+
+    def test_cannot_patch_with_blank_state(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'state': ''},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['"" is een ongeldige keuze.'], body['state'])
+
+    def test_cannot_patch_with_non_existing_state(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'state': 'bla'},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['"bla" is een ongeldige keuze.'], body['state'])
+
+    def test_cannot_patch_with_null_state(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'state': None},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['state'])
+
+    def test_categories_are_ignored_in_patch(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'categories': [4, 5, 6]},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('id', body)
+        self.assertEqual(self.status_message.pk, body['id'])
+        self.assertIn('title', body)
+        self.assertEqual(self.TITLE, body['title'])
+        self.assertIn('text', body)
+        self.assertEqual(self.TEXT, body['text'])
+        self.assertIn('active', body)
+        self.assertEqual(self.ACTIVE, body['active'])
+        self.assertIn('state', body)
+        self.assertEqual(self.STATE, body['state'])
+        self.assertIn('categories', body)
+        self.assertListEqual([], body['categories'])
+        self.assertIn('updated_at', body)
+        self.assertIsNotNone(body['updated_at'])
+        self.assertIn('created_at', body)
+        self.assertIsNotNone(body['created_at'])
