@@ -427,3 +427,194 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
         self.assertIsNotNone(body['created_at'])
+
+    def test_cannot_put_without_title(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk) ,
+            {'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('title', body)
+        self.assertListEqual(['Dit veld is vereist.'], body['title'])
+
+    def test_cannot_put_with_blank_title(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': '', 'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('title', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['title'])
+
+    def test_cannot_put_with_null_title(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': None, 'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('title', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['title'])
+
+    def test_cannot_put_without_text(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('text', body)
+        self.assertListEqual(['Dit veld is vereist.'], body['text'])
+
+    def test_cannot_put_with_blank_text(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': '', 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('text', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['text'])
+
+    def test_cannot_put_with_null_text(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': None, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('text', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['text'])
+
+    def test_can_put_without_active(self):
+        title = 'put title'
+        text = 'put text'
+        state = 'm'
+
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': title, 'text': text, 'state': state},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('active', body)
+        self.assertTrue(body['active'])
+        self.assertIn('title', body)
+        self.assertEqual(title, body['title'])
+        self.assertIn('text', body)
+        self.assertEqual(text, body['text'])
+        self.assertIn('state', body)
+        self.assertEqual(state, body['state'])
+
+    def test_cannot_put_without_state(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['Dit veld is vereist.'], body['state'])
+
+    def test_cannot_put_with_blank_state(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE, 'state': ''},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['"" is een ongeldige keuze.'], body['state'])
+
+    def test_cannot_put_with_non_existing_state(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE, 'state': 'bla'},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['"bla" is een ongeldige keuze.'], body['state'])
+
+    def test_cannot_put_with_null_state(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE, 'state': None},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertIn('state', body)
+        self.assertListEqual(['Dit veld mag niet leeg zijn.'], body['state'])
+
+    def test_categories_are_ignored_in_put(self):
+        title = 'put title'
+        text = 'put text'
+        active = False
+        state = 'm'
+
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {
+                'title': title,
+                'text': text,
+                'active': active,
+                'state': state,
+                'categories': [4, 5, 6]
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        body = response.json()
+        self.assertIn('id', body)
+        self.assertEqual(self.status_message.pk, body['id'])
+        self.assertIn('title', body)
+        self.assertEqual(title, body['title'])
+        self.assertIn('text', body)
+        self.assertEqual(text, body['text'])
+        self.assertIn('active', body)
+        self.assertEqual(active, body['active'])
+        self.assertIn('state', body)
+        self.assertEqual(state, body['state'])
+        self.assertIn('categories', body)
+        self.assertListEqual([], body['categories'])
+        self.assertIn('updated_at', body)
+        self.assertIsNotNone(body['updated_at'])
+        self.assertIn('created_at', body)
+        self.assertIsNotNone(body['created_at'])
