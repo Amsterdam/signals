@@ -430,7 +430,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
 
     def test_cannot_put_without_title(self):
         response = self.client.put(
-            self.PATH + str(self.status_message.pk) ,
+            self.PATH + str(self.status_message.pk),
             {'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
             format='json'
         )
@@ -736,3 +736,59 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
         self.assertIsNotNone(body['updated_at'])
         self.assertIn('created_at', body)
         self.assertIsNotNone(body['created_at'])
+
+
+class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
+    TITLE = 'title'
+    TEXT = 'text'
+    STATE = 'o'
+    ACTIVE = True
+    PATH = '/signals/v1/private/status_message/'
+
+    def setUp(self):
+        self.client.force_authenticate(user=self.user)
+
+        self.status_message = StatusMessageFactory.create(
+            title=self.TITLE,
+            text=self.TEXT,
+            state=self.STATE,
+            active=self.ACTIVE
+        )
+
+    # Permission tests
+    def test_cannot_create_without_permission(self):
+        response = self.client.post(
+            self.PATH,
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(403, response.status_code)
+
+    def test_cannot_read_without_permission(self):
+        response = self.client.get(self.PATH + str(self.status_message.pk))
+
+        self.assertEqual(403, response.status_code)
+
+    def test_cannot_put_without_permission(self):
+        response = self.client.put(
+            self.PATH + str(self.status_message.pk),
+            {'title': self.TITLE, 'text': self.TEXT, 'active': self.ACTIVE, 'state': self.STATE},
+            format='json'
+        )
+
+        self.assertEqual(403, response.status_code)
+
+    def test_cannot_patch_without_permission(self):
+        response = self.client.patch(
+            self.PATH + str(self.status_message.pk),
+            {'title': 'patch title'},
+            format='json'
+        )
+
+        self.assertEqual(403, response.status_code)
+
+    def test_cannot_delete_without_permission(self):
+        response = self.client.delete(self.PATH + str(self.status_message.pk))
+
+        self.assertEqual(403, response.status_code)
