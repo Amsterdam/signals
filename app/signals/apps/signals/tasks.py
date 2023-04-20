@@ -37,8 +37,6 @@ def anonymize_reporters(days=365):
 
     reporter_ids = Reporter.objects.filter(
         (Q(email__isnull=False) & ~Q(email__exact='')) | (Q(phone__isnull=False) & ~Q(phone__exact='')),
-        email_anonymized=False,
-        phone_anonymized=False,
         created_at__lt=created_before,
         _signal__status__state__in=allowed_signal_states,
     ).values_list(
