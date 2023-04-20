@@ -5,6 +5,7 @@ from rest_framework import mixins, viewsets
 from signals.apps.api.generics.permissions import ModelWritePermissions, SIAPermissions
 from signals.apps.api.serializers.status_message import StatusMessageSerializer
 from signals.apps.signals.models import StatusMessage
+from signals.auth.backend import JWTAuthBackend
 
 
 class StatusMessageViewSet(mixins.CreateModelMixin,
@@ -25,4 +26,5 @@ class StatusMessageViewSet(mixins.CreateModelMixin,
     """
     queryset = StatusMessage.objects.all()
     serializer_class = StatusMessageSerializer
+    authentication_classes = (JWTAuthBackend, )
     permission_classes = (SIAPermissions & ModelWritePermissions, )
