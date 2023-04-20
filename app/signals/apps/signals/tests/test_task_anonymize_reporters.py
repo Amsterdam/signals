@@ -17,7 +17,7 @@ from signals.apps.signals.workflow import (
 )
 
 
-class TestTaskTranslateCategory(TransactionTestCase):
+class TestAnonymizeTasks(TransactionTestCase):
     def test_anonymize_reporter(self):
         signal = SignalFactory.create(status__state=AFGEHANDELD)
         reporter = signal.reporter
@@ -122,3 +122,91 @@ class TestTaskTranslateCategory(TransactionTestCase):
         self.assertEqual(Reporter.objects.filter(email_anonymized=False, phone_anonymized=False).count(), 4)
 
         self.assertEqual(Reporter.objects.count(), 7)
+
+    def test_anonymize_reporters_that_has_null_phone(self):
+        with freeze_time(timezone.now() - timezone.timedelta(days=3)):
+            signal = SignalFactory.create(status__state=AFGEHANDELD)
+        reporter = signal.reporter
+        reporter.phone = None
+        reporter.save()
+
+        self.assertIsNotNone(reporter.email)
+        self.assertNotEqual('', reporter.email)
+        self.assertIsNone(reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+        anonymize_reporters(days=1)
+
+        reporter.refresh_from_db()
+
+        self.assertIsNone(reporter.email)
+        self.assertIsNone(reporter.phone)
+        self.assertTrue(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+    def test_anonymize_reporters_that_has_empty_phone(self):
+        with freeze_time(timezone.now() - timezone.timedelta(days=3)):
+            signal = SignalFactory.create(status__state=AFGEHANDELD)
+        reporter = signal.reporter
+        reporter.phone = ''
+        reporter.save()
+
+        self.assertIsNotNone(reporter.email)
+        self.assertNotEqual('', reporter.email)
+        self.assertEqual('', reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+        anonymize_reporters(days=1)
+
+        reporter.refresh_from_db()
+
+        self.assertIsNone(reporter.email)
+        self.assertEqual('', reporter.phone)
+        self.assertTrue(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+    def test_anonymize_reporters_that_has_null_email(self):
+        with freeze_time(timezone.now() - timezone.timedelta(days=3)):
+            signal = SignalFactory.create(status__state=AFGEHANDELD)
+        reporter = signal.reporter
+        reporter.email = None
+        reporter.save()
+
+        self.assertIsNone(reporter.email)
+        self.assertIsNotNone(reporter.phone)
+        self.assertNotEqual('', reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+        anonymize_reporters(days=1)
+
+        reporter.refresh_from_db()
+
+        self.assertIsNone(reporter.email)
+        self.assertIsNone(reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertTrue(reporter.phone_anonymized)
+
+    def test_anonymize_reporters_that_has_empty_email(self):
+        with freeze_time(timezone.now() - timezone.timedelta(days=3)):
+            signal = SignalFactory.create(status__state=AFGEHANDELD)
+        reporter = signal.reporter
+        reporter.email = ''
+        reporter.save()
+
+        self.assertEqual('', reporter.email)
+        self.assertIsNotNone(reporter.phone)
+        self.assertNotEqual('', reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertFalse(reporter.phone_anonymized)
+
+        anonymize_reporters(days=1)
+
+        reporter.refresh_from_db()
+
+        self.assertEqual('', reporter.email)
+        self.assertIsNone(reporter.phone)
+        self.assertFalse(reporter.email_anonymized)
+        self.assertTrue(reporter.phone_anonymized)
