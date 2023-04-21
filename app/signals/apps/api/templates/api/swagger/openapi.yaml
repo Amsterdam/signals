@@ -2186,6 +2186,102 @@ paths:
         - OAuth2:
             - SIG/ALL
 
+  /signals/v1/private/status_message/:
+    post:
+      description: Create a new status message
+      requestBody:
+        description: Status message data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1StatusMessage'
+      responses:
+        '201':
+          description: New status message created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageDetailGet'
+        '400':
+          description: Bad request, see response body for the reason.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+
+  /signals/v1/private/status_message/{id}:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageDetailGet'
+        '400':
+          description: Bad request, see response body for the reason.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+        '404':
+          description: Not found.
+    put:
+      requestBody:
+        description: Status message data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1StatusMessage'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageDetailGet'
+        '400':
+          description: Bad request, see response body for the reason.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+        '404':
+          description: Not found.
+    patch:
+      requestBody:
+        description: Status message data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1StatusMessage'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1StatusMessageDetailGet'
+        '400':
+          description: Bad request, see response body for the reason.
+        '401':
+          description: Not authenticated, may be caused by expired token.
+        '403':
+          description: Not authorized to access this endpoint.
+        '404':
+          description: Not found.
+    delete:
+      '200':
+        description: Successfully deleted.
+      '400':
+        description: Bad request, see response body for the reason.
+      '401':
+        description: Not authenticated, may be caused by expired token.
+      '403':
+        description: Not authorized to access this endpoint.
+      '404':
+        description: Not found.
+
 components:
   schemas:
     StatusStateChoices:
@@ -5021,6 +5117,59 @@ components:
           description: The topic a standard answer belongs to
           type: string
           example: Hoe heeft de gemeente u geholpen?
+
+    V1StatusMessage:
+      description: Status message
+      type: object
+      properties:
+        title:
+          description: The title of the status message
+          type: string
+          example: Title of the status message
+        text:
+          description: The actual text of the status message
+          type: string
+          example: Text of the status message
+        active:
+          description: The active state of the status message
+          type: boolean
+          example: true
+        state:
+          $ref: '#/components/schemas/StatusStateChoices'
+
+    V1StatusMessageDetailGet:
+      description: Status message
+      type: object
+      properties:
+        title:
+          description: The title of the status message
+          type: string
+          example: Title of the status message
+        text:
+          description: The actual text of the status message
+          type: string
+          example: Text of the status message
+        active:
+          description: The active state of the status message
+          type: boolean
+          example: true
+        state:
+          $ref: '#/components/schemas/StatusStateChoices'
+        categories:
+          description: The category id's that the status message is attached to
+          type: array
+          items:
+            type: integer
+        updated_at:
+          description: When the status message was last updated
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
+        created_at:
+          description: When the status message was created
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00+00:00"
 
   securitySchemes:
     OAuth2:
