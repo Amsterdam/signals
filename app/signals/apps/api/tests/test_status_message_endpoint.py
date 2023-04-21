@@ -16,7 +16,7 @@ class TestStatusMessageEndpoint(SIAReadWriteUserMixin, SignalsBaseApiTestCase):
     TEXT = 'text'
     STATE = 'o'
     ACTIVE = True
-    PATH = '/signals/v1/private/status_message/'
+    PATH = '/signals/v1/private/status-messages/'
 
     def setUp(self):
         statusmessagetemplate_write_permission = Permission.objects.get(
@@ -743,7 +743,7 @@ class TestStatusMessageEndpointPermissions(SignalsBaseApiTestCase):
     TEXT = 'text'
     STATE = 'o'
     ACTIVE = True
-    PATH = '/signals/v1/private/status_message/'
+    PATH = '/signals/v1/private/status-messages/'
 
     def setUp(self):
         self.client.force_authenticate(user=self.user)

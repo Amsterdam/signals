@@ -8,11 +8,11 @@ from signals.apps.signals.models import StatusMessage
 from signals.auth.backend import JWTAuthBackend
 
 
-class StatusMessageViewSet(mixins.CreateModelMixin,
-                           mixins.RetrieveModelMixin,
-                           mixins.UpdateModelMixin,
-                           mixins.DestroyModelMixin,
-                           viewsets.GenericViewSet):
+class StatusMessagesViewSet(mixins.CreateModelMixin,
+                            mixins.RetrieveModelMixin,
+                            mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
     """
     Endpoint to manage status messages.
 

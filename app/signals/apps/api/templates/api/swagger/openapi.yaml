@@ -2186,7 +2186,7 @@ paths:
         - OAuth2:
             - SIG/ALL
 
-  /signals/v1/private/status_message/:
+  /signals/v1/private/status-messages/:
     post:
       description: Create a new status message
       requestBody:
@@ -2210,7 +2210,7 @@ paths:
         '403':
           description: Not authorized to access this endpoint.
 
-  /signals/v1/private/status_message/{id}:
+  /signals/v1/private/status-messages/{id}:
     get:
       responses:
         '200':
