@@ -68,3 +68,17 @@ class TestTasks(TestCase):
             recipient=user_with_notification,
             assigned_to=user_with_notification
         )
+
+    @mock.patch('signals.apps.email_integrations.tasks.MailService.system_mail', autospec=True)
+    def test_send_no_mail_for_closed_signal(self, mocked_mail):
+        signal = SignalFactory.create()
+        signal.status = StatusFactory(_signal=signal, state=workflow.AFGEHANDELD)
+        signal.save()
+
+        user_with_notification = UserFactory.create()
+        user_with_notification.profile.notification_on_user_assignment = True
+        user_with_notification.profile.save()
+
+        tasks.send_mail_assigned_signal_user(signal_pk=signal.pk, user_pk=user_with_notification.pk)
+
+        mocked_mail.assert_not_called()

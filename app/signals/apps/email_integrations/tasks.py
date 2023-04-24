@@ -5,11 +5,18 @@ import logging
 from django.contrib.auth import get_user_model
 
 from signals.apps.email_integrations.services import MailService
+from signals.apps.signals import workflow
 from signals.apps.signals.models import Department, Signal
 from signals.celery import app
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+CLOSED_STATES = [
+    workflow.AFGEHANDELD,
+    workflow.GEANNULEERD,
+    workflow.GESPLITST,
+]
 
 
 @app.task
@@ -23,6 +30,9 @@ def send_mail_assigned_signal_departments(signal_pk, department_pks):
         signal = Signal.objects.get(pk=signal_pk)
     except Signal.DoesNotExist:
         logger.exception()
+        return
+
+    if signal.status.state in CLOSED_STATES:
         return
 
     for department_pk in department_pks:
@@ -50,6 +60,9 @@ def send_mail_assigned_signal_user(signal_pk, user_pk):
         signal = Signal.objects.get(pk=signal_pk)
     except Signal.DoesNotExist:
         logger.exception()
+        return
+
+    if signal.status.state in CLOSED_STATES:
         return
 
     try:
